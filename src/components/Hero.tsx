@@ -1,6 +1,7 @@
 import FadeIn from './FadeIn';
 import Magnet from './Magnet';
 import { Stat } from './ui';
+import heroImg from '../assets/pavlo-hero.jpg';
 
 export default function Hero() {
   return (
@@ -8,7 +9,7 @@ export default function Hero() {
       {/* photo layer */}
       <div className="absolute inset-y-0 right-0 w-full md:w-[62%] pointer-events-none select-none">
         <img
-          src="/pavlo-hero.png"
+          src={heroImg}
           alt=""
           className="h-full w-full object-cover object-right opacity-40 md:opacity-90"
         />

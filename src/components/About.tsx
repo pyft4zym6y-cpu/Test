@@ -1,5 +1,6 @@
 import FadeIn from './FadeIn';
 import { Eyebrow, Section, SectionTitle, Stat, Chip } from './ui';
+import portraitImg from '../assets/pavlo-portrait.jpg';
 
 const BRAND_CHIPS = ['Amazon', 'Henkel', 'J&J', 'Watsons', 'Rozetka', 'Kimberly-Clark'];
 
@@ -106,7 +107,7 @@ export default function About() {
           <FadeIn delay={0.15} x={40} y={0}>
             <div className="relative">
               <img
-                src="/pavlo-portrait.png"
+                src={portraitImg}
                 alt="Павло Сидоренко — портрет"
                 className="w-full max-w-sm mx-auto rounded-2xl border border-[#232933]"
                 loading="lazy"

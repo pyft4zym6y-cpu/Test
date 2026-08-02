@@ -1,5 +1,6 @@
 import FadeIn from './FadeIn';
 import { Eyebrow, Section, SectionTitle } from './ui';
+import heroImg from '../assets/pavlo-hero.jpg';
 
 const TRAJECTORIES = [
   {
@@ -55,7 +56,7 @@ export default function Final() {
       <section id="contact" className="relative overflow-hidden">
         <div className="absolute inset-y-0 right-0 w-full md:w-[58%] pointer-events-none select-none">
           <img
-            src="/pavlo-hero.png"
+            src={heroImg}
             alt=""
             className="h-full w-full object-cover object-right opacity-30 md:opacity-80"
             loading="lazy"
