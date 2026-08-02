@@ -1,33 +1,51 @@
-# Jack — 3D Creator
+# Павло Сидоренко — Commerce OS
 
-Portfolio landing page for a 3D creator. Dark theme, Kanit typography, scroll-driven marquee, character-reveal about text, and sticky-stacking project cards.
+Персональний сайт-лендинг на основі self-presentation 2026: Commerce OS — операційна система для зростання e-commerce.
 
-## Stack
+## Стек
 
 - React 18 + TypeScript
 - Vite
 - Tailwind CSS
 - Framer Motion
-- Lucide React
+- Шрифти: Manrope · JetBrains Mono · PT Serif (Google Fonts)
 
-## Development
+## Запуск
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Build
+## Збірка
 
 ```bash
 npm run build
 npm run preview
 ```
 
-## Sections
+## Секції
 
-1. **Hero** — full-viewport intro with gradient heading, magnetic portrait, and navbar
-2. **Marquee** — two scroll-driven rows of project preview GIFs
-3. **About** — gradient heading, character-by-character scroll-reveal paragraph, decorative 3D corner images
-4. **Services** — 5 numbered services on a white rounded panel
-5. **Projects** — sticky-stacking cards with scale-down scroll effect
+1. **Hero** — фото, градієнтне ім'я, ключові цифри (анімовані лічильники)
+2. **Велика ідея / Маніфест** — посимвольне scroll-розкриття тексту
+3. **Болі бізнесу** → що вирішує Commerce OS
+4. **Про мене** — досвід, ролі, бренди, позиціонування, портрет
+5. **Школа Commerce Architecture** — нова категорія, візія/місія, цінності, переконання
+6. **Довіра** — marquee з 16 брендів, ринки/канали/галузі
+7. **Система** — 12 модулів, карта залежностей, анімований growth flywheel
+8. **Продукт** — 56 плейбуків, сітка PB-01…56, термінальні екрани (плейбук, audit calculator, gold standards)
+9. **Процес** — таймлайн по тижнях, команда pod-ів
+10. **Економіка** — CAPEX-бари, ROI-ланцюг, ризики IF/THEN, принципи
+11. **Кейси** — Premium Textile ×18 (SVG-графік росту, прогрес-бари, атрибуція), Ugears, Imperia/ISEI
+12. **Ринок** — галузі, порівняльна таблиця конкурентів
+13. **Умови** — три формати роботи, комерційна пропозиція, FAQ
+14. **CTA** — дві траєкторії, бронювання стратегічної сесії, контакти
+
+## Візуальні ефекти
+
+- Scroll-reveal анімації (Framer Motion), посимвольне розкриття маніфесту
+- Анімовані лічильники, прогрес-бари та SVG-графік із draw-анімацією
+- Обертовий flywheel із пульсуючими вузлами
+- Marquee брендів у два зустрічні ряди
+- Магнітні hover-картки статистики, glow-ефекти, blueprint-сітка
+- `prefers-reduced-motion` враховано
