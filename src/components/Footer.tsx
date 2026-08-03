@@ -27,7 +27,7 @@ const FORMAT_LINKS = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-black/10 grid-bg">
+    <footer data-bot-say="Дійшов до кінця? Тоді час діяти: кнопка «Забронювати сесію» — просто тут, у підвалі 😉" className="border-t border-black/10 grid-bg">
       <div className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10">
         {/* Top: brand + link columns */}
         <div className="grid gap-10 lg:grid-cols-[1.3fr_1fr_1fr_1.1fr] py-14">

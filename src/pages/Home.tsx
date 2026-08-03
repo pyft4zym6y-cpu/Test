@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Play, ArrowRight } from 'lucide-react';
 import FadeIn from '../components/FadeIn';
 import HeroBot from '../components/HeroBot';
+import ScrollBot from '../components/ScrollBot';
 import { say, sayIdle } from '../components/speech';
 import { Eyebrow, Chip } from '../components/ui';
 
@@ -119,7 +120,7 @@ export default function Home() {
       </section>
 
       {/* ================= BRANDS ================= */}
-      <section className="border-y border-black/10 py-8 bg-[#F6F7F8]">
+      <section data-bot-say="Це бренди й ринки, з якими ми вже працювали — від Henkel і J&J до Amazon та Rozetka." className="border-y border-black/10 py-8 bg-[#F6F7F8]">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10">
           <p className="font-pixel text-[0.55rem] uppercase text-black/55 mb-5">
             Бренди й ринки, з якими ми вже працювали
@@ -135,7 +136,7 @@ export default function Home() {
       </section>
 
       {/* ================= THREE DOORS ================= */}
-      <section className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10 py-16 md:py-20">
+      <section data-bot-say="Три двері на вибір: Підхід — чому, Система — як, Кейси — докази. Обирай!" className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10 py-16 md:py-20">
         <FadeIn>
           <div className="flex flex-wrap items-end justify-between gap-6 mb-10">
             <h2 className="font-extrabold uppercase tracking-tight" style={{ fontSize: 'clamp(1.6rem, 3.4vw, 2.6rem)' }}>
@@ -166,6 +167,7 @@ export default function Home() {
           ))}
         </div>
       </section>
+      <ScrollBot />
     </div>
   );
 }
