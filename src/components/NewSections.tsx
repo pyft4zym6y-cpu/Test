@@ -4,6 +4,7 @@ import FadeIn from './FadeIn';
 import { Eyebrow, Section, SectionTitle, Chip, Stat } from './ui';
 import { GrowthChart } from './Cases';
 import { say, sayIdle } from './speech';
+import { track } from './analytics';
 
 const PROOF_SAYS: Record<string, string> = {
   x18: 'Як досягли ×18: сім пластів у синхроні — платформа+SEO, маркетплейси, ребрендинг, retention, B2B і ERP. Жоден окремо цього не дав би.',
@@ -55,7 +56,7 @@ export function Proof() {
           </p>
           <Link
             to="/cases/premium-textile"
-            className="font-mono text-sm text-[#65A30D] uppercase tracking-wider hover:text-[#4d7c0f] transition-colors"
+            className="font-mono text-sm text-[#4D7C0F] uppercase tracking-wider hover:text-[#4d7c0f] transition-colors"
           >
             Розібрати кейс →
           </Link>
@@ -100,7 +101,7 @@ function InactionChart() {
   const withoutSystem = 'M 12 132 C 110 133, 220 138, 372 146';
   return (
     <div className="card p-6">
-      <p className="font-pixel text-[0.55rem] text-[#65A30D] mb-5">ЩО СТАЄТЬСЯ ЗА 3 РОКИ</p>
+      <p className="font-pixel text-[0.55rem] text-[#4D7C0F] mb-5">ЩО СТАЄТЬСЯ ЗА 3 РОКИ</p>
       <svg viewBox="0 0 400 170" className="w-full">
         {[45, 90, 135].map((y) => (
           <line key={y} x1="0" y1={y} x2="400" y2={y} stroke="rgba(10,14,18,0.07)" />
@@ -271,7 +272,7 @@ export function HowItWorks() {
         </div>
         <FadeIn delay={0.3}>
           <div className="card p-5 mt-6 flex flex-wrap gap-x-6 gap-y-2 items-baseline">
-            <span className="font-pixel text-[0.5rem] uppercase text-[#65A30D]">
+            <span className="font-pixel text-[0.5rem] uppercase text-[#4D7C0F]">
               DoD на кожному етапі
             </span>
             <span className="text-[#3F4854] text-sm">
@@ -429,7 +430,7 @@ export function GoldStandards() {
                     <th className="pb-2.5 pr-3 font-medium">Метрика</th>
                     <th className="pb-2.5 pr-3 font-medium text-[#DC2626]">●</th>
                     <th className="pb-2.5 pr-3 font-medium text-[#B45309]">●</th>
-                    <th className="pb-2.5 font-medium text-[#65A30D]">●</th>
+                    <th className="pb-2.5 font-medium text-[#4D7C0F]">●</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -438,7 +439,7 @@ export function GoldStandards() {
                       <td className="py-2.5 pr-3 font-sans font-semibold text-[#12161C]">{m.name}</td>
                       <td className="py-2.5 pr-3 text-[#DC2626]">{m.red}</td>
                       <td className="py-2.5 pr-3 text-[#B45309]">{m.norm}</td>
-                      <td className="py-2.5 text-[#65A30D]">{m.gold}</td>
+                      <td className="py-2.5 text-[#4D7C0F]">{m.gold}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -527,7 +528,7 @@ export function PlaybookNet() {
               className="absolute -translate-x-1/2 -translate-y-1/2 card px-5 py-3.5 text-center"
               style={{ left: '50%', top: '47%', borderColor: 'rgba(101,163,13,0.6)', boxShadow: '0 0 28px rgba(101,163,13,0.25)' }}
             >
-              <p className="font-mono text-[0.55rem] text-[#65A30D]">PB-12 · ФІНАНСИ</p>
+              <p className="font-mono text-[0.55rem] text-[#4D7C0F]">PB-12 · ФІНАНСИ</p>
               <p className="font-extrabold text-sm">Unit Economics</p>
               <p className="font-mono text-[0.5rem] text-[#5A6472] mt-0.5">CM1·CM2·CM3 · LTV:CAC</p>
             </div>
@@ -535,7 +536,7 @@ export function PlaybookNet() {
         </FadeIn>
 
         <FadeIn delay={0.2}>
-          <p className="font-pixel text-[0.55rem] uppercase text-[#65A30D] mb-3">
+          <p className="font-pixel text-[0.55rem] uppercase text-[#4D7C0F] mb-3">
             Один плейбук зблизька
           </p>
           <p className="text-sm text-[#3F4854] leading-relaxed max-w-md">
@@ -589,7 +590,7 @@ export function Fork() {
       <div className="grid md:grid-cols-2 gap-5 mt-10 items-stretch">
         <FadeIn delay={0.1}>
           <div className="card accent-top p-7 h-full" style={{ '--accent': 'var(--lime)', borderColor: 'rgba(101,163,13,0.35)' } as React.CSSProperties}>
-            <p className="font-extrabold text-2xl text-[#65A30D] mb-5">З Commerce OS</p>
+            <p className="font-extrabold text-2xl text-[#4D7C0F] mb-5">З Commerce OS</p>
             <div className="flex flex-col">
               {TRACK_OS.map((t, i) => (
                 <div key={t.period} className={`flex gap-5 py-3.5 ${i > 0 ? 'border-t border-black/[0.06]' : ''}`}>
@@ -598,7 +599,7 @@ export function Fork() {
                 </div>
               ))}
             </div>
-            <p className="font-mono text-xs text-[#65A30D] mt-4">↗ крива йде вгору — ви будуєте актив</p>
+            <p className="font-mono text-xs text-[#4D7C0F] mt-4">↗ крива йде вгору — ви будуєте актив</p>
           </div>
         </FadeIn>
         <FadeIn delay={0.2}>
@@ -644,7 +645,7 @@ export function RayCase() {
     <Section>
       <FadeIn>
         <Eyebrow>
-          Кейс · <span className="text-[#65A30D]">Fashion-виробник</span> · Program of Record 2026
+          Кейс · <span className="text-[#4D7C0F]">Fashion-виробник</span> · Program of Record 2026
         </Eyebrow>
         <SectionTitle as="h1">
           Одяговий бренд ·<br />
@@ -677,7 +678,7 @@ export function RayCase() {
                 </p>
               </div>
               <div>
-                <p className="font-mono font-bold text-2xl text-[#65A30D]">4–8 міс</p>
+                <p className="font-mono font-bold text-2xl text-[#4D7C0F]">4–8 міс</p>
                 <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[#5A6472] mt-1">
                   Окупність (за сценаріями CM)
                 </p>
@@ -703,7 +704,7 @@ export function RayCase() {
                   <tr key={r.name} className="border-t border-black/[0.06]">
                     <td className="py-2.5 pr-3 font-sans font-semibold text-[#12161C]">{r.name}</td>
                     <td className="py-2.5 pr-3 text-[#DC2626]">{r.a}</td>
-                    <td className="py-2.5 text-right text-[#65A30D]">→ {r.b}</td>
+                    <td className="py-2.5 text-right text-[#4D7C0F]">→ {r.b}</td>
                   </tr>
                 ))}
               </tbody>
@@ -734,7 +735,8 @@ export function PageCta({ label = 'Почнімо з аудиту' }: { label?: 
           </div>
           <Link
             to="/contact"
-            className="self-start md:self-auto shrink-0 flex items-center gap-3 border border-[#65A30D] text-[#65A30D] px-7 py-3.5 text-sm tracking-wider uppercase hover:bg-[#65A30D] hover:text-[#12161C] transition-colors"
+            onClick={() => track('cta_click', { location: 'page_cta' })}
+            className="self-start md:self-auto shrink-0 flex items-center gap-3 border border-[#65A30D] text-[#4D7C0F] px-7 py-3.5 text-sm tracking-wider uppercase hover:bg-[#65A30D] hover:text-[#12161C] transition-colors"
           >
             Забронювати сесію →
           </Link>

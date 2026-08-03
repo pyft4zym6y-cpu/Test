@@ -113,7 +113,7 @@ export function Case01Detail() {
         <div className="glow-lime w-[420px] h-[420px] top-10 -right-40" />
         <FadeIn>
           <Eyebrow>
-            Кейс 01 · Преміум-текстиль · UA→EU · <span className="text-[#65A30D]">Флагман</span>
+            Кейс 01 · Преміум-текстиль · UA→EU · <span className="text-[#4D7C0F]">Флагман</span>
           </Eyebrow>
           <SectionTitle>
             Якісний продукт,
@@ -223,7 +223,7 @@ export function Case01Detail() {
                       <span className="font-mono text-xs" style={{ fontVariantNumeric: 'tabular-nums' }}>
                         <span className="text-[#5A6472]">{r.from}</span>
                         <span className="text-[#5A6472]"> → </span>
-                        <span className="text-[#65A30D] font-bold">{r.to}</span>
+                        <span className="text-[#4D7C0F] font-bold">{r.to}</span>
                       </span>
                     </div>
                     <Bar percent={r.pct} delay={i * 0.08} height={7} />
@@ -238,7 +238,7 @@ export function Case01Detail() {
         <div className="grid lg:grid-cols-3 gap-6 mt-10 items-start">
           <FadeIn delay={0.1}>
             <div className="card p-6 h-full">
-              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#65A30D] mb-5">
+              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#4D7C0F] mb-5">
                 Вклад факторів (експертна оцінка)
               </p>
               <div className="flex flex-col gap-3.5">

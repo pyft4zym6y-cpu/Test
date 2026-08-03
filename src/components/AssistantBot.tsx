@@ -220,13 +220,21 @@ export default function AssistantBot() {
       raf = requestAnimationFrame(tick);
     };
 
+    /* Пауза фізики у фоновій вкладці — економія батареї на мобільних. */
+    const onVisibility = () => {
+      cancelAnimationFrame(raf);
+      if (!document.hidden && !reduced) raf = requestAnimationFrame(tick);
+    };
+
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('mousemove', onMove, { passive: true });
-    if (!reduced) raf = requestAnimationFrame(tick);
+    document.addEventListener('visibilitychange', onVisibility);
+    if (!reduced && !document.hidden) raf = requestAnimationFrame(tick);
     return () => {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('mousemove', onMove);
+      document.removeEventListener('visibilitychange', onVisibility);
       cancelAnimationFrame(raf);
     };
   }, [isHome]);
@@ -264,10 +272,10 @@ export default function AssistantBot() {
         >
           <X size={13} />
         </button>
-        <p className="font-pixel text-[0.45rem] text-[#65A30D] mb-1.5">WEEXP·OS</p>
+        <p className="font-pixel text-[0.45rem] text-[#4D7C0F] mb-1.5">WEEXP·OS</p>
         <p className="font-mono text-[0.64rem] md:text-[0.66rem] leading-relaxed text-[#12161C] min-h-[2.4em]">
           {typed}
-          <span className="cursor-blink text-[#65A30D]">▊</span>
+          <span className="cursor-blink text-[#4D7C0F]">▊</span>
         </p>
       </div>
 

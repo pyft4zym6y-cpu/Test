@@ -37,7 +37,7 @@ const DIFFS = [
 ];
 
 function MarkIcon({ mark }: { mark: Mark }) {
-  if (mark === 'yes') return <span className="text-[#65A30D]">✓</span>;
+  if (mark === 'yes') return <span className="text-[#4D7C0F]">✓</span>;
   if (mark === 'part') return <span className="text-[#B45309]">~</span>;
   return <span className="text-[#5A6472]">×</span>;
 }
@@ -104,7 +104,7 @@ export function Competitors() {
                     }`}
                   >
                     <td className="px-6 py-4">
-                      <p className={`font-bold ${row.me ? 'text-[#65A30D]' : ''}`}>{row.name}</p>
+                      <p className={`font-bold ${row.me ? 'text-[#4D7C0F]' : ''}`}>{row.name}</p>
                       <p className="font-mono text-[0.62rem] text-[#5A6472] mt-0.5">{row.sub}</p>
                     </td>
                     {row.marks.map((m, i) => (
@@ -112,7 +112,7 @@ export function Competitors() {
                         <MarkIcon mark={m} />
                       </td>
                     ))}
-                    <td className={`px-6 py-4 text-right font-mono font-bold ${row.me ? 'text-[#65A30D]' : 'text-[#5A6472]'}`}>
+                    <td className={`px-6 py-4 text-right font-mono font-bold ${row.me ? 'text-[#4D7C0F]' : 'text-[#5A6472]'}`}>
                       {row.price}
                     </td>
                   </tr>
@@ -125,7 +125,7 @@ export function Competitors() {
               ✓ повністю · ~ частково · × ні. Назви фірм — приклади архетипів; кожна модель має
               свою нішу.
             </p>
-            <p className="font-mono text-xs text-[#65A30D]">
+            <p className="font-mono text-xs text-[#4D7C0F]">
               Єдиний рядок із усіма ✓ — стратегія + руки + активи + P&amp;L + система.
             </p>
           </div>

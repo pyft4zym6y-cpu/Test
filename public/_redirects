@@ -1,0 +1,3 @@
+# Netlify SPA fallback: усі маршрути віддають index.html (потрібно після
+# переходу з HashRouter на BrowserRouter — див. DEPLOY.md)
+/*  /index.html  200

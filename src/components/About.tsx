@@ -107,7 +107,7 @@ export default function About() {
               />
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-[21rem] card px-5 py-3 bg-[#FFFFFF]/85 backdrop-blur-sm">
                 <p className="font-bold">Павло Сидоренко</p>
-                <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[#65A30D]">
+                <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[#4D7C0F]">
                   E-commerce &amp; Digital Architect
                 </p>
               </div>

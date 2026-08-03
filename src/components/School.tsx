@@ -70,13 +70,13 @@ export function SchoolIdentity() {
               </p>
             </div>
           </FadeIn>
-          <div className="hidden md:flex items-center text-[#65A30D] text-2xl font-mono">→</div>
+          <div className="hidden md:flex items-center text-[#4D7C0F] text-2xl font-mono">→</div>
           <FadeIn delay={0.2}>
             <div
               className="card accent-top p-7 h-full"
               style={{ '--accent': 'var(--lime)', borderColor: 'rgba(101,163,13,0.35)' } as React.CSSProperties}
             >
-              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#65A30D] mb-3">
+              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#4D7C0F] mb-3">
                 Наша категорія
               </p>
               <p className="font-extrabold text-2xl lime-text">Commerce Architecture</p>
@@ -90,7 +90,7 @@ export function SchoolIdentity() {
         </div>
         <FadeIn delay={0.3}>
           <div className="card p-5 mt-5 flex flex-wrap gap-x-6 gap-y-2 items-baseline">
-            <span className="font-pixel text-[0.5rem] uppercase text-[#65A30D]">
+            <span className="font-pixel text-[0.5rem] uppercase text-[#4D7C0F]">
               Без гучних слів
             </span>
             <span className="text-[#3F4854] text-sm">
@@ -114,7 +114,7 @@ export function SchoolIdentity() {
               </p>
               <p className="font-extrabold text-xl md:text-2xl leading-snug">
                 Commerce OS має стати операційною системою цифрових компаній —{' '}
-                <span className="text-[#65A30D]">як SAP став ОС підприємств</span>.
+                <span className="text-[#4D7C0F]">як SAP став ОС підприємств</span>.
               </p>
               <p className="text-[#5A6472] text-sm mt-4 leading-relaxed">
                 Нова школа управління e-commerce: компанії ростуть не через нескінченне збільшення
@@ -124,7 +124,7 @@ export function SchoolIdentity() {
           </FadeIn>
           <FadeIn delay={0.2}>
             <div className="card accent-top p-8 h-full" style={{ '--accent': 'var(--lime)' } as React.CSSProperties}>
-              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#65A30D] mb-4">
+              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#4D7C0F] mb-4">
                 Місія
               </p>
               <p className="font-extrabold text-xl md:text-2xl leading-snug">

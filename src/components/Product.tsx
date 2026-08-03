@@ -86,7 +86,7 @@ export default function Product() {
 
         <FadeIn delay={0.2}>
           <div className="card p-6 md:p-8 mt-10">
-            <p className="font-mono text-xs text-[#65A30D] mb-4">Playbook Library/</p>
+            <p className="font-mono text-xs text-[#4D7C0F] mb-4">Playbook Library/</p>
             <div className="grid sm:grid-cols-2 gap-x-10">
               {DOMAINS.map((d, i) => (
                 <div
@@ -152,7 +152,7 @@ export default function Product() {
           {/* Screen 1: playbook */}
           <FadeIn delay={0.1}>
             <Terminal title="commerce-os · playbook · PB-12">
-              <p className="font-mono text-[0.62rem] text-[#65A30D] tracking-[0.1em]">
+              <p className="font-mono text-[0.62rem] text-[#4D7C0F] tracking-[0.1em]">
                 PB-12 · ДОМЕН «ФІНАНСИ» · СТРОК 3 ТИЖНІ
               </p>
               <p className="font-extrabold text-lg mt-1.5 mb-4">
@@ -187,7 +187,7 @@ CM3 = CM2 − реклама
 CAC payback = CAC / міс. маржа
 LTV:CAC ≥ 3 → ріст`}
                   </pre>
-                  <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#65A30D] mt-4 mb-1.5">
+                  <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#4D7C0F] mt-4 mb-1.5">
                     DoD ✓
                   </p>
                   <p className="text-[0.7rem] text-[#5A6472] leading-relaxed">
@@ -223,14 +223,14 @@ LTV:CAC ≥ 3 → ріст`}
                             {r.fact}
                           </span>
                         </td>
-                        <td className="py-2.5 pr-3 text-[#65A30D]">{r.target}</td>
+                        <td className="py-2.5 pr-3 text-[#4D7C0F]">{r.target}</td>
                         <td className="py-2.5 pr-3 text-right text-[#B45309]">{r.gap}</td>
                         <td className="py-2.5 text-[#0F9488]">{r.pb}</td>
                       </tr>
                     ))}
                     <tr className="border-t border-[#E4E7EA]">
                       <td className="pt-3 font-sans font-extrabold text-[#141820]">РАЗОМ УПУЩЕНО / РІК</td>
-                      <td colSpan={3} className="pt-3 text-right font-bold text-[#65A30D]">
+                      <td colSpan={3} className="pt-3 text-right font-bold text-[#4D7C0F]">
                         ≥ 19 млн ₴
                       </td>
                       <td />
@@ -251,7 +251,7 @@ LTV:CAC ≥ 3 → ріст`}
           <Terminal title="commerce-os · gold-standards + kpi-blueprint" className="mt-6">
             <div className="grid sm:grid-cols-2 gap-8">
               <div>
-                <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#65A30D] mb-3">
+                <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#4D7C0F] mb-3">
                   Gold Standards · 3 зони
                 </p>
                 <ul className="flex flex-col gap-2 text-[0.78rem] text-[#3F4854]">
@@ -263,7 +263,7 @@ LTV:CAC ≥ 3 → ріст`}
                     <span className="text-[#B45309] font-bold">● Норма</span> — точка росту
                   </li>
                   <li>
-                    <span className="text-[#65A30D] font-bold">● Золотий</span> — рівень кращих у
+                    <span className="text-[#4D7C0F] font-bold">● Золотий</span> — рівень кращих у
                     категорії
                   </li>
                 </ul>

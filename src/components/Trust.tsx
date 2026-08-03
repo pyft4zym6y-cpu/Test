@@ -69,7 +69,7 @@ export default function Trust() {
             type="button"
             onClick={() => setPaused((v) => !v)}
             aria-label={paused ? 'Відновити стрічку' : 'Зупинити стрічку'}
-            className="font-mono text-[0.62rem] px-2.5 py-1 border border-black/15 text-black/60 hover:text-[#65A30D] hover:border-[#65A30D]/50 transition-colors"
+            className="font-mono text-[0.62rem] px-2.5 py-1 border border-black/15 text-black/60 hover:text-[#4D7C0F] hover:border-[#65A30D]/50 transition-colors"
           >
             {paused ? '▶' : '❚❚'}
           </button>

@@ -4,6 +4,7 @@ import { Play, ArrowRight } from 'lucide-react';
 import FadeIn from '../components/FadeIn';
 import HeroBot from '../components/HeroBot';
 import { say, sayIdle } from '../components/speech';
+import { track } from '../components/analytics';
 import { Eyebrow, Chip } from '../components/ui';
 
 const STATS = [
@@ -57,7 +58,7 @@ export default function Home() {
                   style={{ fontSize: 'clamp(2.2rem, 5.2vw, 4.2rem)', lineHeight: 1.02 }}
                 >
                   Зростання — це{' '}
-                  <span className="font-pixel text-[0.78em] text-[#65A30D] inline-block align-baseline leading-none">
+                  <span className="font-pixel text-[0.78em] text-[#4D7C0F] inline-block align-baseline leading-none">
                     система
                   </span>
                   ,<br />а не рекламний{' '}
@@ -77,6 +78,7 @@ export default function Home() {
                     to="/contact"
                     onMouseEnter={() => say('Diagnostic Sprint від $2K — і твій розрив у грошах на столі. Почнемо?')}
                     onMouseLeave={sayIdle}
+                    onClick={() => track('cta_click', { location: 'home_hero' })}
                     className="flex items-center gap-3 bg-[#A3E635] px-7 py-3.5 text-sm font-bold tracking-wider uppercase text-black hover:brightness-95 transition-[filter]"
                   >
                     <Play size={14} fill="currentColor" />
@@ -131,7 +133,7 @@ export default function Home() {
               type="button"
               onClick={() => setMarqueePaused((v) => !v)}
               aria-label={marqueePaused ? 'Відновити стрічку' : 'Зупинити стрічку'}
-              className="font-mono text-[0.62rem] px-2.5 py-1 border border-black/15 text-black/60 hover:text-[#65A30D] hover:border-[#65A30D]/50 transition-colors"
+              className="font-mono text-[0.62rem] px-2.5 py-1 border border-black/15 text-black/60 hover:text-[#4D7C0F] hover:border-[#65A30D]/50 transition-colors"
             >
               {marqueePaused ? '▶' : '❚❚'}
             </button>
@@ -167,10 +169,10 @@ export default function Home() {
                 onMouseLeave={sayIdle}
                 className="card card-hover p-7 h-full flex flex-col group"
               >
-                <p className="font-pixel text-[0.6rem] text-[#65A30D]">0{i + 1}</p>
+                <p className="font-pixel text-[0.6rem] text-[#4D7C0F]">0{i + 1}</p>
                 <p className="font-extrabold text-2xl mt-3">{d.title}</p>
                 <p className="text-[#5A6472] text-sm mt-2.5 leading-relaxed flex-1">{d.text}</p>
-                <p className="font-mono text-xs uppercase tracking-wider mt-6 text-black/65 group-hover:text-[#65A30D] transition-colors">
+                <p className="font-mono text-xs uppercase tracking-wider mt-6 text-black/65 group-hover:text-[#4D7C0F] transition-colors">
                   Перейти →
                 </p>
               </Link>

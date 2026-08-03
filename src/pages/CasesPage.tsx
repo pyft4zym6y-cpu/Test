@@ -47,7 +47,7 @@ export default function CasesPage() {
           <Eyebrow>Кейси · Не один результат — система</Eyebrow>
           <SectionTitle as="h1">
             Кожен кейс —{' '}
-            <span className="font-pixel text-[0.8em] text-[#65A30D] inline-block align-baseline leading-none">
+            <span className="font-pixel text-[0.8em] text-[#4D7C0F] inline-block align-baseline leading-none">
               окрема історія
             </span>
           </SectionTitle>
@@ -72,7 +72,7 @@ export default function CasesPage() {
                   {c.cat}
                 </p>
                 <p className="text-[#5A6472] text-sm mt-3 leading-relaxed flex-1">{c.text}</p>
-                <p className="font-mono text-xs uppercase tracking-wider mt-6 text-black/60 group-hover:text-[#65A30D] transition-colors">
+                <p className="font-mono text-xs uppercase tracking-wider mt-6 text-black/60 group-hover:text-[#4D7C0F] transition-colors">
                   Читати кейс →
                 </p>
               </Link>

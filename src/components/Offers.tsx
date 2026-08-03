@@ -171,7 +171,7 @@ export default function Offers() {
               </p>
               <hr className="border-[#E4E7EA] my-5" />
               <div className="flex items-center gap-4">
-                <p className="font-mono font-bold text-4xl text-[#65A30D]">1 : 1</p>
+                <p className="font-mono font-bold text-4xl text-[#4D7C0F]">1 : 1</p>
                 <p className="text-[#5A6472] text-xs leading-snug">
                   один власник —
                   <br />

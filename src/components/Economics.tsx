@@ -70,7 +70,7 @@ export default function Economics() {
         <div className="grid lg:grid-cols-2 gap-6 mt-10 items-start">
           <FadeIn delay={0.2}>
             <div className="card p-7">
-              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#65A30D] mb-6">
+              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#4D7C0F] mb-6">
                 Структура CAPEX · Флагман ~$80K
               </p>
               <div className="flex flex-col gap-4">
@@ -78,7 +78,7 @@ export default function Economics() {
                   <div key={c.name}>
                     <div className="flex justify-between items-baseline mb-1.5">
                       <span className="text-sm text-[#2F3742]">{c.name}</span>
-                      <span className="font-mono text-sm text-[#65A30D]" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                      <span className="font-mono text-sm text-[#4D7C0F]" style={{ fontVariantNumeric: 'tabular-nums' }}>
                         {c.value}
                       </span>
                     </div>
@@ -122,7 +122,7 @@ export default function Economics() {
                   <div>
                     <div className="flex justify-between text-xs font-mono mb-1.5">
                       <span className="text-[#5A6472]">Створена вартість</span>
-                      <span className="text-[#65A30D]">€288K+/рік · актив</span>
+                      <span className="text-[#4D7C0F]">€288K+/рік · актив</span>
                     </div>
                     <Bar percent={100} delay={0.15} />
                   </div>

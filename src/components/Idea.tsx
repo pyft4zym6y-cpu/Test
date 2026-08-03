@@ -42,7 +42,7 @@ export default function Idea() {
             Увагу <span className="text-[#EA580C]">не можна купити назавжди</span>.
             <br />
             Справжнє зростання починається там, де з&rsquo;являється{' '}
-            <span className="text-[#65A30D]">система</span>.
+            <span className="text-[#4D7C0F]">система</span>.
           </SectionTitle>
         </FadeIn>
         <AnimatedText
@@ -58,7 +58,7 @@ export default function Idea() {
               <p className="font-bold text-xl text-[#5A6472]">Як більше продати</p>
             </div>
             <div className="border-l-2 border-[#65A30D] pl-5">
-              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#65A30D] mb-1.5">
+              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#4D7C0F] mb-1.5">
                 Ми говоримо
               </p>
               <p className="font-bold text-xl">Як дорожчати</p>
@@ -104,7 +104,7 @@ export default function Idea() {
               <div className="text-center font-mono text-[#5A6472]">↓</div>
               <div className="card accent-left p-6 mt-4" style={{ '--accent': 'var(--lime)' } as React.CSSProperties}>
                 <p className="font-bold text-xl">
-                  Commerce OS вирішує <span className="text-[#65A30D]">саме це</span>.
+                  Commerce OS вирішує <span className="text-[#4D7C0F]">саме це</span>.
                 </p>
                 <p className="text-[#5A6472] mt-2 text-sm leading-relaxed">
                   Система перетворює хаос симптомів на діагноз у грошах і план, що продає сам себе.

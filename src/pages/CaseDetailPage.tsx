@@ -114,7 +114,7 @@ function ImperiaDetail() {
 
       <FadeIn delay={0.35}>
         <div className="card p-7 mt-5">
-          <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#65A30D] mb-4">
+          <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#4D7C0F] mb-4">
             Що зроблено
           </p>
           <ul className="grid sm:grid-cols-2 gap-x-8 gap-y-2.5 text-sm text-[#2F3742]">
@@ -148,14 +148,24 @@ export default function CaseDetailPage() {
 
   return (
     <div className="pt-16">
-      <div className="max-w-6xl mx-auto px-5 sm:px-8 md:px-12 pt-8 -mb-12">
-        <Link
-          to="/cases"
-          className="font-mono text-xs uppercase tracking-wider text-[#5A6472] hover:text-[#65A30D] transition-colors"
-        >
-          ← Всі кейси
-        </Link>
-      </div>
+      <nav
+        aria-label="Хлібні крихти"
+        className="max-w-6xl mx-auto px-5 sm:px-8 md:px-12 pt-8 -mb-12 font-mono text-xs uppercase tracking-wider"
+      >
+        <ol className="flex flex-wrap items-center gap-2">
+          <li>
+            <Link to="/cases" className="text-[#5A6472] hover:text-[#4D7C0F] transition-colors">
+              Кейси
+            </Link>
+          </li>
+          <li aria-hidden="true" className="text-black/30">
+            /
+          </li>
+          <li aria-current="page" className="text-[#12161C]">
+            {CASE_COVERS[idx]?.title ?? 'Кейс'}
+          </li>
+        </ol>
+      </nav>
 
       <Detail />
 
@@ -177,7 +187,7 @@ export default function CaseDetailPage() {
                 </span>
               </p>
             </div>
-            <span className="font-mono text-sm uppercase tracking-wider text-black/60 group-hover:text-[#65A30D] transition-colors">
+            <span className="font-mono text-sm uppercase tracking-wider text-black/60 group-hover:text-[#4D7C0F] transition-colors">
               Читати →
             </span>
           </Link>

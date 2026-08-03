@@ -33,11 +33,11 @@ export default function BotVariantsPage() {
                 }`}
               >
                 <AvatarBot variant={x.v} size={120} />
-                <p className="font-pixel text-[0.6rem] text-[#65A30D] mt-5">V{x.v}</p>
+                <p className="font-pixel text-[0.6rem] text-[#4D7C0F] mt-5">V{x.v}</p>
                 <p className="font-extrabold text-lg mt-1.5">{x.name}</p>
                 <p className="text-[#5A6472] text-xs mt-2 leading-relaxed">{x.desc}</p>
                 {x.v === BOT_VARIANT && (
-                  <p className="font-mono text-[0.6rem] uppercase tracking-wider text-[#65A30D] mt-3">
+                  <p className="font-mono text-[0.6rem] uppercase tracking-wider text-[#4D7C0F] mt-3">
                     ● активний
                   </p>
                 )}

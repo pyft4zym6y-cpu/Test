@@ -98,7 +98,7 @@ export default function Media() {
           ))}
           <span className="text-[#5A6472] text-xs ml-2">
             Запросити спікером —{' '}
-            <a href="mailto:pashasidorenko18@gmail.com?subject=Запрошення спікером" className="text-[#65A30D] hover:text-[#4d7c0f] transition-colors">
+            <a href="mailto:pashasidorenko18@gmail.com?subject=Запрошення спікером" className="text-[#4D7C0F] hover:text-[#4d7c0f] transition-colors">
               напишіть
             </a>
           </span>

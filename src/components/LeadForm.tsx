@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { say } from './speech';
+import { track } from './analytics';
 
 const TURNOVER_OPTIONS = [
   'до 1 млн ₴ / міс',
@@ -45,6 +46,7 @@ export default function LeadForm() {
       /* clipboard недоступний — залишиться mailto */
     }
     setSent(true);
+    track('lead_submit', { turnover, method: 'mailto' });
     say(
       `Дякую${name ? `, ${name.trim()}` : ''}! Лист сформовано й скопійовано в буфер. Якщо поштовик не відкрився — просто встав текст у лист на pashasidorenko18@gmail.com.`,
     );
@@ -55,7 +57,7 @@ export default function LeadForm() {
 
   return (
     <form onSubmit={handleSubmit} className="card p-7 bg-white/85 backdrop-blur-sm">
-      <p className="font-pixel text-[0.5rem] uppercase text-[#65A30D] mb-2">Заявка на діагностику</p>
+      <p className="font-pixel text-[0.5rem] uppercase text-[#4D7C0F] mb-2">Заявка на діагностику</p>
       <p className="font-extrabold text-xl mb-1.5">Порахуємо ваш розрив у грошах</p>
       <p className="text-[#5A6472] text-xs mb-6 leading-relaxed">
         30-хв сесія безкоштовна. Відповідаємо протягом робочого дня.

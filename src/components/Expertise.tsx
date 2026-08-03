@@ -67,7 +67,7 @@ export default function Expertise() {
           <Eyebrow>Експертиза · З чим саме працюємо</Eyebrow>
           <SectionTitle as="h1">
             17 напрямів —{' '}
-            <span className="font-pixel text-[0.8em] text-[#65A30D] inline-block align-baseline leading-none">
+            <span className="font-pixel text-[0.8em] text-[#4D7C0F] inline-block align-baseline leading-none">
               одна система
             </span>
           </SectionTitle>
@@ -117,7 +117,7 @@ export default function Expertise() {
 
         <FadeIn delay={0.3}>
           <div className="card p-5 mt-12 flex flex-wrap gap-x-6 gap-y-2 items-baseline">
-            <span className="font-pixel text-[0.5rem] uppercase text-[#65A30D]">Не меню послуг</span>
+            <span className="font-pixel text-[0.5rem] uppercase text-[#4D7C0F]">Не меню послуг</span>
             <span className="text-[#3F4854] text-sm">
               Напрями не продаються поодинці — вони підключаються за дорожньою картою, коли
               діагностика показує розрив у грошах саме там.

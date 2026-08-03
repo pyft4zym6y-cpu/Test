@@ -17,6 +17,7 @@ import ContactPage from './pages/ContactPage';
 import { PrivacyPage, OfferPage } from './pages/LegalPages';
 import BotVariantsPage from './pages/BotVariantsPage';
 import NotFoundPage from './pages/NotFoundPage';
+import { track } from './components/analytics';
 
 const TITLES: Record<string, string> = {
   '/': 'weexp — Commerce OS · Growth & Engineering',
@@ -40,6 +41,7 @@ function ScrollToTop() {
     document.title =
       TITLES[pathname] ??
       (pathname.startsWith('/cases/') ? 'Кейс — weexp · Commerce OS' : TITLES['/']);
+    track('page_view', { page_path: pathname, page_title: document.title });
     let robots = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
     if (pathname === '/bot-variants') {
       if (!robots) {

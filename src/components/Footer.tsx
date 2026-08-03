@@ -41,7 +41,7 @@ export default function Footer() {
                 />
               </svg>
               <span className="font-pixel text-xs leading-none pt-0.5">
-                WEEXP<span className="text-[#65A30D]">·OS</span>
+                WEEXP<span className="text-[#4D7C0F]">·OS</span>
               </span>
             </Link>
             <p className="text-[#5A6472] text-sm mt-5 max-w-xs leading-relaxed">
@@ -54,21 +54,21 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="LinkedIn"
-                className="p-2.5 border border-black/15 text-black/70 hover:text-[#65A30D] hover:border-[#65A30D]/50 transition-colors"
+                className="p-2.5 border border-black/15 text-black/70 hover:text-[#4D7C0F] hover:border-[#65A30D]/50 transition-colors"
               >
                 <Linkedin size={16} />
               </a>
               <a
                 href="mailto:pashasidorenko18@gmail.com"
                 aria-label="Email"
-                className="p-2.5 border border-black/15 text-black/70 hover:text-[#65A30D] hover:border-[#65A30D]/50 transition-colors"
+                className="p-2.5 border border-black/15 text-black/70 hover:text-[#4D7C0F] hover:border-[#65A30D]/50 transition-colors"
               >
                 <Mail size={16} />
               </a>
               <a
                 href="tel:+380999188260"
                 aria-label="Телефон"
-                className="p-2.5 border border-black/15 text-black/70 hover:text-[#65A30D] hover:border-[#65A30D]/50 transition-colors"
+                className="p-2.5 border border-black/15 text-black/70 hover:text-[#4D7C0F] hover:border-[#65A30D]/50 transition-colors"
               >
                 <Phone size={16} />
               </a>
@@ -81,7 +81,7 @@ export default function Footer() {
             <ul className="flex flex-col gap-2.5">
               {NAV_LINKS.map((l) => (
                 <li key={l.label}>
-                  <Link to={l.to} className="text-sm text-[#3F4854] hover:text-[#65A30D] transition-colors">
+                  <Link to={l.to} className="text-sm text-[#3F4854] hover:text-[#4D7C0F] transition-colors">
                     {l.label}
                   </Link>
                 </li>
@@ -95,7 +95,7 @@ export default function Footer() {
             <ul className="flex flex-col gap-2.5">
               {CASE_LINKS.map((l) => (
                 <li key={l.label}>
-                  <Link to={l.to} className="text-sm text-[#3F4854] hover:text-[#65A30D] transition-colors">
+                  <Link to={l.to} className="text-sm text-[#3F4854] hover:text-[#4D7C0F] transition-colors">
                     {l.label}
                   </Link>
                 </li>
@@ -105,7 +105,7 @@ export default function Footer() {
             <ul className="flex flex-col gap-2.5">
               {FORMAT_LINKS.map((l) => (
                 <li key={l.label}>
-                  <Link to={l.to} className="text-sm text-[#3F4854] hover:text-[#65A30D] transition-colors">
+                  <Link to={l.to} className="text-sm text-[#3F4854] hover:text-[#4D7C0F] transition-colors">
                     {l.label}
                   </Link>
                 </li>
@@ -118,12 +118,12 @@ export default function Footer() {
             <p className="font-pixel text-[0.55rem] uppercase text-black/65 mb-4">Контакти</p>
             <ul className="flex flex-col gap-2.5 font-mono text-[0.78rem] text-[#2F3742]">
               <li>
-                <a href="mailto:pashasidorenko18@gmail.com" className="hover:text-[#65A30D] transition-colors">
+                <a href="mailto:pashasidorenko18@gmail.com" className="hover:text-[#4D7C0F] transition-colors">
                   pashasidorenko18@gmail.com
                 </a>
               </li>
               <li>
-                <a href="tel:+380999188260" className="hover:text-[#65A30D] transition-colors">
+                <a href="tel:+380999188260" className="hover:text-[#4D7C0F] transition-colors">
                   +38 099 918 82 60
                 </a>
               </li>
@@ -132,7 +132,7 @@ export default function Footer() {
                   href="https://linkedin.com/in/pvsidorenko"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-[#65A30D] transition-colors"
+                  className="hover:text-[#4D7C0F] transition-colors"
                 >
                   linkedin.com/in/pvsidorenko
                 </a>
@@ -141,7 +141,7 @@ export default function Footer() {
             </ul>
             <Link
               to="/contact"
-              className="inline-block mt-6 border border-[#65A30D] text-[#65A30D] px-6 py-3 text-xs tracking-widest uppercase hover:bg-[#65A30D] hover:text-[#12161C] transition-colors"
+              className="inline-block mt-6 border border-[#65A30D] text-[#4D7C0F] px-6 py-3 text-xs tracking-widest uppercase hover:bg-[#65A30D] hover:text-[#12161C] transition-colors"
             >
               Забронювати сесію →
             </Link>
@@ -165,7 +165,7 @@ export default function Footer() {
               type="button"
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
               aria-label="Вгору"
-              className="p-2 border border-black/15 text-black/60 hover:text-[#65A30D] hover:border-[#65A30D]/50 transition-colors"
+              className="p-2 border border-black/15 text-black/60 hover:text-[#4D7C0F] hover:border-[#65A30D]/50 transition-colors"
             >
               <ArrowUp size={14} />
             </button>

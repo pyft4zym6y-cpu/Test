@@ -35,11 +35,16 @@ export default function HeroBot() {
 
   return (
     <div className="flex flex-col items-center gap-6">
-      <div className="card p-4 w-full bg-white/95" style={{ borderColor: 'rgba(101,163,13,0.45)' }}>
-        <p className="font-pixel text-[0.5rem] text-[#65A30D] mb-2">WEEXP·OS · ONLINE</p>
+      <div
+        className="card p-4 w-full bg-white/95"
+        style={{ borderColor: 'rgba(101,163,13,0.45)' }}
+        role="status"
+        aria-live="polite"
+      >
+        <p className="font-pixel text-[0.5rem] text-[#4D7C0F] mb-2">WEEXP·OS · ONLINE</p>
         <p className="font-mono text-[0.72rem] leading-relaxed text-[#12161C] min-h-[3.6em]">
           {typed}
-          <span className="cursor-blink text-[#65A30D]">▊</span>
+          <span className="cursor-blink text-[#4D7C0F]">▊</span>
         </p>
       </div>
       <div className="girl-float">

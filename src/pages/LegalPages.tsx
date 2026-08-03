@@ -33,14 +33,14 @@ function LegalLayout({
           </FadeIn>
           <FadeIn delay={0.15}>
             <div className="card p-5 mt-12 flex flex-wrap gap-x-6 gap-y-2 items-baseline">
-              <span className="font-pixel text-[0.5rem] uppercase text-[#65A30D]">Питання?</span>
+              <span className="font-pixel text-[0.5rem] uppercase text-[#4D7C0F]">Питання?</span>
               <span className="text-[#3F4854] text-sm">
                 Напишіть нам:{' '}
-                <a href="mailto:pashasidorenko18@gmail.com" className="text-[#65A30D] hover:text-[#4d7c0f] transition-colors">
+                <a href="mailto:pashasidorenko18@gmail.com" className="text-[#4D7C0F] hover:text-[#4d7c0f] transition-colors">
                   pashasidorenko18@gmail.com
                 </a>{' '}
                 або поверніться на{' '}
-                <Link to="/" className="text-[#65A30D] hover:text-[#4d7c0f] transition-colors">
+                <Link to="/" className="text-[#4D7C0F] hover:text-[#4d7c0f] transition-colors">
                   головну
                 </Link>
                 .
@@ -57,7 +57,7 @@ function Sec({ n, title, children }: { n: string; title: string; children: React
   return (
     <section>
       <h2 className="font-extrabold text-lg mb-3">
-        <span className="font-mono text-[#65A30D] mr-2.5">{n}.</span>
+        <span className="font-mono text-[#4D7C0F] mr-2.5">{n}.</span>
         {title}
       </h2>
       <div className="text-[#3F4854] text-sm leading-relaxed flex flex-col gap-2.5">{children}</div>
@@ -82,7 +82,7 @@ export function PrivacyPage() {
         </p>
         <p>
           Володілець персональних даних: ФОП Сидоренко Павло Володимирович (повні реквізити надаються в рахунку та договорі). Контакт із питань персональних даних:{' '}
-          <a href="mailto:pashasidorenko18@gmail.com" className="text-[#65A30D]">pashasidorenko18@gmail.com</a>.
+          <a href="mailto:pashasidorenko18@gmail.com" className="text-[#4D7C0F]">pashasidorenko18@gmail.com</a>.
         </p>
         <p>
           Обробка даних здійснюється відповідно до Закону України «Про захист персональних даних»,
@@ -147,7 +147,7 @@ export function PrivacyPage() {
         </ul>
         <p>
           Для реалізації прав напишіть на{' '}
-          <a href="mailto:pashasidorenko18@gmail.com" className="text-[#65A30D]">pashasidorenko18@gmail.com</a>.
+          <a href="mailto:pashasidorenko18@gmail.com" className="text-[#4D7C0F]">pashasidorenko18@gmail.com</a>.
           Ми відповімо протягом 30 календарних днів.
         </p>
       </Sec>
@@ -306,7 +306,7 @@ export function OfferPage() {
         </p>
         <p>
           Виконавець: ФОП Сидоренко Павло Володимирович · реквізити (РНОКПП, адреса, IBAN) — у рахунку · email:{' '}
-          <a href="mailto:pashasidorenko18@gmail.com" className="text-[#65A30D]">pashasidorenko18@gmail.com</a>{' '}
+          <a href="mailto:pashasidorenko18@gmail.com" className="text-[#4D7C0F]">pashasidorenko18@gmail.com</a>{' '}
           · тел.: +38 099 918 82 60.
         </p>
       </Sec>

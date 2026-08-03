@@ -8,7 +8,7 @@ export default function NotFoundPage() {
       <Section className="grid-bg min-h-[70vh] flex items-center">
         <FadeIn>
           <Eyebrow>Помилка 404</Eyebrow>
-          <p className="font-pixel text-[#65A30D]" style={{ fontSize: 'clamp(3rem, 10vw, 7rem)' }}>
+          <p className="font-pixel text-[#4D7C0F]" style={{ fontSize: 'clamp(3rem, 10vw, 7rem)' }}>
             404
           </p>
           <h1 className="font-extrabold text-2xl md:text-4xl mt-6 tracking-tight">

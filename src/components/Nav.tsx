@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import { say, sayIdle } from './speech';
+import { track } from './analytics';
 
 const LINKS = [
   { to: '/approach', label: 'Підхід', say: 'Чому реклама більше не рятує? Тут — відповідь у цифрах →' },
@@ -31,7 +32,7 @@ function Logo() {
         />
       </svg>
       <span className="font-pixel text-[0.6rem] leading-none pt-0.5">
-        WEEXP<span className="text-[#65A30D]">·OS</span>
+        WEEXP<span className="text-[#4D7C0F]">·OS</span>
       </span>
     </Link>
   );
@@ -64,7 +65,7 @@ export default function Nav() {
 
   const linkCls = (isActive: boolean) =>
     `text-xs xl:text-sm tracking-wide uppercase transition-opacity hover:opacity-70 ${
-      isActive ? 'text-[#65A30D]' : 'text-[#12161C]'
+      isActive ? 'text-[#4D7C0F]' : 'text-[#12161C]'
     }`;
 
   return (
@@ -107,12 +108,12 @@ export default function Nav() {
                           className="flex items-baseline justify-between gap-4 px-5 py-2.5 text-xs uppercase tracking-wide text-black/70 hover:text-[#12161C] hover:bg-black/5 transition-colors"
                         >
                           <span>{c.label}</span>
-                          <span className="font-mono text-[0.62rem] text-[#65A30D]">{c.num}</span>
+                          <span className="font-mono text-[0.62rem] text-[#4D7C0F]">{c.num}</span>
                         </Link>
                       ))}
                       <Link
                         to="/cases"
-                        className="block px-5 py-2.5 mt-1 border-t border-black/10 text-xs uppercase tracking-wide text-[#65A30D] hover:bg-black/5 transition-colors"
+                        className="block px-5 py-2.5 mt-1 border-t border-black/10 text-xs uppercase tracking-wide text-[#4D7C0F] hover:bg-black/5 transition-colors"
                       >
                         Всі кейси →
                       </Link>
@@ -138,6 +139,7 @@ export default function Nav() {
               to="/contact"
               onMouseEnter={() => say('30 хвилин — і ти знаєш свій розрив у грошах. Тисни!')}
               onMouseLeave={sayIdle}
+              onClick={() => track('cta_click', { location: 'nav' })}
               className="hidden lg:inline-block border border-black/30 bg-black/5 backdrop-blur-sm px-5 py-2 text-xs tracking-wider uppercase hover:bg-black/5 transition-colors"
             >
               Забронювати сесію
@@ -179,7 +181,7 @@ export default function Nav() {
                 onClick={() => setMenuOpen(false)}
                 className={({ isActive }) =>
                   `menu-link text-2xl tracking-widest uppercase ${
-                    isActive ? 'text-[#65A30D]' : 'text-[#12161C]'
+                    isActive ? 'text-[#4D7C0F]' : 'text-[#12161C]'
                   } ${menuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`
                 }
                 style={{ transitionDelay: menuOpen ? `${100 + i * 60}ms` : '0ms' }}
@@ -198,9 +200,9 @@ export default function Nav() {
                       key={c.to}
                       to={c.to}
                       onClick={() => setMenuOpen(false)}
-                      className="text-xs uppercase tracking-wider text-black/60 hover:text-[#65A30D] transition-colors"
+                      className="text-xs uppercase tracking-wider text-black/60 hover:text-[#4D7C0F] transition-colors"
                     >
-                      {c.label} <span className="font-mono text-[#65A30D]/70">{c.num}</span>
+                      {c.label} <span className="font-mono text-[#4D7C0F]/70">{c.num}</span>
                     </Link>
                   ))}
                 </div>
@@ -210,7 +212,7 @@ export default function Nav() {
           <Link
             to="/contact"
             onClick={() => setMenuOpen(false)}
-            className={`menu-link mt-3 border border-[#65A30D] text-[#65A30D] px-8 py-3 text-sm tracking-widest uppercase ${
+            className={`menu-link mt-3 border border-[#65A30D] text-[#4D7C0F] px-8 py-3 text-sm tracking-widest uppercase ${
               menuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}
             style={{ transitionDelay: menuOpen ? `${100 + LINKS.length * 60}ms` : '0ms' }}

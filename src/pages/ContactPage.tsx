@@ -20,7 +20,7 @@ export default function ContactPage() {
                   Тепер очевидно:
                   <br />
                   зростання — це{' '}
-                  <span className="font-pixel text-[0.8em] text-[#65A30D] inline-block align-baseline leading-none">
+                  <span className="font-pixel text-[0.8em] text-[#4D7C0F] inline-block align-baseline leading-none">
                     система
                   </span>
                 </h1>
@@ -58,7 +58,7 @@ export default function ContactPage() {
           <FadeIn delay={0.28}>
             <div className="grid sm:grid-cols-2 gap-4 mt-14 max-w-2xl">
               <div className="card p-6 bg-white/85 backdrop-blur-sm">
-                <p className="font-pixel text-[0.5rem] uppercase text-[#65A30D] mb-2.5">Контакт</p>
+                <p className="font-pixel text-[0.5rem] uppercase text-[#4D7C0F] mb-2.5">Контакт</p>
                 <p className="font-extrabold text-xl">Павло Сидоренко</p>
                 <p className="text-[#5A6472] text-xs mt-1.5">Архітектор Commerce OS</p>
               </div>
@@ -69,18 +69,18 @@ export default function ContactPage() {
                       href="https://linkedin.com/in/pvsidorenko"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hover:text-[#65A30D] transition-colors"
+                      className="hover:text-[#4D7C0F] transition-colors"
                     >
                       linkedin.com/in/pvsidorenko
                     </a>
                   </li>
                   <li>
-                    <a href="mailto:pashasidorenko18@gmail.com" className="hover:text-[#65A30D] transition-colors">
+                    <a href="mailto:pashasidorenko18@gmail.com" className="hover:text-[#4D7C0F] transition-colors">
                       pashasidorenko18@gmail.com
                     </a>
                   </li>
                   <li>
-                    <a href="tel:+380999188260" className="hover:text-[#65A30D] transition-colors">
+                    <a href="tel:+380999188260" className="hover:text-[#4D7C0F] transition-colors">
                       +38 099 918 82 60
                     </a>
                   </li>

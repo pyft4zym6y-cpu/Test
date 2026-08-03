@@ -81,11 +81,11 @@ export default function Process() {
         <div className="grid lg:grid-cols-[1fr_1.6fr] gap-8 mt-10 items-start">
           <FadeIn delay={0.1}>
             <div className="card accent-top p-7" style={{ '--accent': 'var(--lime)' } as React.CSSProperties}>
-              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#65A30D] mb-3">
+              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#4D7C0F] mb-3">
                 Ядро
               </p>
               <p className="font-extrabold text-2xl">Павло Сидоренко</p>
-              <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#65A30D] mt-1.5">
+              <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#4D7C0F] mt-1.5">
                 Founder &amp; Chief Architect · власник weexp
               </p>
               <p className="text-[#3F4854] text-sm mt-3 leading-relaxed">

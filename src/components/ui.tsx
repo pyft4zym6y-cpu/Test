@@ -165,7 +165,7 @@ export function Terminal({
         <span className="w-2.5 h-2.5 rounded-full bg-[#A3E635]" />
         <span className="font-mono text-[0.68rem] text-[#5A6472] ml-2 truncate">
           {title}
-          <span className="cursor-blink text-[#65A30D]">▊</span>
+          <span className="cursor-blink text-[#4D7C0F]">▊</span>
         </span>
       </div>
       <div className="p-5">{children}</div>

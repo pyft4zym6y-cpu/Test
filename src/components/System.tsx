@@ -105,7 +105,7 @@ function Flywheel() {
       </svg>
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
         <p className="font-mono font-bold text-sm leading-tight">
-          <span className="text-[#65A30D]">Commerce</span>
+          <span className="text-[#4D7C0F]">Commerce</span>
           <br />
           OS Engine
         </p>
@@ -220,7 +220,7 @@ export default function System() {
           </FadeIn>
           <FadeIn delay={0.3}>
             <div className="card accent-left p-6 h-full" style={{ '--accent': 'var(--lime)' } as React.CSSProperties}>
-              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#65A30D] mb-2.5">
+              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#4D7C0F] mb-2.5">
                 Чому це сильно
               </p>
               <p className="text-[#3F4854] text-sm leading-relaxed">
@@ -248,7 +248,7 @@ export default function System() {
             </p>
             <div className="flex gap-12 mt-8">
               <div>
-                <p className="font-mono font-bold text-3xl text-[#65A30D]">↓ CAC</p>
+                <p className="font-mono font-bold text-3xl text-[#4D7C0F]">↓ CAC</p>
                 <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[#5A6472] mt-1.5">
                   З кожним обертом
                 </p>
