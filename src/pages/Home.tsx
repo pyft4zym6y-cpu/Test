@@ -22,15 +22,6 @@ export default function Home() {
           alt=""
           className="absolute inset-0 h-full w-full object-cover object-right opacity-50 md:opacity-80 lg:scale-[1.08]"
         />
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="absolute inset-0 h-full w-full object-cover opacity-0 [&:not([data-failed])]:opacity-40 lg:scale-[1.2]"
-          src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260725_114042_d2ed2a89-f2fa-449b-9609-da456344257b.mp4"
-          onError={(e) => e.currentTarget.setAttribute('data-failed', '1')}
-        />
         <div
           className="absolute inset-0"
           style={{

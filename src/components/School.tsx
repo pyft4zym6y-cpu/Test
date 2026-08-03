@@ -36,14 +36,23 @@ const BELIEFS = [
   },
 ];
 
-export default function School() {
+export function SchoolIdentity() {
   return (
     <>
       {/* ---- Нова категорія ---- */}
       <Section className="grid-bg">
         <FadeIn>
-          <Eyebrow>Нова категорія</Eyebrow>
-          <SectionTitle>Я не в ринку. Я створюю ринок.</SectionTitle>
+          <Eyebrow>Більша картина</Eyebrow>
+          <SectionTitle>
+            За Commerce OS стоїть дисципліна —
+            <br />
+            <span className="lime-text">Commerce Architecture</span>
+          </SectionTitle>
+          <p className="text-[#8C96A5] mt-4 max-w-3xl leading-relaxed">
+            Це спосіб проєктувати компанію як актив: маркетинг, аналітика, продукт і команда
+            працюють не заради окремих показників, а заради вартості бізнесу. Так само, як SAP став
+            операційною системою підприємств.
+          </p>
         </FadeIn>
         <div className="grid md:grid-cols-[1fr_auto_1fr] gap-5 items-stretch mt-10">
           <FadeIn delay={0.1}>
@@ -81,12 +90,12 @@ export default function School() {
         </div>
         <FadeIn delay={0.3}>
           <div className="card p-5 mt-5 flex flex-wrap gap-x-6 gap-y-2 items-baseline">
-            <span className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#A3E635]">
-              Чому це сильно
+            <span className="font-pixel text-[0.5rem] uppercase text-[#A3E635]">
+              Без гучних слів
             </span>
             <span className="text-[#B7C0CC] text-sm">
-              Коли з&rsquo;являється нова категорія — зникає пряме порівняння з конкурентами. Ти не
-              «ще один». Ти — єдиний.
+              Я не «створюю ринок». Я бачу, що ринок <strong className="text-white">вже рухається сюди</strong>{' '}
+              — від купівлі уваги до побудови активів. І будую інструмент для цього руху.
             </span>
           </div>
         </FadeIn>
@@ -146,7 +155,13 @@ export default function School() {
           ))}
         </div>
       </Section>
+    </>
+  );
+}
 
+export function Beliefs() {
+  return (
+    <>
       {/* ---- Переконання ---- */}
       <Section>
         <FadeIn>

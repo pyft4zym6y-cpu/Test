@@ -18,17 +18,18 @@ export default function Idea() {
       <Section className="grid-bg">
         <div className="glow-cyan w-[420px] h-[420px] -top-20 right-0" />
         <FadeIn>
-          <Eyebrow>Велика ідея</Eyebrow>
-          <p className="font-bold text-xl sm:text-2xl text-[#8C96A5] mb-2">Ринок питає:</p>
-          <SectionTitle className="text-[#B7C0CC]">«Як збільшити продажі?»</SectionTitle>
-          <p className="font-bold text-xl sm:text-2xl text-[#8C96A5] mt-10 mb-2">
-            Я ставлю інше питання:
+          <Eyebrow>Зсув</Eyebrow>
+          <p className="font-bold text-xl sm:text-2xl text-[#8C96A5] mb-2">
+            Правильне питання — не
           </p>
+          <SectionTitle className="text-[#B7C0CC]">«Як продати більше?»</SectionTitle>
+          <p className="font-bold text-xl sm:text-2xl text-[#8C96A5] mt-10 mb-2">А</p>
           <SectionTitle>
-            <span className="lime-text">«Як збільшити вартість компанії?»</span>
+            <span className="lime-text">«Як зробити компанію дорожчою?»</span>
           </SectionTitle>
           <p className="font-serif-it text-lg text-[#B7C0CC] mt-8">
-            Це дві абсолютно різні розмови. І майбутнє — за другою.
+            Продажі — це квартал. Вартість компанії — це десятиліття. Далі — доказ, що так і
+            працює.
           </p>
         </FadeIn>
       </Section>

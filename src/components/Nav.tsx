@@ -3,12 +3,13 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 
 const LINKS = [
-  { to: '/about', label: 'Про мене' },
+  { to: '/approach', label: 'Підхід' },
   { to: '/system', label: 'Система' },
+  { to: '/product', label: 'Продукт' },
   { to: '/cases', label: 'Кейси' },
   { to: '/process', label: 'Процес' },
   { to: '/services', label: 'Умови' },
-  { to: '/contact', label: 'Контакт' },
+  { to: '/about', label: 'Про мене' },
 ];
 
 function Logo() {
@@ -54,7 +55,7 @@ export default function Nav() {
       >
         <nav className="max-w-7xl mx-auto flex items-center justify-between px-5 sm:px-6 md:px-10 py-5">
           <Logo />
-          <ul className="hidden md:flex items-center gap-8">
+          <ul className="hidden lg:flex items-center gap-6 xl:gap-8">
             {LINKS.map((l) => (
               <li key={l.to}>
                 <NavLink
@@ -73,7 +74,7 @@ export default function Nav() {
           <div className="flex items-center gap-3">
             <Link
               to="/contact"
-              className="hidden md:inline-block border border-white/30 bg-white/5 backdrop-blur-sm px-5 py-2 text-xs tracking-wider uppercase hover:bg-white/10 transition-colors"
+              className="hidden lg:inline-block border border-white/30 bg-white/5 backdrop-blur-sm px-5 py-2 text-xs tracking-wider uppercase hover:bg-white/10 transition-colors"
             >
               Сесія 30 хв
             </Link>
@@ -81,7 +82,7 @@ export default function Nav() {
               type="button"
               aria-label="Відкрити меню"
               onClick={() => setMenuOpen(true)}
-              className="md:hidden p-2 hover:opacity-70 transition-opacity"
+              className="lg:hidden p-2 hover:opacity-70 transition-opacity"
             >
               <Menu size={24} />
             </button>

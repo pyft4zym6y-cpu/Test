@@ -3,8 +3,10 @@ import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Nav from './components/Nav';
 import Footer from './components/Footer';
 import Home from './pages/Home';
+import ApproachPage from './pages/ApproachPage';
 import AboutPage from './pages/AboutPage';
 import SystemPage from './pages/SystemPage';
+import ProductPage from './pages/ProductPage';
 import CasesPage from './pages/CasesPage';
 import ProcessPage from './pages/ProcessPage';
 import ServicesPage from './pages/ServicesPage';
@@ -27,11 +29,13 @@ function Shell() {
       <Nav />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/about" element={<AboutPage />} />
+        <Route path="/approach" element={<ApproachPage />} />
         <Route path="/system" element={<SystemPage />} />
+        <Route path="/product" element={<ProductPage />} />
         <Route path="/cases" element={<CasesPage />} />
         <Route path="/process" element={<ProcessPage />} />
         <Route path="/services" element={<ServicesPage />} />
+        <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="*" element={<Home />} />
       </Routes>

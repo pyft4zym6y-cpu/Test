@@ -17,11 +17,11 @@ const DOMAINS = [
 ];
 
 const AUDIT_ROWS = [
-  { metric: 'Оплата заявок', fact: '63,4%', zone: '#FF5F56', norm: '70–80%', gold: '75%+', gap: '≈4,0 млн ₴', pb: 'PB-02·15' },
-  { metric: 'Викуп до виручки', fact: '82%', zone: '#F5B84B', norm: '85–88%', gold: '88%+', gap: '≈2,5 млн ₴', pb: 'PB-19' },
-  { metric: 'Повторні покупки', fact: '15–20%', zone: '#FF5F56', norm: '25–30%', gold: '26–30%', gap: '≈4,5 млн ₴', pb: 'PB-08' },
-  { metric: 'SEO · органіка', fact: 'поз. 14', zone: '#FF5F56', norm: 'топ-10', gold: 'топ-5', gap: '≈3,0 млн ₴', pb: 'PB-04·05' },
-  { metric: 'Дод. канали', fact: 'платні', zone: '#FF5F56', norm: '2–3', gold: '3+', gap: '≈2,0 млн ₴', pb: 'PB-21·22' },
+  { metric: 'Оплата заявок', fact: '63,4%', zone: '#FF5F56', target: '75%+', gap: '≈4,0 млн ₴', pb: 'PB-02·15' },
+  { metric: 'Викуп до виручки', fact: '82%', zone: '#F5B84B', target: '88%+', gap: '≈2,5 млн ₴', pb: 'PB-19' },
+  { metric: 'Повторні покупки', fact: '15–20%', zone: '#FF5F56', target: '26–30%', gap: '≈4,5 млн ₴', pb: 'PB-08' },
+  { metric: 'SEO · органіка', fact: 'поз. 14', zone: '#FF5F56', target: 'топ-5', gap: '≈3,0 млн ₴', pb: 'PB-04·05' },
+  { metric: 'Дод. канали', fact: '1 платний', zone: '#FF5F56', target: '3+', gap: '≈2,0 млн ₴', pb: 'PB-21·22' },
 ];
 
 const SYSTEM_NUMBERS = [
@@ -176,8 +176,7 @@ LTV:CAC ≥ 3 → ріст`}
                     <tr className="text-[#66707E] uppercase tracking-[0.1em] text-left">
                       <th className="pb-2.5 pr-3 font-medium">Метрика</th>
                       <th className="pb-2.5 pr-3 font-medium">Факт</th>
-                      <th className="pb-2.5 pr-3 font-medium">Норма</th>
-                      <th className="pb-2.5 pr-3 font-medium">Золотий</th>
+                      <th className="pb-2.5 pr-3 font-medium">Ціль</th>
                       <th className="pb-2.5 pr-3 font-medium text-right">Розрив→₴</th>
                       <th className="pb-2.5 font-medium">Плейбук</th>
                     </tr>
@@ -192,15 +191,14 @@ LTV:CAC ≥ 3 → ріст`}
                             {r.fact}
                           </span>
                         </td>
-                        <td className="py-2.5 pr-3 text-[#8C96A5]">{r.norm}</td>
-                        <td className="py-2.5 pr-3 text-[#A3E635]">{r.gold}</td>
+                        <td className="py-2.5 pr-3 text-[#A3E635]">{r.target}</td>
                         <td className="py-2.5 pr-3 text-right text-[#F5B84B]">{r.gap}</td>
                         <td className="py-2.5 text-[#3DDAD0]">{r.pb}</td>
                       </tr>
                     ))}
                     <tr className="border-t border-[#232933]">
                       <td className="pt-3 font-sans font-extrabold text-[#E9EDF2]">РАЗОМ УПУЩЕНО / РІК</td>
-                      <td colSpan={4} className="pt-3 text-right font-bold text-[#A3E635]">
+                      <td colSpan={3} className="pt-3 text-right font-bold text-[#A3E635]">
                         ≥ 19 млн ₴
                       </td>
                       <td />
