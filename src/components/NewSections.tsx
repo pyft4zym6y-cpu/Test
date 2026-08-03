@@ -1,7 +1,50 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import FadeIn from './FadeIn';
-import { Eyebrow, Section, SectionTitle, Chip } from './ui';
+import { Eyebrow, Section, SectionTitle, Chip, Stat } from './ui';
+import { GrowthChart } from './Cases';
+
+/* ================= Доказ (chokolad-паттерн: результат — першим) ================= */
+
+export function Proof() {
+  return (
+    <Section className="grid-bg">
+      <div className="glow-lime w-[420px] h-[420px] -top-24 -right-32" />
+      <FadeIn>
+        <Eyebrow>Доказ · Premium Textile · UA→EU · Факт за CRM / ERP / GA4</Eyebrow>
+        <SectionTitle>Спочатку — що це дає. На реальному бізнесі.</SectionTitle>
+      </FadeIn>
+      <div className="grid lg:grid-cols-2 gap-6 mt-10 items-stretch">
+        <FadeIn delay={0.1}>
+          <GrowthChart />
+        </FadeIn>
+        <FadeIn delay={0.2}>
+          <div className="grid grid-cols-2 gap-3 h-full content-stretch">
+            <Stat value="×18" label="Оборот" color="var(--lime)" />
+            <Stat value="4,2%" label="Конверсія · з 0,8%" color="var(--cyan)" />
+            <Stat value="45%" label="Органіка · CAC ≈ €7" color="var(--purple)" />
+            <Stat value="3.8×" label="ROI за рік 1" color="var(--yellow)" />
+          </div>
+        </FadeIn>
+      </div>
+      <FadeIn delay={0.3}>
+        <div className="flex flex-wrap items-baseline justify-between gap-4 mt-8">
+          <p className="text-[#8C96A5] text-sm max-w-3xl leading-relaxed">
+            Конверсія 4,2% при галузевій нормі 0,7–1,5% — це{' '}
+            <strong className="text-white">топ-1% сегмента</strong>. Не гасло — вимірюваний факт.
+            Далі — як це побудовано.
+          </p>
+          <Link
+            to="/cases/premium-textile"
+            className="font-mono text-sm text-[#A3E635] uppercase tracking-wider hover:text-[#bdff4d] transition-colors"
+          >
+            Розібрати кейс →
+          </Link>
+        </div>
+      </FadeIn>
+    </Section>
+  );
+}
 
 /* ================= Статус-кво + Ціна бездіяльності ================= */
 

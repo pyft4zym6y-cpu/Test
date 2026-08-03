@@ -45,7 +45,7 @@ const CASE1_MISTAKES = [
   { title: 'Недооцінка returns ЄС', fix: 'Заклали фактичну вартість повернень у ціноутворення.' },
 ];
 
-function GrowthChart() {
+export function GrowthChart() {
   // €48K → €900K, 18 months, s-curve
   const path = 'M 10 150 C 90 145, 130 120, 190 80 S 300 20, 380 12';
   const area = `${path} L 380 160 L 10 160 Z`;
@@ -105,7 +105,7 @@ function GrowthChart() {
   );
 }
 
-export default function Cases() {
+export function Case01Detail() {
   return (
     <>
       {/* ================= CASE 01 ================= */}
@@ -308,7 +308,13 @@ export default function Cases() {
           </p>
         </FadeIn>
       </Section>
+    </>
+  );
+}
 
+export function MiniCases() {
+  return (
+    <>
       {/* ================= CASES 02–03 ================= */}
       <Section>
         <div className="grid lg:grid-cols-2 gap-6 items-stretch">
