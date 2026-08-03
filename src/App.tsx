@@ -42,6 +42,8 @@ function ScrollToTop() {
       TITLES[pathname] ??
       (pathname.startsWith('/cases/') ? 'Кейс — weexp · Commerce OS' : TITLES['/']);
     track('page_view', { page_path: pathname, page_title: document.title });
+    const canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (canonical) canonical.href = `https://weexp.agency${pathname === '/' ? '/' : pathname}`;
     let robots = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
     if (pathname === '/bot-variants') {
       if (!robots) {

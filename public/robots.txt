@@ -4,5 +4,4 @@ Allow: /
 # Службова сторінка з варіантами дизайну асистента — не для індексації
 Disallow: /bot-variants
 
-# Після підключення власного домену розкоментуйте й підставте домен:
-# Sitemap: https://YOUR-DOMAIN/sitemap.xml
+Sitemap: https://weexp.agency/sitemap.xml
