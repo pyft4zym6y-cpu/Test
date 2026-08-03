@@ -39,7 +39,7 @@ const DIFFS = [
 function MarkIcon({ mark }: { mark: Mark }) {
   if (mark === 'yes') return <span className="text-[#65A30D]">✓</span>;
   if (mark === 'part') return <span className="text-[#B45309]">~</span>;
-  return <span className="text-[#66707E]">×</span>;
+  return <span className="text-[#5A6472]">×</span>;
 }
 
 export function Industries() {
@@ -62,7 +62,7 @@ export function Industries() {
           ))}
         </div>
         <FadeIn delay={0.3}>
-          <p className="text-[#66707E] text-xs mt-6 max-w-3xl leading-relaxed">
+          <p className="text-[#5A6472] text-xs mt-6 max-w-3xl leading-relaxed">
             Commerce OS галузе-незалежний: категорійні поправки калібрують еталони під нішу при
             фіксації baseline у тиждень 1.
           </p>
@@ -85,7 +85,7 @@ export function Competitors() {
           <div className="card mt-10 overflow-x-auto">
             <table className="w-full text-sm min-w-[720px]">
               <thead>
-                <tr className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#66707E] text-left">
+                <tr className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#5A6472] text-left">
                   <th className="px-6 py-4 font-medium">Гравець</th>
                   {COLUMNS.map((c) => (
                     <th key={c} className="px-3 py-4 font-medium text-center">
@@ -105,7 +105,7 @@ export function Competitors() {
                   >
                     <td className="px-6 py-4">
                       <p className={`font-bold ${row.me ? 'text-[#65A30D]' : ''}`}>{row.name}</p>
-                      <p className="font-mono text-[0.62rem] text-[#66707E] mt-0.5">{row.sub}</p>
+                      <p className="font-mono text-[0.62rem] text-[#5A6472] mt-0.5">{row.sub}</p>
                     </td>
                     {row.marks.map((m, i) => (
                       <td key={i} className="px-3 py-4 text-center font-mono">
@@ -121,7 +121,7 @@ export function Competitors() {
             </table>
           </div>
           <div className="flex flex-wrap justify-between gap-3 mt-4">
-            <p className="text-[#66707E] text-xs">
+            <p className="text-[#5A6472] text-xs">
               ✓ повністю · ~ частково · × ні. Назви фірм — приклади архетипів; кожна модель має
               свою нішу.
             </p>

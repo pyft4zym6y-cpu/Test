@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Play, ArrowRight } from 'lucide-react';
 import FadeIn from '../components/FadeIn';
@@ -39,6 +40,7 @@ const DOORS = [
 ];
 
 export default function Home() {
+  const [marqueePaused, setMarqueePaused] = useState(false);
   return (
     <div className="pt-16">
       {/* ================= HERO ================= */}
@@ -99,7 +101,7 @@ export default function Home() {
                       <p className="font-mono font-bold text-xl" style={{ color: s.color }}>
                         {s.value}
                       </p>
-                      <p className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-[#66707E] mt-1">
+                      <p className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-[#5A6472] mt-1">
                         {s.label}
                       </p>
                     </div>
@@ -121,11 +123,21 @@ export default function Home() {
       {/* ================= BRANDS ================= */}
       <section data-bot-say="Це бренди й ринки, з якими ми вже працювали — від Henkel і J&J до Amazon та Rozetka." className="border-y border-black/10 py-8 bg-[#F6F7F8]">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10">
-          <p className="font-pixel text-[0.55rem] uppercase text-black/55 mb-5">
-            Бренди й ринки, з якими ми вже працювали
-          </p>
+          <div className="flex items-center justify-between mb-5">
+            <p className="font-pixel text-[0.55rem] uppercase text-black/65">
+              Бренди й ринки, з якими ми вже працювали
+            </p>
+            <button
+              type="button"
+              onClick={() => setMarqueePaused((v) => !v)}
+              aria-label={marqueePaused ? 'Відновити стрічку' : 'Зупинити стрічку'}
+              className="font-mono text-[0.62rem] px-2.5 py-1 border border-black/15 text-black/60 hover:text-[#65A30D] hover:border-[#65A30D]/50 transition-colors"
+            >
+              {marqueePaused ? '▶' : '❚❚'}
+            </button>
+          </div>
         </div>
-        <div className="marquee-mask overflow-hidden">
+        <div className={`marquee-mask overflow-hidden${marqueePaused ? ' marquee-paused' : ''}`}>
           <div className="marquee-track">
             {[...BRANDS, ...BRANDS].map((b, i) => (
               <Chip key={`${b}-${i}`}>{b}</Chip>
@@ -158,7 +170,7 @@ export default function Home() {
                 <p className="font-pixel text-[0.6rem] text-[#65A30D]">0{i + 1}</p>
                 <p className="font-extrabold text-2xl mt-3">{d.title}</p>
                 <p className="text-[#5A6472] text-sm mt-2.5 leading-relaxed flex-1">{d.text}</p>
-                <p className="font-mono text-xs uppercase tracking-wider mt-6 text-black/55 group-hover:text-[#65A30D] transition-colors">
+                <p className="font-mono text-xs uppercase tracking-wider mt-6 text-black/65 group-hover:text-[#65A30D] transition-colors">
                   Перейти →
                 </p>
               </Link>

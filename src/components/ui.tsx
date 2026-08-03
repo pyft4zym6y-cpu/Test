@@ -17,17 +17,19 @@ export function Eyebrow({ children }: { children: ReactNode }) {
 export function SectionTitle({
   children,
   className = '',
+  as: Tag = 'h2',
 }: {
   children: ReactNode;
   className?: string;
+  as?: 'h1' | 'h2';
 }) {
   return (
-    <h2
+    <Tag
       className={`font-extrabold leading-[1.05] tracking-tight ${className}`}
       style={{ fontSize: 'clamp(1.9rem, 4.6vw, 3.4rem)', textWrap: 'balance' }}
     >
       {children}
-    </h2>
+    </Tag>
   );
 }
 

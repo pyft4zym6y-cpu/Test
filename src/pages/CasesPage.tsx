@@ -45,7 +45,7 @@ export default function CasesPage() {
       <Section className="grid-bg">
         <FadeIn>
           <Eyebrow>Кейси · Не один результат — система</Eyebrow>
-          <SectionTitle>
+          <SectionTitle as="h1">
             Кожен кейс —{' '}
             <span className="font-pixel text-[0.8em] text-[#65A30D] inline-block align-baseline leading-none">
               окрема історія
@@ -68,7 +68,7 @@ export default function CasesPage() {
                   {c.num}
                 </p>
                 <p className="font-extrabold text-2xl mt-4">{c.title}</p>
-                <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#66707E] mt-1.5">
+                <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#5A6472] mt-1.5">
                   {c.cat}
                 </p>
                 <p className="text-[#5A6472] text-sm mt-3 leading-relaxed flex-1">{c.text}</p>

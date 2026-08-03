@@ -173,6 +173,9 @@ body,
 .marquee-mask:hover .marquee-track {
   animation-play-state: paused;
 }
+.marquee-paused .marquee-track {
+  animation-play-state: paused !important;
+}
 
 /* Flywheel */
 @keyframes spin-slow {

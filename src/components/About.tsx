@@ -22,7 +22,7 @@ export default function About() {
         <div className="grid lg:grid-cols-[1.2fr_1fr] gap-12 items-start">
           <FadeIn>
             <Eyebrow>weexp · Хто будує</Eyebrow>
-            <SectionTitle>
+            <SectionTitle as="h1">
               Не підрядник на задачі.
               <br />
               <span className="lime-text">Архітектори цифрових систем.</span>

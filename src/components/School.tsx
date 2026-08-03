@@ -174,7 +174,7 @@ export function Beliefs() {
                 className={`font-extrabold leading-snug py-7 ${i > 0 ? 'border-t border-[#E4E7EA]' : ''}`}
                 style={{ fontSize: 'clamp(1.25rem, 2.6vw, 1.9rem)' }}
               >
-                {b.bold} <span className="text-[#66707E]">{b.rest}</span>
+                {b.bold} <span className="text-[#5A6472]">{b.rest}</span>
               </p>
             </FadeIn>
           ))}

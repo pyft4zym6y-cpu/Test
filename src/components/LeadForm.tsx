@@ -23,6 +23,7 @@ export default function LeadForm() {
   const [phone, setPhone] = useState('');
   const [turnover, setTurnover] = useState('');
   const [comment, setComment] = useState('');
+  const [sent, setSent] = useState(false);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -38,8 +39,14 @@ export default function LeadForm() {
     ]
       .filter(Boolean)
       .join('\n');
+    try {
+      navigator.clipboard?.writeText(`${subject}\n\n${body}`);
+    } catch {
+      /* clipboard недоступний — залишиться mailto */
+    }
+    setSent(true);
     say(
-      `Дякую${name ? `, ${name.trim()}` : ''}! Лист сформовано — надішли його зі своєї пошти, і ми повернемось протягом робочого дня. До зв'язку!`,
+      `Дякую${name ? `, ${name.trim()}` : ''}! Лист сформовано й скопійовано в буфер. Якщо поштовик не відкрився — просто встав текст у лист на pashasidorenko18@gmail.com.`,
     );
     window.location.href = `mailto:pashasidorenko18@gmail.com?subject=${encodeURIComponent(
       subject,
@@ -73,6 +80,9 @@ export default function LeadForm() {
         <input
           type="tel"
           required
+          pattern="[+()0-9\\-\\s]{10,18}"
+          inputMode="tel"
+          title="Телефон у форматі +38 0XX XXX XX XX"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           onFocus={() => say('Телефон потрібен, щоб узгодити час 30-хв сесії. Нікакого спаму — обіцяю.')}
@@ -106,12 +116,21 @@ export default function LeadForm() {
           className="bg-[#A3E635] px-7 py-3.5 font-mono text-sm font-bold uppercase tracking-[0.12em] text-black transition-transform duration-200 hover:scale-[1.02]"
           style={{ boxShadow: '0 0 28px rgba(101,163,13,0.3)' }}
         >
-          Отримати діагностику →
+          Забронювати сесію →
         </button>
-        <p className="text-[#5A6472] text-[0.64rem] leading-relaxed">
-          Кнопка відкриє лист із заповненими даними у вашій пошті — нічого не публікується
-          автоматично.
-        </p>
+        {sent ? (
+          <p className="text-[#4d7c0f] text-[0.7rem] leading-relaxed font-medium">
+            Заявку сформовано й скопійовано в буфер обміну. Якщо вікно пошти не відкрилося —
+            вставте текст у лист на{' '}
+            <a href="mailto:pashasidorenko18@gmail.com" className="underline">pashasidorenko18@gmail.com</a>{' '}
+            або зателефонуйте: +38 099 918 82 60.
+          </p>
+        ) : (
+          <p className="text-[#5A6472] text-[0.64rem] leading-relaxed">
+            Кнопка відкриє лист із заповненими даними у вашій пошті — нічого не публікується
+            автоматично.
+          </p>
+        )}
       </div>
     </form>
   );

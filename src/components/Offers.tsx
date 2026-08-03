@@ -63,7 +63,7 @@ export default function Offers() {
       <Section id="offers">
         <FadeIn>
           <Eyebrow>Як працюємо · Scope · Deliverable · Інвестиція · Next</Eyebrow>
-          <SectionTitle>Три двері — прозорі умови</SectionTitle>
+          <SectionTitle as="h1">Три двері — прозорі умови</SectionTitle>
         </FadeIn>
         <div className="grid md:grid-cols-3 gap-5 mt-10 items-stretch">
           {DOORS.map((d, i) => (
@@ -84,7 +84,7 @@ export default function Offers() {
                 <div className="flex flex-col">
                   {d.rows.map((r, ri) => (
                     <div key={r.k} className={`py-3 ${ri > 0 ? 'border-t border-[#ECEEF0]' : ''}`}>
-                      <p className="font-mono text-[0.58rem] uppercase tracking-[0.18em] text-[#66707E] mb-1">
+                      <p className="font-mono text-[0.58rem] uppercase tracking-[0.18em] text-[#5A6472] mb-1">
                         {r.k}
                       </p>
                       <p className="text-sm text-[#2F3742] leading-snug">{r.v}</p>
@@ -172,7 +172,7 @@ export default function Offers() {
               <hr className="border-[#E4E7EA] my-5" />
               <div className="flex items-center gap-4">
                 <p className="font-mono font-bold text-4xl text-[#65A30D]">1 : 1</p>
-                <p className="text-[#66707E] text-xs leading-snug">
+                <p className="text-[#5A6472] text-xs leading-snug">
                   один власник —
                   <br />
                   один фокус на результат

@@ -65,7 +65,7 @@ export default function Expertise() {
         <div className="glow-lime w-[420px] h-[420px] -top-24 -right-32" />
         <FadeIn>
           <Eyebrow>Експертиза · З чим саме працюємо</Eyebrow>
-          <SectionTitle>
+          <SectionTitle as="h1">
             17 напрямів —{' '}
             <span className="font-pixel text-[0.8em] text-[#65A30D] inline-block align-baseline leading-none">
               одна система
@@ -90,7 +90,7 @@ export default function Expertise() {
                   {cluster.label}
                 </h3>
                 <span className="flex-1 h-px bg-white/10" />
-                <span className="font-mono text-[0.62rem] text-[#66707E]">
+                <span className="font-mono text-[0.62rem] text-[#5A6472]">
                   {String(cluster.zones.length).padStart(2, '0')}
                 </span>
               </div>

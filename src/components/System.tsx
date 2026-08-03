@@ -127,7 +127,7 @@ function Flywheel() {
             <span className="font-bold text-xs sm:text-sm whitespace-nowrap bg-[#FFFFFF]/70 px-1.5 rounded">
               {n.name}
             </span>
-            <span className="font-mono text-[0.58rem] text-[#66707E]">
+            <span className="font-mono text-[0.58rem] text-[#5A6472]">
               0{i + 1}
             </span>
           </div>
@@ -145,7 +145,7 @@ export default function System() {
         <div className="glow-purple w-[420px] h-[420px] bottom-0 -left-40" />
         <FadeIn>
           <Eyebrow>Commerce OS · Перший продукт школи Commerce Architecture</Eyebrow>
-          <SectionTitle>Дванадцять модулів. Один рушій.</SectionTitle>
+          <SectionTitle as="h1">Дванадцять модулів. Один рушій.</SectionTitle>
           <p className="text-[#5A6472] mt-4 max-w-3xl">
             Дані входять, проходять через діагностичний рушій, виходять планом і керуванням. AI та
             база знань працюють наскрізь.
@@ -199,9 +199,9 @@ export default function System() {
                   style={{ '--accent': c.color } as React.CSSProperties}
                 >
                   <p className="font-bold text-sm whitespace-nowrap">{c.name}</p>
-                  <p className="font-mono text-[0.58rem] text-[#66707E] mt-0.5">{c.sub}</p>
+                  <p className="font-mono text-[0.58rem] text-[#5A6472] mt-0.5">{c.sub}</p>
                 </div>
-                {i < CHAIN.length - 1 && <span className="text-[#66707E] font-mono">→</span>}
+                {i < CHAIN.length - 1 && <span className="text-[#5A6472] font-mono">→</span>}
               </div>
             ))}
           </div>

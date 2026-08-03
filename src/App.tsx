@@ -16,6 +16,7 @@ import ServicesPage from './pages/ServicesPage';
 import ContactPage from './pages/ContactPage';
 import { PrivacyPage, OfferPage } from './pages/LegalPages';
 import BotVariantsPage from './pages/BotVariantsPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 const TITLES: Record<string, string> = {
   '/': 'weexp — Commerce OS · Growth & Engineering',
@@ -39,6 +40,17 @@ function ScrollToTop() {
     document.title =
       TITLES[pathname] ??
       (pathname.startsWith('/cases/') ? 'Кейс — weexp · Commerce OS' : TITLES['/']);
+    let robots = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+    if (pathname === '/bot-variants') {
+      if (!robots) {
+        robots = document.createElement('meta');
+        robots.name = 'robots';
+        document.head.appendChild(robots);
+      }
+      robots.content = 'noindex';
+    } else if (robots) {
+      robots.remove();
+    }
   }, [pathname]);
   return null;
 }
@@ -63,7 +75,7 @@ function Shell() {
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/offer" element={<OfferPage />} />
         <Route path="/bot-variants" element={<BotVariantsPage />} />
-        <Route path="*" element={<Home />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
       <Footer />
       <AssistantBot />

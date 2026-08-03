@@ -96,7 +96,7 @@ export default function Product() {
                   }`}
                 >
                   <span className="flex items-center gap-3 min-w-0">
-                    <span className="font-mono text-[#66707E]">├─</span>
+                    <span className="font-mono text-[#5A6472]">├─</span>
                     <span className="w-2 h-2 rounded-full shrink-0" style={{ background: d.color }} />
                     <span className="font-bold text-sm truncate">{d.name}</span>
                   </span>
@@ -105,7 +105,7 @@ export default function Product() {
               ))}
             </div>
           </div>
-          <p className="text-[#66707E] text-xs mt-4 leading-relaxed">
+          <p className="text-[#5A6472] text-xs mt-4 leading-relaxed">
             Кожен плейбук = 9 розділів: навіщо · тригери · вхід · кроки · формули · deliverable ·
             критерії приймання · помилки · зв&rsquo;язки.
           </p>
@@ -118,11 +118,15 @@ export default function Product() {
               const colors = ['#65A30D', '#0F9488', '#6D28D9', '#B45309', '#EA580C', '#DB2777'];
               const c = colors[i % colors.length];
               return (
-                <div
+                <button
+                  type="button"
                   key={i}
                   onMouseEnter={() => say(pbSay(i + 1))}
                   onMouseLeave={sayIdle}
-                  className="card card-hover flex flex-col items-center justify-center py-3 cursor-help"
+                  onClick={() => say(pbSay(i + 1))}
+                  onFocus={() => say(pbSay(i + 1))}
+                  aria-label={`Плейбук PB-${String(i + 1).padStart(2, '0')}`}
+                  className="card card-hover flex flex-col items-center justify-center py-3 cursor-pointer"
                 >
                   <span className="font-mono text-[0.55rem]" style={{ color: c }}>
                     PB
@@ -130,7 +134,7 @@ export default function Product() {
                   <span className="font-mono font-bold text-sm">
                     {String(i + 1).padStart(2, '0')}
                   </span>
-                </div>
+                </button>
               );
             })}
           </div>
@@ -201,7 +205,7 @@ LTV:CAC ≥ 3 → ріст`}
               <div className="overflow-x-auto">
                 <table className="w-full font-mono text-[0.66rem]" style={{ fontVariantNumeric: 'tabular-nums' }}>
                   <thead>
-                    <tr className="text-[#66707E] uppercase tracking-[0.1em] text-left">
+                    <tr className="text-[#5A6472] uppercase tracking-[0.1em] text-left">
                       <th className="pb-2.5 pr-3 font-medium">Метрика</th>
                       <th className="pb-2.5 pr-3 font-medium">Факт</th>
                       <th className="pb-2.5 pr-3 font-medium">Ціль</th>
@@ -234,7 +238,7 @@ LTV:CAC ≥ 3 → ріст`}
                   </tbody>
                 </table>
               </div>
-              <p className="text-[0.64rem] text-[#66707E] mt-4">
+              <p className="text-[0.64rem] text-[#5A6472] mt-4">
                 Факт клієнта прикладається до еталона. Кожен розрив → недоотриманий оборот →
                 конкретний плейбук. Реальний аудит fashion-виробника (Україна), 2026.
               </p>

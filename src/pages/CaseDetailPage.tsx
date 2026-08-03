@@ -10,7 +10,7 @@ function UgearsDetail() {
     <Section className="grid-bg">
       <FadeIn>
         <Eyebrow>Кейс · Consumer DTC · Споживчі товари</Eyebrow>
-        <SectionTitle>
+        <SectionTitle as="h1">
           Міжнародний DTC + Amazon
           <br />
           для бренду <span className="lime-text">з Forbes TOP-250 UA</span>
@@ -167,7 +167,7 @@ export default function CaseDetailPage() {
             style={{ '--accent': next.color } as React.CSSProperties}
           >
             <div>
-              <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[#66707E] mb-1.5">
+              <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[#5A6472] mb-1.5">
                 Наступний кейс
               </p>
               <p className="font-extrabold text-2xl">

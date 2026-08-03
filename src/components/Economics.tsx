@@ -59,9 +59,9 @@ export default function Economics() {
                   <p className="font-mono font-bold text-xl mt-1" style={{ color: c.color }}>
                     {c.value}
                   </p>
-                  <p className="font-mono text-[0.55rem] text-[#66707E] mt-0.5">{c.sub}</p>
+                  <p className="font-mono text-[0.55rem] text-[#5A6472] mt-0.5">{c.sub}</p>
                 </div>
-                {i < CHAIN.length - 1 && <span className="text-[#66707E] font-mono">→</span>}
+                {i < CHAIN.length - 1 && <span className="text-[#5A6472] font-mono">→</span>}
               </div>
             ))}
           </div>
@@ -101,7 +101,7 @@ export default function Economics() {
                   ліквідності. Це перший документ при оцінці будь-якого нового каналу чи контракту.
                 </p>
                 <hr className="border-[#E4E7EA] my-4" />
-                <p className="text-[#66707E] text-xs leading-relaxed">
+                <p className="text-[#5A6472] text-xs leading-relaxed">
                   Не входить у CAPEX: медіабюджет, товар, ФОП команди — рахуються окремо й прозоро.
                 </p>
               </div>
@@ -127,7 +127,7 @@ export default function Economics() {
                     <Bar percent={100} delay={0.15} />
                   </div>
                 </div>
-                <p className="text-[#66707E] text-xs mt-5 leading-relaxed">
+                <p className="text-[#5A6472] text-xs mt-5 leading-relaxed">
                   <span className="text-[#B45309] font-mono uppercase text-[0.62rem] tracking-[0.14em]">Початок · </span>
                   Аудит від $2K виявляє мільйони упущеного обороту (приклад: ≈16,6 млн ₴) —
                   інвестиція окуповується ще до старту робіт. Цифри флагман-кейсу; для вашого
@@ -156,7 +156,7 @@ export default function Economics() {
                   {r.ifPart}
                 </p>
                 <p className="text-[#5A6472] text-sm mt-2.5 leading-relaxed">
-                  <span className="font-mono text-[0.62rem] text-[#66707E] mr-2">→ THEN</span>
+                  <span className="font-mono text-[0.62rem] text-[#5A6472] mr-2">→ THEN</span>
                   {r.then}
                 </p>
               </div>

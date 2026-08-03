@@ -45,7 +45,7 @@ export default function HeroBot() {
       <div className="girl-float">
         <AvatarBot variant={BOT_VARIANT} size={260} />
       </div>
-      <div className="flex gap-2 font-mono text-[0.62rem] text-[#66707E]">
+      <div className="flex gap-2 font-mono text-[0.62rem] text-[#5A6472]">
         <span className="chip-dark px-3 py-1.5">CR 4,2%</span>
         <span className="chip-dark px-3 py-1.5">LTV:CAC ≥3</span>
         <span className="chip-dark px-3 py-1.5">ROI 3.8×</span>

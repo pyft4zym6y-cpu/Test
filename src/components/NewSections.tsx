@@ -20,8 +20,8 @@ export function Proof() {
       <div className="glow-lime w-[420px] h-[420px] -top-24 -right-32" />
       <FadeIn>
         <Eyebrow>Доказ · Кейс «Преміум-текстиль» · UA→EU · Факт за CRM / ERP / GA4</Eyebrow>
-        <SectionTitle>Спочатку — що це дає. На реальному бізнесі.</SectionTitle>
-        <p className="font-mono text-xs text-[#66707E] mt-3">
+        <SectionTitle as="h1">Спочатку — що це дає. На реальному бізнесі.</SectionTitle>
+        <p className="font-mono text-xs text-[#5A6472] mt-3">
           Наведи на цифру — асистент розповість, як ми цього досягли ↓
         </p>
       </FadeIn>
@@ -133,10 +133,10 @@ function InactionChart() {
         <text x="310" y="160" fill="#DC2626" fontSize="11" className="font-mono">
           без системи
         </text>
-        <text x="12" y="160" fill="#66707E" fontSize="10" className="font-mono">
+        <text x="12" y="160" fill="#5A6472" fontSize="10" className="font-mono">
           сьогодні
         </text>
-        <text x="345" y="160" fill="#66707E" fontSize="10" className="font-mono">
+        <text x="345" y="160" fill="#5A6472" fontSize="10" className="font-mono">
           3 роки
         </text>
       </svg>
@@ -216,7 +216,7 @@ export function Glossary() {
               <p className="font-extrabold text-xl" style={{ color: g.color }}>
                 {g.name}
               </p>
-              <p className="font-pixel text-[0.5rem] text-black/55 uppercase mt-2 mb-3">{g.role}</p>
+              <p className="font-pixel text-[0.5rem] text-black/65 uppercase mt-2 mb-3">{g.role}</p>
               <p className="text-[#5A6472] text-sm leading-relaxed">{g.text}</p>
             </div>
           </FadeIn>
@@ -296,7 +296,7 @@ export function HowItWorks() {
                 </p>
                 <p className="text-sm text-[#2F3742]">Roadmap · доступи та дані · бюджет траншами</p>
               </div>
-              <div className="text-center font-mono text-[#66707E]">↓</div>
+              <div className="text-center font-mono text-[#5A6472]">↓</div>
               <div className="card p-5 text-center">
                 <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[#B45309] mb-2">
                   Вихід
@@ -363,7 +363,7 @@ export function GoldStandards() {
       <div className="flex flex-wrap items-end justify-between gap-8">
         <FadeIn>
           <Eyebrow>Gold Standards · Лінійка, а не думка</Eyebrow>
-          <SectionTitle>Еталон прикладається на трьох рівнях</SectionTitle>
+          <SectionTitle as="h1">Еталон прикладається на трьох рівнях</SectionTitle>
         </FadeIn>
         <FadeIn delay={0.15}>
           <div className="text-right">
@@ -392,7 +392,7 @@ export function GoldStandards() {
                     </span>
                   </span>
                   {s.tag && (
-                    <span className="font-mono text-[0.58rem] text-[#66707E] border border-black/10 rounded px-2 py-0.5 whitespace-nowrap">
+                    <span className="font-mono text-[0.58rem] text-[#5A6472] border border-black/10 rounded px-2 py-0.5 whitespace-nowrap">
                       {s.tag}
                     </span>
                   )}
@@ -425,7 +425,7 @@ export function GoldStandards() {
             <div className="overflow-x-auto">
               <table className="w-full font-mono text-[0.7rem]" style={{ fontVariantNumeric: 'tabular-nums' }}>
                 <thead>
-                  <tr className="text-[#66707E] uppercase tracking-[0.1em] text-left">
+                  <tr className="text-[#5A6472] uppercase tracking-[0.1em] text-left">
                     <th className="pb-2.5 pr-3 font-medium">Метрика</th>
                     <th className="pb-2.5 pr-3 font-medium text-[#DC2626]">●</th>
                     <th className="pb-2.5 pr-3 font-medium text-[#B45309]">●</th>
@@ -444,7 +444,7 @@ export function GoldStandards() {
                 </tbody>
               </table>
             </div>
-            <p className="text-[#66707E] text-[0.68rem] mt-4 leading-relaxed">
+            <p className="text-[#5A6472] text-[0.68rem] mt-4 leading-relaxed">
               Спершу — стратегія (є/нема), далі — цифри сайту, далі — інструменти. Кожен розрив
               перекладається в гроші.
             </p>
@@ -529,7 +529,7 @@ export function PlaybookNet() {
             >
               <p className="font-mono text-[0.55rem] text-[#65A30D]">PB-12 · ФІНАНСИ</p>
               <p className="font-extrabold text-sm">Unit Economics</p>
-              <p className="font-mono text-[0.5rem] text-[#66707E] mt-0.5">CM1·CM2·CM3 · LTV:CAC</p>
+              <p className="font-mono text-[0.5rem] text-[#5A6472] mt-0.5">CM1·CM2·CM3 · LTV:CAC</p>
             </div>
           </div>
         </FadeIn>
@@ -555,7 +555,7 @@ export function PlaybookNet() {
               </li>
             ))}
           </ul>
-          <p className="text-[#66707E] text-xs mt-6 leading-relaxed max-w-md">
+          <p className="text-[#5A6472] text-xs mt-6 leading-relaxed max-w-md">
             Тому це <strong className="text-[#2F3742]">система</strong>, а не набір послуг: витягти
             цінність з одного плейбука можна лише разом зі зв&rsquo;язаними — дані течуть між ними.
           </p>
@@ -593,7 +593,7 @@ export function Fork() {
             <div className="flex flex-col">
               {TRACK_OS.map((t, i) => (
                 <div key={t.period} className={`flex gap-5 py-3.5 ${i > 0 ? 'border-t border-black/[0.06]' : ''}`}>
-                  <span className="font-mono text-[0.66rem] text-[#66707E] w-16 shrink-0 pt-0.5">{t.period}</span>
+                  <span className="font-mono text-[0.66rem] text-[#5A6472] w-16 shrink-0 pt-0.5">{t.period}</span>
                   <span className="text-sm text-[#2F3742]">{t.text}</span>
                 </div>
               ))}
@@ -607,7 +607,7 @@ export function Fork() {
             <div className="flex flex-col">
               {TRACK_NO.map((t, i) => (
                 <div key={t.period} className={`flex gap-5 py-3.5 ${i > 0 ? 'border-t border-black/[0.06]' : ''}`}>
-                  <span className="font-mono text-[0.66rem] text-[#66707E] w-16 shrink-0 pt-0.5">{t.period}</span>
+                  <span className="font-mono text-[0.66rem] text-[#5A6472] w-16 shrink-0 pt-0.5">{t.period}</span>
                   <span className="text-sm text-[#2F3742]">{t.text}</span>
                 </div>
               ))}
@@ -646,7 +646,7 @@ export function RayCase() {
         <Eyebrow>
           Кейс · <span className="text-[#65A30D]">Fashion-виробник</span> · Program of Record 2026
         </Eyebrow>
-        <SectionTitle>
+        <SectionTitle as="h1">
           Одяговий бренд ·<br />
           програма росту 12 міс
         </SectionTitle>
@@ -683,7 +683,7 @@ export function RayCase() {
                 </p>
               </div>
             </div>
-            <p className="text-[#66707E] text-[0.66rem] mt-5">
+            <p className="text-[#5A6472] text-[0.66rem] mt-5">
               Програма росту · цілі на 12 міс, не постфактум-результат.
             </p>
           </div>
@@ -692,7 +692,7 @@ export function RayCase() {
           <div className="card p-6 overflow-x-auto">
             <table className="w-full font-mono text-[0.7rem]" style={{ fontVariantNumeric: 'tabular-nums' }}>
               <thead>
-                <tr className="text-[#66707E] uppercase tracking-[0.1em] text-left">
+                <tr className="text-[#5A6472] uppercase tracking-[0.1em] text-left">
                   <th className="pb-3 pr-3 font-medium">Показник</th>
                   <th className="pb-3 pr-3 font-medium">Точка А</th>
                   <th className="pb-3 font-medium text-right">12 міс</th>

@@ -94,7 +94,7 @@ export function GrowthChart() {
           transition={{ delay: 1.7, type: 'spring', stiffness: 300 }}
           style={{ transformOrigin: '380px 12px' }}
         />
-        <text x="12" y="145" className="font-mono" fill="#66707E" fontSize="11">
+        <text x="12" y="145" className="font-mono" fill="#5A6472" fontSize="11">
           €48K
         </text>
         <text x="330" y="34" className="font-mono" fill="#65A30D" fontSize="12" fontWeight="bold">
@@ -207,7 +207,7 @@ export function Case01Detail() {
                   CR сегмента (норма 0,7–1,5%)
                 </p>
               </div>
-              <p className="text-[#66707E] text-xs leading-relaxed flex-1 min-w-[200px]">
+              <p className="text-[#5A6472] text-xs leading-relaxed flex-1 min-w-[200px]">
                 Бенчмарки: Klaviyo, Shopify Plus, Triple Whale (2024–2025). B2B / HoReCa: Repeat
                 Rate 78%, середній чек ×5.
               </p>
@@ -221,7 +221,7 @@ export function Case01Detail() {
                     <div className="flex justify-between items-baseline mb-1.5">
                       <span className="font-bold text-sm">{r.name}</span>
                       <span className="font-mono text-xs" style={{ fontVariantNumeric: 'tabular-nums' }}>
-                        <span className="text-[#66707E]">{r.from}</span>
+                        <span className="text-[#5A6472]">{r.from}</span>
                         <span className="text-[#5A6472]"> → </span>
                         <span className="text-[#65A30D] font-bold">{r.to}</span>
                       </span>
@@ -259,7 +259,7 @@ export function Case01Detail() {
                   </div>
                 ))}
               </div>
-              <p className="text-[#66707E] text-[0.64rem] mt-4 leading-relaxed">
+              <p className="text-[#5A6472] text-[0.64rem] mt-4 leading-relaxed">
                 Оцінка на основі когорт і атрибуції; сума — потенціал, важелі перетинаються.
               </p>
             </div>

@@ -40,6 +40,7 @@ function Logo() {
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [casesOpen, setCasesOpen] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -51,6 +52,7 @@ export default function Nav() {
 
   useEffect(() => {
     setMenuOpen(false);
+    setCasesOpen(false);
   }, [location.pathname]);
 
   useEffect(() => {
@@ -83,12 +85,18 @@ export default function Nav() {
                     to={l.to}
                     onMouseEnter={() => say(l.say)}
                     onMouseLeave={sayIdle}
+                    onClick={(e) => {
+                      if (window.matchMedia('(pointer: coarse)').matches && !casesOpen) {
+                        e.preventDefault();
+                        setCasesOpen(true);
+                      }
+                    }}
                     className={({ isActive }) => `${linkCls(isActive)} inline-flex items-center gap-1`}
                   >
                     {l.label}
-                    <ChevronDown size={12} className="transition-transform duration-200 group-hover:rotate-180" />
+                    <ChevronDown size={12} className={`transition-transform duration-200 group-hover:rotate-180 ${casesOpen ? 'rotate-180' : ''}`} />
                   </NavLink>
-                  <div className="absolute left-1/2 -translate-x-1/2 top-full pt-3 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto transition-opacity duration-200">
+                  <div className={`absolute left-1/2 -translate-x-1/2 top-full pt-3 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto transition-opacity duration-200${casesOpen ? ' opacity-100 pointer-events-auto' : ''}`}>
                     <div className="bg-white/95 backdrop-blur-md border border-black/10 min-w-[260px] py-2">
                       {CASE_LINKS.map((c) => (
                         <Link
@@ -132,7 +140,7 @@ export default function Nav() {
               onMouseLeave={sayIdle}
               className="hidden lg:inline-block border border-black/30 bg-black/5 backdrop-blur-sm px-5 py-2 text-xs tracking-wider uppercase hover:bg-black/5 transition-colors"
             >
-              Сесія 30 хв
+              Забронювати сесію
             </Link>
             <button
               type="button"
@@ -207,7 +215,7 @@ export default function Nav() {
             }`}
             style={{ transitionDelay: menuOpen ? `${100 + LINKS.length * 60}ms` : '0ms' }}
           >
-            Сесія 30 хв
+            Забронювати сесію
           </Link>
         </nav>
       </div>

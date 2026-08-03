@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import FadeIn from './FadeIn';
 import { Eyebrow, Section, SectionTitle, Chip, Stat } from './ui';
 
@@ -42,6 +43,7 @@ const FACTS = [
 ];
 
 export default function Trust() {
+  const [paused, setPaused] = useState(false);
   return (
     <Section>
       <div className="flex flex-wrap items-end justify-between gap-8">
@@ -62,7 +64,17 @@ export default function Trust() {
 
       {/* Marquee of brand chips — two counter-directed rows */}
       <FadeIn delay={0.2}>
-        <div className="marquee-mask overflow-hidden mt-12 flex flex-col gap-3">
+        <div className="flex justify-end mt-10">
+          <button
+            type="button"
+            onClick={() => setPaused((v) => !v)}
+            aria-label={paused ? 'Відновити стрічку' : 'Зупинити стрічку'}
+            className="font-mono text-[0.62rem] px-2.5 py-1 border border-black/15 text-black/60 hover:text-[#65A30D] hover:border-[#65A30D]/50 transition-colors"
+          >
+            {paused ? '▶' : '❚❚'}
+          </button>
+        </div>
+        <div className={`marquee-mask overflow-hidden mt-2 flex flex-col gap-3${paused ? ' marquee-paused' : ''}`}>
           <div className="marquee-track">
             {[...BRANDS, ...BRANDS].map((b, i) => (
               <Chip key={`a-${b}-${i}`}>{b}</Chip>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { X } from 'lucide-react';
 import AvatarBot from './AvatarBot';
 import { BOT_VARIANT } from './botConfig';
 import { say } from './speech';
@@ -8,7 +9,7 @@ import { say } from './speech';
 const ROUTE_IDLE: [string, string][] = [
   ['/approach', 'Наведи на цифри доказу — розповім, як ми цього досягли →'],
   ['/system', 'Наведи на модуль M01–M12 — поясню, що він робить →'],
-  ['/product', 'Наведи на плитку PB-01…56 — розкажу, що всередині →'],
+  ['/product', 'Тапни плитку PB-01…56 — розкажу, що всередині →'],
   ['/expertise', 'Наведи на напрям — поясню, як ми з ним працюємо →'],
   ['/cases/', 'Цифри в кейсі справжні — з CRM, ERP та GA4. Скроль, коментуватиму →'],
   ['/cases', 'Обери кейс — цифри на обкладинках вимірювані, не рекламні →'],
@@ -38,7 +39,7 @@ const SECTION_SAYS: [string, string][] = [
   ['Як працює Commerce OS', 'Чотири кроки: біль → гроші → план → виконання. Без магії.'],
   ['Що всередині блоку', 'Виконання — не обіцянка: команда, спринти, deliverables, контроль якості.'],
   ['Gold Standards', 'Еталон із 52 метрик — лінійка, до якої прикладемо ваш бізнес.'],
-  ['Playbook Library', 'Наведи на плитку PB — розкажу, що всередині плейбука.'],
+  ['Playbook Library', 'Тапни плитку PB — розкажу, що всередині плейбука.'],
   ['Покажи, не розкажи', 'Реальні екрани продукту: плейбук, аудит у грошах, еталони.'],
   ['У цифрах', 'Система, яку можна перерахувати — і перевірити.'],
   ['бібліотека плейбуків', 'Плейбуки зв’язані: потягни за один — рухаються сусідні.'],
@@ -75,18 +76,38 @@ function idleFor(pathname: string): string {
   return ROUTE_IDLE[ROUTE_IDLE.length - 1][1];
 }
 
+const MUTE_KEY = 'weexp-bot-muted';
+
 /**
- * Глобальний AI-асистент: живе на всіх сторінках, «біжить» за скролом
- * із 3D-нахилами й коментує кожну секцію, що з'являється на екрані.
+ * Глобальний AI-асистент на всіх сторінках і всіх пристроях:
+ * десктоп — «біжить» за скролом із 3D-нахилами; мобільний — компактна
+ * кнопка-аватар, що розгортає бульбашку тапом. Можна згорнути (✕) —
+ * вибір запам'ятовується.
  */
 export default function AssistantBot() {
   const { pathname } = useLocation();
   const isHome = pathname === '/';
   const [docked, setDocked] = useState(!isHome);
+  const [muted, setMuted] = useState(() => {
+    try {
+      return localStorage.getItem(MUTE_KEY) === '1';
+    } catch {
+      return false;
+    }
+  });
   const [phrase, setPhrase] = useState(idleFor(pathname));
   const [typed, setTyped] = useState('');
   const rigRef = useRef<HTMLDivElement>(null);
   const linesRef = useRef<HTMLDivElement>(null);
+
+  const setMutedPersist = (v: boolean) => {
+    setMuted(v);
+    try {
+      localStorage.setItem(MUTE_KEY, v ? '1' : '0');
+    } catch {
+      /* noop */
+    }
+  };
 
   /* ---- Шина реплік ---- */
   useEffect(() => {
@@ -103,7 +124,7 @@ export default function AssistantBot() {
     };
   }, [pathname]);
 
-  /* ---- Зміна маршруту: нове вітання ---- */
+  /* ---- Зміна маршруту ---- */
   useEffect(() => {
     setPhrase(idleFor(pathname));
     setDocked(pathname !== '/');
@@ -111,6 +132,7 @@ export default function AssistantBot() {
 
   /* ---- Друкарська машинка ---- */
   useEffect(() => {
+    if (muted) return;
     setTyped('');
     let i = 0;
     const id = setInterval(() => {
@@ -119,10 +141,11 @@ export default function AssistantBot() {
       if (i >= phrase.length) clearInterval(id);
     }, 18);
     return () => clearInterval(id);
-  }, [phrase]);
+  }, [phrase, muted]);
 
-  /* ---- Автокоментарі секцій (перезбирається на кожному маршруті) ---- */
+  /* ---- Автокоментарі секцій ---- */
   useEffect(() => {
+    if (muted) return;
     let io: IntersectionObserver | null = null;
     const timer = setTimeout(() => {
       const targets: [Element, string][] = [];
@@ -156,9 +179,9 @@ export default function AssistantBot() {
       clearTimeout(timer);
       io?.disconnect();
     };
-  }, [pathname]);
+  }, [pathname, muted]);
 
-  /* ---- «Біг» із 3D-фізикою ---- */
+  /* ---- «Біг» із 3D-фізикою (десктоп) ---- */
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let raf = 0;
@@ -208,32 +231,57 @@ export default function AssistantBot() {
     };
   }, [isHome]);
 
+  /* ---- Згорнутий стан: лише кнопка-аватар ---- */
+  if (muted) {
+    return (
+      <button
+        type="button"
+        onClick={() => setMutedPersist(false)}
+        aria-label="Увімкнути AI-асистента"
+        className="fixed bottom-5 right-5 z-40 opacity-70 hover:opacity-100 transition-opacity"
+      >
+        <AvatarBot variant={BOT_VARIANT} size={48} />
+      </button>
+    );
+  }
+
   return (
     <div
-      className={`hidden md:flex fixed bottom-6 right-6 z-40 items-end gap-3 pointer-events-none transition-all duration-500 ${
-        docked ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+      className={`fixed bottom-5 right-5 md:bottom-6 md:right-6 z-40 flex items-end gap-2.5 md:gap-3 transition-all duration-500 ${
+        docked ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'
       }`}
       aria-live="polite"
     >
       <div
-        className="card p-3.5 max-w-[280px] bg-white/95 backdrop-blur-sm"
+        className="relative card p-3.5 pr-7 max-w-[240px] md:max-w-[280px] bg-white/95 backdrop-blur-sm"
         style={{ borderColor: 'rgba(101,163,13,0.45)', boxShadow: '0 10px 30px rgba(10,14,18,0.12)' }}
       >
+        <button
+          type="button"
+          onClick={() => setMutedPersist(true)}
+          aria-label="Згорнути асистента"
+          className="absolute top-1.5 right-1.5 p-1 text-black/60 hover:text-black/80 transition-colors"
+        >
+          <X size={13} />
+        </button>
         <p className="font-pixel text-[0.45rem] text-[#65A30D] mb-1.5">WEEXP·OS</p>
-        <p className="font-mono text-[0.66rem] leading-relaxed text-[#12161C] min-h-[2.4em]">
+        <p className="font-mono text-[0.64rem] md:text-[0.66rem] leading-relaxed text-[#12161C] min-h-[2.4em]">
           {typed}
           <span className="cursor-blink text-[#65A30D]">▊</span>
         </p>
       </div>
 
-      <div className="relative shrink-0" style={{ perspective: '520px' }}>
-        <div ref={linesRef} className="absolute right-full top-1/2 -translate-y-1/2 mr-1.5 flex flex-col gap-1.5 opacity-0">
+      <div className="relative shrink-0 pointer-events-none" style={{ perspective: '520px' }}>
+        <div ref={linesRef} className="absolute right-full top-1/2 -translate-y-1/2 mr-1.5 hidden md:flex flex-col gap-1.5 opacity-0">
           <span className="block h-[2px] w-6 bg-[#65A30D]/70 rounded-full" />
           <span className="block h-[2px] w-4 bg-[#65A30D]/50 rounded-full ml-2" />
           <span className="block h-[2px] w-5 bg-[#65A30D]/60 rounded-full" />
         </div>
         <div ref={rigRef} style={{ transformStyle: 'preserve-3d', willChange: 'transform' }}>
-          <AvatarBot variant={BOT_VARIANT} size={72} />
+          <AvatarBot variant={BOT_VARIANT} size={56} className="md:hidden" />
+          <div className="hidden md:block">
+            <AvatarBot variant={BOT_VARIANT} size={72} />
+          </div>
         </div>
         <div className="mx-auto mt-0.5 h-1.5 w-10 rounded-full bg-black/15 blur-[2px]" />
       </div>

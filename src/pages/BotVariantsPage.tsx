@@ -17,7 +17,7 @@ export default function BotVariantsPage() {
       <Section className="grid-bg">
         <FadeIn>
           <Eyebrow>Дизайн-варіанти AI-асистента</Eyebrow>
-          <SectionTitle>Обери свого асистента</SectionTitle>
+          <SectionTitle as="h1">Обери свого асистента</SectionTitle>
           <p className="text-[#5A6472] mt-4 max-w-2xl">
             П&rsquo;ять оригінальних варіантів. Усі стежать очима за курсором, кліпають і говорять
             через бульбашку. Активний зараз — <strong>V{BOT_VARIANT}</strong>; змінюється однією

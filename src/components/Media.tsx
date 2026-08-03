@@ -77,10 +77,10 @@ export default function Media() {
                 <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em]" style={{ color: t.color }}>
                   {t.role}
                 </p>
-                <p className="font-mono text-[0.6rem] text-[#66707E]">{t.year}</p>
+                <p className="font-mono text-[0.6rem] text-[#5A6472]">{t.year}</p>
               </div>
               <p className="font-extrabold text-lg mt-2 leading-snug">{t.event}</p>
-              <p className="font-mono text-[0.62rem] text-[#66707E] mt-0.5">{t.where}</p>
+              <p className="font-mono text-[0.62rem] text-[#5A6472] mt-0.5">{t.where}</p>
               <p className="font-serif-it text-sm text-[#3F4854] mt-3 leading-relaxed flex-1">
                 {t.topic}
               </p>
@@ -96,7 +96,7 @@ export default function Media() {
               {f}
             </span>
           ))}
-          <span className="text-[#66707E] text-xs ml-2">
+          <span className="text-[#5A6472] text-xs ml-2">
             Запросити спікером —{' '}
             <a href="mailto:pashasidorenko18@gmail.com?subject=Запрошення спікером" className="text-[#65A30D] hover:text-[#4d7c0f] transition-colors">
               напишіть

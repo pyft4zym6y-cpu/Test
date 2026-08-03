@@ -28,7 +28,7 @@ export default function Process() {
       <Section id="process" className="grid-bg">
         <FadeIn>
           <Eyebrow>Процес · Discovery → Audit → Roadmap → Implementation → Governance</Eyebrow>
-          <SectionTitle>Як виглядає робота по тижнях</SectionTitle>
+          <SectionTitle as="h1">Як виглядає робота по тижнях</SectionTitle>
         </FadeIn>
 
         <div className="mt-12 relative">
@@ -120,14 +120,14 @@ export default function Process() {
               <FadeIn key={p.name} delay={0.1 + i * 0.05}>
                 <div className="card card-hover accent-top px-4 py-4 h-full" style={{ '--accent': p.color } as React.CSSProperties}>
                   <p className="font-bold text-sm">{p.name}</p>
-                  <p className="text-[#66707E] text-[0.68rem] mt-1.5 leading-relaxed">{p.text}</p>
+                  <p className="text-[#5A6472] text-[0.68rem] mt-1.5 leading-relaxed">{p.text}</p>
                 </div>
               </FadeIn>
             ))}
           </div>
         </div>
         <FadeIn delay={0.3}>
-          <p className="text-[#66707E] text-xs mt-6 leading-relaxed max-w-3xl">
+          <p className="text-[#5A6472] text-xs mt-6 leading-relaxed max-w-3xl">
             Кожен pod і кожна роль мають власний OKR і тижневий цикл звітності. Головна
             управлінська задача — не кількість людей, а синхронізація за таймлайном, бюджетом і
             залежностями.

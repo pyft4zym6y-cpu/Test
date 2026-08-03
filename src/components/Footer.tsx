@@ -77,7 +77,7 @@ export default function Footer() {
 
           {/* Navigation */}
           <nav aria-label="Сторінки">
-            <p className="font-pixel text-[0.55rem] uppercase text-black/55 mb-4">Навігація</p>
+            <p className="font-pixel text-[0.55rem] uppercase text-black/65 mb-4">Навігація</p>
             <ul className="flex flex-col gap-2.5">
               {NAV_LINKS.map((l) => (
                 <li key={l.label}>
@@ -91,7 +91,7 @@ export default function Footer() {
 
           {/* Cases */}
           <nav aria-label="Кейси">
-            <p className="font-pixel text-[0.55rem] uppercase text-black/55 mb-4">Кейси</p>
+            <p className="font-pixel text-[0.55rem] uppercase text-black/65 mb-4">Кейси</p>
             <ul className="flex flex-col gap-2.5">
               {CASE_LINKS.map((l) => (
                 <li key={l.label}>
@@ -101,7 +101,7 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
-            <p className="font-pixel text-[0.55rem] uppercase text-black/55 mt-7 mb-4">Формати</p>
+            <p className="font-pixel text-[0.55rem] uppercase text-black/65 mt-7 mb-4">Формати</p>
             <ul className="flex flex-col gap-2.5">
               {FORMAT_LINKS.map((l) => (
                 <li key={l.label}>
@@ -115,7 +115,7 @@ export default function Footer() {
 
           {/* Contacts + CTA */}
           <div>
-            <p className="font-pixel text-[0.55rem] uppercase text-black/55 mb-4">Контакти</p>
+            <p className="font-pixel text-[0.55rem] uppercase text-black/65 mb-4">Контакти</p>
             <ul className="flex flex-col gap-2.5 font-mono text-[0.78rem] text-[#2F3742]">
               <li>
                 <a href="mailto:pashasidorenko18@gmail.com" className="hover:text-[#65A30D] transition-colors">
@@ -137,8 +137,7 @@ export default function Footer() {
                   linkedin.com/in/pvsidorenko
                 </a>
               </li>
-              <li className="text-[#66707E]">Київ, Україна · працюємо з ЄС та US</li>
-              <li className="text-[#66707E]">Пн–Пт · 10:00–19:00 (EET)</li>
+              <li className="text-[#5A6472]">Україна · онлайн · проєкти в ЄС і US</li>
             </ul>
             <Link
               to="/contact"
