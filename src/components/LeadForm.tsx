@@ -45,7 +45,7 @@ export default function LeadForm() {
       <p className="font-pixel text-[0.5rem] uppercase text-[#A3E635] mb-2">Заявка на діагностику</p>
       <p className="font-extrabold text-xl mb-1.5">Порахуємо ваш розрив у грошах</p>
       <p className="text-[#8C96A5] text-xs mb-6 leading-relaxed">
-        30-хв сесія безкоштовна. Відповідаю особисто протягом робочого дня.
+        30-хв сесія безкоштовна. Відповідаємо протягом робочого дня.
       </p>
       <div className="flex flex-col gap-3.5">
         <input

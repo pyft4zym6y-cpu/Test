@@ -54,7 +54,7 @@ export default function Media() {
       <div className="flex flex-wrap items-end justify-between gap-8">
         <FadeIn>
           <Eyebrow>Медіа · Виступи</Eyebrow>
-          <SectionTitle>Говорю про системний ріст —
+          <SectionTitle>Говоримо про системний ріст —
             <br />
             зі сцени та в медіа
           </SectionTitle>

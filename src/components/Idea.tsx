@@ -59,7 +59,7 @@ export default function Idea() {
             </div>
             <div className="border-l-2 border-[#A3E635] pl-5">
               <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#A3E635] mb-1.5">
-                Я говорю
+                Ми говоримо
               </p>
               <p className="font-bold text-xl">Як дорожчати</p>
             </div>

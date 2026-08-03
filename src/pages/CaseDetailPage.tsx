@@ -16,7 +16,7 @@ function UgearsDetail() {
           для бренду <span className="lime-text">Forbes TOP-250 UA</span>
         </SectionTitle>
         <p className="text-[#8C96A5] mt-5 max-w-2xl leading-relaxed">
-          Керував e-commerce напрямом (8 фахівців) у мультиканальній і мультигеографічній моделі:
+          Засновник weexp керував e-commerce напрямом (8 фахівців) у мультиканальній і мультигеографічній моделі:
           власний магазин + маркетплейси, ринки США · DE · FR · ES · IT · UK. Лютий 2023 — квітень
           2025.
         </p>

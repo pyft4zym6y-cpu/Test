@@ -24,16 +24,16 @@ const COMPETITORS: {
   { name: 'Elogic · dev-студії', sub: 'e-com розробка', marks: ['no', 'yes', 'part', 'no', 'no'], price: '$$' },
   { name: 'Fractional CMO', sub: 'маркетинг-лідер', marks: ['yes', 'part', 'part', 'part', 'no'], price: '$$$' },
   { name: 'In-house Head', sub: 'повний штат', marks: ['yes', 'yes', 'yes', 'yes', 'no'], price: '$$$$' },
-  { name: 'Я · Commerce OS', sub: 'fractional + продуктивізована система', marks: ['yes', 'yes', 'yes', 'yes', 'yes'], price: '$$', me: true },
+  { name: 'weexp · Commerce OS', sub: 'fractional + продуктивізована система', marks: ['yes', 'yes', 'yes', 'yes', 'yes'], price: '$$', me: true },
 ];
 
 const COLUMNS = ['Стратегія', 'Виконання', 'Власні активи', 'P&L', 'Система-продукт'];
 
 const DIFFS = [
-  { vs: 'На відміну від агенцій', text: 'будую активи, а не лише трафік — і відповідаю за P&L, не за «охоплення».', color: '#FF6A3D' },
-  { vs: 'На відміну від фрилансерів', text: 'приношу системну методологію та керовану команду, а не одну вузьку послугу.', color: '#8C96A5' },
-  { vs: 'На відміну від in-house', text: 'працюю з дня 1 і будую систему швидше, ніж наймається й розганяється відділ.', color: '#F5B84B' },
-  { vs: 'На відміну від big consulting', text: 'не лишаю деку — веду виконання руками до вимірюваного результату.', color: '#8B7CF6' },
+  { vs: 'На відміну від агенцій', text: 'будуємо активи, а не лише трафік — і відповідаємо за P&L, не за «охоплення».', color: '#FF6A3D' },
+  { vs: 'На відміну від фрилансерів', text: 'приносимо системну методологію та керовану команду, а не одну вузьку послугу.', color: '#8C96A5' },
+  { vs: 'На відміну від in-house', text: 'працюємо з дня 1 і будуємо систему швидше, ніж наймається й розганяється відділ.', color: '#F5B84B' },
+  { vs: 'На відміну від big consulting', text: 'не лишаємо деку — ведемо виконання руками до вимірюваного результату.', color: '#8B7CF6' },
 ];
 
 function MarkIcon({ mark }: { mark: Mark }) {
@@ -48,7 +48,7 @@ export function Industries() {
       {/* ---- Галузі ---- */}
       <Section>
         <FadeIn>
-          <Eyebrow>Галузі · Де я вже давав результат</Eyebrow>
+          <Eyebrow>Галузі · Де ми вже давали результат</Eyebrow>
           <SectionTitle>Сім галузей — один метод</SectionTitle>
         </FadeIn>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mt-10">

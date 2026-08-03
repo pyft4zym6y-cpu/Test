@@ -63,7 +63,7 @@ export default function Expertise() {
       <Section className="grid-bg">
         <div className="glow-lime w-[420px] h-[420px] -top-24 -right-32" />
         <FadeIn>
-          <Eyebrow>Експертиза · З чим саме працюю</Eyebrow>
+          <Eyebrow>Експертиза · З чим саме працюємо</Eyebrow>
           <SectionTitle>
             17 напрямів —{' '}
             <span className="font-pixel text-[0.8em] text-[#A3E635] inline-block align-baseline leading-none">

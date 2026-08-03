@@ -80,7 +80,7 @@ export default function Process() {
         <FadeIn>
           <Eyebrow>Команда · Хто робить роботу</Eyebrow>
           <SectionTitle>
-            Не «тільки Павло». <span className="lime-text">Керована мережа pod-ів.</span>
+            Не одна людина. <span className="lime-text">Керована мережа pod-ів.</span>
           </SectionTitle>
         </FadeIn>
 

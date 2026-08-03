@@ -52,7 +52,7 @@ export default function Trust() {
           <Eyebrow>Довіра · Бренди, ринки, партнери</Eyebrow>
           <SectionTitle>
             Бренди й ринки,
-            <br />з якими я вже працював
+            <br />з якими ми вже працювали
           </SectionTitle>
         </FadeIn>
         <FadeIn delay={0.15}>

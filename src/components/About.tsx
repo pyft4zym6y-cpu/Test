@@ -18,14 +18,14 @@ export default function About() {
         <div className="glow-lime w-[380px] h-[380px] top-0 -right-32" />
         <div className="grid lg:grid-cols-[1.2fr_1fr] gap-12 items-start">
           <FadeIn>
-            <Eyebrow>Про мене · Павло Сидоренко</Eyebrow>
+            <Eyebrow>weexp · Хто будує</Eyebrow>
             <SectionTitle>
-              Не агенція. Не фрилансер.
+              Не підрядник на задачі.
               <br />
-              <span className="lime-text">Архітектор цифрової системи.</span>
+              <span className="lime-text">Архітектори цифрових систем.</span>
             </SectionTitle>
             <p className="text-[#B7C0CC] mt-6 max-w-xl leading-relaxed">
-              8+ років у міжнародному e-commerce: масштабую цифрові продажі й будую стратегії для
+              Ядро weexp — 8+ років у міжнародному e-commerce: масштабуємо цифрові продажі й будуємо стратегії для
               брендів у США, ЄС і MENA. Стик стратегії, технологій і клієнтського досвіду — з
               відповідальністю за P&amp;L.
             </p>
@@ -55,7 +55,7 @@ export default function About() {
           <FadeIn delay={0.15} x={40} y={0}>
             <div className="card accent-top p-7" style={{ '--accent': 'var(--yellow)' } as React.CSSProperties}>
               <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#F5B84B] mb-3">
-                Що я приношу
+                Що ми приносимо
               </p>
               <p className="font-extrabold text-2xl mb-3">Commerce OS</p>
               <p className="text-[#B7C0CC] text-sm leading-relaxed">
@@ -65,7 +65,7 @@ export default function About() {
               </p>
               <hr className="border-[#232933] my-5" />
               <p className="text-[#8C96A5] text-xs leading-relaxed">
-                Спікер бізнес-клубу <strong className="text-[#C7CFDA]">RISE</strong>. Галузі:
+                Засновник — спікер бізнес-клубу <strong className="text-[#C7CFDA]">RISE</strong>. Галузі:
                 Electronics, Fashion, Beauty, Home&amp;Decor, FMCG, Fintech, AI.
               </p>
             </div>
@@ -86,7 +86,7 @@ export default function About() {
       <Section>
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <FadeIn>
-            <Eyebrow>Хто я</Eyebrow>
+            <Eyebrow>Засновник · Павло Сидоренко</Eyebrow>
             <SectionTitle>
               Засновник школи
               <br />
@@ -94,8 +94,8 @@ export default function About() {
             </SectionTitle>
             <p className="font-bold text-lg mt-5">Commerce OS — перший продукт цієї школи.</p>
             <p className="font-serif-it text-lg text-[#B7C0CC] mt-4 leading-relaxed">
-              Я не продаю методологію. Я визначаю, як ринок думатиме про цифрове зростання в
-              найближчі роки.
+              «Я не продаю методологію. Я визначаю, як ринок думатиме про цифрове зростання в
+              найближчі роки».
             </p>
             <div className="flex flex-wrap gap-2.5 mt-6">
               {ARCHETYPES.map((a) => (
@@ -126,11 +126,11 @@ export default function About() {
           <div className="mt-16 max-w-4xl">
             <Eyebrow>Позиціонування · System Intelligence</Eyebrow>
             <p className="font-extrabold leading-snug" style={{ fontSize: 'clamp(1.4rem, 3vw, 2.2rem)' }}>
-              Я не допомагаю компаніям рости. Я проєктую компанії, вартість яких зростає{' '}
+              Ми не допомагаємо компаніям рости. Ми проєктуємо компанії, вартість яких зростає{' '}
               <span className="lime-text">швидше за їхні рекламні бюджети</span>.
             </p>
             <p className="text-[#8C96A5] mt-5 leading-relaxed max-w-3xl">
-              SEO, CRM, Amazon, Shopify — це інструменти, а не професія. Я створюю{' '}
+              SEO, CRM, Amazon, Shopify — це інструменти, а не професія. Ми будуємо{' '}
               <strong className="text-[#E9EDF2]">інтелект компанії</strong> — System Intelligence:
               систему, що перетворює цифровий хаос на капіталізацію бізнесу.
             </p>

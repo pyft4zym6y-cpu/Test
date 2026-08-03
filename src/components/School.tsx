@@ -77,7 +77,7 @@ export function SchoolIdentity() {
               style={{ '--accent': 'var(--lime)', borderColor: 'rgba(163,230,53,0.35)' } as React.CSSProperties}
             >
               <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#A3E635] mb-3">
-                Моя категорія
+                Наша категорія
               </p>
               <p className="font-extrabold text-2xl lime-text">Commerce Architecture</p>
               <p className="text-[#B7C0CC] text-sm mt-3 leading-relaxed">
@@ -94,8 +94,8 @@ export function SchoolIdentity() {
               Без гучних слів
             </span>
             <span className="text-[#B7C0CC] text-sm">
-              Я не «створюю ринок». Я бачу, що ринок <strong className="text-white">вже рухається сюди</strong>{' '}
-              — від купівлі уваги до побудови активів. І будую інструмент для цього руху.
+              Ми не «створюємо ринок». Ми бачимо, що ринок <strong className="text-white">вже рухається сюди</strong>{' '}
+              — від купівлі уваги до побудови активів. І будуємо інструмент для цього руху.
             </span>
           </div>
         </FadeIn>
