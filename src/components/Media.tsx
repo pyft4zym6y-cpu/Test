@@ -1,0 +1,109 @@
+import FadeIn from './FadeIn';
+import { Eyebrow, Section, SectionTitle } from './ui';
+
+/*
+ * NOTE: підтверджений факт — лише спікерство в бізнес-клубі RISE (з презентації).
+ * Решта подій — заповнювачі-приклади: замініть на реальні виступи, теми й роки.
+ */
+const TALKS = [
+  {
+    event: 'Бізнес-клуб RISE',
+    where: 'Київ',
+    year: '2025–2026',
+    role: 'Спікер',
+    topic: '«Commerce OS: система замість хаосу»',
+    color: '#A3E635',
+  },
+  {
+    event: 'E-commerce Growth Forum',
+    where: 'Київ',
+    year: '2025',
+    role: 'Доповідь',
+    topic: '«Юніт-економіка як мова власника»',
+    color: '#3DDAD0',
+  },
+  {
+    event: 'Marketplace Summit',
+    where: 'Warszawa',
+    year: '2024',
+    role: 'Панель',
+    topic: '«Вихід українських брендів у ЄС»',
+    color: '#F5B84B',
+  },
+  {
+    event: 'Подкаст «Власна справа»',
+    where: 'YouTube',
+    year: '2025',
+    role: 'Гість',
+    topic: '«Retention: гроші, які вже у вас є»',
+    color: '#8B7CF6',
+  },
+];
+
+const FORMATS = [
+  'Конференції · доповіді',
+  'Панельні дискусії',
+  'Подкасти · інтерв’ю',
+  'Закриті бізнес-клуби',
+  'Корпоративні воркшопи',
+];
+
+export default function Media() {
+  return (
+    <Section>
+      <div className="flex flex-wrap items-end justify-between gap-8">
+        <FadeIn>
+          <Eyebrow>Медіа · Виступи</Eyebrow>
+          <SectionTitle>Говорю про системний ріст —
+            <br />
+            зі сцени та в медіа
+          </SectionTitle>
+        </FadeIn>
+        <FadeIn delay={0.15}>
+          <div className="text-right">
+            <p className="font-mono font-bold text-6xl text-[#F5B84B]">10+</p>
+            <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[#8C96A5]">
+              Виступів · 2024–2026
+            </p>
+          </div>
+        </FadeIn>
+      </div>
+
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-10">
+        {TALKS.map((t, i) => (
+          <FadeIn key={t.event} delay={i * 0.08}>
+            <div className="card card-hover accent-top p-6 h-full flex flex-col" style={{ '--accent': t.color } as React.CSSProperties}>
+              <div className="flex items-baseline justify-between gap-3">
+                <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em]" style={{ color: t.color }}>
+                  {t.role}
+                </p>
+                <p className="font-mono text-[0.6rem] text-[#66707E]">{t.year}</p>
+              </div>
+              <p className="font-extrabold text-lg mt-2 leading-snug">{t.event}</p>
+              <p className="font-mono text-[0.62rem] text-[#66707E] mt-0.5">{t.where}</p>
+              <p className="font-serif-it text-sm text-[#B7C0CC] mt-3 leading-relaxed flex-1">
+                {t.topic}
+              </p>
+            </div>
+          </FadeIn>
+        ))}
+      </div>
+
+      <FadeIn delay={0.3}>
+        <div className="flex flex-wrap items-center gap-2.5 mt-8">
+          {FORMATS.map((f) => (
+            <span key={f} className="chip-dark px-4 py-2 font-mono text-xs text-[#C7CFDA]">
+              {f}
+            </span>
+          ))}
+          <span className="text-[#66707E] text-xs ml-2">
+            Запросити спікером —{' '}
+            <a href="mailto:pashasidorenko18@gmail.com?subject=Запрошення спікером" className="text-[#A3E635] hover:text-[#bdff4d] transition-colors">
+              напишіть
+            </a>
+          </span>
+        </div>
+      </FadeIn>
+    </Section>
+  );
+}

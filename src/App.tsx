@@ -7,6 +7,7 @@ import ApproachPage from './pages/ApproachPage';
 import AboutPage from './pages/AboutPage';
 import SystemPage from './pages/SystemPage';
 import ProductPage from './pages/ProductPage';
+import ExpertisePage from './pages/ExpertisePage';
 import CasesPage from './pages/CasesPage';
 import ProcessPage from './pages/ProcessPage';
 import ServicesPage from './pages/ServicesPage';
@@ -32,6 +33,7 @@ function Shell() {
         <Route path="/approach" element={<ApproachPage />} />
         <Route path="/system" element={<SystemPage />} />
         <Route path="/product" element={<ProductPage />} />
+        <Route path="/expertise" element={<ExpertisePage />} />
         <Route path="/cases" element={<CasesPage />} />
         <Route path="/process" element={<ProcessPage />} />
         <Route path="/services" element={<ServicesPage />} />

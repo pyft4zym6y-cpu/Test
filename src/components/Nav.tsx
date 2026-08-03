@@ -6,6 +6,7 @@ const LINKS = [
   { to: '/approach', label: 'Підхід' },
   { to: '/system', label: 'Система' },
   { to: '/product', label: 'Продукт' },
+  { to: '/expertise', label: 'Експертиза' },
   { to: '/cases', label: 'Кейси' },
   { to: '/process', label: 'Процес' },
   { to: '/services', label: 'Умови' },
@@ -55,13 +56,13 @@ export default function Nav() {
       >
         <nav className="max-w-7xl mx-auto flex items-center justify-between px-5 sm:px-6 md:px-10 py-5">
           <Logo />
-          <ul className="hidden lg:flex items-center gap-6 xl:gap-8">
+          <ul className="hidden lg:flex items-center gap-4 xl:gap-6">
             {LINKS.map((l) => (
               <li key={l.to}>
                 <NavLink
                   to={l.to}
                   className={({ isActive }) =>
-                    `text-sm tracking-wide uppercase transition-opacity hover:opacity-70 ${
+                    `text-xs xl:text-sm tracking-wide uppercase transition-opacity hover:opacity-70 ${
                       isActive ? 'text-[#A3E635]' : 'text-white'
                     }`
                   }
@@ -107,7 +108,7 @@ export default function Nav() {
             <X size={24} />
           </button>
         </div>
-        <nav className="flex flex-col items-center justify-center flex-1 gap-8">
+        <nav className="flex flex-col items-center justify-center flex-1 gap-6">
           {LINKS.map((l, i) => (
             <NavLink
               key={l.to}

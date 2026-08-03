@@ -1,6 +1,7 @@
 import About from '../components/About';
 import { SchoolIdentity } from '../components/School';
 import Trust from '../components/Trust';
+import Media from '../components/Media';
 import { PageCta } from '../components/NewSections';
 
 export default function AboutPage() {
@@ -9,6 +10,7 @@ export default function AboutPage() {
       <About />
       <SchoolIdentity />
       <Trust />
+      <Media />
       <PageCta label="Познайомимось за 30 хвилин" />
     </div>
   );
