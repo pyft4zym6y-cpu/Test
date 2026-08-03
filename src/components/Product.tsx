@@ -2,26 +2,26 @@ import FadeIn from './FadeIn';
 import { Eyebrow, Section, SectionTitle, Terminal, Stat, CountUp } from './ui';
 
 const DOMAINS = [
-  { name: 'SEO / Органіка', ids: 'PB-04 · 05 · 06 · 07', color: '#A3E635' },
-  { name: 'CRO / UX', ids: 'PB-15 · 02 · 40', color: '#3DDAD0' },
-  { name: 'CRM / Retention', ids: 'PB-08 · 09 · 45', color: '#8B7CF6' },
-  { name: 'Фінанси', ids: 'PB-12 · 36 · 53', color: '#F5B84B' },
-  { name: 'Маркетплейси', ids: 'PB-21 · 22 · 23', color: '#FF6A3D' },
-  { name: 'Міжн. експансія', ids: 'PB-24 · 25 · 26 · 27', color: '#A3E635' },
-  { name: 'Платформа / IT', ids: 'PB-14 · 16 · 17 · 18', color: '#3DDAD0' },
-  { name: 'AI', ids: 'PB-32 · 33 · 54 · 55 · 56', color: '#8B7CF6' },
-  { name: 'Бренд', ids: 'PB-37 · 46 · 50 · 51', color: '#F471B5' },
-  { name: 'Операції', ids: 'PB-19 · 20 · 34', color: '#F5B84B' },
-  { name: 'Продукт', ids: 'PB-28 · 29 · 42', color: '#A3E635' },
-  { name: 'Стратегія · Продажі', ids: 'PB-01 · 41 · 43 · 44', color: '#FF6A3D' },
+  { name: 'SEO / Органіка', ids: 'PB-04 · 05 · 06 · 07', color: '#65A30D' },
+  { name: 'CRO / UX', ids: 'PB-15 · 02 · 40', color: '#0F9488' },
+  { name: 'CRM / Retention', ids: 'PB-08 · 09 · 45', color: '#6D28D9' },
+  { name: 'Фінанси', ids: 'PB-12 · 36 · 53', color: '#B45309' },
+  { name: 'Маркетплейси', ids: 'PB-21 · 22 · 23', color: '#EA580C' },
+  { name: 'Міжн. експансія', ids: 'PB-24 · 25 · 26 · 27', color: '#65A30D' },
+  { name: 'Платформа / IT', ids: 'PB-14 · 16 · 17 · 18', color: '#0F9488' },
+  { name: 'AI', ids: 'PB-32 · 33 · 54 · 55 · 56', color: '#6D28D9' },
+  { name: 'Бренд', ids: 'PB-37 · 46 · 50 · 51', color: '#DB2777' },
+  { name: 'Операції', ids: 'PB-19 · 20 · 34', color: '#B45309' },
+  { name: 'Продукт', ids: 'PB-28 · 29 · 42', color: '#65A30D' },
+  { name: 'Стратегія · Продажі', ids: 'PB-01 · 41 · 43 · 44', color: '#EA580C' },
 ];
 
 const AUDIT_ROWS = [
-  { metric: 'Оплата заявок', fact: '63,4%', zone: '#FF5F56', target: '75%+', gap: '≈4,0 млн ₴', pb: 'PB-02·15' },
-  { metric: 'Викуп до виручки', fact: '82%', zone: '#F5B84B', target: '88%+', gap: '≈2,5 млн ₴', pb: 'PB-19' },
-  { metric: 'Повторні покупки', fact: '15–20%', zone: '#FF5F56', target: '26–30%', gap: '≈4,5 млн ₴', pb: 'PB-08' },
-  { metric: 'SEO · органіка', fact: 'поз. 14', zone: '#FF5F56', target: 'топ-5', gap: '≈3,0 млн ₴', pb: 'PB-04·05' },
-  { metric: 'Дод. канали', fact: '1 платний', zone: '#FF5F56', target: '3+', gap: '≈2,0 млн ₴', pb: 'PB-21·22' },
+  { metric: 'Оплата заявок', fact: '63,4%', zone: '#DC2626', target: '75%+', gap: '≈4,0 млн ₴', pb: 'PB-02·15' },
+  { metric: 'Викуп до виручки', fact: '82%', zone: '#B45309', target: '88%+', gap: '≈2,5 млн ₴', pb: 'PB-19' },
+  { metric: 'Повторні покупки', fact: '15–20%', zone: '#DC2626', target: '26–30%', gap: '≈4,5 млн ₴', pb: 'PB-08' },
+  { metric: 'SEO · органіка', fact: 'поз. 14', zone: '#DC2626', target: 'топ-5', gap: '≈3,0 млн ₴', pb: 'PB-04·05' },
+  { metric: 'Дод. канали', fact: '1 платний', zone: '#DC2626', target: '3+', gap: '≈2,0 млн ₴', pb: 'PB-21·22' },
 ];
 
 const SYSTEM_NUMBERS = [
@@ -48,10 +48,10 @@ export default function Product() {
           </FadeIn>
           <FadeIn delay={0.15}>
             <div className="text-right">
-              <p className="font-mono font-bold text-6xl text-[#3DDAD0]">
+              <p className="font-mono font-bold text-6xl text-[#0F9488]">
                 <CountUp to={56} />
               </p>
-              <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[#8C96A5]">
+              <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[#5A6472]">
                 Executable · 18 доменів
               </p>
             </div>
@@ -60,13 +60,13 @@ export default function Product() {
 
         <FadeIn delay={0.2}>
           <div className="card p-6 md:p-8 mt-10">
-            <p className="font-mono text-xs text-[#A3E635] mb-4">Playbook Library/</p>
+            <p className="font-mono text-xs text-[#65A30D] mb-4">Playbook Library/</p>
             <div className="grid sm:grid-cols-2 gap-x-10">
               {DOMAINS.map((d, i) => (
                 <div
                   key={d.name}
                   className={`flex items-center justify-between gap-4 py-3 ${
-                    i < DOMAINS.length - (DOMAINS.length % 2 === 0 ? 2 : 1) ? 'border-b border-[#1C2129]' : ''
+                    i < DOMAINS.length - (DOMAINS.length % 2 === 0 ? 2 : 1) ? 'border-b border-[#ECEEF0]' : ''
                   }`}
                 >
                   <span className="flex items-center gap-3 min-w-0">
@@ -74,7 +74,7 @@ export default function Product() {
                     <span className="w-2 h-2 rounded-full shrink-0" style={{ background: d.color }} />
                     <span className="font-bold text-sm truncate">{d.name}</span>
                   </span>
-                  <span className="font-mono text-[0.62rem] text-[#8C96A5] whitespace-nowrap">{d.ids}</span>
+                  <span className="font-mono text-[0.62rem] text-[#5A6472] whitespace-nowrap">{d.ids}</span>
                 </div>
               ))}
             </div>
@@ -89,7 +89,7 @@ export default function Product() {
         <FadeIn delay={0.25}>
           <div className="grid grid-cols-4 sm:grid-cols-7 md:grid-cols-8 gap-2 mt-10">
             {Array.from({ length: 56 }, (_, i) => {
-              const colors = ['#A3E635', '#3DDAD0', '#8B7CF6', '#F5B84B', '#FF6A3D', '#F471B5'];
+              const colors = ['#65A30D', '#0F9488', '#6D28D9', '#B45309', '#EA580C', '#DB2777'];
               const c = colors[i % colors.length];
               return (
                 <div
@@ -120,14 +120,14 @@ export default function Product() {
           {/* Screen 1: playbook */}
           <FadeIn delay={0.1}>
             <Terminal title="commerce-os · playbook · PB-12">
-              <p className="font-mono text-[0.62rem] text-[#A3E635] tracking-[0.1em]">
+              <p className="font-mono text-[0.62rem] text-[#65A30D] tracking-[0.1em]">
                 PB-12 · ДОМЕН «ФІНАНСИ» · СТРОК 3 ТИЖНІ
               </p>
               <p className="font-extrabold text-lg mt-1.5 mb-4">
                 Unit Economics &amp; Contribution Margin
               </p>
               <div className="grid sm:grid-cols-2 gap-6">
-                <ol className="font-mono text-[0.68rem] text-[#8C96A5] flex flex-col gap-1.5">
+                <ol className="font-mono text-[0.68rem] text-[#5A6472] flex flex-col gap-1.5">
                   {[
                     'Навіщо потрібен',
                     'Тригери підключення',
@@ -145,20 +145,20 @@ export default function Product() {
                   ))}
                 </ol>
                 <div>
-                  <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#F5B84B] mb-2">
+                  <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#B45309] mb-2">
                     Формули
                   </p>
-                  <pre className="font-mono text-[0.66rem] text-[#C7CFDA] leading-relaxed whitespace-pre-wrap">
+                  <pre className="font-mono text-[0.66rem] text-[#2F3742] leading-relaxed whitespace-pre-wrap">
 {`CM1 = Виручка − COGS
 CM2 = CM1 − еквайринг/лог
 CM3 = CM2 − реклама
 CAC payback = CAC / міс. маржа
 LTV:CAC ≥ 3 → ріст`}
                   </pre>
-                  <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#A3E635] mt-4 mb-1.5">
+                  <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#65A30D] mt-4 mb-1.5">
                     DoD ✓
                   </p>
-                  <p className="text-[0.7rem] text-[#8C96A5] leading-relaxed">
+                  <p className="text-[0.7rem] text-[#5A6472] leading-relaxed">
                     ≥90% замовлень із собівартістю · збиткові SKU виявлені · LTV:CAC за когортами ·
                     чутливість до 3 важелів
                   </p>
@@ -183,22 +183,22 @@ LTV:CAC ≥ 3 → ріст`}
                   </thead>
                   <tbody>
                     {AUDIT_ROWS.map((r) => (
-                      <tr key={r.metric} className="border-t border-[#1C2129]">
-                        <td className="py-2.5 pr-3 text-[#E9EDF2] font-sans font-semibold">{r.metric}</td>
+                      <tr key={r.metric} className="border-t border-[#ECEEF0]">
+                        <td className="py-2.5 pr-3 text-[#141820] font-sans font-semibold">{r.metric}</td>
                         <td className="py-2.5 pr-3">
                           <span className="inline-flex items-center gap-1.5" style={{ color: r.zone }}>
                             <span className="w-1.5 h-1.5 rounded-full" style={{ background: r.zone }} />
                             {r.fact}
                           </span>
                         </td>
-                        <td className="py-2.5 pr-3 text-[#A3E635]">{r.target}</td>
-                        <td className="py-2.5 pr-3 text-right text-[#F5B84B]">{r.gap}</td>
-                        <td className="py-2.5 text-[#3DDAD0]">{r.pb}</td>
+                        <td className="py-2.5 pr-3 text-[#65A30D]">{r.target}</td>
+                        <td className="py-2.5 pr-3 text-right text-[#B45309]">{r.gap}</td>
+                        <td className="py-2.5 text-[#0F9488]">{r.pb}</td>
                       </tr>
                     ))}
-                    <tr className="border-t border-[#232933]">
-                      <td className="pt-3 font-sans font-extrabold text-[#E9EDF2]">РАЗОМ УПУЩЕНО / РІК</td>
-                      <td colSpan={3} className="pt-3 text-right font-bold text-[#A3E635]">
+                    <tr className="border-t border-[#E4E7EA]">
+                      <td className="pt-3 font-sans font-extrabold text-[#141820]">РАЗОМ УПУЩЕНО / РІК</td>
+                      <td colSpan={3} className="pt-3 text-right font-bold text-[#65A30D]">
                         ≥ 19 млн ₴
                       </td>
                       <td />
@@ -219,34 +219,34 @@ LTV:CAC ≥ 3 → ріст`}
           <Terminal title="commerce-os · gold-standards + kpi-blueprint" className="mt-6">
             <div className="grid sm:grid-cols-2 gap-8">
               <div>
-                <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#A3E635] mb-3">
+                <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#65A30D] mb-3">
                   Gold Standards · 3 зони
                 </p>
-                <ul className="flex flex-col gap-2 text-[0.78rem] text-[#B7C0CC]">
+                <ul className="flex flex-col gap-2 text-[0.78rem] text-[#3F4854]">
                   <li>
-                    <span className="text-[#FF5F56] font-bold">● Червона</span> — прямі втрати, у
+                    <span className="text-[#DC2626] font-bold">● Червона</span> — прямі втрати, у
                     гроші першою
                   </li>
                   <li>
-                    <span className="text-[#F5B84B] font-bold">● Норма</span> — точка росту
+                    <span className="text-[#B45309] font-bold">● Норма</span> — точка росту
                   </li>
                   <li>
-                    <span className="text-[#A3E635] font-bold">● Золотий</span> — рівень кращих у
+                    <span className="text-[#65A30D] font-bold">● Золотий</span> — рівень кращих у
                     категорії
                   </li>
                 </ul>
-                <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#3DDAD0] mt-5 mb-2">
+                <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#0F9488] mt-5 mb-2">
                   Тип значення
                 </p>
-                <p className="text-[0.7rem] text-[#8C96A5] leading-relaxed">
+                <p className="text-[0.7rem] text-[#5A6472] leading-relaxed">
                   стандарт (Google CWV) · бенчмарк (галузь) · орієнтир (калібрується при baseline)
                 </p>
               </div>
               <div>
-                <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#F5B84B] mb-3">
+                <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#B45309] mb-3">
                   KPI Blueprint · По ролях
                 </p>
-                <pre className="font-mono text-[0.66rem] text-[#C7CFDA] leading-relaxed whitespace-pre-wrap">
+                <pre className="font-mono text-[0.66rem] text-[#2F3742] leading-relaxed whitespace-pre-wrap">
 {`Власник ........ Вартість компанії
 E-com lead ..... CM3 · LTV:CAC ≥ 3
 Performance .... CAC / ROAS поріг
@@ -254,10 +254,10 @@ CRM ............ Частка виручки email 30%+
 SEO ............ Топ-5 по ядру · орг. 50%+
 Ops ............ Точність замовлень >99%`}
                 </pre>
-                <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#FF6A3D] mt-4 mb-1.5">
+                <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#EA580C] mt-4 mb-1.5">
                   Дисципліна капіталу
                 </p>
-                <p className="text-[0.7rem] text-[#8C96A5] leading-relaxed">
+                <p className="text-[0.7rem] text-[#5A6472] leading-relaxed">
                   LTV:CAC ≥ 3 · 6 тижнів тесту каналу · транші під DoD · країна за країною
                 </p>
               </div>

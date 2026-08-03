@@ -8,7 +8,7 @@ const MODULE_GROUPS: {
 }[] = [
   {
     label: 'Вхід · Дані',
-    color: '#A3E635',
+    color: '#65A30D',
     modules: [
       { id: 'M01', name: 'Discovery (CDF v2.0)' },
       { id: 'M02', name: 'Data & Access Registry' },
@@ -17,7 +17,7 @@ const MODULE_GROUPS: {
   },
   {
     label: 'Рушій · Діагностика → Scope',
-    color: '#3DDAD0',
+    color: '#0F9488',
     modules: [
       { id: 'M04', name: 'Gold Standards · 52 метрики' },
       { id: 'M05', name: 'Audit Calculator · розрив→₴' },
@@ -27,7 +27,7 @@ const MODULE_GROUPS: {
   },
   {
     label: 'Вихід · Виконання та керування',
-    color: '#F5B84B',
+    color: '#B45309',
     modules: [
       { id: 'M08', name: 'PM & Delivery' },
       { id: 'M09', name: 'Governance · RACI / KPI' },
@@ -36,7 +36,7 @@ const MODULE_GROUPS: {
   },
   {
     label: 'Наскрізно',
-    color: '#8B7CF6',
+    color: '#6D28D9',
     modules: [
       { id: 'M11', name: 'AI Layer — Use-cases, Readiness, автоматизація' },
       { id: 'M12', name: 'Knowledge Base — плейбуки, промпти, DoD' },
@@ -45,24 +45,24 @@ const MODULE_GROUPS: {
 ];
 
 const CHAIN = [
-  { name: 'Бренд', sub: 'позиціонування', color: '#F471B5' },
-  { name: 'SEO + Платформа', sub: 'фундамент', color: '#A3E635' },
-  { name: 'Аналітика', sub: 'єдиний профіль', color: '#3DDAD0' },
-  { name: 'CRM + Retention', sub: 'LTV', color: '#5EEAD4' },
-  { name: 'Маркетплейси', sub: 'канали', color: '#F5B84B' },
-  { name: 'ERP / Операції', sub: 'масштаб', color: '#8B7CF6' },
-  { name: 'Юніт-економіка', sub: 'маржа', color: '#C084FC' },
-  { name: 'BI', sub: 'дашборд', color: '#38BDF8' },
-  { name: 'P&L / Вартість', sub: 'результат', color: '#A3E635' },
+  { name: 'Бренд', sub: 'позиціонування', color: '#DB2777' },
+  { name: 'SEO + Платформа', sub: 'фундамент', color: '#65A30D' },
+  { name: 'Аналітика', sub: 'єдиний профіль', color: '#0F9488' },
+  { name: 'CRM + Retention', sub: 'LTV', color: '#0F9488' },
+  { name: 'Маркетплейси', sub: 'канали', color: '#B45309' },
+  { name: 'ERP / Операції', sub: 'масштаб', color: '#6D28D9' },
+  { name: 'Юніт-економіка', sub: 'маржа', color: '#9333EA' },
+  { name: 'BI', sub: 'дашборд', color: '#0284C7' },
+  { name: 'P&L / Вартість', sub: 'результат', color: '#65A30D' },
 ];
 
 const FLYWHEEL_NODES = [
-  { name: 'Дані', color: '#A3E635' },
-  { name: 'Інфраструктура', color: '#3DDAD0' },
-  { name: 'Конверсія', color: '#F5B84B' },
-  { name: 'Retention · LTV', color: '#8B7CF6' },
-  { name: 'Реінвестиція', color: '#FF6A3D' },
-  { name: 'Вартість', color: '#A3E635' },
+  { name: 'Дані', color: '#65A30D' },
+  { name: 'Інфраструктура', color: '#0F9488' },
+  { name: 'Конверсія', color: '#B45309' },
+  { name: 'Retention · LTV', color: '#6D28D9' },
+  { name: 'Реінвестиція', color: '#EA580C' },
+  { name: 'Вартість', color: '#65A30D' },
 ];
 
 function Flywheel() {
@@ -78,17 +78,17 @@ function Flywheel() {
           cy={CY}
           r={R}
           fill="none"
-          stroke="rgba(140,150,165,0.35)"
+          stroke="rgba(10,14,18,0.25)"
           strokeWidth="1.5"
           strokeDasharray="3 8"
           className="spin-slow"
           style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
         />
-        <circle cx={CX} cy={CY} r={62} fill="#14181F" stroke="#232933" />
+        <circle cx={CX} cy={CY} r={62} fill="#FFFFFF" stroke="#E4E7EA" />
       </svg>
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
         <p className="font-mono font-bold text-sm leading-tight">
-          <span className="text-[#A3E635]">Commerce</span>
+          <span className="text-[#65A30D]">Commerce</span>
           <br />
           OS Engine
         </p>
@@ -107,7 +107,7 @@ function Flywheel() {
               className="w-3.5 h-3.5 rounded-full node-pulse"
               style={{ background: n.color, animationDelay: `${i * 0.4}s` }}
             />
-            <span className="font-bold text-xs sm:text-sm whitespace-nowrap bg-[#0B0D10]/70 px-1.5 rounded">
+            <span className="font-bold text-xs sm:text-sm whitespace-nowrap bg-[#FFFFFF]/70 px-1.5 rounded">
               {n.name}
             </span>
             <span className="font-mono text-[0.58rem] text-[#66707E]">
@@ -129,7 +129,7 @@ export default function System() {
         <FadeIn>
           <Eyebrow>Commerce OS · Перший продукт школи Commerce Architecture</Eyebrow>
           <SectionTitle>Дванадцять модулів. Один рушій.</SectionTitle>
-          <p className="text-[#8C96A5] mt-4 max-w-3xl">
+          <p className="text-[#5A6472] mt-4 max-w-3xl">
             Дані входять, проходять через діагностичний рушій, виходять планом і керуванням. AI та
             база знань працюють наскрізь.
           </p>
@@ -190,10 +190,10 @@ export default function System() {
         <div className="grid md:grid-cols-2 gap-5 mt-10">
           <FadeIn delay={0.2}>
             <div className="card accent-left p-6 h-full" style={{ '--accent': 'var(--red)' } as React.CSSProperties}>
-              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#FF5F56] mb-2.5">
+              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#DC2626] mb-2.5">
                 GO / NO-GO
               </p>
-              <p className="text-[#B7C0CC] text-sm leading-relaxed">
+              <p className="text-[#3F4854] text-sm leading-relaxed">
                 Без аналітики не працює retention. Без ERP не масштабуються канали. Якщо передумова
                 не виконана — етап не стартує.
               </p>
@@ -201,10 +201,10 @@ export default function System() {
           </FadeIn>
           <FadeIn delay={0.3}>
             <div className="card accent-left p-6 h-full" style={{ '--accent': 'var(--lime)' } as React.CSSProperties}>
-              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#A3E635] mb-2.5">
+              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#65A30D] mb-2.5">
                 Чому це сильно
               </p>
-              <p className="text-[#B7C0CC] text-sm leading-relaxed">
+              <p className="text-[#3F4854] text-sm leading-relaxed">
                 Черговість продиктована необхідністю — з нею неможливо сперечатися. Це ж захищає
                 бюджет від рішень «за відчуттям».
               </p>
@@ -222,21 +222,21 @@ export default function System() {
           <FadeIn delay={0.15} x={40} y={0}>
             <Eyebrow>Growth Flywheel · Рушій, що розганяє себе</Eyebrow>
             <SectionTitle>Кожен оберт здешевлює наступний</SectionTitle>
-            <p className="text-[#8C96A5] mt-5 leading-relaxed max-w-lg">
+            <p className="text-[#5A6472] mt-5 leading-relaxed max-w-lg">
               Дані живлять інфраструктуру → вища конверсія → більше retention і LTV → вивільнена
               маржа реінвестується в активи → зростає вартість компанії. Маховик, який після
               запуску крутиться сам.
             </p>
             <div className="flex gap-12 mt-8">
               <div>
-                <p className="font-mono font-bold text-3xl text-[#A3E635]">↓ CAC</p>
-                <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[#8C96A5] mt-1.5">
+                <p className="font-mono font-bold text-3xl text-[#65A30D]">↓ CAC</p>
+                <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[#5A6472] mt-1.5">
                   З кожним обертом
                 </p>
               </div>
               <div>
-                <p className="font-mono font-bold text-3xl text-[#3DDAD0]">↑ LTV</p>
-                <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[#8C96A5] mt-1.5">
+                <p className="font-mono font-bold text-3xl text-[#0F9488]">↑ LTV</p>
+                <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[#5A6472] mt-1.5">
                   Компаунд-ефект
                 </p>
               </div>

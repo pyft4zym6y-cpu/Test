@@ -9,7 +9,7 @@ const TURNOVER_OPTIONS = [
 ];
 
 const inputCls =
-  'w-full bg-[#0E1013] border border-white/10 px-4 py-3 text-sm text-white placeholder:text-[#5A6472] focus:outline-none focus:border-[#A3E635] transition-colors';
+  'w-full bg-[#FFFFFF] border border-black/10 px-4 py-3 text-sm text-[#12161C] placeholder:text-[#5A6472] focus:outline-none focus:border-[#65A30D] transition-colors';
 
 /*
  * Форма збирає поля й відкриває поштовий клієнт із заповненим листом (mailto) —
@@ -41,10 +41,10 @@ export default function LeadForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="card p-7 bg-black/70 backdrop-blur-sm">
-      <p className="font-pixel text-[0.5rem] uppercase text-[#A3E635] mb-2">Заявка на діагностику</p>
+    <form onSubmit={handleSubmit} className="card p-7 bg-white/85 backdrop-blur-sm">
+      <p className="font-pixel text-[0.5rem] uppercase text-[#65A30D] mb-2">Заявка на діагностику</p>
       <p className="font-extrabold text-xl mb-1.5">Порахуємо ваш розрив у грошах</p>
-      <p className="text-[#8C96A5] text-xs mb-6 leading-relaxed">
+      <p className="text-[#5A6472] text-xs mb-6 leading-relaxed">
         30-хв сесія безкоштовна. Відповідаємо протягом робочого дня.
       </p>
       <div className="flex flex-col gap-3.5">
@@ -68,13 +68,13 @@ export default function LeadForm() {
           required
           value={turnover}
           onChange={(e) => setTurnover(e.target.value)}
-          className={`${inputCls} ${turnover ? 'text-white' : 'text-[#5A6472]'}`}
+          className={`${inputCls} ${turnover ? 'text-[#12161C]' : 'text-[#5A6472]'}`}
         >
           <option value="" disabled>
             Місячний оборот e-commerce *
           </option>
           {TURNOVER_OPTIONS.map((o) => (
-            <option key={o} value={o} className="bg-[#0E1013] text-white">
+            <option key={o} value={o} className="bg-[#FFFFFF] text-[#12161C]">
               {o}
             </option>
           ))}
@@ -89,7 +89,7 @@ export default function LeadForm() {
         <button
           type="submit"
           className="bg-[#A3E635] px-7 py-3.5 font-mono text-sm font-bold uppercase tracking-[0.12em] text-black transition-transform duration-200 hover:scale-[1.02]"
-          style={{ boxShadow: '0 0 28px rgba(163,230,53,0.3)' }}
+          style={{ boxShadow: '0 0 28px rgba(101,163,13,0.3)' }}
         >
           Отримати діагностику →
         </button>

@@ -12,13 +12,13 @@ const CASE1_POINT_A = [
 ];
 
 const CASE1_LAYERS = [
-  { n: '01', name: 'Ребрендинг', text: 'Позиціонування, Brand Book, тригери довіри (OEKO-TEX®)', color: '#F471B5' },
-  { n: '02', name: 'E-com UA + EU', text: '2 вітрини, SEO-first, mobile-first, hreflang 4 мови', color: '#A3E635' },
-  { n: '03', name: 'Маркетплейси', text: 'Amazon DE (Brand Registry) + Allegro + Rozetka, middleware', color: '#F5B84B' },
-  { n: '04', name: 'CRM + Retention', text: 'Zoho + Klaviyo, 8+ автоматизацій, RFM-сегментація', color: '#8B7CF6' },
-  { n: '05', name: 'B2B / HoReCa', text: 'Окремий контур, воронка, 78% повторних, комерц-політика', color: '#3DDAD0' },
-  { n: '06', name: 'LinkedIn', text: 'B2B-аутрич + контент + employer branding', color: '#38BDF8' },
-  { n: '07', name: 'ERP Odoo · Автоматизація', text: 'Єдина система: склад, замовлення, фінанси, синхронізація каналів — операційний хребет усіх пластів. +40% ефективність', color: '#FF6A3D' },
+  { n: '01', name: 'Ребрендинг', text: 'Позиціонування, Brand Book, тригери довіри (OEKO-TEX®)', color: '#DB2777' },
+  { n: '02', name: 'E-com UA + EU', text: '2 вітрини, SEO-first, mobile-first, hreflang 4 мови', color: '#65A30D' },
+  { n: '03', name: 'Маркетплейси', text: 'Amazon DE (Brand Registry) + Allegro + Rozetka, middleware', color: '#B45309' },
+  { n: '04', name: 'CRM + Retention', text: 'Zoho + Klaviyo, 8+ автоматизацій, RFM-сегментація', color: '#6D28D9' },
+  { n: '05', name: 'B2B / HoReCa', text: 'Окремий контур, воронка, 78% повторних, комерц-політика', color: '#0F9488' },
+  { n: '06', name: 'LinkedIn', text: 'B2B-аутрич + контент + employer branding', color: '#0284C7' },
+  { n: '07', name: 'ERP Odoo · Автоматизація', text: 'Єдина система: склад, замовлення, фінанси, синхронізація каналів — операційний хребет усіх пластів. +40% ефективність', color: '#EA580C' },
 ];
 
 const CASE1_RESULTS = [
@@ -31,12 +31,12 @@ const CASE1_RESULTS = [
 ];
 
 const CASE1_FACTORS = [
-  { name: 'Платформа + SEO', pct: 28, color: '#A3E635' },
-  { name: 'Маркетплейси', pct: 28, color: '#3DDAD0' },
-  { name: 'Ребрендинг', pct: 13, color: '#8B7CF6' },
-  { name: 'Retention', pct: 13, color: '#F5B84B' },
-  { name: 'B2B + LinkedIn', pct: 13, color: '#FF6A3D' },
-  { name: 'Продукт', pct: 5, color: '#4ADE80' },
+  { name: 'Платформа + SEO', pct: 28, color: '#65A30D' },
+  { name: 'Маркетплейси', pct: 28, color: '#0F9488' },
+  { name: 'Ребрендинг', pct: 13, color: '#6D28D9' },
+  { name: 'Retention', pct: 13, color: '#B45309' },
+  { name: 'B2B + LinkedIn', pct: 13, color: '#EA580C' },
+  { name: 'Продукт', pct: 5, color: '#16A34A' },
 ];
 
 const CASE1_MISTAKES = [
@@ -51,18 +51,18 @@ export function GrowthChart() {
   const area = `${path} L 380 160 L 10 160 Z`;
   return (
     <div className="card p-6">
-      <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[#8C96A5] mb-4">
+      <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[#5A6472] mb-4">
         Оборот · 18 місяців (annualized run-rate)
       </p>
       <svg viewBox="0 0 400 170" className="w-full">
         <defs>
           <linearGradient id="chart-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="rgba(163,230,53,0.28)" />
-            <stop offset="100%" stopColor="rgba(163,230,53,0)" />
+            <stop offset="0%" stopColor="rgba(101,163,13,0.28)" />
+            <stop offset="100%" stopColor="rgba(101,163,13,0)" />
           </linearGradient>
         </defs>
         {[40, 80, 120].map((y) => (
-          <line key={y} x1="0" y1={y} x2="400" y2={y} stroke="rgba(140,150,165,0.12)" strokeWidth="1" />
+          <line key={y} x1="0" y1={y} x2="400" y2={y} stroke="rgba(10,14,18,0.08)" strokeWidth="1" />
         ))}
         <motion.path
           d={area}
@@ -75,7 +75,7 @@ export function GrowthChart() {
         <motion.path
           d={path}
           fill="none"
-          stroke="#A3E635"
+          stroke="#65A30D"
           strokeWidth="3"
           strokeLinecap="round"
           initial={{ pathLength: 0 }}
@@ -87,7 +87,7 @@ export function GrowthChart() {
           cx="380"
           cy="12"
           r="5"
-          fill="#A3E635"
+          fill="#65A30D"
           initial={{ scale: 0 }}
           whileInView={{ scale: 1 }}
           viewport={{ once: true }}
@@ -97,7 +97,7 @@ export function GrowthChart() {
         <text x="12" y="145" className="font-mono" fill="#66707E" fontSize="11">
           €48K
         </text>
-        <text x="330" y="34" className="font-mono" fill="#A3E635" fontSize="12" fontWeight="bold">
+        <text x="330" y="34" className="font-mono" fill="#65A30D" fontSize="12" fontWeight="bold">
           €900K
         </text>
       </svg>
@@ -113,7 +113,7 @@ export function Case01Detail() {
         <div className="glow-lime w-[420px] h-[420px] top-10 -right-40" />
         <FadeIn>
           <Eyebrow>
-            Кейс 01 · Premium Textile · UA→EU · <span className="text-[#A3E635]">Флагман</span>
+            Кейс 01 · Premium Textile · UA→EU · <span className="text-[#65A30D]">Флагман</span>
           </Eyebrow>
           <SectionTitle>
             Якісний продукт,
@@ -125,17 +125,17 @@ export function Case01Detail() {
         <div className="grid lg:grid-cols-2 gap-6 mt-10 items-start">
           <FadeIn delay={0.1}>
             <div className="card p-6">
-              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#FF5F56] mb-4">
+              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#DC2626] mb-4">
                 Точка А
               </p>
               <div className="flex flex-col">
                 {CASE1_POINT_A.map((r, i) => (
                   <div
                     key={r.k}
-                    className={`flex justify-between gap-4 py-2.5 ${i > 0 ? 'border-t border-[#1C2129]' : ''}`}
+                    className={`flex justify-between gap-4 py-2.5 ${i > 0 ? 'border-t border-[#ECEEF0]' : ''}`}
                   >
                     <span className="font-bold text-sm">{r.k}</span>
-                    <span className="font-mono text-[0.68rem] text-[#FF5F56] text-right">{r.v}</span>
+                    <span className="font-mono text-[0.68rem] text-[#DC2626] text-right">{r.v}</span>
                   </div>
                 ))}
               </div>
@@ -143,18 +143,18 @@ export function Case01Detail() {
           </FadeIn>
           <FadeIn delay={0.2}>
             <div className="card accent-left p-6" style={{ '--accent': 'var(--orange)' } as React.CSSProperties}>
-              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#FF6A3D] mb-3">
+              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#EA580C] mb-3">
                 Виклик
               </p>
-              <p className="text-[#B7C0CC] text-sm leading-relaxed">
+              <p className="text-[#3F4854] text-sm leading-relaxed">
                 Не «покращити онлайн-продажі», а{' '}
-                <strong className="text-[#E9EDF2]">
+                <strong className="text-[#141820]">
                   оцифрувати й інтернаціоналізувати бізнес з нуля
                 </strong>{' '}
                 — побудувати інфраструктуру, якої не існувало як класу.
               </p>
             </div>
-            <p className="font-serif-it text-lg text-[#B7C0CC] leading-relaxed mt-6 px-1">
+            <p className="font-serif-it text-lg text-[#3F4854] leading-relaxed mt-6 px-1">
               «Проблема структурна: не в продукті й не в маркетингу, а у відсутності
               інфраструктури, яка дає якісному продукту знайти покупця».
             </p>
@@ -177,7 +177,7 @@ export function Case01Detail() {
                   </span>
                   {l.name}
                 </p>
-                <p className="text-[#8C96A5] text-xs mt-2 leading-relaxed">{l.text}</p>
+                <p className="text-[#5A6472] text-xs mt-2 leading-relaxed">{l.text}</p>
               </div>
             </FadeIn>
           ))}
@@ -194,7 +194,7 @@ export function Case01Detail() {
         {/* Results */}
         <FadeIn delay={0.1}>
           <h3 className="font-extrabold text-2xl md:text-3xl mt-16 mb-8">
-            Точка А → Точка Б · <span className="text-[#8C96A5]">факт (CRM · ERP · GA4)</span>
+            Точка А → Точка Б · <span className="text-[#5A6472]">факт (CRM · ERP · GA4)</span>
           </h3>
         </FadeIn>
         <div className="grid lg:grid-cols-2 gap-6 items-start">
@@ -203,7 +203,7 @@ export function Case01Detail() {
             <div className="card p-5 mt-5 flex flex-wrap items-center gap-x-8 gap-y-3">
               <div>
                 <p className="font-mono font-bold text-3xl lime-text">Топ-1%</p>
-                <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[#8C96A5] mt-1">
+                <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[#5A6472] mt-1">
                   CR сегмента (норма 0,7–1,5%)
                 </p>
               </div>
@@ -222,8 +222,8 @@ export function Case01Detail() {
                       <span className="font-bold text-sm">{r.name}</span>
                       <span className="font-mono text-xs" style={{ fontVariantNumeric: 'tabular-nums' }}>
                         <span className="text-[#66707E]">{r.from}</span>
-                        <span className="text-[#8C96A5]"> → </span>
-                        <span className="text-[#A3E635] font-bold">{r.to}</span>
+                        <span className="text-[#5A6472]"> → </span>
+                        <span className="text-[#65A30D] font-bold">{r.to}</span>
                       </span>
                     </div>
                     <Bar percent={r.pct} delay={i * 0.08} height={7} />
@@ -238,14 +238,14 @@ export function Case01Detail() {
         <div className="grid lg:grid-cols-3 gap-6 mt-10 items-start">
           <FadeIn delay={0.1}>
             <div className="card p-6 h-full">
-              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#A3E635] mb-5">
+              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#65A30D] mb-5">
                 Вклад факторів (експертна оцінка)
               </p>
               <div className="flex flex-col gap-3.5">
                 {CASE1_FACTORS.map((f, i) => (
                   <div key={f.name}>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-[#C7CFDA]">{f.name}</span>
+                      <span className="text-[#2F3742]">{f.name}</span>
                       <span className="font-mono" style={{ color: f.color }}>
                         ~{f.pct}%
                       </span>
@@ -266,14 +266,14 @@ export function Case01Detail() {
           </FadeIn>
           <FadeIn delay={0.2}>
             <div className="card p-6 h-full">
-              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#FF6A3D] mb-5">
+              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#EA580C] mb-5">
                 Помилки та уроки
               </p>
               <div className="flex flex-col gap-4">
                 {CASE1_MISTAKES.map((m) => (
                   <div key={m.title}>
-                    <p className="font-bold text-sm text-[#FF6A3D]">✗ {m.title}</p>
-                    <p className="text-[#8C96A5] text-xs mt-1 leading-relaxed">→ {m.fix}</p>
+                    <p className="font-bold text-sm text-[#EA580C]">✗ {m.title}</p>
+                    <p className="text-[#5A6472] text-xs mt-1 leading-relaxed">→ {m.fix}</p>
                   </div>
                 ))}
               </div>
@@ -283,17 +283,17 @@ export function Case01Detail() {
             <FadeIn delay={0.3}>
               <div className="card p-6 text-center">
                 <p className="font-mono font-bold text-5xl lime-text">3.8×</p>
-                <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[#8C96A5] mt-2">
+                <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[#5A6472] mt-2">
                   ROI за рік 1 · €288K / €75K
                 </p>
               </div>
             </FadeIn>
             <FadeIn delay={0.4}>
               <div className="card accent-left p-6" style={{ '--accent': 'var(--orange)' } as React.CSSProperties}>
-                <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#FF6A3D] mb-2.5">
+                <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#EA580C] mb-2.5">
                   Касова криза · лист-2024
                 </p>
-                <p className="text-[#B7C0CC] text-xs leading-relaxed">
+                <p className="text-[#3F4854] text-xs leading-relaxed">
                   Подолана за 2 тижні. Впроваджено 13-тижневий cash-flow + буфер. Зрілість — це
                   швидкість системного виправлення.
                 </p>
@@ -302,7 +302,7 @@ export function Case01Detail() {
           </div>
         </div>
         <FadeIn delay={0.2}>
-          <p className="font-serif-it text-[#8C96A5] mt-8">
+          <p className="font-serif-it text-[#5A6472] mt-8">
             Кейс — не історія одного геніального рішення, а системна побудова шести пластів, кожен
             із яких підсилював решту.
           </p>
@@ -326,7 +326,7 @@ export function MiniCases() {
                 Міжнародний DTC + Amazon для бренду{' '}
                 <span className="lime-text">Forbes TOP-250 UA</span>
               </h3>
-              <p className="text-[#8C96A5] text-sm mt-4 leading-relaxed">
+              <p className="text-[#5A6472] text-sm mt-4 leading-relaxed">
                 Керував e-commerce напрямом (8 фахівців) у мультиканальній і мультигеографічній
                 моделі: власний магазин + маркетплейси, ринки США · DE · FR · ES · IT · UK. Лют
                 2023 — кві 2025.
@@ -343,7 +343,7 @@ export function MiniCases() {
                 <Stat countTo={6} label="Нових ринків ЄС + США" color="var(--yellow)" />
               </div>
               <p className="text-[#66707E] text-xs mt-6 leading-relaxed">
-                <span className="font-mono uppercase text-[0.6rem] tracking-[0.14em] text-[#F5B84B]">
+                <span className="font-mono uppercase text-[0.6rem] tracking-[0.14em] text-[#B45309]">
                   Що зроблено ·{' '}
                 </span>
                 Запуск міжнародних продажів на Amazon · глобальний інтернет-магазин · ERP і
@@ -364,7 +364,7 @@ export function MiniCases() {
                 E-com трансформація національного{' '}
                 <span className="lime-text">FMCG-дистриб&rsquo;ютора</span>
               </h3>
-              <p className="text-[#8C96A5] text-sm mt-4 leading-relaxed">
+              <p className="text-[#5A6472] text-sm mt-4 leading-relaxed">
                 Запуск web-інфраструктури, управління маркетплейсами (17K SKU), дропшипінг, вихід
                 на міжнародні ринки, просування ключових і запуск нових брендів. Бренд ISEI: UA ·
                 PL · NL · CY.
@@ -377,18 +377,18 @@ export function MiniCases() {
               </div>
               <div className="mt-6 flex flex-col gap-3">
                 <div>
-                  <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[#F5B84B] mb-1.5">
+                  <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[#B45309] mb-1.5">
                     Виробники
                   </p>
-                  <p className="text-[#8C96A5] text-xs">
+                  <p className="text-[#5A6472] text-xs">
                     Henkel · SC Johnson · Kimberly-Clark · Schwarzkopf · J&amp;J · Missha · NYX
                   </p>
                 </div>
                 <div>
-                  <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[#3DDAD0] mb-1.5">
+                  <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[#0F9488] mb-1.5">
                     Клієнти
                   </p>
-                  <p className="text-[#8C96A5] text-xs">
+                  <p className="text-[#5A6472] text-xs">
                     Watsons · MAKEUP · Rozetka · Pampik · Kasta · Lamoda
                   </p>
                 </div>

@@ -12,7 +12,7 @@ const TALKS = [
     year: '2025–2026',
     role: 'Спікер',
     topic: '«Commerce OS: система замість хаосу»',
-    color: '#A3E635',
+    color: '#65A30D',
   },
   {
     event: 'E-commerce Growth Forum',
@@ -20,7 +20,7 @@ const TALKS = [
     year: '2025',
     role: 'Доповідь',
     topic: '«Юніт-економіка як мова власника»',
-    color: '#3DDAD0',
+    color: '#0F9488',
   },
   {
     event: 'Marketplace Summit',
@@ -28,7 +28,7 @@ const TALKS = [
     year: '2024',
     role: 'Панель',
     topic: '«Вихід українських брендів у ЄС»',
-    color: '#F5B84B',
+    color: '#B45309',
   },
   {
     event: 'Подкаст «Власна справа»',
@@ -36,7 +36,7 @@ const TALKS = [
     year: '2025',
     role: 'Гість',
     topic: '«Retention: гроші, які вже у вас є»',
-    color: '#8B7CF6',
+    color: '#6D28D9',
   },
 ];
 
@@ -61,8 +61,8 @@ export default function Media() {
         </FadeIn>
         <FadeIn delay={0.15}>
           <div className="text-right">
-            <p className="font-mono font-bold text-6xl text-[#F5B84B]">10+</p>
-            <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[#8C96A5]">
+            <p className="font-mono font-bold text-6xl text-[#B45309]">10+</p>
+            <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[#5A6472]">
               Виступів · 2024–2026
             </p>
           </div>
@@ -81,7 +81,7 @@ export default function Media() {
               </div>
               <p className="font-extrabold text-lg mt-2 leading-snug">{t.event}</p>
               <p className="font-mono text-[0.62rem] text-[#66707E] mt-0.5">{t.where}</p>
-              <p className="font-serif-it text-sm text-[#B7C0CC] mt-3 leading-relaxed flex-1">
+              <p className="font-serif-it text-sm text-[#3F4854] mt-3 leading-relaxed flex-1">
                 {t.topic}
               </p>
             </div>
@@ -92,13 +92,13 @@ export default function Media() {
       <FadeIn delay={0.3}>
         <div className="flex flex-wrap items-center gap-2.5 mt-8">
           {FORMATS.map((f) => (
-            <span key={f} className="chip-dark px-4 py-2 font-mono text-xs text-[#C7CFDA]">
+            <span key={f} className="chip-dark px-4 py-2 font-mono text-xs text-[#2F3742]">
               {f}
             </span>
           ))}
           <span className="text-[#66707E] text-xs ml-2">
             Запросити спікером —{' '}
-            <a href="mailto:pashasidorenko18@gmail.com?subject=Запрошення спікером" className="text-[#A3E635] hover:text-[#bdff4d] transition-colors">
+            <a href="mailto:pashasidorenko18@gmail.com?subject=Запрошення спікером" className="text-[#65A30D] hover:text-[#4d7c0f] transition-colors">
               напишіть
             </a>
           </span>

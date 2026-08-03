@@ -11,7 +11,7 @@ export const CASE_COVERS = [
     title: 'Premium Textile',
     cat: 'UA→EU · Флагман · 18 міс',
     text: 'Оборот €48K → €900K: сім пластів у синхроні, топ-1% конверсії сегмента.',
-    color: '#A3E635',
+    color: '#65A30D',
   },
   {
     slug: 'ray-ua',
@@ -19,7 +19,7 @@ export const CASE_COVERS = [
     title: 'RAY.UA',
     cat: 'Program of Record · 2026',
     text: 'Реальний аудит у грошах і програма росту на 12 місяців із траншами під DoD.',
-    color: '#F471B5',
+    color: '#DB2777',
   },
   {
     slug: 'ugears',
@@ -27,7 +27,7 @@ export const CASE_COVERS = [
     title: 'Ugears',
     cat: 'Forbes TOP-250 · Head of e-Commerce',
     text: 'Міжнародний DTC + Amazon: 6 нових ринків, повторні 14,7% → 60%.',
-    color: '#3DDAD0',
+    color: '#0F9488',
   },
   {
     slug: 'imperia',
@@ -35,7 +35,7 @@ export const CASE_COVERS = [
     title: 'Imperia / ISEI',
     cat: 'FMCG · Head of Marketing',
     text: 'E-com трансформація національного дистриб’ютора: +40% продажів.',
-    color: '#F5B84B',
+    color: '#B45309',
   },
 ];
 
@@ -47,11 +47,11 @@ export default function CasesPage() {
           <Eyebrow>Кейси · Не один результат — система</Eyebrow>
           <SectionTitle>
             Кожен кейс —{' '}
-            <span className="font-pixel text-[0.8em] text-[#A3E635] inline-block align-baseline leading-none">
+            <span className="font-pixel text-[0.8em] text-[#65A30D] inline-block align-baseline leading-none">
               окрема історія
             </span>
           </SectionTitle>
-          <p className="text-[#8C96A5] mt-4 max-w-3xl">
+          <p className="text-[#5A6472] mt-4 max-w-3xl">
             Три завершені кейси і одна діюча програма росту. Цифра на обкладинці — вимірюваний
             факт, усередині — повний розбір: точка А, рішення, помилки, ROI.
           </p>
@@ -71,8 +71,8 @@ export default function CasesPage() {
                 <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#66707E] mt-1.5">
                   {c.cat}
                 </p>
-                <p className="text-[#8C96A5] text-sm mt-3 leading-relaxed flex-1">{c.text}</p>
-                <p className="font-mono text-xs uppercase tracking-wider mt-6 text-white/60 group-hover:text-[#A3E635] transition-colors">
+                <p className="text-[#5A6472] text-sm mt-3 leading-relaxed flex-1">{c.text}</p>
+                <p className="font-mono text-xs uppercase tracking-wider mt-6 text-black/60 group-hover:text-[#65A30D] transition-colors">
                   Читати кейс →
                 </p>
               </Link>

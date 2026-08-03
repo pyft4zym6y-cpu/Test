@@ -25,22 +25,22 @@ const FACTS = [
   {
     label: 'Ринки · 14 країн',
     text: 'США · DE · FR · ES · IT · UK · PL · CZ · RO · LV · MT · GR · CA · UA',
-    accent: '#A3E635',
+    accent: '#65A30D',
   },
   {
     label: 'Канали збуту',
     text: 'DTC-сайт · Amazon · eBay · Etsy · Allegro · Rozetka · Kasta',
-    accent: '#3DDAD0',
+    accent: '#0F9488',
   },
   {
     label: 'Моделі бізнесу',
     text: 'B2C / DTC · B2B · HoReCa · Wholesale · Cross-border',
-    accent: '#8B7CF6',
+    accent: '#6D28D9',
   },
   {
     label: 'Платформи · CMS',
     text: 'Shopify · Magento · WooCommerce · OpenCart · Odoo',
-    accent: '#F5B84B',
+    accent: '#B45309',
   },
 ];
 
@@ -89,7 +89,7 @@ export default function Trust() {
               >
                 {f.label}
               </p>
-              <p className="text-[#B7C0CC] text-sm leading-relaxed">{f.text}</p>
+              <p className="text-[#3F4854] text-sm leading-relaxed">{f.text}</p>
             </div>
           </FadeIn>
         ))}

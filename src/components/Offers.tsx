@@ -5,7 +5,7 @@ const DOORS = [
   {
     period: '4–6 тижнів',
     name: 'Diagnostic Sprint',
-    color: '#3DDAD0',
+    color: '#0F9488',
     rows: [
       { k: 'Scope', v: 'Health Score, аудит, розрив→₴, roadmap' },
       { k: 'Deliverable', v: 'D-01 Discovery Report + Roadmap (PDF)' },
@@ -16,7 +16,7 @@ const DOORS = [
   {
     period: '6–12 місяців',
     name: 'Program of Record',
-    color: '#A3E635',
+    color: '#65A30D',
     featured: true,
     rows: [
       { k: 'Scope', v: 'Повна трансформація, пласти в синхроні' },
@@ -28,7 +28,7 @@ const DOORS = [
   {
     period: '1–3 дні/тиждень',
     name: 'Fractional Lead',
-    color: '#8B7CF6',
+    color: '#6D28D9',
     rows: [
       { k: 'Scope', v: 'Стратегічне лідерство + відповідальність за P&L' },
       { k: 'Deliverable', v: 'Керування, синхрон, звітність' },
@@ -39,12 +39,12 @@ const DOORS = [
 ];
 
 const OFFER_CELLS = [
-  { label: 'Що входить', text: 'Діагностика · аудит у грошах · roadmap · виконання пластів · керування (RACI/KPI) · BI-дашборд', color: '#A3E635' },
-  { label: 'Етапи', text: '5: Discovery → Audit → Roadmap → Implementation → Governance', color: '#3DDAD0' },
-  { label: 'Строки', text: 'Discovery 4–6 тижнів · програма 6–12 міс · перший результат 30–60 днів', color: '#F5B84B' },
-  { label: 'Бюджет', text: 'Discovery від $2K · Fractional $6–20K/міс · програма — проєкт/ретейнер (обговорюється)', color: '#FF6A3D' },
-  { label: 'Формат', text: 'Diagnostic Sprint · Program of Record · Fractional Lead — під вашу ситуацію', color: '#8B7CF6' },
-  { label: 'Наступний крок', text: '30-хв стратегічна сесія → Discovery Sprint', color: '#A3E635' },
+  { label: 'Що входить', text: 'Діагностика · аудит у грошах · roadmap · виконання пластів · керування (RACI/KPI) · BI-дашборд', color: '#65A30D' },
+  { label: 'Етапи', text: '5: Discovery → Audit → Roadmap → Implementation → Governance', color: '#0F9488' },
+  { label: 'Строки', text: 'Discovery 4–6 тижнів · програма 6–12 міс · перший результат 30–60 днів', color: '#B45309' },
+  { label: 'Бюджет', text: 'Discovery від $2K · Fractional $6–20K/міс · програма — проєкт/ретейнер (обговорюється)', color: '#EA580C' },
+  { label: 'Формат', text: 'Diagnostic Sprint · Program of Record · Fractional Lead — під вашу ситуацію', color: '#6D28D9' },
+  { label: 'Наступний крок', text: '30-хв стратегічна сесія → Discovery Sprint', color: '#65A30D' },
 ];
 
 const FAQ = [
@@ -73,7 +73,7 @@ export default function Offers() {
                 style={
                   {
                     '--accent': d.color,
-                    ...(d.featured ? { borderColor: 'rgba(163,230,53,0.4)' } : {}),
+                    ...(d.featured ? { borderColor: 'rgba(101,163,13,0.4)' } : {}),
                   } as React.CSSProperties
                 }
               >
@@ -83,11 +83,11 @@ export default function Offers() {
                 <p className="font-extrabold text-2xl mt-1.5 mb-5">{d.name}</p>
                 <div className="flex flex-col">
                   {d.rows.map((r, ri) => (
-                    <div key={r.k} className={`py-3 ${ri > 0 ? 'border-t border-[#1C2129]' : ''}`}>
+                    <div key={r.k} className={`py-3 ${ri > 0 ? 'border-t border-[#ECEEF0]' : ''}`}>
                       <p className="font-mono text-[0.58rem] uppercase tracking-[0.18em] text-[#66707E] mb-1">
                         {r.k}
                       </p>
-                      <p className="text-sm text-[#C7CFDA] leading-snug">{r.v}</p>
+                      <p className="text-sm text-[#2F3742] leading-snug">{r.v}</p>
                     </div>
                   ))}
                 </div>
@@ -97,10 +97,10 @@ export default function Offers() {
         </div>
         <FadeIn delay={0.3}>
           <div className="card p-5 mt-6 flex flex-wrap gap-x-6 gap-y-2 items-baseline">
-            <span className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#F5B84B]">
+            <span className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#B45309]">
               Завжди
             </span>
-            <span className="text-[#B7C0CC] text-sm">
+            <span className="text-[#3F4854] text-sm">
               Інвестиція зіставляється з упущеним оборотом із калькулятора. Кожен етап — з DoD і
               траншами під результат. Перший вимірюваний результат — за 30–60 днів.
             </span>
@@ -121,7 +121,7 @@ export default function Offers() {
                 <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] mb-2.5" style={{ color: c.color }}>
                   {c.label}
                 </p>
-                <p className="text-[#B7C0CC] text-sm leading-relaxed">{c.text}</p>
+                <p className="text-[#3F4854] text-sm leading-relaxed">{c.text}</p>
               </div>
             </FadeIn>
           ))}
@@ -129,10 +129,10 @@ export default function Offers() {
         <FadeIn delay={0.3}>
           <div
             className="card p-7 mt-6 flex flex-col md:flex-row gap-5 md:items-center"
-            style={{ borderColor: 'rgba(163,230,53,0.35)' }}
+            style={{ borderColor: 'rgba(101,163,13,0.35)' }}
           >
             <p className="font-extrabold text-2xl lime-text shrink-0">Почнімо з аудиту</p>
-            <p className="text-[#8C96A5] text-sm leading-relaxed">
+            <p className="text-[#5A6472] text-sm leading-relaxed">
               Інвестиція завжди зіставляється з упущеним оборотом. Кожен етап — з DoD і траншами
               під результат. Ви бачите цифри до того, як вкладаєте бюджет у виконання.
             </p>
@@ -151,7 +151,7 @@ export default function Offers() {
               <FadeIn key={f.q} delay={i * 0.06}>
                 <div className="card card-hover p-6 h-full">
                   <p className="font-bold">{f.q}</p>
-                  <p className="text-[#8C96A5] text-sm mt-2 leading-relaxed">{f.a}</p>
+                  <p className="text-[#5A6472] text-sm mt-2 leading-relaxed">{f.a}</p>
                 </div>
               </FadeIn>
             ))}
@@ -159,19 +159,19 @@ export default function Offers() {
           <FadeIn delay={0.2} x={40} y={0}>
             <div
               className="card accent-top p-8 h-full"
-              style={{ '--accent': 'var(--purple)', background: 'linear-gradient(160deg, #181524, #14181F)' } as React.CSSProperties}
+              style={{ '--accent': 'var(--purple)', background: 'linear-gradient(160deg, #181524, #FFFFFF)' } as React.CSSProperties}
             >
-              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#F5B84B] mb-4">
+              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#B45309] mb-4">
                 Обмежена доступність
               </p>
               <p className="font-extrabold text-2xl">Глибина замість потоку</p>
-              <p className="text-[#8C96A5] text-sm mt-3 leading-relaxed">
+              <p className="text-[#5A6472] text-sm mt-3 leading-relaxed">
                 Беру обмежену кількість активних мандатів одночасно — щоб кожен клієнт отримав
                 увагу рівня P&amp;L-власника, а не «ще один проєкт у черзі».
               </p>
-              <hr className="border-[#2A2438] my-5" />
+              <hr className="border-[#E4E7EA] my-5" />
               <div className="flex items-center gap-4">
-                <p className="font-mono font-bold text-4xl text-[#A3E635]">1 : 1</p>
+                <p className="font-mono font-bold text-4xl text-[#65A30D]">1 : 1</p>
                 <p className="text-[#66707E] text-xs leading-snug">
                   один власник —
                   <br />

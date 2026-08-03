@@ -19,15 +19,15 @@ export default function Idea() {
         <div className="glow-cyan w-[420px] h-[420px] -top-20 right-0" />
         <FadeIn>
           <Eyebrow>Зсув</Eyebrow>
-          <p className="font-bold text-xl sm:text-2xl text-[#8C96A5] mb-2">
+          <p className="font-bold text-xl sm:text-2xl text-[#5A6472] mb-2">
             Правильне питання — не
           </p>
-          <SectionTitle className="text-[#B7C0CC]">«Як продати більше?»</SectionTitle>
-          <p className="font-bold text-xl sm:text-2xl text-[#8C96A5] mt-10 mb-2">А</p>
+          <SectionTitle className="text-[#3F4854]">«Як продати більше?»</SectionTitle>
+          <p className="font-bold text-xl sm:text-2xl text-[#5A6472] mt-10 mb-2">А</p>
           <SectionTitle>
             <span className="lime-text">«Як зробити компанію дорожчою?»</span>
           </SectionTitle>
-          <p className="font-serif-it text-lg text-[#B7C0CC] mt-8">
+          <p className="font-serif-it text-lg text-[#3F4854] mt-8">
             Продажі — це квартал. Вартість компанії — це десятиліття. Далі — доказ, що так і
             працює.
           </p>
@@ -39,26 +39,26 @@ export default function Idea() {
         <FadeIn>
           <Eyebrow>Маніфест</Eyebrow>
           <SectionTitle>
-            Увагу <span className="text-[#FF6A3D]">не можна купити назавжди</span>.
+            Увагу <span className="text-[#EA580C]">не можна купити назавжди</span>.
             <br />
             Справжнє зростання починається там, де з&rsquo;являється{' '}
-            <span className="text-[#A3E635]">система</span>.
+            <span className="text-[#65A30D]">система</span>.
           </SectionTitle>
         </FadeIn>
         <AnimatedText
           text="Більшість вірить, що зростання народжується з нових рекламних кампаній. Але увага завжди належить платформам і алгоритмам. Commerce OS — це спосіб мислити про компанію як про актив: маркетинг, аналітика, продукт і команда працюють не заради окремих показників, а заради зростання вартості бізнесу."
-          className="font-serif-it text-lg md:text-xl leading-relaxed text-[#E9EDF2] max-w-3xl mt-8"
+          className="font-serif-it text-lg md:text-xl leading-relaxed text-[#141820] max-w-3xl mt-8"
         />
         <FadeIn delay={0.15}>
           <div className="flex flex-wrap gap-x-16 gap-y-6 mt-10">
-            <div className="border-l border-[#232933] pl-5">
-              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#8C96A5] mb-1.5">
+            <div className="border-l border-[#E4E7EA] pl-5">
+              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#5A6472] mb-1.5">
                 Ринок говорить
               </p>
-              <p className="font-bold text-xl text-[#8C96A5]">Як більше продати</p>
+              <p className="font-bold text-xl text-[#5A6472]">Як більше продати</p>
             </div>
-            <div className="border-l-2 border-[#A3E635] pl-5">
-              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#A3E635] mb-1.5">
+            <div className="border-l-2 border-[#65A30D] pl-5">
+              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#65A30D] mb-1.5">
                 Ми говоримо
               </p>
               <p className="font-bold text-xl">Як дорожчати</p>
@@ -75,11 +75,11 @@ export default function Idea() {
             <SectionTitle>
               Компанія росте.
               <br />
-              Потім — <span className="text-[#FF6A3D]">перестає</span>.
+              Потім — <span className="text-[#EA580C]">перестає</span>.
               <br />
               <span className="steel-text">Чому?</span>
             </SectionTitle>
-            <p className="font-serif-it text-lg text-[#B7C0CC] mt-6 max-w-md leading-relaxed">
+            <p className="font-serif-it text-lg text-[#3F4854] mt-6 max-w-md leading-relaxed">
               Продукт нормальний. Люди намагаються. Але зростання зупинилось, а кожен наступний
               долар приносить менше.
             </p>
@@ -89,7 +89,7 @@ export default function Idea() {
               <div className="card accent-left p-6" style={{ '--accent': 'var(--red)' } as React.CSSProperties}>
                 <ul className="flex flex-col gap-3">
                   {PAINS.map((p) => (
-                    <li key={p} className="flex items-center gap-3 text-[#C7CFDA]">
+                    <li key={p} className="flex items-center gap-3 text-[#2F3742]">
                       <span
                         className="w-2 h-2 rounded-full shrink-0"
                         style={{ background: 'var(--red)', boxShadow: '0 0 8px rgba(255,95,86,0.7)' }}
@@ -101,12 +101,12 @@ export default function Idea() {
               </div>
             </FadeIn>
             <FadeIn delay={0.2}>
-              <div className="text-center font-mono text-[#8C96A5]">↓</div>
+              <div className="text-center font-mono text-[#5A6472]">↓</div>
               <div className="card accent-left p-6 mt-4" style={{ '--accent': 'var(--lime)' } as React.CSSProperties}>
                 <p className="font-bold text-xl">
-                  Commerce OS вирішує <span className="text-[#A3E635]">саме це</span>.
+                  Commerce OS вирішує <span className="text-[#65A30D]">саме це</span>.
                 </p>
-                <p className="text-[#8C96A5] mt-2 text-sm leading-relaxed">
+                <p className="text-[#5A6472] mt-2 text-sm leading-relaxed">
                   Система перетворює хаос симптомів на діагноз у грошах і план, що продає сам себе.
                 </p>
               </div>

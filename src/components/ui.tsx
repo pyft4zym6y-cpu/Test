@@ -6,7 +6,7 @@ export function Eyebrow({ children }: { children: ReactNode }) {
   return (
     <div className="flex items-center gap-3 mb-6">
       <span className="eyebrow-dot" />
-      <span className="font-mono text-[0.7rem] sm:text-xs uppercase tracking-[0.22em] text-[#8C96A5]">
+      <span className="font-mono text-[0.7rem] sm:text-xs uppercase tracking-[0.22em] text-[#5A6472]">
         {children}
       </span>
     </div>
@@ -97,7 +97,7 @@ export function Stat({
           value
         )}
       </div>
-      <div className="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-[#8C96A5] mt-2 leading-relaxed">
+      <div className="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-[#5A6472] mt-2 leading-relaxed">
         {label}
       </div>
     </div>
@@ -107,7 +107,7 @@ export function Stat({
 /* ---------- Animated horizontal bar ---------- */
 export function Bar({
   percent,
-  gradient = 'linear-gradient(90deg, #A3E635, #3DDAD0)',
+  gradient = 'linear-gradient(90deg, #65A30D, #0F9488)',
   height = 8,
   delay = 0,
 }: {
@@ -119,7 +119,7 @@ export function Bar({
   return (
     <div
       className="w-full rounded-full overflow-hidden"
-      style={{ height, background: 'rgba(140,150,165,0.12)' }}
+      style={{ height, background: 'rgba(10,14,18,0.08)' }}
     >
       <motion.div
         className="h-full rounded-full"
@@ -137,7 +137,7 @@ export function Bar({
 export function Chip({ children, style }: { children: ReactNode; style?: CSSProperties }) {
   return (
     <span
-      className="card inline-flex items-center px-4 py-2 font-mono text-xs sm:text-sm text-[#C7CFDA] whitespace-nowrap"
+      className="card inline-flex items-center px-4 py-2 font-mono text-xs sm:text-sm text-[#2F3742] whitespace-nowrap"
       style={style}
     >
       {children}
@@ -157,13 +157,13 @@ export function Terminal({
 }) {
   return (
     <div className={`card overflow-hidden ${className}`}>
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-[#232933] bg-[#171B22]">
-        <span className="w-2.5 h-2.5 rounded-full bg-[#FF5F56]" />
-        <span className="w-2.5 h-2.5 rounded-full bg-[#F5B84B]" />
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-[#E4E7EA] bg-[#F1F3F5]">
+        <span className="w-2.5 h-2.5 rounded-full bg-[#DC2626]" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[#B45309]" />
         <span className="w-2.5 h-2.5 rounded-full bg-[#A3E635]" />
-        <span className="font-mono text-[0.68rem] text-[#8C96A5] ml-2 truncate">
+        <span className="font-mono text-[0.68rem] text-[#5A6472] ml-2 truncate">
           {title}
-          <span className="cursor-blink text-[#A3E635]">▊</span>
+          <span className="cursor-blink text-[#65A30D]">▊</span>
         </span>
       </div>
       <div className="p-5">{children}</div>

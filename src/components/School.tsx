@@ -48,7 +48,7 @@ export function SchoolIdentity() {
             <br />
             <span className="lime-text">Commerce Architecture</span>
           </SectionTitle>
-          <p className="text-[#8C96A5] mt-4 max-w-3xl leading-relaxed">
+          <p className="text-[#5A6472] mt-4 max-w-3xl leading-relaxed">
             Це спосіб проєктувати компанію як актив: маркетинг, аналітика, продукт і команда
             працюють не заради окремих показників, а заради вартості бізнесу. Так само, як SAP став
             операційною системою підприємств.
@@ -57,10 +57,10 @@ export function SchoolIdentity() {
         <div className="grid md:grid-cols-[1fr_auto_1fr] gap-5 items-stretch mt-10">
           <FadeIn delay={0.1}>
             <div className="card p-7 h-full opacity-80">
-              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#8C96A5] mb-3">
+              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#5A6472] mb-3">
                 Стара категорія
               </p>
-              <p className="font-bold text-xl text-[#8C96A5] leading-snug">
+              <p className="font-bold text-xl text-[#5A6472] leading-snug">
                 E-commerce Consulting
                 <br />
                 Digital Transformation
@@ -70,17 +70,17 @@ export function SchoolIdentity() {
               </p>
             </div>
           </FadeIn>
-          <div className="hidden md:flex items-center text-[#A3E635] text-2xl font-mono">→</div>
+          <div className="hidden md:flex items-center text-[#65A30D] text-2xl font-mono">→</div>
           <FadeIn delay={0.2}>
             <div
               className="card accent-top p-7 h-full"
-              style={{ '--accent': 'var(--lime)', borderColor: 'rgba(163,230,53,0.35)' } as React.CSSProperties}
+              style={{ '--accent': 'var(--lime)', borderColor: 'rgba(101,163,13,0.35)' } as React.CSSProperties}
             >
-              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#A3E635] mb-3">
+              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#65A30D] mb-3">
                 Наша категорія
               </p>
               <p className="font-extrabold text-2xl lime-text">Commerce Architecture</p>
-              <p className="text-[#B7C0CC] text-sm mt-3 leading-relaxed">
+              <p className="text-[#3F4854] text-sm mt-3 leading-relaxed">
                 Проєктування цифрового підприємства як активу.
                 <br />
                 Commerce Infrastructure · Commerce Operating System.
@@ -90,11 +90,11 @@ export function SchoolIdentity() {
         </div>
         <FadeIn delay={0.3}>
           <div className="card p-5 mt-5 flex flex-wrap gap-x-6 gap-y-2 items-baseline">
-            <span className="font-pixel text-[0.5rem] uppercase text-[#A3E635]">
+            <span className="font-pixel text-[0.5rem] uppercase text-[#65A30D]">
               Без гучних слів
             </span>
-            <span className="text-[#B7C0CC] text-sm">
-              Ми не «створюємо ринок». Ми бачимо, що ринок <strong className="text-white">вже рухається сюди</strong>{' '}
+            <span className="text-[#3F4854] text-sm">
+              Ми не «створюємо ринок». Ми бачимо, що ринок <strong className="text-[#12161C]">вже рухається сюди</strong>{' '}
               — від купівлі уваги до побудови активів. І будуємо інструмент для цього руху.
             </span>
           </div>
@@ -109,14 +109,14 @@ export function SchoolIdentity() {
         <div className="grid md:grid-cols-2 gap-5">
           <FadeIn delay={0.1}>
             <div className="card accent-top p-8 h-full" style={{ '--accent': 'var(--cyan)' } as React.CSSProperties}>
-              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#3DDAD0] mb-4">
+              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#0F9488] mb-4">
                 Візія
               </p>
               <p className="font-extrabold text-xl md:text-2xl leading-snug">
                 Commerce OS має стати операційною системою цифрових компаній —{' '}
-                <span className="text-[#A3E635]">як SAP став ОС підприємств</span>.
+                <span className="text-[#65A30D]">як SAP став ОС підприємств</span>.
               </p>
-              <p className="text-[#8C96A5] text-sm mt-4 leading-relaxed">
+              <p className="text-[#5A6472] text-sm mt-4 leading-relaxed">
                 Нова школа управління e-commerce: компанії ростуть не через нескінченне збільшення
                 реклами, а через цифрову інфраструктуру як стратегічний актив.
               </p>
@@ -124,13 +124,13 @@ export function SchoolIdentity() {
           </FadeIn>
           <FadeIn delay={0.2}>
             <div className="card accent-top p-8 h-full" style={{ '--accent': 'var(--lime)' } as React.CSSProperties}>
-              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#A3E635] mb-4">
+              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#65A30D] mb-4">
                 Місія
               </p>
               <p className="font-extrabold text-xl md:text-2xl leading-snug">
                 Щоб підприємці перестали купувати маркетинг — і почали будувати цифрові активи.
               </p>
-              <p className="font-serif-it text-[#B7C0CC] mt-4">
+              <p className="font-serif-it text-[#3F4854] mt-4">
                 Замінити хаотичне зростання системним управлінням вартістю бізнесу.
               </p>
             </div>
@@ -149,7 +149,7 @@ export function SchoolIdentity() {
             <FadeIn key={v.title} delay={i * 0.08}>
               <div className="card card-hover accent-left p-7 h-full" style={{ '--accent': v.accent } as React.CSSProperties}>
                 <h3 className="font-extrabold text-xl mb-2.5">{v.title}</h3>
-                <p className="text-[#8C96A5] text-sm leading-relaxed">{v.text}</p>
+                <p className="text-[#5A6472] text-sm leading-relaxed">{v.text}</p>
               </div>
             </FadeIn>
           ))}
@@ -171,7 +171,7 @@ export function Beliefs() {
           {BELIEFS.map((b, i) => (
             <FadeIn key={b.bold} delay={i * 0.1}>
               <p
-                className={`font-extrabold leading-snug py-7 ${i > 0 ? 'border-t border-[#232933]' : ''}`}
+                className={`font-extrabold leading-snug py-7 ${i > 0 ? 'border-t border-[#E4E7EA]' : ''}`}
                 style={{ fontSize: 'clamp(1.25rem, 2.6vw, 1.9rem)' }}
               >
                 {b.bold} <span className="text-[#66707E]">{b.rest}</span>

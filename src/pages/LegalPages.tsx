@@ -33,14 +33,14 @@ function LegalLayout({
           </FadeIn>
           <FadeIn delay={0.15}>
             <div className="card p-5 mt-12 flex flex-wrap gap-x-6 gap-y-2 items-baseline">
-              <span className="font-pixel text-[0.5rem] uppercase text-[#A3E635]">Питання?</span>
-              <span className="text-[#B7C0CC] text-sm">
+              <span className="font-pixel text-[0.5rem] uppercase text-[#65A30D]">Питання?</span>
+              <span className="text-[#3F4854] text-sm">
                 Напишіть нам:{' '}
-                <a href="mailto:pashasidorenko18@gmail.com" className="text-[#A3E635] hover:text-[#bdff4d] transition-colors">
+                <a href="mailto:pashasidorenko18@gmail.com" className="text-[#65A30D] hover:text-[#4d7c0f] transition-colors">
                   pashasidorenko18@gmail.com
                 </a>{' '}
                 або поверніться на{' '}
-                <Link to="/" className="text-[#A3E635] hover:text-[#bdff4d] transition-colors">
+                <Link to="/" className="text-[#65A30D] hover:text-[#4d7c0f] transition-colors">
                   головну
                 </Link>
                 .
@@ -57,10 +57,10 @@ function Sec({ n, title, children }: { n: string; title: string; children: React
   return (
     <section>
       <h2 className="font-extrabold text-lg mb-3">
-        <span className="font-mono text-[#A3E635] mr-2.5">{n}.</span>
+        <span className="font-mono text-[#65A30D] mr-2.5">{n}.</span>
         {title}
       </h2>
-      <div className="text-[#B7C0CC] text-sm leading-relaxed flex flex-col gap-2.5">{children}</div>
+      <div className="text-[#3F4854] text-sm leading-relaxed flex flex-col gap-2.5">{children}</div>
     </section>
   );
 }
@@ -83,7 +83,7 @@ export function PrivacyPage() {
         <p>
           Володілець персональних даних: ФОП Сидоренко Павло Володимирович [РНОКПП — вкажіть
           реквізити]. Контакт із питань персональних даних:{' '}
-          <a href="mailto:pashasidorenko18@gmail.com" className="text-[#A3E635]">pashasidorenko18@gmail.com</a>.
+          <a href="mailto:pashasidorenko18@gmail.com" className="text-[#65A30D]">pashasidorenko18@gmail.com</a>.
         </p>
         <p>
           Обробка даних здійснюється відповідно до Закону України «Про захист персональних даних»,
@@ -148,7 +148,7 @@ export function PrivacyPage() {
         </ul>
         <p>
           Для реалізації прав напишіть на{' '}
-          <a href="mailto:pashasidorenko18@gmail.com" className="text-[#A3E635]">pashasidorenko18@gmail.com</a>.
+          <a href="mailto:pashasidorenko18@gmail.com" className="text-[#65A30D]">pashasidorenko18@gmail.com</a>.
           Ми відповімо протягом 30 календарних днів.
         </p>
       </Sec>
@@ -209,16 +209,16 @@ export function OfferPage() {
         </p>
         <ul className="list-disc pl-5 flex flex-col gap-1.5">
           <li>
-            <strong className="text-white">Diagnostic Sprint</strong> — діагностика e-commerce:
+            <strong className="text-[#12161C]">Diagnostic Sprint</strong> — діагностика e-commerce:
             Health Score, аудит метрик, розрахунок недоотриманого обороту, дорожня карта
             (deliverable — Discovery Report, PDF/XLSX);
           </li>
           <li>
-            <strong className="text-white">Program of Record</strong> — програма трансформації
+            <strong className="text-[#12161C]">Program of Record</strong> — програма трансформації
             строком 6–12 місяців із виконанням дорожньої карти;
           </li>
           <li>
-            <strong className="text-white">Fractional Lead</strong> — стратегічне лідерство
+            <strong className="text-[#12161C]">Fractional Lead</strong> — стратегічне лідерство
             e-commerce напряму на умовах часткової зайнятості.
           </li>
         </ul>
@@ -307,7 +307,7 @@ export function OfferPage() {
         </p>
         <p>
           Виконавець: ФОП Сидоренко Павло Володимирович · [РНОКПП] · [адреса] · [IBAN] · email:{' '}
-          <a href="mailto:pashasidorenko18@gmail.com" className="text-[#A3E635]">pashasidorenko18@gmail.com</a>{' '}
+          <a href="mailto:pashasidorenko18@gmail.com" className="text-[#65A30D]">pashasidorenko18@gmail.com</a>{' '}
           · тел.: +38 099 918 82 60.
         </p>
       </Sec>

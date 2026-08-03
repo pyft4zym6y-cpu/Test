@@ -16,7 +16,7 @@ interface Cluster {
 const CLUSTERS: Cluster[] = [
   {
     label: 'Бренд і клієнтський досвід',
-    color: '#F471B5',
+    color: '#DB2777',
     zones: [
       { name: 'Бренд', text: 'Позиціонування, Brand Book, тригери довіри.', pb: 'PB-37 · 46 · 50' },
       { name: 'UX / UI', text: 'Інтерфейси, що продають: картка товару, чекаут, пошук.', pb: 'PB-15 · 40' },
@@ -26,7 +26,7 @@ const CLUSTERS: Cluster[] = [
   },
   {
     label: 'Платформа і розробка',
-    color: '#3DDAD0',
+    color: '#0F9488',
     zones: [
       { name: 'Web-розробка', text: 'SEO-first, mobile-first вітрини: Shopify · Magento · WooCommerce.', pb: 'PB-14 · 16' },
       { name: 'Тестування · юзабіліті', text: 'User-friendly аудит, A/B-тести, швидкість (Core Web Vitals).', pb: 'PB-15 · 17' },
@@ -36,7 +36,7 @@ const CLUSTERS: Cluster[] = [
   },
   {
     label: 'Трафік і канали',
-    color: '#A3E635',
+    color: '#65A30D',
     zones: [
       { name: 'SEO · AEO · GEO', text: 'Органіка, видимість у AI-пошуку, локальна видача.', pb: 'PB-04 · 05 · 06 · 07' },
       { name: 'PPC / Target', text: 'Performance із порогом ROAS і дисципліною капіталу.', pb: 'PB-36' },
@@ -46,7 +46,7 @@ const CLUSTERS: Cluster[] = [
   },
   {
     label: 'Утримання, дані та AI',
-    color: '#8B7CF6',
+    color: '#6D28D9',
     zones: [
       { name: 'Retention', text: 'Повторні продажі, RFM-сегментація, керування LTV.', pb: 'PB-08 · 09 · 45' },
       { name: 'Email-маркетинг', text: 'Klaviyo-автоматизації: ціль — 30%+ частки виручки.', pb: 'PB-08 · 45' },
@@ -66,11 +66,11 @@ export default function Expertise() {
           <Eyebrow>Експертиза · З чим саме працюємо</Eyebrow>
           <SectionTitle>
             17 напрямів —{' '}
-            <span className="font-pixel text-[0.8em] text-[#A3E635] inline-block align-baseline leading-none">
+            <span className="font-pixel text-[0.8em] text-[#65A30D] inline-block align-baseline leading-none">
               одна система
             </span>
           </SectionTitle>
-          <p className="text-[#8C96A5] mt-4 max-w-3xl leading-relaxed">
+          <p className="text-[#5A6472] mt-4 max-w-3xl leading-relaxed">
             Кожен напрям — це домен Commerce OS із власними плейбуками, метриками та DoD. Порядок
             підключення диктують залежності, а не бажання: без аналітики не працює retention, без
             ERP не масштабуються канали.
@@ -101,7 +101,7 @@ export default function Expertise() {
                     style={{ '--accent': cluster.color } as React.CSSProperties}
                   >
                     <p className="font-extrabold text-base leading-snug">{z.name}</p>
-                    <p className="text-[#8C96A5] text-xs mt-2 leading-relaxed flex-1">{z.text}</p>
+                    <p className="text-[#5A6472] text-xs mt-2 leading-relaxed flex-1">{z.text}</p>
                     <p className="font-mono text-[0.58rem] mt-4" style={{ color: cluster.color }}>
                       {z.pb}
                     </p>
@@ -114,8 +114,8 @@ export default function Expertise() {
 
         <FadeIn delay={0.3}>
           <div className="card p-5 mt-12 flex flex-wrap gap-x-6 gap-y-2 items-baseline">
-            <span className="font-pixel text-[0.5rem] uppercase text-[#A3E635]">Не меню послуг</span>
-            <span className="text-[#B7C0CC] text-sm">
+            <span className="font-pixel text-[0.5rem] uppercase text-[#65A30D]">Не меню послуг</span>
+            <span className="text-[#3F4854] text-sm">
               Напрями не продаються поодинці — вони підключаються за дорожньою картою, коли
               діагностика показує розрив у грошах саме там.
             </span>

@@ -2,12 +2,12 @@ import FadeIn from './FadeIn';
 import { Eyebrow, Section, SectionTitle } from './ui';
 
 const INDUSTRIES = [
-  { name: 'FMCG / Beauty', text: 'Imperia/ISEI · 17K SKU +40% · Henkel, J&J, NYX', color: '#F5B84B' },
-  { name: 'Home & Decor · Textile', text: 'Premium Textile ×18 · Ugears — hobby/home', color: '#A3E635' },
-  { name: 'Consumer Electronics', text: 'мультиканальна роздрібна модель · Amazon', color: '#3DDAD0' },
-  { name: 'Fashion', text: 'маркетплейси ЄС · листинги · retention', color: '#F471B5' },
-  { name: 'Fintech', text: 'цифрові продукти · воронки · аналітика', color: '#8B7CF6' },
-  { name: 'AI', text: 'AI-домен Commerce OS · персоналізація, автоматизація', color: '#FF6A3D' },
+  { name: 'FMCG / Beauty', text: 'Imperia/ISEI · 17K SKU +40% · Henkel, J&J, NYX', color: '#B45309' },
+  { name: 'Home & Decor · Textile', text: 'Premium Textile ×18 · Ugears — hobby/home', color: '#65A30D' },
+  { name: 'Consumer Electronics', text: 'мультиканальна роздрібна модель · Amazon', color: '#0F9488' },
+  { name: 'Fashion', text: 'маркетплейси ЄС · листинги · retention', color: '#DB2777' },
+  { name: 'Fintech', text: 'цифрові продукти · воронки · аналітика', color: '#6D28D9' },
+  { name: 'AI', text: 'AI-домен Commerce OS · персоналізація, автоматизація', color: '#EA580C' },
 ];
 
 type Mark = 'yes' | 'no' | 'part';
@@ -30,15 +30,15 @@ const COMPETITORS: {
 const COLUMNS = ['Стратегія', 'Виконання', 'Власні активи', 'P&L', 'Система-продукт'];
 
 const DIFFS = [
-  { vs: 'На відміну від агенцій', text: 'будуємо активи, а не лише трафік — і відповідаємо за P&L, не за «охоплення».', color: '#FF6A3D' },
-  { vs: 'На відміну від фрилансерів', text: 'приносимо системну методологію та керовану команду, а не одну вузьку послугу.', color: '#8C96A5' },
-  { vs: 'На відміну від in-house', text: 'працюємо з дня 1 і будуємо систему швидше, ніж наймається й розганяється відділ.', color: '#F5B84B' },
-  { vs: 'На відміну від big consulting', text: 'не лишаємо деку — ведемо виконання руками до вимірюваного результату.', color: '#8B7CF6' },
+  { vs: 'На відміну від агенцій', text: 'будуємо активи, а не лише трафік — і відповідаємо за P&L, не за «охоплення».', color: '#EA580C' },
+  { vs: 'На відміну від фрилансерів', text: 'приносимо системну методологію та керовану команду, а не одну вузьку послугу.', color: '#5A6472' },
+  { vs: 'На відміну від in-house', text: 'працюємо з дня 1 і будуємо систему швидше, ніж наймається й розганяється відділ.', color: '#B45309' },
+  { vs: 'На відміну від big consulting', text: 'не лишаємо деку — ведемо виконання руками до вимірюваного результату.', color: '#6D28D9' },
 ];
 
 function MarkIcon({ mark }: { mark: Mark }) {
-  if (mark === 'yes') return <span className="text-[#A3E635]">✓</span>;
-  if (mark === 'part') return <span className="text-[#F5B84B]">~</span>;
+  if (mark === 'yes') return <span className="text-[#65A30D]">✓</span>;
+  if (mark === 'part') return <span className="text-[#B45309]">~</span>;
   return <span className="text-[#66707E]">×</span>;
 }
 
@@ -56,7 +56,7 @@ export function Industries() {
             <FadeIn key={ind.name} delay={i * 0.06}>
               <div className="card card-hover accent-top p-6 h-full" style={{ '--accent': ind.color } as React.CSSProperties}>
                 <p className="font-extrabold text-lg">{ind.name}</p>
-                <p className="text-[#8C96A5] text-xs mt-2 leading-relaxed">{ind.text}</p>
+                <p className="text-[#5A6472] text-xs mt-2 leading-relaxed">{ind.text}</p>
               </div>
             </FadeIn>
           ))}
@@ -99,12 +99,12 @@ export function Competitors() {
                 {COMPETITORS.map((row) => (
                   <tr
                     key={row.name}
-                    className={`border-t border-[#1C2129] ${
-                      row.me ? 'bg-[rgba(163,230,53,0.07)]' : ''
+                    className={`border-t border-[#ECEEF0] ${
+                      row.me ? 'bg-[rgba(101,163,13,0.07)]' : ''
                     }`}
                   >
                     <td className="px-6 py-4">
-                      <p className={`font-bold ${row.me ? 'text-[#A3E635]' : ''}`}>{row.name}</p>
+                      <p className={`font-bold ${row.me ? 'text-[#65A30D]' : ''}`}>{row.name}</p>
                       <p className="font-mono text-[0.62rem] text-[#66707E] mt-0.5">{row.sub}</p>
                     </td>
                     {row.marks.map((m, i) => (
@@ -112,7 +112,7 @@ export function Competitors() {
                         <MarkIcon mark={m} />
                       </td>
                     ))}
-                    <td className={`px-6 py-4 text-right font-mono font-bold ${row.me ? 'text-[#A3E635]' : 'text-[#8C96A5]'}`}>
+                    <td className={`px-6 py-4 text-right font-mono font-bold ${row.me ? 'text-[#65A30D]' : 'text-[#5A6472]'}`}>
                       {row.price}
                     </td>
                   </tr>
@@ -125,7 +125,7 @@ export function Competitors() {
               ✓ повністю · ~ частково · × ні. Назви фірм — приклади архетипів; кожна модель має
               свою нішу.
             </p>
-            <p className="font-mono text-xs text-[#A3E635]">
+            <p className="font-mono text-xs text-[#65A30D]">
               Єдиний рядок із усіма ✓ — стратегія + руки + активи + P&amp;L + система.
             </p>
           </div>
@@ -137,7 +137,7 @@ export function Competitors() {
             <FadeIn key={d.vs} delay={i * 0.08}>
               <div className="card card-hover accent-left p-6 h-full" style={{ '--accent': d.color } as React.CSSProperties}>
                 <p className="font-bold">{d.vs}</p>
-                <p className="text-[#8C96A5] text-sm mt-1.5 leading-relaxed">{d.text}</p>
+                <p className="text-[#5A6472] text-sm mt-1.5 leading-relaxed">{d.text}</p>
               </div>
             </FadeIn>
           ))}

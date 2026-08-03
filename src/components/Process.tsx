@@ -2,23 +2,23 @@ import FadeIn from './FadeIn';
 import { Eyebrow, Section, SectionTitle, CountUp } from './ui';
 
 const STEPS = [
-  { period: 'Тиждень 1', name: 'Baseline & доступи', text: 'Фіксуємо факт: аналітика, CRM, кабінети. Межа факт/допущення.', color: '#A3E635' },
-  { period: 'Тижд. 2–3', name: 'Discovery + Audit', text: 'Health Score, зрілість, розрив→₴, роутинг у плейбуки.', color: '#3DDAD0' },
-  { period: 'Тижд. 4–6', name: 'Roadmap', text: '3 хвилі, бюджет-вилки, сценарії, карта залежностей.', color: '#F5B84B' },
-  { period: 'Міс. 2–3', name: 'Wave 1 · швидкі перемоги', text: 'Перший вимірюваний результат за 30–60 днів.', color: '#FF6A3D' },
-  { period: 'Міс. 3–9', name: 'Wave 2 · бар’єр', text: 'Найдовший актив: SEO, EC-інфраструктура, бренд.', color: '#8B7CF6' },
-  { period: 'Міс. 1–12', name: 'Governance', text: 'RACI, KPI, транші під DoD, дисципліна капіталу.', color: '#A3E635' },
+  { period: 'Тиждень 1', name: 'Baseline & доступи', text: 'Фіксуємо факт: аналітика, CRM, кабінети. Межа факт/допущення.', color: '#65A30D' },
+  { period: 'Тижд. 2–3', name: 'Discovery + Audit', text: 'Health Score, зрілість, розрив→₴, роутинг у плейбуки.', color: '#0F9488' },
+  { period: 'Тижд. 4–6', name: 'Roadmap', text: '3 хвилі, бюджет-вилки, сценарії, карта залежностей.', color: '#B45309' },
+  { period: 'Міс. 2–3', name: 'Wave 1 · швидкі перемоги', text: 'Перший вимірюваний результат за 30–60 днів.', color: '#EA580C' },
+  { period: 'Міс. 3–9', name: 'Wave 2 · бар’єр', text: 'Найдовший актив: SEO, EC-інфраструктура, бренд.', color: '#6D28D9' },
+  { period: 'Міс. 1–12', name: 'Governance', text: 'RACI, KPI, транші під DoD, дисципліна капіталу.', color: '#65A30D' },
 ];
 
 const PODS = [
-  { name: 'Web / Dev', text: 'Frontend · Backend · DevOps · QA', color: '#3DDAD0' },
-  { name: 'SEO / Content', text: 'Технічний SEO · семантика · контент', color: '#A3E635' },
-  { name: 'CRM / Retention', text: 'Klaviyo · Zoho · сегментація', color: '#8B7CF6' },
-  { name: 'Marketplace', text: 'Amazon · Allegro · листинги', color: '#F5B84B' },
-  { name: 'Design / UX', text: 'CJM · макети · бренд', color: '#F471B5' },
-  { name: 'Analytics / BI', text: 'GA4 · дашборди · атрибуція', color: '#FF6A3D' },
-  { name: 'Legal / Fin', text: 'VAT ЄС · юніт-економіка', color: '#38BDF8' },
-  { name: 'PM', text: 'спринти · DoD · синхрон', color: '#A3E635' },
+  { name: 'Web / Dev', text: 'Frontend · Backend · DevOps · QA', color: '#0F9488' },
+  { name: 'SEO / Content', text: 'Технічний SEO · семантика · контент', color: '#65A30D' },
+  { name: 'CRM / Retention', text: 'Klaviyo · Zoho · сегментація', color: '#6D28D9' },
+  { name: 'Marketplace', text: 'Amazon · Allegro · листинги', color: '#B45309' },
+  { name: 'Design / UX', text: 'CJM · макети · бренд', color: '#DB2777' },
+  { name: 'Analytics / BI', text: 'GA4 · дашборди · атрибуція', color: '#EA580C' },
+  { name: 'Legal / Fin', text: 'VAT ЄС · юніт-економіка', color: '#0284C7' },
+  { name: 'PM', text: 'спринти · DoD · синхрон', color: '#65A30D' },
 ];
 
 export default function Process() {
@@ -37,7 +37,7 @@ export default function Process() {
             className="hidden lg:block absolute top-[7px] left-0 right-0 h-[3px] rounded-full"
             style={{
               background:
-                'linear-gradient(90deg, #A3E635, #3DDAD0, #F5B84B, #FF6A3D, #8B7CF6, #A3E635)',
+                'linear-gradient(90deg, #65A30D, #0F9488, #B45309, #EA580C, #6D28D9, #65A30D)',
             }}
           />
           <div className="grid sm:grid-cols-2 lg:grid-cols-6 gap-x-5 gap-y-10">
@@ -52,7 +52,7 @@ export default function Process() {
                     {s.period}
                   </p>
                   <p className="font-extrabold text-base leading-snug">{s.name}</p>
-                  <p className="text-[#8C96A5] text-xs mt-2 leading-relaxed">{s.text}</p>
+                  <p className="text-[#5A6472] text-xs mt-2 leading-relaxed">{s.text}</p>
                 </div>
               </FadeIn>
             ))}
@@ -61,13 +61,13 @@ export default function Process() {
 
         <FadeIn delay={0.3}>
           <div className="card p-6 md:p-7 mt-12 flex flex-col md:flex-row gap-6 md:items-center">
-            <div className="shrink-0 md:border-r md:border-[#232933] md:pr-8">
-              <p className="font-mono font-bold text-5xl text-[#A3E635]">30–60</p>
-              <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[#8C96A5] mt-1.5">
+            <div className="shrink-0 md:border-r md:border-[#E4E7EA] md:pr-8">
+              <p className="font-mono font-bold text-5xl text-[#65A30D]">30–60</p>
+              <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[#5A6472] mt-1.5">
                 Днів до першого результату
               </p>
             </div>
-            <p className="text-[#B7C0CC] text-sm leading-relaxed">
+            <p className="text-[#3F4854] text-sm leading-relaxed">
               Кожен етап має підрядника, DoD (вимірюваний критерій закриття) і строк. Наступний
               етап не стартує, поки не виконана передумова — це захищає ваш бюджет.
             </p>
@@ -87,28 +87,28 @@ export default function Process() {
         <div className="grid lg:grid-cols-[1fr_1.6fr] gap-8 mt-10 items-start">
           <FadeIn delay={0.1}>
             <div className="card accent-top p-7" style={{ '--accent': 'var(--lime)' } as React.CSSProperties}>
-              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#A3E635] mb-3">
+              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#65A30D] mb-3">
                 Ядро
               </p>
               <p className="font-extrabold text-2xl">Павло Сидоренко</p>
-              <p className="text-[#8C96A5] text-sm mt-2">
+              <p className="text-[#5A6472] text-sm mt-2">
                 Архітектор системи · P&amp;L · переговори · синхрон підрядників
               </p>
-              <hr className="border-[#232933] my-5" />
+              <hr className="border-[#E4E7EA] my-5" />
               <div className="flex gap-10">
                 <div>
-                  <p className="font-mono font-bold text-3xl text-[#3DDAD0]">
+                  <p className="font-mono font-bold text-3xl text-[#0F9488]">
                     ~<CountUp to={40} />
                   </p>
-                  <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[#8C96A5] mt-1">
+                  <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[#5A6472] mt-1">
                     Фахівців у флагмані
                   </p>
                 </div>
                 <div>
-                  <p className="font-mono font-bold text-3xl text-[#F5B84B]">
+                  <p className="font-mono font-bold text-3xl text-[#B45309]">
                     <CountUp to={6} />
                   </p>
-                  <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[#8C96A5] mt-1">
+                  <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[#5A6472] mt-1">
                     Підрядних команд
                   </p>
                 </div>

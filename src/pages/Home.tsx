@@ -1,157 +1,171 @@
 import { Link } from 'react-router-dom';
-import { Play } from 'lucide-react';
+import { Play, ArrowRight } from 'lucide-react';
 import FadeIn from '../components/FadeIn';
-import RobotGirl, { say, sayIdle } from '../components/RobotGirl';
+import HeroGirl from '../components/HeroGirl';
+import { say, sayIdle } from '../components/speech';
+import { Eyebrow, Chip } from '../components/ui';
 
-const SERVICES = [
-  'Branding & Strategy',
-  'UX/UI · Customer Journey',
-  'Web Development · Shopify/React',
-  'SEO · AEO · GEO',
-  'CRM · Retention · Email',
-  'Marketplaces · AI · Аналітика',
+const STATS = [
+  { value: '×18', label: 'оборот у кейсі', color: '#65A30D' },
+  { value: '€900K', label: 'за 18 місяців', color: '#0F9488' },
+  { value: 'TOP-250', label: 'Forbes UA · кейс', color: '#12161C' },
+  { value: '14', label: 'країн', color: '#B45309' },
+];
+
+const BRANDS = [
+  'Ugears', 'Imperia', 'ISEI', 'Henkel', 'SC Johnson', 'Kimberly-Clark', 'Schwarzkopf',
+  'J&J', 'NYX', 'Missha', 'Watsons', 'Rozetka', 'Kasta', 'Lamoda', 'MAKEUP', 'Amazon', 'Epicentr',
+];
+
+const DOORS = [
+  {
+    to: '/approach',
+    title: 'Підхід',
+    text: 'Чому «більше бюджету» більше не працює — і що замість цього.',
+    say: 'Почни звідси: філософія системи за 3 хвилини →',
+  },
+  {
+    to: '/system',
+    title: 'Система',
+    text: '12 модулів Commerce OS: від діагностики до BI-дашборда.',
+    say: '12 модулів, один рушій. Зазирни під капот →',
+  },
+  {
+    to: '/cases',
+    title: 'Кейси',
+    text: '×18 обороту, ≥19 млн ₴ знайдених грошей, Forbes TOP-250.',
+    say: '×18 — не обіцянка, а факт із CRM. Перевір →',
+  },
 ];
 
 export default function Home() {
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-black text-white">
-      {/* Fallback layer: hi-tech grid + glow (visible if video is unavailable) */}
-      <div className="absolute inset-0 pointer-events-none select-none grid-bg">
-        <div className="glow-lime w-[560px] h-[560px] -top-40 -right-40" />
-        <div className="glow-cyan w-[420px] h-[420px] bottom-0 -left-32" />
-      </div>
-
-      {/* Hi-tech robot girl: watches the cursor and talks on menu hover */}
-      <div className="hidden md:block absolute bottom-0 right-[2%] lg:right-[5%] w-[300px] lg:w-[360px] xl:w-[400px] z-[5]">
-        <RobotGirl />
-      </div>
-      {/* Thin legibility gradient at the bottom only */}
-      <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
-
-      {/* Content above video */}
-      <div className="relative z-10 flex h-full flex-col px-5 sm:px-6 md:px-10 lg:px-14 pt-20">
-        {/* Meta grid */}
-        <div className="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-          <div>
-            <h2 className="text-lg md:text-xl tracking-wide leading-tight uppercase">
-              <span className="font-normal">weexp</span>
-              <br />
-              <span className="font-pixel text-base md:text-xl text-[#A3E635]">Commerce OS</span>
-            </h2>
-            <div className="text-[10px] text-white/50 mt-3">*</div>
-            <p className="font-pixel mt-1 text-[0.55rem] text-white/60 leading-loose">
-              weexp — команда, що
-              <br />
-              будує e-commerce
-              <br />
-              як актив: система,
-              <br />
-              дані та P&amp;L
-            </p>
-          </div>
-
-          <div className="text-right lg:text-left">
-            <h2 className="text-lg md:text-xl tracking-wide leading-tight uppercase">
-              <span className="font-normal">Growth &amp;</span>
-              <br />
-              <span className="font-pixel text-base md:text-xl">Engineering</span>
-            </h2>
-          </div>
-
-          <div>
-            <p className="font-pixel text-[0.6rem] tracking-widest text-white/50 uppercase mb-3">
-              Що ми робимо
-            </p>
-            <p className="text-sm text-white/90 leading-relaxed max-w-[240px]">
-              Створюємо топ-1% e-commerce досвіду для брендів і цифрових продуктів
-            </p>
-          </div>
-
-          <div className="text-right lg:text-left">
-            <p className="font-pixel text-[0.6rem] tracking-widest text-white/50 uppercase mb-3">
-              Послуги
-            </p>
-            <ul className="text-xs sm:text-sm text-white/90 leading-relaxed space-y-0.5">
-              {SERVICES.map((s) => (
-                <li key={s}>{s}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        <div className="flex-1" />
-
-        {/* Bottom block */}
-        <div className="pb-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 items-end">
-            <FadeIn delay={0.05} y={20}>
-              <h1
-                className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.4rem] xl:text-[3.9rem] tracking-wide uppercase font-normal"
-                style={{ lineHeight: 0.95 }}
-              >
-                Зростання —
-                <br />
-                це{' '}
-                <span className="font-pixel text-[0.82em] text-[#A3E635] inline-block leading-none align-baseline">
-                  система
-                </span>
-                ,
-                <br />
-                а не рекламний
-                <br />
-                <span className="font-pixel text-[0.82em] inline-block leading-none align-baseline">
-                  бюджет
-                </span>
-              </h1>
-            </FadeIn>
-
-            <FadeIn delay={0.18} y={16}>
-              <div className="flex flex-col gap-4 sm:gap-6 justify-end">
-                <Link
-                  to="/contact"
-                  onMouseEnter={() => say('Diagnostic Sprint від $2K — і твій розрив у грошах на столі. Почнемо?')}
-                  onMouseLeave={sayIdle}
-                  className="self-start flex items-center gap-3 border border-white/30 px-6 py-3 backdrop-blur-sm bg-white/5 hover:bg-white/10 transition-colors"
+    <div className="pt-16">
+      {/* ================= HERO ================= */}
+      <section className="relative grid-bg overflow-hidden">
+        <div className="glow-lime w-[480px] h-[480px] -top-32 -right-24" />
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10 py-14 md:py-20">
+          <div className="grid lg:grid-cols-[1.15fr_1fr] gap-12 lg:gap-8 items-center">
+            {/* Left: message */}
+            <div>
+              <FadeIn>
+                <Eyebrow>weexp · Commerce OS · операційна система росту</Eyebrow>
+                <h1
+                  className="font-extrabold uppercase tracking-tight"
+                  style={{ fontSize: 'clamp(2.2rem, 5.2vw, 4.2rem)', lineHeight: 1.02 }}
                 >
-                  <Play size={14} fill="white" />
-                  <span className="text-sm tracking-wider uppercase">Diagnostic Sprint</span>
-                </Link>
+                  Зростання — це{' '}
+                  <span className="font-pixel text-[0.78em] text-[#65A30D] inline-block align-baseline leading-none">
+                    система
+                  </span>
+                  ,<br />а не рекламний{' '}
+                  <span className="font-pixel text-[0.78em] inline-block align-baseline leading-none">
+                    бюджет
+                  </span>
+                </h1>
+                <p className="text-[#5A6472] mt-6 max-w-xl leading-relaxed text-base md:text-lg">
+                  weexp будує e-commerce як актив: бренд, платформа, дані та P&amp;L працюють в
+                  одній системі — і вартість компанії зростає швидше за її рекламні бюджети.
+                </p>
+              </FadeIn>
 
-                <div className="flex flex-wrap items-stretch gap-2 sm:gap-3 text-sm text-white/80 self-start lg:self-end">
-                  <div className="chip-dark px-3 sm:px-4 py-2 flex items-center gap-2">
-                    <span className="font-bold text-sm sm:text-base tracking-tight text-[#A3E635]">×18</span>
-                    <span className="text-white/50 text-xs">оборот у кейсі</span>
-                  </div>
-                  <div className="chip-dark px-3 sm:px-4 py-2 flex items-center gap-2">
-                    <span className="font-bold text-sm sm:text-base tracking-tight text-[#3DDAD0]">€900K</span>
-                    <span className="text-white/50 text-xs">за 18 міс</span>
-                  </div>
-                  <div className="chip-dark px-3 sm:px-4 py-2 flex items-center gap-2">
-                    <span className="font-bold text-[10px] sm:text-xs tracking-tight">Forbes TOP-250</span>
-                    <span className="text-white/50 text-xs">кейс</span>
-                  </div>
-                  <div className="chip-dark px-3 sm:px-4 py-2 flex items-center gap-2">
-                    <span className="font-bold text-sm sm:text-base tracking-tight text-[#F5B84B]">14</span>
-                    <span className="text-white/50 text-xs">країн</span>
-                  </div>
+              <FadeIn delay={0.12}>
+                <div className="flex flex-wrap gap-4 mt-8">
+                  <Link
+                    to="/contact"
+                    onMouseEnter={() => say('Diagnostic Sprint від $2K — і твій розрив у грошах на столі. Почнемо?')}
+                    onMouseLeave={sayIdle}
+                    className="flex items-center gap-3 bg-[#A3E635] px-7 py-3.5 text-sm font-bold tracking-wider uppercase text-black hover:brightness-95 transition-[filter]"
+                  >
+                    <Play size={14} fill="currentColor" />
+                    Diagnostic Sprint
+                  </Link>
+                  <Link
+                    to="/cases"
+                    onMouseEnter={() => say('Спершу докази? Справедливо. Кейси тут →')}
+                    onMouseLeave={sayIdle}
+                    className="flex items-center gap-2 border border-black/30 px-7 py-3.5 text-sm tracking-wider uppercase hover:bg-black/5 transition-colors"
+                  >
+                    Дивитись кейси
+                    <ArrowRight size={14} />
+                  </Link>
                 </div>
+              </FadeIn>
+
+              <FadeIn delay={0.22}>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-10 max-w-xl">
+                  {STATS.map((s) => (
+                    <div key={s.label} className="card px-4 py-3">
+                      <p className="font-mono font-bold text-xl" style={{ color: s.color }}>
+                        {s.value}
+                      </p>
+                      <p className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-[#66707E] mt-1">
+                        {s.label}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </FadeIn>
+            </div>
+
+            {/* Right: digital assistant girl */}
+            <FadeIn delay={0.15} x={30} y={0}>
+              <div className="max-w-[440px] mx-auto lg:mx-0 lg:ml-auto w-full">
+                <HeroGirl />
               </div>
             </FadeIn>
           </div>
+        </div>
+      </section>
 
-          <div className="mt-4 sm:mt-5 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 pt-4 border-t border-white/10">
-            <p className="text-xs text-white/60">
-              Відкриті до нових проєктів: Diagnostic Sprint, Program of Record, Fractional.{' '}
-              <Link to="/contact" className="text-[#A3E635] hover:text-[#bdff4d] transition-colors">
-                Забронювати сесію
-              </Link>
-            </p>
-            <p className="text-xs text-white/60 sm:text-right">
+      {/* ================= BRANDS ================= */}
+      <section className="border-y border-black/10 py-8 bg-[#F6F7F8]">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10">
+          <p className="font-pixel text-[0.55rem] uppercase text-black/55 mb-5">
+            Бренди й ринки, з якими ми вже працювали
+          </p>
+        </div>
+        <div className="marquee-mask overflow-hidden">
+          <div className="marquee-track">
+            {[...BRANDS, ...BRANDS].map((b, i) => (
+              <Chip key={`${b}-${i}`}>{b}</Chip>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ================= THREE DOORS ================= */}
+      <section className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10 py-16 md:py-20">
+        <FadeIn>
+          <div className="flex flex-wrap items-end justify-between gap-6 mb-10">
+            <h2 className="font-extrabold uppercase tracking-tight" style={{ fontSize: 'clamp(1.6rem, 3.4vw, 2.6rem)' }}>
+              З чого почати
+            </h2>
+            <p className="text-xs text-black/60 font-mono">
               56 плейбуків • 52 метрики • 3 кейси • 1 програма росту
             </p>
           </div>
+        </FadeIn>
+        <div className="grid md:grid-cols-3 gap-5">
+          {DOORS.map((d, i) => (
+            <FadeIn key={d.to} delay={i * 0.08}>
+              <Link
+                to={d.to}
+                onMouseEnter={() => say(d.say)}
+                onMouseLeave={sayIdle}
+                className="card card-hover p-7 h-full flex flex-col group"
+              >
+                <p className="font-pixel text-[0.6rem] text-[#65A30D]">0{i + 1}</p>
+                <p className="font-extrabold text-2xl mt-3">{d.title}</p>
+                <p className="text-[#5A6472] text-sm mt-2.5 leading-relaxed flex-1">{d.text}</p>
+                <p className="font-mono text-xs uppercase tracking-wider mt-6 text-black/55 group-hover:text-[#65A30D] transition-colors">
+                  Перейти →
+                </p>
+              </Link>
+            </FadeIn>
+          ))}
         </div>
-      </div>
+      </section>
     </div>
   );
 }

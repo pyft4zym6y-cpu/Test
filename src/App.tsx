@@ -24,10 +24,8 @@ function ScrollToTop() {
 }
 
 function Shell() {
-  const { pathname } = useLocation();
-  const isHome = pathname === '/';
   return (
-    <main style={{ background: '#000', overflowX: 'clip' }}>
+    <main style={{ background: '#fff', overflowX: 'clip' }}>
       <ScrollToTop />
       <Nav />
       <Routes>
@@ -46,7 +44,7 @@ function Shell() {
         <Route path="/offer" element={<OfferPage />} />
         <Route path="*" element={<Home />} />
       </Routes>
-      {!isHome && <Footer />}
+      <Footer />
     </main>
   );
 }

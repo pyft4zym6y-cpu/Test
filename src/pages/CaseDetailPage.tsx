@@ -15,7 +15,7 @@ function UgearsDetail() {
           <br />
           для бренду <span className="lime-text">Forbes TOP-250 UA</span>
         </SectionTitle>
-        <p className="text-[#8C96A5] mt-5 max-w-2xl leading-relaxed">
+        <p className="text-[#5A6472] mt-5 max-w-2xl leading-relaxed">
           Засновник weexp керував e-commerce напрямом (8 фахівців) у мультиканальній і мультигеографічній моделі:
           власний магазин + маркетплейси, ринки США · DE · FR · ES · IT · UK. Лютий 2023 — квітень
           2025.
@@ -24,10 +24,10 @@ function UgearsDetail() {
 
       <FadeIn delay={0.1}>
         <div className="card accent-left p-6 mt-10 max-w-2xl" style={{ '--accent': 'var(--red)' } as React.CSSProperties}>
-          <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#FF5F56] mb-2.5">
+          <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#DC2626] mb-2.5">
             Точка А · старт-аудит
           </p>
-          <p className="font-mono text-sm text-[#C7CFDA]">
+          <p className="font-mono text-sm text-[#2F3742]">
             конверсія 0,64% · повторні 14,7% · CAC $40–50
           </p>
         </div>
@@ -44,10 +44,10 @@ function UgearsDetail() {
 
       <FadeIn delay={0.3}>
         <div className="card p-7 mt-8">
-          <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#F5B84B] mb-4">
+          <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#B45309] mb-4">
             Що зроблено
           </p>
-          <ul className="grid sm:grid-cols-2 gap-x-8 gap-y-2.5 text-sm text-[#C7CFDA]">
+          <ul className="grid sm:grid-cols-2 gap-x-8 gap-y-2.5 text-sm text-[#2F3742]">
             <li>· Запуск міжнародних продажів на Amazon (EU + US)</li>
             <li>· Глобальний інтернет-магазин · SEO-first</li>
             <li>· ERP і наскрізна звітність (CRM + BI)</li>
@@ -76,7 +76,7 @@ function ImperiaDetail() {
           <br />
           національного <span className="lime-text">FMCG-дистриб&rsquo;ютора</span>
         </SectionTitle>
-        <p className="text-[#8C96A5] mt-5 max-w-2xl leading-relaxed">
+        <p className="text-[#5A6472] mt-5 max-w-2xl leading-relaxed">
           Запуск web-інфраструктури, управління маркетплейсами (17K SKU), дропшипінг, вихід на
           міжнародні ринки, просування ключових і запуск нових брендів. Бренд ISEI: UA · PL · NL ·
           CY.
@@ -95,18 +95,18 @@ function ImperiaDetail() {
       <FadeIn delay={0.25}>
         <div className="grid md:grid-cols-2 gap-5 mt-8">
           <div className="card p-6">
-            <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[#F5B84B] mb-2.5">
+            <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[#B45309] mb-2.5">
               Виробники
             </p>
-            <p className="text-[#8C96A5] text-sm leading-relaxed">
+            <p className="text-[#5A6472] text-sm leading-relaxed">
               Henkel · SC Johnson · Kimberly-Clark · Schwarzkopf · J&amp;J · Missha · NYX
             </p>
           </div>
           <div className="card p-6">
-            <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[#3DDAD0] mb-2.5">
+            <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[#0F9488] mb-2.5">
               Клієнти
             </p>
-            <p className="text-[#8C96A5] text-sm leading-relaxed">
+            <p className="text-[#5A6472] text-sm leading-relaxed">
               Watsons · MAKEUP · Rozetka · Pampik · Kasta · Lamoda
             </p>
           </div>
@@ -115,10 +115,10 @@ function ImperiaDetail() {
 
       <FadeIn delay={0.35}>
         <div className="card p-7 mt-5">
-          <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#A3E635] mb-4">
+          <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#65A30D] mb-4">
             Що зроблено
           </p>
-          <ul className="grid sm:grid-cols-2 gap-x-8 gap-y-2.5 text-sm text-[#C7CFDA]">
+          <ul className="grid sm:grid-cols-2 gap-x-8 gap-y-2.5 text-sm text-[#2F3742]">
             <li>· Web-інфраструктура дистриб&rsquo;ютора з нуля</li>
             <li>· Управління 17K SKU на маркетплейсах</li>
             <li>· Дропшипінг-модель для роздрібних партнерів</li>
@@ -152,7 +152,7 @@ export default function CaseDetailPage() {
       <div className="max-w-6xl mx-auto px-5 sm:px-8 md:px-12 pt-8 -mb-12">
         <Link
           to="/cases"
-          className="font-mono text-xs uppercase tracking-wider text-[#8C96A5] hover:text-[#A3E635] transition-colors"
+          className="font-mono text-xs uppercase tracking-wider text-[#5A6472] hover:text-[#65A30D] transition-colors"
         >
           ← Всі кейси
         </Link>
@@ -178,7 +178,7 @@ export default function CaseDetailPage() {
                 </span>
               </p>
             </div>
-            <span className="font-mono text-sm uppercase tracking-wider text-white/60 group-hover:text-[#A3E635] transition-colors">
+            <span className="font-mono text-sm uppercase tracking-wider text-black/60 group-hover:text-[#65A30D] transition-colors">
               Читати →
             </span>
           </Link>

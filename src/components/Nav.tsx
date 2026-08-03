@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Menu, X, ChevronDown } from 'lucide-react';
-import { say, sayIdle } from './RobotGirl';
+import { say, sayIdle } from './speech';
 
 const LINKS = [
   { to: '/approach', label: 'Підхід', say: 'Чому реклама більше не рятує? Тут — відповідь у цифрах →' },
@@ -27,11 +27,11 @@ function Logo() {
       <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 256 256" fill="none" aria-hidden="true">
         <path
           d="M 160 88 L 194 34 L 216 0 L 256 0 L 256 40 L 221.5 93.5 L 200 128 L 256 128 L 256 256 L 96 256 L 96 168 L 64.246 220 L 40 256 L 0 256 L 0 216 L 34 162 L 56 128 L 0 128 L 0 0 L 160 0 Z"
-          fill="white"
+          fill="#12161C"
         />
       </svg>
       <span className="font-pixel text-[0.6rem] leading-none pt-0.5">
-        WEEXP<span className="text-[#A3E635]">·OS</span>
+        WEEXP<span className="text-[#65A30D]">·OS</span>
       </span>
     </Link>
   );
@@ -62,14 +62,14 @@ export default function Nav() {
 
   const linkCls = (isActive: boolean) =>
     `text-xs xl:text-sm tracking-wide uppercase transition-opacity hover:opacity-70 ${
-      isActive ? 'text-[#A3E635]' : 'text-white'
+      isActive ? 'text-[#65A30D]' : 'text-[#12161C]'
     }`;
 
   return (
     <>
       <header
         className={`fixed top-0 inset-x-0 z-50 transition-colors duration-300 ${
-          scrolled ? 'bg-black/85 backdrop-blur-md border-b border-white/10' : ''
+          scrolled ? 'bg-white/90 backdrop-blur-md border-b border-black/10' : ''
         }`}
       >
         <nav className="max-w-7xl mx-auto flex items-center justify-between px-5 sm:px-6 md:px-10 py-5">
@@ -89,22 +89,22 @@ export default function Nav() {
                     <ChevronDown size={12} className="transition-transform duration-200 group-hover:rotate-180" />
                   </NavLink>
                   <div className="absolute left-1/2 -translate-x-1/2 top-full pt-3 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200">
-                    <div className="bg-black/95 backdrop-blur-md border border-white/10 min-w-[260px] py-2">
+                    <div className="bg-white/95 backdrop-blur-md border border-black/10 min-w-[260px] py-2">
                       {CASE_LINKS.map((c) => (
                         <Link
                           key={c.to}
                           to={c.to}
                           onMouseEnter={() => say(c.say)}
                           onMouseLeave={sayIdle}
-                          className="flex items-baseline justify-between gap-4 px-5 py-2.5 text-xs uppercase tracking-wide text-white/75 hover:text-white hover:bg-white/5 transition-colors"
+                          className="flex items-baseline justify-between gap-4 px-5 py-2.5 text-xs uppercase tracking-wide text-black/70 hover:text-[#12161C] hover:bg-black/5 transition-colors"
                         >
                           <span>{c.label}</span>
-                          <span className="font-mono text-[0.62rem] text-[#A3E635]">{c.num}</span>
+                          <span className="font-mono text-[0.62rem] text-[#65A30D]">{c.num}</span>
                         </Link>
                       ))}
                       <Link
                         to="/cases"
-                        className="block px-5 py-2.5 mt-1 border-t border-white/10 text-xs uppercase tracking-wide text-[#A3E635] hover:bg-white/5 transition-colors"
+                        className="block px-5 py-2.5 mt-1 border-t border-black/10 text-xs uppercase tracking-wide text-[#65A30D] hover:bg-black/5 transition-colors"
                       >
                         Всі кейси →
                       </Link>
@@ -130,7 +130,7 @@ export default function Nav() {
               to="/contact"
               onMouseEnter={() => say('30 хвилин — і ти знаєш свій розрив у грошах. Тисни!')}
               onMouseLeave={sayIdle}
-              className="hidden lg:inline-block border border-white/30 bg-white/5 backdrop-blur-sm px-5 py-2 text-xs tracking-wider uppercase hover:bg-white/10 transition-colors"
+              className="hidden lg:inline-block border border-black/30 bg-black/5 backdrop-blur-sm px-5 py-2 text-xs tracking-wider uppercase hover:bg-black/5 transition-colors"
             >
               Сесія 30 хв
             </Link>
@@ -148,7 +148,7 @@ export default function Nav() {
 
       {/* Fullscreen mobile menu — staggered links */}
       <div
-        className={`menu-overlay fixed inset-0 z-[60] bg-black/95 backdrop-blur-md flex flex-col overflow-y-auto ${
+        className={`menu-overlay fixed inset-0 z-[60] bg-white/95 backdrop-blur-md flex flex-col overflow-y-auto ${
           menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >
@@ -171,7 +171,7 @@ export default function Nav() {
                 onClick={() => setMenuOpen(false)}
                 className={({ isActive }) =>
                   `menu-link text-2xl tracking-widest uppercase ${
-                    isActive ? 'text-[#A3E635]' : 'text-white'
+                    isActive ? 'text-[#65A30D]' : 'text-[#12161C]'
                   } ${menuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`
                 }
                 style={{ transitionDelay: menuOpen ? `${100 + i * 60}ms` : '0ms' }}
@@ -190,9 +190,9 @@ export default function Nav() {
                       key={c.to}
                       to={c.to}
                       onClick={() => setMenuOpen(false)}
-                      className="text-xs uppercase tracking-wider text-white/60 hover:text-[#A3E635] transition-colors"
+                      className="text-xs uppercase tracking-wider text-black/60 hover:text-[#65A30D] transition-colors"
                     >
-                      {c.label} <span className="font-mono text-[#A3E635]/70">{c.num}</span>
+                      {c.label} <span className="font-mono text-[#65A30D]/70">{c.num}</span>
                     </Link>
                   ))}
                 </div>
@@ -202,7 +202,7 @@ export default function Nav() {
           <Link
             to="/contact"
             onClick={() => setMenuOpen(false)}
-            className={`menu-link mt-3 border border-[#A3E635] text-[#A3E635] px-8 py-3 text-sm tracking-widest uppercase ${
+            className={`menu-link mt-3 border border-[#65A30D] text-[#65A30D] px-8 py-3 text-sm tracking-widest uppercase ${
               menuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}
             style={{ transitionDelay: menuOpen ? `${100 + LINKS.length * 60}ms` : '0ms' }}
