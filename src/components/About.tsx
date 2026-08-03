@@ -29,22 +29,6 @@ export default function About() {
               брендів у США, ЄС і MENA. Стик стратегії, технологій і клієнтського досвіду — з
               відповідальністю за P&amp;L.
             </p>
-            <ul className="mt-6 flex flex-col gap-2.5">
-              <li className="flex items-baseline gap-3">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#A3E635] shrink-0 translate-y-[-2px]" />
-                <p>
-                  <strong>Head of e-Commerce · Ugears</strong>{' '}
-                  <span className="text-[#8C96A5]">(Forbes TOP-250 UA · Смарт Екоммерс, LV)</span>
-                </p>
-              </li>
-              <li className="flex items-baseline gap-3">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#3DDAD0] shrink-0 translate-y-[-2px]" />
-                <p>
-                  <strong>Head of Marketing · Imperia Holding</strong>{' '}
-                  <span className="text-[#8C96A5]">(нац. FMCG-дистрибуція)</span>
-                </p>
-              </li>
-            </ul>
             <div className="flex flex-wrap gap-2.5 mt-6">
               {BRAND_CHIPS.map((b) => (
                 <Chip key={b}>{b}</Chip>

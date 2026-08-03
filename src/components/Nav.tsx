@@ -10,7 +10,7 @@ const LINKS = [
   { to: '/cases', label: 'Кейси' },
   { to: '/process', label: 'Процес' },
   { to: '/services', label: 'Умови' },
-  { to: '/about', label: 'Про мене' },
+  { to: '/about', label: 'Про нас' },
 ];
 
 function Logo() {
