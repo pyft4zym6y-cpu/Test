@@ -115,7 +115,7 @@ export function Case01Detail() {
           <Eyebrow>
             Кейс 01 · Преміум-текстиль · UA→EU · <span className="text-[#4D7C0F]">Флагман</span>
           </Eyebrow>
-          <SectionTitle>
+          <SectionTitle as="h1">
             Якісний продукт,
             <br />
             замкнений в аналоговій моделі

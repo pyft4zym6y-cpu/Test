@@ -56,7 +56,7 @@ export function Proof() {
           </p>
           <Link
             to="/cases/premium-textile"
-            className="font-mono text-sm text-[#4D7C0F] uppercase tracking-wider hover:text-[#4d7c0f] transition-colors"
+            className="font-mono text-sm text-[#4D7C0F] uppercase tracking-wider hover:text-[#3F6212] transition-colors"
           >
             Розібрати кейс →
           </Link>

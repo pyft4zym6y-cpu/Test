@@ -36,11 +36,11 @@ function LegalLayout({
               <span className="font-pixel text-[0.5rem] uppercase text-[#4D7C0F]">Питання?</span>
               <span className="text-[#3F4854] text-sm">
                 Напишіть нам:{' '}
-                <a href="mailto:pashasidorenko18@gmail.com" className="text-[#4D7C0F] hover:text-[#4d7c0f] transition-colors">
+                <a href="mailto:pashasidorenko18@gmail.com" className="text-[#4D7C0F] hover:text-[#3F6212] transition-colors">
                   pashasidorenko18@gmail.com
                 </a>{' '}
                 або поверніться на{' '}
-                <Link to="/" className="text-[#4D7C0F] hover:text-[#4d7c0f] transition-colors">
+                <Link to="/" className="text-[#4D7C0F] hover:text-[#3F6212] transition-colors">
                   головну
                 </Link>
                 .

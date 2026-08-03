@@ -158,8 +158,9 @@ export default function Nav() {
 
       {/* Fullscreen mobile menu — staggered links */}
       <div
+        aria-hidden={!menuOpen}
         className={`menu-overlay fixed inset-0 z-[60] bg-white/95 backdrop-blur-md flex flex-col overflow-y-auto ${
-          menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          menuOpen ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none'
         }`}
       >
         <div className="flex items-center justify-between px-6 py-6">
