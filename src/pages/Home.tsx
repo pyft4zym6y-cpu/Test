@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Play } from 'lucide-react';
 import FadeIn from '../components/FadeIn';
+import RobotGirl, { say, sayIdle } from '../components/RobotGirl';
 
 const SERVICES = [
   'Branding & Strategy',
@@ -20,15 +21,10 @@ export default function Home() {
         <div className="glow-cyan w-[420px] h-[420px] bottom-0 -left-32" />
       </div>
 
-      {/* Reference background video (girl) — plays where network allows */}
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="absolute inset-0 h-full w-full object-cover lg:scale-[1.2]"
-        src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260725_114042_d2ed2a89-f2fa-449b-9609-da456344257b.mp4"
-      />
+      {/* Hi-tech robot girl: watches the cursor and talks on menu hover */}
+      <div className="hidden md:block absolute bottom-0 right-[2%] lg:right-[5%] w-[300px] lg:w-[360px] xl:w-[400px] z-[5]">
+        <RobotGirl />
+      </div>
       {/* Thin legibility gradient at the bottom only */}
       <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
 
@@ -113,6 +109,8 @@ export default function Home() {
               <div className="flex flex-col gap-4 sm:gap-6 justify-end">
                 <Link
                   to="/contact"
+                  onMouseEnter={() => say('Diagnostic Sprint від $2K — і твій розрив у грошах на столі. Почнемо?')}
+                  onMouseLeave={sayIdle}
                   className="self-start flex items-center gap-3 border border-white/30 px-6 py-3 backdrop-blur-sm bg-white/5 hover:bg-white/10 transition-colors"
                 >
                   <Play size={14} fill="white" />

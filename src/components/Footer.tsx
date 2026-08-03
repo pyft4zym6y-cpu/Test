@@ -1,18 +1,177 @@
 import { Link } from 'react-router-dom';
+import { Linkedin, Mail, Phone, ArrowUp } from 'lucide-react';
+
+const NAV_LINKS = [
+  { to: '/approach', label: 'Підхід' },
+  { to: '/system', label: 'Система' },
+  { to: '/product', label: 'Продукт' },
+  { to: '/expertise', label: 'Експертиза' },
+  { to: '/process', label: 'Процес' },
+  { to: '/services', label: 'Умови' },
+  { to: '/about', label: 'Про нас' },
+];
+
+const CASE_LINKS = [
+  { to: '/cases/premium-textile', label: 'Premium Textile · ×18' },
+  { to: '/cases/ray-ua', label: 'RAY.UA · ≥19 млн ₴' },
+  { to: '/cases/ugears', label: 'Ugears · +65%' },
+  { to: '/cases/imperia', label: 'Imperia / ISEI · 17K SKU' },
+  { to: '/cases', label: 'Всі кейси →' },
+];
+
+const FORMAT_LINKS = [
+  { to: '/services', label: 'Diagnostic Sprint · від $2K' },
+  { to: '/services', label: 'Program of Record · 6–12 міс' },
+  { to: '/services', label: 'Fractional Lead · $6–20K/міс' },
+];
 
 export default function Footer() {
   return (
-    <footer className="border-t border-white/10">
-      <div className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10 py-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <p className="text-xs text-white/60">
-          Відкриті до Diagnostic Sprint, Program of Record або Fractional Lead.{' '}
-          <Link to="/contact" className="text-[#A3E635] hover:text-[#bdff4d] transition-colors">
-            Забронювати сесію
-          </Link>
-        </p>
-        <p className="text-xs text-white/60 sm:text-right font-mono">
-          © 2026 weexp · Commerce OS · linkedin.com/in/pvsidorenko
-        </p>
+    <footer className="border-t border-white/10 grid-bg">
+      <div className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10">
+        {/* Top: brand + link columns */}
+        <div className="grid gap-10 lg:grid-cols-[1.3fr_1fr_1fr_1.1fr] py-14">
+          {/* Brand */}
+          <div>
+            <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+              <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 256 256" fill="none" aria-hidden="true">
+                <path
+                  d="M 160 88 L 194 34 L 216 0 L 256 0 L 256 40 L 221.5 93.5 L 200 128 L 256 128 L 256 256 L 96 256 L 96 168 L 64.246 220 L 40 256 L 0 256 L 0 216 L 34 162 L 56 128 L 0 128 L 0 0 L 160 0 Z"
+                  fill="white"
+                />
+              </svg>
+              <span className="font-pixel text-xs leading-none pt-0.5">
+                WEEXP<span className="text-[#A3E635]">·OS</span>
+              </span>
+            </Link>
+            <p className="text-[#8C96A5] text-sm mt-5 max-w-xs leading-relaxed">
+              Команда, що будує e-commerce як актив: Commerce OS — операційна система росту, за
+              якою вартість компанії зростає швидше за рекламні бюджети.
+            </p>
+            <div className="flex items-center gap-3 mt-6">
+              <a
+                href="https://linkedin.com/in/pvsidorenko"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="LinkedIn"
+                className="p-2.5 border border-white/15 text-white/70 hover:text-[#A3E635] hover:border-[#A3E635]/50 transition-colors"
+              >
+                <Linkedin size={16} />
+              </a>
+              <a
+                href="mailto:pashasidorenko18@gmail.com"
+                aria-label="Email"
+                className="p-2.5 border border-white/15 text-white/70 hover:text-[#A3E635] hover:border-[#A3E635]/50 transition-colors"
+              >
+                <Mail size={16} />
+              </a>
+              <a
+                href="tel:+380999188260"
+                aria-label="Телефон"
+                className="p-2.5 border border-white/15 text-white/70 hover:text-[#A3E635] hover:border-[#A3E635]/50 transition-colors"
+              >
+                <Phone size={16} />
+              </a>
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <nav aria-label="Сторінки">
+            <p className="font-pixel text-[0.55rem] uppercase text-white/50 mb-4">Навігація</p>
+            <ul className="flex flex-col gap-2.5">
+              {NAV_LINKS.map((l) => (
+                <li key={l.label}>
+                  <Link to={l.to} className="text-sm text-[#B7C0CC] hover:text-[#A3E635] transition-colors">
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Cases */}
+          <nav aria-label="Кейси">
+            <p className="font-pixel text-[0.55rem] uppercase text-white/50 mb-4">Кейси</p>
+            <ul className="flex flex-col gap-2.5">
+              {CASE_LINKS.map((l) => (
+                <li key={l.label}>
+                  <Link to={l.to} className="text-sm text-[#B7C0CC] hover:text-[#A3E635] transition-colors">
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <p className="font-pixel text-[0.55rem] uppercase text-white/50 mt-7 mb-4">Формати</p>
+            <ul className="flex flex-col gap-2.5">
+              {FORMAT_LINKS.map((l) => (
+                <li key={l.label}>
+                  <Link to={l.to} className="text-sm text-[#B7C0CC] hover:text-[#A3E635] transition-colors">
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Contacts + CTA */}
+          <div>
+            <p className="font-pixel text-[0.55rem] uppercase text-white/50 mb-4">Контакти</p>
+            <ul className="flex flex-col gap-2.5 font-mono text-[0.78rem] text-[#C7CFDA]">
+              <li>
+                <a href="mailto:pashasidorenko18@gmail.com" className="hover:text-[#A3E635] transition-colors">
+                  pashasidorenko18@gmail.com
+                </a>
+              </li>
+              <li>
+                <a href="tel:+380999188260" className="hover:text-[#A3E635] transition-colors">
+                  +38 099 918 82 60
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://linkedin.com/in/pvsidorenko"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-[#A3E635] transition-colors"
+                >
+                  linkedin.com/in/pvsidorenko
+                </a>
+              </li>
+              <li className="text-[#66707E]">Київ, Україна · працюємо з ЄС та US</li>
+              <li className="text-[#66707E]">Пн–Пт · 10:00–19:00 (EET)</li>
+            </ul>
+            <Link
+              to="/contact"
+              className="inline-block mt-6 border border-[#A3E635] text-[#A3E635] px-6 py-3 text-xs tracking-widest uppercase hover:bg-[#A3E635] hover:text-black transition-colors"
+            >
+              Забронювати сесію →
+            </Link>
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div className="border-t border-white/10 py-6 flex flex-wrap items-center justify-between gap-x-8 gap-y-3">
+          <p className="text-xs text-white/50">
+            © 2026 weexp · Commerce OS. Всі права захищені.
+          </p>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-white/50">
+            <Link to="/services" className="hover:text-white transition-colors">
+              Політика конфіденційності
+            </Link>
+            <Link to="/services" className="hover:text-white transition-colors">
+              Публічна оферта
+            </Link>
+            <span className="font-mono text-white/40">56 плейбуків · 52 метрики · 18 доменів</span>
+            <button
+              type="button"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              aria-label="Вгору"
+              className="p-2 border border-white/15 text-white/60 hover:text-[#A3E635] hover:border-[#A3E635]/50 transition-colors"
+            >
+              <ArrowUp size={14} />
+            </button>
+          </div>
+        </div>
       </div>
     </footer>
   );
