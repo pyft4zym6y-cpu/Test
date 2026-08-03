@@ -6,6 +6,9 @@ import { viteSingleFile } from 'vite-plugin-singlefile';
 // (all JS, CSS and images inlined as data URIs).
 export default defineConfig({
   plugins: [react(), viteSingleFile()],
+  define: {
+    __ARTIFACT_BUILD__: 'true',
+  },
   build: {
     outDir: 'dist-artifact',
     assetsInlineLimit: 100_000_000,

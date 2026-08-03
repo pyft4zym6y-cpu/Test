@@ -21,26 +21,14 @@ npm run preview    # посмотреть собранную версию лок
 
 ---
 
-## 2. Переезд на свой домен: обязательный шаг — BrowserRouter
+## 2. Роутер переключается сам
 
-Сейчас сайт использует HashRouter (URL вида `/#/cases`) — это нужно только для
-хостинга-артефакта Claude. На своём домене переключитесь на нормальные URL:
-
-**Файл `src/App.tsx`** — замените в двух местах:
-
-```diff
-- import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
-+ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-
-- <HashRouter>
-+ <BrowserRouter>
-    <Shell />
-- </HashRouter>
-+ </BrowserRouter>
-```
-
-После этого URL станут `site.com/cases` — их индексирует Google, ими можно
-делиться. Конфиги для отдачи SPA по любому URL уже лежат в репозитории:
+Обычная сборка (`npm run build`, деплой на Vercel/Netlify/Apache) использует
+**BrowserRouter** — чистые URL вида `site.com/cases`, которые индексирует
+Google. Артефакт-сборка (`vite.artifact.config.ts`) автоматически собирается
+с HashRouter (`/#/cases`) — он нужен только для страницы-артефакта Claude.
+Ничего переключать вручную не нужно. Конфиги для отдачи SPA по любому URL
+уже лежат в репозитории:
 
 | Хостинг | Файл | Делать ничего не надо |
 |---|---|---|
@@ -82,7 +70,6 @@ npm run preview    # посмотреть собранную версию лок
 
 ## 4. Чек-лист после переезда на домен
 
-- [ ] `src/App.tsx`: HashRouter → BrowserRouter (раздел 2)
 - [ ] `index.html`: раскомментировать блок `og:image` и подставить свой домен
       (картинка `og-image.png` уже в сборке)
 - [ ] `public/sitemap.xml`: заменить `https://YOUR-DOMAIN` на свой домен

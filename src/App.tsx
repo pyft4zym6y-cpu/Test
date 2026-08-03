@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Nav from './components/Nav';
 import Footer from './components/Footer';
 import AssistantBot from './components/AssistantBot';
@@ -85,10 +85,18 @@ function Shell() {
   );
 }
 
+/*
+ * Хостинг (Vercel/Netlify/Apache) — BrowserRouter, чисті URL без «#»;
+ * артефакт-збірка (vite.artifact.config.ts) — HashRouter, бо сторінка
+ * живе за одним URL без серверних rewrite.
+ */
+declare const __ARTIFACT_BUILD__: boolean;
+const Router = __ARTIFACT_BUILD__ ? HashRouter : BrowserRouter;
+
 export default function App() {
   return (
-    <HashRouter>
+    <Router>
       <Shell />
-    </HashRouter>
+    </Router>
   );
 }
