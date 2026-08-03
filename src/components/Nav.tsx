@@ -88,7 +88,7 @@ export default function Nav() {
                     {l.label}
                     <ChevronDown size={12} className="transition-transform duration-200 group-hover:rotate-180" />
                   </NavLink>
-                  <div className="absolute left-1/2 -translate-x-1/2 top-full pt-3 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200">
+                  <div className="absolute left-1/2 -translate-x-1/2 top-full pt-3 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto transition-opacity duration-200">
                     <div className="bg-white/95 backdrop-blur-md border border-black/10 min-w-[260px] py-2">
                       {CASE_LINKS.map((c) => (
                         <Link

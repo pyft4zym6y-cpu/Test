@@ -39,6 +39,11 @@ body,
   -moz-osx-font-smoothing: grayscale;
 }
 
+:focus-visible {
+  outline: 2px solid #65a30d;
+  outline-offset: 2px;
+}
+
 ::selection {
   background: rgba(163, 230, 53, 0.4);
 }

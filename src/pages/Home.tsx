@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { Play, ArrowRight } from 'lucide-react';
 import FadeIn from '../components/FadeIn';
 import HeroBot from '../components/HeroBot';
-import ScrollBot from '../components/ScrollBot';
 import { say, sayIdle } from '../components/speech';
 import { Eyebrow, Chip } from '../components/ui';
 
@@ -167,7 +166,6 @@ export default function Home() {
           ))}
         </div>
       </section>
-      <ScrollBot />
     </div>
   );
 }

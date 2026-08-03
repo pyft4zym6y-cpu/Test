@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Nav from './components/Nav';
 import Footer from './components/Footer';
+import AssistantBot from './components/AssistantBot';
 import Home from './pages/Home';
 import ApproachPage from './pages/ApproachPage';
 import AboutPage from './pages/AboutPage';
@@ -16,10 +17,28 @@ import ContactPage from './pages/ContactPage';
 import { PrivacyPage, OfferPage } from './pages/LegalPages';
 import BotVariantsPage from './pages/BotVariantsPage';
 
+const TITLES: Record<string, string> = {
+  '/': 'weexp — Commerce OS · Growth & Engineering',
+  '/approach': 'Підхід — weexp · Commerce OS',
+  '/system': 'Система — weexp · Commerce OS',
+  '/product': 'Продукт — weexp · Commerce OS',
+  '/expertise': 'Експертиза — weexp · Commerce OS',
+  '/cases': 'Кейси — weexp · Commerce OS',
+  '/process': 'Процес — weexp · Commerce OS',
+  '/services': 'Умови — weexp · Commerce OS',
+  '/about': 'Про нас — weexp · Commerce OS',
+  '/contact': 'Контакт — weexp · Commerce OS',
+  '/privacy': 'Політика конфіденційності — weexp',
+  '/offer': 'Публічна оферта — weexp',
+};
+
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+    document.title =
+      TITLES[pathname] ??
+      (pathname.startsWith('/cases/') ? 'Кейс — weexp · Commerce OS' : TITLES['/']);
   }, [pathname]);
   return null;
 }
@@ -47,6 +66,7 @@ function Shell() {
         <Route path="*" element={<Home />} />
       </Routes>
       <Footer />
+      <AssistantBot />
     </main>
   );
 }

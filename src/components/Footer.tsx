@@ -151,17 +151,17 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="border-t border-black/10 py-6 flex flex-wrap items-center justify-between gap-x-8 gap-y-3">
-          <p className="text-xs text-black/55">
+          <p className="text-xs text-black/60">
             © 2026 weexp · Commerce OS. Всі права захищені.
           </p>
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-black/55">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-black/60">
             <Link to="/privacy" className="hover:text-[#12161C] transition-colors">
               Політика конфіденційності
             </Link>
             <Link to="/offer" className="hover:text-[#12161C] transition-colors">
               Публічна оферта
             </Link>
-            <span className="font-mono text-black/45">56 плейбуків · 52 метрики · 18 доменів</span>
+            <span className="font-mono text-black/60">56 плейбуків · 52 метрики · 18 доменів</span>
             <button
               type="button"
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}

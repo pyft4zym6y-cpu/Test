@@ -1,4 +1,3 @@
-import MiniBot from '../components/MiniBot';
 import FadeIn from '../components/FadeIn';
 import { Eyebrow } from '../components/ui';
 import LeadForm from '../components/LeadForm';
@@ -91,7 +90,6 @@ export default function ContactPage() {
           </FadeIn>
         </div>
       </section>
-      <MiniBot idleText="Заповни форму — я підкажу і подякую 🙂 Поля з * обов’язкові." />
     </div>
   );
 }
