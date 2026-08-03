@@ -18,23 +18,29 @@ const BRANDS = [
   'Lamoda',
   'MAKEUP',
   'Amazon',
+  'Epicentr',
 ];
 
 const FACTS = [
   {
-    label: 'Ринки',
-    text: 'США · Німеччина · Франція · Іспанія · Італія · Велика Британія · Польща · Чехія · Румунія · Латвія · Мальта · Греція · Канада · Україна',
+    label: 'Ринки · 14 країн',
+    text: 'США · DE · FR · ES · IT · UK · PL · CZ · RO · LV · MT · GR · CA · UA',
     accent: '#A3E635',
   },
   {
-    label: 'Канали',
-    text: 'Власний DTC · Amazon · eBay · Etsy · Allegro · Shopify · Magento · маркетплейси ЄС · B2B / HoReCa',
+    label: 'Канали збуту',
+    text: 'DTC-сайт · Amazon · eBay · Etsy · Allegro · Rozetka · Kasta',
     accent: '#3DDAD0',
   },
   {
-    label: 'Галузі',
-    text: 'Consumer Electronics · Fashion · Beauty · Home & Decor · FMCG · Fintech · AI',
+    label: 'Моделі бізнесу',
+    text: 'B2C / DTC · B2B · HoReCa · Wholesale · Cross-border',
     accent: '#8B7CF6',
+  },
+  {
+    label: 'Платформи · CMS',
+    text: 'Shopify · Magento · WooCommerce · OpenCart · Odoo',
+    accent: '#F5B84B',
   },
 ];
 
@@ -73,7 +79,7 @@ export default function Trust() {
         </div>
       </FadeIn>
 
-      <div className="grid md:grid-cols-3 gap-5 mt-10">
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 mt-10">
         {FACTS.map((f, i) => (
           <FadeIn key={f.label} delay={i * 0.1}>
             <div className="card card-hover p-6 h-full">

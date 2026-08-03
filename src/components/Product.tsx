@@ -17,11 +17,11 @@ const DOMAINS = [
 ];
 
 const AUDIT_ROWS = [
-  { metric: 'Оплата заявок', fact: '63,4%', zone: '#FF5F56', norm: '70–80%', gold: '85%+', gap: '≈4,0 млн ₴', pb: 'PB-02·15' },
-  { metric: 'Конверсія сайту', fact: '0,8%', zone: '#FF5F56', norm: '2,0–3,5%', gold: '4,0%+', gap: '≈6,2 млн ₴', pb: 'PB-15' },
-  { metric: 'Повторні покупки', fact: '15%', zone: '#FF5F56', norm: '25–30%', gold: '35%+', gap: '≈3,1 млн ₴', pb: 'PB-08' },
-  { metric: 'Органіка (частка)', fact: '5%', zone: '#FF5F56', norm: '30–45%', gold: '50%+', gap: '≈2,4 млн ₴', pb: 'PB-04·05' },
-  { metric: 'Buy Box (Amazon)', fact: '72%', zone: '#F5B84B', norm: '70–90%', gold: '90%+', gap: '≈0,9 млн ₴', pb: 'PB-22' },
+  { metric: 'Оплата заявок', fact: '63,4%', zone: '#FF5F56', norm: '70–80%', gold: '75%+', gap: '≈4,0 млн ₴', pb: 'PB-02·15' },
+  { metric: 'Викуп до виручки', fact: '82%', zone: '#F5B84B', norm: '85–88%', gold: '88%+', gap: '≈2,5 млн ₴', pb: 'PB-19' },
+  { metric: 'Повторні покупки', fact: '15–20%', zone: '#FF5F56', norm: '25–30%', gold: '26–30%', gap: '≈4,5 млн ₴', pb: 'PB-08' },
+  { metric: 'SEO · органіка', fact: 'поз. 14', zone: '#FF5F56', norm: 'топ-10', gold: 'топ-5', gap: '≈3,0 млн ₴', pb: 'PB-04·05' },
+  { metric: 'Дод. канали', fact: 'платні', zone: '#FF5F56', norm: '2–3', gold: '3+', gap: '≈2,0 млн ₴', pb: 'PB-21·22' },
 ];
 
 const SYSTEM_NUMBERS = [
@@ -169,7 +169,7 @@ LTV:CAC ≥ 3 → ріст`}
 
           {/* Screen 2: audit calculator */}
           <FadeIn delay={0.2}>
-            <Terminal title="commerce-os · audit-calculator.xlsx">
+            <Terminal title="commerce-os · audit · RAY.UA · 2026">
               <div className="overflow-x-auto">
                 <table className="w-full font-mono text-[0.66rem]" style={{ fontVariantNumeric: 'tabular-nums' }}>
                   <thead>
@@ -199,9 +199,9 @@ LTV:CAC ≥ 3 → ріст`}
                       </tr>
                     ))}
                     <tr className="border-t border-[#232933]">
-                      <td className="pt-3 font-sans font-extrabold text-[#E9EDF2]">РАЗОМ УПУЩЕНО</td>
+                      <td className="pt-3 font-sans font-extrabold text-[#E9EDF2]">РАЗОМ УПУЩЕНО / РІК</td>
                       <td colSpan={4} className="pt-3 text-right font-bold text-[#A3E635]">
-                        ≈16,6 млн ₴
+                        ≥ 19 млн ₴
                       </td>
                       <td />
                     </tr>
@@ -210,7 +210,7 @@ LTV:CAC ≥ 3 → ріст`}
               </div>
               <p className="text-[0.64rem] text-[#66707E] mt-4">
                 Факт клієнта прикладається до еталона. Кожен розрив → недоотриманий оборот →
-                конкретний плейбук. Дані ілюстративні.
+                конкретний плейбук. Реальний аудит бренду RAY.UA, 2026.
               </p>
             </Terminal>
           </FadeIn>

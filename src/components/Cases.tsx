@@ -16,8 +16,9 @@ const CASE1_LAYERS = [
   { n: '02', name: 'E-com UA + EU', text: '2 вітрини, SEO-first, mobile-first, hreflang 4 мови', color: '#A3E635' },
   { n: '03', name: 'Маркетплейси', text: 'Amazon DE (Brand Registry) + Allegro + Rozetka, middleware', color: '#F5B84B' },
   { n: '04', name: 'CRM + Retention', text: 'Zoho + Klaviyo, 8+ автоматизацій, RFM-сегментація', color: '#8B7CF6' },
-  { n: '05', name: 'B2B / HoReCa', text: 'Окремий контур, лендинг, воронка, комерц-політика', color: '#3DDAD0' },
+  { n: '05', name: 'B2B / HoReCa', text: 'Окремий контур, воронка, 78% повторних, комерц-політика', color: '#3DDAD0' },
   { n: '06', name: 'LinkedIn', text: 'B2B-аутрич + контент + employer branding', color: '#38BDF8' },
+  { n: '07', name: 'ERP Odoo · Автоматизація', text: 'Єдина система: склад, замовлення, фінанси, синхронізація каналів — операційний хребет усіх пластів. +40% ефективність', color: '#FF6A3D' },
 ];
 
 const CASE1_RESULTS = [
@@ -163,7 +164,7 @@ export default function Cases() {
         {/* Solution: 6 layers */}
         <FadeIn delay={0.15}>
           <h3 className="font-extrabold text-2xl md:text-3xl mt-16 mb-8">
-            Шість паралельних пластів — <span className="lime-text">у синхроні, не по черзі</span>
+            Сім пластів — <span className="lime-text">у синхроні, не по черзі</span>
           </h3>
         </FadeIn>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -183,10 +184,10 @@ export default function Cases() {
         </div>
         <FadeIn delay={0.2}>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-8">
-            <Stat countTo={18} label="Місяців" color="var(--lime)" />
-            <Stat value="~40" label="Фахівців · 6 команд" color="var(--cyan)" />
+            <Stat countTo={18} label="Місяців · ~40 фахівців" color="var(--lime)" />
             <Stat value="~$80K" label="CAPEX в активи" color="var(--yellow)" />
-            <Stat value="~85%" label="Автоматизацій операцій" color="var(--purple)" />
+            <Stat value="3.8×" label="ROI рік 1" color="var(--purple)" />
+            <Stat value="2 тижні" label="На подолання касової кризи" color="var(--orange)" />
           </div>
         </FadeIn>
 
@@ -342,6 +343,9 @@ export default function Cases() {
                 Запуск міжнародних продажів на Amazon · глобальний інтернет-магазин · ERP і
                 наскрізна звітність (CRM+BI) · retention-стратегія · масштабування SKU й управління
                 P&amp;L.
+              </p>
+              <p className="font-mono text-[0.64rem] text-[#66707E] mt-3">
+                старт-аудит: конверсія 0,64% · повторні 14,7% → 60% · CAC $40–50
               </p>
             </div>
           </FadeIn>

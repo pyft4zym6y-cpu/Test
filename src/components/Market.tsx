@@ -42,7 +42,7 @@ function MarkIcon({ mark }: { mark: Mark }) {
   return <span className="text-[#66707E]">×</span>;
 }
 
-export default function Market() {
+export function Industries() {
   return (
     <>
       {/* ---- Галузі ---- */}
@@ -68,7 +68,13 @@ export default function Market() {
           </p>
         </FadeIn>
       </Section>
+    </>
+  );
+}
 
+export function Competitors() {
+  return (
+    <>
       {/* ---- Конкуренти ---- */}
       <Section className="grid-bg">
         <FadeIn>

@@ -1,35 +1,49 @@
+import { useEffect } from 'react';
+import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Nav from './components/Nav';
-import Hero from './components/Hero';
-import Idea from './components/Idea';
-import About from './components/About';
-import School from './components/School';
-import Trust from './components/Trust';
-import System from './components/System';
-import Product from './components/Product';
-import Process from './components/Process';
-import Economics from './components/Economics';
-import Cases from './components/Cases';
-import Market from './components/Market';
-import Offers from './components/Offers';
-import Final from './components/Final';
+import Footer from './components/Footer';
+import Home from './pages/Home';
+import AboutPage from './pages/AboutPage';
+import SystemPage from './pages/SystemPage';
+import CasesPage from './pages/CasesPage';
+import ProcessPage from './pages/ProcessPage';
+import ServicesPage from './pages/ServicesPage';
+import ContactPage from './pages/ContactPage';
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+  }, [pathname]);
+  return null;
+}
+
+function Shell() {
+  const { pathname } = useLocation();
+  const isHome = pathname === '/';
+  return (
+    <main style={{ background: '#000', overflowX: 'clip' }}>
+      <ScrollToTop />
+      <Nav />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/system" element={<SystemPage />} />
+        <Route path="/cases" element={<CasesPage />} />
+        <Route path="/process" element={<ProcessPage />} />
+        <Route path="/services" element={<ServicesPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="*" element={<Home />} />
+      </Routes>
+      {!isHome && <Footer />}
+    </main>
+  );
+}
 
 export default function App() {
   return (
-    <main style={{ background: '#0B0D10', overflowX: 'clip' }}>
-      <Nav />
-      <Hero />
-      <Idea />
-      <About />
-      <School />
-      <Trust />
-      <System />
-      <Product />
-      <Process />
-      <Economics />
-      <Cases />
-      <Market />
-      <Offers />
-      <Final />
-    </main>
+    <HashRouter>
+      <Shell />
+    </HashRouter>
   );
 }

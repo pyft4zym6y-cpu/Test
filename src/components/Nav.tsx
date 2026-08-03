@@ -1,15 +1,31 @@
 import { useEffect, useState } from 'react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Menu, X } from 'lucide-react';
 
 const LINKS = [
-  { href: '#about', label: 'Про мене' },
-  { href: '#system', label: 'Система' },
-  { href: '#cases', label: 'Кейси' },
-  { href: '#process', label: 'Процес' },
-  { href: '#offers', label: 'Умови' },
+  { to: '/about', label: 'Про мене' },
+  { to: '/system', label: 'Система' },
+  { to: '/cases', label: 'Кейси' },
+  { to: '/process', label: 'Процес' },
+  { to: '/services', label: 'Умови' },
+  { to: '/contact', label: 'Контакт' },
 ];
+
+function Logo() {
+  return (
+    <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+      <span className="eyebrow-dot" />
+      <span className="font-pixel text-[0.6rem] text-[#A3E635] leading-none pt-0.5">
+        COMMERCE&nbsp;OS
+      </span>
+    </Link>
+  );
+}
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -18,38 +34,106 @@ export default function Nav() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [menuOpen]);
+
   return (
-    <header
-      className={`fixed top-0 inset-x-0 z-50 transition-colors duration-300 ${
-        scrolled ? 'bg-[#0B0D10]/85 backdrop-blur-md border-b border-[#232933]' : ''
-      }`}
-    >
-      <nav className="max-w-6xl mx-auto flex items-center justify-between px-5 sm:px-8 py-4">
-        <a href="#top" className="flex items-center gap-2.5">
-          <span className="eyebrow-dot" />
-          <span className="font-mono font-bold text-sm tracking-[0.14em] text-[#A3E635]">
-            COMMERCE&nbsp;OS
-          </span>
-        </a>
-        <ul className="hidden md:flex items-center gap-7">
-          {LINKS.map((l) => (
-            <li key={l.href}>
-              <a
-                href={l.href}
-                className="font-mono text-[0.72rem] uppercase tracking-[0.16em] text-[#8C96A5] hover:text-[#E9EDF2] transition-colors duration-200"
-              >
-                {l.label}
-              </a>
-            </li>
+    <>
+      <header
+        className={`fixed top-0 inset-x-0 z-50 transition-colors duration-300 ${
+          scrolled ? 'bg-black/85 backdrop-blur-md border-b border-white/10' : ''
+        }`}
+      >
+        <nav className="max-w-7xl mx-auto flex items-center justify-between px-5 sm:px-6 md:px-10 py-5">
+          <Logo />
+          <ul className="hidden md:flex items-center gap-8">
+            {LINKS.map((l) => (
+              <li key={l.to}>
+                <NavLink
+                  to={l.to}
+                  className={({ isActive }) =>
+                    `text-sm tracking-wide uppercase transition-opacity hover:opacity-70 ${
+                      isActive ? 'text-[#A3E635]' : 'text-white'
+                    }`
+                  }
+                >
+                  {l.label}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+          <div className="flex items-center gap-3">
+            <Link
+              to="/contact"
+              className="hidden md:inline-block border border-white/30 bg-white/5 backdrop-blur-sm px-5 py-2 text-xs tracking-wider uppercase hover:bg-white/10 transition-colors"
+            >
+              Сесія 30 хв
+            </Link>
+            <button
+              type="button"
+              aria-label="Відкрити меню"
+              onClick={() => setMenuOpen(true)}
+              className="md:hidden p-2 hover:opacity-70 transition-opacity"
+            >
+              <Menu size={24} />
+            </button>
+          </div>
+        </nav>
+      </header>
+
+      {/* Fullscreen mobile menu — staggered links */}
+      <div
+        className={`menu-overlay fixed inset-0 z-[60] bg-black/95 backdrop-blur-md flex flex-col ${
+          menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+      >
+        <div className="flex items-center justify-between px-6 py-6">
+          <Logo />
+          <button
+            type="button"
+            aria-label="Закрити меню"
+            onClick={() => setMenuOpen(false)}
+            className="p-2 hover:opacity-70 transition-opacity"
+          >
+            <X size={24} />
+          </button>
+        </div>
+        <nav className="flex flex-col items-center justify-center flex-1 gap-8">
+          {LINKS.map((l, i) => (
+            <NavLink
+              key={l.to}
+              to={l.to}
+              onClick={() => setMenuOpen(false)}
+              className={({ isActive }) =>
+                `menu-link text-2xl tracking-widest uppercase ${
+                  isActive ? 'text-[#A3E635]' : 'text-white'
+                } ${menuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`
+              }
+              style={{ transitionDelay: menuOpen ? `${100 + i * 60}ms` : '0ms' }}
+            >
+              {l.label}
+            </NavLink>
           ))}
-        </ul>
-        <a
-          href="#contact"
-          className="rounded-full bg-[#A3E635] px-5 py-2 font-mono text-xs font-bold uppercase tracking-[0.12em] text-[#0B0D10] transition-transform duration-200 hover:scale-[1.04]"
-        >
-          Сесія 30 хв
-        </a>
-      </nav>
-    </header>
+          <Link
+            to="/contact"
+            onClick={() => setMenuOpen(false)}
+            className={`menu-link mt-4 border border-[#A3E635] text-[#A3E635] px-8 py-3 text-sm tracking-widest uppercase ${
+              menuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            }`}
+            style={{ transitionDelay: menuOpen ? `${100 + LINKS.length * 60}ms` : '0ms' }}
+          >
+            Сесія 30 хв
+          </Link>
+        </nav>
+      </div>
+    </>
   );
 }
