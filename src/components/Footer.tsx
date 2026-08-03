@@ -155,10 +155,10 @@ export default function Footer() {
             © 2026 weexp · Commerce OS. Всі права захищені.
           </p>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-white/50">
-            <Link to="/services" className="hover:text-white transition-colors">
+            <Link to="/privacy" className="hover:text-white transition-colors">
               Політика конфіденційності
             </Link>
-            <Link to="/services" className="hover:text-white transition-colors">
+            <Link to="/offer" className="hover:text-white transition-colors">
               Публічна оферта
             </Link>
             <span className="font-mono text-white/40">56 плейбуків · 52 метрики · 18 доменів</span>

@@ -13,6 +13,7 @@ import CaseDetailPage from './pages/CaseDetailPage';
 import ProcessPage from './pages/ProcessPage';
 import ServicesPage from './pages/ServicesPage';
 import ContactPage from './pages/ContactPage';
+import { PrivacyPage, OfferPage } from './pages/LegalPages';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -41,6 +42,8 @@ function Shell() {
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/offer" element={<OfferPage />} />
         <Route path="*" element={<Home />} />
       </Routes>
       {!isHome && <Footer />}
