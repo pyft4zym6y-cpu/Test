@@ -14,6 +14,7 @@ import ProcessPage from './pages/ProcessPage';
 import ServicesPage from './pages/ServicesPage';
 import ContactPage from './pages/ContactPage';
 import { PrivacyPage, OfferPage } from './pages/LegalPages';
+import BotVariantsPage from './pages/BotVariantsPage';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -42,6 +43,7 @@ function Shell() {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/offer" element={<OfferPage />} />
+        <Route path="/bot-variants" element={<BotVariantsPage />} />
         <Route path="*" element={<Home />} />
       </Routes>
       <Footer />

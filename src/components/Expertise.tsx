@@ -1,4 +1,5 @@
 import FadeIn from './FadeIn';
+import { say, sayIdle } from './speech';
 import { Eyebrow, Section, SectionTitle } from './ui';
 
 interface Zone {
@@ -97,6 +98,8 @@ export default function Expertise() {
                 {cluster.zones.map((z) => (
                   <div
                     key={z.name}
+                    onMouseEnter={() => say(`${z.name}: ${z.text} Працюємо за плейбуками ${z.pb}.`)}
+                    onMouseLeave={sayIdle}
                     className="card card-hover accent-top p-5 h-full flex flex-col"
                     style={{ '--accent': cluster.color } as React.CSSProperties}
                   >

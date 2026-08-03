@@ -1,5 +1,22 @@
 import FadeIn from './FadeIn';
+import { say, sayIdle } from './speech';
 import { Eyebrow, Section, SectionTitle } from './ui';
+
+
+const MODULE_SAYS: Record<string, string> = {
+  M01: 'M01 Discovery: структурована анкета CDF v2.0 — знімаємо факт бізнесу за тиждень, без здогадок.',
+  M02: 'M02 Data & Access Registry: всі доступи й джерела даних в одному реєстрі — без «у кого пароль?».',
+  M03: 'M03 Metrics: наскрізний трекінг подій — база для чесних цифр у кожному наступному модулі.',
+  M04: 'M04 Gold Standards: 52 еталонні метрики у 3 зонах — лінійка, до якої прикладаємо ваш факт.',
+  M05: 'M05 Audit Calculator: кожен розрив перекладаємо у гривні недоотриманого обороту.',
+  M06: 'M06 Playbook Library: 56 готових процедур закриття розривів — з кроками, формулами й DoD.',
+  M07: 'M07 Roadmap: хвилі робіт у порядку залежностей, а не побажань.',
+  M08: 'M08 PM & Delivery: спринти, беклог, підрядники — рушій, що перетворює план на факт.',
+  M09: 'M09 Governance: RACI та KPI по ролях — кожен у команді знає свою цифру.',
+  M10: 'M10 BI Dashboard: P&L у реальному часі — рішення ухвалюються на даних, не на відчуттях.',
+  M11: 'M11 AI Layer: автоматизація і персоналізація наскрізь усіх модулів системи.',
+  M12: 'M12 Knowledge Base: плейбуки, промпти, DoD — знання лишаються в компанії, а не в головах.',
+};
 
 const MODULE_GROUPS: {
   label: string;
@@ -147,6 +164,8 @@ export default function System() {
                 {g.modules.map((m) => (
                   <div
                     key={m.id}
+                    onMouseEnter={() => say(MODULE_SAYS[m.id] ?? m.name)}
+                    onMouseLeave={sayIdle}
                     className="card card-hover accent-left px-5 py-4"
                     style={{ '--accent': g.color } as React.CSSProperties}
                   >

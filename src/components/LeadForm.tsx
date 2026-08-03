@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { say } from './speech';
 
 const TURNOVER_OPTIONS = [
   'до 1 млн ₴ / міс',
@@ -19,6 +20,7 @@ const inputCls =
 export default function LeadForm() {
   const [name, setName] = useState('');
   const [store, setStore] = useState('');
+  const [phone, setPhone] = useState('');
   const [turnover, setTurnover] = useState('');
   const [comment, setComment] = useState('');
 
@@ -28,6 +30,7 @@ export default function LeadForm() {
     const body = [
       `Ім'я: ${name}`,
       `Магазин / сайт: ${store}`,
+      `Телефон: ${phone}`,
       `Оборот: ${turnover}`,
       comment ? `Коментар: ${comment}` : '',
       '',
@@ -35,6 +38,9 @@ export default function LeadForm() {
     ]
       .filter(Boolean)
       .join('\n');
+    say(
+      `Дякую${name ? `, ${name.trim()}` : ''}! Лист сформовано — надішли його зі своєї пошти, і ми повернемось протягом робочого дня. До зв'язку!`,
+    );
     window.location.href = `mailto:pashasidorenko18@gmail.com?subject=${encodeURIComponent(
       subject,
     )}&body=${encodeURIComponent(body)}`;
@@ -62,6 +68,15 @@ export default function LeadForm() {
           value={store}
           onChange={(e) => setStore(e.target.value)}
           placeholder="Посилання на магазин / сайт *"
+          className={inputCls}
+        />
+        <input
+          type="tel"
+          required
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          onFocus={() => say('Телефон потрібен, щоб узгодити час 30-хв сесії. Нікакого спаму — обіцяю.')}
+          placeholder="Телефон *"
           className={inputCls}
         />
         <select

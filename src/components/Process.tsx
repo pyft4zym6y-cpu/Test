@@ -5,7 +5,7 @@ const STEPS = [
   { period: 'Тиждень 1', name: 'Baseline & доступи', text: 'Фіксуємо факт: аналітика, CRM, кабінети. Межа факт/допущення.', color: '#65A30D' },
   { period: 'Тижд. 2–3', name: 'Discovery + Audit', text: 'Health Score, зрілість, розрив→₴, роутинг у плейбуки.', color: '#0F9488' },
   { period: 'Тижд. 4–6', name: 'Roadmap', text: '3 хвилі, бюджет-вилки, сценарії, карта залежностей.', color: '#B45309' },
-  { period: 'Міс. 2–3', name: 'Wave 1 · швидкі перемоги', text: 'Перший вимірюваний результат за 30–60 днів.', color: '#EA580C' },
+  { period: 'Міс. 2–3', name: 'Wave 1 · швидкі перемоги', text: 'Найшвидші розриви закриваються першими й фінансують наступні хвилі.', color: '#EA580C' },
   { period: 'Міс. 3–9', name: 'Wave 2 · бар’єр', text: 'Найдовший актив: SEO, EC-інфраструктура, бренд.', color: '#6D28D9' },
   { period: 'Міс. 1–12', name: 'Governance', text: 'RACI, KPI, транші під DoD, дисципліна капіталу.', color: '#65A30D' },
 ];
@@ -60,16 +60,10 @@ export default function Process() {
         </div>
 
         <FadeIn delay={0.3}>
-          <div className="card p-6 md:p-7 mt-12 flex flex-col md:flex-row gap-6 md:items-center">
-            <div className="shrink-0 md:border-r md:border-[#E4E7EA] md:pr-8">
-              <p className="font-mono font-bold text-5xl text-[#65A30D]">30–60</p>
-              <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[#5A6472] mt-1.5">
-                Днів до першого результату
-              </p>
-            </div>
+          <div className="card p-6 md:p-7 mt-12">
             <p className="text-[#3F4854] text-sm leading-relaxed">
-              Кожен етап має підрядника, DoD (вимірюваний критерій закриття) і строк. Наступний
-              етап не стартує, поки не виконана передумова — це захищає ваш бюджет.
+              Кожен етап має підрядника, DoD (вимірюваний критерій закриття) і бюджет траншами.
+              Наступний етап не стартує, поки не виконана передумова — це захищає ваш бюджет.
             </p>
           </div>
         </FadeIn>
@@ -91,8 +85,13 @@ export default function Process() {
                 Ядро
               </p>
               <p className="font-extrabold text-2xl">Павло Сидоренко</p>
-              <p className="text-[#5A6472] text-sm mt-2">
-                Архітектор системи · P&amp;L · переговори · синхрон підрядників
+              <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#65A30D] mt-1.5">
+                Founder &amp; Chief Architect · власник weexp
+              </p>
+              <p className="text-[#3F4854] text-sm mt-3 leading-relaxed">
+                Стратегічні ініціативи та архітектура кожного мандата — особисто. Ставить цілі
+                pod-ам, веде переговори рівня власників і відповідає за P&amp;L результату. Система
+                працює як оркестр, тому що за пультом — той, хто її спроєктував.
               </p>
               <hr className="border-[#E4E7EA] my-5" />
               <div className="flex gap-10">

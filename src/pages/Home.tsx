@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Play, ArrowRight } from 'lucide-react';
 import FadeIn from '../components/FadeIn';
-import HeroGirl from '../components/HeroGirl';
+import HeroBot from '../components/HeroBot';
 import { say, sayIdle } from '../components/speech';
 import { Eyebrow, Chip } from '../components/ui';
 
@@ -13,7 +13,7 @@ const STATS = [
 ];
 
 const BRANDS = [
-  'Ugears', 'Imperia', 'ISEI', 'Henkel', 'SC Johnson', 'Kimberly-Clark', 'Schwarzkopf',
+  'Henkel', 'SC Johnson', 'Kimberly-Clark', 'Schwarzkopf',
   'J&J', 'NYX', 'Missha', 'Watsons', 'Rozetka', 'Kasta', 'Lamoda', 'MAKEUP', 'Amazon', 'Epicentr',
 ];
 
@@ -111,7 +111,7 @@ export default function Home() {
             {/* Right: digital assistant girl */}
             <FadeIn delay={0.15} x={30} y={0}>
               <div className="max-w-[440px] mx-auto lg:mx-0 lg:ml-auto w-full">
-                <HeroGirl />
+                <HeroBot />
               </div>
             </FadeIn>
           </div>

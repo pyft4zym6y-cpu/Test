@@ -9,7 +9,7 @@ const DOORS = [
     rows: [
       { k: 'Scope', v: 'Health Score, аудит, розрив→₴, roadmap' },
       { k: 'Deliverable', v: 'D-01 Discovery Report + Roadmap (PDF)' },
-      { k: 'Інвестиція', v: 'фіксована · від $2K' },
+      { k: 'Інвестиція', v: '$2–6K · фіксована' },
       { k: 'Next', v: '30-хв дзвінок' },
     ],
   },
@@ -21,7 +21,7 @@ const DOORS = [
     rows: [
       { k: 'Scope', v: 'Повна трансформація, пласти в синхроні' },
       { k: 'Deliverable', v: 'Система активів + KPI + BI-дашборд' },
-      { k: 'Інвестиція', v: 'проєкт / ретейнер · обговорюється' },
+      { k: 'Інвестиція', v: '$40–80K · проєкт / ретейнер' },
       { k: 'Next', v: 'після Discovery' },
     ],
   },
@@ -32,7 +32,7 @@ const DOORS = [
     rows: [
       { k: 'Scope', v: 'Стратегічне лідерство + відповідальність за P&L' },
       { k: 'Deliverable', v: 'Керування, синхрон, звітність' },
-      { k: 'Інвестиція', v: 'ретейнер · $6–20K/міс (орієнтир)' },
+      { k: 'Інвестиція', v: '$6–20K/міс · ретейнер' },
       { k: 'Next', v: 'пілот 1 місяць' },
     ],
   },
@@ -42,7 +42,7 @@ const OFFER_CELLS = [
   { label: 'Що входить', text: 'Діагностика · аудит у грошах · roadmap · виконання пластів · керування (RACI/KPI) · BI-дашборд', color: '#65A30D' },
   { label: 'Етапи', text: '5: Discovery → Audit → Roadmap → Implementation → Governance', color: '#0F9488' },
   { label: 'Строки', text: 'Discovery 4–6 тижнів · програма 6–12 міс · перший результат 30–60 днів', color: '#B45309' },
-  { label: 'Бюджет', text: 'Discovery від $2K · Fractional $6–20K/міс · програма — проєкт/ретейнер (обговорюється)', color: '#EA580C' },
+  { label: 'Бюджет', text: 'Discovery $2–6K · Програма $40–80K (6–12 міс) · Fractional $6–20K/міс', color: '#EA580C' },
   { label: 'Формат', text: 'Diagnostic Sprint · Program of Record · Fractional Lead — під вашу ситуацію', color: '#6D28D9' },
   { label: 'Наступний крок', text: '30-хв стратегічна сесія → Discovery Sprint', color: '#65A30D' },
 ];

@@ -9,14 +9,14 @@ function UgearsDetail() {
   return (
     <Section className="grid-bg">
       <FadeIn>
-        <Eyebrow>Кейс · Ugears · Consumer Products · Head of e-Commerce</Eyebrow>
+        <Eyebrow>Кейс · Consumer DTC · Споживчі товари</Eyebrow>
         <SectionTitle>
           Міжнародний DTC + Amazon
           <br />
-          для бренду <span className="lime-text">Forbes TOP-250 UA</span>
+          для бренду <span className="lime-text">з Forbes TOP-250 UA</span>
         </SectionTitle>
         <p className="text-[#5A6472] mt-5 max-w-2xl leading-relaxed">
-          Засновник weexp керував e-commerce напрямом (8 фахівців) у мультиканальній і мультигеографічній моделі:
+          Засновник weexp керував e-commerce напрямом (8 фахівців) міжнародного виробника споживчих товарів — мультиканальна й мультигеографічна модель:
           власний магазин + маркетплейси, ринки США · DE · FR · ES · IT · UK. Лютий 2023 — квітень
           2025.
         </p>
@@ -70,7 +70,7 @@ function ImperiaDetail() {
   return (
     <Section className="grid-bg">
       <FadeIn>
-        <Eyebrow>Кейс · Imperia Holding / ISEI · FMCG · Head of Marketing</Eyebrow>
+        <Eyebrow>Кейс · FMCG-дистрибуція · Beauty</Eyebrow>
         <SectionTitle>
           E-com трансформація
           <br />
@@ -78,8 +78,7 @@ function ImperiaDetail() {
         </SectionTitle>
         <p className="text-[#5A6472] mt-5 max-w-2xl leading-relaxed">
           Запуск web-інфраструктури, управління маркетплейсами (17K SKU), дропшипінг, вихід на
-          міжнародні ринки, просування ключових і запуск нових брендів. Бренд ISEI: UA · PL · NL ·
-          CY.
+          міжнародні ринки, просування ключових і запуск нових брендів. Власний beauty-бренд: UA · PL · NL · CY.
         </p>
       </FadeIn>
 
@@ -123,7 +122,7 @@ function ImperiaDetail() {
             <li>· Управління 17K SKU на маркетплейсах</li>
             <li>· Дропшипінг-модель для роздрібних партнерів</li>
             <li>· CRM: +25% операційної ефективності</li>
-            <li>· Запуск і просування власного бренду ISEI</li>
+            <li>· Запуск і просування власного beauty-бренду</li>
             <li>· Вихід на ринки PL · NL · CY</li>
           </ul>
         </div>
@@ -134,9 +133,9 @@ function ImperiaDetail() {
 
 const DETAILS: Record<string, () => JSX.Element> = {
   'premium-textile': Case01Detail,
-  'ray-ua': RayCase,
-  ugears: UgearsDetail,
-  imperia: ImperiaDetail,
+  'fashion-apparel': RayCase,
+  'consumer-dtc': UgearsDetail,
+  'fmcg-distribution': ImperiaDetail,
 };
 
 export default function CaseDetailPage() {

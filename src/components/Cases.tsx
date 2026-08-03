@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import FadeIn from './FadeIn';
-import { Eyebrow, Section, SectionTitle, Bar, Chip, Stat } from './ui';
+import { Eyebrow, Section, SectionTitle, Bar, Stat } from './ui';
 
 const CASE1_POINT_A = [
   { k: 'Оборот', v: '~€48K/рік · майже все офлайн' },
@@ -113,7 +113,7 @@ export function Case01Detail() {
         <div className="glow-lime w-[420px] h-[420px] top-10 -right-40" />
         <FadeIn>
           <Eyebrow>
-            Кейс 01 · Premium Textile · UA→EU · <span className="text-[#65A30D]">Флагман</span>
+            Кейс 01 · Преміум-текстиль · UA→EU · <span className="text-[#65A30D]">Флагман</span>
           </Eyebrow>
           <SectionTitle>
             Якісний продукт,
@@ -312,91 +312,3 @@ export function Case01Detail() {
   );
 }
 
-export function MiniCases() {
-  return (
-    <>
-      {/* ================= CASES 02–03 ================= */}
-      <Section>
-        <div className="grid lg:grid-cols-2 gap-6 items-stretch">
-          {/* Case 02 */}
-          <FadeIn>
-            <div className="card card-hover p-8 h-full flex flex-col">
-              <Eyebrow>Кейс 02 · Ugears · Head of e-Commerce</Eyebrow>
-              <h3 className="font-extrabold text-2xl leading-snug">
-                Міжнародний DTC + Amazon для бренду{' '}
-                <span className="lime-text">Forbes TOP-250 UA</span>
-              </h3>
-              <p className="text-[#5A6472] text-sm mt-4 leading-relaxed">
-                Керував e-commerce напрямом (8 фахівців) у мультиканальній і мультигеографічній
-                моделі: власний магазин + маркетплейси, ринки США · DE · FR · ES · IT · UK. Лют
-                2023 — кві 2025.
-              </p>
-              <div className="flex flex-wrap gap-2 mt-5">
-                {['DTC + Marketplace', 'Amazon EU', 'ERP', 'P&L', 'Retention'].map((t) => (
-                  <Chip key={t}>{t}</Chip>
-                ))}
-              </div>
-              <div className="grid grid-cols-2 gap-3 mt-6">
-                <Stat value="+65%" label="До продажів · 9 міс (глоб. магазин)" color="var(--lime)" />
-                <Stat value="+40%" label="Ефективність · впровадження ERP" color="var(--cyan)" />
-                <Stat value="60%" label="Повторні замовлення (retention)" color="var(--purple)" />
-                <Stat countTo={6} label="Нових ринків ЄС + США" color="var(--yellow)" />
-              </div>
-              <p className="text-[#66707E] text-xs mt-6 leading-relaxed">
-                <span className="font-mono uppercase text-[0.6rem] tracking-[0.14em] text-[#B45309]">
-                  Що зроблено ·{' '}
-                </span>
-                Запуск міжнародних продажів на Amazon · глобальний інтернет-магазин · ERP і
-                наскрізна звітність (CRM+BI) · retention-стратегія · масштабування SKU й управління
-                P&amp;L.
-              </p>
-              <p className="font-mono text-[0.64rem] text-[#66707E] mt-3">
-                старт-аудит: конверсія 0,64% · повторні 14,7% → 60% · CAC $40–50
-              </p>
-            </div>
-          </FadeIn>
-
-          {/* Case 03 */}
-          <FadeIn delay={0.12}>
-            <div className="card card-hover p-8 h-full flex flex-col">
-              <Eyebrow>Кейс 03 · Imperia Holding / ISEI · Head of Marketing</Eyebrow>
-              <h3 className="font-extrabold text-2xl leading-snug">
-                E-com трансформація національного{' '}
-                <span className="lime-text">FMCG-дистриб&rsquo;ютора</span>
-              </h3>
-              <p className="text-[#5A6472] text-sm mt-4 leading-relaxed">
-                Запуск web-інфраструктури, управління маркетплейсами (17K SKU), дропшипінг, вихід
-                на міжнародні ринки, просування ключових і запуск нових брендів. Бренд ISEI: UA ·
-                PL · NL · CY.
-              </p>
-              <div className="grid grid-cols-2 gap-3 mt-6">
-                <Stat value="17 000" label="SKU на маркетплейсах" color="var(--pink)" />
-                <Stat value="+40%" label="Зростання продажів" color="var(--lime)" />
-                <Stat value="+25%" label="Опер. ефективність · CRM" color="var(--purple)" />
-                <Stat value="12–17" label="Фахівців у керуванні" color="var(--cyan)" />
-              </div>
-              <div className="mt-6 flex flex-col gap-3">
-                <div>
-                  <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[#B45309] mb-1.5">
-                    Виробники
-                  </p>
-                  <p className="text-[#5A6472] text-xs">
-                    Henkel · SC Johnson · Kimberly-Clark · Schwarzkopf · J&amp;J · Missha · NYX
-                  </p>
-                </div>
-                <div>
-                  <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[#0F9488] mb-1.5">
-                    Клієнти
-                  </p>
-                  <p className="text-[#5A6472] text-xs">
-                    Watsons · MAKEUP · Rozetka · Pampik · Kasta · Lamoda
-                  </p>
-                </div>
-              </div>
-            </div>
-          </FadeIn>
-        </div>
-      </Section>
-    </>
-  );
-}

@@ -12,10 +12,10 @@ const NAV_LINKS = [
 ];
 
 const CASE_LINKS = [
-  { to: '/cases/premium-textile', label: 'Premium Textile · ×18' },
-  { to: '/cases/ray-ua', label: 'RAY.UA · ≥19 млн ₴' },
-  { to: '/cases/ugears', label: 'Ugears · +65%' },
-  { to: '/cases/imperia', label: 'Imperia / ISEI · 17K SKU' },
+  { to: '/cases/premium-textile', label: 'Преміум-текстиль · ×18' },
+  { to: '/cases/fashion-apparel', label: 'Fashion-виробник · ≥19 млн ₴' },
+  { to: '/cases/consumer-dtc', label: 'Consumer DTC · +65%' },
+  { to: '/cases/fmcg-distribution', label: 'FMCG-дистриб’ютор · 17K SKU' },
   { to: '/cases', label: 'Всі кейси →' },
 ];
 

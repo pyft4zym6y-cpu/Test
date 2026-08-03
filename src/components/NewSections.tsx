@@ -3,6 +3,14 @@ import { Link } from 'react-router-dom';
 import FadeIn from './FadeIn';
 import { Eyebrow, Section, SectionTitle, Chip, Stat } from './ui';
 import { GrowthChart } from './Cases';
+import { say, sayIdle } from './speech';
+
+const PROOF_SAYS: Record<string, string> = {
+  x18: 'Як досягли ×18: сім пластів у синхроні — платформа+SEO, маркетплейси, ребрендинг, retention, B2B і ERP. Жоден окремо цього не дав би.',
+  cr: 'Конверсія 0,8% → 4,2%: SEO-first вітрина, mobile-first чекаут і десятки CRO-ітерацій за Gold Standards.',
+  organic: 'Органіка 5% → 45%: 18 місяців технічного SEO та контенту — тому CAC впав до ≈€7.',
+  roi: 'ROI 3.8×: бюджет ішов траншами під DoD — гроші вкладались лише в те, що довело ефект.',
+};
 
 /* ================= Доказ (chokolad-паттерн: результат — першим) ================= */
 
@@ -11,8 +19,11 @@ export function Proof() {
     <Section className="grid-bg">
       <div className="glow-lime w-[420px] h-[420px] -top-24 -right-32" />
       <FadeIn>
-        <Eyebrow>Доказ · Premium Textile · UA→EU · Факт за CRM / ERP / GA4</Eyebrow>
+        <Eyebrow>Доказ · Кейс «Преміум-текстиль» · UA→EU · Факт за CRM / ERP / GA4</Eyebrow>
         <SectionTitle>Спочатку — що це дає. На реальному бізнесі.</SectionTitle>
+        <p className="font-mono text-xs text-[#66707E] mt-3">
+          Наведи на цифру — асистент розповість, як ми цього досягли ↓
+        </p>
       </FadeIn>
       <div className="grid lg:grid-cols-2 gap-6 mt-10 items-stretch">
         <FadeIn delay={0.1}>
@@ -20,10 +31,18 @@ export function Proof() {
         </FadeIn>
         <FadeIn delay={0.2}>
           <div className="grid grid-cols-2 gap-3 h-full content-stretch">
-            <Stat value="×18" label="Оборот" color="var(--lime)" />
-            <Stat value="4,2%" label="Конверсія · з 0,8%" color="var(--cyan)" />
-            <Stat value="45%" label="Органіка · CAC ≈ €7" color="var(--purple)" />
-            <Stat value="3.8×" label="ROI за рік 1" color="var(--yellow)" />
+            <div onMouseEnter={() => say(PROOF_SAYS.x18)} onMouseLeave={sayIdle}>
+              <Stat value="×18" label="Оборот" color="var(--lime)" />
+            </div>
+            <div onMouseEnter={() => say(PROOF_SAYS.cr)} onMouseLeave={sayIdle}>
+              <Stat value="4,2%" label="Конверсія · з 0,8%" color="var(--cyan)" />
+            </div>
+            <div onMouseEnter={() => say(PROOF_SAYS.organic)} onMouseLeave={sayIdle}>
+              <Stat value="45%" label="Органіка · CAC ≈ €7" color="var(--purple)" />
+            </div>
+            <div onMouseEnter={() => say(PROOF_SAYS.roi)} onMouseLeave={sayIdle}>
+              <Stat value="3.8×" label="ROI за рік 1" color="var(--yellow)" />
+            </div>
           </div>
         </FadeIn>
       </div>
@@ -136,12 +155,12 @@ export function PriceOfInaction() {
         <FadeIn delay={0.1}>
           <div className="card p-7 h-full flex flex-col justify-center">
             <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#EA580C] mb-4">
-              Недоотримано · аудит RAY.UA
+              Недоотримано · аудит fashion-бренду
             </p>
             <p className="font-mono font-bold text-5xl md:text-6xl text-[#DB2777]">≥ 19 млн ₴</p>
             <p className="text-[#5A6472] text-sm mt-4 leading-relaxed">
               незайнятого обороту на рік (без Європи). ≈1,6 млн ₴ втрачається щомісяця зволікання.
-              Реальний аудит бренду <strong className="text-[#12161C]">RAY.UA</strong>, 2026.
+              Реальний аудит fashion-виробника (Україна), 2026.
             </p>
           </div>
         </FadeIn>
@@ -607,7 +626,7 @@ export function Fork() {
   );
 }
 
-/* ================= Кейс RAY.UA ================= */
+/* ================= Кейс fashion-бренд ================= */
 
 const RAY_ROWS = [
   { name: 'Оборот e-com', a: '23,2 млн ₴', b: '×2,0–2,5' },
@@ -625,10 +644,10 @@ export function RayCase() {
     <Section>
       <FadeIn>
         <Eyebrow>
-          Кейс · <span className="text-[#65A30D]">RAY.UA</span> · Program of Record 2026
+          Кейс · <span className="text-[#65A30D]">Fashion-виробник</span> · Program of Record 2026
         </Eyebrow>
         <SectionTitle>
-          Named-бренд ·<br />
+          Одяговий бренд ·<br />
           програма росту 12 міс
         </SectionTitle>
       </FadeIn>

@@ -2,8 +2,8 @@ import FadeIn from './FadeIn';
 import { Eyebrow, Section, SectionTitle } from './ui';
 
 const INDUSTRIES = [
-  { name: 'FMCG / Beauty', text: 'Imperia/ISEI · 17K SKU +40% · Henkel, J&J, NYX', color: '#B45309' },
-  { name: 'Home & Decor · Textile', text: 'Premium Textile ×18 · Ugears — hobby/home', color: '#65A30D' },
+  { name: 'FMCG / Beauty', text: 'нац. дистриб’ютор · 17K SKU · +40% · Henkel, J&J, NYX', color: '#B45309' },
+  { name: 'Home & Decor · Textile', text: 'преміум-текстиль ×18 · споживчі товари hobby/home', color: '#65A30D' },
   { name: 'Consumer Electronics', text: 'мультиканальна роздрібна модель · Amazon', color: '#0F9488' },
   { name: 'Fashion', text: 'маркетплейси ЄС · листинги · retention', color: '#DB2777' },
   { name: 'Fintech', text: 'цифрові продукти · воронки · аналітика', color: '#6D28D9' },

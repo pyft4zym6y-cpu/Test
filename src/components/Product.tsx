@@ -1,4 +1,5 @@
 import FadeIn from './FadeIn';
+import { say, sayIdle } from './speech';
 import { Eyebrow, Section, SectionTitle, Terminal, Stat, CountUp } from './ui';
 
 const DOMAINS = [
@@ -23,6 +24,31 @@ const AUDIT_ROWS = [
   { metric: 'SEO · органіка', fact: 'поз. 14', zone: '#DC2626', target: 'топ-5', gap: '≈3,0 млн ₴', pb: 'PB-04·05' },
   { metric: 'Дод. канали', fact: '1 платний', zone: '#DC2626', target: '3+', gap: '≈2,0 млн ₴', pb: 'PB-21·22' },
 ];
+
+
+const PB_DOMAIN: Record<number, string> = {};
+for (const d of [
+  { name: 'SEO / Органіка', nums: [4, 5, 6, 7] },
+  { name: 'CRO / UX', nums: [15, 2, 40] },
+  { name: 'CRM / Retention', nums: [8, 9, 45] },
+  { name: 'Фінанси', nums: [12, 36, 53] },
+  { name: 'Маркетплейси', nums: [21, 22, 23] },
+  { name: 'Міжнародна експансія', nums: [24, 25, 26, 27] },
+  { name: 'Платформа / IT', nums: [14, 16, 17, 18] },
+  { name: 'AI', nums: [32, 33, 54, 55, 56] },
+  { name: 'Бренд', nums: [37, 46, 50, 51] },
+  { name: 'Операції', nums: [19, 20, 34] },
+  { name: 'Продукт', nums: [28, 29, 42] },
+  { name: 'Стратегія · Продажі', nums: [1, 41, 43, 44] },
+]) {
+  for (const n of d.nums) PB_DOMAIN[n] = d.name;
+}
+function pbSay(n: number): string {
+  const num = String(n).padStart(2, '0');
+  const domain = PB_DOMAIN[n];
+  const scope = domain ? `домен «${domain}»` : 'суміжний домен системи';
+  return `PB-${num} · ${scope}: 9 розділів — навіщо, тригери, вхід, кроки, формули, deliverable, DoD, типові помилки та зв'язки з іншими плейбуками.`;
+}
 
 const SYSTEM_NUMBERS = [
   { to: 56, label: 'Плейбуків', color: 'var(--lime)' },
@@ -94,7 +120,9 @@ export default function Product() {
               return (
                 <div
                   key={i}
-                  className="card card-hover flex flex-col items-center justify-center py-3"
+                  onMouseEnter={() => say(pbSay(i + 1))}
+                  onMouseLeave={sayIdle}
+                  className="card card-hover flex flex-col items-center justify-center py-3 cursor-help"
                 >
                   <span className="font-mono text-[0.55rem]" style={{ color: c }}>
                     PB
@@ -169,7 +197,7 @@ LTV:CAC ≥ 3 → ріст`}
 
           {/* Screen 2: audit calculator */}
           <FadeIn delay={0.2}>
-            <Terminal title="commerce-os · audit · RAY.UA · 2026">
+            <Terminal title="commerce-os · audit · fashion-бренд · 2026">
               <div className="overflow-x-auto">
                 <table className="w-full font-mono text-[0.66rem]" style={{ fontVariantNumeric: 'tabular-nums' }}>
                   <thead>
@@ -208,7 +236,7 @@ LTV:CAC ≥ 3 → ріст`}
               </div>
               <p className="text-[0.64rem] text-[#66707E] mt-4">
                 Факт клієнта прикладається до еталона. Кожен розрив → недоотриманий оборот →
-                конкретний плейбук. Реальний аудит бренду RAY.UA, 2026.
+                конкретний плейбук. Реальний аудит fashion-виробника (Україна), 2026.
               </p>
             </Terminal>
           </FadeIn>

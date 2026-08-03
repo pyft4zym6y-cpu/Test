@@ -8,7 +8,7 @@ export default function ProcessPage() {
       <Process />
       <Economics />
       <PriceOfInaction />
-      <PageCta label="Перший результат — за 30–60 днів" />
+      <PageCta label="Процес, що захищає ваш бюджет" />
     </div>
   );
 }

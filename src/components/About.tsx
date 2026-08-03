@@ -5,9 +5,12 @@ import portraitImg from '../assets/pavlo-portrait.jpg';
 const BRAND_CHIPS = ['Amazon', 'Henkel', 'J&J', 'Watsons', 'Rozetka', 'Kimberly-Clark'];
 
 const ARCHETYPES = [
-  'Архітектор — проєктую',
-  'Мудрець — пояснюю складне просто',
-  'Візіонер — бачу на 5 років',
+  'Автор Commerce OS',
+  'Засновник школи Commerce Architecture',
+  'Спікер бізнес-клубу RISE',
+  'Ex-Head of e-Commerce · бренд Forbes TOP-250 UA',
+  'Ex-Head of Marketing · нац. FMCG-дистриб’ютор',
+  '15+ ринків · US · EU · MENA',
 ];
 
 export default function About() {
@@ -70,13 +73,19 @@ export default function About() {
       <Section>
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <FadeIn>
-            <Eyebrow>Засновник · Павло Сидоренко</Eyebrow>
+            <Eyebrow>Засновник · Особистий бренд</Eyebrow>
             <SectionTitle>
-              Засновник школи
+              Павло Сидоренко —
               <br />
-              <span className="lime-text">Commerce Architecture</span>
+              <span className="lime-text">архітектор, що перетворив досвід на систему</span>
             </SectionTitle>
-            <p className="font-bold text-lg mt-5">Commerce OS — перший продукт цієї школи.</p>
+            <p className="text-[#3F4854] mt-5 leading-relaxed max-w-xl">
+              8+ років будував e-commerce для брендів рівня Forbes TOP-250 і національних
+              дистриб'юторів — від першого продажу до десятків мільйонів обороту. Цей досвід
+              зібрано у Commerce OS: 56 плейбуків, 52 метрики і продукт замість годин консультанта.
+              Заснував школу Commerce Architecture, виступає в бізнес-спільнотах і особисто веде
+              кожен мандат weexp.
+            </p>
             <p className="font-serif-it text-lg text-[#3F4854] mt-4 leading-relaxed">
               «Я не продаю методологію. Я визначаю, як ринок думатиме про цифрове зростання в
               найближчі роки».

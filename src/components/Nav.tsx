@@ -15,10 +15,10 @@ const LINKS = [
 ];
 
 const CASE_LINKS = [
-  { to: '/cases/premium-textile', num: '×18', label: 'Premium Textile', say: '€48K → €900K за 18 місяців. Хочеш так само?' },
-  { to: '/cases/ray-ua', num: '≥19 млн ₴', label: 'RAY.UA', say: '≥19 млн ₴ знайдених грошей. Дивись аудит →' },
-  { to: '/cases/ugears', num: '+65%', label: 'Ugears', say: 'Forbes TOP-250 і +65% продажів за 9 міс →' },
-  { to: '/cases/imperia', num: '17K SKU', label: 'Imperia / ISEI', say: '17 000 SKU під контролем однієї системи →' },
+  { to: '/cases/premium-textile', num: '×18', label: 'Преміум-текстиль', say: '€48K → €900K за 18 місяців. Хочеш так само?' },
+  { to: '/cases/fashion-apparel', num: '≥19 млн ₴', label: 'Fashion-виробник', say: '≥19 млн ₴ знайдених грошей. Дивись аудит →' },
+  { to: '/cases/consumer-dtc', num: '+65%', label: 'Consumer DTC', say: 'Бренд із Forbes TOP-250 і +65% продажів за 9 міс →' },
+  { to: '/cases/fmcg-distribution', num: '17K SKU', label: 'FMCG-дистриб’ютор', say: '17 000 SKU під контролем однієї системи →' },
 ];
 
 function Logo() {

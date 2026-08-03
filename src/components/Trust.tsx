@@ -2,9 +2,6 @@ import FadeIn from './FadeIn';
 import { Eyebrow, Section, SectionTitle, Chip, Stat } from './ui';
 
 const BRANDS = [
-  'Ugears',
-  'Imperia Holding',
-  'ISEI',
   'Henkel',
   'SC Johnson',
   'Kimberly-Clark',
