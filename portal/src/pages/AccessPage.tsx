@@ -1,8 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ACCESSES, ACCESS_GUIDES, STATUSES } from '../lib/model';
-import { supabase, type AccessRow } from '../lib/supabase';
+import { supabase, DEMO, type AccessRow } from '../lib/supabase';
 import { useApp } from '../App';
+
+const LS_ACC = 'weexp-demo-access';
+const LS_FILES = 'weexp-demo-files';
+const lsGet = (k: string, def: any) => {
+  try {
+    return JSON.parse(localStorage.getItem(k) ?? '') ?? def;
+  } catch {
+    return def;
+  }
+};
 
 type FileRow = {
   id: string;
@@ -24,13 +34,18 @@ export default function AccessPage() {
   const [uploading, setUploading] = useState<string | null>(null);
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
-  const loadFiles = () =>
-    supabase
+  const loadFiles = () => {
+    if (DEMO) {
+      setFiles(lsGet(LS_FILES, []));
+      return Promise.resolve();
+    }
+    return supabase
       .from('files')
       .select('id,access_id,name,path,size')
       .eq('client_id', clientId)
       .order('created_at')
       .then(({ data }) => setFiles((data ?? []) as FileRow[]));
+  };
 
   useEffect(() => {
     loadFiles();
@@ -40,6 +55,17 @@ export default function AccessPage() {
   const upload = async (accessId: string, list: FileList | null) => {
     if (!list?.length) return;
     setUploading(accessId);
+    if (DEMO) {
+      const cur: FileRow[] = lsGet(LS_FILES, []);
+      for (const f of Array.from(list)) {
+        cur.push({ id: String(Date.now() + Math.random()), access_id: accessId, name: f.name, path: 'demo', size: f.size });
+      }
+      localStorage.setItem(LS_FILES, JSON.stringify(cur));
+      setFiles(cur);
+      setUploading(null);
+      if ((rows[accessId]?.status ?? 'Не выдан') === 'Не выдан') save(accessId, { status: 'Выдан' });
+      return;
+    }
     for (const f of Array.from(list)) {
       const safe = f.name.replace(/[^\w.\-а-яА-ЯіїєґІЇЄҐ ]+/g, '_');
       const path = `${clientId}/${accessId}/${Date.now()}_${safe}`;
@@ -51,7 +77,7 @@ export default function AccessPage() {
           name: f.name,
           path,
           size: f.size,
-          uploaded_by: session.user.email,
+          uploaded_by: session?.user.email ?? null,
         });
       }
     }
@@ -61,12 +87,23 @@ export default function AccessPage() {
   };
 
   const removeFile = async (f: FileRow) => {
+    if (DEMO) {
+      const cur: FileRow[] = lsGet(LS_FILES, []).filter((x: FileRow) => x.id !== f.id);
+      localStorage.setItem(LS_FILES, JSON.stringify(cur));
+      setFiles(cur);
+      return;
+    }
     await supabase.storage.from('uploads').remove([f.path]);
     await supabase.from('files').delete().eq('id', f.id);
     await loadFiles();
   };
 
   useEffect(() => {
+    if (DEMO) {
+      setRows(lsGet(LS_ACC, {}));
+      setLoaded(true);
+      return;
+    }
     supabase
       .from('access_status')
       .select('*')
@@ -86,14 +123,16 @@ export default function AccessPage() {
         access_id: accessId,
         status: 'Не выдан',
         comment: null,
-        updated_by: session.user.email ?? null,
+        updated_by: session?.user.email ?? null,
       };
-      const next = { ...cur, ...patch, updated_by: session.user.email ?? null };
+      const next = { ...cur, ...patch, updated_by: session?.user.email ?? 'demo' };
+      const all = { ...prev, [accessId]: next };
       clearTimeout(timers.current[accessId]);
       timers.current[accessId] = setTimeout(() => {
-        supabase.from('access_status').upsert(next, { onConflict: 'client_id,access_id' });
+        if (DEMO) localStorage.setItem(LS_ACC, JSON.stringify(all));
+        else supabase.from('access_status').upsert(next, { onConflict: 'client_id,access_id' });
       }, 500);
-      return { ...prev, [accessId]: next };
+      return all;
     });
   };
 

@@ -1,8 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { supabase, type AnswerRow } from './supabase';
+import { supabase, DEMO, type AnswerRow } from './supabase';
 import { useApp } from '../App';
 
-/** Ответы клиента: загрузка + upsert с дебаунсом. */
+const LS_KEY = 'weexp-demo-answers';
+
+const lsLoad = (): Record<string, AnswerRow> => {
+  try {
+    return JSON.parse(localStorage.getItem(LS_KEY) ?? '{}');
+  } catch {
+    return {};
+  }
+};
+export const lsSaveAll = (rows: Record<string, AnswerRow>) =>
+  localStorage.setItem(LS_KEY, JSON.stringify(rows));
+
+/** Ответы клиента: загрузка + upsert с дебаунсом (Supabase или localStorage в демо). */
 export function useAnswers() {
   const { session, member } = useApp();
   const clientId = member.client_id!;
@@ -12,6 +24,11 @@ export function useAnswers() {
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   useEffect(() => {
+    if (DEMO) {
+      setRows(lsLoad());
+      setLoaded(true);
+      return;
+    }
     supabase
       .from('answers')
       .select('*')
@@ -32,21 +49,23 @@ export function useAnswers() {
           question_id: questionId,
           answer: null,
           facts: null,
-          updated_by: session.user.email ?? null,
+          updated_by: session?.user.email ?? 'demo',
         };
-        const next = { ...cur, ...patch, updated_by: session.user.email ?? null };
+        const next = { ...cur, ...patch, updated_by: session?.user.email ?? 'demo' };
+        const all = { ...prev, [questionId]: next };
         clearTimeout(timers.current[questionId]);
         timers.current[questionId] = setTimeout(async () => {
-          await supabase.from('answers').upsert(next, { onConflict: 'client_id,question_id' });
+          if (DEMO) lsSaveAll(all);
+          else await supabase.from('answers').upsert(next, { onConflict: 'client_id,question_id' });
           setSavedAt(Date.now());
-        }, 700);
-        return { ...prev, [questionId]: next };
+        }, 500);
+        return all;
       });
     },
-    [clientId, session.user.email],
+    [clientId, session],
   );
 
-  return { rows, loaded, save, savedAt };
+  return { rows, setRows, loaded, save, savedAt };
 }
 
 export function answerMap(rows: Record<string, AnswerRow>): Record<string, string> {

@@ -4,6 +4,16 @@ const url = import.meta.env.VITE_SUPABASE_URL as string;
 const anon = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
 export const CONFIGURED = Boolean(url && anon);
+/** Без настроенного Supabase портал работает в демо-режиме: localStorage, без логина. */
+export const DEMO = !CONFIGURED;
+
+export const DEMO_MEMBER = {
+  email: 'demo@weexp.agency',
+  client_id: 'demo',
+  name: 'Демо',
+  role: 'CEO',
+  is_admin: false,
+};
 
 export const supabase = createClient(url ?? 'https://placeholder.supabase.co', anon ?? 'anon');
 

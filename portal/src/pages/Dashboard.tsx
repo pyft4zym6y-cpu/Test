@@ -4,7 +4,7 @@ import { useAnswers, answerMap } from '../lib/useAnswers';
 import { PAINS, PAINS_QID, trackFor } from '../data/pains';
 import { useApp } from '../App';
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, DEMO } from '../lib/supabase';
 
 export default function Dashboard() {
   const { member } = useApp();
@@ -13,6 +13,15 @@ export default function Dashboard() {
   const [accessDone, setAccessDone] = useState(0);
 
   useEffect(() => {
+    if (DEMO) {
+      try {
+        const m = JSON.parse(localStorage.getItem('weexp-demo-access') ?? '{}');
+        setAccessDone(Object.values(m).filter((r: any) => r.status === 'Выдан').length);
+      } catch {
+        /* noop */
+      }
+      return;
+    }
     supabase
       .from('access_status')
       .select('access_id,status')

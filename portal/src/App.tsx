@@ -1,7 +1,8 @@
 import { useEffect, useState, createContext, useContext } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import type { Session } from '@supabase/supabase-js';
-import { supabase, CONFIGURED, type Member } from './lib/supabase';
+import { supabase, CONFIGURED, DEMO_MEMBER, type Member } from './lib/supabase';
+import { seedDemo } from './lib/demoSeed';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import DomainPage from './pages/DomainPage';
@@ -10,7 +11,7 @@ import AdminPage from './pages/AdminPage';
 import PainsPage from './pages/PainsPage';
 import ReportPage from './pages/ReportPage';
 
-type Ctx = { session: Session; member: Member };
+type Ctx = { session: Session | null; member: Member };
 const AppCtx = createContext<Ctx | null>(null);
 export const useApp = () => useContext(AppCtx)!;
 
@@ -81,15 +82,54 @@ export default function App() {
 
   if (!CONFIGURED)
     return (
-      <div className="container" style={{ paddingTop: 60 }}>
-        <div className="card">
-          <h2>Портал не настроен</h2>
-          <p className="sub">
-            Задайте переменные окружения VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY (см.
-            PORTAL_SETUP.md) и пересоберите проект.
-          </p>
+      <AppCtx.Provider value={{ session: null, member: DEMO_MEMBER as Member }}>
+        <ScrollTop />
+        <div
+          className="mono"
+          style={{
+            background: '#12161C',
+            color: '#A3E635',
+            fontSize: 11.5,
+            padding: '8px 16px',
+            display: 'flex',
+            gap: 14,
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+          }}
+        >
+          <span>ДЕМО-РЕЖИМ · данные сохраняются только в этом браузере</span>
+          <button
+            className="chip"
+            style={{ fontSize: 11, padding: '3px 10px' }}
+            onClick={() => {
+              seedDemo();
+              window.location.reload();
+            }}
+          >
+            Заполнить демо-данными
+          </button>
+          <button
+            className="chip"
+            style={{ fontSize: 11, padding: '3px 10px' }}
+            onClick={() => {
+              localStorage.clear();
+              window.location.reload();
+            }}
+          >
+            Сбросить
+          </button>
         </div>
-      </div>
+        <Topbar member={DEMO_MEMBER as Member} />
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/pains" element={<PainsPage />} />
+          <Route path="/d/:sheet" element={<DomainPage />} />
+          <Route path="/access" element={<AccessPage />} />
+          <Route path="/report" element={<ReportPage />} />
+          <Route path="*" element={<Dashboard />} />
+        </Routes>
+      </AppCtx.Provider>
     );
 
   if (loading) return null;
