@@ -46,7 +46,7 @@ export default function Footer() {
               </span>
             </Link>
             <p className="text-[#5A6472] text-sm mt-5 max-w-xs leading-relaxed">
-              Команда, що будує e-commerce як актив: Commerce OS — операційна система росту, за
+              Команда, що будує e-commerce як актив: Commerce OS™ — операційна система росту, за
               якою вартість компанії зростає швидше за рекламні бюджети.
             </p>
             <div className="flex items-center gap-3 mt-6">
@@ -152,7 +152,7 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-black/10 py-6 flex flex-wrap items-center justify-between gap-x-8 gap-y-3">
           <p className="text-xs text-black/60">
-            © 2026 weexp · Commerce OS. Всі права захищені.
+            © 2026 weexp · Commerce OS™. Всі права захищені.
           </p>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-black/60">
             <Link to="/privacy" className="hover:text-[#12161C] transition-colors">

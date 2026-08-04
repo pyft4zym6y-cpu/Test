@@ -120,6 +120,16 @@ export function Case01Detail() {
             <br />
             замкнений в аналоговій моделі
           </SectionTitle>
+          <div className="flex flex-wrap items-center gap-1.5 mt-7" aria-label="Структура кейсу">
+            {['Було', 'Проблема', 'Рішення', 'Результат', 'Уроки', 'ROI'].map((s, i) => (
+              <span key={s} className="flex items-center gap-1.5">
+                <span className="font-pixel text-[0.44rem] px-2 py-1.5 border border-[#65A30D]/40 text-[#4D7C0F]">
+                  0{i + 1} {s}
+                </span>
+                {i < 5 && <span className="text-black/25 text-xs">→</span>}
+              </span>
+            ))}
+          </div>
         </FadeIn>
 
         <div className="grid lg:grid-cols-2 gap-6 mt-10 items-start">

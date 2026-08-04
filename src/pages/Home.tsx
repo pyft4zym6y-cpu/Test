@@ -19,25 +19,62 @@ const BRANDS = [
   'J&J', 'NYX', 'Missha', 'Watsons', 'Rozetka', 'Kasta', 'Lamoda', 'MAKEUP', 'Amazon', 'Epicentr',
 ];
 
-const DOORS = [
+const PAINS = [
   {
-    to: '/approach',
-    title: 'Підхід',
-    text: 'Чому «більше бюджету» більше не працює — і що замість цього.',
-    say: 'Почни звідси: філософія системи за 3 хвилини →',
+    n: '01',
+    t: 'Реклама дорожчає, прибуток — ні',
+    d: 'CAC росте щоквартала, а кожен новий клієнт купує один раз. Без системи це біг у колесі: вимкнули бюджет — продажі впали.',
+    v: '0,64%',
+    vl: 'типова конверсія «до» у наших аудитах',
   },
   {
-    to: '/system',
-    title: 'Система',
-    text: '12 модулів Commerce OS: від діагностики до BI-дашборда.',
-    say: '12 модулів, один рушій. Зазирни під капот →',
+    n: '02',
+    t: 'База клієнтів лежить мертвим вантажем',
+    d: 'Повторні покупки 12–15% замість 35–45%. Найдешевші гроші бізнесу ніхто не збирає — email дає 0–5% виручки.',
+    v: '14,7%',
+    vl: 'повторних до впровадження · кейс DTC',
   },
   {
-    to: '/cases',
-    title: 'Кейси',
-    text: '×18 обороту, ≥19 млн ₴ знайдених грошей, Forbes TOP-250.',
-    say: '×18 — не обіцянка, а факт із CRM. Перевір →',
+    n: '03',
+    t: 'Рішення наосліп, без цифр',
+    d: 'Немає наскрізної аналітики та юніт-економіки — неможливо сказати, який канал заробляє, а який спалює маржу.',
+    v: '≈1,6 млн ₴',
+    vl: 'втрачає на місяць бізнес без системи · аудит 2026',
   },
+];
+
+const PRODUCTS = [
+  {
+    n: '01',
+    name: 'Diagnostic Sprint',
+    price: '$2–6K',
+    term: '2–4 тижні',
+    result: 'Розрив у грошах + план: 16 документів, 11 із них — ще до передачі доступів.',
+    say: 'Вхід у систему: аудит, що повертає розрив у гривнях →',
+  },
+  {
+    n: '02',
+    name: 'Commerce OS™ Build',
+    price: '$40–80K',
+    term: '6–12 міс',
+    result: 'Система росту під ключ: модулі, плейбуки, команда — транші під DoD.',
+    say: 'Повна побудова системи. Бюджет захищено траншами →',
+  },
+  {
+    n: '03',
+    name: 'Fractional Head of Commerce',
+    price: '$6–20K/міс',
+    term: 'помісячно',
+    result: 'Керівник e-commerce у вашій команді — без найму в штат і без простою.',
+    say: 'Наш архітектор веде ваш e-commerce щомісяця →',
+  },
+];
+
+const CASE_ROW = [
+  { to: '/cases/premium-textile', num: '×18', name: 'Преміум-текстиль', metric: '€48K → €900K · 18 міс', color: '#65A30D' },
+  { to: '/cases/consumer-dtc', num: '+65%', name: 'Consumer DTC · Forbes TOP-250', metric: '6 нових ринків · 9 міс', color: '#0F9488' },
+  { to: '/cases/fashion-apparel', num: '≥19 млн ₴', name: 'Fashion-виробник', metric: 'знайдений розрив на рік', color: '#DB2777' },
+  { to: '/cases/fmcg-distribution', num: '17K SKU', name: 'FMCG-дистрибуція', metric: '+40% продажів · CRM', color: '#B45309' },
 ];
 
 export default function Home() {
@@ -52,7 +89,7 @@ export default function Home() {
             {/* Left: message */}
             <div>
               <FadeIn>
-                <Eyebrow>weexp · Commerce OS · операційна система росту</Eyebrow>
+                <Eyebrow>weexp · Commerce OS™ · операційна система росту</Eyebrow>
                 <h1
                   className="font-extrabold uppercase tracking-tight"
                   style={{ fontSize: 'clamp(2.1rem, 4.9vw, 3.9rem)', lineHeight: 1.03 }}
@@ -72,6 +109,9 @@ export default function Home() {
                   Конверсія 0,8% → 4,2%. Оборот ×18 за 18 місяців. ROI 3.8×. Не гасла — виміряні
                   кейси. Ми перебудовуємо весь шлях покупки, щоб компанія росла швидше за її
                   рекламний бюджет.
+                </p>
+                <p className="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-[#4D7C0F] mt-4">
+                  Для власників і CEO e-commerce з обігом від ₴1 млн/міс · UA · EU · US
                 </p>
               </FadeIn>
 
@@ -152,6 +192,98 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ================= PROBLEM ================= */}
+      <section
+        data-bot-say="Впізнаєш хоч одну з трьох проблем? Тоді далі — про те, як їх закриває система."
+        className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10 py-16 md:py-20"
+      >
+        <FadeIn>
+          <Eyebrow>Проблема · Чому e-commerce застрягає</Eyebrow>
+          <h2
+            className="font-extrabold uppercase tracking-tight"
+            style={{ fontSize: 'clamp(1.6rem, 3.4vw, 2.6rem)' }}
+          >
+            Три причини, чому оборот стоїть на місці
+          </h2>
+        </FadeIn>
+        <div className="grid md:grid-cols-3 gap-4 mt-9">
+          {PAINS.map((p, i) => (
+            <FadeIn key={p.n} delay={i * 0.08}>
+              <div className="card card-hover accent-top p-6 h-full flex flex-col" style={{ '--accent': '#DC2626' } as React.CSSProperties}>
+                <p className="font-pixel text-[0.5rem] text-[#DC2626]">{p.n}</p>
+                <p className="font-extrabold text-lg mt-2.5">{p.t}</p>
+                <p className="text-[#5A6472] text-[0.82rem] mt-2 leading-relaxed flex-1">{p.d}</p>
+                <div className="mt-4 pt-4 border-t border-black/[0.07]">
+                  <p className="font-mono font-bold text-2xl text-[#DC2626]">{p.v}</p>
+                  <p className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-[#5A6472] mt-1">
+                    {p.vl}
+                  </p>
+                </div>
+              </div>
+            </FadeIn>
+          ))}
+        </div>
+      </section>
+
+      {/* ================= COMMERCE OS ================= */}
+      <section
+        data-bot-say="Commerce OS™ — наш власний фреймворк: 12 модулів, 56 плейбуків, 52 еталони. Не «послуги» — система."
+        className="border-y border-black/10 bg-[#F6F7F8]"
+      >
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10 py-16 md:py-20">
+          <div className="grid lg:grid-cols-[1.1fr_1fr] gap-10 items-center">
+            <FadeIn>
+              <Eyebrow>Рішення · Власна методологія</Eyebrow>
+              <h2
+                className="font-extrabold uppercase tracking-tight"
+                style={{ fontSize: 'clamp(1.7rem, 3.6vw, 2.8rem)' }}
+              >
+                Commerce <span className="font-pixel text-[0.8em] text-[#4D7C0F]">OS™</span> —
+                операційна система росту
+              </h2>
+              <p className="text-[#5A6472] mt-5 leading-relaxed max-w-xl">
+                Не набір послуг, а виконуваний фреймворк: кожна проблема бізнесу має свій модуль,
+                кожен модуль — плейбуки з кроками та критеріями приймання, кожна метрика —
+                еталон, до якого її прикладають. Тому результат відтворюваний, а не залежить від
+                натхнення підрядника.
+              </p>
+              <div className="flex flex-wrap gap-4 mt-7">
+                <Link
+                  to="/system"
+                  onClick={() => track('cta_click', { location: 'home_os_system' })}
+                  className="bg-[#12161C] text-white px-6 py-3 font-mono text-xs uppercase tracking-wider hover:opacity-85 transition-opacity"
+                >
+                  Розібрати систему →
+                </Link>
+                <Link
+                  to="/product"
+                  className="border border-black/30 px-6 py-3 font-mono text-xs uppercase tracking-wider hover:bg-black/5 transition-colors"
+                >
+                  Подивитись демо зсередини
+                </Link>
+              </div>
+            </FadeIn>
+            <FadeIn delay={0.15}>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { v: '12', l: 'модулів системи · M01–M12' },
+                  { v: '56', l: 'виконуваних плейбуків' },
+                  { v: '52', l: 'еталонні метрики Gold Standards' },
+                  { v: '16', l: 'документів аудиту клієнту' },
+                ].map((s) => (
+                  <div key={s.l} className="card px-5 py-5">
+                    <p className="font-mono font-bold text-4xl text-[#4D7C0F]">{s.v}</p>
+                    <p className="font-mono text-[0.62rem] uppercase tracking-[0.14em] text-[#5A6472] mt-2 leading-relaxed">
+                      {s.l}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </FadeIn>
+          </div>
+        </div>
+      </section>
+
       {/* ================= WHY OWNERS CHOOSE US ================= */}
       <section
         data-bot-say="Головне питання власника: «Скільки ви мені заробите?» Ось математика рішення — на реальних цифрах кейсів."
@@ -223,32 +355,75 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ================= THREE DOORS ================= */}
-      <section data-bot-say="Три двері на вибір: Підхід — чому, Система — як, Кейси — докази. Обирай!" className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10 py-16 md:py-20">
+      {/* ================= PRODUCTS ================= */}
+      <section
+        data-bot-say="Купують не «агентство», а продукт: три формати з цінами, строками й результатом. Обирай двері за розміром задачі."
+        className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10 py-16 md:py-20"
+      >
         <FadeIn>
-          <div className="flex flex-wrap items-end justify-between gap-6 mb-10">
+          <Eyebrow>Продукти · Ціни відкриті</Eyebrow>
+          <div className="flex flex-wrap items-end justify-between gap-6 mb-9">
             <h2 className="font-extrabold uppercase tracking-tight" style={{ fontSize: 'clamp(1.6rem, 3.4vw, 2.6rem)' }}>
-              З чого почати
+              Три способи купити ріст
             </h2>
-            <p className="text-xs text-black/60 font-mono">
-              56 плейбуків • 52 метрики • 3 кейси • 1 програма росту
-            </p>
+            <Link to="/services" className="font-mono text-xs uppercase tracking-wider text-black/60 hover:text-[#4D7C0F] transition-colors">
+              Повні умови →
+            </Link>
           </div>
         </FadeIn>
         <div className="grid md:grid-cols-3 gap-5">
-          {DOORS.map((d, i) => (
-            <FadeIn key={d.to} delay={i * 0.08}>
+          {PRODUCTS.map((p, i) => (
+            <FadeIn key={p.n} delay={i * 0.08}>
               <Link
-                to={d.to}
-                onMouseEnter={() => say(d.say)}
+                to="/services"
+                onMouseEnter={() => say(p.say)}
                 onMouseLeave={sayIdle}
-                className="card card-hover p-7 h-full flex flex-col group"
+                onClick={() => track('cta_click', { location: `home_product_${p.n}` })}
+                className="card card-hover accent-top p-7 h-full flex flex-col group"
+                style={{ '--accent': 'var(--lime)' } as React.CSSProperties}
               >
-                <p className="font-pixel text-[0.6rem] text-[#4D7C0F]">0{i + 1}</p>
-                <p className="font-extrabold text-2xl mt-3">{d.title}</p>
-                <p className="text-[#5A6472] text-sm mt-2.5 leading-relaxed flex-1">{d.text}</p>
+                <div className="flex items-baseline justify-between gap-3">
+                  <p className="font-pixel text-[0.55rem] text-[#4D7C0F]">{p.n}</p>
+                  <p className="font-mono text-[0.62rem] uppercase tracking-wider text-[#5A6472]">{p.term}</p>
+                </div>
+                <p className="font-extrabold text-xl mt-3">{p.name}</p>
+                <p className="font-mono font-bold text-3xl text-[#12161C] mt-2">{p.price}</p>
+                <p className="text-[#5A6472] text-[0.82rem] mt-3 leading-relaxed flex-1">{p.result}</p>
                 <p className="font-mono text-xs uppercase tracking-wider mt-6 text-black/65 group-hover:text-[#4D7C0F] transition-colors">
-                  Перейти →
+                  Детальніше →
+                </p>
+              </Link>
+            </FadeIn>
+          ))}
+        </div>
+      </section>
+
+      {/* ================= CASES ROW ================= */}
+      <section
+        data-bot-say="Чотири мандати — чотири виміряні результати. Клікай будь-який: усередині повний розбір «було → стало»."
+        className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10 pb-16 md:pb-20"
+      >
+        <FadeIn>
+          <Eyebrow>Докази · Кейси з CRM, ERP і GA4</Eyebrow>
+        </FadeIn>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {CASE_ROW.map((c, i) => (
+            <FadeIn key={c.to} delay={i * 0.07}>
+              <Link
+                to={c.to}
+                onClick={() => track('cta_click', { location: 'home_case_row' })}
+                className="card card-hover accent-top p-6 h-full flex flex-col group"
+                style={{ '--accent': c.color } as React.CSSProperties}
+              >
+                <p className="font-mono font-bold text-3xl" style={{ color: c.color }}>
+                  {c.num}
+                </p>
+                <p className="font-bold text-sm mt-2.5 leading-snug flex-1">{c.name}</p>
+                <p className="font-mono text-[0.62rem] uppercase tracking-[0.14em] text-[#5A6472] mt-2">
+                  {c.metric}
+                </p>
+                <p className="font-mono text-xs uppercase tracking-wider mt-4 text-black/60 group-hover:text-[#4D7C0F] transition-colors">
+                  Розбір →
                 </p>
               </Link>
             </FadeIn>
