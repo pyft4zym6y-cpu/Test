@@ -1,5 +1,66 @@
 /** Боли и цели → рекомендуемый трек доменов (номера листов фреймворка). База 10/11/12 всегда. */
-export type Pain = { id: string; title: string; desc: string; sheets: string[] };
+export type Horizon = 'tactical' | 'strategic';
+export type Pain = {
+  id: string;
+  title: string;
+  desc: string;
+  sheets: string[];
+  horizon?: Horizon; // по умолчанию strategic
+  fix?: string; // тактические: первая помощь на 24–48 часов
+  accesses?: string[]; // тактические: какие доступы нужны в первую очередь
+};
+
+/** Тактика: горит прямо сейчас — решается днями, не месяцами. */
+export const TACTICAL_PAINS: Pain[] = [
+  {
+    id: 'fire_sales', title: 'Продажи обвалились на этой неделе', horizon: 'tactical',
+    desc: 'Резкое падение к прошлой неделе/месяцу — причина неизвестна.',
+    fix: 'Проверить три причины 80% обвалов: рекламные кабинеты (статус/бюджет), остатки топ-SKU, работоспособность чекаута.',
+    sheets: ['21', '20', '28'], accesses: ['AC-01', 'AC-07', 'AC-08'],
+  },
+  {
+    id: 'fire_ads', title: 'Реклама встала / кабинет заблокирован', horizon: 'tactical',
+    desc: 'Meta/Google отклонили объявления или заблокировали аккаунт.',
+    fix: 'Апелляция по регламенту площадки + резервный кабинет + временный перенос бюджета в работающий канал (email по базе — самый быстрый).',
+    sheets: ['21', '23'], accesses: ['AC-07', 'AC-08', 'AC-09'],
+  },
+  {
+    id: 'fire_site', title: 'Сайт тормозит / ошибки в чекауте', horizon: 'tactical',
+    desc: 'Заказы падают из-за технических проблем прямо сейчас.',
+    fix: 'Откат последнего релиза + мониторинг ошибок + ручной приём заказов через мессенджер, пока чинится.',
+    sheets: ['28', '35'], accesses: ['AC-05', 'AC-06'],
+  },
+  {
+    id: 'fire_cash', title: 'Кассовый разрыв в этом месяце', horizon: 'tactical',
+    desc: 'Не хватает денег на закупку/зарплаты в ближайшие недели.',
+    fix: 'Платёжный календарь на 4 недели + приоритизация платежей + быстрая распродажа неликвида + договорённости об отсрочках.',
+    sheets: ['31', '30'], accesses: ['AC-12', 'AC-13', 'AC-14'],
+  },
+  {
+    id: 'fire_mp', title: 'Маркетплейс заблокировал аккаунт / карточки', horizon: 'tactical',
+    desc: 'Rozetka/Prom/Amazon сняли листинги или заморозили кабинет.',
+    fix: 'Апелляция по регламенту площадки в первые 24 часа + перенос трафика на сайт + информирование постоянных клиентов.',
+    sheets: ['26'], accesses: ['AC-11'],
+  },
+  {
+    id: 'fire_stock', title: 'Сток кончается / поставка сорвалась', horizon: 'tactical',
+    desc: 'Топовые позиции уходят в ноль, поставщик подвёл.',
+    fix: 'Пересчёт покрытия по топ-SKU + альтернативный поставщик + снятие рекламы с позиций в нуле + честные сроки клиентам.',
+    sheets: ['30', '29'], accesses: ['AC-14', 'AC-10'],
+  },
+  {
+    id: 'fire_team', title: 'Ушёл ключевой человек', horizon: 'tactical',
+    desc: 'Единственный, кто знал систему/рекламу/склад, — ушёл.',
+    fix: 'Сменить пароли и доступы в первый день + карта задач недели + временное перераспределение + экстренная передача знаний.',
+    sheets: ['32', '34'], accesses: ['EX-01'],
+  },
+  {
+    id: 'fire_season', title: 'Сезон через 4–6 недель — не готовы', horizon: 'tactical',
+    desc: 'Пик близко: сток, промо, логистика, люди — не собраны.',
+    fix: 'Чек-лист готовности к пику: покрытие стока, промо-план, мощность логистики и поддержки, дежурства.',
+    sheets: ['21', '30', '29'], accesses: ['AC-14', 'AC-16'],
+  },
+];
 
 export const PAINS: Pain[] = [
   { id: 'sales_drop', title: 'Падают продажи', desc: 'Оборот снижается или стоит, хотя раньше рос.', sheets: ['21', '22', '20', '24', '35'] },
@@ -20,7 +81,16 @@ export const PAINS: Pain[] = [
   { id: 'exit_prep', title: 'Готовим к инвестору / продаже', desc: 'Нужны управляемость, цифры и рост стоимости бизнеса.', sheets: ['31', '34', '11', '32', '15'] },
 ];
 
-export type Goal = { id: string; title: string; sheets: string[] };
+export type Goal = { id: string; title: string; sheets: string[]; horizon?: Horizon };
+
+/** Тактические цели: 90 дней, измеримый результат. */
+export const TACTICAL_GOALS: Goal[] = [
+  { id: 'gt_stop', title: 'Остановить падение продаж', sheets: ['21', '20', '28'], horizon: 'tactical' },
+  { id: 'gt_cash', title: 'Закрыть кассовый разрыв', sheets: ['31', '30'], horizon: 'tactical' },
+  { id: 'gt_cr', title: 'Поднять конверсию за 30 дней', sheets: ['35', '28', '21'], horizon: 'tactical' },
+  { id: 'gt_base', title: 'Быстрые продажи из своей базы', sheets: ['23'], horizon: 'tactical' },
+  { id: 'gt_season', title: 'Подготовиться к сезону', sheets: ['30', '29', '21'], horizon: 'tactical' },
+];
 
 export const GOALS: Goal[] = [
   { id: 'g_sales', title: 'Рост продаж в Украине', sheets: ['21', '22', '20'] },
@@ -97,7 +167,14 @@ export const effectiveNiche = (p: Passport) =>
 export type LinkItem = { url: string; note: string };
 export type Links = { direct: LinkItem[]; indirect: LinkItem[]; refs: LinkItem[] };
 
-/** Персональный трек: база + домены целей и болей по частоте. */
+export const ALL_PAINS: Pain[] = [...TACTICAL_PAINS, ...PAINS];
+export const ALL_GOALS: Goal[] = [...TACTICAL_GOALS, ...GOALS];
+export const painById = (id: string) => ALL_PAINS.find((p) => p.id === id);
+export const goalById = (id: string) => ALL_GOALS.find((g) => g.id === id);
+export const tacticalPainsOf = (ids: string[]) =>
+  ids.map(painById).filter((p): p is Pain => Boolean(p && p.horizon === 'tactical'));
+
+/** Персональный трек: тактика ×1.5 (горит — отвечаем первыми), цели ×1.2, боли ×1. */
 export function trackFor(painIds: string[], goalIds: string[] = []): string[] {
   const score: Record<string, number> = {};
   const bump = (sheets: string[], mult: number) =>
@@ -105,12 +182,12 @@ export function trackFor(painIds: string[], goalIds: string[] = []): string[] {
       score[s] = (score[s] ?? 0) + (sheets.length - i) * mult;
     });
   for (const gid of goalIds) {
-    const g = GOALS.find((x) => x.id === gid);
-    if (g) bump(g.sheets, 1.2);
+    const g = goalById(gid);
+    if (g) bump(g.sheets, g.horizon === 'tactical' ? 1.5 : 1.2);
   }
   for (const pid of painIds) {
-    const p = PAINS.find((x) => x.id === pid);
-    if (p) bump(p.sheets, 1);
+    const p = painById(pid);
+    if (p) bump(p.sheets, p.horizon === 'tactical' ? 1.5 : 1);
   }
   const ranked = Object.entries(score)
     .sort((a, b) => b[1] - a[1])

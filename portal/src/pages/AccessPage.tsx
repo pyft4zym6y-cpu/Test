@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ACCESSES, ACCESS_GUIDES, STATUSES } from '../lib/model';
+import { PAINS_QID, tacticalPainsOf } from '../data/pains';
 import { supabase, DEMO, type AccessRow } from '../lib/supabase';
 import { useApp } from '../App';
 
@@ -138,6 +139,20 @@ export default function AccessPage() {
 
   const done = Object.values(rows).filter((r) => r.status === 'Выдан').length;
 
+  const [painIds, setPainIds] = useState<string[]>([]);
+  useEffect(() => {
+    if (DEMO) {
+      try {
+        const a = JSON.parse(localStorage.getItem('weexp-demo-answers') ?? '{}');
+        setPainIds((a[PAINS_QID]?.answer ?? '').split(' | ').filter(Boolean));
+      } catch { /* noop */ }
+      return;
+    }
+    supabase.from('answers').select('answer').eq('client_id', clientId).eq('question_id', PAINS_QID)
+      .maybeSingle().then(({ data }) => setPainIds((data?.answer ?? '').split(' | ').filter(Boolean)));
+  }, [clientId]);
+  const fireAccesses = [...new Set(tacticalPainsOf(painIds).flatMap((tp) => tp.accesses ?? []))];
+
   return (
     <div className="container" style={{ padding: '30px 20px 80px' }}>
       <Link to="/" className="mono" style={{ fontSize: 12, color: 'var(--muted)', textDecoration: 'none' }}>
@@ -154,6 +169,12 @@ export default function AccessPage() {
         «просмотр» или файлом в защищённую папку. Если без пароля никак — используйте одноразовую
         ссылку (Bitwarden Send / 1Password), а сюда напишите только «отправлено ссылкой».
       </div>
+      {fireAccesses.length > 0 && (
+        <div className="note" style={{ margin: '0 0 18px', borderColor: 'rgba(220,38,38,0.4)', background: '#FEF1F1' }}>
+          🔥 <b>Под ваши горящие боли первыми нужны: {fireAccesses.join(', ')}.</b>{' '}
+          Выдайте их сегодня — без них первая помощь работает вслепую.
+        </div>
+      )}
       <p className="mono" style={{ fontWeight: 700, marginBottom: 14 }}>
         Выдано: {done}/{ACCESSES.length}
       </p>

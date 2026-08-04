@@ -19,9 +19,9 @@ export function seedDemo() {
     };
   };
 
-  put(PAINS_QID, 'ads_expensive | low_repeat | no_data');
+  put(PAINS_QID, 'fire_sales | ads_expensive | low_repeat | no_data');
   put(PAINS_CUSTOM_QID, 'Поставщик поднял закупочные цены на 30% — маржа просела');
-  put(GOALS_QID, 'g_sales | g_eu | g_ltv');
+  put(GOALS_QID, 'gt_stop | g_sales | g_eu | g_ltv');
   put(BRIEF_TRIED_QID, 'Работали с двумя агентствами по рекламе — трафик рос, прибыль нет. SEO-подрядчик за год не дал результата.');
   put(BRIEF_TEAM_QID, 'Драйвить готов совладелец; в команде есть маркетолог на full-time.');
   put(BRIEF_AMBITION_QID, 'Через 3 года — топ-3 в нише в Украине + 30% выручки из ЕС, компания управляется без ежедневного участия собственника.');

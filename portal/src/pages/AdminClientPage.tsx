@@ -6,7 +6,7 @@ import {
   useReportMeta, runPSI, computeGap8, LEVER_DEFS, DEFAULT_LEVERS,
   type L0Row, type Levers, type LeverKey,
 } from '../lib/consultant';
-import { PASSPORT_QID, LINKS_QID, PAINS_QID, GOALS_QID, type Passport, type Links } from '../data/pains';
+import { PASSPORT_QID, LINKS_QID, PAINS_QID, GOALS_QID, tacticalPainsOf, type Passport, type Links } from '../data/pains';
 import {
   runDecisions, computeConfidence, gapCosts, forecast, activeChains, seedHypotheses,
   type Hypothesis,
@@ -262,6 +262,11 @@ export default function AdminClientPage() {
         · ответов {report.answeredL1}/{report.totalL1} · рисков {report.problems.length} · разрывов{' '}
         {report.gaps.length}
       </p>
+      {tacticalPainsOf(painIds).length > 0 && (
+        <p style={{ fontSize: 13, margin: '6px 0 0', color: 'var(--red)', fontWeight: 700 }}>
+          🔥 Горит: {tacticalPainsOf(painIds).map((tp) => tp.title).join(' · ')} — первая помощь в отчёте, доступы {[...new Set(tacticalPainsOf(painIds).flatMap((tp) => tp.accesses ?? []))].join(', ')}
+        </p>
+      )}
       <details style={{ marginTop: 4 }}>
         <summary className="mono" style={{ fontSize: 11.5, color: 'var(--muted)', cursor: 'pointer' }}>
           Из чего сложилась достоверность {conf.score}% →
@@ -286,13 +291,13 @@ export default function AdminClientPage() {
           <p className="sub" style={{ fontSize: 12.5 }}>Пока мало данных — правила не сработали.</p>
         ) : (
           decisions.map((d, i) => {
-            const quadrant = d.impact >= 7 && d.difficulty <= 4 ? 'Quick win' : d.impact >= 7 ? 'Стратегическое' : 'Поддерживающее';
+            const quadrant = d.horizon === 'tactical' ? '🔥 Тактика' : d.impact >= 7 && d.difficulty <= 4 ? 'Quick win' : d.impact >= 7 ? 'Стратегическое' : 'Поддерживающее';
             return (
               <div key={d.id} style={{ padding: '10px 0', borderBottom: '1px solid var(--line)' }}>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap' }}>
                   <span className="mono" style={{ fontWeight: 800, fontSize: 15 }}>#{i + 1}</span>
                   <b style={{ fontSize: 14 }}>{d.title}</b>
-                  <span className="tag" style={{ color: quadrant === 'Quick win' ? 'var(--lime-dark)' : undefined }}>{quadrant}</span>
+                  <span className="tag" style={{ color: quadrant === 'Quick win' ? 'var(--lime-dark)' : quadrant.startsWith('🔥') ? 'var(--red)' : undefined }}>{quadrant}</span>
                 </div>
                 <p className="mono" style={{ fontSize: 11.5, margin: '4px 0 0', color: 'var(--muted)' }}>
                   Impact {d.impact}/10 · Сложность {d.difficulty}/10 · ~{d.timeDays} дней · ROI {d.roi} · {d.playbooks.join(', ')}

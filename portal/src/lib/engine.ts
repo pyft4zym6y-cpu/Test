@@ -23,6 +23,7 @@ export type Ctx = {
 export type Decision = {
   id: string;
   title: string;
+  horizon?: 'tactical' | 'strategic';
   impact: number; // 1–10 влияние на деньги
   difficulty: number; // 1–10 сложность внедрения
   timeDays: number;
@@ -39,12 +40,44 @@ const numAns = (ctx: Ctx, qid: string) => parseFloat(ans(ctx, qid).replace(',', 
 type RuleDef = {
   id: string;
   title: string;
+  horizon?: 'tactical' | 'strategic';
   impact: number;
   difficulty: number;
   timeDays: number;
   playbooks: string[];
   eval: (ctx: Ctx) => string[] | null; // null = не сработало; иначе условия с фактами
 };
+
+const TACTICAL_RULES: RuleDef[] = [
+  {
+    id: 'DE-T1', title: 'Пожар: стабилизировать продажи за 48 часов', horizon: 'tactical',
+    impact: 10, difficulty: 2, timeDays: 2, playbooks: ['PB-02'],
+    eval: (c) => c.painIds.includes('fire_sales') || c.painIds.includes('fire_site')
+      ? ['Выбрана горящая боль: обвал продаж / ошибки чекаута — проверка кабинетов, остатков топ-SKU и чекаута до любой стратегии']
+      : null,
+  },
+  {
+    id: 'DE-T2', title: 'Пожар: вернуть рекламный канал / включить резерв', horizon: 'tactical',
+    impact: 9, difficulty: 3, timeDays: 5, playbooks: ['PB-03'],
+    eval: (c) => c.painIds.includes('fire_ads') || c.painIds.includes('fire_mp')
+      ? ['Канал остановлен (реклама/маркетплейс) — апелляция + резервный канал + email по базе как самый быстрый заменитель']
+      : null,
+  },
+  {
+    id: 'DE-T3', title: 'Пожар: платёжный календарь и разморозка кэша', horizon: 'tactical',
+    impact: 9, difficulty: 3, timeDays: 7, playbooks: ['PB-36'],
+    eval: (c) => c.painIds.includes('fire_cash') || c.goalIds.includes('gt_cash')
+      ? ['Кассовый разрыв: календарь на 4 недели, приоритизация платежей, распродажа неликвида, отсрочки поставщикам']
+      : null,
+  },
+  {
+    id: 'DE-T4', title: 'Пожар: покрытие стока и подготовка к пику', horizon: 'tactical',
+    impact: 8, difficulty: 3, timeDays: 10, playbooks: ['PB-29'],
+    eval: (c) => c.painIds.includes('fire_stock') || c.painIds.includes('fire_season') || c.goalIds.includes('gt_season')
+      ? ['Сток/сезон: пересчёт покрытия топ-SKU, альтернативные поставщики, чек-лист готовности к пику']
+      : null,
+  },
+];
 
 const RULES: RuleDef[] = [
   {
@@ -192,18 +225,21 @@ const RULES: RuleDef[] = [
 
 export function runDecisions(ctx: Ctx): Decision[] {
   const out: Decision[] = [];
-  for (const r of RULES) {
+  for (const r of [...TACTICAL_RULES, ...RULES]) {
     const why = r.eval(ctx);
     if (!why) continue;
     const ratio = r.impact / r.difficulty;
     out.push({
-      id: r.id, title: r.title, impact: r.impact, difficulty: r.difficulty,
+      id: r.id, title: r.title, horizon: r.horizon ?? 'strategic',
+      impact: r.impact, difficulty: r.difficulty,
       timeDays: r.timeDays, playbooks: r.playbooks, why,
       roi: ratio >= 2.5 ? 'High' : ratio >= 1.2 ? 'Medium' : 'Long-term',
     });
   }
-  // приоритет: отношение влияния к сложности, затем влияние
-  return out.sort((a, b) => b.impact / b.difficulty - a.impact / a.difficulty || b.impact - a.impact);
+  // тактика всегда сверху, дальше — отношение влияния к сложности
+  return out.sort((a, b) =>
+    (a.horizon === 'tactical' ? 0 : 1) - (b.horizon === 'tactical' ? 0 : 1)
+    || b.impact / b.difficulty - a.impact / a.difficulty || b.impact - a.impact);
 }
 
 /* ── Confidence Score: доверие к выводам отчёта ── */

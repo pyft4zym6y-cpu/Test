@@ -2,8 +2,9 @@ import { Link } from 'react-router-dom';
 import { DOMAINS, QUESTIONS, ACCESSES } from '../lib/model';
 import { useAnswers, answerMap } from '../lib/useAnswers';
 import {
-  PAINS, PAINS_QID, PAINS_CUSTOM_QID, GOALS, GOALS_QID, GOALS_CUSTOM_QID,
-  PASSPORT_QID, LINKS_QID, trackFor, effectiveNiche, type Passport, type Links,
+  PAINS_QID, PAINS_CUSTOM_QID, GOALS_QID, GOALS_CUSTOM_QID,
+  PASSPORT_QID, LINKS_QID, trackFor, effectiveNiche, painById, goalById,
+  tacticalPainsOf, type Passport, type Links,
 } from '../data/pains';
 import { DECISION_QID, type Decision } from '../data/decision';
 import { useApp } from '../App';
@@ -111,10 +112,10 @@ export default function Dashboard() {
           <div style={{ marginTop: 22 }}>
             <StepRow to="/company" n="01" title="Компания" state={state(0)}
               desc={companyDone ? `${passport.name} · ${effectiveNiche(passport) ?? ''} · ${passport.channels?.length ?? 0} каналов` : 'Кто вы, что и где продаёте, какие каналы'} />
-            <StepRow to="/goals" n="02" title="Цели на 12 месяцев" state={state(1)}
-              desc={goalsDone ? goalIds.map((g) => GOALS.find((x) => x.id === g)?.title).filter(Boolean).join(' · ') || 'Свои цели описаны' : 'Верхнеуровнево: рост, Европа, прибыль…'} />
-            <StepRow to="/pains" n="03" title="Что болит" state={state(2)}
-              desc={painsDone ? painIds.map((p) => PAINS.find((x) => x.id === p)?.title).filter(Boolean).slice(0, 3).join(' · ') + (painIds.length > 3 ? '…' : '') : '16 типовых болей + свои словами'} />
+            <StepRow to="/goals" n="02" title="Цели: тактика 90 дней + стратегия 12 месяцев" state={state(1)}
+              desc={goalsDone ? goalIds.map((g) => goalById(g)?.title).filter(Boolean).join(' · ') || 'Свои цели описаны' : 'Что нужно быстро — и куда строим систему'} />
+            <StepRow to="/pains" n="03" title="Что болит: горит сейчас + системно" state={state(2)}
+              desc={painsDone ? painIds.map((p) => painById(p)?.title).filter(Boolean).slice(0, 3).join(' · ') + (painIds.length > 3 ? '…' : '') : 'Пожары на 24–48 часов и хронические боли'} />
             <StepRow to={orderedDomains[0] ? `/d/${orderedDomains[0].sheet}` : '/'} n="04" title="Опросник" state={state(3)}
               desc="Ваш персональный трек анкет — по целям и болям" right={`${answeredL1}/${totalL1} · ${pct}%`} />
             <StepRow to="/links" n="05" title="Конкуренты и референсы" state={state(4)}
@@ -124,6 +125,14 @@ export default function Dashboard() {
             <StepRow to="/decision" n="07" title="Решение и команда" state={state(6)}
               desc={decisionDone ? 'Бриф, участники решения и рамки заполнены' : 'Кто решает, бюджетные рамки, ваша команда — заполняет CEO'} />
           </div>
+
+          {tacticalPainsOf(painIds).length > 0 && (
+            <div className="note" style={{ marginTop: 20, borderColor: 'rgba(220,38,38,0.4)', background: '#FEF1F1' }}>
+              🔥 <b>Горит: {tacticalPainsOf(painIds).map((p) => p.title).join(' · ')}.</b>{' '}
+              Трек диагностики перестроен под пожар, план первой помощи — уже в отчёте, а
+              консультант увидит эти боли первым приоритетом. Начните с первых двух анкет ниже.
+            </div>
+          )}
 
           <Link to="/report" className="rowlink" style={{ marginTop: 20, borderColor: 'rgba(101,163,13,0.5)' }}>
             <div>
