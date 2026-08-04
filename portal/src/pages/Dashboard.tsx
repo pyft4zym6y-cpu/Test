@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { DOMAINS, QUESTIONS, ACCESSES } from '../lib/model';
 import { useAnswers, answerMap } from '../lib/useAnswers';
+import { PAINS, PAINS_QID, trackFor } from '../data/pains';
 import { useApp } from '../App';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
@@ -23,6 +24,16 @@ export default function Dashboard() {
   const answeredL1 = QUESTIONS.filter((q) => q.level === 'L1' && answers[q.id]).length;
   const pct = totalL1 ? Math.round((answeredL1 / totalL1) * 100) : 0;
 
+  const selectedPains = (rows[PAINS_QID]?.answer ?? '').split(' | ').filter(Boolean);
+  const track = trackFor(selectedPains);
+  const orderedDomains = selectedPains.length
+    ? [...DOMAINS].sort((a, b) => {
+        const ia = track.indexOf(a.sheet);
+        const ib = track.indexOf(b.sheet);
+        return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+      })
+    : DOMAINS;
+
   return (
     <div className="container" style={{ padding: '36px 20px 80px' }}>
       <p className="eyebrow">Discovery · Диагностика перед аудитом</p>
@@ -33,7 +44,38 @@ export default function Dashboard() {
         Чем конкретнее ответы и цифры, тем точнее аудит посчитает деньги.
       </p>
 
-      <div className="card" style={{ marginTop: 22 }}>
+      {loaded && !selectedPains.length && (
+        <Link to="/pains" className="rowlink" style={{ marginTop: 22, borderColor: 'var(--lime)', background: '#F4FBE8' }}>
+          <div>
+            <h2 style={{ marginBottom: 2 }}>Шаг 1 · Почему вы обратились?</h2>
+            <p className="sub" style={{ margin: 0 }}>
+              Выберите свои боли — соберём персональный трек диагностики вместо всех {DOMAINS.length} анкет.
+            </p>
+          </div>
+          <span className="mono" style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>
+            Начать →
+          </span>
+        </Link>
+      )}
+      {loaded && selectedPains.length > 0 && (
+        <div className="card" style={{ marginTop: 22 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'baseline' }}>
+            <h2>Ваши боли · {selectedPains.length}</h2>
+            <Link to="/pains" className="mono" style={{ fontSize: 12, color: 'var(--muted)' }}>
+              Изменить
+            </Link>
+          </div>
+          <div className="chips" style={{ marginTop: 8 }}>
+            {selectedPains.map((id) => (
+              <span key={id} className="chip on">
+                {PAINS.find((p) => p.id === id)?.title ?? id}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="card" style={{ marginTop: 12 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
           <h2>Общий прогресс</h2>
           <span className="mono" style={{ fontWeight: 700 }}>
@@ -59,12 +101,12 @@ export default function Dashboard() {
       </Link>
 
       <p className="eyebrow" style={{ margin: '30px 0 12px' }}>
-        Опросники по блокам · {DOMAINS.length}
+        {selectedPains.length ? 'Ваш трек · сначала важное' : `Опросники по блокам · ${DOMAINS.length}`}
       </p>
       {!loaded ? (
         <p className="sub">Загрузка…</p>
       ) : (
-        DOMAINS.map((d) => {
+        orderedDomains.map((d) => {
           const qs = QUESTIONS.filter((q) => q.domain === d.key && q.level === 'L1');
           const done = qs.filter((q) => answers[q.id]).length;
           return (

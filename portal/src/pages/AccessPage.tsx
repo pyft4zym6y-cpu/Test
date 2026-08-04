@@ -4,12 +4,67 @@ import { ACCESSES, ACCESS_GUIDES, STATUSES } from '../lib/model';
 import { supabase, type AccessRow } from '../lib/supabase';
 import { useApp } from '../App';
 
+type FileRow = {
+  id: string;
+  access_id: string | null;
+  name: string;
+  path: string;
+  size: number | null;
+};
+
+const fmtSize = (n: number | null) =>
+  !n ? '' : n > 1_000_000 ? `${(n / 1_000_000).toFixed(1)} МБ` : `${Math.round(n / 1000)} КБ`;
+
 export default function AccessPage() {
   const { session, member } = useApp();
   const clientId = member.client_id!;
   const [rows, setRows] = useState<Record<string, AccessRow>>({});
   const [loaded, setLoaded] = useState(false);
+  const [files, setFiles] = useState<FileRow[]>([]);
+  const [uploading, setUploading] = useState<string | null>(null);
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  const loadFiles = () =>
+    supabase
+      .from('files')
+      .select('id,access_id,name,path,size')
+      .eq('client_id', clientId)
+      .order('created_at')
+      .then(({ data }) => setFiles((data ?? []) as FileRow[]));
+
+  useEffect(() => {
+    loadFiles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientId]);
+
+  const upload = async (accessId: string, list: FileList | null) => {
+    if (!list?.length) return;
+    setUploading(accessId);
+    for (const f of Array.from(list)) {
+      const safe = f.name.replace(/[^\w.\-а-яА-ЯіїєґІЇЄҐ ]+/g, '_');
+      const path = `${clientId}/${accessId}/${Date.now()}_${safe}`;
+      const { error } = await supabase.storage.from('uploads').upload(path, f);
+      if (!error) {
+        await supabase.from('files').insert({
+          client_id: clientId,
+          access_id: accessId,
+          name: f.name,
+          path,
+          size: f.size,
+          uploaded_by: session.user.email,
+        });
+      }
+    }
+    await loadFiles();
+    setUploading(null);
+    if ((rows[accessId]?.status ?? 'Не выдан') === 'Не выдан') save(accessId, { status: 'Выдан' });
+  };
+
+  const removeFile = async (f: FileRow) => {
+    await supabase.storage.from('uploads').remove([f.path]);
+    await supabase.from('files').delete().eq('id', f.id);
+    await loadFiles();
+  };
 
   useEffect(() => {
     supabase
@@ -106,6 +161,31 @@ export default function AccessPage() {
                   ))}
                 </select>
               </div>
+              {/Файл/i.test(a.level) && (
+                <div style={{ marginTop: 12, borderTop: '1px solid var(--line)', paddingTop: 10 }}>
+                  {files
+                    .filter((f) => f.access_id === a.id)
+                    .map((f) => (
+                      <div key={f.id} style={{ display: 'flex', gap: 10, alignItems: 'baseline', fontSize: 13, marginBottom: 4 }}>
+                        <span className="mono" style={{ color: 'var(--lime-dark)' }}>📎</span>
+                        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
+                        <span className="sub" style={{ fontSize: 11.5 }}>{fmtSize(f.size)}</span>
+                        <button className="chip" style={{ padding: '2px 8px', fontSize: 11 }} onClick={() => removeFile(f)}>
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  <label className="chip" style={{ display: 'inline-block', marginTop: 6 }}>
+                    {uploading === a.id ? 'Загрузка…' : '+ Загрузить файлы'}
+                    <input
+                      type="file"
+                      multiple
+                      style={{ display: 'none' }}
+                      onChange={(e) => upload(a.id, e.target.files)}
+                    />
+                  </label>
+                </div>
+              )}
               {(status === 'В процессе' || status === 'Нужна помощь' || r?.comment) && (
                 <input
                   type="text"

@@ -94,6 +94,41 @@ drop policy if exists access_update on access_status;
 create policy access_update on access_status for update
   using (client_id = my_client_id());
 
+-- Загруженные клиентом файлы (метаданные; сами файлы — в Storage bucket "uploads")
+create table if not exists files (
+  id uuid primary key default gen_random_uuid(),
+  client_id uuid not null references clients(id) on delete cascade,
+  access_id text,
+  name text not null,
+  path text not null,
+  size bigint,
+  uploaded_by text,
+  created_at timestamptz default now()
+);
+alter table files enable row level security;
+drop policy if exists files_select on files;
+create policy files_select on files for select
+  using (client_id = my_client_id() or is_portal_admin());
+drop policy if exists files_insert on files;
+create policy files_insert on files for insert
+  with check (client_id = my_client_id());
+drop policy if exists files_delete on files;
+create policy files_delete on files for delete
+  using (client_id = my_client_id() or is_portal_admin());
+
+-- Storage: приватный bucket для файлов клиентов; путь = <client_id>/<access_id>/<файл>
+insert into storage.buckets (id, name, public) values ('uploads', 'uploads', false)
+  on conflict (id) do nothing;
+drop policy if exists uploads_select on storage.objects;
+create policy uploads_select on storage.objects for select
+  using (bucket_id = 'uploads' and (split_part(name, '/', 1) = my_client_id()::text or is_portal_admin()));
+drop policy if exists uploads_insert on storage.objects;
+create policy uploads_insert on storage.objects for insert
+  with check (bucket_id = 'uploads' and split_part(name, '/', 1) = my_client_id()::text);
+drop policy if exists uploads_delete on storage.objects;
+create policy uploads_delete on storage.objects for delete
+  using (bucket_id = 'uploads' and (split_part(name, '/', 1) = my_client_id()::text or is_portal_admin()));
+
 -- ═══ Первичная настройка (замените значения) ═══
 -- 1) Себя как админа:
 -- insert into members (email, name, is_admin) values ('pashasidorenko18@gmail.com', 'Павло', true);

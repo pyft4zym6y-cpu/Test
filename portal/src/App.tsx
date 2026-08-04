@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import DomainPage from './pages/DomainPage';
 import AccessPage from './pages/AccessPage';
 import AdminPage from './pages/AdminPage';
+import PainsPage from './pages/PainsPage';
 
 type Ctx = { session: Session; member: Member };
 const AppCtx = createContext<Ctx | null>(null);
@@ -125,6 +126,7 @@ export default function App() {
       <Topbar member={member} />
       <Routes>
         <Route path="/" element={<Dashboard />} />
+        <Route path="/pains" element={<PainsPage />} />
         <Route path="/d/:sheet" element={<DomainPage />} />
         <Route path="/access" element={<AccessPage />} />
         <Route path="/admin" element={<AdminPage />} />
