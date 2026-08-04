@@ -1,6 +1,7 @@
 import routingRaw from '../data/routing.json';
 import { QUESTIONS, DOMAINS, type Question } from './model';
 import { PAINS } from '../data/pains';
+import { MATURITY_DOMAINS, CRITICAL_GAPS, type CriticalGap } from '../data/method';
 
 export type Rule = {
   id: string;
@@ -25,9 +26,14 @@ export type DomainScore = {
   problems: Problem[];
 };
 
+export type FiredGap = CriticalGap & { evidence: string };
+
 export type Report = {
   domains: DomainScore[];
-  score: number | null; // 0..100
+  score: number | null; // 0..100 · 0.6×A + 0.4×B
+  scoreA: number | null; // взвешенная зрелость
+  scoreB: number | null; // 100 − штрафы
+  gaps: FiredGap[];
   answeredL1: number;
   totalL1: number;
   problems: Problem[];
@@ -83,10 +89,36 @@ export function buildReport(
     };
   });
 
-  const scored = domains.filter((d) => d.health !== null);
-  const score = scored.length >= 3
-    ? Math.round((scored.reduce((s, d) => s + (d.health as number), 0) / scored.length) * 100)
-    : null;
+  /* Score A: взвешенная зрелость 18 доменов (уровень 0–5 из health, вес из матрицы). */
+  const bySheet = new Map(domains.map((d) => [d.sheet, d]));
+  let wSum = 0;
+  let aSum = 0;
+  for (const md of MATURITY_DOMAINS) {
+    const parts = md.sheets.map((s) => bySheet.get(s)).filter((d) => d && d.health !== null) as DomainScore[];
+    if (!parts.length) continue;
+    const health = parts.reduce((s, d) => s + (d.health as number), 0) / parts.length;
+    wSum += md.weight;
+    aSum += health * 100 * md.weight;
+  }
+  const scoreA = wSum >= 30 ? Math.round(aSum / wSum) : null;
+
+  /* Score B: 100 − штрафы за критические разрывы (разрыв = «Нет» на контрольный вопрос). */
+  const gaps: FiredGap[] = [];
+  for (const g of CRITICAL_GAPS) {
+    const hit = g.qids.find((qid) => {
+      const a = answers[qid]?.answer ?? '';
+      return NO_RE.test(a);
+    });
+    if (hit) {
+      const q = QUESTIONS.find((x) => x.id === hit);
+      gaps.push({ ...g, evidence: q ? `${hit}: ${q.text}` : hit });
+    }
+  }
+  const anyGapAnswered = CRITICAL_GAPS.some((g) => g.qids.some((qid) => answers[qid]?.answer));
+  const scoreB = anyGapAnswered ? Math.max(0, 100 - gaps.reduce((s, g) => s + g.penalty, 0)) : null;
+
+  const score =
+    scoreA !== null ? Math.round(0.6 * scoreA + 0.4 * (scoreB ?? scoreA)) : null;
 
   const totalL1 = QUESTIONS.filter((q) => q.level === 'L1').length;
   const answeredL1 = QUESTIONS.filter((q) => q.level === 'L1' && answers[q.id]?.answer).length;
@@ -113,7 +145,7 @@ export function buildReport(
   const prio = (p: string) => (p?.startsWith('P0') ? 0 : p?.startsWith('P1') ? 1 : 2);
   rules.sort((a, b) => prio(a.priority) - prio(b.priority));
 
-  return { domains, score, answeredL1, totalL1, problems, rules };
+  return { domains, score, scoreA, scoreB, gaps, answeredL1, totalL1, problems, rules };
 }
 
 export function zone(health: number | null): { color: string; label: string } {

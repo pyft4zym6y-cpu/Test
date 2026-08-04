@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { GOALS, GOALS_QID, GOALS_CUSTOM_QID } from '../data/pains';
+import { BRIEF_TRIED_QID, BRIEF_TEAM_QID, BRIEF_AMBITION_QID } from '../data/method';
 import { useAnswers } from '../lib/useAnswers';
 
 export default function GoalsPage() {
@@ -43,6 +44,28 @@ export default function GoalsPage() {
           onChange={(e) => save(GOALS_CUSTOM_QID, { answer: e.target.value })}
           placeholder="Например: через 2 года продать 50% фонду; выйти на $1M ARR на Amazon…"
         />
+      </div>
+
+      <div className="card" style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <p className="eyebrow" style={{ margin: 0 }}>Три вопроса собственнику</p>
+        <div>
+          <p className="qtext">Что уже пробовали менять — и что не сработало?</p>
+          <textarea value={rows[BRIEF_TRIED_QID]?.answer ?? ''}
+            onChange={(e) => save(BRIEF_TRIED_QID, { answer: e.target.value })}
+            placeholder="Агентства, подрядчики, свои эксперименты — и почему не взлетело…" />
+        </div>
+        <div>
+          <p className="qtext">Готова ли команда к изменениям? Кто будет драйвить внутри?</p>
+          <textarea value={rows[BRIEF_TEAM_QID]?.answer ?? ''}
+            onChange={(e) => save(BRIEF_TEAM_QID, { answer: e.target.value })}
+            placeholder="Кто со стороны компании отвечает за проект, сколько времени готов выделять…" />
+        </div>
+        <div>
+          <p className="qtext">Амбиция: какой вы видите компанию через 3 года?</p>
+          <textarea value={rows[BRIEF_AMBITION_QID]?.answer ?? ''}
+            onChange={(e) => save(BRIEF_AMBITION_QID, { answer: e.target.value })}
+            placeholder="Размер, рынки, роль в жизни владельца…" />
+        </div>
       </div>
 
       <div style={{ display: 'flex', gap: 12, marginTop: 22 }}>

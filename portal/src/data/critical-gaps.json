@@ -1,0 +1,187 @@
+{
+ "CG-01": {
+  "penalty": 10,
+  "domain": "Analytics",
+  "qids": [
+   "AN-003",
+   "PD-012"
+  ]
+ },
+ "CG-02": {
+  "penalty": 10,
+  "domain": "Finance",
+  "qids": [
+   "CU-020",
+   "FI-002"
+  ]
+ },
+ "CG-03": {
+  "penalty": 8,
+  "domain": "CRM",
+  "qids": [
+   "CR-004"
+  ]
+ },
+ "CG-04": {
+  "penalty": 6,
+  "domain": "SEO",
+  "qids": [
+   "SE-002"
+  ]
+ },
+ "CG-05": {
+  "penalty": 7,
+  "domain": "Operations",
+  "qids": [
+   "SE-011",
+   "IN-074"
+  ]
+ },
+ "CG-06": {
+  "penalty": 5,
+  "domain": "Product",
+  "qids": []
+ },
+ "CG-07": {
+  "penalty": 7,
+  "domain": "Finance",
+  "qids": [
+   "FI-001"
+  ]
+ },
+ "CG-08": {
+  "penalty": 5,
+  "domain": "People",
+  "qids": []
+ },
+ "CG-09": {
+  "penalty": 5,
+  "domain": "Product",
+  "qids": [
+   "PX-013"
+  ]
+ },
+ "CG-10": {
+  "penalty": 4,
+  "domain": "Customer",
+  "qids": []
+ },
+ "CG-11": {
+  "penalty": 3,
+  "domain": "Strategy",
+  "qids": []
+ },
+ "CG-12": {
+  "penalty": 4,
+  "domain": "Brand",
+  "qids": [
+   "MK-017"
+  ]
+ },
+ "CG-13": {
+  "penalty": 3,
+  "domain": "Brand",
+  "qids": [
+   "BR-025"
+  ]
+ },
+ "CG-14": {
+  "penalty": 3,
+  "domain": "Customer",
+  "qids": [
+   "CU-011",
+   "CU-012",
+   "CR-015"
+  ]
+ },
+ "CG-15": {
+  "penalty": 4,
+  "domain": "Platform",
+  "qids": []
+ },
+ "CG-16": {
+  "penalty": 4,
+  "domain": "Platform",
+  "qids": [
+   "PL-009"
+  ]
+ },
+ "CG-17": {
+  "penalty": 4,
+  "domain": "Product",
+  "qids": []
+ },
+ "CG-18": {
+  "penalty": 4,
+  "domain": "Pricing",
+  "qids": []
+ },
+ "CG-19": {
+  "penalty": 3,
+  "domain": "Marketplace",
+  "qids": []
+ },
+ "CG-20": {
+  "penalty": 4,
+  "domain": "International",
+  "qids": []
+ },
+ "CG-21": {
+  "penalty": 6,
+  "domain": "International",
+  "qids": [
+   "PR-011",
+   "IN-020",
+   "IN-074"
+  ]
+ },
+ "CG-22": {
+  "penalty": 5,
+  "domain": "International",
+  "qids": [
+   "CR-018",
+   "IN-080"
+  ]
+ },
+ "CG-23": {
+  "penalty": 3,
+  "domain": "AI",
+  "qids": [
+   "AI-007",
+   "AI-112"
+  ]
+ },
+ "CG-24": {
+  "penalty": 4,
+  "domain": "Governance",
+  "qids": [
+   "AI-107",
+   "CX-008"
+  ]
+ },
+ "CG-25": {
+  "penalty": 4,
+  "domain": "Governance",
+  "qids": []
+ },
+ "CG-26": {
+  "penalty": 3,
+  "domain": "People",
+  "qids": []
+ },
+ "CG-27": {
+  "penalty": 3,
+  "domain": "Brand",
+  "qids": [
+   "VI-007",
+   "VI-017"
+  ]
+ },
+ "CG-28": {
+  "penalty": 3,
+  "domain": "Finance",
+  "qids": [
+   "FI-124"
+  ]
+ }
+}

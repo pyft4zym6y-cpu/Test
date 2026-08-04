@@ -13,6 +13,7 @@ import ReportPage from './pages/ReportPage';
 import CompanyPage from './pages/CompanyPage';
 import GoalsPage from './pages/GoalsPage';
 import LinksPage from './pages/LinksPage';
+import DeliverablesPage from './pages/DeliverablesPage';
 
 type Ctx = { session: Session | null; member: Member };
 const AppCtx = createContext<Ctx | null>(null);
@@ -133,6 +134,7 @@ export default function App() {
           <Route path="/d/:sheet" element={<DomainPage />} />
           <Route path="/access" element={<AccessPage />} />
           <Route path="/report" element={<ReportPage />} />
+        <Route path="/deliverables" element={<DeliverablesPage />} />
           <Route path="*" element={<Dashboard />} />
         </Routes>
       </AppCtx.Provider>
@@ -180,6 +182,7 @@ export default function App() {
         <Route path="/d/:sheet" element={<DomainPage />} />
         <Route path="/access" element={<AccessPage />} />
         <Route path="/report" element={<ReportPage />} />
+        <Route path="/deliverables" element={<DeliverablesPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="*" element={<Dashboard />} />
       </Routes>

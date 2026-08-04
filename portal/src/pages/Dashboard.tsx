@@ -129,7 +129,11 @@ export default function Dashboard() {
             <span className="mono" style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>Открыть →</span>
           </Link>
 
-          <p className="eyebrow" style={{ margin: '30px 0 12px' }}>
+          <Link to="/deliverables" className="mono no-print" style={{ display: 'inline-block', marginTop: 14, fontSize: 12, color: 'var(--lime-dark)' }}>
+        Что вы получите по итогам аудита: 18 документов →
+      </Link>
+
+      <p className="eyebrow" style={{ margin: '30px 0 12px' }}>
             {painsDone || goalsDone ? 'Шаг 04 · Ваш трек анкет' : `Шаг 04 · Анкеты (${DOMAINS.length})`}
           </p>
           {orderedDomains.map((d) => {

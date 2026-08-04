@@ -7,6 +7,7 @@ import {
   PASSPORT_QID, effectiveNiche, type Passport,
 } from '../data/pains';
 import { ACCESSES } from '../lib/model';
+import { bandFor } from '../data/method';
 
 function ScoreRing({ score }: { score: number }) {
   const r = 64;
@@ -121,17 +122,14 @@ export default function ReportPage() {
           <div className="card" style={{ marginTop: 22, display: 'flex', gap: 26, alignItems: 'center', flexWrap: 'wrap' }}>
             {report.score !== null && <ScoreRing score={report.score} />}
             <div style={{ flex: 1, minWidth: 240 }}>
-              <p className="eyebrow">Health Score · по опроснику</p>
+              <p className="eyebrow">Health Score · формула Commerce OS</p>
               <h2 style={{ fontSize: 20 }}>
-                {report.score !== null && report.score >= 70
-                  ? 'Система в целом работает — растим её потолок'
-                  : report.score !== null && report.score >= 45
-                    ? 'Бизнес работает, но система недостроена'
-                    : 'Рост держится на ручном управлении — есть что вернуть'}
+                {report.score !== null ? bandFor(report.score).label : 'Недостаточно данных'}
               </h2>
               <p className="sub" style={{ fontSize: 13 }}>
-                Балл — доля «здоровых» ответов по {scored.length} блокам с поправкой на вес
-                вопросов. Не оценка бизнеса — карта, где спрятан резерв роста.
+                {report.score !== null ? bandFor(report.score).action : ''} · Формула: 0,6 ×
+                зрелость доменов ({report.scoreA ?? '—'}) + 0,4 × фундамент без критических
+                разрывов ({report.scoreB ?? '—'}).
               </p>
               {(painIds.length > 0 || customPains) && (
                 <div className="chips" style={{ marginTop: 10 }}>
@@ -174,6 +172,39 @@ export default function ReportPage() {
             <p className="sub" style={{ fontSize: 11.5, marginTop: 8 }}>
               Блоки, где отвечено меньше 3 скорируемых вопросов, не показаны — заполните их
               анкеты, чтобы карта стала полной.
+            </p>
+          </div>
+
+          {/* Критические разрывы */}
+          {report.gaps.length > 0 && (
+            <>
+              <p className="eyebrow" style={{ margin: '28px 0 12px' }}>
+                Критические разрывы · снижают Health Score
+              </p>
+              <div className="grid cols2">
+                {report.gaps.map((g) => (
+                  <div key={g.id} className="card" style={{ borderLeft: '3px solid #dc2626', padding: 16 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                      <span className="qid" style={{ color: '#dc2626' }}>{g.id}</span>
+                      <span className="mono" style={{ fontSize: 11.5, color: '#dc2626', fontWeight: 700 }}>−{g.penalty}</span>
+                    </div>
+                    <p style={{ fontWeight: 700, margin: '4px 0 2px', fontSize: 14 }}>{g.label}</p>
+                    <p className="sub" style={{ fontSize: 11.5, margin: 0 }}>{g.evidence}</p>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* Методика */}
+          <div className="card" style={{ marginTop: 26, background: 'var(--panel)' }}>
+            <p className="eyebrow">Методика · граница факта и допущения</p>
+            <p className="sub" style={{ fontSize: 13, margin: '6px 0 0' }}>
+              Всё в этом отчёте — <b>ответы вашей команды</b> (уверенность среднего уровня), приложенные к
+              эталонам практики weexp. Разрыв фиксируется только по прямому ответу; «не знаем / не
+              считаем» по методике считается разрывом. Деньги, точные позиции и финальные выводы
+              появляются после проверки данных (GA4, CRM, выгрузки) — тогда оценки заменяются
+              фактами, а структура отчёта не меняется.
             </p>
           </div>
 
