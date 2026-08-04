@@ -180,6 +180,39 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {/* ================= CALCULATOR TEASER ================= */}
+      <section
+        data-bot-say="Чотири питання — і твій недоотриманий оборот на екрані. Спробуй, це безкоштовно й без контактів."
+        className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10 pb-20 md:pb-24"
+      >
+        <FadeIn>
+          <Link
+            to="/calculator"
+            onMouseEnter={() => say('Порахуємо, скільки грошей лишається на столі? 4 питання, 30 секунд →')}
+            onMouseLeave={sayIdle}
+            onClick={() => track('cta_click', { location: 'home_calculator_teaser' })}
+            className="card card-hover accent-top p-8 md:p-10 flex flex-col md:flex-row md:items-center justify-between gap-6 group"
+            style={{ '--accent': '#DB2777' } as React.CSSProperties}
+          >
+            <div>
+              <p className="font-pixel text-[0.55rem] text-[#DB2777] mb-3">
+                КАЛЬКУЛЯТОР · БЕЗКОШТОВНО · БЕЗ КОНТАКТІВ
+              </p>
+              <p className="font-extrabold text-2xl md:text-3xl">
+                Скільки обороту ви недоотримуєте щороку?
+              </p>
+              <p className="text-[#5A6472] text-sm mt-2.5 max-w-xl leading-relaxed">
+                4 питання проти еталонів вашої ніші — і розрив у гривнях на екрані. Та сама
+                модель, якою ми рахуємо аудити.
+              </p>
+            </div>
+            <span className="shrink-0 self-start md:self-auto font-mono text-sm uppercase tracking-wider border border-black/30 px-7 py-3.5 group-hover:bg-[#12161C] group-hover:text-white group-hover:border-[#12161C] transition-colors">
+              Порахувати →
+            </span>
+          </Link>
+        </FadeIn>
+      </section>
     </div>
   );
 }

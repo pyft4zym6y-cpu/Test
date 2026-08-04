@@ -14,4 +14,5 @@
   <url><loc>https://weexp.agency/services</loc><priority>0.9</priority></url>
   <url><loc>https://weexp.agency/about</loc><priority>0.6</priority></url>
   <url><loc>https://weexp.agency/contact</loc><priority>0.9</priority></url>
+  <url><loc>https://weexp.agency/calculator</loc><priority>0.9</priority></url>
 </urlset>
