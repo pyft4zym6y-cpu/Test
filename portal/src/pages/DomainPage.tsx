@@ -12,19 +12,41 @@ function QuestionInput({
   onChange: (v: string) => void;
 }) {
   const opts = optionsFor(q);
+  const isOther = (o: string) => /^друг(ое|ая|ой|ие)/i.test(o);
   if (q.type === 'Мультивыбор' && opts) {
     const selected = value ? value.split(' | ') : [];
+    const isOn = (o: string) => (isOther(o) ? selected.some(isOther) : selected.includes(o));
     const toggle = (o: string) => {
-      const next = selected.includes(o) ? selected.filter((x) => x !== o) : [...selected, o];
+      const next = isOn(o)
+        ? selected.filter((x) => (isOther(o) ? !isOther(x) : x !== o))
+        : [...selected, o];
       onChange(next.join(' | '));
     };
+    const otherOpt = opts.find(isOther);
+    const otherEntry = selected.find(isOther);
+    const otherText = otherEntry?.includes(': ') ? otherEntry.slice(otherEntry.indexOf(': ') + 2) : '';
+    const setOtherText = (t: string) => {
+      const entry = t.trim() ? `${otherOpt}: ${t}` : otherOpt!;
+      onChange(selected.map((x) => (isOther(x) ? entry : x)).join(' | '));
+    };
     return (
-      <div className="chips">
-        {opts.map((o) => (
-          <span key={o} className={`chip ${selected.includes(o) ? 'on' : ''}`} onClick={() => toggle(o)}>
-            {o}
-          </span>
-        ))}
+      <div>
+        <div className="chips">
+          {opts.map((o) => (
+            <span key={o} className={`chip ${isOn(o) ? 'on' : ''}`} onClick={() => toggle(o)}>
+              {o}
+            </span>
+          ))}
+        </div>
+        {otherOpt && otherEntry && (
+          <input
+            type="text"
+            placeholder="Впишите свой вариант…"
+            value={otherText}
+            onChange={(e) => setOtherText(e.target.value)}
+            style={{ marginTop: 8 }}
+          />
+        )}
       </div>
     );
   }
@@ -88,13 +110,31 @@ function QuestionInput({
     );
   }
   if (opts) {
+    const otherOpt = opts.find(isOther);
+    const otherActive = Boolean(otherOpt) && /^друг(ое|ая|ой|ие)/i.test(value);
+    const otherText = otherActive && value.includes(': ') ? value.slice(value.indexOf(': ') + 2) : '';
     return (
-      <div className="chips">
-        {opts.map((o) => (
-          <span key={o} className={`chip ${value === o ? 'on' : ''}`} onClick={() => onChange(o)}>
-            {o}
-          </span>
-        ))}
+      <div>
+        <div className="chips">
+          {opts.map((o) => (
+            <span
+              key={o}
+              className={`chip ${value === o || (isOther(o) && otherActive) ? 'on' : ''}`}
+              onClick={() => onChange(o)}
+            >
+              {o}
+            </span>
+          ))}
+        </div>
+        {otherActive && (
+          <input
+            type="text"
+            placeholder="Впишите свой вариант…"
+            value={otherText}
+            onChange={(e) => onChange(e.target.value.trim() ? `${otherOpt}: ${e.target.value}` : otherOpt!)}
+            style={{ marginTop: 8 }}
+          />
+        )}
       </div>
     );
   }
