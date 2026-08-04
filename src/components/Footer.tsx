@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { to: '/process', label: 'Процес' },
   { to: '/services', label: 'Умови' },
   { to: '/calculator', label: 'Калькулятор розриву' },
+  { to: '/estimate', label: 'Оцінка проєкту' },
   { to: '/about', label: 'Про нас' },
 ];
 

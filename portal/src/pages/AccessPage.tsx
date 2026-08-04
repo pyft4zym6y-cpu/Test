@@ -185,6 +185,16 @@ export default function AccessPage() {
                       → {ACCESS_GUIDES[a.id]}
                     </p>
                   )}
+                  {a.id === 'AC-13' && (
+                    <p style={{ fontSize: 12.5, margin: '4px 0 0' }}>
+                      <a href={`${import.meta.env.BASE_URL}templates/orders-template.csv`} download>
+                        Скачать шаблон выгрузки заказов (CSV) ↓
+                      </a>{' '}
+                      <span className="sub" style={{ fontSize: 11.5 }}>
+                        — колонки, которые нужны для расчёта; e-mail можно захешировать
+                      </span>
+                    </p>
+                  )}
                 </div>
                 <select
                   className="status-select"

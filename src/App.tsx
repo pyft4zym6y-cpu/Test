@@ -16,6 +16,7 @@ import ServicesPage from './pages/ServicesPage';
 import ContactPage from './pages/ContactPage';
 import { PrivacyPage, OfferPage } from './pages/LegalPages';
 import CalculatorPage from './pages/CalculatorPage';
+import EstimatePage from './pages/EstimatePage';
 import BotVariantsPage from './pages/BotVariantsPage';
 import NotFoundPage from './pages/NotFoundPage';
 import { track } from './components/analytics';
@@ -32,6 +33,7 @@ const TITLES: Record<string, string> = {
   '/about': 'Про нас — weexp · Commerce OS',
   '/contact': 'Контакт — weexp · Commerce OS',
   '/calculator': 'Калькулятор недоотриманого обороту — weexp',
+  '/estimate': 'Оцінка проєкту — weexp',
   '/privacy': 'Політика конфіденційності — weexp',
   '/offer': 'Публічна оферта — weexp',
 };
@@ -79,6 +81,7 @@ function Shell() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/calculator" element={<CalculatorPage />} />
+        <Route path="/estimate" element={<EstimatePage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/offer" element={<OfferPage />} />
         <Route path="/bot-variants" element={<BotVariantsPage />} />

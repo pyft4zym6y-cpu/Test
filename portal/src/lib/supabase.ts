@@ -12,7 +12,7 @@ export const DEMO_MEMBER = {
   client_id: 'demo',
   name: 'Демо',
   role: 'CEO',
-  is_admin: false,
+  is_admin: true, // в демо показываем и консультантскую ветку
 };
 
 export const supabase = createClient(url ?? 'https://placeholder.supabase.co', anon ?? 'anon');

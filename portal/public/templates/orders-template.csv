@@ -1,0 +1,4 @@
+order_id;order_date;customer_id;customer_email_hash;channel;city;items_count;sku_list;subtotal_uah;discount_uah;delivery_uah;total_uah;payment_method;status;is_first_order
+10001;2025-01-05;C-501;a1b2c3;site;Київ;2;SKU-15|SKU-88;2400;200;80;2280;card;delivered;yes
+10002;2025-01-06;C-502;d4e5f6;rozetka;Львів;1;SKU-15;1200;0;0;1200;cod;delivered;no
+10003;2025-01-06;C-501;a1b2c3;site;Київ;3;SKU-90|SKU-91|SKU-12;5100;510;0;4590;card;returned;no

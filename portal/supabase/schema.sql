@@ -129,6 +129,48 @@ drop policy if exists uploads_delete on storage.objects;
 create policy uploads_delete on storage.objects for delete
   using (bucket_id = 'uploads' and (split_part(name, '/', 1) = my_client_id()::text or is_portal_admin()));
 
+-- Консультантский слой: заметки по вопросам (клиенту не видны)
+create table if not exists consultant_notes (
+  client_id uuid not null references clients(id) on delete cascade,
+  question_id text not null,
+  note text,
+  updated_at timestamptz default now(),
+  primary key (client_id, question_id)
+);
+alter table consultant_notes enable row level security;
+drop policy if exists cnotes_admin on consultant_notes;
+create policy cnotes_admin on consultant_notes for all
+  using (is_portal_admin()) with check (is_portal_admin());
+
+-- Мета отчёта: статус, резюме консультанта, деньги, L0-замеры, скрытые риски
+create table if not exists report_meta (
+  client_id uuid primary key references clients(id) on delete cascade,
+  status text not null default 'draft',
+  summary text,
+  hidden jsonb default '[]',
+  money jsonb,
+  l0 jsonb,
+  updated_at timestamptz default now()
+);
+alter table report_meta enable row level security;
+drop policy if exists rmeta_select on report_meta;
+create policy rmeta_select on report_meta for select
+  using (client_id = my_client_id() or is_portal_admin());
+drop policy if exists rmeta_admin_ins on report_meta;
+create policy rmeta_admin_ins on report_meta for insert with check (is_portal_admin());
+drop policy if exists rmeta_admin_upd on report_meta;
+create policy rmeta_admin_upd on report_meta for update using (is_portal_admin());
+
+-- Управление клиентами и участниками из интерфейса (только админ)
+drop policy if exists clients_admin_ins on clients;
+create policy clients_admin_ins on clients for insert with check (is_portal_admin());
+drop policy if exists members_admin_ins on members;
+create policy members_admin_ins on members for insert with check (is_portal_admin());
+drop policy if exists members_admin_upd on members;
+create policy members_admin_upd on members for update using (is_portal_admin());
+drop policy if exists members_admin_del on members;
+create policy members_admin_del on members for delete using (is_portal_admin());
+
 -- ═══ Первичная настройка (замените значения) ═══
 -- 1) Себя как админа:
 -- insert into members (email, name, is_admin) values ('pashasidorenko18@gmail.com', 'Павло', true);

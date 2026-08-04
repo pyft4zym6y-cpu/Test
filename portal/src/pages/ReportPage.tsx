@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAnswers } from '../lib/useAnswers';
+import { useApp } from '../App';
+import { useReportMeta } from '../lib/consultant';
 import { buildReport, zone } from '../lib/report';
 import {
   PAINS, PAINS_QID, PAINS_CUSTOM_QID, GOALS, GOALS_QID, GOALS_CUSTOM_QID,
@@ -39,6 +41,12 @@ function ScoreRing({ score }: { score: number }) {
 
 export default function ReportPage() {
   const { rows, loaded } = useAnswers();
+  const { member } = useApp();
+  const { meta } = useReportMeta(member.client_id ?? 'demo');
+  const isFinal = meta?.status === 'final';
+  const hidden = meta?.hidden ?? [];
+  const money = meta?.money?.show ? meta.money : null;
+  const l0 = meta?.l0 ?? [];
 
   const painIds = (rows[PAINS_QID]?.answer ?? '').split(' | ').filter(Boolean);
   const goalIds = (rows[GOALS_QID]?.answer ?? '').split(' | ').filter(Boolean);
@@ -62,7 +70,8 @@ export default function ReportPage() {
   const enough = report.answeredL1 >= 30;
   const pct = Math.round((report.answeredL1 / report.totalL1) * 100);
   const scored = report.domains.filter((d) => d.health !== null).sort((a, b) => (a.health! - b.health!));
-  const topProblems = report.problems.slice(0, 12);
+  const visibleProblems = report.problems.filter((p) => !hidden.includes(p.q.id));
+  const topProblems = visibleProblems.slice(0, 12);
 
   return (
     <div className="container report" style={{ padding: '30px 20px 80px' }}>
@@ -77,10 +86,19 @@ export default function ReportPage() {
 
       {/* Обложка */}
       <div style={{ marginTop: 18 }}>
-        <p className="eyebrow">weexp · Commerce OS™ · Diagnostic Snapshot</p>
+        <p className="eyebrow">
+          weexp · Commerce OS™ · {isFinal ? 'Финальная диагностика' : 'Diagnostic Snapshot'}
+        </p>
         <h1 style={{ fontSize: 30 }}>
-          {passport.name ? `${passport.name}: предварительная картина` : 'Диагностика: предварительная картина'}
+          {passport.name
+            ? `${passport.name}: ${isFinal ? 'финальная картина' : 'предварительная картина'}`
+            : isFinal ? 'Диагностика: финальная картина' : 'Диагностика: предварительная картина'}
         </h1>
+        {isFinal && (
+          <p className="mono" style={{ fontSize: 12, color: 'var(--lime-dark)', fontWeight: 700, margin: '2px 0 8px' }}>
+            ✓ ПРОВЕРЕНО КОНСУЛЬТАНТОМ WEEXP — финальная версия
+          </p>
+        )}
         {passport.offer && (
           <p className="sub" style={{ maxWidth: 640, marginBottom: 4 }}>
             <b>{effectiveNiche(passport)}</b> · {passport.offer}
@@ -99,11 +117,29 @@ export default function ReportPage() {
           </p>
         )}
         <p className="sub" style={{ maxWidth: 640 }}>
-          Автоматический срез по вашим ответам ({report.answeredL1} из {report.totalL1}, {pct}%).
-          Это <b>предварительный диагноз</b>: зоны и риски — по опроснику, деньги и финальные
-          выводы появляются после проверки данных (GA4, CRM, P&L) командой weexp.
+          {isFinal ? (
+            <>
+              Отчёт по вашим ответам ({report.answeredL1} из {report.totalL1}, {pct}%),
+              проверенный и дополненный консультантом weexp: риски отмодерированы, деньги
+              посчитаны по данным.
+            </>
+          ) : (
+            <>
+              Автоматический срез по вашим ответам ({report.answeredL1} из {report.totalL1}, {pct}%).
+              Это <b>предварительный диагноз</b>: зоны и риски — по опроснику, деньги и финальные
+              выводы появляются после проверки данных (GA4, CRM, P&L) командой weexp.
+            </>
+          )}
         </p>
       </div>
+
+      {/* Резюме консультанта */}
+      {isFinal && (meta?.summary ?? '').trim() && (
+        <div className="card" style={{ marginTop: 18, borderLeft: '3px solid var(--lime)' }}>
+          <p className="eyebrow">Резюме консультанта</p>
+          <p style={{ fontSize: 14.5, margin: '8px 0 0', whiteSpace: 'pre-wrap' }}>{meta!.summary}</p>
+        </div>
+      )}
 
       {!enough ? (
         <div className="card" style={{ marginTop: 22, borderColor: 'var(--amber)' }}>
@@ -212,7 +248,7 @@ export default function ReportPage() {
           {topProblems.length > 0 && (
             <>
               <p className="eyebrow" style={{ margin: '28px 0 12px' }}>
-                Главные выявленные риски · {report.problems.length}
+                Главные выявленные риски · {visibleProblems.length}
               </p>
               {topProblems.map((p) => (
                 <div key={p.q.id} className="qcard" style={{ borderLeft: `3px solid ${p.severity >= 2 ? '#dc2626' : '#b45309'}` }}>
@@ -224,9 +260,9 @@ export default function ReportPage() {
                   <p className="qwhy" style={{ margin: 0 }}>← {p.q.text}</p>
                 </div>
               ))}
-              {report.problems.length > topProblems.length && (
+              {visibleProblems.length > topProblems.length && (
                 <p className="sub" style={{ fontSize: 12.5 }}>
-                  Ещё {report.problems.length - topProblems.length} рисков — в полной версии после
+                  Ещё {visibleProblems.length - topProblems.length} рисков — в полной версии после
                   разбора с командой weexp.
                 </p>
               )}
@@ -258,22 +294,78 @@ export default function ReportPage() {
             </>
           )}
 
-          {/* Деньги + next steps */}
-          <div className="card" style={{ marginTop: 26, borderColor: 'rgba(101,163,13,0.4)' }}>
-            <p className="eyebrow">Следующий шаг · деньги</p>
-            <h2>Сколько это стоит в обороте — считаем по данным, не по опроснику</h2>
-            <p className="sub" style={{ maxWidth: 640 }}>
-              Опросник показывает «где болит». Перевод в гривни требует двух доступов:{' '}
-              <b>GA4 (AC-01)</b> и <b>выгрузка заказов (AC-13)</b> — после них команда weexp
-              считает недополученный оборот по цепной модели и собирает план с бюджетом и DoD.
-              Доступов выдано: {ACCESSES.length ? '' : ''}
-              <Link to="/access">передать доступы →</Link>
-            </p>
-          </div>
+          {/* Скорость: вы против конкурентов (L0, замер консультанта) */}
+          {l0.length > 0 && (
+            <>
+              <p className="eyebrow" style={{ margin: '28px 0 12px' }}>
+                Скорость сайта · вы против конкурентов
+              </p>
+              <div className="card">
+                <table className="admin" style={{ margin: 0 }}>
+                  <thead>
+                    <tr><th>Сайт</th><th>Кто</th><th>PageSpeed</th><th>LCP, c</th><th>CLS</th></tr>
+                  </thead>
+                  <tbody>
+                    {l0.map((r) => (
+                      <tr key={r.url}>
+                        <td style={{ maxWidth: 240, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {r.url.replace(/^https?:\/\//, '')}
+                        </td>
+                        <td>{r.kind === 'client' ? 'вы' : 'конкурент'}</td>
+                        <td className="mono" style={{ fontWeight: 700, color: (r.score ?? 0) >= 70 ? '#65a30d' : (r.score ?? 0) >= 40 ? '#b45309' : '#dc2626' }}>
+                          {r.score ?? '—'}
+                        </td>
+                        <td className="mono">{r.lcp ?? '—'}</td>
+                        <td className="mono">{r.cls != null ? r.cls.toFixed(2) : '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <p className="sub" style={{ fontSize: 11.5, marginTop: 8 }}>
+                  Google PageSpeed Insights, mobile. Замер выполнен командой weexp. Скорость ниже
+                  70 напрямую снижает конверсию мобильного трафика.
+                </p>
+              </div>
+            </>
+          )}
+
+          {/* Деньги */}
+          {money ? (
+            <div className="card" style={{ marginTop: 26, borderColor: 'rgba(101,163,13,0.5)' }}>
+              <p className="eyebrow">Деньги · посчитано по вашим данным</p>
+              <h2>
+                Консервативно вы недополучаете{' '}
+                <span className="mono" style={{ color: '#DB2777' }}>
+                  ≈{(money.consMin / 1e6).toFixed(1)} млн ₴/год
+                </span>
+              </h2>
+              <p className="sub" style={{ maxWidth: 640 }}>
+                Полный потенциал — до {(money.consMax / 1e6).toFixed(1)} млн ₴/год. Каждый месяц
+                без изменений ≈ {Math.round(money.monthly / 1000)} тыс ₴. Рычаги: конверсия{' '}
+                {money.cr}% → {money.crTarget}%, повторные покупки {money.repeat}% →{' '}
+                {money.repeatTarget}%. Baseline зафиксирован по вашим данным (GA4 / выгрузка
+                заказов), модель цепная — показана консервативная нижняя граница.
+                {money.comment ? ` ${money.comment}` : ''}
+              </p>
+            </div>
+          ) : (
+            <div className="card" style={{ marginTop: 26, borderColor: 'rgba(101,163,13,0.4)' }}>
+              <p className="eyebrow">Следующий шаг · деньги</p>
+              <h2>Сколько это стоит в обороте — считаем по данным, не по опроснику</h2>
+              <p className="sub" style={{ maxWidth: 640 }}>
+                Опросник показывает «где болит». Перевод в гривни требует двух доступов:{' '}
+                <b>GA4 (AC-01)</b> и <b>выгрузка заказов (AC-13)</b> — после них команда weexp
+                считает недополученный оборот по цепной модели и собирает план с бюджетом и DoD.
+                Доступов выдано: {ACCESSES.length ? '' : ''}
+                <Link to="/access">передать доступы →</Link>
+              </p>
+            </div>
+          )}
 
           <p className="sub no-print" style={{ fontSize: 11.5, marginTop: 22 }}>
-            Версия: автоматическая · {new Date().toLocaleDateString('ru-RU')} · Финальную версию
-            готовит консультант после проверки данных. weexp · Commerce OS™
+            {isFinal
+              ? `Версия: финальная, проверена консультантом · ${new Date().toLocaleDateString('ru-RU')} · weexp · Commerce OS™`
+              : `Версия: автоматическая · ${new Date().toLocaleDateString('ru-RU')} · Финальную версию готовит консультант после проверки данных. weexp · Commerce OS™`}
           </p>
         </>
       )}
