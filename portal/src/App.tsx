@@ -8,6 +8,7 @@ import DomainPage from './pages/DomainPage';
 import AccessPage from './pages/AccessPage';
 import AdminPage from './pages/AdminPage';
 import PainsPage from './pages/PainsPage';
+import ReportPage from './pages/ReportPage';
 
 type Ctx = { session: Session; member: Member };
 const AppCtx = createContext<Ctx | null>(null);
@@ -129,6 +130,7 @@ export default function App() {
         <Route path="/pains" element={<PainsPage />} />
         <Route path="/d/:sheet" element={<DomainPage />} />
         <Route path="/access" element={<AccessPage />} />
+        <Route path="/report" element={<ReportPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="*" element={<Dashboard />} />
       </Routes>

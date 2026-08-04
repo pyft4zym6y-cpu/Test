@@ -87,7 +87,20 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <Link to="/access" className="rowlink" style={{ marginTop: 22 }}>
+      <Link to="/report" className="rowlink" style={{ marginTop: 22, borderColor: 'rgba(101,163,13,0.4)' }}>
+        <div>
+          <h2 style={{ marginBottom: 2 }}>Диагностика · предварительный отчёт</h2>
+          <p className="sub" style={{ margin: 0 }}>
+            Health Score, карта здоровья по блокам, риски и рекомендации — собирается из ваших
+            ответов автоматически.
+          </p>
+        </div>
+        <span className="mono" style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>
+          Открыть →
+        </span>
+      </Link>
+
+      <Link to="/access" className="rowlink" style={{ marginTop: 10 }}>
         <div>
           <h2 style={{ marginBottom: 2 }}>Передача доступов</h2>
           <p className="sub" style={{ margin: 0 }}>

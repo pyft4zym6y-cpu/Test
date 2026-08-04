@@ -1,0 +1,452 @@
+[
+ {
+  "id": "R01",
+  "area": "Триггер проекта",
+  "trigger": "Падают продажи",
+  "domains": "SEO, Marketing, Pricing, Analytics",
+  "playbooks": "PB-02, PB-03, PB-04, PB-10",
+  "deliverable": "Funnel Teardown + Traffic Recovery Plan",
+  "priority": "P0 Критично"
+ },
+ {
+  "id": "R02",
+  "area": "Триггер проекта",
+  "trigger": "Не можем масштабироваться",
+  "domains": "Platform, Operations, CRM, AI, International",
+  "playbooks": "PB-14, PB-16, PB-18, PB-32",
+  "deliverable": "Scalability Blueprint",
+  "priority": "P0 Критично"
+ },
+ {
+  "id": "R03",
+  "area": "Триггер проекта",
+  "trigger": "Инвестор требует роста",
+  "domains": "Finance, Governance, Analytics, Strategy",
+  "playbooks": "PB-11, PB-12, PB-34",
+  "deliverable": "Growth Plan + BI Layer",
+  "priority": "P0 Критично"
+ },
+ {
+  "id": "R04",
+  "area": "Триггер проекта",
+  "trigger": "Выход на новый рынок",
+  "domains": "International, Legal, Operations, Marketplace",
+  "playbooks": "PB-24, PB-25, PB-26, PB-27",
+  "deliverable": "Market Entry Roadmap",
+  "priority": "P1 Высокий"
+ },
+ {
+  "id": "R05",
+  "area": "Триггер проекта",
+  "trigger": "Смена платформы",
+  "domains": "Platform, SEO, Analytics, Operations",
+  "playbooks": "PB-14, PB-05, PB-10, PB-16",
+  "deliverable": "Replatforming Plan",
+  "priority": "P1 Высокий"
+ },
+ {
+  "id": "R06",
+  "area": "Маржинальность",
+  "trigger": "Маржа падает при росте оборота",
+  "domains": "Finance, Pricing, Operations",
+  "playbooks": "PB-12, PB-13, PB-36",
+  "deliverable": "Unit Economics Model",
+  "priority": "P0 Критично"
+ },
+ {
+  "id": "R07",
+  "area": "Retention",
+  "trigger": "Repeat rate < 20%",
+  "domains": "CRM, CX, Product",
+  "playbooks": "PB-08, PB-09, PB-35",
+  "deliverable": "Retention Engine",
+  "priority": "P1 Высокий"
+ },
+ {
+  "id": "R08",
+  "area": "Аналитика",
+  "trigger": "Нет единого источника правды",
+  "domains": "Analytics, Governance",
+  "playbooks": "PB-10, PB-11",
+  "deliverable": "Analytics Blueprint",
+  "priority": "P0 Критично"
+ },
+ {
+  "id": "R09",
+  "area": "Ассортимент",
+  "trigger": ">5000 SKU без структуры",
+  "domains": "Product, SEO, Platform",
+  "playbooks": "PB-28, PB-05, PB-17",
+  "deliverable": "Assortment & Taxonomy Pack",
+  "priority": "P1 Высокий"
+ },
+ {
+  "id": "R10",
+  "area": "Операции",
+  "trigger": "Нет ERP / учёт в Excel",
+  "domains": "Operations, Finance, Governance",
+  "playbooks": "PB-18, PB-16",
+  "deliverable": "ERP Readiness Assessment",
+  "priority": "P1 Высокий"
+ },
+ {
+  "id": "R11",
+  "area": "Международное",
+  "trigger": "Нет юрлица в ЕС",
+  "domains": "International, Legal, Finance",
+  "playbooks": "PB-25, PB-26",
+  "deliverable": "Entity & Tax Structure Memo",
+  "priority": "P1 Высокий"
+ },
+ {
+  "id": "R12",
+  "area": "Международное",
+  "trigger": "Нет VAT/OSS регистрации",
+  "domains": "Legal, Finance",
+  "playbooks": "PB-26, PB-38",
+  "deliverable": "Compliance Pack",
+  "priority": "P0 Критично"
+ },
+ {
+  "id": "R13",
+  "area": "Международное",
+  "trigger": "Нет локального склада",
+  "domains": "Operations, International",
+  "playbooks": "PB-19, PB-25",
+  "deliverable": "Fulfillment Model",
+  "priority": "P1 Высокий"
+ },
+ {
+  "id": "R14",
+  "area": "Команда",
+  "trigger": "Нет владельца канала",
+  "domains": "People, Governance",
+  "playbooks": "PB-30, PB-31",
+  "deliverable": "Org Design + RACI",
+  "priority": "P1 Высокий"
+ },
+ {
+  "id": "R15",
+  "area": "Governance",
+  "trigger": "Нет регулярного управленческого ритма",
+  "domains": "Governance",
+  "playbooks": "PB-34",
+  "deliverable": "Operating Rhythm Charter",
+  "priority": "P2 Средний"
+ },
+ {
+  "id": "R16",
+  "area": "AI",
+  "trigger": "Ручное производство контента на >1000 SKU",
+  "domains": "AI, SEO, Product",
+  "playbooks": "PB-33, PB-07",
+  "deliverable": "AI Content Pipeline",
+  "priority": "P2 Средний"
+ },
+ {
+  "id": "R17",
+  "area": "Marketplace",
+  "trigger": "Каннибализация цен между каналами",
+  "domains": "Pricing, Marketplace",
+  "playbooks": "PB-13, PB-21",
+  "deliverable": "Channel Pricing Policy",
+  "priority": "P1 Высокий"
+ },
+ {
+  "id": "R18",
+  "area": "CX",
+  "trigger": "SLA ответа > 24 часов",
+  "domains": "CX, People",
+  "playbooks": "PB-35",
+  "deliverable": "Support Redesign",
+  "priority": "P2 Средний"
+ },
+ {
+  "id": "R19",
+  "area": "Финансы",
+  "trigger": "Кассовые разрывы при росте",
+  "domains": "Finance, Product",
+  "playbooks": "PB-36, PB-29",
+  "deliverable": "Working Capital Plan",
+  "priority": "P0 Критично"
+ },
+ {
+  "id": "R20",
+  "area": "SEO",
+  "trigger": "Трафик упал после редизайна/миграции",
+  "domains": "SEO, Platform",
+  "playbooks": "PB-04, PB-05",
+  "deliverable": "SEO Recovery Plan",
+  "priority": "P0 Критично"
+ },
+ {
+  "id": "R21",
+  "area": "Конверсия",
+  "trigger": "CR сайта < 1%",
+  "domains": "Platform, Analytics, CRM",
+  "playbooks": "PB-15, PB-10, PB-08",
+  "deliverable": "CRO Program + Tracking Audit",
+  "priority": "P0 Критично"
+ },
+ {
+  "id": "R22",
+  "area": "SEO",
+  "trigger": "SEO не ведётся вообще",
+  "domains": "SEO, Platform",
+  "playbooks": "PB-04, PB-05, PB-06, PB-07",
+  "deliverable": "SEO Audit Pack: технический, структура, контент, GEO",
+  "priority": "P0 Критично"
+ },
+ {
+  "id": "R23",
+  "area": "Продукт",
+  "trigger": "Нет сформулированного Value Proposition",
+  "domains": "Product, Marketing",
+  "playbooks": "PB-39, PB-40",
+  "deliverable": "Value Proposition Canvas",
+  "priority": "P1 Высокий"
+ },
+ {
+  "id": "R24",
+  "area": "Продукт",
+  "trigger": "Не знают, почему клиенты не покупают",
+  "domains": "Product, CX",
+  "playbooks": "PB-40, PB-44",
+  "deliverable": "Barrier & Objection Map",
+  "priority": "P1 Высокий"
+ },
+ {
+  "id": "R25",
+  "area": "Клиенты",
+  "trigger": "Персоны отсутствуют или придуманы командой",
+  "domains": "CX, Marketing",
+  "playbooks": "PB-43, PB-40",
+  "deliverable": "Persona Set на данных",
+  "priority": "P1 Высокий"
+ },
+ {
+  "id": "R26",
+  "area": "Клиенты",
+  "trigger": "Нет CJM ни для одного сегмента",
+  "domains": "CX",
+  "playbooks": "PB-44",
+  "deliverable": "Customer Journey Map",
+  "priority": "P2 Средний"
+ },
+ {
+  "id": "R27",
+  "area": "Клиенты",
+  "trigger": "NPS/CSAT/CES не измеряются",
+  "domains": "CX, Analytics",
+  "playbooks": "PB-45",
+  "deliverable": "VoC System",
+  "priority": "P2 Средний"
+ },
+ {
+  "id": "R28",
+  "area": "Клиенты",
+  "trigger": "Не изучались причины ухода к конкуренту",
+  "domains": "CX, CRM",
+  "playbooks": "PB-45, PB-40",
+  "deliverable": "Churn Reason Study",
+  "priority": "P1 Высокий"
+ },
+ {
+  "id": "R29",
+  "area": "Конкуренты",
+  "trigger": "Мониторинг конкурентов не ведётся",
+  "domains": "Strategy, Pricing",
+  "playbooks": "PB-41, PB-13",
+  "deliverable": "Competitive Monitoring System",
+  "priority": "P1 Высокий"
+ },
+ {
+  "id": "R30",
+  "area": "Конкуренты",
+  "trigger": "Нет карты позиционирования и SWOT",
+  "domains": "Strategy",
+  "playbooks": "PB-41",
+  "deliverable": "Positioning Map + SWOT",
+  "priority": "P2 Средний"
+ },
+ {
+  "id": "R31",
+  "area": "Конкуренты",
+  "trigger": "Свободная ниша не искалась",
+  "domains": "Strategy, Product",
+  "playbooks": "PB-41, PB-39",
+  "deliverable": "White Space Analysis",
+  "priority": "P2 Средний"
+ },
+ {
+  "id": "R32",
+  "area": "Бренд",
+  "trigger": "Нет бренд-платформы и RTB",
+  "domains": "Marketing, Strategy",
+  "playbooks": "PB-46",
+  "deliverable": "Brand Platform",
+  "priority": "P1 Высокий"
+ },
+ {
+  "id": "R33",
+  "area": "Бренд",
+  "trigger": "Конкурент может подписаться под вашим позиционированием",
+  "domains": "Strategy, Marketing",
+  "playbooks": "PB-46, PB-41",
+  "deliverable": "Repositioning Sprint",
+  "priority": "P0 Критично"
+ },
+ {
+  "id": "R34",
+  "area": "Бренд",
+  "trigger": "Архитектура бренда не определена при 2+ линейках",
+  "domains": "Strategy, Product",
+  "playbooks": "PB-48",
+  "deliverable": "Brand Architecture",
+  "priority": "P1 Высокий"
+ },
+ {
+  "id": "R35",
+  "area": "Бренд",
+  "trigger": "Нет бренд-бука или он устарел",
+  "domains": "Marketing",
+  "playbooks": "PB-47, PB-51",
+  "deliverable": "Brand Guidelines",
+  "priority": "P2 Средний"
+ },
+ {
+  "id": "R36",
+  "area": "Бренд",
+  "trigger": "Метрики бренда не измеряются",
+  "domains": "Analytics, Marketing",
+  "playbooks": "PB-50",
+  "deliverable": "Brand KPI Dashboard + Baseline",
+  "priority": "P2 Средний"
+ },
+ {
+  "id": "R37",
+  "area": "Бренд",
+  "trigger": "Нет ценовой премии относительно конкурентов",
+  "domains": "Pricing, Marketing",
+  "playbooks": "PB-50, PB-46",
+  "deliverable": "Price Premium Program",
+  "priority": "P1 Высокий"
+ },
+ {
+  "id": "R38",
+  "area": "Коммуникации",
+  "trigger": "Нет контент-пилларов и редакционного плана",
+  "domains": "Marketing, SEO",
+  "playbooks": "PB-47, PB-07",
+  "deliverable": "Content Platform",
+  "priority": "P2 Средний"
+ },
+ {
+  "id": "R39",
+  "area": "Коммуникации",
+  "trigger": "Сообщения в рекламе не совпадают с сайтом",
+  "domains": "Marketing, Platform",
+  "playbooks": "PB-03, PB-47",
+  "deliverable": "Message Consistency Audit",
+  "priority": "P1 Высокий"
+ },
+ {
+  "id": "R40",
+  "area": "Визуал",
+  "trigger": "Разнобой в фото и карточках каталога",
+  "domains": "Marketing, Product",
+  "playbooks": "PB-51, PB-17",
+  "deliverable": "Catalog Visual Standard",
+  "priority": "P1 Высокий"
+ },
+ {
+  "id": "R41",
+  "area": "Визуал",
+  "trigger": "Нет дизайн-системы при активной разработке",
+  "domains": "Platform",
+  "playbooks": "PB-52",
+  "deliverable": "Design System",
+  "priority": "P2 Средний"
+ },
+ {
+  "id": "R42",
+  "area": "Финансы",
+  "trigger": "Нет расчёта contribution margin по SKU",
+  "domains": "Finance, Pricing",
+  "playbooks": "PB-12",
+  "deliverable": "Contribution Margin Model",
+  "priority": "P0 Критично"
+ },
+ {
+  "id": "R43",
+  "area": "Финансы",
+  "trigger": "CAC payback > 12 месяцев",
+  "domains": "Finance, Marketing",
+  "playbooks": "PB-12, PB-36",
+  "deliverable": "CAC Payback Plan",
+  "priority": "P0 Критично"
+ },
+ {
+  "id": "R44",
+  "area": "Финансы",
+  "trigger": "LTV:CAC < 3",
+  "domains": "Finance, CRM",
+  "playbooks": "PB-12, PB-08",
+  "deliverable": "Unit Economics Recovery",
+  "priority": "P0 Критично"
+ },
+ {
+  "id": "R45",
+  "area": "Финансы",
+  "trigger": "Runway < 6 месяцев",
+  "domains": "Finance, Governance",
+  "playbooks": "PB-36, PB-53",
+  "deliverable": "Cash Preservation Plan",
+  "priority": "P0 Критично"
+ },
+ {
+  "id": "R46",
+  "area": "Финансы",
+  "trigger": "EBITDA не рассчитывается",
+  "domains": "Finance",
+  "playbooks": "PB-53",
+  "deliverable": "EBITDA Bridge",
+  "priority": "P1 Высокий"
+ },
+ {
+  "id": "R47",
+  "area": "Финансы",
+  "trigger": "Нет стресс-сценария на падение 30%",
+  "domains": "Finance, Governance",
+  "playbooks": "PB-53",
+  "deliverable": "Scenario Model",
+  "priority": "P2 Средний"
+ },
+ {
+  "id": "R48",
+  "area": "AI",
+  "trigger": "Данные не готовы к AI (оценка < 3)",
+  "domains": "AI, Analytics",
+  "playbooks": "PB-54, PB-10, PB-17",
+  "deliverable": "Data Readiness Program",
+  "priority": "P1 Высокий"
+ },
+ {
+  "id": "R49",
+  "area": "AI",
+  "trigger": "Нет политики использования AI",
+  "domains": "Legal, AI",
+  "playbooks": "PB-56",
+  "deliverable": "AI Usage Policy",
+  "priority": "P1 Высокий"
+ },
+ {
+  "id": "R50",
+  "area": "AI",
+  "trigger": "Нет базы знаний для LLM-ассистентов",
+  "domains": "AI, CX",
+  "playbooks": "PB-55",
+  "deliverable": "Knowledge Base Build",
+  "priority": "P2 Средний"
+ }
+]

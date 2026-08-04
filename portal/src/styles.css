@@ -81,3 +81,11 @@ textarea { resize: vertical; min-height: 74px; }
 .note { background: var(--panel); border: 1px solid var(--line); border-radius: 2px; padding: 12px 14px; font-size: 13px; color: var(--muted); }
 table.admin { width: 100%; border-collapse: collapse; font-size: 13px; }
 table.admin th, table.admin td { border-bottom: 1px solid var(--line); text-align: left; padding: 8px 10px; }
+
+@media print {
+  .no-print, .topbar { display: none !important; }
+  body { background: #fff; }
+  .container.report { max-width: 100%; padding: 0; }
+  .card, .qcard { break-inside: avoid; box-shadow: none; }
+  a { text-decoration: none; color: inherit; }
+}
