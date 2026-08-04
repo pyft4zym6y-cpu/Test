@@ -4,6 +4,11 @@ import { useAnswers } from '../lib/useAnswers';
 import { useApp } from '../App';
 import { useReportMeta } from '../lib/consultant';
 import { buildReport, zone } from '../lib/report';
+import { computeConfidence, gapCosts, forecast } from '../lib/engine';
+import { detectContradictions } from '../lib/contradictions';
+import { LADDERS, levelFromHealth } from '../data/engine';
+import { supabase, DEMO } from '../lib/supabase';
+import { useEffect, useState } from 'react';
 import {
   PAINS, PAINS_QID, PAINS_CUSTOM_QID, GOALS, GOALS_QID, GOALS_CUSTOM_QID,
   PASSPORT_QID, effectiveNiche, type Passport,
@@ -48,6 +53,19 @@ export default function ReportPage() {
   const money = meta?.money?.show ? meta.money : null;
   const l0 = meta?.l0 ?? [];
 
+  const [accessGranted, setAccessGranted] = useState(0);
+  useEffect(() => {
+    if (DEMO) {
+      try {
+        const m = JSON.parse(localStorage.getItem('weexp-demo-access') ?? '{}');
+        setAccessGranted(Object.values(m).filter((r: any) => r.status === 'Выдан').length);
+      } catch { /* noop */ }
+      return;
+    }
+    supabase.from('access_status').select('status').eq('client_id', member.client_id!)
+      .then(({ data }) => setAccessGranted((data ?? []).filter((r) => r.status === 'Выдан').length));
+  }, [member.client_id]);
+
   const painIds = (rows[PAINS_QID]?.answer ?? '').split(' | ').filter(Boolean);
   const goalIds = (rows[GOALS_QID]?.answer ?? '').split(' | ').filter(Boolean);
   let passport: Passport = {};
@@ -72,6 +90,14 @@ export default function ReportPage() {
   const scored = report.domains.filter((d) => d.health !== null).sort((a, b) => (a.health! - b.health!));
   const visibleProblems = report.problems.filter((p) => !hidden.includes(p.q.id));
   const topProblems = visibleProblems.slice(0, 12);
+  const conf = computeConfidence(report, detectContradictions(rows), accessGranted, meta);
+  const costs = gapCosts(report, money);
+  const fc = forecast(money);
+  const levelFor = (sheet: string): number | null => {
+    const lad = LADDERS.find((l) => l.sheets.includes(sheet));
+    const d = report.domains.find((x) => x.sheet === sheet);
+    return lad && d && d.health !== null ? levelFromHealth(d.health) : null;
+  };
 
   return (
     <div className="container report" style={{ padding: '30px 20px 80px' }}>
@@ -167,6 +193,15 @@ export default function ReportPage() {
                 зрелость доменов ({report.scoreA ?? '—'}) + 0,4 × фундамент без критических
                 разрывов ({report.scoreB ?? '—'}).
               </p>
+              <p className="mono" style={{ fontSize: 12, margin: '6px 0 0' }}>
+                Достоверность выводов:{' '}
+                <b style={{ color: conf.score >= 75 ? 'var(--lime-dark)' : conf.score >= 50 ? 'var(--amber)' : 'var(--red)' }}>
+                  {conf.score}%
+                </b>{' '}
+                <span className="sub" style={{ fontSize: 11 }}>
+                  — растёт с заполненностью, выданными доступами и данными систем вместо оценок
+                </span>
+              </p>
               {(painIds.length > 0 || customPains) && (
                 <div className="chips" style={{ marginTop: 10 }}>
                   {painIds.map((id) => (
@@ -194,7 +229,14 @@ export default function ReportPage() {
               return (
                 <div key={d.sheet} style={{ marginBottom: 14 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, marginBottom: 5 }}>
-                    <span style={{ fontWeight: 600, fontSize: 13.5 }}>{d.key}</span>
+                    <span style={{ fontWeight: 600, fontSize: 13.5 }}>
+                      {d.key}
+                      {levelFor(d.sheet) && (
+                        <span className="mono" style={{ fontSize: 10.5, marginLeft: 8, color: 'var(--muted)', fontWeight: 700 }}>
+                          L{levelFor(d.sheet)}/5
+                        </span>
+                      )}
+                    </span>
                     <span className="mono" style={{ fontSize: 11.5, color: z.color }}>
                       {Math.round((d.health as number) * 100)}% · {z.label}
                     </span>
@@ -226,6 +268,11 @@ export default function ReportPage() {
                     </div>
                     <p style={{ fontWeight: 700, margin: '4px 0 2px', fontSize: 14 }}>{g.label}</p>
                     <p className="sub" style={{ fontSize: 11.5, margin: 0 }}>{g.evidence}</p>
+                    {costs.has(g.id) && (
+                      <p className="mono" style={{ fontSize: 11.5, margin: '4px 0 0', color: '#DB2777', fontWeight: 700 }}>
+                        Цена бездействия ≈ {Math.round((costs.get(g.id) ?? 0) / 1000)} тыс ₴/год
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -412,6 +459,17 @@ export default function ReportPage() {
                   })()}
                   <p className="sub" style={{ fontSize: 11, margin: '4px 0 0' }}>
                     Вклад каждого рычага в годовой потенциал (цепная атрибуция — вклады сходятся к итогу).
+                  </p>
+                </div>
+              )}
+              {fc && (
+                <div style={{ marginTop: 14, padding: '10px 14px', background: 'var(--panel)', borderRadius: 8 }}>
+                  <p className="eyebrow" style={{ fontSize: 10.5 }}>Прогноз · 12 месяцев</p>
+                  <p style={{ fontSize: 13.5, margin: '4px 0 0' }}>
+                    Если ничего не менять: ≈ <b className="mono">{(fc.current / 1e6).toFixed(1)} млн ₴</b>.{' '}
+                    С программой (консервативный сценарий): ≈{' '}
+                    <b className="mono" style={{ color: 'var(--lime-dark)' }}>{(fc.withProgram / 1e6).toFixed(1)} млн ₴ (+{fc.upliftPct}%)</b>.
+                    Прогноз сверяется с фактом на 3, 6 и 12 месяце — тем же инструментом.
                   </p>
                 </div>
               )}

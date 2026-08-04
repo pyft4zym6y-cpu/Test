@@ -6,7 +6,12 @@ import {
   useReportMeta, runPSI, computeGap8, LEVER_DEFS, DEFAULT_LEVERS,
   type L0Row, type Levers, type LeverKey,
 } from '../lib/consultant';
-import { PASSPORT_QID, LINKS_QID, PAINS_QID, type Passport, type Links } from '../data/pains';
+import { PASSPORT_QID, LINKS_QID, PAINS_QID, GOALS_QID, type Passport, type Links } from '../data/pains';
+import {
+  runDecisions, computeConfidence, gapCosts, forecast, activeChains, seedHypotheses,
+  type Hypothesis,
+} from '../lib/engine';
+import { LADDERS, levelFromHealth, EVIDENCE, evidenceForSource, PB_PREREQS } from '../data/engine';
 import { DECISION_QID, selfScore, type Decision } from '../data/decision';
 import { detectContradictions } from '../lib/contradictions';
 import { parseOrdersCsv, type OrdersMetrics } from '../lib/orders';
@@ -71,6 +76,47 @@ export default function AdminClientPage() {
   let decision: Decision = {};
   try { decision = JSON.parse(rows[DECISION_QID]?.answer ?? '{}'); } catch { /* noop */ }
   const self = selfScore(decision.self);
+
+  /* Decision Engine + Confidence */
+  const goalIds = (rows[GOALS_QID]?.answer ?? '').split(' | ').filter(Boolean);
+  const [accessGranted, setAccessGranted] = useState(0);
+  useEffect(() => {
+    if (DEMO) {
+      try {
+        const m = JSON.parse(localStorage.getItem('weexp-demo-access') ?? '{}');
+        setAccessGranted(Object.values(m).filter((r: any) => r.status === 'Выдан').length);
+      } catch { /* noop */ }
+      return;
+    }
+    supabase.from('access_status').select('status').eq('client_id', clientId)
+      .then(({ data }) => setAccessGranted((data ?? []).filter((r) => r.status === 'Выдан').length));
+  }, [clientId]);
+
+  const engineCtx = useMemo(
+    () => ({ report, rows, painIds, goalIds, levers: meta?.money?.levers ?? levers, meta }),
+    [report, rows, painIds, goalIds, meta, levers],
+  );
+  const decisions = useMemo(() => runDecisions(engineCtx), [engineCtx]);
+  const conf = useMemo(
+    () => computeConfidence(report, contradictions, accessGranted, meta, Boolean(decision.reason)),
+    [report, contradictions, accessGranted, meta, decision.reason],
+  );
+  const chains = useMemo(() => activeChains(engineCtx), [engineCtx]);
+  const costs = gapCosts(report, meta?.money);
+  const fc = forecast(meta?.money);
+  const hyps = (meta?.hypotheses as Hypothesis[] | null) ?? [];
+  const setHyp = (i: number, patch: Partial<Hypothesis>) =>
+    save({ hypotheses: hyps.map((h, j) => (j === i ? { ...h, ...patch } : h)) });
+
+  const scopePbs = useMemo(() => {
+    const set = new Set<string>();
+    report.rules.forEach((r) => (r.playbooks?.match(/PB-\d+/g) ?? []).forEach((p) => set.add(p)));
+    decisions.forEach((d) => d.playbooks.forEach((p) => set.add(p)));
+    return set;
+  }, [report.rules, decisions]);
+  const prereqNotes = [...scopePbs]
+    .filter((pb) => PB_PREREQS[pb])
+    .map((pb) => `${pb} — только после ${PB_PREREQS[pb].join(', ')}${PB_PREREQS[pb].some((x) => !scopePbs.has(x)) ? ' (пререквизит вне scope — добавить!)' : ''}`);
 
   const onOrdersFile = (f: File) =>
     f.text().then((t) => {
@@ -209,9 +255,108 @@ export default function AdminClientPage() {
         </span>
       </div>
       <p className="sub">
-        Health Score {report.score ?? '—'} · ответов {report.answeredL1}/{report.totalL1} · рисков{' '}
-        {report.problems.length} · разрывов {report.gaps.length}
+        Health Score {report.score ?? '—'} ·{' '}
+        <b style={{ color: conf.score >= 75 ? 'var(--lime-dark)' : conf.score >= 50 ? 'var(--amber)' : 'var(--red)' }}>
+          Confidence {conf.score}%
+        </b>{' '}
+        · ответов {report.answeredL1}/{report.totalL1} · рисков {report.problems.length} · разрывов{' '}
+        {report.gaps.length}
       </p>
+      <details style={{ marginTop: 4 }}>
+        <summary className="mono" style={{ fontSize: 11.5, color: 'var(--muted)', cursor: 'pointer' }}>
+          Из чего сложилась достоверность {conf.score}% →
+        </summary>
+        <ul style={{ margin: '6px 0 0', paddingLeft: 18, fontSize: 12.5 }}>
+          {conf.factors.map((f) => (
+            <li key={f.label}>
+              {f.label}: <b className="mono" style={{ color: f.delta < 0 ? 'var(--red)' : 'var(--lime-dark)' }}>{f.delta > 0 ? '+' : ''}{f.delta}</b>
+            </li>
+          ))}
+        </ul>
+      </details>
+
+      {/* Decision Engine */}
+      <div className="card" style={{ marginTop: 18, borderColor: 'rgba(101,163,13,0.45)' }}>
+        <h2>Decision Engine · приоритеты ({decisions.length})</h2>
+        <p className="sub" style={{ fontSize: 12.5 }}>
+          Решения из IF-правил над ответами, baseline и замерами. Ранжированы по отношению
+          влияния к сложности. Каждое решение объяснимо — разверните «почему».
+        </p>
+        {decisions.length === 0 ? (
+          <p className="sub" style={{ fontSize: 12.5 }}>Пока мало данных — правила не сработали.</p>
+        ) : (
+          decisions.map((d, i) => {
+            const quadrant = d.impact >= 7 && d.difficulty <= 4 ? 'Quick win' : d.impact >= 7 ? 'Стратегическое' : 'Поддерживающее';
+            return (
+              <div key={d.id} style={{ padding: '10px 0', borderBottom: '1px solid var(--line)' }}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap' }}>
+                  <span className="mono" style={{ fontWeight: 800, fontSize: 15 }}>#{i + 1}</span>
+                  <b style={{ fontSize: 14 }}>{d.title}</b>
+                  <span className="tag" style={{ color: quadrant === 'Quick win' ? 'var(--lime-dark)' : undefined }}>{quadrant}</span>
+                </div>
+                <p className="mono" style={{ fontSize: 11.5, margin: '4px 0 0', color: 'var(--muted)' }}>
+                  Impact {d.impact}/10 · Сложность {d.difficulty}/10 · ~{d.timeDays} дней · ROI {d.roi} · {d.playbooks.join(', ')}
+                </p>
+                <details>
+                  <summary className="mono" style={{ fontSize: 11.5, cursor: 'pointer', color: 'var(--lime-dark)' }}>почему →</summary>
+                  <ul style={{ margin: '4px 0 0', paddingLeft: 18, fontSize: 12.5 }}>
+                    {d.why.map((w) => <li key={w}>{w}</li>)}
+                  </ul>
+                </details>
+              </div>
+            );
+          })
+        )}
+        {prereqNotes.length > 0 && (
+          <p className="sub" style={{ fontSize: 11.5, marginTop: 10 }}>
+            <b>Зависимости плейбуков:</b> {prereqNotes.join(' · ')}
+          </p>
+        )}
+      </div>
+
+      {/* Причинно-следственные цепочки */}
+      {chains.length > 0 && (
+        <div className="card" style={{ marginTop: 14 }}>
+          <h2>Причинно-следственные цепочки ({chains.length})</h2>
+          <p className="sub" style={{ fontSize: 12.5 }}>
+            Симптом → подтверждённые корневые причины → влияние на бизнес. Лечим причину, не симптом.
+          </p>
+          {chains.map((c) => (
+            <div key={c.id} style={{ padding: '10px 0', borderBottom: '1px solid var(--line)' }}>
+              <b style={{ fontSize: 13.5 }}>{c.symptom}</b>
+              <p style={{ fontSize: 12.5, margin: '4px 0 0' }}>
+                {c.confirmedRoots.length
+                  ? <>Подтверждено ответами: {c.confirmedRoots.map((r) => <span key={r} className="chip" style={{ fontSize: 11, marginRight: 6 }}>{r}</span>)}</>
+                  : <span className="sub">Корневая причина не подтверждена ответами — проверить на интервью: {c.roots.map((r) => r.cause).join(' / ')}</span>}
+              </p>
+              <p className="sub" style={{ fontSize: 11.5, margin: '4px 0 0' }}>→ {c.businessImpact} · рычаг: {c.lever}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Зрелость процессов */}
+      <div className="card" style={{ marginTop: 14 }}>
+        <h2>Зрелость процессов · L1–L5</h2>
+        <p className="sub" style={{ fontSize: 12.5 }}>
+          Модель метода: L1 Хаос → L2 Повторяемо → L3 Определено → L4 Управляемо → L5 Оптимизировано.
+          Уровень выведен из ответов домена; рядом — что даст следующий уровень.
+        </p>
+        {LADDERS.map((l) => {
+          const ds = report.domains.filter((d) => l.sheets.includes(d.sheet) && d.health !== null);
+          if (!ds.length) return null;
+          const h = ds.reduce((s, d) => s + (d.health as number), 0) / ds.length;
+          const lvl = levelFromHealth(h);
+          return (
+            <div key={l.domain} style={{ display: 'flex', gap: 10, alignItems: 'baseline', padding: '7px 0', borderBottom: '1px solid var(--line)', flexWrap: 'wrap' }}>
+              <span className="mono" style={{ fontWeight: 800, minWidth: 34, color: lvl <= 2 ? 'var(--red)' : lvl === 3 ? 'var(--amber)' : 'var(--lime-dark)' }}>L{lvl}</span>
+              <b style={{ fontSize: 13, minWidth: 130 }}>{l.domain}</b>
+              <span className="sub" style={{ fontSize: 12 }}>{l.levels[lvl - 1]}</span>
+              {lvl < 5 && <span className="sub" style={{ fontSize: 11.5, color: 'var(--lime-dark)' }}>→ L{lvl + 1}: {l.levels[lvl]}</span>}
+            </div>
+          );
+        })}
+      </div>
 
       {/* Публикация */}
       <div className="card" style={{ marginTop: 18 }}>
@@ -280,7 +425,15 @@ export default function AdminClientPage() {
                       onChange={(e) => setLever(d.key, 'source', e.target.value)}>
                       <option value="">—</option>
                       {LEVER_SOURCES.map((s) => <option key={s}>{s}</option>)}
-                    </select>
+                    </select>{' '}
+                    {(() => {
+                      const ev = evidenceForSource(levers[d.key].source);
+                      return (
+                        <span className="mono" title={EVIDENCE[ev].label} style={{ fontSize: 10, color: EVIDENCE[ev].color, fontWeight: 700 }}>
+                          {ev}
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td className="mono" style={{ fontSize: 12, color: (w?.value ?? 0) > 0 ? 'var(--lime-dark)' : 'var(--muted)' }}>
                     {w ? `+${Math.round(w.value / 1000)} тыс` : '—'}
@@ -296,6 +449,18 @@ export default function AdminClientPage() {
             Консервативно <b>≈{(gap.conservative / 1e6).toFixed(1)} млн ₴/год</b> · полный потенциал{' '}
             {(gap.potential / 1e6).toFixed(1)} млн ₴ · промедление ≈{Math.round(gap.monthly / 1000)} тыс ₴/мес ·{' '}
             {gap.sumCheck ? 'Σ вкладов = потенциал ✓' : 'Σ вкладов ≠ потенциал ✗'}
+          </p>
+        )}
+        {fc && (
+          <p className="sub" style={{ fontSize: 12.5, marginTop: 6 }}>
+            Прогноз 12 мес: без изменений ≈ {(fc.current / 1e6).toFixed(1)} млн ₴ · с программой ≈{' '}
+            {(fc.withProgram / 1e6).toFixed(1)} млн ₴ (<b style={{ color: 'var(--lime-dark)' }}>+{fc.upliftPct}%</b>, консервативно)
+          </p>
+        )}
+        {costs.size > 0 && (
+          <p className="sub" style={{ fontSize: 12.5, marginTop: 4 }}>
+            Цена бездействия по разрывам:{' '}
+            {report.gaps.slice(0, 4).map((g) => `${g.label} ≈ ${Math.round((costs.get(g.id) ?? 0) / 1000)} тыс ₴/год`).join(' · ')}
           </p>
         )}
         <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
@@ -603,6 +768,57 @@ export default function AdminClientPage() {
                 <button className="chip" onClick={() => save({ budget: null })}>Убрать из КП</button>
               )}
             </div>
+          </>
+        )}
+      </div>
+
+      {/* Гипотезы · Continuous Consulting */}
+      <div className="card" style={{ marginTop: 14 }}>
+        <h2>Гипотезы · проверяем после старта ({hyps.length})</h2>
+        <p className="sub" style={{ fontSize: 12.5 }}>
+          Каждая рекомендация — гипотеза с уверенностью и способом проверки. Сверяются на 3-м,
+          6-м и 12-м месяце (XX-01) — так аудит превращается в непрерывный цикл.
+        </p>
+        {hyps.length === 0 ? (
+          <button className="btn btn-ghost" style={{ marginTop: 8 }} disabled={!decisions.length}
+            onClick={() => save({ hypotheses: seedHypotheses(decisions) })}>
+            Сгенерировать из решений Decision Engine
+          </button>
+        ) : (
+          <>
+            {hyps.map((h, i) => (
+              <div key={h.id} style={{ padding: '10px 0', borderBottom: '1px solid var(--line)', opacity: h.status === 'rejected' ? 0.5 : 1 }}>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <span className="qid">{h.id}</span>
+                  <input type="text" value={h.text} style={{ flex: 1, minWidth: 220, padding: '6px 8px', fontSize: 13 }}
+                    onChange={(e) => setHyp(i, { text: e.target.value })} />
+                  <select value={h.confidence} style={{ padding: '6px 8px', maxWidth: 150 }}
+                    onChange={(e) => setHyp(i, { confidence: Number(e.target.value) })}>
+                    {[25, 50, 75, 100].map((v) => <option key={v} value={v}>уверенность {v}</option>)}
+                  </select>
+                  {(['open', 'confirmed', 'rejected'] as const).map((s) => (
+                    <span key={s} className={`chip ${h.status === s ? 'on' : ''}`} style={{ fontSize: 11 }}
+                      onClick={() => setHyp(i, { status: s })}>
+                      {s === 'open' ? 'открыта' : s === 'confirmed' ? 'подтверждена' : 'отклонена'}
+                    </span>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
+                  <input type="text" placeholder="Доказательство" value={h.evidence} style={{ flex: 2, minWidth: 180, padding: '6px 8px', fontSize: 12 }}
+                    onChange={(e) => setHyp(i, { evidence: e.target.value })} />
+                  <input type="text" placeholder="Как проверяем" value={h.validation} style={{ flex: 2, minWidth: 180, padding: '6px 8px', fontSize: 12 }}
+                    onChange={(e) => setHyp(i, { validation: e.target.value })} />
+                  <input type="text" placeholder="Владелец" value={h.owner} style={{ maxWidth: 110, padding: '6px 8px', fontSize: 12 }}
+                    onChange={(e) => setHyp(i, { owner: e.target.value })} />
+                  <input type="text" placeholder="Дедлайн" value={h.deadline} style={{ maxWidth: 110, padding: '6px 8px', fontSize: 12 }}
+                    onChange={(e) => setHyp(i, { deadline: e.target.value })} />
+                </div>
+              </div>
+            ))}
+            <button className="chip" style={{ marginTop: 8 }}
+              onClick={() => save({ hypotheses: [...hyps, { id: `H-${hyps.length + 1}`, text: '', evidence: '', confidence: 50, validation: '', owner: '', deadline: '', status: 'open' }] })}>
+              + Добавить гипотезу
+            </button>
           </>
         )}
       </div>

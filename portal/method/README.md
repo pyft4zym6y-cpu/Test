@@ -28,6 +28,8 @@ weexp, выгруженная в репозиторий как страховк�
 | `references/competitor_benchmark.md` | Конкурентный бенчмарк: 16 параметров, индекс, white space |
 | `references/discovery_brief.md` | Бриф собственника |
 | `scripts/gap_calculator.py` | Расчёт потенциала и вкладов рычагов с контролем сходимости |
+| `references/decision_engine.md` | Decision Engine: правила решений, Confidence Score, Evidence Levels, причинные цепочки, зрелость, гипотезы, Learning Loop |
+| `references/ontology.md` | Онтология Commerce OS: сущности, связи, сквозной пример по графу |
 
 ## Что из этого уже зашито в портал
 
@@ -41,6 +43,7 @@ weexp, выгруженная в репозиторий как страховк�
 | Rate card (выжимка) | `src/data/rates.ts` |
 | Бриф собственника + ЛПР | шаг 07, `src/data/decision.ts` |
 | КП (11 секций из 20) | `src/pages/KpPage.tsx` |
+| Decision Engine + Confidence + Evidence + цепочки + зрелость + гипотезы | `src/lib/engine.ts`, `src/data/engine.ts` |
 | Гант (черновик из фазы 0 + волн) | `lib/gantt.ts` |
 
 При изменении методики сначала правится первоисточник здесь, затем
