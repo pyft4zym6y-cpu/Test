@@ -10,6 +10,9 @@ import AccessPage from './pages/AccessPage';
 import AdminPage from './pages/AdminPage';
 import PainsPage from './pages/PainsPage';
 import ReportPage from './pages/ReportPage';
+import CompanyPage from './pages/CompanyPage';
+import GoalsPage from './pages/GoalsPage';
+import LinksPage from './pages/LinksPage';
 
 type Ctx = { session: Session | null; member: Member };
 const AppCtx = createContext<Ctx | null>(null);
@@ -123,7 +126,10 @@ export default function App() {
         <Topbar member={DEMO_MEMBER as Member} />
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/company" element={<CompanyPage />} />
+          <Route path="/goals" element={<GoalsPage />} />
           <Route path="/pains" element={<PainsPage />} />
+          <Route path="/links" element={<LinksPage />} />
           <Route path="/d/:sheet" element={<DomainPage />} />
           <Route path="/access" element={<AccessPage />} />
           <Route path="/report" element={<ReportPage />} />
@@ -167,7 +173,10 @@ export default function App() {
       <Topbar member={member} />
       <Routes>
         <Route path="/" element={<Dashboard />} />
+        <Route path="/company" element={<CompanyPage />} />
+        <Route path="/goals" element={<GoalsPage />} />
         <Route path="/pains" element={<PainsPage />} />
+        <Route path="/links" element={<LinksPage />} />
         <Route path="/d/:sheet" element={<DomainPage />} />
         <Route path="/access" element={<AccessPage />} />
         <Route path="/report" element={<ReportPage />} />

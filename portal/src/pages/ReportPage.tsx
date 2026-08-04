@@ -2,7 +2,10 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAnswers } from '../lib/useAnswers';
 import { buildReport, zone } from '../lib/report';
-import { PAINS, PAINS_QID } from '../data/pains';
+import {
+  PAINS, PAINS_QID, PAINS_CUSTOM_QID, GOALS, GOALS_QID, GOALS_CUSTOM_QID,
+  PASSPORT_QID, type Passport,
+} from '../data/pains';
 import { ACCESSES } from '../lib/model';
 
 function ScoreRing({ score }: { score: number }) {
@@ -37,6 +40,15 @@ export default function ReportPage() {
   const { rows, loaded } = useAnswers();
 
   const painIds = (rows[PAINS_QID]?.answer ?? '').split(' | ').filter(Boolean);
+  const goalIds = (rows[GOALS_QID]?.answer ?? '').split(' | ').filter(Boolean);
+  let passport: Passport = {};
+  try {
+    passport = JSON.parse(rows[PASSPORT_QID]?.answer ?? '{}');
+  } catch {
+    passport = {};
+  }
+  const customPains = (rows[PAINS_CUSTOM_QID]?.answer ?? '').trim();
+  const customGoals = (rows[GOALS_CUSTOM_QID]?.answer ?? '').trim();
   const report = useMemo(() => buildReport(rows, painIds), [rows, painIds]);
 
   if (!loaded)
@@ -65,7 +77,24 @@ export default function ReportPage() {
       {/* Обложка */}
       <div style={{ marginTop: 18 }}>
         <p className="eyebrow">weexp · Commerce OS™ · Diagnostic Snapshot</p>
-        <h1 style={{ fontSize: 30 }}>Диагностика: предварительная картина</h1>
+        <h1 style={{ fontSize: 30 }}>
+          {passport.name ? `${passport.name}: предварительная картина` : 'Диагностика: предварительная картина'}
+        </h1>
+        {passport.offer && (
+          <p className="sub" style={{ maxWidth: 640, marginBottom: 4 }}>
+            <b>{passport.niche}</b> · {passport.offer}
+            {passport.geo ? ` · ${passport.geo}` : ''}
+            {passport.revenue ? ` · ${passport.revenue}` : ''}
+            {passport.channels?.length ? ` · каналы: ${passport.channels.join(', ')}` : ''}
+          </p>
+        )}
+        {(goalIds.length > 0 || customGoals) && (
+          <p className="sub" style={{ maxWidth: 640, marginBottom: 4 }}>
+            <b>Цели 12 мес:</b>{' '}
+            {goalIds.map((g) => GOALS.find((x) => x.id === g)?.title).filter(Boolean).join(' · ')}
+            {customGoals ? `${goalIds.length ? ' · ' : ''}«${customGoals}»` : ''}
+          </p>
+        )}
         <p className="sub" style={{ maxWidth: 640 }}>
           Автоматический срез по вашим ответам ({report.answeredL1} из {report.totalL1}, {pct}%).
           Это <b>предварительный диагноз</b>: зоны и риски — по опроснику, деньги и финальные
@@ -102,13 +131,18 @@ export default function ReportPage() {
                 Балл — доля «здоровых» ответов по {scored.length} блокам с поправкой на вес
                 вопросов. Не оценка бизнеса — карта, где спрятан резерв роста.
               </p>
-              {painIds.length > 0 && (
+              {(painIds.length > 0 || customPains) && (
                 <div className="chips" style={{ marginTop: 10 }}>
                   {painIds.map((id) => (
                     <span key={id} className="chip" style={{ fontSize: 11.5 }}>
                       {PAINS.find((p) => p.id === id)?.title}
                     </span>
                   ))}
+                  {customPains && (
+                    <span className="chip" style={{ fontSize: 11.5, borderColor: 'var(--lime)' }}>
+                      + «{customPains.slice(0, 60)}{customPains.length > 60 ? '…' : ''}»
+                    </span>
+                  )}
                 </div>
               )}
             </div>

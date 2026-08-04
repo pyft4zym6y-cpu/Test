@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { PAINS, PAINS_QID } from '../data/pains';
+import { PAINS, PAINS_QID, PAINS_CUSTOM_QID } from '../data/pains';
 import { useAnswers } from '../lib/useAnswers';
 
 export default function PainsPage() {
@@ -14,11 +14,11 @@ export default function PainsPage() {
 
   return (
     <div className="container" style={{ padding: '30px 20px 80px' }}>
-      <Link to="/" className="mono" style={{ fontSize: 12, color: 'var(--muted)', textDecoration: 'none' }}>
-        ← На главную
+      <Link to="/goals" className="mono" style={{ fontSize: 12, color: 'var(--muted)', textDecoration: 'none' }}>
+        ← Назад: цели
       </Link>
       <p className="eyebrow" style={{ marginTop: 14 }}>
-        Шаг 1 · Что болит
+        Шаг 3 · Что болит
       </p>
       <h1>Почему вы обратились?</h1>
       <p className="sub" style={{ maxWidth: 620 }}>
@@ -62,9 +62,25 @@ export default function PainsPage() {
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: 14, marginTop: 26, alignItems: 'center' }}>
-        <button className="btn" disabled={!selected.length} onClick={() => nav('/')}>
-          Собрать мой трек ({selected.length}) →
+      <div className="card" style={{ marginTop: 14 }}>
+        <p className="qtext">Что ещё болит — своими словами</p>
+        <p className="sub" style={{ fontSize: 12.5, marginBottom: 8 }}>
+          Если вашей боли нет в списке — опишите её здесь, мы учтём её в диагностике и отчёте.
+        </p>
+        <textarea
+          value={rows[PAINS_CUSTOM_QID]?.answer ?? ''}
+          onChange={(e) => save(PAINS_CUSTOM_QID, { answer: e.target.value })}
+          placeholder="Например: поставщик поднял цены на 30% и маржа схлопнулась; ключевой маркетолог ушёл…"
+        />
+      </div>
+
+      <div style={{ display: 'flex', gap: 14, marginTop: 22, alignItems: 'center' }}>
+        <button
+          className="btn"
+          disabled={!selected.length && !(rows[PAINS_CUSTOM_QID]?.answer ?? '').trim()}
+          onClick={() => nav('/')}
+        >
+          Собрать мой трек →
         </button>
         <span className="sub" style={{ fontSize: 12.5 }}>
           Изменить выбор можно в любой момент.
