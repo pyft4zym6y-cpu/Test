@@ -4,7 +4,7 @@ import { useAnswers } from '../lib/useAnswers';
 import { buildReport, zone } from '../lib/report';
 import {
   PAINS, PAINS_QID, PAINS_CUSTOM_QID, GOALS, GOALS_QID, GOALS_CUSTOM_QID,
-  PASSPORT_QID, type Passport,
+  PASSPORT_QID, effectiveNiche, type Passport,
 } from '../data/pains';
 import { ACCESSES } from '../lib/model';
 
@@ -82,10 +82,12 @@ export default function ReportPage() {
         </h1>
         {passport.offer && (
           <p className="sub" style={{ maxWidth: 640, marginBottom: 4 }}>
-            <b>{passport.niche}</b> · {passport.offer}
+            <b>{effectiveNiche(passport)}</b> · {passport.offer}
             {passport.geo ? ` · ${passport.geo}` : ''}
             {passport.revenue ? ` · ${passport.revenue}` : ''}
-            {passport.channels?.length ? ` · каналы: ${passport.channels.join(', ')}` : ''}
+            {passport.channels?.length
+              ? ` · каналы: ${passport.channels.join(', ')}${passport.channelsOther ? `, ${passport.channelsOther}` : ''}`
+              : ''}
           </p>
         )}
         {(goalIds.length > 0 || customGoals) && (

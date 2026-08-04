@@ -34,16 +34,37 @@ export const GOALS: Goal[] = [
   { id: 'g_invest', title: 'Инвестор / продажа компании', sheets: ['31', '34', '32'] },
 ];
 
-export const CHANNELS = [
-  'Свой интернет-магазин',
-  'Rozetka',
-  'Prom.ua',
-  'Другие маркетплейсы UA',
-  'Instagram / TikTok',
-  'Amazon / eBay',
-  'Allegro / Kaufland',
-  'Офлайн-точки',
-  'Опт / B2B / дилеры',
+export type ChannelGroup = { title: string; items: string[] };
+
+export const CHANNEL_GROUPS: ChannelGroup[] = [
+  {
+    title: 'Собственные каналы',
+    items: [
+      'Интернет-магазин',
+      'Лендинги / промо-сайты',
+      'Мобильное приложение',
+      'Instagram Shop',
+      'TikTok Shop',
+      'Facebook Shop',
+      'Telegram-магазин / бот',
+    ],
+  },
+  {
+    title: 'Маркетплейсы · Украина',
+    items: ['Rozetka', 'Prom.ua', 'Епіцентр', 'Kasta', 'MAKEUP', 'OLX'],
+  },
+  {
+    title: 'Маркетплейсы · Европа',
+    items: ['Allegro (PL)', 'Amazon EU', 'eBay EU', 'Kaufland', 'eMAG', 'Zalando', 'Etsy', 'Cdiscount / bol.com'],
+  },
+  {
+    title: 'Маркетплейсы · США и мир',
+    items: ['Amazon US', 'eBay US', 'Etsy US', 'Walmart', 'TikTok Shop US'],
+  },
+  {
+    title: 'Офлайн и B2B',
+    items: ['Свои офлайн-точки', 'Розничные сети', 'Опт / дилеры', 'HoReCa', 'B2B-экспорт', 'Дистрибьюторы'],
+  },
 ];
 
 export const BASE_SHEETS = ['10', '11', '12'];
@@ -59,13 +80,19 @@ export const LINKS_QID = 'LINKS'; // JSON {direct, indirect, refs}
 export type Passport = {
   name?: string;
   site?: string;
+  sites?: string[];
   offer?: string;
   niche?: string;
+  nicheOther?: string;
   channels?: string[];
+  channelsOther?: string;
   geo?: string;
   revenue?: string;
   team?: string;
 };
+
+export const effectiveNiche = (p: Passport) =>
+  p.niche === 'Другая' ? p.nicheOther || 'Другая' : p.niche;
 
 export type LinkItem = { url: string; note: string };
 export type Links = { direct: LinkItem[]; indirect: LinkItem[]; refs: LinkItem[] };

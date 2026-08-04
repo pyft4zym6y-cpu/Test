@@ -3,7 +3,7 @@ import { DOMAINS, QUESTIONS, ACCESSES } from '../lib/model';
 import { useAnswers, answerMap } from '../lib/useAnswers';
 import {
   PAINS, PAINS_QID, PAINS_CUSTOM_QID, GOALS, GOALS_QID, GOALS_CUSTOM_QID,
-  PASSPORT_QID, LINKS_QID, trackFor, type Passport, type Links,
+  PASSPORT_QID, LINKS_QID, trackFor, effectiveNiche, type Passport, type Links,
 } from '../data/pains';
 import { useApp } from '../App';
 import { useEffect, useState } from 'react';
@@ -106,7 +106,7 @@ export default function Dashboard() {
         <>
           <div style={{ marginTop: 22 }}>
             <StepRow to="/company" n="01" title="Компания" state={state(0)}
-              desc={companyDone ? `${passport.name} · ${passport.niche ?? ''} · ${passport.channels?.length ?? 0} каналов` : 'Кто вы, что и где продаёте, какие каналы'} />
+              desc={companyDone ? `${passport.name} · ${effectiveNiche(passport) ?? ''} · ${passport.channels?.length ?? 0} каналов` : 'Кто вы, что и где продаёте, какие каналы'} />
             <StepRow to="/goals" n="02" title="Цели на 12 месяцев" state={state(1)}
               desc={goalsDone ? goalIds.map((g) => GOALS.find((x) => x.id === g)?.title).filter(Boolean).join(' · ') || 'Свои цели описаны' : 'Верхнеуровнево: рост, Европа, прибыль…'} />
             <StepRow to="/pains" n="03" title="Что болит" state={state(2)}
