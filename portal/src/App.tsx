@@ -18,6 +18,7 @@ import AdminClientPage from './pages/AdminClientPage';
 import KpPage from './pages/KpPage';
 import DecisionPage from './pages/DecisionPage';
 import PrivacyPage from './pages/PrivacyPage';
+import Assistant from './components/Assistant';
 
 type Ctx = { session: Session | null; member: Member };
 const AppCtx = createContext<Ctx | null>(null);
@@ -146,6 +147,7 @@ export default function App() {
           <Route path="/kp/:clientId" element={<KpPage />} />
           <Route path="*" element={<Dashboard />} />
         </Routes>
+        <Assistant />
       </AppCtx.Provider>
     );
 
@@ -202,6 +204,7 @@ export default function App() {
         <Route path="/kp/:clientId" element={<KpPage />} />
         <Route path="*" element={<Dashboard />} />
       </Routes>
+      <Assistant />
     </AppCtx.Provider>
   );
 }
