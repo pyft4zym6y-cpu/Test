@@ -10,8 +10,9 @@ const LINKS = [
   { to: '/product', label: 'Продукт', say: '56 плейбуків і аудит, що рахує гроші. Показати?' },
   { to: '/expertise', label: 'Експертиза', say: 'Від SEO до AI — 17 напрямів. Знайди свій →' },
   { to: '/cases', label: 'Кейси', say: '×18 обороту — не обіцянка, а факт. Перевір →' },
-  { to: '/process', label: 'Процес', say: 'Перший результат за 30–60 днів. Ось як це працює →' },
+  { to: '/process', label: 'Процес', say: 'Етапи, DoD і транші під результат — ось як захищено бюджет →' },
   { to: '/services', label: 'Умови', say: 'Старт від $2K. Три двері — обери свою →' },
+  { to: '/calculator', label: 'Калькулятор', say: '8 питань — і твій розрив у грошах на екрані. Спробуй →' },
   { to: '/about', label: 'Про нас', say: 'Знайомся: weexp. Будуємо активи, а не витрати →' },
 ];
 
@@ -64,7 +65,7 @@ export default function Nav() {
   }, [menuOpen]);
 
   const linkCls = (isActive: boolean) =>
-    `text-xs xl:text-sm tracking-wide uppercase transition-opacity hover:opacity-70 ${
+    `text-xs 2xl:text-sm tracking-wide uppercase transition-opacity hover:opacity-70 ${
       isActive ? 'text-[#4D7C0F]' : 'text-[#12161C]'
     }`;
 
@@ -77,7 +78,7 @@ export default function Nav() {
       >
         <nav className="max-w-7xl mx-auto flex items-center justify-between px-5 sm:px-6 md:px-10 py-5">
           <Logo />
-          <ul className="hidden lg:flex items-center gap-4 xl:gap-6">
+          <ul className="hidden xl:flex items-center gap-5 2xl:gap-6">
             {LINKS.map((l) =>
               l.to === '/cases' ? (
                 /* ---- Кейси: dropdown ---- */
@@ -140,7 +141,7 @@ export default function Nav() {
               onMouseEnter={() => say('30 хвилин — і ти знаєш свій розрив у грошах. Тисни!')}
               onMouseLeave={sayIdle}
               onClick={() => track('cta_click', { location: 'nav' })}
-              className="hidden lg:inline-block border border-black/30 bg-black/5 backdrop-blur-sm px-5 py-2 text-xs tracking-wider uppercase hover:bg-black/5 transition-colors"
+              className="hidden xl:inline-block border border-black/30 bg-black/5 backdrop-blur-sm px-5 py-2 text-xs tracking-wider uppercase hover:bg-black/5 transition-colors"
             >
               Забронювати сесію
             </Link>
@@ -148,9 +149,9 @@ export default function Nav() {
               type="button"
               aria-label="Відкрити меню"
               onClick={() => setMenuOpen(true)}
-              className="lg:hidden p-2 hover:opacity-70 transition-opacity"
+              className="xl:hidden p-2 border border-black/15 hover:border-black/40 transition-colors"
             >
-              <Menu size={24} />
+              <Menu size={22} />
             </button>
           </div>
         </nav>
@@ -163,63 +164,87 @@ export default function Nav() {
           menuOpen ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none'
         }`}
       >
-        <div className="flex items-center justify-between px-6 py-6">
+        <div className="flex items-center justify-between px-6 h-[68px] border-b border-black/[0.07] shrink-0">
           <Logo />
           <button
             type="button"
             aria-label="Закрити меню"
             onClick={() => setMenuOpen(false)}
-            className="p-2 hover:opacity-70 transition-opacity"
+            className="p-2 -mr-2 border border-black/15 hover:border-black/40 transition-colors"
           >
-            <X size={24} />
+            <X size={20} />
           </button>
         </div>
-        <nav className="flex flex-col items-center justify-center flex-1 gap-5 py-8">
-          {LINKS.map((l, i) => (
-            <div key={l.to} className="flex flex-col items-center">
-              <NavLink
-                to={l.to}
-                onClick={() => setMenuOpen(false)}
-                className={({ isActive }) =>
-                  `menu-link text-2xl tracking-widest uppercase ${
-                    isActive ? 'text-[#4D7C0F]' : 'text-[#12161C]'
-                  } ${menuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`
-                }
-                style={{ transitionDelay: menuOpen ? `${100 + i * 60}ms` : '0ms' }}
-              >
-                {l.label}
-              </NavLink>
-              {l.to === '/cases' && (
-                <div
-                  className={`menu-link mt-3 grid grid-cols-2 gap-x-6 gap-y-1.5 ${
-                    menuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-                  }`}
-                  style={{ transitionDelay: menuOpen ? `${130 + i * 60}ms` : '0ms' }}
+        <nav className="flex-1 flex flex-col px-6 pt-5 pb-8 overflow-y-auto">
+          <div className="flex flex-col">
+            {LINKS.map((l, i) => (
+              <div key={l.to}>
+                <NavLink
+                  to={l.to}
+                  onClick={() => setMenuOpen(false)}
+                  className={({ isActive }) =>
+                    `menu-link flex items-baseline gap-4 py-[0.68rem] border-b border-black/[0.06] ${
+                      isActive ? 'text-[#4D7C0F]' : 'text-[#12161C]'
+                    } ${menuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`
+                  }
+                  style={{ transitionDelay: menuOpen ? `${70 + i * 45}ms` : '0ms' }}
                 >
-                  {CASE_LINKS.map((c) => (
-                    <Link
-                      key={c.to}
-                      to={c.to}
-                      onClick={() => setMenuOpen(false)}
-                      className="text-xs uppercase tracking-wider text-black/60 hover:text-[#4D7C0F] transition-colors"
-                    >
-                      {c.label} <span className="font-mono text-[#4D7C0F]/70">{c.num}</span>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-          <Link
-            to="/contact"
-            onClick={() => setMenuOpen(false)}
-            className={`menu-link mt-3 border border-[#65A30D] text-[#4D7C0F] px-8 py-3 text-sm tracking-widest uppercase ${
+                  <span className="font-pixel text-[0.5rem] text-[#4D7C0F]/80 w-7 shrink-0">
+                    0{i + 1}
+                  </span>
+                  <span className="font-extrabold text-[1.35rem] leading-tight tracking-tight uppercase">
+                    {l.label}
+                  </span>
+                </NavLink>
+                {l.to === '/cases' && (
+                  <div
+                    className={`menu-link flex flex-col border-b border-black/[0.06] py-2 ${
+                      menuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                    }`}
+                    style={{ transitionDelay: menuOpen ? `${90 + i * 45}ms` : '0ms' }}
+                  >
+                    {CASE_LINKS.map((c) => (
+                      <Link
+                        key={c.to}
+                        to={c.to}
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-baseline justify-between gap-3 pl-11 pr-1 py-[0.42rem] text-[0.78rem] uppercase tracking-wide text-black/60 hover:text-[#4D7C0F] transition-colors"
+                      >
+                        <span className="truncate">{c.label}</span>
+                        <span className="font-mono text-[0.66rem] text-[#4D7C0F] shrink-0">{c.num}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div
+            className={`menu-link mt-auto pt-8 flex flex-col gap-5 ${
               menuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}
-            style={{ transitionDelay: menuOpen ? `${100 + LINKS.length * 60}ms` : '0ms' }}
+            style={{ transitionDelay: menuOpen ? `${90 + LINKS.length * 45}ms` : '0ms' }}
           >
-            Забронювати сесію
-          </Link>
+            <Link
+              to="/contact"
+              onClick={() => setMenuOpen(false)}
+              className="block bg-[#A3E635] text-black text-center font-mono text-sm font-bold uppercase tracking-[0.12em] px-8 py-4"
+            >
+              Забронювати сесію →
+            </Link>
+            <div className="flex items-center justify-between font-mono text-[0.68rem] text-[#5A6472]">
+              <a href="tel:+380999188260" className="hover:text-[#12161C] transition-colors">
+                +38 099 918 82 60
+              </a>
+              <a
+                href="mailto:pashasidorenko18@gmail.com"
+                className="hover:text-[#12161C] transition-colors"
+              >
+                Написати нам
+              </a>
+            </div>
+          </div>
         </nav>
       </div>
     </>
