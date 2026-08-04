@@ -2,10 +2,17 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { supabase, DEMO } from '../lib/supabase';
 import { buildReport } from '../lib/report';
-import { useReportMeta, computeMoney, runPSI, type L0Row } from '../lib/consultant';
+import {
+  useReportMeta, runPSI, computeGap8, LEVER_DEFS, DEFAULT_LEVERS,
+  type L0Row, type Levers, type LeverKey,
+} from '../lib/consultant';
 import { PASSPORT_QID, LINKS_QID, PAINS_QID, type Passport, type Links } from '../data/pains';
+import { DECISION_QID, selfScore, type Decision } from '../data/decision';
+import { detectContradictions } from '../lib/contradictions';
 import { byId } from '../lib/model';
 import type { AnswerRow } from '../lib/supabase';
+
+const LEVER_SOURCES = ['GA4', 'CRM', 'Выгрузка заказов', 'Кабинет площадки', 'Оценка клиента'];
 
 export default function AdminClientPage() {
   const { clientId = 'demo' } = useParams();
@@ -13,7 +20,8 @@ export default function AdminClientPage() {
   const [loaded, setLoaded] = useState(false);
   const { meta, save } = useReportMeta(clientId);
   const [psiBusy, setPsiBusy] = useState(false);
-  const [baseline, setBaseline] = useState({ revenueK: 0, cr: 1.5, crTarget: 2.5, repeat: 15, repeatTarget: 30 });
+  const [leversDraft, setLeversDraft] = useState<Levers | null>(null);
+  const [baseMeta, setBaseMeta] = useState<{ dateTaken?: string; period?: string } | null>(null);
 
   useEffect(() => {
     if (DEMO) {
@@ -42,7 +50,17 @@ export default function AdminClientPage() {
   const toggleHidden = (qid: string) =>
     save({ hidden: hidden.includes(qid) ? hidden.filter((x) => x !== qid) : [...hidden, qid] });
 
-  const money = computeMoney(baseline);
+  const levers = leversDraft ?? meta?.money?.levers ?? DEFAULT_LEVERS;
+  const setLever = (k: LeverKey, field: 'fact' | 'target' | 'source', v: string) =>
+    setLeversDraft({ ...levers, [k]: { ...levers[k], [field]: field === 'source' ? v : Number(v) } });
+  const bm = baseMeta ?? { dateTaken: meta?.money?.dateTaken, period: meta?.money?.period };
+  const gap = computeGap8(levers);
+  const hasBaseline = gap.rFact > 0;
+
+  const contradictions = useMemo(() => detectContradictions(rows), [rows]);
+  let decision: Decision = {};
+  try { decision = JSON.parse(rows[DECISION_QID]?.answer ?? '{}'); } catch { /* noop */ }
+  const self = selfScore(decision.self);
 
   const runL0 = async () => {
     setPsiBusy(true);
@@ -122,45 +140,83 @@ export default function AdminClientPage() {
         </p>
       </div>
 
-      {/* Деньги */}
+      {/* Деньги · 8 рычагов (AD-13 baseline + AD-04 экономика разрыва) */}
       <div className="card" style={{ marginTop: 14 }}>
-        <h2>Деньги · baseline и расчёт</h2>
+        <h2>Деньги · baseline на 8 рычагов</h2>
         <p className="sub" style={{ fontSize: 12.5 }}>
-          Вводите значения из проверенных данных (GA4, выгрузка заказов). Модель цепная, показываем
-          консервативную нижнюю границу.
+          Модель выручки Commerce OS: новая (трафик × CR × чек × оплата × выкуп) + повторная
+          (база × повторные/мес × заказов × чек). Вклады рычагов — цепной атрибуцией,
+          Σ вкладов = потенциал. Значения — только из проверенных данных.
         </p>
-        <div className="grid cols2" style={{ marginTop: 12 }}>
-          {(
-            [
-              ['revenueK', 'Оборот, тыс ₴/мес'],
-              ['cr', 'Конверсия факт, %'],
-              ['crTarget', 'Конверсия цель, %'],
-              ['repeat', 'Повторные факт, %'],
-              ['repeatTarget', 'Повторные цель, %'],
-            ] as const
-          ).map(([k, label]) => (
-            <div key={k}>
-              <p className="qtext" style={{ fontSize: 13 }}>{label}</p>
-              <input
-                type="number"
-                value={(baseline as any)[k] || ''}
-                onChange={(e) => setBaseline({ ...baseline, [k]: Number(e.target.value) })}
-              />
-            </div>
-          ))}
+        <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap' }}>
+          <input type="text" placeholder="Дата снятия (напр. 04.08.2026)" value={bm.dateTaken ?? ''}
+            style={{ maxWidth: 220 }} onChange={(e) => setBaseMeta({ ...bm, dateTaken: e.target.value })} />
+          <input type="text" placeholder="Период усреднения (напр. 3 мес)" value={bm.period ?? ''}
+            style={{ maxWidth: 220 }} onChange={(e) => setBaseMeta({ ...bm, period: e.target.value })} />
         </div>
-        {baseline.revenueK > 0 && (
+        <table className="admin" style={{ marginTop: 12 }}>
+          <thead>
+            <tr><th>Рычаг</th><th>Факт</th><th>Цель</th><th>Источник</th><th>Вклад, ₴/год</th></tr>
+          </thead>
+          <tbody>
+            {LEVER_DEFS.map((d) => {
+              const w = gap.waterfall.find((x) => x.key === d.key);
+              return (
+                <tr key={d.key}>
+                  <td>
+                    <b style={{ fontSize: 13 }}>{d.label}</b>{' '}
+                    <span className="sub" style={{ fontSize: 11 }}>{d.unit}</span>
+                    <p className="sub" style={{ fontSize: 10.5, margin: 0 }}>{d.hint}</p>
+                  </td>
+                  <td><input type="number" value={levers[d.key].fact || ''} style={{ width: 90, padding: '6px 8px' }}
+                    onChange={(e) => setLever(d.key, 'fact', e.target.value)} /></td>
+                  <td><input type="number" value={levers[d.key].target || ''} style={{ width: 90, padding: '6px 8px' }}
+                    onChange={(e) => setLever(d.key, 'target', e.target.value)} /></td>
+                  <td>
+                    <select value={levers[d.key].source ?? ''} style={{ padding: '6px 8px', fontSize: 12 }}
+                      onChange={(e) => setLever(d.key, 'source', e.target.value)}>
+                      <option value="">—</option>
+                      {LEVER_SOURCES.map((s) => <option key={s}>{s}</option>)}
+                    </select>
+                  </td>
+                  <td className="mono" style={{ fontSize: 12, color: (w?.value ?? 0) > 0 ? 'var(--lime-dark)' : 'var(--muted)' }}>
+                    {w ? `+${Math.round(w.value / 1000)} тыс` : '—'}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        {hasBaseline && (
           <p style={{ marginTop: 12 }} className="mono">
-            Консервативно ≈ <b>{(money.consMin / 1e6).toFixed(1)} млн ₴/год</b> · полный потенциал до{' '}
-            {(money.consMax / 1e6).toFixed(1)} млн ₴ · ≈{Math.round(money.monthly / 1000)} тыс ₴/мес
-            промедления
+            Факт ≈ {Math.round(gap.rFact / 1000)} тыс ₴/мес → цель ≈ {Math.round(gap.rTarget / 1000)} тыс ₴/мес ·
+            Консервативно <b>≈{(gap.conservative / 1e6).toFixed(1)} млн ₴/год</b> · полный потенциал{' '}
+            {(gap.potential / 1e6).toFixed(1)} млн ₴ · промедление ≈{Math.round(gap.monthly / 1000)} тыс ₴/мес ·{' '}
+            {gap.sumCheck ? 'Σ вкладов = потенциал ✓' : 'Σ вкладов ≠ потенциал ✗'}
           </p>
         )}
         <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
           <button
             className="btn btn-ghost"
-            disabled={!baseline.revenueK}
-            onClick={() => save({ money: { show: true, ...baseline, ...money } })}
+            disabled={!hasBaseline}
+            onClick={() =>
+              save({
+                money: {
+                  show: true,
+                  cr: levers.cr.fact,
+                  crTarget: levers.cr.target,
+                  repeat: levers.repeat.fact,
+                  repeatTarget: levers.repeat.target,
+                  consMin: gap.conservative,
+                  consMax: gap.potential,
+                  monthly: gap.monthly,
+                  levers,
+                  waterfall: gap.waterfall,
+                  dateTaken: bm.dateTaken,
+                  period: bm.period,
+                },
+              })
+            }
           >
             Показать в отчёте клиента
           </button>
@@ -168,6 +224,69 @@ export default function AdminClientPage() {
             <button className="chip" onClick={() => save({ money: null })}>Убрать из отчёта</button>
           )}
         </div>
+      </div>
+
+      {/* ЛПР и рамки */}
+      <div className="card" style={{ marginTop: 14 }}>
+        <h2>ЛПР, рамки, команда {self !== null && report.score !== null && (
+          <span className="tag" style={{ marginLeft: 8, color: Math.abs(self - report.score) >= 15 ? 'var(--amber)' : undefined }}>
+            самооценка {self} vs Health Score {report.score}
+          </span>
+        )}</h2>
+        {!decision.reason && !decision.lprs?.length ? (
+          <p className="sub" style={{ fontSize: 12.5 }}>Клиент ещё не заполнил шаг «Решение и команда».</p>
+        ) : (
+          <>
+            {decision.reason && <p style={{ fontSize: 13.5, marginTop: 8 }}>«{decision.reason}»</p>}
+            {(decision.problems ?? []).filter(Boolean).length > 0 && (
+              <p className="sub" style={{ fontSize: 12.5 }}>
+                Проблемы по версии владельца: {(decision.problems ?? []).filter(Boolean).join(' · ')}
+              </p>
+            )}
+            {(decision.lprs ?? []).filter((l) => l.name || l.kpi).map((l, i) => (
+              <p key={i} style={{ fontSize: 13, margin: '4px 0' }}>
+                <b>{l.name || '—'}</b> · {l.role} · {l.influence}
+                {l.kpi && <> · KPI: {l.kpi}</>}
+                {l.matters && <span className="sub"> · важно: {l.matters}</span>}
+              </p>
+            ))}
+            <p className="mono" style={{ fontSize: 12, marginTop: 8 }}>
+              Бюджет: {decision.budget?.range ?? '—'} · {decision.budget?.tranches ?? ''} · решение:{' '}
+              {decision.budget?.deadline ?? '—'} {decision.budget?.cash ? `· кэш: ${decision.budget.cash}` : ''}
+            </p>
+            {(decision.team ?? []).filter((t) => t.role || t.name).length > 0 && (
+              <p className="sub" style={{ fontSize: 12.5 }}>
+                Команда: {(decision.team ?? []).filter((t) => t.role || t.name)
+                  .map((t) => `${t.role || t.name}${t.hours ? ` (${t.hours} ч/нед)` : ''}`).join(' · ')}
+                {decision.outsource ? ` · аутсорс: ${decision.outsource}` : ''}
+              </p>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Противоречия → вопросы к интервью */}
+      <div className="card" style={{ marginTop: 14 }}>
+        <h2>Вопросы к интервью · противоречия в ответах ({contradictions.length})</h2>
+        {contradictions.length === 0 ? (
+          <p className="sub" style={{ fontSize: 12.5 }}>
+            Противоречий между связанными ответами не найдено (или мало данных).
+          </p>
+        ) : (
+          contradictions.map((c) => (
+            <div key={c.rule.id} style={{ padding: '10px 0', borderBottom: '1px solid var(--line)' }}>
+              <p style={{ fontSize: 13.5, fontWeight: 600, margin: 0 }}>
+                {c.crossRole && <span className="tag" style={{ marginRight: 8, color: 'var(--amber)' }}>разные роли</span>}
+                {c.rule.question}
+              </p>
+              <p className="sub" style={{ fontSize: 11.5, margin: '4px 0 0' }}>
+                {c.rule.a.qid} «{c.aText.slice(0, 60)}» → <b>{c.aAnswer}</b>
+                {c.aBy ? ` (${c.aBy})` : ''} · {c.rule.b.qid} «{c.bText.slice(0, 60)}» → <b>{c.bAnswer}</b>
+                {c.bBy ? ` (${c.bBy})` : ''}
+              </p>
+            </div>
+          ))
+        )}
       </div>
 
       {/* L0 · PSI */}

@@ -341,12 +341,38 @@ export default function ReportPage() {
               </h2>
               <p className="sub" style={{ maxWidth: 640 }}>
                 Полный потенциал — до {(money.consMax / 1e6).toFixed(1)} млн ₴/год. Каждый месяц
-                без изменений ≈ {Math.round(money.monthly / 1000)} тыс ₴. Рычаги: конверсия{' '}
-                {money.cr}% → {money.crTarget}%, повторные покупки {money.repeat}% →{' '}
-                {money.repeatTarget}%. Baseline зафиксирован по вашим данным (GA4 / выгрузка
-                заказов), модель цепная — показана консервативная нижняя граница.
+                без изменений ≈ {Math.round(money.monthly / 1000)} тыс ₴.
+                {!money.waterfall?.length && (
+                  <> Рычаги: конверсия {money.cr}% → {money.crTarget}%, повторные покупки {money.repeat}% → {money.repeatTarget}%.</>
+                )}{' '}
+                Baseline зафиксирован по вашим данным
+                {money.dateTaken ? ` на ${money.dateTaken}` : ''}
+                {money.period ? ` (среднее за ${money.period})` : ''}, модель цепная — показана
+                консервативная нижняя граница.
                 {money.comment ? ` ${money.comment}` : ''}
               </p>
+              {Boolean(money.waterfall?.length) && (
+                <div style={{ marginTop: 12, maxWidth: 560 }}>
+                  {(() => {
+                    const wf = money.waterfall!;
+                    const max = Math.max(...wf.map((w) => w.value));
+                    return wf.map((w) => (
+                      <div key={w.key} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 5 }}>
+                        <span style={{ fontSize: 12.5, minWidth: 150 }}>{w.label}</span>
+                        <div className="progress" style={{ flex: 1 }}>
+                          <div style={{ width: `${Math.max(4, (w.value / max) * 100)}%`, background: '#65a30d' }} />
+                        </div>
+                        <span className="mono" style={{ fontSize: 11.5, minWidth: 80, textAlign: 'right' }}>
+                          +{Math.round(w.value / 1000)} тыс
+                        </span>
+                      </div>
+                    ));
+                  })()}
+                  <p className="sub" style={{ fontSize: 11, margin: '4px 0 0' }}>
+                    Вклад каждого рычага в годовой потенциал (цепная атрибуция — вклады сходятся к итогу).
+                  </p>
+                </div>
+              )}
             </div>
           ) : (
             <div className="card" style={{ marginTop: 26, borderColor: 'rgba(101,163,13,0.4)' }}>

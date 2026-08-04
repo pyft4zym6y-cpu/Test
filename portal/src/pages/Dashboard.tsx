@@ -5,6 +5,7 @@ import {
   PAINS, PAINS_QID, PAINS_CUSTOM_QID, GOALS, GOALS_QID, GOALS_CUSTOM_QID,
   PASSPORT_QID, LINKS_QID, trackFor, effectiveNiche, type Passport, type Links,
 } from '../data/pains';
+import { DECISION_QID, type Decision } from '../data/decision';
 import { useApp } from '../App';
 import { useEffect, useState } from 'react';
 import { supabase, DEMO } from '../lib/supabase';
@@ -60,8 +61,10 @@ export default function Dashboard() {
 
   let passport: Passport = {};
   let links: Links = { direct: [], indirect: [], refs: [] };
+  let decision: Decision = {};
   try { passport = JSON.parse(rows[PASSPORT_QID]?.answer ?? '{}'); } catch { /* noop */ }
   try { links = { direct: [], indirect: [], refs: [], ...JSON.parse(rows[LINKS_QID]?.answer ?? '{}') }; } catch { /* noop */ }
+  try { decision = JSON.parse(rows[DECISION_QID]?.answer ?? '{}'); } catch { /* noop */ }
 
   const companyDone = Boolean(passport.name && passport.offer && passport.niche);
   const goalIds = (rows[GOALS_QID]?.answer ?? '').split(' | ').filter(Boolean);
@@ -75,7 +78,8 @@ export default function Dashboard() {
   const pct = totalL1 ? Math.round((answeredL1 / totalL1) * 100) : 0;
   const surveyStarted = answeredL1 > 3;
 
-  const doneFlags = [companyDone, goalsDone, painsDone, surveyStarted, linksCount > 0, accessDone > 0];
+  const decisionDone = Boolean(decision.reason || (decision.lprs ?? []).some((l) => l.name));
+  const doneFlags = [companyDone, goalsDone, painsDone, surveyStarted, linksCount > 0, accessDone > 0, decisionDone];
   const nextIdx = doneFlags.findIndex((d) => !d);
   const state = (i: number): 'done' | 'next' | 'todo' =>
     doneFlags[i] ? 'done' : i === nextIdx ? 'next' : 'todo';
@@ -96,7 +100,7 @@ export default function Dashboard() {
         {passport.name ? `${passport.name}: диагностика` : `Добро пожаловать${member.name ? `, ${member.name}` : ''}`}
       </h1>
       <p className="sub" style={{ maxWidth: 640 }}>
-        Шесть шагов — от вводных до передачи данных. Всё сохраняется автоматически, идти можно в
+        Семь шагов — от вводных до передачи данных. Всё сохраняется автоматически, идти можно в
         любом порядке, но лучший результат даёт путь сверху вниз. Отчёт собирается по мере ответов.
       </p>
 
@@ -117,6 +121,8 @@ export default function Dashboard() {
               desc="Ссылки: прямые, дополнительные, референсы «хотим как…»" right={linksCount ? `${linksCount} ссылок →` : '→'} />
             <StepRow to="/access" n="06" title="Файлы и доступы" state={state(5)}
               desc="Выгрузки, P&L, GA4 — без паролей, только приглашения" right={`${accessDone}/${ACCESSES.length} →`} />
+            <StepRow to="/decision" n="07" title="Решение и команда" state={state(6)}
+              desc={decisionDone ? 'Бриф, участники решения и рамки заполнены' : 'Кто решает, бюджетные рамки, ваша команда — заполняет CEO'} />
           </div>
 
           <Link to="/report" className="rowlink" style={{ marginTop: 20, borderColor: 'rgba(101,163,13,0.5)' }}>

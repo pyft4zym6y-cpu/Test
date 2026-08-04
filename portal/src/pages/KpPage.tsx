@@ -95,9 +95,27 @@ export default function KpPage() {
           <p style={{ fontSize: 15, margin: 0 }}>
             Консервативно вы недополучаете <b className="mono" style={{ color: '#DB2777' }}>≈{(money.consMin / 1e6).toFixed(1)} млн ₴/год</b>{' '}
             (полный потенциал — до {(money.consMax / 1e6).toFixed(1)} млн ₴). Каждый месяц промедления ≈{' '}
-            {Math.round(money.monthly / 1000)} тыс ₴. Рычаги: конверсия {money.cr}% → {money.crTarget}%,
-            повторные {money.repeat}% → {money.repeatTarget}%. {money.comment ?? ''}
+            {Math.round(money.monthly / 1000)} тыс ₴.
+            {!money.waterfall?.length && (
+              <> Рычаги: конверсия {money.cr}% → {money.crTarget}%, повторные {money.repeat}% → {money.repeatTarget}%.</>
+            )}{' '}
+            {money.comment ?? ''}
           </p>
+          {Boolean(money.waterfall?.length) && (
+            <ul style={{ margin: '8px 0 0', paddingLeft: 18, fontSize: 13.5 }}>
+              {money.waterfall!.map((w) => (
+                <li key={w.key}>
+                  {w.label}: <b className="mono">+{Math.round(w.value / 1000)} тыс ₴/год</b>
+                </li>
+              ))}
+            </ul>
+          )}
+          {(money.dateTaken || money.period) && (
+            <p className="sub" style={{ fontSize: 11.5, margin: '6px 0 0' }}>
+              Baseline: {money.dateTaken ?? ''}{money.period ? ` · среднее за ${money.period}` : ''} ·
+              цепная атрибуция, консервативная нижняя граница.
+            </p>
+          )}
         </S>
       )}
 
