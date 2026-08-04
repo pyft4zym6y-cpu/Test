@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
 export default function Login() {
@@ -47,6 +48,10 @@ export default function Login() {
           {err && <p style={{ color: 'var(--red)', fontSize: 13 }}>{err}</p>}
         </form>
       )}
+      <p className="sub" style={{ fontSize: 11.5, marginTop: 16 }}>
+        Мы не запрашиваем пароли и не передаём данные третьим лицам ·{' '}
+        <Link to="/privacy" style={{ color: 'var(--lime-dark)' }}>как мы обращаемся с данными →</Link>
+      </p>
     </div>
   );
 }

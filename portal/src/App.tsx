@@ -17,6 +17,7 @@ import DeliverablesPage from './pages/DeliverablesPage';
 import AdminClientPage from './pages/AdminClientPage';
 import KpPage from './pages/KpPage';
 import DecisionPage from './pages/DecisionPage';
+import PrivacyPage from './pages/PrivacyPage';
 
 type Ctx = { session: Session | null; member: Member };
 const AppCtx = createContext<Ctx | null>(null);
@@ -137,6 +138,7 @@ export default function App() {
           <Route path="/d/:sheet" element={<DomainPage />} />
           <Route path="/access" element={<AccessPage />} />
           <Route path="/decision" element={<DecisionPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/report" element={<ReportPage />} />
         <Route path="/deliverables" element={<DeliverablesPage />} />
           <Route path="/admin" element={<AdminPage />} />
@@ -153,7 +155,10 @@ export default function App() {
     return (
       <>
         <Topbar member={null} />
-        <Login />
+        <Routes>
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="*" element={<Login />} />
+        </Routes>
       </>
     );
 
@@ -189,6 +194,7 @@ export default function App() {
         <Route path="/d/:sheet" element={<DomainPage />} />
         <Route path="/access" element={<AccessPage />} />
           <Route path="/decision" element={<DecisionPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/report" element={<ReportPage />} />
         <Route path="/deliverables" element={<DeliverablesPage />} />
         <Route path="/admin" element={<AdminPage />} />
