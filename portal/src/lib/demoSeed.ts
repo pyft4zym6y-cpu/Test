@@ -51,8 +51,11 @@ export function seedDemo() {
     }),
   );
 
+  put('CO-006', 'Сайт: 45 | Маркетплейсы: 30 | Опт: 15 | Розница: 5 | Соцсети: 5');
+
   for (const q of QUESTIONS) {
     if (q.level !== 'L1') continue;
+    if (rows[q.id]) continue;
     const opts = optionsFor(q);
     if (/Да\/Нет/.test(q.type) && opts) {
       const r = Math.random();

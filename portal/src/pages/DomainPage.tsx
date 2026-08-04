@@ -28,6 +28,65 @@ function QuestionInput({
       </div>
     );
   }
+  if (opts && (q.type === 'Текст' || q.type === 'Число')) {
+    // Разбивка по позициям («Сайт %», «Опт %»…): каждой строке — своё поле.
+    const isPct = opts.every((o) => o.trim().endsWith('%'));
+    const label = (o: string) => o.replace(/\s*%$/, '').trim();
+    const map: Record<string, string> = {};
+    value.split(' | ').forEach((part) => {
+      const i = part.indexOf(': ');
+      if (i > 0) map[part.slice(0, i)] = part.slice(i + 2);
+    });
+    const setPart = (l: string, v: string) => {
+      const next = { ...map, [l]: v };
+      onChange(
+        opts
+          .map(label)
+          .filter((l2) => (next[l2] ?? '').trim())
+          .map((l2) => `${l2}: ${next[l2].trim()}`)
+          .join(' | '),
+      );
+    };
+    const sum = isPct
+      ? opts.map(label).reduce((s, l) => s + (parseFloat((map[l] ?? '').replace(',', '.')) || 0), 0)
+      : null;
+    return (
+      <div>
+        {opts.map((o) => {
+          const l = label(o);
+          return (
+            <div key={o} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+              <span style={{ fontSize: 13, minWidth: 130 }}>{l}</span>
+              <input
+                type="text"
+                inputMode="decimal"
+                placeholder={isPct ? '0' : 'Значение'}
+                value={map[l] ?? ''}
+                onChange={(e) => setPart(l, e.target.value)}
+                style={{ maxWidth: 110 }}
+              />
+              {isPct && <span className="sub" style={{ fontSize: 13 }}>%</span>}
+            </div>
+          );
+        })}
+        {sum !== null && sum > 0 && (
+          <p
+            className="mono"
+            style={{
+              fontSize: 12,
+              margin: '4px 0 0',
+              color: Math.abs(sum - 100) <= 2 ? 'var(--lime-dark)' : 'var(--amber)',
+            }}
+          >
+            Сумма: {Math.round(sum * 10) / 10}%{Math.abs(sum - 100) > 2 ? ' · обычно в сумме ≈100%' : ' ✓'}
+          </p>
+        )}
+        <p className="sub" style={{ fontSize: 11.5, margin: '4px 0 0' }}>
+          Не знаете точно — впишите оценку; пустые строки не сохраняются.
+        </p>
+      </div>
+    );
+  }
   if (opts) {
     return (
       <div className="chips">
