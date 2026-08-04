@@ -145,6 +145,13 @@ export default function Nav() {
             >
               Забронювати сесію
             </Link>
+            <Link
+              to="/contact"
+              onClick={() => track('cta_click', { location: 'nav_mobile' })}
+              className="xl:hidden bg-[#A3E635] px-3.5 py-2 font-mono text-[0.62rem] font-bold uppercase tracking-wider text-black"
+            >
+              Аудит →
+            </Link>
             <button
               type="button"
               aria-label="Відкрити меню"

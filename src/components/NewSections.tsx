@@ -738,7 +738,7 @@ export function PageCta({ label = 'Почнімо з аудиту' }: { label?: 
             onClick={() => track('cta_click', { location: 'page_cta' })}
             className="self-start md:self-auto shrink-0 flex items-center gap-3 border border-[#65A30D] text-[#4D7C0F] px-7 py-3.5 text-sm tracking-wider uppercase hover:bg-[#65A30D] hover:text-[#12161C] transition-colors"
           >
-            Забронювати сесію →
+            Отримати аудит у грошах →
           </Link>
         </div>
       </FadeIn>

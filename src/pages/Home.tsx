@@ -55,20 +55,23 @@ export default function Home() {
                 <Eyebrow>weexp · Commerce OS · операційна система росту</Eyebrow>
                 <h1
                   className="font-extrabold uppercase tracking-tight"
-                  style={{ fontSize: 'clamp(2.2rem, 5.2vw, 4.2rem)', lineHeight: 1.02 }}
+                  style={{ fontSize: 'clamp(2.1rem, 4.9vw, 3.9rem)', lineHeight: 1.03 }}
                 >
-                  Зростання — це{' '}
+                  Збільшуємо{' '}
                   <span className="font-pixel text-[0.78em] text-[#4D7C0F] inline-block align-baseline leading-none">
-                    система
-                  </span>
-                  ,<br />а не рекламний{' '}
+                    виручку
+                  </span>{' '}
+                  <span className="whitespace-nowrap">e-commerce</span>
+                  <br />
+                  через CRO, retention і{' '}
                   <span className="font-pixel text-[0.78em] inline-block align-baseline leading-none">
-                    бюджет
+                    систему
                   </span>
                 </h1>
                 <p className="text-[#5A6472] mt-6 max-w-xl leading-relaxed text-base md:text-lg">
-                  weexp будує e-commerce як актив: бренд, платформа, дані та P&amp;L працюють в
-                  одній системі — і вартість компанії зростає швидше за її рекламні бюджети.
+                  Конверсія 0,8% → 4,2%. Оборот ×18 за 18 місяців. ROI 3.8×. Не гасла — виміряні
+                  кейси. Ми перебудовуємо весь шлях покупки, щоб компанія росла швидше за її
+                  рекламний бюджет.
                 </p>
               </FadeIn>
 
@@ -82,15 +85,16 @@ export default function Home() {
                     className="flex items-center gap-3 bg-[#A3E635] px-7 py-3.5 text-sm font-bold tracking-wider uppercase text-black hover:brightness-95 transition-[filter]"
                   >
                     <Play size={14} fill="currentColor" />
-                    Diagnostic Sprint
+                    Отримати аудит у грошах
                   </Link>
                   <Link
-                    to="/cases"
-                    onMouseEnter={() => say('Спершу докази? Справедливо. Кейси тут →')}
+                    to="/calculator"
+                    onMouseEnter={() => say('30 секунд — і розрив у гривнях на екрані. Без контактів →')}
                     onMouseLeave={sayIdle}
+                    onClick={() => track('cta_click', { location: 'home_hero_calc' })}
                     className="flex items-center gap-2 border border-black/30 px-7 py-3.5 text-sm tracking-wider uppercase hover:bg-black/5 transition-colors"
                   >
-                    Дивитись кейси
+                    Порахувати розрив · 30 сек
                     <ArrowRight size={14} />
                   </Link>
                 </div>
@@ -145,6 +149,77 @@ export default function Home() {
               <Chip key={`${b}-${i}`}>{b}</Chip>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ================= WHY OWNERS CHOOSE US ================= */}
+      <section
+        data-bot-say="Головне питання власника: «Скільки ви мені заробите?» Ось математика рішення — на реальних цифрах кейсів."
+        className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10 py-16 md:py-20"
+      >
+        <FadeIn>
+          <h2
+            className="font-extrabold uppercase tracking-tight"
+            style={{ fontSize: 'clamp(1.6rem, 3.4vw, 2.6rem)' }}
+          >
+            Питання власника: <span className="text-[#4D7C0F]">«Скільки ви мені заробите?»</span>
+          </h2>
+        </FadeIn>
+
+        {/* Математика рішення */}
+        <FadeIn delay={0.1}>
+          <div className="card p-6 md:p-8 mt-8" style={{ borderColor: 'rgba(101,163,13,0.35)' }}>
+            <p className="font-pixel text-[0.5rem] text-[#4D7C0F] mb-5">
+              МАТЕМАТИКА РІШЕННЯ · РЕАЛЬНІ ЦИФРИ КЕЙСІВ
+            </p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-5">
+              {[
+                { k: 'Вхід', v: '$2–6K', d: 'Diagnostic Sprint: аудит, що рахує гроші' },
+                { k: 'Аудит знаходить', v: '≥19 млн ₴/рік', d: 'розрив у кейсі fashion-виробника' },
+                { k: 'Програма', v: 'транші під DoD', d: 'платите за прийнятий результат' },
+                { k: 'ROI року', v: '3.8×', d: 'флагманський кейс · Преміум-текстиль' },
+              ].map((s, i) => (
+                <div key={s.k} className="relative">
+                  <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[#5A6472]">
+                    {i + 1} · {s.k}
+                  </p>
+                  <p className="font-mono font-bold text-2xl md:text-[1.7rem] text-[#12161C] mt-1.5">
+                    {s.v}
+                  </p>
+                  <p className="text-[#5A6472] text-xs mt-1.5 leading-relaxed">{s.d}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </FadeIn>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-5">
+          {[
+            {
+              t: 'Рахуємо в грошах',
+              d: 'Кожен висновок аудиту переведено в гривні проти 52 еталонів Gold Standards. Жодних «покращимо впізнаваність».',
+            },
+            {
+              t: 'Ціни відкриті',
+              d: 'Вилки прямо на сайті: $2–6K · $40–80K · $6–20K/міс. Без «зателефонуйте, щоб дізнатись вартість».',
+            },
+            {
+              t: 'Бюджет під захистом',
+              d: 'Етапи з Definition of Done і траншами: наступний платіж — після прийнятого результату.',
+            },
+            {
+              t: 'Старт без ризику',
+              d: '11 із 16 документів аудиту готові ще до передачі доступів — ви бачите цінність до того, як відкриваєте дані.',
+            },
+          ].map((c, i) => (
+            <FadeIn key={c.t} delay={0.12 + i * 0.06}>
+              <div className="card card-hover p-6 h-full">
+                <p className="font-pixel text-[0.5rem] text-[#4D7C0F]">0{i + 1}</p>
+                <p className="font-extrabold text-lg mt-2.5">{c.t}</p>
+                <p className="text-[#5A6472] text-[0.82rem] mt-2 leading-relaxed">{c.d}</p>
+              </div>
+            </FadeIn>
+          ))}
         </div>
       </section>
 
