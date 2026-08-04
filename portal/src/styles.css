@@ -1,0 +1,83 @@
+:root {
+  --ink: #12161c;
+  --muted: #5a6472;
+  --line: rgba(10, 14, 18, 0.1);
+  --lime: #65a30d;
+  --lime-dark: #4d7c0f;
+  --lime-bright: #a3e635;
+  --bg: #ffffff;
+  --panel: #f6f7f8;
+  --red: #dc2626;
+  --amber: #b45309;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  line-height: 1.5;
+}
+.mono { font-family: 'JetBrains Mono', monospace; }
+a { color: inherit; }
+.container { max-width: 880px; margin: 0 auto; padding: 0 20px; }
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  background: rgba(255,255,255,0.92); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.topbar-in { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 800; text-decoration: none; font-size: 14px; letter-spacing: 0.06em; }
+.logo b { color: var(--lime-dark); }
+.card {
+  border: 1px solid var(--line); border-radius: 2px; background: #fff; padding: 20px;
+}
+.card + .card { margin-top: 12px; }
+.btn {
+  display: inline-block; border: none; cursor: pointer; border-radius: 2px;
+  background: var(--lime-bright); color: #000; font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+  padding: 12px 22px; text-decoration: none;
+}
+.btn:disabled { background: #e2e5e8; color: #9aa1ab; cursor: default; }
+.btn-ghost {
+  background: transparent; border: 1px solid rgba(0,0,0,0.25); color: var(--ink);
+}
+.eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; color: var(--muted); }
+h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.01em; margin: 6px 0 4px; }
+h2 { font-size: 18px; font-weight: 800; margin: 0 0 6px; }
+.sub { color: var(--muted); font-size: 14px; }
+input[type='text'], input[type='email'], input[type='number'], textarea, select {
+  width: 100%; border: 1px solid var(--line); border-radius: 2px; padding: 11px 13px;
+  font: inherit; color: var(--ink); background: #fff;
+}
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--lime); }
+textarea { resize: vertical; min-height: 74px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  border: 1px solid var(--line); border-radius: 2px; padding: 8px 14px; cursor: pointer;
+  font-size: 13px; background: #fff; user-select: none;
+}
+.chip.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+.progress { height: 7px; background: rgba(10,14,18,0.08); border-radius: 99px; overflow: hidden; }
+.progress > div { height: 100%; background: linear-gradient(90deg, #65a30d, #0f9488); border-radius: 99px; transition: width 0.4s; }
+.grid { display: grid; gap: 12px; }
+@media (min-width: 720px) { .grid.cols2 { grid-template-columns: 1fr 1fr; } }
+.qcard { border: 1px solid var(--line); border-radius: 2px; padding: 18px; margin-bottom: 12px; background: #fff; }
+.qcard.branch { margin-left: 22px; border-left: 3px solid var(--lime); }
+.qid { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--lime-dark); }
+.qtext { font-weight: 600; margin: 4px 0 2px; }
+.qwhy { color: var(--muted); font-size: 12.5px; margin-bottom: 10px; }
+.facts summary { cursor: pointer; font-size: 12.5px; color: var(--muted); margin-top: 10px; }
+.saved { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--lime-dark); }
+.rowlink {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  border: 1px solid var(--line); border-radius: 2px; padding: 16px 18px; margin-bottom: 10px;
+  text-decoration: none; background: #fff;
+}
+.rowlink:hover { border-color: rgba(0,0,0,0.3); }
+.status-select { max-width: 180px; }
+.tag { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.1em; padding: 3px 8px; border: 1px solid var(--line); border-radius: 2px; color: var(--muted); white-space: nowrap; }
+.note { background: var(--panel); border: 1px solid var(--line); border-radius: 2px; padding: 12px 14px; font-size: 13px; color: var(--muted); }
+table.admin { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.admin th, table.admin td { border-bottom: 1px solid var(--line); text-align: left; padding: 8px 10px; }
