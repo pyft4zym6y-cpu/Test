@@ -329,6 +329,48 @@ export default function ReportPage() {
             </>
           )}
 
+          {/* Скрининг против голд-стандарта */}
+          {(meta?.screen ?? []).filter((s) => s.score != null).length > 0 && (
+            <>
+              <p className="eyebrow" style={{ margin: '28px 0 12px' }}>
+                Витрина · вы против конкурентов против эталона
+              </p>
+              <div className="card">
+                {(meta!.screen ?? []).filter((s) => s.score != null).map((s) => (
+                  <div key={s.url} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                    <span style={{ fontSize: 12.5, minWidth: 170, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {s.kind === 'client' ? '★ ' : ''}{s.url.replace(/^https?:\/\/(www\.)?/, '')}
+                    </span>
+                    <div className="progress" style={{ flex: 1 }}>
+                      <div style={{ width: `${s.score}%`, background: (s.score ?? 0) >= 75 ? '#65a30d' : (s.score ?? 0) >= 50 ? '#b45309' : '#dc2626' }} />
+                    </div>
+                    <span className="mono" style={{ fontSize: 12, fontWeight: 700, minWidth: 44, textAlign: 'right' }}>{s.score}%</span>
+                  </div>
+                ))}
+                {(() => {
+                  const client = (meta!.screen ?? []).find((s) => s.kind === 'client' && s.checks.length);
+                  if (!client) return null;
+                  const fails = client.checks.filter((c) => !c.pass).slice(0, 8);
+                  if (!fails.length) return null;
+                  return (
+                    <>
+                      <p className="qtext" style={{ fontSize: 13, marginTop: 10 }}>Что чинить в первую очередь у вас:</p>
+                      <ul style={{ margin: '4px 0 0', paddingLeft: 18, fontSize: 13 }}>
+                        {fails.map((c) => (
+                          <li key={c.id}>{c.label}{c.detail ? ` (${c.detail})` : ''}</li>
+                        ))}
+                      </ul>
+                    </>
+                  );
+                })()}
+                <p className="sub" style={{ fontSize: 11.5, marginTop: 10 }}>
+                  30 автоматических проверок SEO/UX/техники против эталона Commerce OS (эталон = 100%).
+                  Замер выполнен командой weexp.
+                </p>
+              </div>
+            </>
+          )}
+
           {/* Деньги */}
           {money ? (
             <div className="card" style={{ marginTop: 26, borderColor: 'rgba(101,163,13,0.5)' }}>

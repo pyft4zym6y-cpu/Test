@@ -9,6 +9,10 @@ import {
 import { PASSPORT_QID, LINKS_QID, PAINS_QID, type Passport, type Links } from '../data/pains';
 import { DECISION_QID, selfScore, type Decision } from '../data/decision';
 import { detectContradictions } from '../lib/contradictions';
+import { parseOrdersCsv, type OrdersMetrics } from '../lib/orders';
+import { screenUrl } from '../lib/screen';
+import { buildGantt, ganttCsv } from '../lib/gantt';
+import { RATE_ITEMS, EUR_RATE_DEFAULT } from '../data/rates';
 import { byId } from '../lib/model';
 import type { AnswerRow } from '../lib/supabase';
 
@@ -22,6 +26,12 @@ export default function AdminClientPage() {
   const [psiBusy, setPsiBusy] = useState(false);
   const [leversDraft, setLeversDraft] = useState<Levers | null>(null);
   const [baseMeta, setBaseMeta] = useState<{ dateTaken?: string; period?: string } | null>(null);
+  const [orders, setOrders] = useState<OrdersMetrics | null>(null);
+  const [ordersErr, setOrdersErr] = useState('');
+  const [screenBusy, setScreenBusy] = useState(false);
+  const [ga4Msg, setGa4Msg] = useState('');
+  const [budgetSel, setBudgetSel] = useState<Record<string, number> | null>(null); // id -> months (0=off, для разовых 1)
+  const [eurRate, setEurRate] = useState(EUR_RATE_DEFAULT);
 
   useEffect(() => {
     if (DEMO) {
@@ -61,6 +71,97 @@ export default function AdminClientPage() {
   let decision: Decision = {};
   try { decision = JSON.parse(rows[DECISION_QID]?.answer ?? '{}'); } catch { /* noop */ }
   const self = selfScore(decision.self);
+
+  const onOrdersFile = (f: File) =>
+    f.text().then((t) => {
+      const r = parseOrdersCsv(t);
+      if ('error' in r) { setOrdersErr(r.error); setOrders(null); }
+      else { setOrders(r); setOrdersErr(''); }
+    });
+
+  const applyOrders = () => {
+    if (!orders) return;
+    const src = { source: 'Выгрузка заказов' };
+    setLeversDraft({
+      ...levers,
+      aov: { ...levers.aov, fact: orders.aov, ...src },
+      base: { ...levers.base, fact: orders.activeBase, ...src },
+      repeat: { ...levers.repeat, fact: orders.monthlyRepeatShare, ...src },
+      opr: { ...levers.opr, fact: orders.ordersPerRepeat || 1, ...src },
+    });
+    setBaseMeta({ ...bm, period: `3 мес (${orders.lastMonth})`, dateTaken: new Date().toLocaleDateString('ru-RU') });
+  };
+
+  const pullGa4 = async () => {
+    setGa4Msg('Запрашиваю GA4…');
+    try {
+      const j = await (await fetch('/api/ga4')).json();
+      if (j.error) { setGa4Msg(j.error); return; }
+      setLeversDraft({
+        ...levers,
+        traffic: { ...levers.traffic, fact: j.sessionsMonthly, source: 'GA4' },
+        cr: { ...levers.cr, fact: j.cr, source: 'GA4' },
+        aov: levers.aov.fact ? levers.aov : { ...levers.aov, fact: j.aov, source: 'GA4' },
+      });
+      setGa4Msg(`GA4 за ${j.period}: ${j.sessionsMonthly} сессий/мес · CR ${j.cr}% · чек ${j.aov}`);
+    } catch {
+      setGa4Msg('API недоступно — работает на хостинге Vercel, не в демо.');
+    }
+  };
+
+  const runScreen = async () => {
+    setScreenBusy(true);
+    const targets = [
+      ...(passport.sites ?? []).filter(Boolean).slice(0, 2).map((u) => ({ url: u, kind: 'client' as const })),
+      ...links.direct.map((l) => l.url).filter(Boolean).slice(0, 3).map((u) => ({ url: u, kind: 'competitor' as const })),
+    ];
+    const out = [];
+    for (const t of targets) {
+      out.push(await screenUrl(t.url, t.kind));
+      save({ screen: [...out] });
+    }
+    setScreenBusy(false);
+  };
+
+  const gantt = useMemo(() => buildGantt(report.rules), [report.rules]);
+  const downloadGantt = () => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(['﻿' + ganttCsv(gantt)], { type: 'text/csv;charset=utf-8' }));
+    a.download = `gantt-${clientId}.csv`;
+    a.click();
+  };
+
+  const selMap: Record<string, number> =
+    budgetSel ?? Object.fromEntries((meta?.budget?.items ?? []).map((i) => [i.id, i.months ?? 1]));
+  const toggleBudget = (id: string) => {
+    const item = RATE_ITEMS.find((r) => r.id === id)!;
+    setBudgetSel({ ...selMap, [id]: selMap[id] ? 0 : item.type === 'Разовая' ? 1 : item.months ?? 6 });
+  };
+  const budgetTotals = useMemo(() => {
+    let min = 0, max = 0;
+    const blocks = new Map<string, { min: number; max: number }>();
+    for (const item of RATE_ITEMS) {
+      const m = selMap[item.id];
+      if (!m) continue;
+      const mult = item.type === 'Разовая' ? 1 : m;
+      min += item.min * mult;
+      max += item.max * mult;
+      const b = blocks.get(item.block) ?? { min: 0, max: 0 };
+      blocks.set(item.block, { min: b.min + item.min * mult, max: b.max + item.max * mult });
+    }
+    return { min, max, blocks };
+  }, [selMap]);
+  const saveBudget = () =>
+    save({
+      budget: {
+        show: true,
+        eurRate,
+        items: RATE_ITEMS.filter((r) => selMap[r.id]).map((r) => ({
+          id: r.id, qty: 1, min: r.min, max: r.max,
+          months: r.type === 'Разовая' ? undefined : selMap[r.id],
+        })),
+      },
+    });
 
   const runL0 = async () => {
     setPsiBusy(true);
@@ -148,12 +249,14 @@ export default function AdminClientPage() {
           (база × повторные/мес × заказов × чек). Вклады рычагов — цепной атрибуцией,
           Σ вкладов = потенциал. Значения — только из проверенных данных.
         </p>
-        <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap', alignItems: 'center' }}>
           <input type="text" placeholder="Дата снятия (напр. 04.08.2026)" value={bm.dateTaken ?? ''}
             style={{ maxWidth: 220 }} onChange={(e) => setBaseMeta({ ...bm, dateTaken: e.target.value })} />
           <input type="text" placeholder="Период усреднения (напр. 3 мес)" value={bm.period ?? ''}
             style={{ maxWidth: 220 }} onChange={(e) => setBaseMeta({ ...bm, period: e.target.value })} />
+          <button className="chip" onClick={pullGa4}>⇓ Подтянуть из GA4</button>
         </div>
+        {ga4Msg && <p className="sub" style={{ fontSize: 11.5, marginTop: 6 }}>{ga4Msg}</p>}
         <table className="admin" style={{ marginTop: 12 }}>
           <thead>
             <tr><th>Рычаг</th><th>Факт</th><th>Цель</th><th>Источник</th><th>Вклад, ₴/год</th></tr>
@@ -224,6 +327,39 @@ export default function AdminClientPage() {
             <button className="chip" onClick={() => save({ money: null })}>Убрать из отчёта</button>
           )}
         </div>
+      </div>
+
+      {/* Выгрузка заказов → факт по рычагам */}
+      <div className="card" style={{ marginTop: 14 }}>
+        <h2>Выгрузка заказов · разбор (AC-13)</h2>
+        <p className="sub" style={{ fontSize: 12.5 }}>
+          Загрузите CSV заказов клиента — файл разбирается прямо в браузере, никуда не отправляется.
+          Нужны колонки: дата, сумма; желательно клиент, канал, статус.
+        </p>
+        <input type="file" accept=".csv,.txt" style={{ marginTop: 10 }}
+          onChange={(e) => e.target.files?.[0] && onOrdersFile(e.target.files[0])} />
+        {ordersErr && <p className="sub" style={{ color: 'var(--red)', fontSize: 12.5 }}>{ordersErr}</p>}
+        {orders && (
+          <>
+            <div className="grid cols2" style={{ marginTop: 12, gap: 8 }}>
+              {[
+                ['Период', `${orders.firstMonth} → ${orders.lastMonth} (${orders.months} мес, ${orders.rows} строк)`],
+                ['Выручка/мес (посл. 3 мес)', `${Math.round(orders.monthlyRevenue / 1000)} тыс ₴ · ${orders.monthlyOrders} заказов`],
+                ['Средний чек', `${orders.aov} ₴`],
+                ['Активная база', `${orders.activeBase} покупателей`],
+                ['Повторные', `${orders.monthlyRepeatShare}% базы/мес · ${orders.ordersPerRepeat} зак./повторного · ${orders.repeatRevenueShare}% выручки`],
+                ['Концентрация', `топ-10% клиентов = ${orders.top10Share}% выручки${orders.top10Share > 50 ? ' ⚠' : ''}`],
+                ['Возвраты/отмены', `${orders.returnsShare}%${orders.returnsShare > 15 ? ' ⚠' : ''}`],
+                ['Каналы', orders.channels.map((c) => `${c.name} ${c.share}%`).join(' · ') || '—'],
+              ].map(([k, v]) => (
+                <p key={k} style={{ fontSize: 13, margin: 0 }}><b>{k}:</b> <span className="mono" style={{ fontSize: 12 }}>{v}</span></p>
+              ))}
+            </div>
+            <button className="btn btn-ghost" style={{ marginTop: 12 }} onClick={applyOrders}>
+              Подставить факт в baseline ↑
+            </button>
+          </>
+        )}
       </div>
 
       {/* ЛПР и рамки */}
@@ -316,6 +452,158 @@ export default function AdminClientPage() {
               ))}
             </tbody>
           </table>
+        )}
+      </div>
+
+      {/* L0-скрининг против голд-стандарта */}
+      <div className="card" style={{ marginTop: 14 }}>
+        <h2>Скрининг страниц · вы против конкурентов против голд-стандарта</h2>
+        <p className="sub" style={{ fontSize: 12.5 }}>
+          30 автоматических проверок SEO/UX/техники по DOM: сайты клиента и прямые конкуренты.
+          Голд-стандарт = 100% проверок. Работает на хостинге (Vercel API); сайты с жёсткой
+          бот-защитой честно помечаются как недоступные.
+        </p>
+        <button className="btn btn-ghost" style={{ marginTop: 10 }} disabled={screenBusy} onClick={runScreen}>
+          {screenBusy ? 'Сканирую…' : 'Прогнать скрининг'}
+        </button>
+        {(meta.screen ?? []).length > 0 && (
+          <>
+            <div style={{ display: 'flex', gap: 14, marginTop: 12, flexWrap: 'wrap' }}>
+              {(meta.screen ?? []).map((s) => (
+                <div key={s.url} className="qcard" style={{ minWidth: 180, flex: 1 }}>
+                  <p className="mono" style={{ fontSize: 11, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {s.url.replace(/^https?:\/\//, '')}
+                  </p>
+                  <p style={{ fontSize: 12, margin: '2px 0' }}>{s.kind === 'client' ? 'клиент' : 'конкурент'}</p>
+                  <p className="mono" style={{ fontSize: 22, fontWeight: 800, margin: 0, color: (s.score ?? 0) >= 75 ? 'var(--lime-dark)' : (s.score ?? 0) >= 50 ? 'var(--amber)' : 'var(--red)' }}>
+                    {s.score != null ? `${s.score}%` : '—'}
+                  </p>
+                  {s.error && <p className="sub" style={{ fontSize: 10.5, margin: 0 }}>{s.error}</p>}
+                </div>
+              ))}
+            </div>
+            {(() => {
+              const withChecks = (meta.screen ?? []).filter((s) => s.checks.length);
+              if (!withChecks.length) return null;
+              const checkIds = withChecks[0].checks.map((c) => c.id);
+              return (
+                <div style={{ overflowX: 'auto', marginTop: 12 }}>
+                  <table className="admin" style={{ fontSize: 12 }}>
+                    <thead>
+                      <tr>
+                        <th>Проверка</th>
+                        {withChecks.map((s) => (
+                          <th key={s.url} style={{ fontSize: 10 }}>
+                            {s.kind === 'client' ? '★ ' : ''}{s.url.replace(/^https?:\/\/(www\.)?/, '').slice(0, 18)}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {checkIds.map((cid) => {
+                        const label = withChecks[0].checks.find((c) => c.id === cid);
+                        return (
+                          <tr key={cid}>
+                            <td style={{ fontSize: 12 }}>
+                              <span className="sub" style={{ fontSize: 10 }}>{label?.group}</span> {label?.label}
+                            </td>
+                            {withChecks.map((s) => {
+                              const c = s.checks.find((x) => x.id === cid);
+                              return (
+                                <td key={s.url} className="mono" style={{ color: c?.pass ? 'var(--lime-dark)' : 'var(--red)' }}>
+                                  {c ? (c.pass ? '✓' : '✗') : '·'}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })()}
+          </>
+        )}
+      </div>
+
+      {/* Гант · план работ */}
+      <div className="card" style={{ marginTop: 14 }}>
+        <h2>План работ · черновик Ганта ({gantt.length} задач)</h2>
+        <p className="sub" style={{ fontSize: 12.5 }}>
+          Фаза 0 фиксирована методикой, волны собраны из сработавших правил роутинга
+          (P0 → волна 1). Экспортируйте CSV и доводите в полной книге Ганта (735 задач).
+        </p>
+        <div style={{ overflowX: 'auto', marginTop: 10 }}>
+          <table className="admin" style={{ fontSize: 12.5 }}>
+            <thead><tr><th>Фаза</th><th>Задача</th><th>Код</th><th>Старт, нед</th><th>Длит., нед</th><th>DoD</th></tr></thead>
+            <tbody>
+              {gantt.map((t, i) => (
+                <tr key={i}>
+                  <td style={{ whiteSpace: 'nowrap', fontSize: 11.5 }}>{t.phase}</td>
+                  <td>{t.name}</td>
+                  <td className="mono" style={{ fontSize: 11 }}>{t.deliverable}</td>
+                  <td className="mono">{t.startWeek + 1}</td>
+                  <td className="mono">{t.weeks}</td>
+                  <td className="sub" style={{ fontSize: 11 }}>{t.dod}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <button className="btn btn-ghost" style={{ marginTop: 10 }} onClick={downloadGantt}>Экспорт Ганта (CSV) ↓</button>
+      </div>
+
+      {/* Бюджет из rate card */}
+      <div className="card" style={{ marginTop: 14 }}>
+        <h2>Бюджет · сборка из rate card</h2>
+        <p className="sub" style={{ fontSize: 12.5 }}>
+          Отметьте работы программы. Ставки с меткой <b>КП</b> — из реальных полученных
+          предложений подрядчиков (факт рынка); остальное — рыночные вилки 2025 (оценка).
+          Для ретейнеров укажите месяцы.
+        </p>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 8 }}>
+          <span className="sub" style={{ fontSize: 12 }}>Курс €:</span>
+          <input type="number" value={eurRate} style={{ maxWidth: 90, padding: '6px 8px' }}
+            onChange={(e) => setEurRate(Number(e.target.value) || EUR_RATE_DEFAULT)} />
+          <span className="sub" style={{ fontSize: 12 }}>₴/€</span>
+        </div>
+        {[...new Set(RATE_ITEMS.map((r) => r.block))].map((block) => (
+          <div key={block} style={{ marginTop: 10 }}>
+            <p className="mono" style={{ fontSize: 11.5, fontWeight: 700, margin: '6px 0 4px' }}>{block}</p>
+            {RATE_ITEMS.filter((r) => r.block === block).map((r) => (
+              <div key={r.id} style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '3px 0', flexWrap: 'wrap' }}>
+                <span className={`chip ${selMap[r.id] ? 'on' : ''}`} style={{ fontSize: 12 }} onClick={() => toggleBudget(r.id)}>
+                  {selMap[r.id] ? '✓ ' : ''}{r.name}
+                </span>
+                {r.confirmed && <span className="tag" style={{ color: 'var(--lime-dark)' }} title={r.source}>КП</span>}
+                <span className="mono sub" style={{ fontSize: 11 }}>
+                  €{r.min.toLocaleString()}–{r.max.toLocaleString()}{r.type === 'Ретейнер/мес' ? '/мес' : ''}
+                </span>
+                {r.type === 'Ретейнер/мес' && Boolean(selMap[r.id]) && (
+                  <>
+                    <input type="number" value={selMap[r.id]} style={{ maxWidth: 64, padding: '4px 6px' }}
+                      onChange={(e) => setBudgetSel({ ...selMap, [r.id]: Math.max(0, Number(e.target.value)) })} />
+                    <span className="sub" style={{ fontSize: 11 }}>мес</span>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        ))}
+        {budgetTotals.min > 0 && (
+          <>
+            <p className="mono" style={{ marginTop: 12, fontSize: 13.5 }}>
+              Итого: <b>€{budgetTotals.min.toLocaleString()} – €{budgetTotals.max.toLocaleString()}</b>{' '}
+              (≈{Math.round((budgetTotals.min * eurRate) / 1e6 * 10) / 10}–{Math.round((budgetTotals.max * eurRate) / 1e6 * 10) / 10} млн ₴)
+            </p>
+            <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+              <button className="btn btn-ghost" onClick={saveBudget}>Показать бюджет в КП</button>
+              {meta.budget?.show && (
+                <button className="chip" onClick={() => save({ budget: null })}>Убрать из КП</button>
+              )}
+            </div>
+          </>
         )}
       </div>
 

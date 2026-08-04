@@ -132,7 +132,8 @@ export function buildReport(
     .map((id) => PAINS.find((p) => p.id === id)?.title ?? '')
     .map(norm);
   const answerTexts = Object.values(answers)
-    .map((a) => norm(a.answer ?? ''))
+    .flatMap((a) => (a.answer ?? '').split(' | ')) // мультивыбор: каждый выбранный вариант отдельно
+    .map(norm)
     .filter((t) => t.length > 3 && t.length < 60);
   const rules = RULES.filter((r) => {
     const t = norm(r.trigger ?? '');

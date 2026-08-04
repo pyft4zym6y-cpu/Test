@@ -53,6 +53,8 @@ export function seedDemo() {
 
   put('CO-006', 'Сайт: 45 | Маркетплейсы: 30 | Опт: 15 | Розница: 5 | Соцсети: 5');
 
+  put('CO-001', 'Падают продажи | Не можем масштабироваться');
+
   // Противоречия для демо консультантской ветки (вопросы к интервью)
   put('GV-003', 'По данным');
   put('AN-003', 'Нет');
@@ -93,6 +95,10 @@ export function seedDemo() {
       put(q.id, String(Math.round(1 + Math.random() * 3)));
     } else if (q.type === 'Выбор' && opts && Math.random() < 0.6) {
       put(q.id, opts[Math.floor(Math.random() * opts.length)]);
+    } else if (q.type === 'Мультивыбор' && opts && Math.random() < 0.5) {
+      const n = 1 + Math.floor(Math.random() * Math.min(2, opts.length));
+      const picked = [...opts].sort(() => Math.random() - 0.5).slice(0, n);
+      put(q.id, picked.join(' | '));
     }
   }
   lsSaveAll(rows);

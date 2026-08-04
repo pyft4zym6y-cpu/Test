@@ -150,8 +150,12 @@ create table if not exists report_meta (
   hidden jsonb default '[]',
   money jsonb,
   l0 jsonb,
+  screen jsonb,
+  budget jsonb,
   updated_at timestamptz default now()
 );
+alter table report_meta add column if not exists screen jsonb;
+alter table report_meta add column if not exists budget jsonb;
 alter table report_meta enable row level security;
 drop policy if exists rmeta_select on report_meta;
 create policy rmeta_select on report_meta for select

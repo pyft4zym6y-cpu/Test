@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { supabase, DEMO, type AnswerRow } from '../lib/supabase';
 import { buildReport } from '../lib/report';
 import { useReportMeta } from '../lib/consultant';
+import { RATE_ITEMS } from '../data/rates';
 import { bandFor } from '../data/method';
 import {
   PASSPORT_QID, PAINS_QID, PAINS_CUSTOM_QID, GOALS_QID, GOALS, PAINS,
@@ -163,6 +164,46 @@ export default function KpPage() {
           <li><b>Commerce OS™ Build</b> — $40–80K · 6–12 мес · система под ключ, транши под DoD</li>
           <li><b>Fractional Head of Commerce</b> — $6–20K/мес · руководитель e-commerce без найма</li>
         </ul>
+        {meta?.budget?.show && meta.budget.items.length > 0 && (() => {
+          const byBlock = new Map<string, { min: number; max: number }>();
+          let tMin = 0, tMax = 0, hasConfirmed = false;
+          for (const it of meta.budget!.items) {
+            const r = RATE_ITEMS.find((x) => x.id === it.id);
+            if (!r) continue;
+            if (r.confirmed) hasConfirmed = true;
+            const mult = it.months ?? 1;
+            const b = byBlock.get(r.block) ?? { min: 0, max: 0 };
+            byBlock.set(r.block, { min: b.min + r.min * mult, max: b.max + r.max * mult });
+            tMin += r.min * mult; tMax += r.max * mult;
+          }
+          const rate = meta.budget!.eurRate;
+          return (
+            <div style={{ marginTop: 12 }}>
+              <p style={{ fontSize: 14, fontWeight: 700, margin: '0 0 6px' }}>Смета программы по блокам</p>
+              <table className="admin" style={{ fontSize: 13 }}>
+                <thead><tr><th>Блок работ</th><th>Бюджет, €</th></tr></thead>
+                <tbody>
+                  {[...byBlock.entries()].map(([b, v]) => (
+                    <tr key={b}>
+                      <td>{b}</td>
+                      <td className="mono">€{v.min.toLocaleString()} – €{v.max.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                  <tr>
+                    <td><b>Итого</b></td>
+                    <td className="mono"><b>€{tMin.toLocaleString()} – €{tMax.toLocaleString()}</b> (≈{((tMin * rate) / 1e6).toFixed(1)}–{((tMax * rate) / 1e6).toFixed(1)} млн ₴)</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p className="sub" style={{ fontSize: 11.5, marginTop: 6 }}>
+                {hasConfirmed
+                  ? 'Часть ставок — из реальных КП подрядчиков (факт рынка), остальное — рыночные вилки 2025 (оценка). '
+                  : 'Ставки — рыночные вилки 2025 (оценка). '}
+                Медиа-бюджет и переменные (комиссии площадок, логистика за заказ) — отдельными строками финмодели.
+              </p>
+            </div>
+          );
+        })()}
         <p className="sub" style={{ fontSize: 12, marginTop: 8 }}>
           Точный бюджет фиксируется после согласования scope; следующий транш — только после
           принятого результата предыдущего этапа.

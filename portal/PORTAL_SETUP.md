@@ -57,3 +57,24 @@
 Изменился XLSX-фреймворк → скажите Claude в чате: перегенерируем
 `src/data/questions.json` из нового файла, `git push` — Vercel выкатит сам.
 Ответы клиентов не пострадают (связь по ID вопроса).
+
+## Serverless-функции (папка api/)
+
+На Vercel вместе с порталом деплоятся две функции (в демо-режиме недоступны):
+
+- **`/api/fetch`** — качает HTML чужих сайтов для L0-скрининга (кнопка
+  «Прогнать скрининг» в консультантской ветке). Настройки не требует.
+- **`/api/ga4`** — тянет baseline из GA4 Data API (кнопка «⇓ Подтянуть из GA4»).
+  Требует три переменные окружения (Vercel → Settings → Environment Variables):
+  1. `GA4_PROPERTY_ID` — числовой ID ресурса (GA4 Admin → Property settings);
+  2. `GA4_SA_EMAIL` — client_email сервисного аккаунта Google Cloud;
+  3. `GA4_SA_KEY` — private_key этого аккаунта (вставить целиком, с `\n`).
+  Сервисный аккаунт создаётся в Google Cloud Console (IAM → Service accounts →
+  ключ JSON), затем его e-mail добавляется в GA4 клиента как «Наблюдатель»
+  (Admin → Property access management). Это делается один раз на ваш аккаунт —
+  дальше каждый клиент просто добавляет тот же e-mail в свой GA4.
+
+## После обновления v5
+
+В Supabase заново прогоните `supabase/schema.sql` (SQL Editor → Run) — добавились
+колонки `screen` и `budget` в `report_meta`. Скрипт идемпотентный.

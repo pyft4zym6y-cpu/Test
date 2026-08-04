@@ -25,6 +25,18 @@ export type Money = {
 
 export type L0Row = { url: string; kind: 'client' | 'competitor'; score: number | null; lcp: number | null; cls: number | null; error?: string };
 
+export type ScreenCheck = { id: string; label: string; group: string; pass: boolean; detail?: string };
+export type ScreenRow = {
+  url: string;
+  kind: 'client' | 'competitor';
+  score: number | null; // % пройденных проверок против голд-стандарта
+  checks: ScreenCheck[];
+  error?: string;
+};
+
+export type BudgetItem = { id: string; qty: number; min: number; max: number; months?: number };
+export type Budget = { items: BudgetItem[]; eurRate: number; show?: boolean };
+
 export type ReportMeta = {
   client_id: string;
   status: 'draft' | 'final';
@@ -32,6 +44,8 @@ export type ReportMeta = {
   hidden: string[];
   money: Money | null;
   l0: L0Row[] | null;
+  screen: ScreenRow[] | null;
+  budget: Budget | null;
 };
 
 const LS_META = 'weexp-demo-meta';
@@ -42,6 +56,8 @@ const emptyMeta = (clientId: string): ReportMeta => ({
   hidden: [],
   money: null,
   l0: null,
+  screen: null,
+  budget: null,
 });
 
 export function useReportMeta(clientId: string) {
