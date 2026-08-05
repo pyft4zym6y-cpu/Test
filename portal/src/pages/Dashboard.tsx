@@ -7,6 +7,7 @@ import {
   tacticalPainsOf, type Passport, type Links,
 } from '../data/pains';
 import { DECISION_QID, type Decision } from '../data/decision';
+import { checkMilestones, NOTIFY_QID } from '../lib/notify';
 import { useApp } from '../App';
 import { useEffect, useState } from 'react';
 import { supabase, DEMO } from '../lib/supabase';
@@ -41,15 +42,18 @@ function StepRow({ to, n, title, desc, state, right }: {
 
 export default function Dashboard() {
   const { member } = useApp();
-  const { rows, loaded } = useAnswers();
+  const { rows, loaded, save } = useAnswers();
   const answers = answerMap(rows);
   const [accessDone, setAccessDone] = useState(0);
+  const [keyAccess, setKeyAccess] = useState(false);
 
   useEffect(() => {
     if (DEMO) {
       try {
         const m = JSON.parse(localStorage.getItem('weexp-demo-access') ?? '{}');
-        setAccessDone(Object.values(m).filter((r: any) => r.status === 'Выдан').length);
+        const granted = Object.entries(m).filter(([, r]: any) => r.status === 'Выдан');
+        setAccessDone(granted.length);
+        setKeyAccess(granted.some(([id]) => id === 'AC-01' || id === 'AC-13'));
       } catch { /* noop */ }
       return;
     }
@@ -57,7 +61,11 @@ export default function Dashboard() {
       .from('access_status')
       .select('access_id,status')
       .eq('client_id', member.client_id!)
-      .then(({ data }) => setAccessDone((data ?? []).filter((r) => r.status === 'Выдан').length));
+      .then(({ data }) => {
+        const granted = (data ?? []).filter((r) => r.status === 'Выдан');
+        setAccessDone(granted.length);
+        setKeyAccess(granted.some((r) => r.access_id === 'AC-01' || r.access_id === 'AC-13'));
+      });
   }, [member.client_id]);
 
   let passport: Passport = {};
@@ -84,6 +92,24 @@ export default function Dashboard() {
   const nextIdx = doneFlags.findIndex((d) => !d);
   const state = (i: number): 'done' | 'next' | 'todo' =>
     doneFlags[i] ? 'done' : i === nextIdx ? 'next' : 'todo';
+
+  // Вехи → письмо консультанту (ровно один раз на веху; в демо не шлём)
+  useEffect(() => {
+    if (!loaded) return;
+    checkMilestones(
+      {
+        clientName: passport.name ?? 'Клиент',
+        companyDone, goalsDone, painsDone,
+        surveyPct: pct,
+        keyAccessGranted: keyAccess,
+        decisionDone,
+      },
+      rows,
+    ).then((sent) => {
+      if (sent) save(NOTIFY_QID, { answer: JSON.stringify(sent) });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loaded, companyDone, goalsDone, painsDone, pct, keyAccess, decisionDone]);
 
   const track = trackFor(painIds, goalIds);
   const orderedDomains = painsDone || goalsDone

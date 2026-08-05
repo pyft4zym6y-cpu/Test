@@ -300,7 +300,7 @@ export default function AdminClientPage() {
     const csv = [
       ['ID', 'Домен', 'Вопрос', 'ОТВЕТ КЛИЕНТА', 'Факты', 'Кто', 'Когда'].map(esc).join(';'),
       ...Object.values(rows)
-        .filter((r) => r.answer)
+        .filter((r) => r.answer && !r.question_id.startsWith('NOTIFY'))
         .map((r) => {
           const q = byId.get(r.question_id);
           return [r.question_id, q?.domain ?? '', q?.text ?? '', r.answer, r.facts, r.updated_by, (r as any).updated_at ?? '']
