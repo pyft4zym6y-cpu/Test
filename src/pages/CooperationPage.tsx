@@ -41,7 +41,7 @@ export default function CooperationPage() {
         <Fork />
       </div>
 
-      <PageCta label="Почнімо з аудиту" />
+      <PageCta />
     </div>
   );
 }

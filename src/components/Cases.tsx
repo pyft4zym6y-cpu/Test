@@ -218,8 +218,8 @@ export function Case01Detail() {
                 </p>
               </div>
               <p className="text-[#5A6472] text-xs leading-relaxed flex-1 min-w-[200px]">
-                Бенчмарки: Klaviyo, Shopify Plus, Triple Whale (2024–2025). B2B / HoReCa: Repeat
-                Rate 78%, середній чек ×5.
+                Платформа кейсу — OpenCart: результат дає система, а не рушій сайту. Бенчмарки
+                ринку 2024–2025. B2B / HoReCa: Repeat Rate 78%, середній чек ×5.
               </p>
             </div>
           </FadeIn>

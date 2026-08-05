@@ -718,7 +718,7 @@ export function RayCase() {
 
 /* ================= CTA-стрічка для кінця сторінок ================= */
 
-export function PageCta({ label = 'Почнімо з аудиту' }: { label?: string }) {
+export function PageCta({ label = 'Порахуйте свій розрив у грошах' }: { label?: string }) {
   return (
     <Section>
       <FadeIn>
@@ -729,16 +729,16 @@ export function PageCta({ label = 'Почнімо з аудиту' }: { label?: 
           <div>
             <p className="font-extrabold text-2xl md:text-3xl">{label}</p>
             <p className="text-[#5A6472] text-sm mt-2 max-w-xl">
-              30-хв стратегічна сесія → аудит. Ви бачите цифри до того, як вкладаєте
-              бюджет у виконання.
+              8 питань · пів хвилини · без контактів і дзвінків. Калькулятор покаже,
+              скільки обороту ви недоотримуєте щомісяця — і де саме.
             </p>
           </div>
           <Link
-            to="/contact"
-            onClick={() => track('cta_click', { location: 'page_cta' })}
+            to="/calculator"
+            onClick={() => track('cta_click', { location: 'page_cta_calc' })}
             className="self-start md:self-auto shrink-0 flex items-center gap-3 border border-[#65A30D] text-[#4D7C0F] px-7 py-3.5 text-sm tracking-wider uppercase hover:bg-[#65A30D] hover:text-[#12161C] transition-colors"
           >
-            Отримати аудит у грошах →
+            Порахувати розрив →
           </Link>
         </div>
       </FadeIn>

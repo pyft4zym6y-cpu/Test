@@ -11,7 +11,7 @@ export default function AboutPage() {
       <SchoolIdentity />
       <Trust />
       <Media />
-      <PageCta label="Познайомимось за 30 хвилин" />
+      <PageCta />
     </div>
   );
 }

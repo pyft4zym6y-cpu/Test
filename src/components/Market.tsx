@@ -19,9 +19,9 @@ const COMPETITORS: {
   price: string;
   me?: boolean;
 }[] = [
-  { name: 'McKinsey · Deloitte', sub: 'big consulting', marks: ['yes', 'no', 'part', 'no', 'yes'], price: '$$$$' },
-  { name: 'Netpeak · Promodo', sub: 'performance-агенції', marks: ['part', 'yes', 'no', 'no', 'no'], price: '$$' },
-  { name: 'Elogic · dev-студії', sub: 'e-com розробка', marks: ['no', 'yes', 'part', 'no', 'no'], price: '$$' },
+  { name: 'Стратегічний консалтинг', sub: 'великі консалтингові фірми', marks: ['yes', 'no', 'part', 'no', 'yes'], price: '$$$$' },
+  { name: 'Performance-агенція', sub: 'трафік і реклама', marks: ['part', 'yes', 'no', 'no', 'no'], price: '$$' },
+  { name: 'Dev-студія', sub: 'e-com розробка', marks: ['no', 'yes', 'part', 'no', 'no'], price: '$$' },
   { name: 'Fractional CMO', sub: 'маркетинг-лідер', marks: ['yes', 'part', 'part', 'part', 'no'], price: '$$$' },
   { name: 'In-house Head', sub: 'повний штат', marks: ['yes', 'yes', 'yes', 'yes', 'no'], price: '$$$$' },
   { name: 'weexp · Commerce OS', sub: 'fractional + продуктивізована система', marks: ['yes', 'yes', 'yes', 'yes', 'yes'], price: '$$', me: true },
@@ -33,7 +33,7 @@ const DIFFS = [
   { vs: 'На відміну від агенцій', text: 'будуємо активи, а не лише трафік — і відповідаємо за P&L, не за «охоплення».', color: '#EA580C' },
   { vs: 'На відміну від фрилансерів', text: 'приносимо системну методологію та керовану команду, а не одну вузьку послугу.', color: '#5A6472' },
   { vs: 'На відміну від in-house', text: 'працюємо з дня 1 і будуємо систему швидше, ніж наймається й розганяється відділ.', color: '#B45309' },
-  { vs: 'На відміну від big consulting', text: 'не лишаємо деку — ведемо виконання руками до вимірюваного результату.', color: '#6D28D9' },
+  { vs: 'На відміну від великого консалтингу', text: 'не лишаємо деку — ведемо виконання руками до вимірюваного результату.', color: '#6D28D9' },
 ];
 
 function MarkIcon({ mark }: { mark: Mark }) {
@@ -122,7 +122,7 @@ export function Competitors() {
           </div>
           <div className="flex flex-wrap justify-between gap-3 mt-4">
             <p className="text-[#5A6472] text-xs">
-              ✓ повністю · ~ частково · × ні. Назви фірм — приклади архетипів; кожна модель має
+              ✓ повністю · ~ частково · × ні. Порівнюємо архетипи гравців ринку — кожна модель має
               свою нішу.
             </p>
             <p className="font-mono text-xs text-[#4D7C0F]">

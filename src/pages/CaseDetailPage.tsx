@@ -194,7 +194,7 @@ export default function CaseDetailPage() {
         </FadeIn>
       </Section>
 
-      <PageCta label="Ваш кейс може бути наступним" />
+      <PageCta label="Скільки втрачає ваш магазин?" />
     </div>
   );
 }

@@ -19,9 +19,9 @@ const CASE_LINKS = [
 ];
 
 const FORMAT_LINKS = [
-  { to: '/services', label: 'Аудит · $2,900 фікс' },
-  { to: '/services', label: 'Консалтинг і супровід · $50/год' },
-  { to: '/services', label: 'Управління проєктом · від $3K/міс' },
+  { to: '/services', label: 'Аудит · фіксована ціна' },
+  { to: '/services', label: 'Консалтинг і супровід' },
+  { to: '/services', label: 'Управління проєктом' },
 ];
 
 export default function Footer() {
@@ -98,17 +98,23 @@ export default function Footer() {
             </ul>
           </nav>
 
-          {/* Cases */}
+          {/* Cases: назва та метрика — окремими рядками, без рваних переносів */}
           <nav aria-label="Кейси">
             <p className="font-pixel text-[0.55rem] uppercase text-black/65 mb-3.5">Кейси</p>
-            <ul className="flex flex-col gap-2">
-              {CASE_LINKS.map((l) => (
-                <li key={l.label}>
-                  <Link to={l.to} className="text-[0.82rem] text-[#3F4854] hover:text-[#4D7C0F] transition-colors">
-                    {l.label}
-                  </Link>
-                </li>
-              ))}
+            <ul className="flex flex-col gap-2.5">
+              {CASE_LINKS.map((l) => {
+                const [name, metric] = l.label.split(' · ');
+                return (
+                  <li key={l.label}>
+                    <Link to={l.to} className="block text-[0.82rem] text-[#3F4854] hover:text-[#4D7C0F] transition-colors">
+                      <span className="block leading-snug">{name}</span>
+                      {metric && (
+                        <span className="block font-mono text-[0.62rem] text-[#4D7C0F] mt-0.5">{metric}</span>
+                      )}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </nav>
 

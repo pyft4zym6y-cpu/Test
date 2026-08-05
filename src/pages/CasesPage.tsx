@@ -81,7 +81,7 @@ export default function CasesPage() {
         </div>
       </Section>
       <Industries />
-      <PageCta label="Ваш кейс може бути наступним" />
+      <PageCta label="Скільки втрачає ваш магазин?" />
     </div>
   );
 }

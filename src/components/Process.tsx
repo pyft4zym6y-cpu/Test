@@ -2,21 +2,29 @@ import FadeIn from './FadeIn';
 import { Eyebrow, Section, SectionTitle, CountUp } from './ui';
 
 const STEPS = [
-  { period: 'Тиждень 1', name: 'Baseline & доступи', text: 'Фіксуємо факт: аналітика, CRM, кабінети. Межа факт/допущення.', color: '#65A30D' },
-  { period: 'Тижд. 2–3', name: 'Discovery + Audit', text: 'Health Score, зрілість, розрив→₴, роутинг у плейбуки.', color: '#0F9488' },
-  { period: 'Тижд. 4–6', name: 'Roadmap', text: '3 хвилі, бюджет-вилки, сценарії, карта залежностей.', color: '#B45309' },
-  { period: 'Міс. 2–3', name: 'Wave 1 · швидкі перемоги', text: 'Найшвидші розриви закриваються першими й фінансують наступні хвилі.', color: '#EA580C' },
-  { period: 'Міс. 3–9', name: 'Wave 2 · бар’єр', text: 'Найдовший актив: SEO, EC-інфраструктура, бренд.', color: '#6D28D9' },
-  { period: 'Міс. 1–12', name: 'Governance', text: 'RACI, KPI, транші під DoD, дисципліна капіталу.', color: '#65A30D' },
+  { period: 'Тижд. 1–2', name: 'Baseline & доступи', text: 'Фіксуємо факт: аналітика, CRM, рекламні кабінети, вивантаження замовлень. Проводимо чітку межу «факт / допущення» — далі рахуємо тільки від перевірених цифр.', color: '#65A30D' },
+  { period: 'Тижд. 2–4', name: 'Discovery + Audit', text: 'Health Score по 18 доменах, зрілість процесів, розрив у грошах по 8 важелях, інтервʼю з ЛПР, роутинг знахідок у плейбуки.', color: '#0F9488' },
+  { period: 'Тижд. 5–8', name: 'Roadmap', text: '3 хвилі з пріоритетами, бюджет-вилки, сценарії песиміст/база/оптиміст, карта залежностей, склад команди під кожну хвилю.', color: '#B45309' },
+  { period: 'Міс. 2–4', name: 'Wave 1 · швидкі перемоги', text: 'Найшвидші розриви закриваються першими: конверсія, CRM-контур, аналітика. Їхній результат фінансує наступні хвилі.', color: '#EA580C' },
+  { period: 'Міс. 4–12', name: 'Wave 2 · барʼєр', text: 'Найдовший актив, який конкурентам не скопіювати за квартал: SEO, інфраструктура, бренд, міжнародні майданчики.', color: '#6D28D9' },
+  { period: 'Міс. 1–12', name: 'Governance', text: 'RACI, KPI на кожну хвилю, транші під DoD, щомісячна звітність власнику, дисципліна капіталу.', color: '#65A30D' },
 ];
 
 const PODS = [
   { name: 'Web / Dev', text: 'Frontend · Backend · DevOps · QA', color: '#0F9488' },
   { name: 'SEO / Content', text: 'Технічний SEO · семантика · контент', color: '#65A30D' },
-  { name: 'CRM / Retention', text: 'Klaviyo · Zoho · сегментація', color: '#6D28D9' },
-  { name: 'Marketplace', text: 'Amazon · Allegro · листинги', color: '#B45309' },
-  { name: 'Design / UX', text: 'CJM · макети · бренд', color: '#DB2777' },
+  { name: 'Performance / Ads', text: 'платний трафік · ретаргетинг · фіди', color: '#DC2626' },
+  { name: 'CRM / Retention', text: 'сегментація · тригерні ланцюжки · email', color: '#6D28D9' },
+  { name: 'CRO / Експерименти', text: 'A/B-тести · гіпотези · воронка', color: '#0F9488' },
+  { name: 'Marketplace', text: 'міжнародні майданчики · листинги', color: '#B45309' },
+  { name: 'Design / UX', text: 'CJM · макети · дизайн-система', color: '#DB2777' },
+  { name: 'Brand / Контент', text: 'фото · відео · копірайтинг', color: '#B45309' },
   { name: 'Analytics / BI', text: 'GA4 · дашборди · атрибуція', color: '#EA580C' },
+  { name: 'Data Engineering', text: 'потоки даних · сховище · інтеграції', color: '#6D28D9' },
+  { name: 'AI / Автоматизація', text: 'контент · скоринг · чат-боти', color: '#DB2777' },
+  { name: 'ERP / Інтеграції', text: 'облік · склад · синхронізації', color: '#EA580C' },
+  { name: 'Логістика / Fulfillment', text: '3PL · доставка · повернення', color: '#0284C7' },
+  { name: 'Customer Care', text: 'NPS · сервіс · скрипти продажів', color: '#65A30D' },
   { name: 'Legal / Fin', text: 'VAT ЄС · юніт-економіка', color: '#0284C7' },
   { name: 'PM', text: 'спринти · DoD · синхрон', color: '#65A30D' },
 ];
@@ -100,7 +108,7 @@ export default function Process() {
                     ~<CountUp to={40} />
                   </p>
                   <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[#5A6472] mt-1">
-                    Фахівців у флагмані
+                    Фахівців у найбільшому кейсі
                   </p>
                 </div>
                 <div>

@@ -58,7 +58,7 @@ export default function CommerceOsPage() {
         <PriceOfInaction />
       </div>
 
-      <PageCta label="Порахуємо ваш розрив у грошах" />
+      <PageCta />
     </div>
   );
 }
