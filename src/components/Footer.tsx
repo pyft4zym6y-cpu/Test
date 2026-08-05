@@ -2,12 +2,9 @@ import { Link } from 'react-router-dom';
 import { Linkedin, Mail, Phone, ArrowUp } from 'lucide-react';
 
 const NAV_LINKS = [
-  { to: '/approach', label: 'Підхід' },
-  { to: '/system', label: 'Система' },
-  { to: '/product', label: 'Продукт' },
-  { to: '/expertise', label: 'Експертиза' },
-  { to: '/process', label: 'Процес' },
-  { to: '/services', label: 'Умови' },
+  { to: '/os', label: 'Commerce OS' },
+  { to: '/cases', label: 'Кейси' },
+  { to: '/services', label: 'Співпраця' },
   { to: '/calculator', label: 'Калькулятор розриву' },
   { to: '/estimate', label: 'Оцінка проєкту' },
   { to: '/about', label: 'Про нас' },
@@ -31,10 +28,10 @@ export default function Footer() {
   return (
     <footer data-bot-say="Дійшов до кінця? Тоді час діяти: кнопка «Забронювати сесію» — просто тут, у підвалі 😉" className="border-t border-black/10 grid-bg">
       <div className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10">
-        {/* Top: brand + link columns */}
-        <div className="grid gap-10 lg:grid-cols-[1.3fr_1fr_1fr_1.1fr] py-14">
+        {/* Top: brand + link columns (mobile — 2 акуратні колонки) */}
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-[1.3fr_1fr_1fr_1.1fr] py-10 md:py-14">
           {/* Brand */}
-          <div>
+          <div className="col-span-2 lg:col-span-1">
             <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
               <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 256 256" fill="none" aria-hidden="true">
                 <path
@@ -77,13 +74,23 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Navigation */}
+          {/* Navigation + Formats */}
           <nav aria-label="Сторінки">
-            <p className="font-pixel text-[0.55rem] uppercase text-black/65 mb-4">Навігація</p>
-            <ul className="flex flex-col gap-2.5">
+            <p className="font-pixel text-[0.55rem] uppercase text-black/65 mb-3.5">Навігація</p>
+            <ul className="flex flex-col gap-2">
               {NAV_LINKS.map((l) => (
                 <li key={l.label}>
-                  <Link to={l.to} className="text-sm text-[#3F4854] hover:text-[#4D7C0F] transition-colors">
+                  <Link to={l.to} className="text-[0.82rem] text-[#3F4854] hover:text-[#4D7C0F] transition-colors">
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <p className="font-pixel text-[0.55rem] uppercase text-black/65 mt-6 mb-3.5">Формати</p>
+            <ul className="flex flex-col gap-2">
+              {FORMAT_LINKS.map((l) => (
+                <li key={l.label}>
+                  <Link to={l.to} className="text-[0.82rem] text-[#3F4854] hover:text-[#4D7C0F] transition-colors">
                     {l.label}
                   </Link>
                 </li>
@@ -93,21 +100,11 @@ export default function Footer() {
 
           {/* Cases */}
           <nav aria-label="Кейси">
-            <p className="font-pixel text-[0.55rem] uppercase text-black/65 mb-4">Кейси</p>
-            <ul className="flex flex-col gap-2.5">
+            <p className="font-pixel text-[0.55rem] uppercase text-black/65 mb-3.5">Кейси</p>
+            <ul className="flex flex-col gap-2">
               {CASE_LINKS.map((l) => (
                 <li key={l.label}>
-                  <Link to={l.to} className="text-sm text-[#3F4854] hover:text-[#4D7C0F] transition-colors">
-                    {l.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            <p className="font-pixel text-[0.55rem] uppercase text-black/65 mt-7 mb-4">Формати</p>
-            <ul className="flex flex-col gap-2.5">
-              {FORMAT_LINKS.map((l) => (
-                <li key={l.label}>
-                  <Link to={l.to} className="text-sm text-[#3F4854] hover:text-[#4D7C0F] transition-colors">
+                  <Link to={l.to} className="text-[0.82rem] text-[#3F4854] hover:text-[#4D7C0F] transition-colors">
                     {l.label}
                   </Link>
                 </li>
@@ -116,7 +113,7 @@ export default function Footer() {
           </nav>
 
           {/* Contacts + CTA */}
-          <div>
+          <div className="col-span-2 lg:col-span-1 border-t border-black/[0.07] pt-8 lg:border-0 lg:pt-0">
             <p className="font-pixel text-[0.55rem] uppercase text-black/65 mb-4">Контакти</p>
             <ul className="flex flex-col gap-2.5 font-mono text-[0.78rem] text-[#2F3742]">
               <li>
