@@ -46,27 +46,27 @@ const PAINS = [
 const PRODUCTS = [
   {
     n: '01',
-    name: 'Diagnostic Sprint',
-    price: '$2–6K',
-    term: '2–4 тижні',
-    result: 'Розрив у грошах + план: 16 документів, 11 із них — ще до передачі доступів.',
+    name: 'Аудит',
+    price: '$2–6K · фікс',
+    term: '4–6 тижнів',
+    result: 'Розрив у грошах, 19 документів, роадмапа + 4 години консультацій. Далі дієте самі.',
     say: 'Вхід у систему: аудит, що повертає розрив у гривнях →',
   },
   {
     n: '02',
-    name: 'Commerce OS™ Build',
-    price: '$40–80K',
-    term: '6–12 міс',
-    result: 'Система росту під ключ: модулі, плейбуки, команда — транші під DoD.',
-    say: 'Повна побудова системи. Бюджет захищено траншами →',
+    name: 'Консалтинг і супровід',
+    price: '$45/год',
+    term: 'від 30 год/міс',
+    result: 'Зовнішній експерт веде вашу команду: спринти, пріоритети, ревʼю проти DoD.',
+    say: 'Ваша команда виконує — ми відповідаємо за якість рішень →',
   },
   {
     n: '03',
-    name: 'Fractional Head of Commerce',
-    price: '$6–20K/міс',
-    term: 'помісячно',
-    result: 'Керівник e-commerce у вашій команді — без найму в штат і без простою.',
-    say: 'Наш архітектор веде ваш e-commerce щомісяця →',
+    name: 'Управління проєктом',
+    price: 'від $3K/міс',
+    term: '6–12 міс',
+    result: 'Трансформація під ключ: план, люди, бюджет. Фінальна відповідальність — на нас.',
+    say: 'Потрібен результат, а не поради? Це сюди →',
   },
 ];
 
@@ -249,14 +249,14 @@ export default function Home() {
               </p>
               <div className="flex flex-wrap gap-4 mt-7">
                 <Link
-                  to="/system"
+                  to="/os#system"
                   onClick={() => track('cta_click', { location: 'home_os_system' })}
                   className="bg-[#12161C] text-white px-6 py-3 font-mono text-xs uppercase tracking-wider hover:opacity-85 transition-opacity"
                 >
                   Розібрати систему →
                 </Link>
                 <Link
-                  to="/product"
+                  to="/os#product"
                   className="border border-black/30 px-6 py-3 font-mono text-xs uppercase tracking-wider hover:bg-black/5 transition-colors"
                 >
                   Подивитись демо зсередини

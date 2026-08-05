@@ -1,18 +1,14 @@
 import { useEffect } from 'react';
-import { BrowserRouter, HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Nav from './components/Nav';
 import Footer from './components/Footer';
 import AssistantBot from './components/AssistantBot';
 import Home from './pages/Home';
-import ApproachPage from './pages/ApproachPage';
 import AboutPage from './pages/AboutPage';
-import SystemPage from './pages/SystemPage';
-import ProductPage from './pages/ProductPage';
-import ExpertisePage from './pages/ExpertisePage';
+import CommerceOsPage from './pages/CommerceOsPage';
+import CooperationPage from './pages/CooperationPage';
 import CasesPage from './pages/CasesPage';
 import CaseDetailPage from './pages/CaseDetailPage';
-import ProcessPage from './pages/ProcessPage';
-import ServicesPage from './pages/ServicesPage';
 import ContactPage from './pages/ContactPage';
 import { PrivacyPage, OfferPage } from './pages/LegalPages';
 import CalculatorPage from './pages/CalculatorPage';
@@ -23,13 +19,9 @@ import { track } from './components/analytics';
 
 const TITLES: Record<string, string> = {
   '/': 'weexp — Commerce OS · Growth & Engineering',
-  '/approach': 'Підхід — weexp · Commerce OS',
-  '/system': 'Система — weexp · Commerce OS',
-  '/product': 'Продукт — weexp · Commerce OS',
-  '/expertise': 'Експертиза — weexp · Commerce OS',
+  '/os': 'Commerce OS — weexp · підхід, система, продукт',
   '/cases': 'Кейси — weexp · Commerce OS',
-  '/process': 'Процес — weexp · Commerce OS',
-  '/services': 'Умови — weexp · Commerce OS',
+  '/services': 'Співпраця — weexp · аудит, консалтинг, управління',
   '/about': 'Про нас — weexp · Commerce OS',
   '/contact': 'Контакт — weexp · Commerce OS',
   '/calculator': 'Калькулятор недоотриманого обороту — weexp',
@@ -39,9 +31,16 @@ const TITLES: Record<string, string> = {
 };
 
 function ScrollToTop() {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+    if (hash) {
+      // редіректи зі старих URL приходять із якорем — доскролюємо до блоку
+      requestAnimationFrame(() => {
+        document.getElementById(hash.slice(1))?.scrollIntoView({ block: 'start' });
+      });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+    }
     document.title =
       TITLES[pathname] ??
       (pathname.startsWith('/cases/') ? 'Кейс — weexp · Commerce OS' : TITLES['/']);
@@ -59,7 +58,7 @@ function ScrollToTop() {
     } else if (robots) {
       robots.remove();
     }
-  }, [pathname]);
+  }, [pathname, hash]);
   return null;
 }
 
@@ -70,14 +69,16 @@ function Shell() {
       <Nav />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/approach" element={<ApproachPage />} />
-        <Route path="/system" element={<SystemPage />} />
-        <Route path="/product" element={<ProductPage />} />
-        <Route path="/expertise" element={<ExpertisePage />} />
+        <Route path="/os" element={<CommerceOsPage />} />
+        {/* Старі URL живуть як редіректи на блоки обʼєднаних сторінок */}
+        <Route path="/approach" element={<Navigate to={{ pathname: '/os', hash: '#why' }} replace />} />
+        <Route path="/system" element={<Navigate to={{ pathname: '/os', hash: '#system' }} replace />} />
+        <Route path="/product" element={<Navigate to={{ pathname: '/os', hash: '#product' }} replace />} />
+        <Route path="/expertise" element={<Navigate to={{ pathname: '/os', hash: '#expertise' }} replace />} />
         <Route path="/cases" element={<CasesPage />} />
         <Route path="/cases/:slug" element={<CaseDetailPage />} />
-        <Route path="/process" element={<ProcessPage />} />
-        <Route path="/services" element={<ServicesPage />} />
+        <Route path="/process" element={<Navigate to={{ pathname: '/services', hash: '#process' }} replace />} />
+        <Route path="/services" element={<CooperationPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/calculator" element={<CalculatorPage />} />

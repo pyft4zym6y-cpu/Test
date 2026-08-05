@@ -7,11 +7,24 @@ export default function Login() {
   const [sent, setSent] = useState(false);
   const [err, setErr] = useState('');
 
+  const [notInvited, setNotInvited] = useState(false);
+
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setErr('');
+    setNotInvited(false);
+    const em = email.trim().toLowerCase();
+    // Портал работает по приглашениям: magic-link уходит только адресам,
+    // заранее добавленным консультантом в members (RPC is_invited из schema.sql).
+    try {
+      const { data: invited, error: rpcErr } = await supabase.rpc('is_invited', { p_email: em });
+      if (!rpcErr && invited === false) {
+        setNotInvited(true);
+        return;
+      }
+    } catch { /* функции ещё нет в базе — падаем на старое поведение */ }
     const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim().toLowerCase(),
+      email: em,
       options: { emailRedirectTo: window.location.origin },
     });
     if (error) setErr(error.message);
@@ -46,6 +59,17 @@ export default function Login() {
             Получить ссылку для входа
           </button>
           {err && <p style={{ color: 'var(--red)', fontSize: 13 }}>{err}</p>}
+          {notInvited && (
+            <div className="note" style={{ marginTop: 4 }}>
+              Портал работает по приглашениям, и адреса <b>{email}</b> пока нет в списке.
+              Если мы уже общаемся о проекте — напишите на{' '}
+              <a href="mailto:pashasidorenko18@gmail.com" style={{ color: 'var(--lime-dark)' }}>
+                pashasidorenko18@gmail.com
+              </a>{' '}
+              с этого адреса, добавим за минуту. Если ещё нет — начните с{' '}
+              <a href="https://weexp.agency" style={{ color: 'var(--lime-dark)' }}>weexp.agency</a>.
+            </div>
+          )}
         </form>
       )}
       <p className="sub" style={{ fontSize: 11.5, marginTop: 16 }}>

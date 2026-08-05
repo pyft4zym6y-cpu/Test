@@ -177,6 +177,15 @@ create policy members_admin_upd on members for update using (is_portal_admin());
 drop policy if exists members_admin_del on members;
 create policy members_admin_del on members for delete using (is_portal_admin());
 
+-- Проверка приглашения ДО отправки magic-link: логин-форма зовёт эту функцию,
+-- и письмо со ссылкой уходит только адресам, заранее добавленным в members.
+-- security definer — anon не имеет select на members, функция проверяет сама.
+create or replace function is_invited(p_email text)
+returns boolean
+language sql security definer set search_path = public as
+$$ select exists(select 1 from members where email = lower(trim(p_email))); $$;
+grant execute on function is_invited(text) to anon, authenticated;
+
 -- ═══ Первичная настройка (замените значения) ═══
 -- 1) Себя как админа:
 -- insert into members (email, name, is_admin) values ('pashasidorenko18@gmail.com', 'Павло', true);
