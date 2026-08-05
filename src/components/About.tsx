@@ -53,7 +53,7 @@ export default function About() {
               <hr className="border-[#E4E7EA] my-5" />
               <p className="text-[#5A6472] text-xs leading-relaxed">
                 Засновник — спікер бізнес-клубу <strong className="text-[#2F3742]">RISE</strong>. Галузі:
-                Electronics, Fashion, Beauty, Home&amp;Decor, FMCG, Fintech, AI.
+                Electronics, Fashion, Beauty, Home&amp;Decor, FMCG, DIY, Food, Kids.
               </p>
             </div>
           </FadeIn>

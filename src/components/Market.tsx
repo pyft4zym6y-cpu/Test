@@ -6,8 +6,10 @@ const INDUSTRIES = [
   { name: 'Home & Decor · Textile', text: 'преміум-текстиль ×18 · споживчі товари hobby/home', color: '#65A30D' },
   { name: 'Consumer Electronics', text: 'мультиканальна роздрібна модель · Amazon', color: '#0F9488' },
   { name: 'Fashion', text: 'маркетплейси ЄС · листинги · retention', color: '#DB2777' },
-  { name: 'Fintech', text: 'цифрові продукти · воронки · аналітика', color: '#6D28D9' },
-  { name: 'AI', text: 'AI-домен Commerce OS · персоналізація, автоматизація', color: '#EA580C' },
+  { name: 'Home Improvement & DIY', text: 'інструмент · сад · будматеріали', color: '#6D28D9' },
+  { name: 'Food & Grocery', text: 'продукти · делікатеси · підписки', color: '#EA580C' },
+  { name: 'Kids & Baby', text: 'дитячі товари · іграшки · догляд', color: '#0284C7' },
+  { name: 'Books · Hobby · Office', text: 'книги · творчість · канцелярія', color: '#DC2626' },
 ];
 
 type Mark = 'yes' | 'no' | 'part';
@@ -49,7 +51,7 @@ export function Industries() {
       <Section>
         <FadeIn>
           <Eyebrow>Галузі · Де ми вже давали результат</Eyebrow>
-          <SectionTitle>Сім галузей — один метод</SectionTitle>
+          <SectionTitle>Вісім галузей — один метод</SectionTitle>
         </FadeIn>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mt-10">
           {INDUSTRIES.map((ind, i) => (
