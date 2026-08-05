@@ -15,6 +15,7 @@ const CASE_LINKS = [
   { to: '/cases/fashion-apparel', label: 'Fashion-виробник · ≥19 млн ₴' },
   { to: '/cases/consumer-dtc', label: 'Consumer DTC · +65%' },
   { to: '/cases/fmcg-distribution', label: 'FMCG-дистриб’ютор · 17K SKU' },
+  { to: '/cases/fmcg-transformation', label: 'Food & FMCG · +96%' },
   { to: '/cases', label: 'Всі кейси →' },
 ];
 

@@ -20,6 +20,7 @@ const CASE_LINKS = [
   { to: '/cases/fashion-apparel', num: '≥19 млн ₴', label: 'Fashion-виробник', say: '≥19 млн ₴ знайдених грошей. Дивись аудит →' },
   { to: '/cases/consumer-dtc', num: '+65%', label: 'Consumer DTC', say: 'Бренд із Forbes TOP-250 і +65% продажів за 9 міс →' },
   { to: '/cases/fmcg-distribution', num: '17K SKU', label: 'FMCG-дистриб’ютор', say: '17 000 SKU під контролем однієї системи →' },
+  { to: '/cases/fmcg-transformation', num: '+96%', label: 'Food & FMCG', say: 'З маркетплейсу — на власну платформу: LTV ×4.2, виручка +96% →' },
 ];
 
 function Logo() {
