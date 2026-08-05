@@ -8,7 +8,10 @@ import { writeFile } from 'node:fs/promises';
 import type { AuditDataset } from '../report.js';
 import type { Analysis } from '../analyze.js';
 import type { EngineResult } from '../portalEngine.js';
+import type { MoneyResult } from '../money.js';
 import { clientName } from '../deliverables.js';
+
+const rub = (n: number) => `${Math.round(n).toLocaleString('ru-RU')} ₴`;
 
 const P = (text: string, opts: { bold?: boolean; italics?: boolean; bullet?: boolean } = {}) =>
   new Paragraph({
@@ -25,7 +28,7 @@ function clientScore(ds: AuditDataset): number | null {
   return scored.length ? Math.round(scored.reduce((s, p) => s + (p.score ?? 0), 0) / scored.length) : null;
 }
 
-export async function exportReportDocx(ds: AuditDataset, a: Analysis, engine: EngineResult | null, outPath: string): Promise<void> {
+export async function exportReportDocx(ds: AuditDataset, a: Analysis, engine: EngineResult | null, money: MoneyResult | null, outPath: string): Promise<void> {
   const cs = clientScore(ds);
   const kids: Paragraph[] = [];
 
@@ -54,6 +57,17 @@ export async function exportReportDocx(ds: AuditDataset, a: Analysis, engine: En
       kids.push(P('Приоритетные решения (влияние/сложность, с трассой «почему»):', { bold: true }));
       for (const d of engine.decisions.slice(0, 8)) kids.push(P(`${d.id} ${d.title} — impact ${d.impact}/сложность ${d.difficulty}, ~${d.timeDays} дн, ROI ${d.roi}, плейбуки: ${d.playbooks.join(', ')}. Почему: ${d.why.join('; ')}`, { bullet: true }));
     }
+  }
+
+  if (money) {
+    kids.push(H('Недополученный оборот (цепная атрибуция)', HeadingLevel.HEADING_1));
+    kids.push(P(`Выручка сейчас: ${rub(money.currentMonth)}/мес → при целевой воронке: ${rub(money.targetMonth)}/мес.`));
+    kids.push(P(`Недополученный оборот: ${rub(money.potentialMonth)}/мес ≈ ${rub(money.potentialYear)}/год (существующая воронка).`, { bold: true }));
+    if (money.extraYear) kids.push(P(`Новые потоки (МП/ЕС): +${rub(money.extraYear)}/год.`));
+    kids.push(P(`Консервативно: ${rub(money.consMinYear)}–${rub(money.consMaxYear)}/год. Прогноз 12 мес: ${rub(money.forecast.current)} → ${rub(money.forecast.withProgram)} (+${money.forecast.upliftPct}%).`));
+    kids.push(P('Вклад рычагов воронки (₴/год) — считаны цепной атрибуцией, не складываются напрямую:', { bold: true }));
+    for (const w of [...money.waterfall].sort((x, y) => y.contribYear - x.contribYear)) kids.push(P(`${w.label}: ${rub(w.contribYear)} (${w.fact} → ${w.target})`, { bullet: true }));
+    if (!money.invariantOk) kids.push(P('⚠️ Инвариант Σ вкладов = потенциал нарушен — проверьте baseline.', { italics: true }));
   }
 
   if (a.findings.length) {

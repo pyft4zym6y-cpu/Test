@@ -6,7 +6,10 @@
 import type { AuditDataset } from './report.js';
 import type { Analysis } from './analyze.js';
 import type { EngineResult } from './portalEngine.js';
+import type { MoneyResult } from './money.js';
 import { AD15_SLIDES } from './method.js';
+
+const rub = (n: number) => `${Math.round(n).toLocaleString('ru-RU')} ₴`;
 
 export type Slide = { n: number; title: string; subtitle?: string; bullets: string[]; note?: string };
 
@@ -20,7 +23,7 @@ export function clientName(ds: AuditDataset): string {
 }
 
 /** Слайд-модель AD-15 — единый источник для Markdown и .pptx. */
-export function buildAD15Model(ds: AuditDataset, a: Analysis, engine?: EngineResult | null): Slide[] {
+export function buildAD15Model(ds: AuditDataset, a: Analysis, engine?: EngineResult | null, money?: MoneyResult | null): Slide[] {
   const cs = clientScore(ds);
   const name = clientName(ds);
   const date = new Date(ds.takenAt).toLocaleDateString('ru-RU');
@@ -46,11 +49,23 @@ export function buildAD15Model(ds: AuditDataset, a: Analysis, engine?: EngineRes
             ? a.pains.flatMap((p) => [`Причина: ${p.cause}`, ...(p.symptoms?.length ? [`  симптомы: ${p.symptoms.join('; ')}`] : []), ...(p.evidence?.length ? [`  доказательство: ${p.evidence.join('; ')}`] : [])])
             : ['Боли не сгенерированы'] };
       case 'cost':
+        if (money) {
+          const top = [...money.waterfall].sort((x, y) => y.contribYear - x.contribYear).slice(0, 4);
+          return { n, title: 'Цена бездействия',
+            bullets: [
+              `Недополученный оборот: ${rub(money.potentialMonth)}/мес ≈ ${rub(money.potentialYear)}/год (существующая воронка)`,
+              money.extraYear ? `Новые потоки (МП/ЕС): +${rub(money.extraYear)}/год` : '',
+              `Консервативно: ${rub(money.consMinYear)}–${rub(money.consMaxYear)}/год`,
+              'Главные рычаги: ' + top.map((w) => `${w.label} ${rub(w.contribYear)}`).join('; '),
+              'Считано цепной атрибуцией — вклады рычагов не складываются напрямую',
+            ].filter(Boolean) };
+        }
         return { n, title: 'Цена бездействия',
           bullets: ['Чем дольше не закрыты разрывы выше — тем больше упущенного оборота ежемесячно', '⚠️ Точная сумма считается на слое L1 (нужен baseline: трафик, конверсия, чек) — см. «Следующий шаг»'] };
       case 'point-b':
         return { n, title: 'Точка Б — куда придём',
-          bullets: ['Тактика 0–3 мес: закрыть дефекты обнаружимости и быстрые UX/SEO-разрывы', 'Стратегия 3–12 / 12–36 мес: системные контуры (аналитика, retention, юнит-экономика)', 'Каждую цель на L1 переведём в число с источником'] };
+          bullets: ['Тактика 0–3 мес: закрыть дефекты обнаружимости и быстрые UX/SEO-разрывы', 'Стратегия 3–12 / 12–36 мес: системные контуры (аналитика, retention, юнит-экономика)',
+            money ? `Прогноз 12 мес: ${rub(money.forecast.current)} → ${rub(money.forecast.withProgram)} (+${money.forecast.upliftPct}%)` : 'Каждую цель на L1 переведём в число с источником'] };
       case 'how': {
         const bullets: string[] = [];
         if (engine && engine.decisions.length) {
@@ -87,8 +102,8 @@ export function buildAD15Model(ds: AuditDataset, a: Analysis, engine?: EngineRes
 }
 
 /** AD-15 — Markdown-черновик из слайд-модели. */
-export function renderAD15(ds: AuditDataset, a: Analysis, engine?: EngineResult | null): string {
-  const model = buildAD15Model(ds, a, engine);
+export function renderAD15(ds: AuditDataset, a: Analysis, engine?: EngineResult | null, money?: MoneyResult | null): string {
+  const model = buildAD15Model(ds, a, engine, money);
   const S: string[] = [];
   S.push(`# AD-15 · Итоговая презентация аудита — ЧЕРНОВИК`);
   S.push(`_Commerce OS · ${clientName(ds)} · тир T${ds.tier} · слой L0. Оценки — «наблюдение L0», не факт по данным клиента. Правьте перед отправкой._`);
