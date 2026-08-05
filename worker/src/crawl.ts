@@ -47,10 +47,11 @@ export async function launchBrowser(): Promise<Browser> {
   const proxy = process.env.HTTPS_PROXY || process.env.https_proxy;
   const executablePath = process.env.CHROME_PATH || undefined; // escape hatch для окружений с предустановленным Chromium
   return chromium.launch({
-    headless: true,
+    headless: process.env.HEADFUL !== '1', // HEADFUL=1 — иногда проходит там, где headless режет Cloudflare
     ...(executablePath ? { executablePath } : {}),
     ...(proxy ? { proxy: { server: proxy } } : {}),
-    args: ['--no-sandbox', '--disable-dev-shm-usage'],
+    // менее детектируемый автоматизированный Chromium (для бот-защиты клиентских сайтов)
+    args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-blink-features=AutomationControlled'],
   });
 }
 
@@ -164,6 +165,9 @@ async function auditPage(page: Page, url: string, isRoot: boolean): Promise<{ au
   }
   const finalUrl = page.url();
   const title = await page.title().catch(() => '');
+  if (/just a moment|attention required|verify you are human|checking your browser|cloudflare|доступ (ограничен|обмежено)|captcha/i.test(title)) {
+    return { audit: { url, finalUrl, kind: 'other', status, title, checks: [], score: null, error: 'бот-защита: challenge-страница (Cloudflare/CAPTCHA) — нужен headful/stealth или доступ' }, tech: [], links: [] };
+  }
   const { checks, kindSignals, tech } = await page.evaluate(inPageChecks);
   const links = await page
     .evaluate(() => Array.from(document.querySelectorAll('a[href]')).map((a) => (a as HTMLAnchorElement).href).slice(0, 400))
@@ -174,9 +178,34 @@ async function auditPage(page: Page, url: string, isRoot: boolean): Promise<{ au
   return { audit: { url, finalUrl, kind, status, title, checks, score }, tech, links };
 }
 
+/** Контекст браузера с закалкой против бот-защиты (UA, заголовки, timezone, anti-webdriver). */
+async function hardenedContext(browser: Browser) {
+  const ctx = await browser.newContext({
+    userAgent: UA,
+    viewport: { width: 1366, height: 900 },
+    locale: 'uk-UA',
+    timezoneId: 'Europe/Kyiv',
+    ignoreHTTPSErrors: true,
+    extraHTTPHeaders: {
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+      'Accept-Language': 'uk-UA,uk;q=0.9,ru;q=0.8,en;q=0.6',
+      'Upgrade-Insecure-Requests': '1',
+      'sec-ch-ua': '"Chromium";v="126", "Not.A/Brand";v="24"',
+      'sec-ch-ua-mobile': '?0',
+      'sec-ch-ua-platform': '"Windows"',
+    },
+  });
+  await ctx.addInitScript(() => {
+    Object.defineProperty(navigator, 'webdriver', { get: () => false });
+    Object.defineProperty(navigator, 'languages', { get: () => ['uk-UA', 'uk', 'ru', 'en'] });
+    Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3] });
+  });
+  return ctx;
+}
+
 /** Точечный обход одной страницы (для агентного добора фактов). */
 export async function auditSingle(browser: Browser, url: string): Promise<PageAudit & { tech: string[] }> {
-  const ctx = await browser.newContext({ userAgent: UA, viewport: { width: 1366, height: 900 }, locale: 'uk-UA', ignoreHTTPSErrors: true });
+  const ctx = await hardenedContext(browser);
   try {
     const page = await ctx.newPage();
     const { audit, tech } = await auditPage(page, url, false);
@@ -214,7 +243,7 @@ export async function crawlSite(
   opts: { maxPages?: number } = {},
 ): Promise<SiteCrawl> {
   const maxPages = opts.maxPages ?? 5;
-  const ctx = await browser.newContext({ userAgent: UA, viewport: { width: 1366, height: 900 }, locale: 'uk-UA', ignoreHTTPSErrors: true });
+  const ctx = await hardenedContext(browser);
   const page = await ctx.newPage();
   const out: SiteCrawl = {
     rootUrl, finalUrl: rootUrl, kind, reachable: false, robotsTxt: false, sitemapXml: false,
