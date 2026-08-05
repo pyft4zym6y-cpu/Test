@@ -93,10 +93,14 @@ console.anthropic.com), опционально `AQC_MODEL` (по умолчан�
 опросник 25% → 60% → выдан ключевой доступ (GA4/заказы) → бриф ЛПР готов.
 Каждая веха — ровно одно письмо.
 
-Настройка (5 минут):
+Настройка (2 минуты):
 1. resend.com → аккаунт → API Keys → создать ключ.
-2. Vercel → Environment Variables: `RESEND_API_KEY`, `NOTIFY_EMAIL` (ваша почта),
-   опционально `NOTIFY_FROM` (адрес на подтверждённом в Resend домене,
-   например `portal@weexp.agency`; без него письма идут с onboarding@resend.dev —
-   для боевого использования подтвердите домен weexp.agency в Resend → Domains).
-Без ключей функция тихо бездействует — портал работает как раньше.
+2. Vercel → Environment Variables: `RESEND_API_KEY` (ключ из шага 1) → Redeploy.
+   Ключ живёт ТОЛЬКО в Vercel env — в код и git его не класть.
+
+Адрес получателя по умолчанию зашит в `api/notify.js` (DEFAULT_NOTIFY_EMAIL);
+переменная `NOTIFY_EMAIL` переопределяет его без правки кода. Опционально
+`NOTIFY_FROM` — адрес на подтверждённом в Resend домене, например
+`portal@weexp.agency`; без него письма идут с onboarding@resend.dev
+(для боевого использования подтвердите домен weexp.agency в Resend → Domains).
+Без `RESEND_API_KEY` функция тихо бездействует — портал работает как раньше.

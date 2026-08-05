@@ -1,16 +1,20 @@
 // Vercel serverless: письмо консультанту о прогрессе клиента (через Resend).
-// Env: RESEND_API_KEY — ключ resend.com; NOTIFY_EMAIL — куда слать;
+// Env: RESEND_API_KEY — ключ resend.com (обязательный, только через Vercel env!);
+//      NOTIFY_EMAIL — куда слать (по умолчанию — адрес консультанта ниже);
 //      NOTIFY_FROM — от кого (по умолчанию onboarding@resend.dev, для боевого —
 //      адрес на подтверждённом домене, напр. portal@weexp.agency).
+const DEFAULT_NOTIFY_EMAIL = 'pashasidorenko18@gmail.com';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'POST only' });
     return;
   }
-  const { RESEND_API_KEY, NOTIFY_EMAIL, NOTIFY_FROM } = process.env;
-  if (!RESEND_API_KEY || !NOTIFY_EMAIL) {
+  const { RESEND_API_KEY, NOTIFY_FROM } = process.env;
+  const NOTIFY_EMAIL = process.env.NOTIFY_EMAIL || DEFAULT_NOTIFY_EMAIL;
+  if (!RESEND_API_KEY) {
     res.status(200).json({
-      error: 'Уведомления не настроены: добавьте RESEND_API_KEY и NOTIFY_EMAIL в Vercel.',
+      error: 'Уведомления не настроены: добавьте RESEND_API_KEY в Vercel.',
     });
     return;
   }
