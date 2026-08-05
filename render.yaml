@@ -1,0 +1,20 @@
+# Render Blueprint — разворачивание аудит-сервера мышкой, без терминала.
+# На render.com: New → Blueprint → выбрать этот репозиторий и ветку
+# claude/ai-assistant-comerc-oc-qufqcc → Render прочитает этот файл.
+services:
+  - type: web
+    name: weexp-audit
+    runtime: docker
+    dockerfilePath: ./worker/Dockerfile
+    dockerContext: .
+    plan: standard        # ~1 ГБ RAM — нужно для браузера (Playwright). Starter (512 МБ) может падать.
+    region: frankfurt
+    healthCheckPath: /health
+    autoDeploy: false
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false          # Render спросит ключ при развёртывании (вставляете свой)
+      - key: AUDIT_SERVER_TOKEN
+        generateValue: true  # Render сам сгенерит секрет — скопируете его в портал
+      - key: AUDIT_MODEL
+        value: claude-opus-5 # дорогая/лучшая модель
