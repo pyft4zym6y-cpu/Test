@@ -14,7 +14,9 @@ import { launchBrowser, crawlSite } from './crawl.js';
 import { renderL0Report, type AuditDataset } from './report.js';
 import { TIERS, type Tier } from './tiers.js';
 import { analyze } from './analyze.js';
-import { renderAD15, renderRoadmap } from './deliverables.js';
+import { renderAD15, renderRoadmap, buildAD15Model, clientName } from './deliverables.js';
+import { exportAD15Pptx } from './export/pptx.js';
+import { exportReportDocx } from './export/docx.js';
 import { hasKey } from './anthropic.js';
 
 type Args = { tier: Tier; site: string; competitors: string[]; request: string; out: string };
@@ -79,7 +81,11 @@ async function main() {
         await writeFile(join(dir, 'analysis.json'), JSON.stringify(analysis, null, 2), 'utf8');
         await writeFile(join(dir, 'AD-15.md'), renderAD15(ds, analysis), 'utf8');
         await writeFile(join(dir, 'roadmap.md'), renderRoadmap(ds, analysis), 'utf8');
-        console.log(`  ✓ материалы собраны: analysis.json, AD-15.md, roadmap.md`);
+        // Экспорт в файлы для клиента
+        const date = new Date(ds.takenAt).toLocaleDateString('ru-RU');
+        await exportAD15Pptx(buildAD15Model(ds, analysis), { name: clientName(ds), tier: ds.tier, date }, join(dir, 'AD-15.pptx'));
+        await exportReportDocx(ds, analysis, join(dir, 'audit-report.docx'));
+        console.log(`  ✓ материалы собраны: analysis.json, AD-15.md/.pptx, roadmap.md, audit-report.docx`);
       } catch (e) {
         console.log(`  ⚠️ аналитический слой не отработал: ${String(e).slice(0, 160)}`);
       }

@@ -1,83 +1,92 @@
 /**
- * Сборка клиентских материалов из анализа + обхода. Пока — редактируемые
- * черновики в Markdown (экспорт в .pptx/.docx подключим модулем позже, но
- * содержание уже готово по чертежам метода). Числа — из обхода/движка, язык и
- * структура — из метода, всё с метками факт/допущение.
+ * Сборка клиентских материалов из анализа + обхода. Единая слайд-модель AD-15
+ * (buildAD15Model) питает и Markdown-черновик, и экспорт в .pptx. Числа — из
+ * обхода/движка, структура и язык — из метода, всё с метками факт/допущение.
  */
 import type { AuditDataset } from './report.js';
 import type { Analysis } from './analyze.js';
 import { AD15_SLIDES } from './method.js';
+
+export type Slide = { n: number; title: string; subtitle?: string; bullets: string[]; note?: string };
 
 function clientScore(ds: AuditDataset): number | null {
   const scored = ds.client.pages.filter((p) => p.score !== null);
   return scored.length ? Math.round(scored.reduce((s, p) => s + (p.score ?? 0), 0) / scored.length) : null;
 }
 
-/** Итоговая презентация AD-15 — черновик по слайдам. */
-export function renderAD15(ds: AuditDataset, a: Analysis): string {
+export function clientName(ds: AuditDataset): string {
+  try { return new URL(ds.client.finalUrl).hostname.replace(/^www\./, ''); } catch { return ds.client.finalUrl; }
+}
+
+/** Слайд-модель AD-15 — единый источник для Markdown и .pptx. */
+export function buildAD15Model(ds: AuditDataset, a: Analysis): Slide[] {
   const cs = clientScore(ds);
-  const name = (() => { try { return new URL(ds.client.finalUrl).hostname.replace(/^www\./, ''); } catch { return ds.client.finalUrl; } })();
-  const S: string[] = [];
-  const slide = (n: number, title: string) => S.push(`\n---\n\n## Слайд ${n}. ${title}`);
+  const name = clientName(ds);
+  const date = new Date(ds.takenAt).toLocaleDateString('ru-RU');
+  const scoredN = ds.client.pages.filter((p) => p.score !== null).length;
 
-  S.push(`# AD-15 · Итоговая презентация аудита — ЧЕРНОВИК`);
-  S.push(`_Commerce OS · ${name} · тир T${ds.tier} · слой L0 (внешний обход). Все оценки — «наблюдение L0», порядок величины, не факт по данным клиента. Правьте перед отправкой клиенту._`);
-
-  AD15_SLIDES.forEach((sl, i) => {
-    slide(i + 1, sl.title);
+  return AD15_SLIDES.map((sl, i): Slide => {
+    const n = i + 1;
     switch (sl.id) {
       case 'cover':
-        S.push(`**${name}** · Диагностика Commerce OS · ${new Date(ds.takenAt).toLocaleDateString('ru-RU')}`);
-        S.push(`_Статус: предварительная картина по внешнему обходу (без доступов)._`);
-        break;
+        return { n, title: name, subtitle: `Диагностика Commerce OS · ${date}`,
+          bullets: ['Предварительная картина по внешнему обходу (без доступов)', 'Статус оценок: наблюдение L0 — порядок величины'] };
       case 'point-a':
-        S.push(`**Соответствие витрины голд-стандарту: ${cs ?? '—'}%** (ср. по ${ds.client.pages.filter((p) => p.score !== null).length} страницам).`);
-        S.push(a.healthNote || '_(healthNote не сгенерирован)_');
-        S.push(`> Health Score по 100-балльной шкале посчитает движок портала после занесения находок в ЕКП.`);
-        break;
+        return { n, title: 'Точка А — где вы сейчас', subtitle: `Соответствие витрины голд-стандарту: ${cs ?? '—'}% (по ${scoredN} стр.)`,
+          bullets: [a.healthNote || 'Оценка зрелости появится после анализа', 'Health Score по 100-балльной шкале посчитает движок после занесения находок в ЕКП'] };
       case 'diagnosis':
-        if (a.pains.length) for (const p of a.pains) {
-          S.push(`**Причина: ${p.cause}**`);
-          if (p.symptoms?.length) S.push(`- Симптомы: ${p.symptoms.join('; ')}`);
-          if (p.evidence?.length) S.push(`- Доказательство (обход): ${p.evidence.join('; ')}`);
-        } else S.push('_(боли не сгенерированы)_');
-        break;
+        return { n, title: 'Диагноз системно',
+          bullets: a.pains.length
+            ? a.pains.flatMap((p) => [`Причина: ${p.cause}`, ...(p.symptoms?.length ? [`  симптомы: ${p.symptoms.join('; ')}`] : []), ...(p.evidence?.length ? [`  доказательство: ${p.evidence.join('; ')}`] : [])])
+            : ['Боли не сгенерированы'] };
       case 'cost':
-        S.push(`Цена бездействия на L0 подаётся качественно: чем дольше не закрыты разрывы выше, тем больше упущенного оборота ежемесячно.`);
-        S.push(`> ⚠️ Точная сумма недополученного оборота считается на слое L1 (нужен baseline: трафик, конверсия, чек). См. «Открытые вопросы».`);
-        break;
+        return { n, title: 'Цена бездействия',
+          bullets: ['Чем дольше не закрыты разрывы выше — тем больше упущенного оборота ежемесячно', '⚠️ Точная сумма считается на слое L1 (нужен baseline: трафик, конверсия, чек) — см. «Следующий шаг»'] };
       case 'point-b':
-        S.push(`Точка Б — целевое состояние. Тактика 0–3 мес: закрыть дефекты обнаружимости и быстрые UX/SEO-разрывы. Стратегия 3–12 / 12–36 мес: системные контуры (аналитика, retention, юнит-экономика) по scope ниже.`);
-        S.push(`_Каждую цель на L1 переведём в число с источником._`);
-        break;
+        return { n, title: 'Точка Б — куда придём',
+          bullets: ['Тактика 0–3 мес: закрыть дефекты обнаружимости и быстрые UX/SEO-разрывы', 'Стратегия 3–12 / 12–36 мес: системные контуры (аналитика, retention, юнит-экономика)', 'Каждую цель на L1 переведём в число с источником'] };
       case 'how': {
-        const waves = [1, 2, 3];
-        for (const w of waves) {
+        const bullets: string[] = [];
+        for (const w of [1, 2, 3]) {
           const items = a.scope.filter((s) => (s.wave ?? 1) === w);
           if (!items.length) continue;
-          S.push(`**Волна ${w}:**`);
-          for (const it of items) S.push(`- ${it.playbook} — ${it.reason}`);
+          bullets.push(`Волна ${w}:`);
+          for (const it of items) bullets.push(`  ${it.playbook} — ${it.reason}`);
         }
-        if (!a.scope.length) S.push('_(scope не сгенерирован)_');
-        break;
+        return { n, title: 'Как — программа и волны', bullets: bullets.length ? bullets : ['Scope не сгенерирован'] };
       }
       case 'team':
-        S.push(`Внутренние роли + внешние подрядчики подбираются под scope. Поимённый состав и ставки — из rate card (cost_base) на этапе КП.`);
-        break;
+        return { n, title: 'Команда и подрядчики',
+          bullets: ['Внутренние роли + внешние подрядчики — под scope', 'Поимённый состав и ставки — из rate card (cost_base) на этапе КП'] };
       case 'budget':
-        S.push(`Бюджет по блокам (разово CAPEX + ретейнеры ×мес) — вилка из rate card, помечается как оценка. Точный бюджет фиксируется в КП после утверждения scope.`);
-        break;
+        return { n, title: 'Бюджет по блокам',
+          bullets: ['Разово (CAPEX) + ретейнеры ×мес — вилка из rate card (оценка)', 'Точный бюджет фиксируется в КП после утверждения scope'] };
       case 'roadmap':
-        S.push(`См. отдельный документ «roadmap.md» — дорожная карта с диаграммой Ганта по волнам. У каждого этапа: срок, ориентир бюджета, исполнитель, измеримый критерий завершения (DoD).`);
-        break;
+        return { n, title: 'Дорожная карта / Гант',
+          bullets: ['Этапы по волнам со сроками — см. документ roadmap (диаграмма Ганта)', 'У каждого этапа: срок, ориентир бюджета, исполнитель, измеримый DoD'] };
       case 'next':
-        S.push(`Что нужно от клиента для перехода на L1 и расчёта денег:`);
-        for (const q of a.openQuestions.length ? a.openQuestions : ['Доступ к GA4/аналитике', 'Выгрузка заказов за 6–12 мес', 'Доступ к CRM и рекламным кабинетам']) S.push(`- ${q}`);
-        break;
+        return { n, title: 'Следующий шаг',
+          bullets: ['Что нужно от клиента для перехода на L1 и расчёта денег:',
+            ...(a.openQuestions.length ? a.openQuestions : ['Доступ к GA4/аналитике', 'Выгрузка заказов за 6–12 мес', 'Доступ к CRM и рекламным кабинетам']).map((q) => `  ${q}`)],
+          note: a.summary ? `Резюме для собственника: ${a.summary}` : undefined };
+      default:
+        return { n, title: sl.title, bullets: [] };
     }
   });
+}
 
-  S.push(`\n---\n_Резюме для собственника: ${a.summary || '—'}_`);
+/** AD-15 — Markdown-черновик из слайд-модели. */
+export function renderAD15(ds: AuditDataset, a: Analysis): string {
+  const model = buildAD15Model(ds, a);
+  const S: string[] = [];
+  S.push(`# AD-15 · Итоговая презентация аудита — ЧЕРНОВИК`);
+  S.push(`_Commerce OS · ${clientName(ds)} · тир T${ds.tier} · слой L0. Оценки — «наблюдение L0», не факт по данным клиента. Правьте перед отправкой._`);
+  for (const s of model) {
+    S.push(`\n---\n\n## Слайд ${s.n}. ${s.title}`);
+    if (s.subtitle) S.push(`**${s.subtitle}**`);
+    for (const b of s.bullets) S.push(b.startsWith('  ') ? `  - ${b.trim()}` : `- ${b}`);
+    if (s.note) S.push(`\n_${s.note}_`);
+  }
   return S.join('\n');
 }
 
@@ -103,7 +112,6 @@ export function renderRoadmap(ds: AuditDataset, a: Analysis): string {
   }
   if (!a.scope.length) R.push('_(scope пуст — аналитический слой не сгенерировал плейбуки)_\n');
 
-  // Mermaid Gantt
   R.push('## Диаграмма Ганта\n');
   R.push('```mermaid');
   R.push('gantt');
