@@ -1,0 +1,20 @@
+{
+  "name": "weexp-audit-worker",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Автономный AI-аудитор Commerce OS: обход сайта, анализ, сборка материалов. Свой рантайм (Playwright + Claude API).",
+  "scripts": {
+    "audit": "tsx src/run.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
+    "playwright": "^1.62.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.3"
+  }
+}

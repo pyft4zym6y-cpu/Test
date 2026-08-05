@@ -147,7 +147,7 @@ export default function App() {
           <Route path="/kp/:clientId" element={<KpPage />} />
           <Route path="*" element={<Dashboard />} />
         </Routes>
-        <Assistant />
+        {(DEMO_MEMBER as Member).is_admin && <Assistant />}
       </AppCtx.Provider>
     );
 
@@ -204,7 +204,7 @@ export default function App() {
         <Route path="/kp/:clientId" element={<KpPage />} />
         <Route path="*" element={<Dashboard />} />
       </Routes>
-      <Assistant />
+      {member.is_admin && <Assistant />}
     </AppCtx.Provider>
   );
 }
