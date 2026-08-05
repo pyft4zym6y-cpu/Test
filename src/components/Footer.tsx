@@ -22,9 +22,9 @@ const CASE_LINKS = [
 ];
 
 const FORMAT_LINKS = [
-  { to: '/services', label: 'Diagnostic Sprint · від $2K' },
-  { to: '/services', label: 'Program of Record · 6–12 міс' },
-  { to: '/services', label: 'Fractional Lead · $6–20K/міс' },
+  { to: '/services', label: 'Аудит · $2,900 фікс' },
+  { to: '/services', label: 'Консалтинг і супровід · $50/год' },
+  { to: '/services', label: 'Управління проєктом · від $3K/міс' },
 ];
 
 export default function Footer() {

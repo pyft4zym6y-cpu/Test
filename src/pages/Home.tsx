@@ -55,7 +55,7 @@ const PRODUCTS = [
   {
     n: '02',
     name: 'Консалтинг і супровід',
-    price: '$45/год',
+    price: '$50/год',
     term: 'від 30 год/міс',
     result: 'Зовнішній експерт веде вашу команду: спринти, пріоритети, ревʼю проти DoD.',
     say: 'Ваша команда виконує — ми відповідаємо за якість рішень →',
@@ -119,7 +119,7 @@ export default function Home() {
                 <div className="flex flex-wrap gap-4 mt-8">
                   <Link
                     to="/contact"
-                    onMouseEnter={() => say('Diagnostic Sprint від $2K — і твій розрив у грошах на столі. Почнемо?')}
+                    onMouseEnter={() => say('Аудит $2,900 фіксовано — і твій розрив у грошах на столі. Почнемо?')}
                     onMouseLeave={sayIdle}
                     onClick={() => track('cta_click', { location: 'home_hero' })}
                     className="flex items-center gap-3 bg-[#A3E635] px-7 py-3.5 text-sm font-bold tracking-wider uppercase text-black hover:brightness-95 transition-[filter]"
@@ -306,7 +306,7 @@ export default function Home() {
             </p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-5">
               {[
-                { k: 'Вхід', v: '$2–6K', d: 'Diagnostic Sprint: аудит, що рахує гроші' },
+                { k: 'Вхід', v: '$2,900', d: 'Аудит із фіксованою ціною, що рахує гроші' },
                 { k: 'Аудит знаходить', v: '≥19 млн ₴/рік', d: 'розрив у кейсі fashion-виробника' },
                 { k: 'Програма', v: 'транші під DoD', d: 'платите за прийнятий результат' },
                 { k: 'ROI року', v: '3.8×', d: 'флагманський кейс · Преміум-текстиль' },
@@ -333,7 +333,7 @@ export default function Home() {
             },
             {
               t: 'Ціни відкриті',
-              d: 'Вилки прямо на сайті: $2–6K · $40–80K · $6–20K/міс. Без «зателефонуйте, щоб дізнатись вартість».',
+              d: 'Ціни прямо на сайті: аудит $2,900/$4,900 · консалтинг $50/год · управління від $3K/міс. Без «зателефонуйте, щоб дізнатись вартість».',
             },
             {
               t: 'Бюджет під захистом',

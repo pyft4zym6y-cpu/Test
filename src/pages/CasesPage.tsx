@@ -17,7 +17,7 @@ export const CASE_COVERS = [
     slug: 'fashion-apparel',
     num: '≥19 млн ₴',
     title: 'Fashion-виробник',
-    cat: 'Program of Record · 2026',
+    cat: 'Управління проєктом · 2026',
     text: 'Реальний аудит у грошах і програма росту на 12 місяців із траншами під DoD.',
     color: '#DB2777',
   },

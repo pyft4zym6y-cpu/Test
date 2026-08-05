@@ -28,7 +28,7 @@ export default function LeadForm() {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    const subject = `Diagnostic Sprint — ${name || 'запит із сайту'}`;
+    const subject = `Аудит — ${name || 'запит із сайту'}`;
     const body = [
       `Ім'я: ${name}`,
       `Магазин / сайт: ${store}`,

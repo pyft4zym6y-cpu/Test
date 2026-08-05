@@ -25,7 +25,7 @@ export default function ContactPage() {
                   </span>
                 </h1>
                 <p className="text-[#3F4854] mt-6 max-w-xl leading-relaxed">
-                  Почнімо з Diagnostic Sprint: Health Score, аудит і розрахунок упущеного обороту в
+                  Почнімо з аудиту: Health Score, діагностика і розрахунок упущеного обороту в
                   грошах. Перший вимірюваний результат — за 30–60 днів.
                 </p>
               </FadeIn>

@@ -645,7 +645,7 @@ export function RayCase() {
     <Section>
       <FadeIn>
         <Eyebrow>
-          Кейс · <span className="text-[#4D7C0F]">Fashion-виробник</span> · Program of Record 2026
+          Кейс · <span className="text-[#4D7C0F]">Fashion-виробник</span> · Управління проєктом 2026
         </Eyebrow>
         <SectionTitle as="h1">
           Одяговий бренд ·<br />
@@ -729,7 +729,7 @@ export function PageCta({ label = 'Почнімо з аудиту' }: { label?: 
           <div>
             <p className="font-extrabold text-2xl md:text-3xl">{label}</p>
             <p className="text-[#5A6472] text-sm mt-2 max-w-xl">
-              30-хв стратегічна сесія → Diagnostic Sprint. Ви бачите цифри до того, як вкладаєте
+              30-хв стратегічна сесія → аудит. Ви бачите цифри до того, як вкладаєте
               бюджет у виконання.
             </p>
           </div>
