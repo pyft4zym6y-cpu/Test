@@ -18,7 +18,7 @@ export const OS_SECTIONS = [
   { id: 'principles', label: 'Принципи' },
 ];
 
-const anchor = { scrollMarginTop: 118 } as React.CSSProperties;
+const anchor = { scrollMarginTop: 126 } as React.CSSProperties;
 
 /*
  * Одна велика сторінка «Commerce OS»: чому старий підхід більше не працює →

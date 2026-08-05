@@ -27,10 +27,22 @@ const FUNNEL = [
 ];
 
 const UNIT = [
-  { k: 'CAC · вартість клієнта', v: '€9', bar: 64, note: 'ціль ≤ €12' },
-  { k: 'LTV · 12 міс', v: '€31', bar: 78, note: 'ціль €40' },
-  { k: 'LTV : CAC', v: '3.4×', bar: 85, note: 'поріг масштабування ≥3' },
-  { k: 'Маржинальність замовлення', v: '58%', bar: 72, note: 'після логістики й повернень' },
+  {
+    k: 'CAC · вартість клієнта', v: '€9', bar: 64, note: 'ціль ≤ €12 · ✓ у нормі',
+    plain: 'Скільки коштує привести одного нового покупця (весь бюджет реклами ÷ нові клієнти).',
+  },
+  {
+    k: 'LTV · 12 міс', v: '€31', bar: 78, note: 'ціль €40 · ↑ добираємо повторними',
+    plain: 'Скільки грошей один клієнт приносить за рік — з усіма його повторними покупками.',
+  },
+  {
+    k: 'LTV : CAC', v: '3.4×', bar: 85, note: 'поріг масштабування ≥3 · ✓ пройдено',
+    plain: 'Головне співвідношення: клієнт приносить у 3,4 раза більше, ніж коштувало його залучення.',
+  },
+  {
+    k: 'Маржинальність замовлення', v: '58%', bar: 72, note: 'після логістики й повернень',
+    plain: 'Скільки лишається з кожної гривні замовлення після собівартості, доставки й повернень.',
+  },
 ];
 
 /* Retention когорт: місяць придбання × місяці після (частка активних, %) */
@@ -125,17 +137,29 @@ export default function DemoOS() {
           )}
 
           {tab === 'Юніт-економіка' && (
-            <div className="grid sm:grid-cols-2 gap-5">
-              {UNIT.map((u) => (
-                <div key={u.k} className="card p-5">
-                  <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#5A6472]">
-                    {u.k}
-                  </p>
-                  <p className="font-mono font-bold text-3xl text-[#12161C] mt-1.5 mb-3">{u.v}</p>
-                  <Bar percent={u.bar} height={6} />
-                  <p className="font-mono text-[0.62rem] text-[#5A6472] mt-2">{u.note}</p>
-                </div>
-              ))}
+            <div>
+              <p className="text-sm text-[#3F4854] leading-relaxed mb-5 max-w-2xl">
+                Юніт-економіка відповідає на одне питання:{' '}
+                <strong className="text-[#12161C]">чи заробляєте ви на кожному клієнті — чи доплачуєте за нього?</strong>{' '}
+                Чотири цифри нижче — і відповідь очевидна.
+              </p>
+              <div className="grid sm:grid-cols-2 gap-5">
+                {UNIT.map((u) => (
+                  <div key={u.k} className="card p-5">
+                    <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#5A6472]">
+                      {u.k}
+                    </p>
+                    <p className="font-mono font-bold text-3xl text-[#12161C] mt-1.5 mb-1.5">{u.v}</p>
+                    <p className="text-[0.74rem] text-[#3F4854] leading-snug mb-3">{u.plain}</p>
+                    <Bar percent={u.bar} height={6} />
+                    <p className="font-mono text-[0.62rem] text-[#5A6472] mt-2">{u.note}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="font-mono text-[0.66rem] text-[#B45309] mt-4">
+                → Висновок: економіка здорова, рекламу можна масштабувати. Вузьке місце — LTV:
+                клієнти приносять €31 замість €40, добираємо повторними покупками (retention-контур).
+              </p>
             </div>
           )}
 

@@ -12,7 +12,7 @@ export const COOP_SECTIONS = [
   { id: 'fork', label: 'Розвилка' },
 ];
 
-const anchor = { scrollMarginTop: 118 } as React.CSSProperties;
+const anchor = { scrollMarginTop: 126 } as React.CSSProperties;
 
 /*
  * «Співпраця»: три формати роботи з цінами → як влаштований процес і чим
