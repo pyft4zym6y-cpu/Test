@@ -20,6 +20,8 @@ import { buildGantt, ganttCsv, scopeEffort } from '../lib/gantt';
 import { RATE_ITEMS, EUR_RATE_DEFAULT } from '../data/rates';
 import { byId } from '../lib/model';
 import qmetaRaw from '../data/question-meta.json';
+import { AQC_ITEMS, AQC_PAGES, SEVERITY_COLOR, type AqcPage, type AqcVerdict } from '../data/aqc';
+import { plan as abPlan, mde as abMde, readResult as abRead } from '../lib/experiments';
 const QMETA = qmetaRaw as Record<string, { interp: string; pb: string; deliv: string; kpi: string }>;
 import type { AnswerRow } from '../lib/supabase';
 
@@ -39,6 +41,10 @@ export default function AdminClientPage() {
   const [ga4Msg, setGa4Msg] = useState('');
   const [budgetSel, setBudgetSel] = useState<Record<string, number> | null>(null); // id -> months (0=off, для разовых 1)
   const [eurRate, setEurRate] = useState(EUR_RATE_DEFAULT);
+  const [aqcPage, setAqcPage] = useState<AqcPage>('Карточка (PDP)');
+  const [aqcBusy, setAqcBusy] = useState('');
+  const [ab, setAb] = useState({ mode: 'plan' as 'plan' | 'mde' | 'read', p1: '', lift: '10', weekly: '', weeks: '4', nA: '', cA: '', nB: '', cB: '' });
+  const [abOut, setAbOut] = useState('');
 
   useEffect(() => {
     if (DEMO) {
@@ -119,6 +125,69 @@ export default function AdminClientPage() {
   const prereqNotes = [...scopePbs]
     .filter((pb) => PB_PREREQS[pb])
     .map((pb) => `${pb} — только после ${PB_PREREQS[pb].join(', ')}${PB_PREREQS[pb].some((x) => !scopePbs.has(x)) ? ' (пререквизит вне scope — добавить!)' : ''}`);
+
+  const aqcVerdicts: Record<string, Record<string, string>> = (meta?.aqc as any) ?? {};
+  const setAqc = (page: string, id: string, v: AqcVerdict | null) => {
+    const pageMap = { ...(aqcVerdicts[page] ?? {}) };
+    if (v === null) delete pageMap[id];
+    else pageMap[id] = v;
+    save({ aqc: { ...aqcVerdicts, [page]: pageMap } });
+  };
+  const aqcManualStats = (() => {
+    let passN = 0, failN = 0;
+    const critFails: string[] = [];
+    for (const it of AQC_ITEMS) {
+      const v = aqcVerdicts[it.page]?.[it.id];
+      if (v === 'pass') passN++;
+      else if (v === 'fail') { failN++; if (it.severity === 'Critical') critFails.push(it.criterion); }
+    }
+    return { passN, failN, critFails, done: passN + failN };
+  })();
+
+  const runAqcAi = async () => {
+    const url = (passport.sites ?? []).filter(Boolean)[0];
+    if (!url) { setAqcBusy('Нет сайта клиента в паспорте'); return; }
+    setAqcBusy('AI-прогон…');
+    try {
+      const items = AQC_ITEMS.filter((i) => i.page === aqcPage).map(({ id, criterion, pass }) => ({ id, criterion, pass }));
+      const r = await fetch('/api/aqc', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, page: aqcPage, items }),
+      });
+      const j = await r.json();
+      if (j.error) { setAqcBusy(j.error); return; }
+      const pageMap = { ...(aqcVerdicts[aqcPage] ?? {}) };
+      for (const v of j.verdicts ?? []) {
+        if (pageMap[v.id] === 'pass' || pageMap[v.id] === 'fail') continue; // ручной вердикт не трогаем
+        if (v.verdict === 'pass') pageMap[v.id] = 'ai-pass';
+        if (v.verdict === 'fail') pageMap[v.id] = 'ai-fail';
+      }
+      save({ aqc: { ...aqcVerdicts, [aqcPage]: pageMap } });
+      setAqcBusy(`AI-гипотезы получены (достоверность 25) — подтвердите руками`);
+    } catch {
+      setAqcBusy('API недоступно — AI-прогон работает на хостинге Vercel.');
+    }
+  };
+
+  const runAb = () => {
+    const n = (x: string) => parseFloat(x.replace(',', '.')) || 0;
+    try {
+      if (ab.mode === 'plan') {
+        const r = abPlan(n(ab.p1) / 100, n(ab.lift) / 100, n(ab.weekly));
+        setAbOut(`Выборка ${r.n.toLocaleString()}/вариант · всего ${r.total.toLocaleString()} · ${r.weeks === Infinity ? '∞' : r.weeks.toFixed(1)} нед${r.tooLong ? ' · ⚠ дольше 8 недель — тест не окупается: радикальнее изменение, уже сегмент или внедрять без теста' : ''}`);
+      } else if (ab.mode === 'mde') {
+        const r = abMde(n(ab.p1) / 100, n(ab.weekly), n(ab.weeks));
+        setAbOut(`За ${ab.weeks} нед при ${n(ab.weekly).toLocaleString()} сессий/нед детектируем подъём от ${(r * 100).toFixed(1)}% относительных — эффекты меньше не увидите`);
+      } else {
+        const r = abRead(n(ab.nA), n(ab.cA), n(ab.nB), n(ab.cB));
+        setAbOut(`A ${(r.pA * 100).toFixed(2)}% → B ${(r.pB * 100).toFixed(2)}% · подъём ${(r.lift * 100).toFixed(1)}% · p=${r.p.toFixed(4)} · ${r.significant ? '✓ ЗНАЧИМО' : '✗ не значимо (данных не хватило — смотри границы ДИ)'} · ДИ [${(r.ci[0] * 100).toFixed(2)}; ${(r.ci[1] * 100).toFixed(2)}] п.п.`);
+      }
+    } catch (e) { setAbOut(String(e)); }
+  };
+  const writeAbToHyp = (hypId: string) => {
+    if (!abOut) return;
+    save({ hypotheses: hyps.map((h) => (h.id === hypId ? { ...h, validation: `A/B: ${abOut}` } : h)) });
+  };
 
   const onOrdersFile = (f: File) =>
     f.text().then((t) => {
@@ -695,6 +764,110 @@ export default function AdminClientPage() {
                 </div>
               );
             })()}
+          </>
+        )}
+      </div>
+
+      {/* AQC-чеклист витрины */}
+      <div className="card" style={{ marginTop: 14 }}>
+        <h2>AQC-чеклист витрины · {aqcManualStats.done}/{AQC_ITEMS.length} проверено</h2>
+        <p className="sub" style={{ fontSize: 12.5 }}>
+          Стандарт Atomic Quality Criteria: находка — это «код · Fail · условие», а не мнение.
+          AI-прогон даёт гипотезы с достоверностью 25 (пунктиром) — подтверждайте руками.
+        </p>
+        <div className="chips" style={{ marginTop: 10 }}>
+          {AQC_PAGES.map((pg) => (
+            <span key={pg} className={`chip ${aqcPage === pg ? 'on' : ''}`} onClick={() => setAqcPage(pg)}>
+              {pg} {(() => { const m = aqcVerdicts[pg] ?? {}; const n = Object.values(m).filter((v) => v === 'pass' || v === 'fail').length; return n ? `· ${n}` : ''; })()}
+            </span>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: 10, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          <button className="chip" onClick={runAqcAi}>🤖 AI-прогон этой страницы</button>
+          {aqcBusy && <span className="sub" style={{ fontSize: 11.5 }}>{aqcBusy}</span>}
+        </div>
+        {AQC_ITEMS.filter((i) => i.page === aqcPage).map((it) => {
+          const v = aqcVerdicts[aqcPage]?.[it.id];
+          const isAi = v === 'ai-pass' || v === 'ai-fail';
+          return (
+            <div key={it.id} style={{ display: 'flex', gap: 10, alignItems: 'baseline', padding: '8px 0', borderBottom: '1px solid var(--line)', flexWrap: 'wrap' }}>
+              <span className="qid" style={{ flexShrink: 0, minWidth: 110 }}>{it.id}</span>
+              <span className="mono" style={{ fontSize: 10, fontWeight: 700, color: SEVERITY_COLOR[it.severity], minWidth: 52 }}>{it.severity}</span>
+              <div style={{ flex: 1, minWidth: 220 }}>
+                <p style={{ fontSize: 13.5, fontWeight: 600, margin: 0 }}>{it.criterion}</p>
+                <p className="sub" style={{ fontSize: 11.5, margin: 0 }}>Pass: {it.pass}</p>
+                {isAi && <p className="sub" style={{ fontSize: 10.5, margin: 0, color: 'var(--amber)' }}>AI-гипотеза (достоверность 25): {v === 'ai-pass' ? 'скорее Pass' : 'скорее Fail'} — подтвердите</p>}
+              </div>
+              <div className="chips" style={{ flexShrink: 0 }}>
+                <span className={`chip ${v === 'pass' ? 'on' : ''}`} style={{ fontSize: 11, borderStyle: v === 'ai-pass' ? 'dashed' : undefined }} onClick={() => setAqc(aqcPage, it.id, v === 'pass' ? null : 'pass')}>Pass</span>
+                <span className={`chip ${v === 'fail' ? 'on' : ''}`} style={{ fontSize: 11, color: v === 'fail' ? 'var(--red)' : undefined, borderStyle: v === 'ai-fail' ? 'dashed' : undefined }} onClick={() => setAqc(aqcPage, it.id, v === 'fail' ? null : 'fail')}>Fail</span>
+                <span className={`chip ${v === 'na' ? 'on' : ''}`} style={{ fontSize: 11 }} onClick={() => setAqc(aqcPage, it.id, v === 'na' ? null : 'na')}>Н/П</span>
+              </div>
+            </div>
+          );
+        })}
+        {aqcManualStats.done > 0 && (
+          <p className="mono" style={{ fontSize: 12.5, marginTop: 10 }}>
+            Итог (ручные вердикты): <b>{Math.round((aqcManualStats.passN / Math.max(aqcManualStats.done, 1)) * 100)}%</b> Pass
+            ({aqcManualStats.passN}/{aqcManualStats.done})
+            {aqcManualStats.critFails.length > 0 && (
+              <span style={{ color: 'var(--red)' }}> · Critical-фейлы: {aqcManualStats.critFails.slice(0, 4).join(' · ')}</span>
+            )}
+          </p>
+        )}
+      </div>
+
+      {/* Планировщик A/B */}
+      <div className="card" style={{ marginTop: 14 }}>
+        <h2>Планировщик A/B-экспериментов</h2>
+        <p className="sub" style={{ fontSize: 12.5 }}>
+          α = 0.05, мощность 80%. Правило метода: тест дольше 8 недель не окупается.
+          Вывод можно записать в способ проверки гипотезы.
+        </p>
+        <div className="chips" style={{ marginTop: 10 }}>
+          {([['plan', 'Спланировать тест'], ['mde', 'Что вообще детектируемо'], ['read', 'Прочитать результат']] as const).map(([m, l]) => (
+            <span key={m} className={`chip ${ab.mode === m ? 'on' : ''}`} onClick={() => { setAb({ ...ab, mode: m }); setAbOut(''); }}>{l}</span>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+          {ab.mode !== 'read' && (
+            <>
+              <input type="text" placeholder="Базовая CR, %" value={ab.p1} style={{ maxWidth: 130 }} onChange={(e) => setAb({ ...ab, p1: e.target.value })} />
+              <input type="text" placeholder="Трафик/нед" value={ab.weekly} style={{ maxWidth: 130 }} onChange={(e) => setAb({ ...ab, weekly: e.target.value })} />
+            </>
+          )}
+          {ab.mode === 'plan' && (
+            <input type="text" placeholder="Ожидаемый подъём, %" value={ab.lift} style={{ maxWidth: 170 }} onChange={(e) => setAb({ ...ab, lift: e.target.value })} />
+          )}
+          {ab.mode === 'mde' && (
+            <input type="text" placeholder="Недель" value={ab.weeks} style={{ maxWidth: 100 }} onChange={(e) => setAb({ ...ab, weeks: e.target.value })} />
+          )}
+          {ab.mode === 'read' && (
+            <>
+              <input type="text" placeholder="n A" value={ab.nA} style={{ maxWidth: 100 }} onChange={(e) => setAb({ ...ab, nA: e.target.value })} />
+              <input type="text" placeholder="конв. A" value={ab.cA} style={{ maxWidth: 100 }} onChange={(e) => setAb({ ...ab, cA: e.target.value })} />
+              <input type="text" placeholder="n B" value={ab.nB} style={{ maxWidth: 100 }} onChange={(e) => setAb({ ...ab, nB: e.target.value })} />
+              <input type="text" placeholder="конв. B" value={ab.cB} style={{ maxWidth: 100 }} onChange={(e) => setAb({ ...ab, cB: e.target.value })} />
+            </>
+          )}
+          <button className="btn btn-ghost" style={{ padding: '8px 16px' }} onClick={runAb}>Посчитать</button>
+          {ab.mode !== 'read' && levers.cr.fact > 0 && (
+            <button className="chip" onClick={() => setAb({ ...ab, p1: String(levers.cr.fact), weekly: String(Math.round((levers.traffic.fact || 0) / 4.33)) })}>
+              ⇐ из baseline
+            </button>
+          )}
+        </div>
+        {abOut && (
+          <>
+            <p className="mono" style={{ fontSize: 13, marginTop: 10 }}>{abOut}</p>
+            {hyps.length > 0 && (
+              <div style={{ display: 'flex', gap: 8, marginTop: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                <span className="sub" style={{ fontSize: 12 }}>Записать в гипотезу:</span>
+                {hyps.map((h) => (
+                  <span key={h.id} className="chip" style={{ fontSize: 11 }} onClick={() => writeAbToHyp(h.id)}>{h.id}</span>
+                ))}
+              </div>
+            )}
           </>
         )}
       </div>

@@ -157,6 +157,7 @@ create table if not exists report_meta (
 alter table report_meta add column if not exists screen jsonb;
 alter table report_meta add column if not exists budget jsonb;
 alter table report_meta add column if not exists hypotheses jsonb;
+alter table report_meta add column if not exists aqc jsonb;
 alter table report_meta enable row level security;
 drop policy if exists rmeta_select on report_meta;
 create policy rmeta_select on report_meta for select

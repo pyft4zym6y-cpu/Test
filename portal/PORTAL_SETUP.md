@@ -78,3 +78,11 @@
 
 В Supabase заново прогоните `supabase/schema.sql` (SQL Editor → Run) — добавились
 колонки `screen` и `budget` в `report_meta`. Скрипт идемпотентный.
+
+## AI-прогон AQC (v9)
+
+Функция `/api/aqc` прогоняет страницу клиента по AQC-чеклисту через Claude API.
+Настройка: Vercel → Environment Variables → `ANTHROPIC_API_KEY` (ключ из
+console.anthropic.com), опционально `AQC_MODEL` (по умолчанию claude-sonnet-5).
+Вердикты AI — гипотезы с достоверностью 25 (правило метода): в чеклисте они
+пунктирные, пока консультант не подтвердит рукой.
