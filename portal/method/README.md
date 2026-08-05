@@ -22,7 +22,7 @@ weexp, выгруженная в репозиторий как страховк�
 | `references/uxui_index.md` + `uxui/ch-*.md` | UX/UI-энциклопедия, 59 глав (PLP/PDP/Cart/Checkout/законы UX) |
 | `references/deliverables_registry.md` | 62 deliverables программы D-01…D-62 |
 | `references/engagement_deliverables.md` | 21 документ сотрудничества: КП (KP), контур программы (PR), fractional (FL), сверка XX-01 |
-| `references/kp_master_structure.md` | 20 секций коммерческого предложения (паттерн RAY.UA) |
+| `references/kp_master_structure.md` | 20 секций коммерческого предложения (продающий паттерн) |
 | `references/data_access_registry.md` | Реестр доступов AC/EX × 56 плейбуков |
 | `references/cost_base.md` | Rate card: подтверждённые ставки из КП + рыночные вилки |
 | `references/competitor_benchmark.md` | Конкурентный бенчмарк: 16 параметров, индекс, white space |
