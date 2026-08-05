@@ -69,12 +69,12 @@ async function runTool(browser: Browser, ds: AuditDataset, name: string, input: 
   }
 }
 
-export async function agentAnalyze(browser: Browser, ds: AuditDataset, opts: { maxSteps?: number } = {}): Promise<Analysis> {
+export async function agentAnalyze(browser: Browser, ds: AuditDataset, opts: { maxSteps?: number; engineFactsStr?: string } = {}): Promise<Analysis> {
   const maxSteps = opts.maxSteps ?? 8;
   let webSearch = process.env.AUDIT_WEB_SEARCH !== '0';
   const system = analysisSystemPrompt() +
     `\n\nУ тебя есть инструменты: crawl_page (обойти ещё страницу браузером), fetch_url (скачать текст любой страницы), web_search (поиск в вебе — конкуренты, бренд, цена в канале, факты о компании). Сначала добери недостающие факты инструментами (2–6 вызовов), затем вызови finish с полным анализом. Не выдумывай — если факт не подтверждён, помечай допущением и клади в missingFacts/openQuestions.`;
-  const messages: any[] = [{ role: 'user', content: datasetToPrompt(ds) + '\n\nВеди аудит. Добери факты инструментами, затем вызови finish.' }];
+  const messages: any[] = [{ role: 'user', content: datasetToPrompt(ds, opts.engineFactsStr) + '\n\nВеди аудит. Добери факты инструментами, затем вызови finish.' }];
 
   for (let step = 0; step < maxSteps; step++) {
     let resp: any;

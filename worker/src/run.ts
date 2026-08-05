@@ -8,9 +8,10 @@
  * L0-датасет + читаемый отчёт наблюдений. Аналитический слой (Claude) и сборка
  * материалов (AD-15, Гант) подключаются следующими модулями поверх датасета.
  */
-import { writeFile, mkdir } from 'node:fs/promises';
+import { writeFile, mkdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { launchBrowser, crawlSite } from './crawl.js';
+import { computeEngine, normalizeAnswers, engineFacts, type EngineResult } from './portalEngine.js';
 import { renderL0Report, type AuditDataset } from './report.js';
 import { TIERS, type Tier } from './tiers.js';
 import { analyze } from './analyze.js';
@@ -20,10 +21,10 @@ import { exportAD15Pptx } from './export/pptx.js';
 import { exportReportDocx } from './export/docx.js';
 import { hasKey } from './anthropic.js';
 
-type Args = { tier: Tier; site: string; competitors: string[]; request: string; out: string; agentic: boolean };
+type Args = { tier: Tier; site: string; competitors: string[]; request: string; out: string; agentic: boolean; answers: string };
 
 function parseArgs(argv: string[]): Args {
-  const a: Args = { tier: 1, site: '', competitors: [], request: '', out: 'results', agentic: false };
+  const a: Args = { tier: 1, site: '', competitors: [], request: '', out: 'results', agentic: false, answers: '' };
   for (let i = 0; i < argv.length; i++) {
     const k = argv[i];
     const v = argv[i + 1];
@@ -32,6 +33,7 @@ function parseArgs(argv: string[]): Args {
     else if (k === '--competitor') { if (v) a.competitors.push(v); i++; }
     else if (k === '--request') { a.request = v ?? ''; i++; }
     else if (k === '--out') { a.out = v ?? 'results'; i++; }
+    else if (k === '--answers') { a.answers = v ?? ''; i++; }
     else if (k === '--agentic') { a.agentic = true; }
   }
   return a;
@@ -75,24 +77,38 @@ async function main() {
     const cs = client.pages.filter((p) => p.score !== null);
     console.log(`✓ Обход готов. Страниц: ${client.pages.length}${cs.length ? `, ср. соответствие ${Math.round(cs.reduce((s, p) => s + (p.score ?? 0), 0) / cs.length)}%` : ''}`);
 
+    // Движок портала (та же математика): Health Score, разрывы, решения, scope.
+    let engine: EngineResult | null = null;
+    if (args.answers) {
+      try {
+        const raw = JSON.parse(await readFile(args.answers, 'utf8'));
+        engine = computeEngine(normalizeAnswers(raw));
+        await writeFile(join(dir, 'engine.json'), JSON.stringify(engine, null, 2), 'utf8');
+        console.log(`  · движок: Health Score ${engine.score ?? '—'}/100, разрывов ${engine.gaps.length}, решений ${engine.decisions.length} (ответов ${engine.coverage.answered}/${engine.coverage.total})`);
+      } catch (e) {
+        console.log(`  ⚠️ ответы опросника не прочитаны (${String(e).slice(0, 120)}) — движок пропущен`);
+      }
+    }
+    const engineFactsStr = engine ? engineFacts(engine) : undefined;
+
     // Аналитический слой + материалы (нужен ANTHROPIC_API_KEY)
     if (hasKey()) {
       console.log(`  · анализ по методологии (Claude${args.agentic ? ', агентный обход' : ''})…`);
       try {
         let analysis;
         if (args.agentic) {
-          try { analysis = await agentAnalyze(browser, ds); }
-          catch (e) { console.log(`  ⚠️ агентный режим сорвался (${String(e).slice(0, 120)}), откат на одношаговый анализ`); analysis = await analyze(ds); }
+          try { analysis = await agentAnalyze(browser, ds, { engineFactsStr }); }
+          catch (e) { console.log(`  ⚠️ агентный режим сорвался (${String(e).slice(0, 120)}), откат на одношаговый анализ`); analysis = await analyze(ds, engineFactsStr); }
         } else {
-          analysis = await analyze(ds);
+          analysis = await analyze(ds, engineFactsStr);
         }
         await writeFile(join(dir, 'analysis.json'), JSON.stringify(analysis, null, 2), 'utf8');
-        await writeFile(join(dir, 'AD-15.md'), renderAD15(ds, analysis), 'utf8');
+        await writeFile(join(dir, 'AD-15.md'), renderAD15(ds, analysis, engine), 'utf8');
         await writeFile(join(dir, 'roadmap.md'), renderRoadmap(ds, analysis), 'utf8');
         // Экспорт в файлы для клиента
         const date = new Date(ds.takenAt).toLocaleDateString('ru-RU');
-        await exportAD15Pptx(buildAD15Model(ds, analysis), { name: clientName(ds), tier: ds.tier, date }, join(dir, 'AD-15.pptx'));
-        await exportReportDocx(ds, analysis, join(dir, 'audit-report.docx'));
+        await exportAD15Pptx(buildAD15Model(ds, analysis, engine), { name: clientName(ds), tier: ds.tier, date }, join(dir, 'AD-15.pptx'));
+        await exportReportDocx(ds, analysis, engine, join(dir, 'audit-report.docx'));
         console.log(`  ✓ материалы собраны: analysis.json, AD-15.md/.pptx, roadmap.md, audit-report.docx`);
       } catch (e) {
         console.log(`  ⚠️ аналитический слой не отработал: ${String(e).slice(0, 160)}`);

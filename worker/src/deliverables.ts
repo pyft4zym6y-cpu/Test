@@ -5,6 +5,7 @@
  */
 import type { AuditDataset } from './report.js';
 import type { Analysis } from './analyze.js';
+import type { EngineResult } from './portalEngine.js';
 import { AD15_SLIDES } from './method.js';
 
 export type Slide = { n: number; title: string; subtitle?: string; bullets: string[]; note?: string };
@@ -19,7 +20,7 @@ export function clientName(ds: AuditDataset): string {
 }
 
 /** Слайд-модель AD-15 — единый источник для Markdown и .pptx. */
-export function buildAD15Model(ds: AuditDataset, a: Analysis): Slide[] {
+export function buildAD15Model(ds: AuditDataset, a: Analysis, engine?: EngineResult | null): Slide[] {
   const cs = clientScore(ds);
   const name = clientName(ds);
   const date = new Date(ds.takenAt).toLocaleDateString('ru-RU');
@@ -31,9 +32,14 @@ export function buildAD15Model(ds: AuditDataset, a: Analysis): Slide[] {
       case 'cover':
         return { n, title: name, subtitle: `Диагностика Commerce OS · ${date}`,
           bullets: ['Предварительная картина по внешнему обходу (без доступов)', 'Статус оценок: наблюдение L0 — порядок величины'] };
-      case 'point-a':
-        return { n, title: 'Точка А — где вы сейчас', subtitle: `Соответствие витрины голд-стандарту: ${cs ?? '—'}% (по ${scoredN} стр.)`,
-          bullets: [a.healthNote || 'Оценка зрелости появится после анализа', 'Health Score по 100-балльной шкале посчитает движок после занесения находок в ЕКП'] };
+      case 'point-a': {
+        const hs = engine && engine.score != null
+          ? `Health Score: ${engine.score}/100 — «${engine.band}»`
+          : 'Health Score: требует опросника (100-балльная шкала считается на T2–T3)';
+        const bullets = [a.healthNote || 'Оценка зрелости появится после анализа', hs];
+        if (engine && engine.score != null && engine.action) bullets.push(`Рекомендация метода: ${engine.action}`);
+        return { n, title: 'Точка А — где вы сейчас', subtitle: `Соответствие витрины голд-стандарту: ${cs ?? '—'}% (по ${scoredN} стр.)`, bullets };
+      }
       case 'diagnosis':
         return { n, title: 'Диагноз системно',
           bullets: a.pains.length
@@ -47,11 +53,16 @@ export function buildAD15Model(ds: AuditDataset, a: Analysis): Slide[] {
           bullets: ['Тактика 0–3 мес: закрыть дефекты обнаружимости и быстрые UX/SEO-разрывы', 'Стратегия 3–12 / 12–36 мес: системные контуры (аналитика, retention, юнит-экономика)', 'Каждую цель на L1 переведём в число с источником'] };
       case 'how': {
         const bullets: string[] = [];
-        for (const w of [1, 2, 3]) {
-          const items = a.scope.filter((s) => (s.wave ?? 1) === w);
-          if (!items.length) continue;
-          bullets.push(`Волна ${w}:`);
-          for (const it of items) bullets.push(`  ${it.playbook} — ${it.reason}`);
+        if (engine && engine.decisions.length) {
+          // приоритет движка (реальные impact/сложность/плейбуки) впереди
+          for (const d of engine.decisions.slice(0, 6)) bullets.push(`${d.id} ${d.title} — ${d.playbooks.join(', ')} (ROI ${d.roi}, ~${d.timeDays}д)`);
+        } else {
+          for (const w of [1, 2, 3]) {
+            const items = a.scope.filter((s) => (s.wave ?? 1) === w);
+            if (!items.length) continue;
+            bullets.push(`Волна ${w}:`);
+            for (const it of items) bullets.push(`  ${it.playbook} — ${it.reason}`);
+          }
         }
         return { n, title: 'Как — программа и волны', bullets: bullets.length ? bullets : ['Scope не сгенерирован'] };
       }
@@ -76,8 +87,8 @@ export function buildAD15Model(ds: AuditDataset, a: Analysis): Slide[] {
 }
 
 /** AD-15 — Markdown-черновик из слайд-модели. */
-export function renderAD15(ds: AuditDataset, a: Analysis): string {
-  const model = buildAD15Model(ds, a);
+export function renderAD15(ds: AuditDataset, a: Analysis, engine?: EngineResult | null): string {
+  const model = buildAD15Model(ds, a, engine);
   const S: string[] = [];
   S.push(`# AD-15 · Итоговая презентация аудита — ЧЕРНОВИК`);
   S.push(`_Commerce OS · ${clientName(ds)} · тир T${ds.tier} · слой L0. Оценки — «наблюдение L0», не факт по данным клиента. Правьте перед отправкой._`);

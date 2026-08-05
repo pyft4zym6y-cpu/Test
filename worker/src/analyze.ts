@@ -39,7 +39,7 @@ function siteBrief(site: SiteCrawl, label: string): string {
   return L.join('\n');
 }
 
-export function datasetToPrompt(ds: AuditDataset): string {
+export function datasetToPrompt(ds: AuditDataset, engineFactsStr?: string): string {
   const L: string[] = [];
   L.push(`Тир T${ds.tier}. Запрос клиента: ${ds.request || '(не задан — негласный/инициативный аудит)'}`);
   L.push('\n' + siteBrief(ds.client, 'КЛИЕНТ'));
@@ -47,12 +47,13 @@ export function datasetToPrompt(ds: AuditDataset): string {
     L.push('\nКОНКУРЕНТЫ:');
     ds.competitors.forEach((c, i) => L.push(siteBrief(c, `конкурент ${i + 1}`)));
   }
-  L.push('\nСделай аудит уровня L0 по схеме из системного промпта. Верни только JSON.');
+  if (engineFactsStr) L.push('\n' + engineFactsStr);
+  L.push('\nСделай аудит уровня L0 по схеме из системного промпта. Опирайся на расчёт движка, если он есть (Health Score, разрывы, решения — их не пересчитывай). Верни только JSON.');
   return L.join('\n');
 }
 
-export async function analyze(ds: AuditDataset): Promise<Analysis> {
-  const text = await ask(analysisSystemPrompt(), datasetToPrompt(ds), 8000);
+export async function analyze(ds: AuditDataset, engineFactsStr?: string): Promise<Analysis> {
+  const text = await ask(analysisSystemPrompt(), datasetToPrompt(ds, engineFactsStr), 8000);
   const a = extractJson<Partial<Analysis>>(text);
   return {
     summary: a.summary ?? '',

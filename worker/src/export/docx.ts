@@ -7,6 +7,7 @@ import { Document, Packer, Paragraph, HeadingLevel, TextRun } from 'docx';
 import { writeFile } from 'node:fs/promises';
 import type { AuditDataset } from '../report.js';
 import type { Analysis } from '../analyze.js';
+import type { EngineResult } from '../portalEngine.js';
 import { clientName } from '../deliverables.js';
 
 const P = (text: string, opts: { bold?: boolean; italics?: boolean; bullet?: boolean } = {}) =>
@@ -24,7 +25,7 @@ function clientScore(ds: AuditDataset): number | null {
   return scored.length ? Math.round(scored.reduce((s, p) => s + (p.score ?? 0), 0) / scored.length) : null;
 }
 
-export async function exportReportDocx(ds: AuditDataset, a: Analysis, outPath: string): Promise<void> {
+export async function exportReportDocx(ds: AuditDataset, a: Analysis, engine: EngineResult | null, outPath: string): Promise<void> {
   const cs = clientScore(ds);
   const kids: Paragraph[] = [];
 
@@ -39,6 +40,21 @@ export async function exportReportDocx(ds: AuditDataset, a: Analysis, outPath: s
   kids.push(P(`Соответствие витрины голд-стандарту: ${cs ?? '—'}% (по ${ds.client.pages.filter((p) => p.score !== null).length} страницам).`, { bold: true }));
   kids.push(P(`Платформа: ${ds.client.tech.platform ?? 'не определена'}. Аналитика: ${ds.client.tech.analytics.join(', ') || 'не обнаружена'}. robots.txt: ${ds.client.robotsTxt ? 'есть' : 'нет'}, sitemap.xml: ${ds.client.sitemapXml ? 'есть' : 'нет'}.`));
   if (a.healthNote) kids.push(P(a.healthNote));
+
+  if (engine) {
+    kids.push(H('Расчёт движка Commerce OS', HeadingLevel.HEADING_1));
+    kids.push(P(engine.score != null
+      ? `Health Score: ${engine.score}/100 — «${engine.band}». Рекомендация метода: ${engine.action}. (зрелость A ${engine.scoreA ?? '—'}, разрывы B ${engine.scoreB ?? '—'}). Заполнено ${engine.coverage.answered}/${engine.coverage.total}.`
+      : `Health Score пока не считается: заполнено ${engine.coverage.answered}/${engine.coverage.total} ответов опросника (нужно больше). Это ожидаемо на раннем тире.`, { bold: engine.score != null }));
+    if (engine.gaps.length) {
+      kids.push(P('Критические разрывы (штраф к Health Score):', { bold: true }));
+      for (const g of engine.gaps) kids.push(P(`${g.label} (−${g.penalty}) — ${g.evidence}`, { bullet: true }));
+    }
+    if (engine.decisions.length) {
+      kids.push(P('Приоритетные решения (влияние/сложность, с трассой «почему»):', { bold: true }));
+      for (const d of engine.decisions.slice(0, 8)) kids.push(P(`${d.id} ${d.title} — impact ${d.impact}/сложность ${d.difficulty}, ~${d.timeDays} дн, ROI ${d.roi}, плейбуки: ${d.playbooks.join(', ')}. Почему: ${d.why.join('; ')}`, { bullet: true }));
+    }
+  }
 
   if (a.findings.length) {
     kids.push(H('Находки по видам', HeadingLevel.HEADING_1));
