@@ -13,6 +13,9 @@ import { join } from 'node:path';
 import { launchBrowser, crawlSite } from './crawl.js';
 import { renderL0Report, type AuditDataset } from './report.js';
 import { TIERS, type Tier } from './tiers.js';
+import { analyze } from './analyze.js';
+import { renderAD15, renderRoadmap } from './deliverables.js';
+import { hasKey } from './anthropic.js';
 
 type Args = { tier: Tier; site: string; competitors: string[]; request: string; out: string };
 
@@ -66,9 +69,24 @@ async function main() {
     await writeFile(join(dir, 'L0-report.md'), renderL0Report(ds), 'utf8');
 
     const cs = client.pages.filter((p) => p.score !== null);
-    console.log(`✓ Готово. Разобрано страниц: ${client.pages.length}${cs.length ? `, ср. соответствие ${Math.round(cs.reduce((s, p) => s + (p.score ?? 0), 0) / cs.length)}%` : ''}`);
-    console.log(`  датасет: ${join(dir, 'dataset.json')}`);
-    console.log(`  отчёт:   ${join(dir, 'L0-report.md')}`);
+    console.log(`✓ Обход готов. Страниц: ${client.pages.length}${cs.length ? `, ср. соответствие ${Math.round(cs.reduce((s, p) => s + (p.score ?? 0), 0) / cs.length)}%` : ''}`);
+
+    // Аналитический слой + материалы (нужен ANTHROPIC_API_KEY)
+    if (hasKey()) {
+      console.log('  · анализ по методологии (Claude)…');
+      try {
+        const analysis = await analyze(ds);
+        await writeFile(join(dir, 'analysis.json'), JSON.stringify(analysis, null, 2), 'utf8');
+        await writeFile(join(dir, 'AD-15.md'), renderAD15(ds, analysis), 'utf8');
+        await writeFile(join(dir, 'roadmap.md'), renderRoadmap(ds, analysis), 'utf8');
+        console.log(`  ✓ материалы собраны: analysis.json, AD-15.md, roadmap.md`);
+      } catch (e) {
+        console.log(`  ⚠️ аналитический слой не отработал: ${String(e).slice(0, 160)}`);
+      }
+    } else {
+      console.log('  · ANTHROPIC_API_KEY не задан — только L0-обход и детерминированный отчёт (материалы AD-15/roadmap собираются с ключом).');
+    }
+    console.log(`  папка результата: ${dir}`);
   } finally {
     await browser.close().catch(() => {});
   }
