@@ -10,7 +10,7 @@
  */
 import { writeFile, mkdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { launchBrowser, crawlSite } from './crawl.js';
+import { launchBrowser, crawlSite, type SiteCrawl } from './crawl.js';
 import { computeEngine, normalizeAnswers, engineFacts, type EngineResult } from './portalEngine.js';
 import { computeMoney, moneyFacts, type Levers, type MoneyResult } from './money.js';
 import { renderL0Report, type AuditDataset } from './report.js';
@@ -22,10 +22,10 @@ import { exportAD15Pptx } from './export/pptx.js';
 import { exportReportDocx } from './export/docx.js';
 import { hasKey } from './anthropic.js';
 
-type Args = { tier: Tier; site: string; competitors: string[]; request: string; out: string; agentic: boolean; answers: string; baseline: string };
+type Args = { tier: Tier; site: string; competitors: string[]; request: string; out: string; agentic: boolean; answers: string; baseline: string; prelaunch: boolean; brief: string };
 
 function parseArgs(argv: string[]): Args {
-  const a: Args = { tier: 1, site: '', competitors: [], request: '', out: 'results', agentic: false, answers: '', baseline: '' };
+  const a: Args = { tier: 1, site: '', competitors: [], request: '', out: 'results', agentic: false, answers: '', baseline: '', prelaunch: false, brief: '' };
   for (let i = 0; i < argv.length; i++) {
     const k = argv[i];
     const v = argv[i + 1];
@@ -36,6 +36,8 @@ function parseArgs(argv: string[]): Args {
     else if (k === '--out') { a.out = v ?? 'results'; i++; }
     else if (k === '--answers') { a.answers = v ?? ''; i++; }
     else if (k === '--baseline') { a.baseline = v ?? ''; i++; }
+    else if (k === '--brief') { a.brief = v ?? ''; i++; }
+    else if (k === '--prelaunch') { a.prelaunch = true; }
     else if (k === '--agentic') { a.agentic = true; }
   }
   return a;
@@ -48,30 +50,41 @@ function slug(url: string): string {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  if (!args.site) {
-    console.error('Нужен --site https://... (опц. --tier 1..4, --competitor <url> ×N, --request "...")');
+  if (args.prelaunch) args.tier = 0;
+  if (!args.site && !args.prelaunch) {
+    console.error('Нужен --site https://... , либо --prelaunch (сайта ещё нет) с --brief "…" и конкурентами.');
     process.exit(1);
   }
   const spec = TIERS[args.tier];
-  console.log(`▶ Аудит T${args.tier} «${spec.title}»\n  клиент: ${args.site}`);
+  console.log(`▶ ${args.prelaunch ? 'Предзапуск T0' : `Аудит T${args.tier}`} «${spec.title}»\n  клиент: ${args.site || '(сайт в разработке)'}`);
   if (args.competitors.length) console.log(`  конкуренты: ${args.competitors.join(', ')}`);
 
   const browser = await launchBrowser();
   try {
-    console.log('  · обход клиента…');
-    const client = await crawlSite(browser, args.site, 'client');
+    let client: SiteCrawl;
+    if (args.prelaunch) {
+      // Сайта ещё нет — обходить нечего. Заглушка клиента.
+      client = { rootUrl: args.site || '(сайт в разработке)', finalUrl: args.site || 'Новый проект', kind: 'client', reachable: false, robotsTxt: false, sitemapXml: false, tech: { platform: null, analytics: [], signals: [] }, pages: [], discoveredLinks: 0 };
+      if (args.site) console.log('  · режим предзапуска: черновой URL задан, но не обходится (сайт в разработке)');
+    } else {
+      console.log('  · обход клиента…');
+      client = await crawlSite(browser, args.site, 'client');
+    }
+
     const competitors = [];
-    if (args.tier >= 2) {
+    if (args.prelaunch || args.tier >= 2) {
       for (const c of args.competitors) {
         console.log(`  · обход конкурента ${c}…`);
         competitors.push(await crawlSite(browser, c, 'competitor'));
       }
+      if (args.prelaunch && !args.competitors.length) console.log('  · конкуренты не заданы — анализ по нише из брифа и внешним данным');
     } else if (args.competitors.length) {
       console.log('  · конкуренты заданы, но на T1 не обходятся (нужен T2+). Пропускаю.');
     }
 
-    const ds: AuditDataset = { tier: args.tier, request: args.request, client, competitors, takenAt: new Date().toISOString() };
-    const dir = join(args.out, `${slug(args.site)}-t${args.tier}-${Date.now()}`);
+    const ds: AuditDataset = { tier: args.tier, request: args.request, client, competitors, takenAt: new Date().toISOString(),
+      ...(args.prelaunch ? { mode: 'prelaunch' as const, brief: args.brief || args.request } : {}) };
+    const dir = join(args.out, `${args.prelaunch ? 'prelaunch' : slug(args.site)}-t${args.tier}-${Date.now()}`);
     await mkdir(dir, { recursive: true });
     await writeFile(join(dir, 'dataset.json'), JSON.stringify(ds, null, 2), 'utf8');
     await writeFile(join(dir, 'L0-report.md'), renderL0Report(ds), 'utf8');

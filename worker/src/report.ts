@@ -12,6 +12,8 @@ export type AuditDataset = {
   client: SiteCrawl;
   competitors: SiteCrawl[];
   takenAt: string;
+  mode?: 'audit' | 'prelaunch'; // prelaunch — сайта ещё нет / в разработке
+  brief?: string; // бриф проекта для режима prelaunch
 };
 
 const KIND_LABEL: Record<PageAudit['kind'], string> = {

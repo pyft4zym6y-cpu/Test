@@ -3,7 +3,7 @@
  * методологии Commerce OS: с ростом тира не переделывает выводы заново, а
  * уточняет ячейки и повышает уверенность (закон метода «факт вместо оценки»).
  */
-export type Tier = 1 | 2 | 3 | 4;
+export type Tier = 0 | 1 | 2 | 3 | 4;
 
 export type TierSpec = {
   tier: Tier;
@@ -15,6 +15,14 @@ export type TierSpec = {
 };
 
 export const TIERS: Record<Tier, TierSpec> = {
+  0: {
+    tier: 0,
+    title: 'Pre-launch — сайта ещё нет / в разработке',
+    inputs: 'бриф проекта, конкуренты, макеты (Figma), ниша',
+    methodLayer: 'Предзапуск — концепция против рынка, go-to-market',
+    baseConfidence: 35,
+    covert: false,
+  },
   1: {
     tier: 1,
     title: 'Только сайт клиента + вольный запрос',
@@ -60,8 +68,8 @@ export type Capabilities = {
 
 export function capabilitiesFor(tier: Tier): Capabilities {
   return {
-    crawlClient: true, // внешний обход доступен всегда
-    crawlCompetitors: tier >= 2,
+    crawlClient: tier >= 1, // на T0 сайта ещё нет — обходить нечего
+    crawlCompetitors: tier === 0 || tier >= 2, // на предзапуске конкуренты обязательны
     useAnswers: tier >= 2,
     useUploads: tier >= 3,
     liveConnectors: tier >= 4,

@@ -4,9 +4,11 @@
  * недостающие факты, черновой scope, открытые вопросы). Деньги на L0 не считает.
  */
 import { ask, extractJson } from './anthropic.js';
-import { analysisSystemPrompt } from './method.js';
+import { analysisSystemPrompt, prelaunchSystemPrompt } from './method.js';
 import type { AuditDataset } from './report.js';
 import type { SiteCrawl } from './crawl.js';
+
+export const systemFor = (ds: AuditDataset) => (ds.mode === 'prelaunch' ? prelaunchSystemPrompt() : analysisSystemPrompt());
 
 export type Finding = { area: string; status: string; fact: string; why: string; confidence: number };
 export type Pain = { cause: string; symptoms: string[]; evidence: string[] };
@@ -41,6 +43,19 @@ function siteBrief(site: SiteCrawl, label: string): string {
 
 export function datasetToPrompt(ds: AuditDataset, engineFactsStr?: string): string {
   const L: string[] = [];
+  if (ds.mode === 'prelaunch') {
+    L.push(`Тир T0 · ПРЕДЗАПУСК (сайта ещё нет / в разработке).`);
+    L.push(`Бриф проекта: ${ds.brief || ds.request || '(бриф не задан)'}`);
+    if (ds.competitors.length) {
+      L.push('\nКОНКУРЕНТЫ (реальный обход — учись у них):');
+      ds.competitors.forEach((c, i) => L.push(siteBrief(c, `конкурент ${i + 1}`)));
+    } else {
+      L.push('\nКонкуренты не заданы — оцени по нише из брифа и внешним данным.');
+    }
+    if (engineFactsStr) L.push('\n' + engineFactsStr);
+    L.push('\nСделай предзапусковую диагностику по схеме из системного промпта. Верни только JSON.');
+    return L.join('\n');
+  }
   L.push(`Тир T${ds.tier}. Запрос клиента: ${ds.request || '(не задан — негласный/инициативный аудит)'}`);
   L.push('\n' + siteBrief(ds.client, 'КЛИЕНТ'));
   if (ds.competitors.length) {
@@ -53,7 +68,7 @@ export function datasetToPrompt(ds: AuditDataset, engineFactsStr?: string): stri
 }
 
 export async function analyze(ds: AuditDataset, engineFactsStr?: string): Promise<Analysis> {
-  const text = await ask(analysisSystemPrompt(), datasetToPrompt(ds, engineFactsStr), 8000);
+  const text = await ask(systemFor(ds), datasetToPrompt(ds, engineFactsStr), 8000);
   const a = extractJson<Partial<Analysis>>(text);
   return {
     summary: a.summary ?? '',

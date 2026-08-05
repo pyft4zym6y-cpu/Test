@@ -9,8 +9,7 @@
 import type { Browser } from 'playwright';
 import { createMessage } from './anthropic.js';
 import { auditSingle } from './crawl.js';
-import { analysisSystemPrompt } from './method.js';
-import { datasetToPrompt, type Analysis } from './analyze.js';
+import { datasetToPrompt, systemFor, type Analysis } from './analyze.js';
 import type { AuditDataset } from './report.js';
 
 const ANALYSIS_SCHEMA = {
@@ -72,8 +71,8 @@ async function runTool(browser: Browser, ds: AuditDataset, name: string, input: 
 export async function agentAnalyze(browser: Browser, ds: AuditDataset, opts: { maxSteps?: number; engineFactsStr?: string } = {}): Promise<Analysis> {
   const maxSteps = opts.maxSteps ?? 8;
   let webSearch = process.env.AUDIT_WEB_SEARCH !== '0';
-  const system = analysisSystemPrompt() +
-    `\n\nУ тебя есть инструменты: crawl_page (обойти ещё страницу браузером), fetch_url (скачать текст любой страницы), web_search (поиск в вебе — конкуренты, бренд, цена в канале, факты о компании). Сначала добери недостающие факты инструментами (2–6 вызовов), затем вызови finish с полным анализом. Не выдумывай — если факт не подтверждён, помечай допущением и клади в missingFacts/openQuestions.`;
+  const system = systemFor(ds) +
+    `\n\nУ тебя есть инструменты: crawl_page (обойти ещё страницу браузером), fetch_url (скачать текст любой страницы — в т.ч. макеты Figma по ссылке, страницы конкурентов), web_search (поиск в вебе — конкуренты, ниша, бренд, цена в канале). Сначала добери недостающие факты инструментами (2–6 вызовов), затем вызови finish с полным анализом. Не выдумывай — если факт не подтверждён, помечай допущением и клади в missingFacts/openQuestions.`;
   const messages: any[] = [{ role: 'user', content: datasetToPrompt(ds, opts.engineFactsStr) + '\n\nВеди аудит. Добери факты инструментами, затем вызови finish.' }];
 
   for (let step = 0; step < maxSteps; step++) {

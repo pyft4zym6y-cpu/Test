@@ -28,14 +28,21 @@ export function buildAD15Model(ds: AuditDataset, a: Analysis, engine?: EngineRes
   const name = clientName(ds);
   const date = new Date(ds.takenAt).toLocaleDateString('ru-RU');
   const scoredN = ds.client.pages.filter((p) => p.score !== null).length;
+  const pre = ds.mode === 'prelaunch';
 
   return AD15_SLIDES.map((sl, i): Slide => {
     const n = i + 1;
     switch (sl.id) {
       case 'cover':
-        return { n, title: name, subtitle: `Диагностика Commerce OS · ${date}`,
-          bullets: ['Предварительная картина по внешнему обходу (без доступов)', 'Статус оценок: наблюдение L0 — порядок величины'] };
+        return { n, title: pre ? (name || 'Новый проект') : name, subtitle: `${pre ? 'Предзапусковая диагностика' : 'Диагностика'} Commerce OS · ${date}`,
+          bullets: pre
+            ? ['Сайта ещё нет / в разработке — оцениваем концепцию против рынка', 'Учимся у конкурентов, собираем план запуска']
+            : ['Предварительная картина по внешнему обходу (без доступов)', 'Статус оценок: наблюдение L0 — порядок величины'] };
       case 'point-a': {
+        if (pre) {
+          return { n, title: 'Точка А — готовность к запуску', subtitle: 'Сайта ещё нет — оцениваем зрелость концепции против рынка',
+            bullets: [a.healthNote || 'Оценка готовности появится после анализа', 'Health Score витрины появится после запуска и первых данных'] };
+        }
         const hs = engine && engine.score != null
           ? `Health Score: ${engine.score}/100 — «${engine.band}»`
           : 'Health Score: требует опросника (100-балльная шкала считается на T2–T3)';
@@ -60,8 +67,10 @@ export function buildAD15Model(ds: AuditDataset, a: Analysis, engine?: EngineRes
               'Считано цепной атрибуцией — вклады рычагов не складываются напрямую',
             ].filter(Boolean) };
         }
-        return { n, title: 'Цена бездействия',
-          bullets: ['Чем дольше не закрыты разрывы выше — тем больше упущенного оборота ежемесячно', '⚠️ Точная сумма считается на слое L1 (нужен baseline: трафик, конверсия, чек) — см. «Следующий шаг»'] };
+        return { n, title: pre ? 'Потенциал рынка' : 'Цена бездействия',
+          bullets: pre
+            ? ['Потенциал рынка и целевая юнит-экономика оцениваются на этапе плана (по бенчмаркам, допущение)', 'Каждый месяц отсрочки запуска — упущенное окно и фора конкурентам', 'Точные деньги считаются после запуска и первых данных']
+            : ['Чем дольше не закрыты разрывы выше — тем больше упущенного оборота ежемесячно', '⚠️ Точная сумма считается на слое L1 (нужен baseline: трафик, конверсия, чек) — см. «Следующий шаг»'] };
       case 'point-b':
         return { n, title: 'Точка Б — куда придём',
           bullets: ['Тактика 0–3 мес: закрыть дефекты обнаружимости и быстрые UX/SEO-разрывы', 'Стратегия 3–12 / 12–36 мес: системные контуры (аналитика, retention, юнит-экономика)',
@@ -118,11 +127,16 @@ export function renderAD15(ds: AuditDataset, a: Analysis, engine?: EngineResult 
 
 /** Дорожная карта с Гантом (mermaid) по волнам scope. */
 export function renderRoadmap(ds: AuditDataset, a: Analysis): string {
+  const pre = ds.mode === 'prelaunch';
   const R: string[] = [];
-  R.push(`# Дорожная карта развития и масштабирования — ЧЕРНОВИК`);
-  R.push(`_Commerce OS · тир T${ds.tier}. Сроки ориентировочные (L0); уточняются после baseline и утверждения scope._\n`);
+  R.push(`# ${pre ? 'План запуска и масштабирования' : 'Дорожная карта развития и масштабирования'} — ЧЕРНОВИК`);
+  R.push(`_Commerce OS · тир T${ds.tier}. Сроки ориентировочные; уточняются после ${pre ? 'утверждения концепции и брифа' : 'baseline и утверждения scope'}._\n`);
 
-  const waveMeta: Record<number, { title: string; dod: string }> = {
+  const waveMeta: Record<number, { title: string; dod: string }> = pre ? {
+    1: { title: 'Волна 1 · До запуска (0–2 мес)', dod: 'позиционирование, аналитика с первого дня, MVP-витрина готовы' },
+    2: { title: 'Волна 2 · Запуск и первые данные (2–5 мес)', dod: 'первые продажи, baseline воронки зафиксирован' },
+    3: { title: 'Волна 3 · Масштабирование (5–18 мес)', dod: 'каналы и retention проходят порог юнит-экономики' },
+  } : {
     1: { title: 'Волна 1 · Фундамент и быстрые победы (0–3 мес)', dod: 'дефекты обнаружимости закрыты, аналитика считает корректно' },
     2: { title: 'Волна 2 · Рычаги роста (3–9 мес)', dod: 'CR и retention растут против baseline' },
     3: { title: 'Волна 3 · Масштабирование (9–24 мес)', dod: 'новые каналы/рынки проходят порог юнит-экономики' },
