@@ -1,26 +1,12 @@
 /**
- * Оркестратор аудита. CLI:
- *   npm run audit -- --tier 1 --site https://shop.example \
- *     [--competitor https://a.example --competitor https://b.example] \
- *     [--request "смотрите, анализируйте"] [--out results]
- *
- * Тир T1 (по умолчанию): внешний обход клиента (+конкурентов, если заданы) →
- * L0-датасет + читаемый отчёт наблюдений. Аналитический слой (Claude) и сборка
- * материалов (AD-15, Гант) подключаются следующими модулями поверх датасета.
+ * CLI-обёртка над конвейером аудита (pipeline.ts).
+ *   npm run audit -- --tier 1 --site https://shop.example [--agentic] \
+ *     [--competitor <url> ×N] [--request "…"] [--answers a.json] [--baseline b.json] \
+ *     [--prelaunch --brief "…"] [--out results]
  */
-import { writeFile, mkdir, readFile } from 'node:fs/promises';
-import { join } from 'node:path';
-import { launchBrowser, crawlSite, type SiteCrawl } from './crawl.js';
-import { computeEngine, normalizeAnswers, engineFacts, type EngineResult } from './portalEngine.js';
-import { computeMoney, moneyFacts, type Levers, type MoneyResult } from './money.js';
-import { renderL0Report, type AuditDataset } from './report.js';
-import { TIERS, type Tier } from './tiers.js';
-import { analyze } from './analyze.js';
-import { agentAnalyze } from './agent.js';
-import { renderAD15, renderRoadmap, buildAD15Model, clientName } from './deliverables.js';
-import { exportAD15Pptx } from './export/pptx.js';
-import { exportReportDocx } from './export/docx.js';
-import { hasKey } from './anthropic.js';
+import { readFile } from 'node:fs/promises';
+import { runAudit } from './pipeline.js';
+import type { Tier } from './tiers.js';
 
 type Args = { tier: Tier; site: string; competitors: string[]; request: string; out: string; agentic: boolean; answers: string; baseline: string; prelaunch: boolean; brief: string };
 
@@ -43,110 +29,22 @@ function parseArgs(argv: string[]): Args {
   return a;
 }
 
-function slug(url: string): string {
-  try { return new URL(url).hostname.replace(/^www\./, '').replace(/[^a-z0-9]+/gi, '-'); }
-  catch { return 'site'; }
-}
-
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  if (args.prelaunch) args.tier = 0;
   if (!args.site && !args.prelaunch) {
-    console.error('Нужен --site https://... , либо --prelaunch (сайта ещё нет) с --brief "…" и конкурентами.');
+    console.error('Нужен --site https://… , либо --prelaunch (сайта ещё нет) с --brief "…" и конкурентами.');
     process.exit(1);
   }
-  const spec = TIERS[args.tier];
-  console.log(`▶ ${args.prelaunch ? 'Предзапуск T0' : `Аудит T${args.tier}`} «${spec.title}»\n  клиент: ${args.site || '(сайт в разработке)'}`);
-  if (args.competitors.length) console.log(`  конкуренты: ${args.competitors.join(', ')}`);
+  const answers = args.answers ? JSON.parse(await readFile(args.answers, 'utf8')) : null;
+  const baseline = args.baseline ? JSON.parse(await readFile(args.baseline, 'utf8')) : null;
 
-  const browser = await launchBrowser();
-  try {
-    let client: SiteCrawl;
-    if (args.prelaunch) {
-      // Сайта ещё нет — обходить нечего. Заглушка клиента.
-      client = { rootUrl: args.site || '(сайт в разработке)', finalUrl: args.site || 'Новый проект', kind: 'client', reachable: false, robotsTxt: false, sitemapXml: false, tech: { platform: null, analytics: [], signals: [] }, pages: [], discoveredLinks: 0 };
-      if (args.site) console.log('  · режим предзапуска: черновой URL задан, но не обходится (сайт в разработке)');
-    } else {
-      console.log('  · обход клиента…');
-      client = await crawlSite(browser, args.site, 'client');
-    }
-
-    const competitors = [];
-    if (args.prelaunch || args.tier >= 2) {
-      for (const c of args.competitors) {
-        console.log(`  · обход конкурента ${c}…`);
-        competitors.push(await crawlSite(browser, c, 'competitor'));
-      }
-      if (args.prelaunch && !args.competitors.length) console.log('  · конкуренты не заданы — анализ по нише из брифа и внешним данным');
-    } else if (args.competitors.length) {
-      console.log('  · конкуренты заданы, но на T1 не обходятся (нужен T2+). Пропускаю.');
-    }
-
-    const ds: AuditDataset = { tier: args.tier, request: args.request, client, competitors, takenAt: new Date().toISOString(),
-      ...(args.prelaunch ? { mode: 'prelaunch' as const, brief: args.brief || args.request } : {}) };
-    const dir = join(args.out, `${args.prelaunch ? 'prelaunch' : slug(args.site)}-t${args.tier}-${Date.now()}`);
-    await mkdir(dir, { recursive: true });
-    await writeFile(join(dir, 'dataset.json'), JSON.stringify(ds, null, 2), 'utf8');
-    await writeFile(join(dir, 'L0-report.md'), renderL0Report(ds), 'utf8');
-
-    const cs = client.pages.filter((p) => p.score !== null);
-    console.log(`✓ Обход готов. Страниц: ${client.pages.length}${cs.length ? `, ср. соответствие ${Math.round(cs.reduce((s, p) => s + (p.score ?? 0), 0) / cs.length)}%` : ''}`);
-
-    // Движок портала (та же математика): Health Score, разрывы, решения, scope.
-    let engine: EngineResult | null = null;
-    if (args.answers) {
-      try {
-        const raw = JSON.parse(await readFile(args.answers, 'utf8'));
-        engine = computeEngine(normalizeAnswers(raw));
-        await writeFile(join(dir, 'engine.json'), JSON.stringify(engine, null, 2), 'utf8');
-        console.log(`  · движок: Health Score ${engine.score ?? '—'}/100, разрывов ${engine.gaps.length}, решений ${engine.decisions.length} (ответов ${engine.coverage.answered}/${engine.coverage.total})`);
-      } catch (e) {
-        console.log(`  ⚠️ ответы опросника не прочитаны (${String(e).slice(0, 120)}) — движок пропущен`);
-      }
-    }
-    // Деньги (цепная атрибуция) — при baseline (T3+).
-    let money: MoneyResult | null = null;
-    if (args.baseline) {
-      try {
-        const raw = JSON.parse(await readFile(args.baseline, 'utf8')) as { levers: Levers; extra?: { name: string; monthly: number }[] };
-        money = computeMoney(raw.levers, raw.extra ?? []);
-        await writeFile(join(dir, 'money.json'), JSON.stringify(money, null, 2), 'utf8');
-        console.log(`  · деньги: недополучено ≈ ${Math.round(money.potentialYear).toLocaleString('ru-RU')} ₴/год (прогноз +${money.forecast.upliftPct}%)${money.invariantOk ? '' : ' ⚠️ инвариант нарушен'}`);
-      } catch (e) {
-        console.log(`  ⚠️ baseline не прочитан (${String(e).slice(0, 120)}) — деньги пропущены`);
-      }
-    }
-    const grounding = [engine ? engineFacts(engine) : '', money ? moneyFacts(money) : ''].filter(Boolean).join('\n\n') || undefined;
-
-    // Аналитический слой + материалы (нужен ANTHROPIC_API_KEY)
-    if (hasKey()) {
-      console.log(`  · анализ по методологии (Claude${args.agentic ? ', агентный обход' : ''})…`);
-      try {
-        let analysis;
-        if (args.agentic) {
-          try { analysis = await agentAnalyze(browser, ds, { engineFactsStr: grounding }); }
-          catch (e) { console.log(`  ⚠️ агентный режим сорвался (${String(e).slice(0, 120)}), откат на одношаговый анализ`); analysis = await analyze(ds, grounding); }
-        } else {
-          analysis = await analyze(ds, grounding);
-        }
-        await writeFile(join(dir, 'analysis.json'), JSON.stringify(analysis, null, 2), 'utf8');
-        await writeFile(join(dir, 'AD-15.md'), renderAD15(ds, analysis, engine, money), 'utf8');
-        await writeFile(join(dir, 'roadmap.md'), renderRoadmap(ds, analysis), 'utf8');
-        // Экспорт в файлы для клиента
-        const date = new Date(ds.takenAt).toLocaleDateString('ru-RU');
-        await exportAD15Pptx(buildAD15Model(ds, analysis, engine, money), { name: clientName(ds), tier: ds.tier, date }, join(dir, 'AD-15.pptx'));
-        await exportReportDocx(ds, analysis, engine, money, join(dir, 'audit-report.docx'));
-        console.log(`  ✓ материалы собраны: analysis.json, AD-15.md/.pptx, roadmap.md, audit-report.docx`);
-      } catch (e) {
-        console.log(`  ⚠️ аналитический слой не отработал: ${String(e).slice(0, 160)}`);
-      }
-    } else {
-      console.log('  · ANTHROPIC_API_KEY не задан — только L0-обход и детерминированный отчёт (материалы AD-15/roadmap собираются с ключом).');
-    }
-    console.log(`  папка результата: ${dir}`);
-  } finally {
-    await browser.close().catch(() => {});
-  }
+  const r = await runAudit({
+    tier: args.tier, site: args.site, competitors: args.competitors, request: args.request,
+    agentic: args.agentic, prelaunch: args.prelaunch, brief: args.brief,
+    answers, baseline, out: args.out,
+  });
+  console.log(`✓ Готово: ${r.summary}`);
+  console.log(`  папка результата: ${r.dir}`);
 }
 
 main().catch((e) => { console.error('Сбой аудита:', e); process.exit(1); });

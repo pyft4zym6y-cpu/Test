@@ -6,6 +6,7 @@
   "description": "Автономный AI-аудитор Commerce OS: обход сайта, анализ, сборка материалов. Свой рантайм (Playwright + Claude API).",
   "scripts": {
     "audit": "tsx src/run.ts",
+    "serve": "tsx src/server.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -19,6 +19,7 @@ import KpPage from './pages/KpPage';
 import DecisionPage from './pages/DecisionPage';
 import PrivacyPage from './pages/PrivacyPage';
 import ConnectorsPage from './pages/ConnectorsPage';
+import AuditRunnerPage from './pages/AuditRunnerPage';
 import Assistant from './components/Assistant';
 
 type Ctx = { session: Session | null; member: Member };
@@ -36,6 +37,11 @@ function Topbar({ member }: { member: Member | null }) {
           {member && (
             <Link to="/connectors" className="tag">
               Коннекторы
+            </Link>
+          )}
+          {member?.is_admin && (
+            <Link to="/audit" className="tag">
+              Запустить аудит
             </Link>
           )}
           {member?.is_admin && (
@@ -145,6 +151,7 @@ export default function App() {
           <Route path="/d/:sheet" element={<DomainPage />} />
           <Route path="/access" element={<AccessPage />} />
           <Route path="/connectors" element={<ConnectorsPage />} />
+          <Route path="/audit" element={<AuditRunnerPage />} />
           <Route path="/decision" element={<DecisionPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/report" element={<ReportPage />} />
@@ -203,6 +210,7 @@ export default function App() {
         <Route path="/d/:sheet" element={<DomainPage />} />
         <Route path="/access" element={<AccessPage />} />
         <Route path="/connectors" element={<ConnectorsPage />} />
+        <Route path="/audit" element={<AuditRunnerPage />} />
           <Route path="/decision" element={<DecisionPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/report" element={<ReportPage />} />

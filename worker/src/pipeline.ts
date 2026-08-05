@@ -1,0 +1,126 @@
+/**
+ * Конвейер аудита как переиспользуемая функция — общий код для CLI (run.ts) и
+ * HTTP-сервера (server.ts). Обход → движок → деньги → анализ → материалы.
+ */
+import { writeFile, mkdir, readdir } from 'node:fs/promises';
+import { join } from 'node:path';
+import { launchBrowser, crawlSite, type SiteCrawl } from './crawl.js';
+import { computeEngine, normalizeAnswers, engineFacts, type EngineResult } from './portalEngine.js';
+import { computeMoney, moneyFacts, type Levers, type MoneyResult } from './money.js';
+import { renderL0Report, type AuditDataset } from './report.js';
+import { TIERS, type Tier } from './tiers.js';
+import { analyze } from './analyze.js';
+import { agentAnalyze } from './agent.js';
+import { renderAD15, renderRoadmap, buildAD15Model, clientName } from './deliverables.js';
+import { exportAD15Pptx } from './export/pptx.js';
+import { exportReportDocx } from './export/docx.js';
+import { hasKey } from './anthropic.js';
+
+export type AuditOptions = {
+  tier?: Tier;
+  site?: string;
+  competitors?: string[];
+  request?: string;
+  agentic?: boolean;
+  prelaunch?: boolean;
+  brief?: string;
+  answers?: Record<string, unknown> | null;
+  baseline?: { levers: Levers; extra?: { name: string; monthly: number }[] } | null;
+  out?: string;
+  log?: (m: string) => void;
+};
+
+export type AuditResult = { id: string; dir: string; summary: string; files: string[] };
+
+function slug(url: string): string {
+  try { return new URL(url).hostname.replace(/^www\./, '').replace(/[^a-z0-9]+/gi, '-'); }
+  catch { return 'site'; }
+}
+
+export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
+  const log = opts.log ?? ((m: string) => console.log(m));
+  const prelaunch = Boolean(opts.prelaunch);
+  const tier: Tier = prelaunch ? 0 : ((opts.tier ?? 1) as Tier);
+  const site = opts.site ?? '';
+  const competitors = opts.competitors ?? [];
+  if (!site && !prelaunch) throw new Error('Нужен site (или prelaunch для проекта без сайта)');
+
+  const spec = TIERS[tier];
+  log(`▶ ${prelaunch ? 'Предзапуск T0' : `Аудит T${tier}`} «${spec.title}» · ${site || '(сайт в разработке)'}`);
+
+  const browser = await launchBrowser();
+  try {
+    let client: SiteCrawl;
+    if (prelaunch) {
+      client = { rootUrl: site || '(сайт в разработке)', finalUrl: site || 'Новый проект', kind: 'client', reachable: false, robotsTxt: false, sitemapXml: false, tech: { platform: null, analytics: [], signals: [] }, pages: [], discoveredLinks: 0 };
+    } else {
+      log('· обход клиента…');
+      client = await crawlSite(browser, site, 'client');
+    }
+
+    const comps: SiteCrawl[] = [];
+    if (prelaunch || tier >= 2) {
+      for (const c of competitors) { log(`· обход конкурента ${c}…`); comps.push(await crawlSite(browser, c, 'competitor')); }
+    }
+
+    const ds: AuditDataset = {
+      tier, request: opts.request ?? '', client, competitors: comps, takenAt: new Date().toISOString(),
+      ...(prelaunch ? { mode: 'prelaunch' as const, brief: opts.brief || opts.request || '' } : {}),
+    };
+    const id = `${prelaunch ? 'prelaunch' : slug(site)}-t${tier}-${Date.now()}`;
+    const dir = join(opts.out ?? 'results', id);
+    await mkdir(dir, { recursive: true });
+    await writeFile(join(dir, 'dataset.json'), JSON.stringify(ds, null, 2), 'utf8');
+    await writeFile(join(dir, 'L0-report.md'), renderL0Report(ds), 'utf8');
+
+    let engine: EngineResult | null = null;
+    if (opts.answers) {
+      engine = computeEngine(normalizeAnswers(opts.answers));
+      await writeFile(join(dir, 'engine.json'), JSON.stringify(engine, null, 2), 'utf8');
+      log(`· движок: Health Score ${engine.score ?? '—'}/100, разрывов ${engine.gaps.length}, решений ${engine.decisions.length}`);
+    }
+
+    let money: MoneyResult | null = null;
+    if (opts.baseline?.levers) {
+      money = computeMoney(opts.baseline.levers, opts.baseline.extra ?? []);
+      await writeFile(join(dir, 'money.json'), JSON.stringify(money, null, 2), 'utf8');
+      log(`· деньги: недополучено ≈ ${Math.round(money.potentialYear).toLocaleString('ru-RU')} ₴/год`);
+    }
+
+    const grounding = [engine ? engineFacts(engine) : '', money ? moneyFacts(money) : ''].filter(Boolean).join('\n\n') || undefined;
+
+    if (hasKey()) {
+      log(`· анализ по методологии (Claude${opts.agentic ? ', агентный обход' : ''})…`);
+      try {
+        let analysis;
+        if (opts.agentic) {
+          try { analysis = await agentAnalyze(browser, ds, { engineFactsStr: grounding }); }
+          catch (e) { log(`⚠️ агентный режим сорвался (${String(e).slice(0, 120)}), откат на одношаговый`); analysis = await analyze(ds, grounding); }
+        } else {
+          analysis = await analyze(ds, grounding);
+        }
+        await writeFile(join(dir, 'analysis.json'), JSON.stringify(analysis, null, 2), 'utf8');
+        await writeFile(join(dir, 'AD-15.md'), renderAD15(ds, analysis, engine, money), 'utf8');
+        await writeFile(join(dir, 'roadmap.md'), renderRoadmap(ds, analysis), 'utf8');
+        const date = new Date(ds.takenAt).toLocaleDateString('ru-RU');
+        await exportAD15Pptx(buildAD15Model(ds, analysis, engine, money), { name: clientName(ds), tier: ds.tier, date }, join(dir, 'AD-15.pptx'));
+        await exportReportDocx(ds, analysis, engine, money, join(dir, 'audit-report.docx'));
+        log('✓ материалы собраны: AD-15.pptx, audit-report.docx, roadmap.md');
+      } catch (e) {
+        log(`⚠️ аналитический слой не отработал: ${String(e).slice(0, 160)}`);
+      }
+    } else {
+      log('· ANTHROPIC_API_KEY не задан — только обход и L0-отчёт (для AD-15/деньги нужен ключ)');
+    }
+
+    const files = (await readdir(dir)).sort();
+    const cs = client.pages.filter((p) => p.score !== null);
+    const parts = [`${files.length} файлов`];
+    if (cs.length) parts.push(`соответствие ${Math.round(cs.reduce((s, p) => s + (p.score ?? 0), 0) / cs.length)}%`);
+    if (engine?.score != null) parts.push(`Health Score ${engine.score}/100`);
+    if (money) parts.push(`недополучено ≈ ${Math.round(money.potentialYear).toLocaleString('ru-RU')} ₴/год`);
+    return { id, dir, summary: parts.join(' · '), files };
+  } finally {
+    await browser.close().catch(() => {});
+  }
+}
