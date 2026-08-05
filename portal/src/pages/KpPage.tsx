@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { supabase, DEMO, type AnswerRow } from '../lib/supabase';
 import { buildReport } from '../lib/report';
+import { scopeEffort } from '../lib/gantt';
 import { useReportMeta } from '../lib/consultant';
 import { RATE_ITEMS } from '../data/rates';
 import { bandFor } from '../data/method';
@@ -246,6 +247,12 @@ export default function KpPage() {
             </div>
           );
         })()}
+        {scopeEffort(report.rules) > 0 && (
+          <p className="sub" style={{ fontSize: 12.5, marginTop: 8 }}>
+            Трудоёмкость программы: ≈<b>{scopeEffort(report.rules)} чел-дней консультанта</b>{' '}
+            (стартовая оценка по активированным правилам, калибруется по факту на сверках XX-01).
+          </p>
+        )}
         <p className="sub" style={{ fontSize: 12, marginTop: 8 }}>
           Точный бюджет фиксируется после согласования scope; следующий транш — только после
           принятого результата предыдущего этапа.

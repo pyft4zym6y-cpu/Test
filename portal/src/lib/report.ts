@@ -11,6 +11,11 @@ export type Rule = {
   playbooks: string;
   deliverable: string;
   priority: string;
+  impact?: number | null;
+  difficulty?: number | null;
+  days?: number | null;
+  blocking?: boolean;
+  effort_days?: number | null;
 };
 export const RULES = routingRaw as Rule[];
 
@@ -144,7 +149,10 @@ export function buildReport(
     );
   });
   const prio = (p: string) => (p?.startsWith('P0') ? 0 : p?.startsWith('P1') ? 1 : 2);
-  rules.sort((a, b) => prio(a.priority) - prio(b.priority));
+  rules.sort((a, b) =>
+    Number(Boolean(b.blocking)) - Number(Boolean(a.blocking)) ||
+    prio(a.priority) - prio(b.priority) ||
+    (b.impact ?? 0) / Math.max(b.difficulty ?? 1, 1) - (a.impact ?? 0) / Math.max(a.difficulty ?? 1, 1));
 
   return { domains, score, scoreA, scoreB, gaps, answeredL1, totalL1, problems, rules };
 }

@@ -1,4 +1,4 @@
-# Индекс плейбуков (56)
+# Индекс плейбуков (58)
 
 Один плейбук = один файл. Открывай только нужный: `references/playbooks/PB-XX.md`.
 Подбор плейбука под проблему — через `references/routing.md`, не через этот список.
@@ -61,3 +61,5 @@
 | [PB-54](playbooks/PB-54.md) | AI Readiness Assessment | AI | 3 недели | AI Readiness Assessment (XLSX/Deck) |
 | [PB-55](playbooks/PB-55.md) | Knowledge Base & Prompt Library | AI | 4 недели | База знаний под RAG + библиотека промптов (DOC) |
 | [PB-56](playbooks/PB-56.md) | AI Governance & Security | Legal / Комплаенс | 3 недели | AI Usage Policy + классификация данных (DOC) |
+| [PB-57](playbooks/PB-57.md) | Аудит и перестройка платных каналов | Маркетинг | 4 недели | D-70 + D-63…D-69 |
+| [PB-58](playbooks/PB-58.md) | Маркетинговое планирование и бюджет | Маркетинг | 3 недели | D-71…D-74 |

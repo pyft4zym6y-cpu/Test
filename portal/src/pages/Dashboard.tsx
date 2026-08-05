@@ -146,7 +146,7 @@ export default function Dashboard() {
 
           <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', marginTop: 14 }}>
         <Link to="/deliverables" className="mono no-print" style={{ fontSize: 12, color: 'var(--lime-dark)' }}>
-          Что вы получите по итогам аудита: 18 документов →
+          Что вы получите по итогам аудита: 19 документов →
         </Link>
         <Link to="/privacy" className="mono no-print" style={{ fontSize: 12, color: 'var(--muted)' }}>
           Как мы обращаемся с данными →

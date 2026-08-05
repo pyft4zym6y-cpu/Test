@@ -16,9 +16,11 @@ import { DECISION_QID, selfScore, type Decision } from '../data/decision';
 import { detectContradictions } from '../lib/contradictions';
 import { parseOrdersCsv, type OrdersMetrics } from '../lib/orders';
 import { screenUrl } from '../lib/screen';
-import { buildGantt, ganttCsv } from '../lib/gantt';
+import { buildGantt, ganttCsv, scopeEffort } from '../lib/gantt';
 import { RATE_ITEMS, EUR_RATE_DEFAULT } from '../data/rates';
 import { byId } from '../lib/model';
+import qmetaRaw from '../data/question-meta.json';
+const QMETA = qmetaRaw as Record<string, { interp: string; pb: string; deliv: string; kpi: string }>;
 import type { AnswerRow } from '../lib/supabase';
 
 const LEVER_SOURCES = ['GA4', 'CRM', 'Выгрузка заказов', 'Кабинет площадки', 'Оценка клиента'];
@@ -356,8 +358,8 @@ export default function AdminClientPage() {
             <div key={l.domain} style={{ display: 'flex', gap: 10, alignItems: 'baseline', padding: '7px 0', borderBottom: '1px solid var(--line)', flexWrap: 'wrap' }}>
               <span className="mono" style={{ fontWeight: 800, minWidth: 34, color: lvl <= 2 ? 'var(--red)' : lvl === 3 ? 'var(--amber)' : 'var(--lime-dark)' }}>L{lvl}</span>
               <b style={{ fontSize: 13, minWidth: 130 }}>{l.domain}</b>
-              <span className="sub" style={{ fontSize: 12 }}>{l.levels[lvl - 1]}</span>
-              {lvl < 5 && <span className="sub" style={{ fontSize: 11.5, color: 'var(--lime-dark)' }}>→ L{lvl + 1}: {l.levels[lvl]}</span>}
+              <span className="sub" style={{ fontSize: 12 }}>{lvl === 0 ? 'Возможности нет вообще' : l.levels[lvl - 1]}</span>
+              {lvl < 5 && <span className="sub" style={{ fontSize: 11.5, color: 'var(--lime-dark)' }}>→ L{lvl + 1}: {l.levels[lvl] ?? l.levels[0]}</span>}
             </div>
           );
         })}
@@ -721,7 +723,11 @@ export default function AdminClientPage() {
             </tbody>
           </table>
         </div>
-        <button className="btn btn-ghost" style={{ marginTop: 10 }} onClick={downloadGantt}>Экспорт Ганта (CSV) ↓</button>
+        <p className="mono" style={{ fontSize: 12.5, marginTop: 10 }}>
+          Трудоёмкость scope: <b>≈{scopeEffort(report.rules)} чел-дней консультанта</b>{' '}
+          <span className="sub" style={{ fontSize: 11 }}>— стартовая оценка из правил, калибруется по факту (XX-01)</span>
+        </p>
+        <button className="btn btn-ghost" style={{ marginTop: 6 }} onClick={downloadGantt}>Экспорт Ганта (CSV) ↓</button>
       </div>
 
       {/* Бюджет из rate card */}
@@ -838,7 +844,16 @@ export default function AdminClientPage() {
               {hidden.includes(p.q.id) ? 'Вернуть' : 'Скрыть'}
             </button>
             <span className="qid" style={{ flexShrink: 0 }}>{p.q.id}</span>
-            <span style={{ fontSize: 13 }}>{(p.q as any).risk}</span>
+            <span style={{ fontSize: 13 }}>
+              {(p.q as any).risk}
+              {QMETA[p.q.id]?.interp && (
+                <span className="sub" style={{ fontSize: 11.5, display: 'block' }}>
+                  Интерпретация: {QMETA[p.q.id].interp}
+                  {QMETA[p.q.id].pb ? ` · ${QMETA[p.q.id].pb}` : ''}
+                  {QMETA[p.q.id].kpi ? ` · KPI ${QMETA[p.q.id].kpi}` : ''}
+                </span>
+              )}
+            </span>
           </div>
         ))}
       </div>
