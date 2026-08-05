@@ -16,6 +16,11 @@ function get(): Anthropic {
 
 export const hasKey = () => Boolean(process.env.ANTHROPIC_API_KEY);
 
+/** Низкоуровневый вызов для агентного цикла (tool-use). params — как в API. */
+export async function createMessage(params: any): Promise<any> {
+  return get().messages.create({ model: MODEL, ...params });
+}
+
 export async function ask(system: string, user: string, maxTokens = 8000): Promise<string> {
   // adaptive thinking / effort могут опережать типы установленного SDK — параметры валидны на API
   const params: any = {

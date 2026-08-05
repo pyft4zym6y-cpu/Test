@@ -14,15 +14,16 @@ import { launchBrowser, crawlSite } from './crawl.js';
 import { renderL0Report, type AuditDataset } from './report.js';
 import { TIERS, type Tier } from './tiers.js';
 import { analyze } from './analyze.js';
+import { agentAnalyze } from './agent.js';
 import { renderAD15, renderRoadmap, buildAD15Model, clientName } from './deliverables.js';
 import { exportAD15Pptx } from './export/pptx.js';
 import { exportReportDocx } from './export/docx.js';
 import { hasKey } from './anthropic.js';
 
-type Args = { tier: Tier; site: string; competitors: string[]; request: string; out: string };
+type Args = { tier: Tier; site: string; competitors: string[]; request: string; out: string; agentic: boolean };
 
 function parseArgs(argv: string[]): Args {
-  const a: Args = { tier: 1, site: '', competitors: [], request: '', out: 'results' };
+  const a: Args = { tier: 1, site: '', competitors: [], request: '', out: 'results', agentic: false };
   for (let i = 0; i < argv.length; i++) {
     const k = argv[i];
     const v = argv[i + 1];
@@ -31,6 +32,7 @@ function parseArgs(argv: string[]): Args {
     else if (k === '--competitor') { if (v) a.competitors.push(v); i++; }
     else if (k === '--request') { a.request = v ?? ''; i++; }
     else if (k === '--out') { a.out = v ?? 'results'; i++; }
+    else if (k === '--agentic') { a.agentic = true; }
   }
   return a;
 }
@@ -75,9 +77,15 @@ async function main() {
 
     // Аналитический слой + материалы (нужен ANTHROPIC_API_KEY)
     if (hasKey()) {
-      console.log('  · анализ по методологии (Claude)…');
+      console.log(`  · анализ по методологии (Claude${args.agentic ? ', агентный обход' : ''})…`);
       try {
-        const analysis = await analyze(ds);
+        let analysis;
+        if (args.agentic) {
+          try { analysis = await agentAnalyze(browser, ds); }
+          catch (e) { console.log(`  ⚠️ агентный режим сорвался (${String(e).slice(0, 120)}), откат на одношаговый анализ`); analysis = await analyze(ds); }
+        } else {
+          analysis = await analyze(ds);
+        }
         await writeFile(join(dir, 'analysis.json'), JSON.stringify(analysis, null, 2), 'utf8');
         await writeFile(join(dir, 'AD-15.md'), renderAD15(ds, analysis), 'utf8');
         await writeFile(join(dir, 'roadmap.md'), renderRoadmap(ds, analysis), 'utf8');

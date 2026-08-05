@@ -174,6 +174,18 @@ async function auditPage(page: Page, url: string, isRoot: boolean): Promise<{ au
   return { audit: { url, finalUrl, kind, status, title, checks, score }, tech, links };
 }
 
+/** Точечный обход одной страницы (для агентного добора фактов). */
+export async function auditSingle(browser: Browser, url: string): Promise<PageAudit & { tech: string[] }> {
+  const ctx = await browser.newContext({ userAgent: UA, viewport: { width: 1366, height: 900 }, locale: 'uk-UA', ignoreHTTPSErrors: true });
+  try {
+    const page = await ctx.newPage();
+    const { audit, tech } = await auditPage(page, url, false);
+    return { ...audit, tech };
+  } finally {
+    await ctx.close().catch(() => {});
+  }
+}
+
 /** Отбирает по одному представителю нужных типов страниц из найденных ссылок. */
 function pickCandidates(root: string, links: string[]): string[] {
   let origin: string;
