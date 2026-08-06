@@ -12,6 +12,7 @@
 import type { AuditDataset } from './report.js';
 import type { PageAudit, PageKind } from './crawl.js';
 import { ask, extractJson, hasKey } from './anthropic.js';
+import { knowledgeFor } from './knowledge.js';
 
 type Weight = 'core' | 'important' | 'nice';
 type Block = { key: string; name: string; role: string; chapter: string; weight: Weight };
@@ -187,7 +188,7 @@ export async function narratePrototype(ds: AuditDataset, r: PrototypeReport): Pr
   if (!hasKey() || !r.pages.length) return null;
   const user = `Клиент: ${ds.client.finalUrl || ds.client.rootUrl}. Тир T${ds.tier}.\n\nСВЕРКА КОМПОЗИЦИИ С ЭТАЛОНОМ:\n${prototypeFacts(r)}\n\nСобери JSON. perPage — по одному объекту на каждый тип страницы из сверки.`;
   try {
-    const text = await ask(SYSTEM, user, 8000);
+    const text = await ask(SYSTEM + (await knowledgeFor('prototype')), user, 8000);
     const n = extractJson<PrototypeNarrative>(text);
     if (!n.summary || !Array.isArray(n.perPage)) return null;
     return n;

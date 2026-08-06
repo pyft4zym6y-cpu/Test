@@ -12,6 +12,7 @@
 import type { AuditDataset } from './report.js';
 import type { PageAudit, PageKind, UxProbe } from './crawl.js';
 import { ask, extractJson, hasKey } from './anthropic.js';
+import { knowledgeFor } from './knowledge.js';
 
 export type Severity = 'Critical' | 'High' | 'Medium' | 'Low';
 export type Verdict = 'pass' | 'warn' | 'fail' | 'na';
@@ -341,7 +342,7 @@ export async function narrateUxUi(ds: AuditDataset, r: UxUiReport): Promise<UxNa
   if (!hasKey() || !r.pages.length) return null;
   const user = `Клиент: ${ds.client.finalUrl || ds.client.rootUrl}. Тир T${ds.tier}. Запрос: ${ds.request || '—'}.\n\nФАКТ-СЛОЙ (сверка с AQC-эталоном):\n${uxFacts(r)}\n\nСобери JSON по инструкции. perPage — по одному объекту на каждый разобранный тип страницы. topFixes — 5–8 правок, отсортированных по severity.`;
   try {
-    const text = await ask(SYSTEM, user, 9000);
+    const text = await ask(SYSTEM + (await knowledgeFor('uxui')), user, 9000);
     const n = extractJson<UxNarrative>(text);
     if (!n.summary || !Array.isArray(n.perPage)) return null;
     n.topFixes = Array.isArray(n.topFixes) ? n.topFixes : [];

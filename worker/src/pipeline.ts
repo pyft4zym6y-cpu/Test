@@ -20,6 +20,7 @@ import { exportPrototypeDocx } from './export/prototypeDocx.js';
 import { buildPrototypeReport, narratePrototype, renderPrototypeMd } from './prototype.js';
 import { exportCoverageDocx } from './export/coverageDocx.js';
 import { buildCoverage, renderCoverageMd } from './coverage.js';
+import { knowledgeCount } from './knowledge.js';
 import { hasKey } from './anthropic.js';
 
 export type AuditOptions = {
@@ -53,6 +54,8 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
 
   const spec = TIERS[tier];
   log(`▶ ${prelaunch ? 'Предзапуск T0' : `Аудит T${tier}`} «${spec.title}» · ${site || '(сайт в разработке)'}`);
+  const kpCount = await knowledgeCount();
+  if (kpCount) log(`· пакетов знаний подключено: ${kpCount}`);
 
   const browser = await launchBrowser();
   try {

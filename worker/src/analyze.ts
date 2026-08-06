@@ -5,6 +5,7 @@
  */
 import { ask, extractJson } from './anthropic.js';
 import { analysisSystemPrompt, prelaunchSystemPrompt } from './method.js';
+import { knowledgeFor } from './knowledge.js';
 import type { AuditDataset } from './report.js';
 import type { SiteCrawl } from './crawl.js';
 
@@ -68,7 +69,7 @@ export function datasetToPrompt(ds: AuditDataset, engineFactsStr?: string): stri
 }
 
 export async function analyze(ds: AuditDataset, engineFactsStr?: string): Promise<Analysis> {
-  const text = await ask(systemFor(ds), datasetToPrompt(ds, engineFactsStr), 8000);
+  const text = await ask(systemFor(ds) + (await knowledgeFor('analyze')), datasetToPrompt(ds, engineFactsStr), 8000);
   const a = extractJson<Partial<Analysis>>(text);
   return {
     summary: a.summary ?? '',

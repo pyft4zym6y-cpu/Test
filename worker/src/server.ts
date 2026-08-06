@@ -18,6 +18,7 @@ import { readFile } from 'node:fs/promises';
 import { join, basename, extname } from 'node:path';
 import { runAudit } from './pipeline.js';
 import { hasKey } from './anthropic.js';
+import { knowledgeCount } from './knowledge.js';
 
 const TOKEN = process.env.AUDIT_SERVER_TOKEN || '';
 const PORT = Number(process.env.PORT || 8787);
@@ -114,7 +115,7 @@ $('tok').value=localStorage.getItem('audit_tok')||'';
 $('tok').oninput=function(){localStorage.setItem('audit_tok',$('tok').value.trim())};
 function ping(){var s=$('ping');s.textContent='проверяю…';s.className='status';
   fetch('/health').then(function(r){return r.json()}).then(function(d){
-    if(d&&d.ok){s.textContent='сервер на связи · ключ Claude: '+(d.hasKey?'есть ✓':'НЕТ ✗');s.className='status ok'}
+    if(d&&d.ok){s.textContent='сервер на связи · ключ Claude: '+(d.hasKey?'есть ✓':'НЕТ ✗')+(typeof d.knowledge==='number'?' · пакетов знаний: '+d.knowledge:'');s.className='status ok'}
     else{s.textContent='сервер ответил, но статус неожиданный';s.className='status err'}
   }).catch(function(){s.textContent='нет связи с сервером';s.className='status err'})}
 function run(){
@@ -142,7 +143,7 @@ const server = createServer(async (req, res) => {
   if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
   const url = new URL(req.url || '/', 'http://localhost');
 
-  if (url.pathname === '/health') { json(res, 200, { ok: true, hasKey: hasKey() }); return; }
+  if (url.pathname === '/health') { json(res, 200, { ok: true, hasKey: hasKey(), knowledge: await knowledgeCount() }); return; }
 
   // Встроенная админ-панель (форма запуска аудита) — открывается в браузере.
   if (req.method === 'GET' && (url.pathname === '/' || url.pathname === '/admin')) {
