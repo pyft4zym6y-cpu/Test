@@ -18,6 +18,8 @@ import { exportUxUiDocx } from './export/uxuiDocx.js';
 import { buildUxUiReport, narrateUxUi, renderUxUiMd } from './uxui.js';
 import { exportPrototypeDocx } from './export/prototypeDocx.js';
 import { buildPrototypeReport, narratePrototype, renderPrototypeMd } from './prototype.js';
+import { exportCoverageDocx } from './export/coverageDocx.js';
+import { buildCoverage, renderCoverageMd } from './coverage.js';
 import { hasKey } from './anthropic.js';
 
 export type AuditOptions = {
@@ -142,6 +144,14 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       }
     } else {
       log('· ANTHROPIC_API_KEY не задан — только обход и L0-отчёт (для AD-15/деньги нужен ключ)');
+    }
+
+    if (!prelaunch) {
+      const cov = buildCoverage(ds, { hasEngine: Boolean(engine), hasMoney: Boolean(money) });
+      await writeFile(join(dir, 'coverage.json'), JSON.stringify(cov, null, 2), 'utf8');
+      await writeFile(join(dir, 'Охват-и-уверенность.md'), renderCoverageMd(ds, cov), 'utf8');
+      await exportCoverageDocx(ds, cov, join(dir, 'Охват-и-уверенность.docx'));
+      log(`✓ охват аудита + Confidence Score ${cov.confidence.score}/${cov.confidence.base} (${cov.confidence.band})`);
     }
 
     const files = (await readdir(dir)).sort();
