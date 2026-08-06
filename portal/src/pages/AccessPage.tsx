@@ -27,7 +27,7 @@ const fmtSize = (n: number | null) =>
   !n ? '' : n > 1_000_000 ? `${(n / 1_000_000).toFixed(1)} МБ` : `${Math.round(n / 1000)} КБ`;
 
 export default function AccessPage() {
-  const { session, member } = useApp();
+  const { session, member, locked } = useApp();
   const clientId = member.client_id!;
   const [rows, setRows] = useState<Record<string, AccessRow>>({});
   const [loaded, setLoaded] = useState(false);
@@ -118,6 +118,7 @@ export default function AccessPage() {
   }, [clientId]);
 
   const save = (accessId: string, patch: Partial<AccessRow>) => {
+    if (locked && !member.is_admin) return; // приём закрыт консультантом
     setRows((prev) => {
       const cur = prev[accessId] ?? {
         client_id: clientId,

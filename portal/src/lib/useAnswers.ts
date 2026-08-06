@@ -16,7 +16,7 @@ export const lsSaveAll = (rows: Record<string, AnswerRow>) =>
 
 /** Ответы клиента: загрузка + upsert с дебаунсом (Supabase или localStorage в демо). */
 export function useAnswers() {
-  const { session, member } = useApp();
+  const { session, member, locked } = useApp();
   const clientId = member.client_id!;
   const [rows, setRows] = useState<Record<string, AnswerRow>>({});
   const [loaded, setLoaded] = useState(false);
@@ -43,6 +43,9 @@ export function useAnswers() {
 
   const save = useCallback(
     (questionId: string, patch: { answer?: string; facts?: string }) => {
+      // Приём закрыт консультантом: RLS в базе всё равно не пропустит запись,
+      // но и в интерфейсе не создаём иллюзию сохранения.
+      if (locked && !member.is_admin) return;
       setRows((prev) => {
         const cur = prev[questionId] ?? {
           client_id: clientId,
@@ -62,7 +65,7 @@ export function useAnswers() {
         return all;
       });
     },
-    [clientId, session],
+    [clientId, session, locked, member.is_admin],
   );
 
   return { rows, setRows, loaded, save, savedAt };

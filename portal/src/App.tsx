@@ -19,7 +19,7 @@ import KpPage from './pages/KpPage';
 import DecisionPage from './pages/DecisionPage';
 import PrivacyPage from './pages/PrivacyPage';
 
-type Ctx = { session: Session | null; member: Member };
+type Ctx = { session: Session | null; member: Member; locked: boolean };
 const AppCtx = createContext<Ctx | null>(null);
 export const useApp = () => useContext(AppCtx)!;
 
@@ -60,6 +60,7 @@ function ScrollTop() {
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [member, setMember] = useState<Member | null>(null);
+  const [locked, setLocked] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -88,9 +89,23 @@ export default function App() {
       .then(({ data }) => setMember(data as Member | null));
   }, [session]);
 
+  // Флаг «приём ответов закрыт» по клиенту участника (админ управляет из /admin)
+  useEffect(() => {
+    if (!member?.client_id) {
+      setLocked(false);
+      return;
+    }
+    supabase
+      .from('clients')
+      .select('locked')
+      .eq('id', member.client_id)
+      .maybeSingle()
+      .then(({ data }) => setLocked(Boolean((data as any)?.locked)));
+  }, [member]);
+
   if (!CONFIGURED)
     return (
-      <AppCtx.Provider value={{ session: null, member: DEMO_MEMBER as Member }}>
+      <AppCtx.Provider value={{ session: null, member: DEMO_MEMBER as Member, locked: false }}>
         <ScrollTop />
         <div
           className="mono"
@@ -182,9 +197,17 @@ export default function App() {
     );
 
   return (
-    <AppCtx.Provider value={{ session, member }}>
+    <AppCtx.Provider value={{ session, member, locked }}>
       <ScrollTop />
       <Topbar member={member} />
+      {locked && !member.is_admin && (
+        <div
+          className="mono"
+          style={{ background: '#B45309', color: '#fff', fontSize: 12, padding: '9px 16px', textAlign: 'center' }}
+        >
+          Приём ответов закрыт консультантом — бриф доступен только для чтения. Вопросы: pashasidorenko18@gmail.com
+        </div>
+      )}
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/company" element={<CompanyPage />} />

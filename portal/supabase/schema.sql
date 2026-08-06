@@ -177,6 +177,29 @@ create policy members_admin_upd on members for update using (is_portal_admin());
 drop policy if exists members_admin_del on members;
 create policy members_admin_del on members for delete using (is_portal_admin());
 
+-- Блокировка заполнения: админ закрывает приём ответов по клиенту.
+-- Проверяется на уровне RLS — обойти из интерфейса невозможно.
+alter table clients add column if not exists locked boolean not null default false;
+drop policy if exists clients_admin_upd on clients;
+create policy clients_admin_upd on clients for update using (is_portal_admin());
+
+create or replace function client_locked(cid uuid) returns boolean
+language sql stable security definer set search_path = public as
+$$ select coalesce((select locked from clients where id = cid), false) $$;
+
+drop policy if exists answers_insert on answers;
+create policy answers_insert on answers for insert
+  with check (client_id = my_client_id() and not client_locked(client_id));
+drop policy if exists answers_update on answers;
+create policy answers_update on answers for update
+  using (client_id = my_client_id() and not client_locked(client_id));
+drop policy if exists access_insert on access_status;
+create policy access_insert on access_status for insert
+  with check (client_id = my_client_id() and not client_locked(client_id));
+drop policy if exists access_update on access_status;
+create policy access_update on access_status for update
+  using (client_id = my_client_id() and not client_locked(client_id));
+
 -- Проверка приглашения ДО отправки magic-link: логин-форма зовёт эту функцию,
 -- и письмо со ссылкой уходит только адресам, заранее добавленным в members.
 -- security definer — anon не имеет select на members, функция проверяет сама.
