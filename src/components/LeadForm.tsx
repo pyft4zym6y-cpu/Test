@@ -21,6 +21,7 @@ const inputCls =
 export default function LeadForm() {
   const [name, setName] = useState('');
   const [store, setStore] = useState('');
+  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [turnover, setTurnover] = useState('');
   const [comment, setComment] = useState('');
@@ -31,7 +32,7 @@ export default function LeadForm() {
     e.preventDefault();
     if (busy) return;
     setBusy(true);
-    const ok = await sendLead({ source: 'contact', name, store, phone, turnover, comment });
+    const ok = await sendLead({ source: 'contact', name, store, email, phone, turnover, comment });
     setBusy(false);
     if (ok) {
       setSent('api');
@@ -44,6 +45,7 @@ export default function LeadForm() {
     const body = [
       `Ім'я: ${name}`,
       `Магазин / сайт: ${store}`,
+      `Email: ${email}`,
       `Телефон: ${phone}`,
       `Оборот: ${turnover}`,
       comment ? `Коментар: ${comment}` : '',
@@ -84,6 +86,14 @@ export default function LeadForm() {
           value={store}
           onChange={(e) => setStore(e.target.value)}
           placeholder="Посилання на магазин / сайт *"
+          className={inputCls}
+        />
+        <input
+          type="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email *"
           className={inputCls}
         />
         <input

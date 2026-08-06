@@ -88,6 +88,7 @@ export default function CalculatorPage() {
   const [margin, setMargin] = useState('');
   const [done, setDone] = useState(false);
   const [leadEmail, setLeadEmail] = useState('');
+  const [leadPhone, setLeadPhone] = useState('');
   const [leadSent, setLeadSent] = useState(false);
   const [leadBusy, setLeadBusy] = useState(false);
   const [leadErr, setLeadErr] = useState(false);
@@ -508,6 +509,7 @@ export default function CalculatorPage() {
                         const ok = await sendLead({
                           source: 'calculator',
                           email: leadEmail,
+                          phone: leadPhone,
                           calc: [
                             `Ніша: ${niche.label}`,
                             `Оборот: ${revenue} тис ₴/міс · чек ${aov} ₴`,
@@ -535,7 +537,17 @@ export default function CalculatorPage() {
                           required
                           value={leadEmail}
                           onChange={(e) => setLeadEmail(e.target.value)}
-                          placeholder="you@company.com"
+                          placeholder="Email *"
+                          className={inputCls + ' sm:flex-1 !text-sm !py-3'}
+                        />
+                        <input
+                          type="tel"
+                          pattern="[+()0-9\-\s]{10,18}"
+                          inputMode="tel"
+                          title="Телефон у форматі +38 0XX XXX XX XX"
+                          value={leadPhone}
+                          onChange={(e) => setLeadPhone(e.target.value)}
+                          placeholder="Телефон (щоб швидше)"
                           className={inputCls + ' sm:flex-1 !text-sm !py-3'}
                         />
                         <button
