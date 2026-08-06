@@ -89,14 +89,6 @@ export default function LeadForm() {
           className={inputCls}
         />
         <input
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email *"
-          className={inputCls}
-        />
-        <input
           type="tel"
           required
           pattern="[+()0-9\\-\\s]{10,18}"
@@ -106,6 +98,13 @@ export default function LeadForm() {
           onChange={(e) => setPhone(e.target.value)}
           onFocus={() => say('Телефон потрібен, щоб узгодити час 30-хв сесії. Нікакого спаму — обіцяю.')}
           placeholder="Телефон *"
+          className={inputCls}
+        />
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email (необов'язково)"
           className={inputCls}
         />
         <select

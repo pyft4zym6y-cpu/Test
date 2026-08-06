@@ -87,6 +87,8 @@ export default function CalculatorPage() {
   const [email, setEmail] = useState('');
   const [margin, setMargin] = useState('');
   const [done, setDone] = useState(false);
+  const [leadName, setLeadName] = useState('');
+  const [leadStore, setLeadStore] = useState('');
   const [leadEmail, setLeadEmail] = useState('');
   const [leadPhone, setLeadPhone] = useState('');
   const [leadSent, setLeadSent] = useState(false);
@@ -508,6 +510,8 @@ export default function CalculatorPage() {
                         setLeadBusy(true);
                         const ok = await sendLead({
                           source: 'calculator',
+                          name: leadName,
+                          store: leadStore,
                           email: leadEmail,
                           phone: leadPhone,
                           calc: [
@@ -532,33 +536,49 @@ export default function CalculatorPage() {
                         робочого дня: які важелі закривати першими саме у вашій ситуації. Без
                         розсилок і спаму.
                       </p>
-                      <div className="flex flex-col sm:flex-row gap-2.5 mt-3.5">
+                      <div className="grid sm:grid-cols-2 gap-2.5 mt-3.5">
                         <input
-                          type="email"
+                          type="text"
                           required
-                          value={leadEmail}
-                          onChange={(e) => setLeadEmail(e.target.value)}
-                          placeholder="Email *"
-                          className={inputCls + ' sm:flex-1 !text-sm !py-3'}
+                          value={leadName}
+                          onChange={(e) => setLeadName(e.target.value)}
+                          placeholder="Ваше ім'я *"
+                          className={inputCls + ' !text-sm !py-3'}
+                        />
+                        <input
+                          type="text"
+                          required
+                          value={leadStore}
+                          onChange={(e) => setLeadStore(e.target.value)}
+                          placeholder="Посилання на магазин / сайт *"
+                          className={inputCls + ' !text-sm !py-3'}
                         />
                         <input
                           type="tel"
+                          required
                           pattern="[+()0-9\-\s]{10,18}"
                           inputMode="tel"
                           title="Телефон у форматі +38 0XX XXX XX XX"
                           value={leadPhone}
                           onChange={(e) => setLeadPhone(e.target.value)}
-                          placeholder="Телефон (щоб швидше)"
-                          className={inputCls + ' sm:flex-1 !text-sm !py-3'}
+                          placeholder="Телефон *"
+                          className={inputCls + ' !text-sm !py-3'}
                         />
-                        <button
-                          type="submit"
-                          disabled={leadBusy}
-                          className="bg-[#A3E635] px-6 py-3 font-mono text-xs font-bold uppercase tracking-[0.12em] text-black hover:brightness-95 transition-[filter] disabled:opacity-60"
-                        >
-                          {leadBusy ? 'Надсилаємо…' : 'Отримати розбір →'}
-                        </button>
+                        <input
+                          type="email"
+                          value={leadEmail}
+                          onChange={(e) => setLeadEmail(e.target.value)}
+                          placeholder="Email (необов'язково)"
+                          className={inputCls + ' !text-sm !py-3'}
+                        />
                       </div>
+                      <button
+                        type="submit"
+                        disabled={leadBusy}
+                        className="w-full sm:w-auto mt-2.5 bg-[#A3E635] px-6 py-3 font-mono text-xs font-bold uppercase tracking-[0.12em] text-black hover:brightness-95 transition-[filter] disabled:opacity-60"
+                      >
+                        {leadBusy ? 'Надсилаємо…' : 'Отримати розбір →'}
+                      </button>
                       {leadErr && (
                         <p className="text-[#B45309] text-xs mt-2.5 leading-relaxed">
                           Не вдалося надіслати. Напишіть нам напряму:{' '}
