@@ -28,10 +28,16 @@ import { buildMaturity, renderMaturityMd } from './maturity.js';
 import { buildScope, renderScopeMd } from './routing.js';
 import { buildCausal, renderCausalMd } from './causal.js';
 import { buildPriceChannel, renderPriceChannelMd } from './pricechannel.js';
-import { exportMaturityDocx, exportScopeDocx, exportCausalDocx, exportPriceChannelDocx } from './export/methodDocs.js';
+import { exportMaturityDocx, exportScopeDocx, exportCausalDocx, exportPriceChannelDocx, exportSynthesisDocx } from './export/methodDocs.js';
+import { buildWorkbook } from './workbook.js';
+import { makeXlsx } from './xlsx.js';
+import { narrateSynthesis, renderSynthesisMd } from './synthesis.js';
 import { knowledgeCount } from './knowledge.js';
 import { hasKey } from './anthropic.js';
 import type { Analysis } from './analyze.js';
+import type { UxUiReport } from './uxui.js';
+import type { PrototypeReport } from './prototype.js';
+import type { BenchmarkReport } from './competitor.js';
 
 export type AuditOptions = {
   tier?: Tier;
@@ -106,9 +112,12 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
 
     // UX/UI-разбор дизайна против AQC-эталона — часть первого блока аудита (T1/L0,
     // работает и без доступов). Факт-слой детерминирован; нарратив — при наличии ключа.
+    let uxui: UxUiReport | null = null;
+    let proto: PrototypeReport | null = null;
+    let bench: BenchmarkReport | null = null;
     if (!prelaunch) {
       log('· UX/UI-разбор страниц против эталона (AQC)…');
-      const uxui = buildUxUiReport(ds);
+      uxui = buildUxUiReport(ds);
       metrics.aqcFails = uxui.counts.fail;
       if (hasKey()) {
         try { uxui.narrative = (await narrateUxUi(ds, uxui)) ?? undefined; }
@@ -121,7 +130,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
 
       // Эталонный прототип ↔ композиция клиента (block-by-block, путь клиента против эталона).
       log('· эталонный прототип ↔ композиция клиента…');
-      const proto = buildPrototypeReport(ds);
+      proto = buildPrototypeReport(ds);
       if (hasKey()) {
         try { proto.narrative = (await narratePrototype(ds, proto)) ?? undefined; }
         catch (e) { log(`⚠️ нарратив прототипа не отработал (${String(e).slice(0, 100)}) — оставляю сверку`); }
@@ -132,7 +141,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       log(`✓ прототип-сверка: разобрано типов страниц ${proto.pages.length}`);
 
       // Конкурентный бенчмарк (AD-11) — когда есть обойдённые конкуренты.
-      const bench = buildBenchmark(ds);
+      bench = buildBenchmark(ds);
       if (bench) {
         metrics.benchmarkIndex = bench.clientIndex;
         log('· конкурентный бенчмарк (AD-11)…');
@@ -215,8 +224,9 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       await exportPriceChannelDocx(ds, pc, join(dir, 'Цена-в-канале.docx'));
 
       // Причинно-следственная карта (нужен анализ).
+      let causal = null as ReturnType<typeof buildCausal> | null;
       if (analysisResult) {
-        const causal = buildCausal(analysisResult, money);
+        causal = buildCausal(analysisResult, money);
         await writeFile(join(dir, 'Причинно-следственная-карта.md'), renderCausalMd(ds, causal), 'utf8');
         await exportCausalDocx(ds, causal, join(dir, 'Причинно-следственная-карта.docx'));
       }
@@ -228,6 +238,26 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       await writeFile(join(dir, 'Охват-и-уверенность.md'), renderCoverageMd(ds, cov), 'utf8');
       await exportCoverageDocx(ds, cov, join(dir, 'Охват-и-уверенность.docx'));
       log(`✓ охват аудита + Confidence Score ${cov.confidence.score}/${cov.confidence.base} (${cov.confidence.band})`);
+
+      // Единая книга аудита (ЕКП) в XLSX — табличные документы одним файлом.
+      const compliance0 = client.pages.filter((pp) => pp.score !== null);
+      const complianceVal = compliance0.length ? Math.round(compliance0.reduce((s, pp) => s + (pp.score ?? 0), 0) / compliance0.length) : null;
+      const hyp2 = analysisResult ? buildHypotheses(analysisResult) : null;
+      const sheets = buildWorkbook(ds, { engine, money, maturity: mat, scope, coverage: cov, hypotheses: hyp2, metrics: { compliance: complianceVal } });
+      await writeFile(join(dir, 'ЕКП-аудит.xlsx'), makeXlsx(sheets));
+      log(`✓ ЕКП-книга (XLSX): листов ${sheets.length}`);
+
+      // Слой синтеза — взаимосвязи всех линз в один вывод (нужен ключ).
+      if (hasKey()) {
+        log('· синтез всех линз…');
+        const synth = await narrateSynthesis(ds, { uxui, proto, bench, maturity: mat, scope, causal, money, engine, coverage: cov });
+        if (synth) {
+          await writeFile(join(dir, 'synthesis.json'), JSON.stringify(synth, null, 2), 'utf8');
+          await writeFile(join(dir, 'Синтез-аудита.md'), renderSynthesisMd(ds, synth), 'utf8');
+          await exportSynthesisDocx(ds, synth, join(dir, 'Синтез-аудита.docx'));
+          log('✓ синтез собран');
+        } else { log('· синтез не собран (нет ключа/данных)'); }
+      }
     }
 
     const files = (await readdir(dir)).sort();

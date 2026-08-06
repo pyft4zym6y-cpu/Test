@@ -197,7 +197,7 @@ function showResult(j){ curJob=j;
   if(m.potentialYear!=null)t+=tile('Недополучено/год',money(m.potentialYear));
   $('tiles').innerHTML=t||'<div class="small">Метрики появятся при наличии ключа/данных.</div>';
   var groups={}; (j.files||[]).forEach(function(f){ (groups[f.category]=groups[f.category]||[]).push(f); });
-  var order=['План и презентация','UX / дизайн','Конкуренты','Деньги','Отчёт и диагностика','Данные (JSON)','Прочее'];
+  var order=['Синтез','План и презентация','Таблицы (XLSX)','UX / дизайн','Конкуренты','Деньги','Отчёт и диагностика','Данные (JSON)','Прочее'];
   var html=''; order.forEach(function(g){ if(!groups[g])return; html+='<div class="group"><h4>'+g+'</h4><div class="files">';
     groups[g].forEach(function(f){ html+='<a href="'+f.url+'?t='+encodeURIComponent(TOK())+'">⬇ '+f.name+'</a>'; }); html+='</div></div>'; });
   $('docs').innerHTML=html;

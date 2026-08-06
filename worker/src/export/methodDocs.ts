@@ -10,6 +10,7 @@ import { levelLabel } from '../maturity.js';
 import type { ScopeReport } from '../routing.js';
 import type { CausalMap } from '../causal.js';
 import type { PriceChannelReport } from '../pricechannel.js';
+import type { Synthesis } from '../synthesis.js';
 
 const LIME = 'A9D92F';
 const INK = '12160A';
@@ -54,6 +55,25 @@ export async function exportCausalDocx(ds: AuditDataset, r: CausalMap, out: stri
     k.push(P(`Деньги: ${n.moneyLink}`, { bold: true }));
   });
   k.push(P('Плейбук адресует корневую причину. Симптом без причины в roadmap не попадает.', { italics: true }));
+  await save(k, out);
+}
+
+export async function exportSynthesisDocx(ds: AuditDataset, s: Synthesis, out: string): Promise<void> {
+  const k: (Paragraph | Table)[] = [new Paragraph({ text: 'Синтез аудита', heading: HeadingLevel.TITLE }), meta(ds, 'взаимосвязи всех линз · L0')];
+  k.push(P(s.headline, { bold: true }));
+  if (s.crossLinks.length) {
+    k.push(H('Взаимосвязи (компаундные эффекты)'));
+    k.push(table(['Линза A', 'Линза B', 'Эффект'], s.crossLinks.map((c) => [c.a, c.b, c.effect]), [22, 22, 56]));
+  }
+  if (s.rootCauses.length) {
+    k.push(H('Единые корневые причины'));
+    k.push(table(['Корневая причина', 'Из линз', 'Эффект'], s.rootCauses.map((r) => [r.cause, r.from.join(', '), r.impact]), [34, 26, 40]));
+  }
+  if (s.priorities.length) {
+    k.push(H('Сквозные приоритеты'));
+    s.priorities.forEach((p, i) => k.push(P(`${i + 1}. ${p.title} — ${p.why}`)));
+  }
+  k.push(P(s.oneLine, { italics: true }));
   await save(k, out);
 }
 
