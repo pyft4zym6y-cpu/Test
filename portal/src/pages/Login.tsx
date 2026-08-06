@@ -25,7 +25,8 @@ export default function Login() {
     } catch { /* функции ещё нет в базе — падаем на старое поведение */ }
     const { error } = await supabase.auth.signInWithOtp({
       email: em,
-      options: { emailRedirectTo: window.location.origin },
+      // путь важен: на сайте бриф живёт под /brief/, а не в корне домена
+      options: { emailRedirectTo: window.location.origin + window.location.pathname },
     });
     if (error) setErr(error.message);
     else setSent(true);

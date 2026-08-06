@@ -13,7 +13,7 @@ const LINKS = [
 ];
 
 // Клієнтський портал діагностики (Discovery) — окремий продукт на піддомені
-const BRIEF_URL = 'https://discovery.weexp.agency';
+const BRIEF_URL = '/brief/';
 
 const CASE_LINKS = [
   { to: '/cases/premium-textile', num: '×18', label: 'Преміум-текстиль', say: '€48K → €900K за 18 місяців. Хочеш так само?' },

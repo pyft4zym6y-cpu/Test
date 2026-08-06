@@ -6,7 +6,7 @@ import {
   useReportMeta, runPSI, computeGap8, LEVER_DEFS, DEFAULT_LEVERS,
   type L0Row, type Levers, type LeverKey,
 } from '../lib/consultant';
-import { PASSPORT_QID, LINKS_QID, PAINS_QID, GOALS_QID, tacticalPainsOf, type Passport, type Links } from '../data/pains';
+import { PASSPORT_QID, LINKS_QID, PAINS_QID, GOALS_QID, tacticalPainsOf, painById, goalById, type Passport, type Links } from '../data/pains';
 import {
   runDecisions, computeConfidence, gapCosts, forecast, activeChains, seedHypotheses,
   type Hypothesis,
@@ -18,8 +18,10 @@ import { parseOrdersCsv, type OrdersMetrics } from '../lib/orders';
 import { screenUrl } from '../lib/screen';
 import { buildGantt, ganttCsv, scopeEffort } from '../lib/gantt';
 import { RATE_ITEMS, EUR_RATE_DEFAULT } from '../data/rates';
-import { byId } from '../lib/model';
+import { byId, QUESTIONS, ACCESSES } from '../lib/model';
 import qmetaRaw from '../data/question-meta.json';
+import sheetMetaRaw from '../data/sheet-meta.json';
+const SHEET_NAME = sheetMetaRaw as Record<string, string>;
 import { AQC_ITEMS, AQC_PAGES, SEVERITY_COLOR, type AqcPage, type AqcVerdict } from '../data/aqc';
 import { plan as abPlan, mde as abMde, readResult as abRead } from '../lib/experiments';
 const QMETA = qmetaRaw as Record<string, { interp: string; pb: string; deliv: string; kpi: string }>;
@@ -314,6 +316,56 @@ export default function AdminClientPage() {
     a.click();
   };
 
+  /* AI-резюме: тезисы пересчитываются на каждом рендере из текущих ответов —
+     то есть обновляются в реальном времени по мере заполнения брифа клиентом. */
+  const aiTheses = useMemo(() => {
+    const t: string[] = [];
+    const pct = report.totalL1 ? Math.round((report.answeredL1 / report.totalL1) * 100) : 0;
+    t.push(`Заполнено ${report.answeredL1}/${report.totalL1} вопросов (${pct}%) — ${pct < 25 ? 'самое начало, выводы предварительные' : pct < 60 ? 'середина пути, картина складывается' : 'достаточно для рабочих выводов'}.`);
+    if (report.score !== null)
+      t.push(`Health Score ${report.score}/100 (зрелость ${report.scoreA ?? '—'}, критические разрывы ${report.scoreB ?? '—'}) · достоверность ${conf.score}%.`);
+    const firePains = tacticalPainsOf(painIds);
+    if (firePains.length)
+      t.push(`🔥 Горящие боли: ${firePains.map((p) => p.title).join('; ')} — сначала стабилизация, потом стратегия.`);
+    const strategicPains = painIds.map((id) => painById(id)).filter((p) => p && !firePains.includes(p as any)).slice(0, 3);
+    if (strategicPains.length)
+      t.push(`Ключевые боли клиента: ${strategicPains.map((p) => p!.title).join('; ')}.`);
+    const goals = goalIds.map((id) => goalById(id)).filter(Boolean).slice(0, 3);
+    if (goals.length)
+      t.push(`Цели: ${goals.map((g) => g!.title).join('; ')}.`);
+    if (report.gaps.length)
+      t.push(`Критических разрывов: ${report.gaps.length}. Главный — ${report.gaps[0].label}.`);
+    const weak = report.domains.filter((d) => d.health !== null && d.health < 0.5).sort((a, b) => (a.health ?? 0) - (b.health ?? 0)).slice(0, 3);
+    if (weak.length)
+      t.push(`Слабые домены: ${weak.map((d) => `${SHEET_NAME[d.sheet] ?? d.key} (${Math.round((d.health ?? 0) * 100)}%)`).join(', ')}.`);
+    if (contradictions.length)
+      t.push(`⚠ Противоречий в ответах: ${contradictions.length} (напр., «${contradictions[0].rule.question}») — уточнить на созвоне.`);
+    if (decisions.length)
+      t.push(`Движок рекомендует первым делом: ${decisions.slice(0, 3).map((d, i) => `${i + 1}) ${d.title}`).join(' · ')}.`);
+    if (hasBaseline && gap.conservative > 0)
+      t.push(`Разрыв по 8 рычагам: ≈ ${Math.round(gap.conservative / 1000)} тыс ₴/год недополученного оборота (консервативно).`);
+    t.push(`Доступы: выдано ${accessGranted}/${ACCESSES.length}.`);
+    return t;
+  }, [report, conf.score, painIds, goalIds, contradictions, decisions, hasBaseline, gap, accessGranted]);
+
+  const downloadBrief = () => {
+    const answered = QUESTIONS.filter((q) => rows[q.id]?.answer && !q.id.startsWith('NOTIFY'));
+    const md = [
+      `# Бриф · ${passport.name ?? clientId}`,
+      `Выгружено: ${new Date().toLocaleString('ru-RU')} · заполнено ${report.answeredL1}/${report.totalL1}`,
+      '',
+      '## Резюме (AI, по текущим ответам)',
+      ...aiTheses.map((x) => `- ${x}`),
+      '',
+      '## Ответы',
+      ...answered.map((q) => `**${q.id} · ${q.text}**\n> ${rows[q.id].answer}${rows[q.id].facts ? `\n> _Факты: ${rows[q.id].facts}_` : ''}\n`),
+    ].join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([md], { type: 'text/markdown;charset=utf-8' }));
+    a.download = `brief-${(passport.name ?? clientId).replace(/[^\wа-яіїє-]+/gi, '-')}.md`;
+    a.click();
+  };
+
   if (!loaded || !meta) return <div className="container" style={{ paddingTop: 50 }}><p className="sub">Загрузка…</p></div>;
 
   return (
@@ -350,6 +402,23 @@ export default function AdminClientPage() {
           ))}
         </ul>
       </details>
+
+      {/* AI-резюме: живые тезисы по мере заполнения брифа */}
+      <div className="card" style={{ marginTop: 18, borderColor: 'rgba(101,163,13,0.45)', background: 'rgba(163,230,53,0.06)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
+          <h2>Резюме AI · обновляется по мере заполнения</h2>
+          <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: 12 }} onClick={downloadBrief}>
+            Скачать бриф + резюме (.md) ↓
+          </button>
+        </div>
+        <ul style={{ margin: '10px 0 0', paddingLeft: 18, fontSize: 13.5, lineHeight: 1.65, display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {aiTheses.map((th, i) => <li key={i}>{th}</li>)}
+        </ul>
+        <p className="sub" style={{ fontSize: 11.5, marginTop: 10 }}>
+          Тезисы собираются движком из текущих ответов, противоречий и baseline — без ручной
+          работы. Чем больше заполнено, тем точнее выводы; файл включает резюме и все ответы.
+        </p>
+      </div>
 
       {/* Decision Engine */}
       <div className="card" style={{ marginTop: 18, borderColor: 'rgba(101,163,13,0.45)' }}>
