@@ -497,8 +497,8 @@ export default function CalculatorPage() {
                 <div className="card p-5 mt-7" style={{ borderColor: 'rgba(101,163,13,0.4)', background: '#F8FCEF' }}>
                   {leadSent ? (
                     <p className="text-sm text-[#3F6212] leading-relaxed">
-                      <b>Готово!</b> Надішлемо цей розрахунок із коротким розбором — що закривати
-                      першим — упродовж робочого дня на <b>{leadEmail}</b>.
+                      <b>Готово, заявку отримано!</b> Подивимося на ваші цифри й звʼяжемося
+                      упродовж робочого дня — розберемо, які важелі закривати першими.
                     </p>
                   ) : (
                     <form
@@ -526,10 +526,11 @@ export default function CalculatorPage() {
                         }
                       }}
                     >
-                      <p className="font-bold text-[0.95rem]">Отримати цей розрахунок на email</p>
+                      <p className="font-bold text-[0.95rem]">Хочете розбір цих цифр?</p>
                       <p className="text-[#5A6472] text-xs mt-1 leading-relaxed">
-                        Надішлемо цифри з коротким розбором: які з важелів закривати першими саме
-                        у вашій ситуації. Без розсилок і спаму.
+                        Залиште контакти — подивимося на ваш розрахунок і звʼяжемося упродовж
+                        робочого дня: які важелі закривати першими саме у вашій ситуації. Без
+                        розсилок і спаму.
                       </p>
                       <div className="flex flex-col sm:flex-row gap-2.5 mt-3.5">
                         <input
