@@ -14,6 +14,8 @@ import { agentAnalyze } from './agent.js';
 import { renderAD15, renderRoadmap, buildAD15Model, clientName } from './deliverables.js';
 import { exportAD15Pptx } from './export/pptx.js';
 import { exportReportDocx } from './export/docx.js';
+import { exportUxUiDocx } from './export/uxuiDocx.js';
+import { buildUxUiReport, narrateUxUi, renderUxUiMd } from './uxui.js';
 import { hasKey } from './anthropic.js';
 
 export type AuditOptions = {
@@ -72,6 +74,21 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
     await mkdir(dir, { recursive: true });
     await writeFile(join(dir, 'dataset.json'), JSON.stringify(ds, null, 2), 'utf8');
     await writeFile(join(dir, 'L0-report.md'), renderL0Report(ds), 'utf8');
+
+    // UX/UI-разбор дизайна против AQC-эталона — часть первого блока аудита (T1/L0,
+    // работает и без доступов). Факт-слой детерминирован; нарратив — при наличии ключа.
+    if (!prelaunch) {
+      log('· UX/UI-разбор страниц против эталона (AQC)…');
+      const uxui = buildUxUiReport(ds);
+      if (hasKey()) {
+        try { uxui.narrative = (await narrateUxUi(ds, uxui)) ?? undefined; }
+        catch (e) { log(`⚠️ нарратив UX/UI не отработал (${String(e).slice(0, 100)}) — оставляю факт-слой`); }
+      }
+      await writeFile(join(dir, 'uxui.json'), JSON.stringify(uxui, null, 2), 'utf8');
+      await writeFile(join(dir, 'UX-UI-разбор.md'), renderUxUiMd(ds, uxui), 'utf8');
+      await exportUxUiDocx(ds, uxui, join(dir, 'UX-UI-разбор.docx'));
+      log(`✓ UX/UI-разбор: провалов критериев ${uxui.counts.fail} (Critical ${uxui.bySeverity.Critical}, High ${uxui.bySeverity.High})`);
+    }
 
     let engine: EngineResult | null = null;
     if (opts.answers) {

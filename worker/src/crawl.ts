@@ -10,6 +10,32 @@ import { chromium, type Browser, type Page } from 'playwright';
 export type L0Check = { id: string; group: string; label: string; pass: boolean; detail?: string };
 export type PageKind = 'home' | 'plp' | 'pdp' | 'cart' | 'checkout' | 'content' | 'other';
 
+/** Дизайн-замеры страницы (для UX/UI-разбора против AQC-эталона). Всё измеримо
+ *  из отрендеренного DOM на T1 — без доступов. */
+export type UxProbe = {
+  foldButtons: number;          // кликабельные элементы над сгибом (конкуренция за внимание)
+  primaryCtaAboveFold: boolean; // крупная кнопка-действие в первом экране
+  navItems: number;             // пунктов в главном меню (закон Хика/Миллера)
+  breadcrumbs: boolean;         // хлебные крошки (положение в IA)
+  stickyHeader: boolean;        // закреплённый хедер
+  headingLevels: number;        // сколько уровней заголовков задействовано (иерархия)
+  distinctButtonColors: number; // разных цветов кнопок (размытие приоритета CTA)
+  productCards: number;         // карточек товара (сигнал PLP)
+  filters: boolean;             // фильтры/фасеты
+  sortControl: boolean;         // сортировка листинга
+  galleryImages: number;        // изображений в галерее товара (PDP)
+  addToCartProminent: boolean;  // «в корзину» распознаётся и в первом экране
+  variantSelector: boolean;     // выбор варианта (размер/цвет)
+  priceVisible: boolean;        // цена видна сразу
+  trustBadges: boolean;         // гарантия/возврат/безопасность
+  paymentIcons: boolean;        // платёжные и контактные сигналы доверия
+  reviews: boolean;             // отзывы/рейтинг
+  formFields: number;           // видимых полей формы (длина чекаута)
+  guestCheckoutHint: boolean;   // намёк на гостевой чекаут
+  smallTapTargets: number;      // кликабельных ниже 40px (Thumb Zone)
+  baseFontPx: number;           // базовый кегль (читаемость на мобильном)
+};
+
 export type PageAudit = {
   url: string;
   finalUrl: string;
@@ -18,6 +44,7 @@ export type PageAudit = {
   title: string;
   checks: L0Check[];
   score: number | null; // % пройденных проверок против голд-стандарта
+  ux?: UxProbe;         // дизайн-замеры для UX/UI-разбора
   error?: string;
 };
 
@@ -56,7 +83,7 @@ export async function launchBrowser(): Promise<Browser> {
 }
 
 /* ── Проверки голд-стандарта, исполняются В СТРАНИЦЕ (реальный DOM) ── */
-function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolean>; tech: string[] } {
+function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolean>; tech: string[]; ux: UxProbe } {
   const out: L0Check[] = [];
   const add = (id: string, group: string, label: string, pass: boolean, detail?: string) =>
     out.push({ id, group, label, pass, detail });
@@ -142,7 +169,47 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
   push(/hotjar/, 'Hotjar');
   push(/clarity\.ms/, 'MS Clarity');
 
-  return { checks: out, kindSignals, tech };
+  // ── Дизайн-замеры для UX/UI-разбора (Visibility, IA, Decision, Mobile) ──
+  const vh = window.innerHeight || 900;
+  const inFold = (el: Element): boolean => {
+    try { const r = el.getBoundingClientRect(); return r.top < vh && r.bottom > 0 && r.width > 0 && r.height > 0; } catch { return false; }
+  };
+  const btns = $$('button, [role="button"], input[type="submit"], a[class*="btn" i], a[class*="button" i], [class*="add-to-cart" i], [data-add-to-cart]');
+  const foldButtons = btns.filter(inFold).length;
+  const primaryCtaAboveFold = btns.some((el) => { if (!inFold(el)) return false; try { const r = el.getBoundingClientRect(); return r.width * r.height >= 3000; } catch { return false; } });
+  const navEl = $('nav') || $('[role="navigation"]') || $('header');
+  const navItems = navEl ? navEl.querySelectorAll('a').length : $$('header a').length;
+  const breadcrumbs = Boolean($('[class*="breadcrumb" i]') || $('[aria-label*="breadcrumb" i]')) || /breadcrumblist/i.test(html);
+  const headerEl = $('header');
+  let stickyHeader = false;
+  try { if (headerEl) { const pos = getComputedStyle(headerEl).position; stickyHeader = pos === 'sticky' || pos === 'fixed'; } } catch { /* noop */ }
+  const headingLevels = ['h1', 'h2', 'h3', 'h4'].filter((t) => $$(t).length > 0).length;
+  const colorSet = new Set<string>();
+  btns.slice(0, 40).forEach((el) => { try { const c = getComputedStyle(el).backgroundColor; if (c && c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent') colorSet.add(c); } catch { /* noop */ } });
+  const distinctButtonColors = colorSet.size;
+  const filters = Boolean($('[class*="filter" i]') || $('[class*="facet" i]') || $('aside input[type="checkbox"]'));
+  const sortControl = Boolean($('select[class*="sort" i]') || $('[class*="sort" i] select') || $('[class*="orderby" i]'));
+  const galleryEl = $('[class*="gallery" i]') || $('[class*="slider" i]') || $('[class*="thumbs" i]');
+  const galleryImages = galleryEl ? galleryEl.querySelectorAll('img').length : 0;
+  const addToCartProminent = btns.some((el) => { const t = (el.textContent ?? '').toLowerCase(); return /(в корзину|в кошик|додати|add to cart|купить|купити|buy)/.test(t) && inFold(el); });
+  const variantSelector = Boolean($('[class*="variant" i]') || $('[class*="swatch" i]') || $('select[name*="attribute" i]') || $('[class*="option" i] button') || $('[class*="size" i] button'));
+  const priceVisible = /(₴|грн|zł|pln|€|eur|usd|\$)\s?\d|\d\s?(₴|грн|zł)/i.test(text);
+  const trustBadges = /гарант|guarantee|поверненн|возврат|return|безпеч|secure|сертифікат|офіційн|официальн|оригінал/i.test(text);
+  const paymentIcons = Boolean($('[class*="payment" i] img') || $('img[src*="visa" i]') || $('img[src*="mastercard" i]') || $('img[alt*="visa" i]')) || /visa|mastercard|google pay|apple pay|liqpay|privat24|monobank|наложен|післяплат|нова пошта/i.test(low);
+  const reviews = /відгук|отзыв|review|рейтинг|rating|★|☆/i.test(low);
+  const formFields = $$('form input:not([type="hidden"]), form select, form textarea').length;
+  const guestCheckoutHint = /без реєстрац|без регистрац|guest|гостев|как гость|як гість/i.test(text);
+  let smallTapTargets = 0;
+  ($$('a, button, [role="button"], input[type="submit"]')).slice(0, 200).forEach((el) => { try { const r = el.getBoundingClientRect(); if (r.width > 0 && r.height > 0 && r.height < 40) smallTapTargets++; } catch { /* noop */ } });
+  let baseFontPx = 16;
+  try { baseFontPx = parseFloat(getComputedStyle(document.body).fontSize) || 16; } catch { /* noop */ }
+  const ux: UxProbe = {
+    foldButtons, primaryCtaAboveFold, navItems, breadcrumbs, stickyHeader, headingLevels, distinctButtonColors,
+    productCards, filters, sortControl, galleryImages, addToCartProminent, variantSelector, priceVisible,
+    trustBadges, paymentIcons, reviews, formFields, guestCheckoutHint, smallTapTargets, baseFontPx,
+  };
+
+  return { checks: out, kindSignals, tech, ux };
 }
 
 function classify(url: string, sig: Record<string, boolean>, isRoot: boolean): PageKind {
@@ -168,14 +235,14 @@ async function auditPage(page: Page, url: string, isRoot: boolean): Promise<{ au
   if (/just a moment|attention required|verify you are human|checking your browser|cloudflare|доступ (ограничен|обмежено)|captcha/i.test(title)) {
     return { audit: { url, finalUrl, kind: 'other', status, title, checks: [], score: null, error: 'бот-защита: challenge-страница (Cloudflare/CAPTCHA) — нужен headful/stealth или доступ' }, tech: [], links: [] };
   }
-  const { checks, kindSignals, tech } = await page.evaluate(inPageChecks);
+  const { checks, kindSignals, tech, ux } = await page.evaluate(inPageChecks);
   const links = await page
     .evaluate(() => Array.from(document.querySelectorAll('a[href]')).map((a) => (a as HTMLAnchorElement).href).slice(0, 400))
     .catch(() => [] as string[]);
   const passed = checks.filter((c) => c.pass).length;
   const score = checks.length ? Math.round((passed / checks.length) * 100) : null;
   const kind = classify(finalUrl, kindSignals, isRoot);
-  return { audit: { url, finalUrl, kind, status, title, checks, score }, tech, links };
+  return { audit: { url, finalUrl, kind, status, title, checks, score, ux }, tech, links };
 }
 
 /** Контекст браузера с закалкой против бот-защиты (UA, заголовки, timezone, anti-webdriver). */
