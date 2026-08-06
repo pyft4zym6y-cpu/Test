@@ -6,7 +6,11 @@ FROM mcr.microsoft.com/playwright:v1.62.1-jammy
 
 WORKDIR /app/worker
 COPY worker/package.json worker/package-lock.json ./
-RUN npm ci
+# Сервер стартует через tsx (запускаем TypeScript напрямую) — tsx лежит в
+# devDependencies, поэтому ставим и их. Иначе на хостинге с NODE_ENV=production
+# npm ci пропустит tsx и контейнер упадёт на старте («Application failed to respond»).
+ENV NODE_ENV=development
+RUN npm ci --include=dev
 
 WORKDIR /app
 COPY worker/ ./worker/
