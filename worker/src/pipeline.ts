@@ -20,6 +20,10 @@ import { exportPrototypeDocx } from './export/prototypeDocx.js';
 import { buildPrototypeReport, narratePrototype, renderPrototypeMd } from './prototype.js';
 import { exportCoverageDocx } from './export/coverageDocx.js';
 import { buildCoverage, renderCoverageMd } from './coverage.js';
+import { exportBenchmarkDocx } from './export/benchmarkDocx.js';
+import { buildBenchmark, narrateBenchmark, renderBenchmarkMd } from './competitor.js';
+import { exportHypothesesDocx } from './export/hypothesesDocx.js';
+import { buildHypotheses, renderHypothesesMd } from './hypotheses.js';
 import { knowledgeCount } from './knowledge.js';
 import { hasKey } from './anthropic.js';
 
@@ -107,6 +111,20 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       await writeFile(join(dir, 'Эталон-vs-композиция.md'), renderPrototypeMd(ds, proto), 'utf8');
       await exportPrototypeDocx(ds, proto, join(dir, 'Эталон-vs-композиция.docx'));
       log(`✓ прототип-сверка: разобрано типов страниц ${proto.pages.length}`);
+
+      // Конкурентный бенчмарк (AD-11) — когда есть обойдённые конкуренты.
+      const bench = buildBenchmark(ds);
+      if (bench) {
+        log('· конкурентный бенчмарк (AD-11)…');
+        if (hasKey()) {
+          try { bench.narrative = (await narrateBenchmark(ds, bench)) ?? undefined; }
+          catch (e) { log(`⚠️ нарратив бенчмарка не отработал (${String(e).slice(0, 100)})`); }
+        }
+        await writeFile(join(dir, 'benchmark.json'), JSON.stringify(bench, null, 2), 'utf8');
+        await writeFile(join(dir, 'Конкурентный-бенчмарк.md'), renderBenchmarkMd(ds, bench), 'utf8');
+        await exportBenchmarkDocx(ds, bench, join(dir, 'Конкурентный-бенчмарк.docx'));
+        log(`✓ бенчмарк: индекс клиента ${bench.clientIndex}/100, место ${bench.clientRank}/${bench.totalSites}`);
+      }
     }
 
     let engine: EngineResult | null = null;
@@ -141,7 +159,12 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         const date = new Date(ds.takenAt).toLocaleDateString('ru-RU');
         await exportAD15Pptx(buildAD15Model(ds, analysis, engine, money), { name: clientName(ds), tier: ds.tier, date }, join(dir, 'AD-15.pptx'));
         await exportReportDocx(ds, analysis, engine, money, join(dir, 'audit-report.docx'));
-        log('✓ материалы собраны: AD-15.pptx, audit-report.docx, roadmap.md');
+        // Реестр гипотез (AD-19) — недоказанное со способом проверки/опровержения.
+        const hyp = buildHypotheses(analysis);
+        await writeFile(join(dir, 'hypotheses.json'), JSON.stringify(hyp, null, 2), 'utf8');
+        await writeFile(join(dir, 'Реестр-гипотез.md'), renderHypothesesMd(ds, hyp), 'utf8');
+        await exportHypothesesDocx(ds, hyp, join(dir, 'Реестр-гипотез.docx'));
+        log(`✓ материалы собраны: AD-15.pptx, audit-report.docx, roadmap.md, реестр гипотез (${hyp.items.length})`);
       } catch (e) {
         log(`⚠️ аналитический слой не отработал: ${String(e).slice(0, 160)}`);
       }
