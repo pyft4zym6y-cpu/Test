@@ -90,4 +90,6 @@ const server = createServer(async (req, res) => {
 server.requestTimeout = 0;
 server.headersTimeout = 0;
 server.timeout = 0;
-server.listen(PORT, () => console.log(`Аудит-сервер запущен на :${PORT} (ключ Claude: ${hasKey() ? 'есть' : 'НЕТ'})`));
+// Слушаем на 0.0.0.0 — иначе прокси хостинга (Railway) не достучится до контейнера
+// («Application failed to respond»), даже если порт совпадает.
+server.listen(PORT, '0.0.0.0', () => console.log(`Аудит-сервер запущен на 0.0.0.0:${PORT} (ключ Claude: ${hasKey() ? 'есть' : 'НЕТ'})`));
