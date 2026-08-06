@@ -54,8 +54,44 @@ export default async function handler(req, res) {
       }),
     });
     const j = await r.json();
-    if (j.id) res.status(200).json({ ok: true });
-    else res.status(200).json({ error: j.message || 'send_failed' });
+    if (!j.id) {
+      res.status(200).json({ error: j.message || 'send_failed' });
+      return;
+    }
+
+    // автоответ клиенту с его расчётом — best effort: до верификации домена
+    // в Resend отправка на чужие адреса не пройдёт, лид при этом не теряется
+    if (email && b.calc) {
+      const clientText = [
+        'Вітаємо!',
+        '',
+        'Ви щойно порахували розрив на weexp.agency — ось ваш розрахунок:',
+        '',
+        String(b.calc).slice(0, 1500),
+        '',
+        'Це консервативна нижня межа за еталонами вашої ніші. Упродовж робочого дня ми подивимося на цифри й надішлемо короткий розбір — що закривати першим.',
+        '',
+        'Не хочете чекати? Забронюйте 30-хв сесію: просто дайте відповідь на цей лист або телефонуйте +38 099 918 82 60.',
+        '',
+        '— Павло, weexp · Commerce OS',
+        'weexp.agency',
+      ].join('\n');
+      try {
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            from: NOTIFY_FROM || 'weexp.agency <onboarding@resend.dev>',
+            to: [email],
+            reply_to: NOTIFY_EMAIL,
+            subject: 'Ваш розрахунок розриву — weexp.agency',
+            text: clientText,
+          }),
+        });
+      } catch { /* не блокуємо відповідь */ }
+    }
+
+    res.status(200).json({ ok: true });
   } catch (e) {
     res.status(200).json({ error: String(e).slice(0, 120) });
   }
