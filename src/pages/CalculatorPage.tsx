@@ -6,6 +6,7 @@ import { Eyebrow, Section, SectionTitle, CountUp, Bar } from '../components/ui';
 import { say } from '../components/speech';
 import { track } from '../components/analytics';
 import Breadcrumbs from '../components/Breadcrumbs';
+import { sendLead } from '../components/leads';
 
 /*
  * Калькулятор недоотриманого обороту — покроковий майстер (8 кроків).
@@ -86,6 +87,10 @@ export default function CalculatorPage() {
   const [email, setEmail] = useState('');
   const [margin, setMargin] = useState('');
   const [done, setDone] = useState(false);
+  const [leadEmail, setLeadEmail] = useState('');
+  const [leadSent, setLeadSent] = useState(false);
+  const [leadBusy, setLeadBusy] = useState(false);
+  const [leadErr, setLeadErr] = useState(false);
 
   const niche = NICHES.find((n) => n.id === nicheId) ?? NICHES[NICHES.length - 1];
 
@@ -486,6 +491,72 @@ export default function CalculatorPage() {
                   діапазону. Точний розрахунок — по ваших даних GA4 / CRM / P&L на Diagnostic
                   Sprint.
                 </p>
+
+                {/* ---- Лід-захват: розрахунок на email ---- */}
+                <div className="card p-5 mt-7" style={{ borderColor: 'rgba(101,163,13,0.4)', background: '#F8FCEF' }}>
+                  {leadSent ? (
+                    <p className="text-sm text-[#3F6212] leading-relaxed">
+                      <b>Готово!</b> Надішлемо цей розрахунок із коротким розбором — що закривати
+                      першим — упродовж робочого дня на <b>{leadEmail}</b>.
+                    </p>
+                  ) : (
+                    <form
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        if (leadBusy) return;
+                        setLeadBusy(true);
+                        const ok = await sendLead({
+                          source: 'calculator',
+                          email: leadEmail,
+                          calc: [
+                            `Ніша: ${niche.label}`,
+                            `Оборот: ${revenue} тис ₴/міс · чек ${aov} ₴`,
+                            `CR: ${cr}% (норма ${niche.crNorm}%) · повторні ${repeat || '~10'}%`,
+                            `Розрив (консервативно): ${fmtUAH(calc.potentialCons)}/рік · ${fmtUAH(calc.monthlyCons)}/міс`,
+                          ].join('\n'),
+                        });
+                        setLeadBusy(false);
+                        if (ok) {
+                          setLeadSent(true);
+                          track('lead_submit', { method: 'api', source: 'calculator' });
+                        } else {
+                          setLeadErr(true);
+                        }
+                      }}
+                    >
+                      <p className="font-bold text-[0.95rem]">Отримати цей розрахунок на email</p>
+                      <p className="text-[#5A6472] text-xs mt-1 leading-relaxed">
+                        Надішлемо цифри з коротким розбором: які з важелів закривати першими саме
+                        у вашій ситуації. Без розсилок і спаму.
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-2.5 mt-3.5">
+                        <input
+                          type="email"
+                          required
+                          value={leadEmail}
+                          onChange={(e) => setLeadEmail(e.target.value)}
+                          placeholder="you@company.com"
+                          className={inputCls + ' sm:flex-1 !text-sm !py-3'}
+                        />
+                        <button
+                          type="submit"
+                          disabled={leadBusy}
+                          className="bg-[#A3E635] px-6 py-3 font-mono text-xs font-bold uppercase tracking-[0.12em] text-black hover:brightness-95 transition-[filter] disabled:opacity-60"
+                        >
+                          {leadBusy ? 'Надсилаємо…' : 'Отримати розбір →'}
+                        </button>
+                      </div>
+                      {leadErr && (
+                        <p className="text-[#B45309] text-xs mt-2.5 leading-relaxed">
+                          Не вдалося надіслати. Напишіть нам напряму:{' '}
+                          <a href="mailto:pashasidorenko18@gmail.com" className="underline">
+                            pashasidorenko18@gmail.com
+                          </a>
+                        </p>
+                      )}
+                    </form>
+                  )}
+                </div>
 
                 <div className="flex flex-wrap gap-4 mt-7">
                   <Link
