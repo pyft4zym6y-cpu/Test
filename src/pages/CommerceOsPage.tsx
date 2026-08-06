@@ -9,6 +9,7 @@ import {
   PriceOfInaction, PageCta,
 } from '../components/NewSections';
 import SubNav from '../components/SubNav';
+import Breadcrumbs from '../components/Breadcrumbs';
 
 export const OS_SECTIONS = [
   { id: 'why', label: 'Чому зараз' },
@@ -29,6 +30,7 @@ export default function CommerceOsPage() {
   return (
     <div className="pt-16">
       <SubNav items={OS_SECTIONS} />
+      <Breadcrumbs items={[{ label: 'Commerce OS' }]} />
 
       <div id="why" style={anchor}>
         <Proof />

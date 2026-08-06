@@ -7,6 +7,7 @@ const NAV_LINKS = [
   { to: '/services', label: 'Співпраця' },
   { to: '/calculator', label: 'Калькулятор розриву' },
   { to: '/estimate', label: 'Оцінка проєкту' },
+  { to: '/blog', label: 'Блог' },
   { to: '/about', label: 'Про нас' },
 ];
 

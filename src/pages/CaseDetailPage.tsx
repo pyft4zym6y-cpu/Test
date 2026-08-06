@@ -3,6 +3,7 @@ import FadeIn from '../components/FadeIn';
 import { Eyebrow, Section, SectionTitle, Stat, Chip } from '../components/ui';
 import { PageCta } from '../components/NewSections';
 import { CASE_COVERS } from './CasesPage';
+import Breadcrumbs from '../components/Breadcrumbs';
 
 /*
  * Єдиний шаблон кейсу: Було → Проблема → Рішення → Результат → Уроки.
@@ -547,24 +548,9 @@ export default function CaseDetailPage() {
 
   return (
     <div className="pt-16">
-      <nav
-        aria-label="Хлібні крихти"
-        className="max-w-6xl mx-auto px-5 sm:px-8 md:px-12 pt-8 -mb-12 font-mono text-xs uppercase tracking-wider"
-      >
-        <ol className="flex flex-wrap items-center gap-2">
-          <li>
-            <Link to="/cases" className="text-[#5A6472] hover:text-[#4D7C0F] transition-colors">
-              Кейси
-            </Link>
-          </li>
-          <li aria-hidden="true" className="text-black/30">
-            /
-          </li>
-          <li aria-current="page" className="text-[#12161C]">
-            {CASE_COVERS[idx]?.title ?? 'Кейс'}
-          </li>
-        </ol>
-      </nav>
+      <Breadcrumbs
+        items={[{ to: '/cases', label: 'Кейси' }, { label: CASE_COVERS[idx]?.title ?? 'Кейс' }]}
+      />
 
       <CaseStory data={CASES[slug]} />
 

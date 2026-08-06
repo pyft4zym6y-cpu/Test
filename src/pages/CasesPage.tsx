@@ -3,6 +3,7 @@ import FadeIn from '../components/FadeIn';
 import { Eyebrow, Section, SectionTitle } from '../components/ui';
 import { Industries } from '../components/Market';
 import { PageCta } from '../components/NewSections';
+import Breadcrumbs from '../components/Breadcrumbs';
 
 export const CASE_COVERS = [
   {
@@ -50,6 +51,7 @@ export const CASE_COVERS = [
 export default function CasesPage() {
   return (
     <div className="pt-16">
+      <Breadcrumbs items={[{ label: 'Кейси' }]} />
       <Section className="grid-bg">
         <FadeIn>
           <Eyebrow>Кейси · Не один результат — система</Eyebrow>

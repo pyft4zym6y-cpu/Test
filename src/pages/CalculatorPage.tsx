@@ -5,6 +5,7 @@ import FadeIn from '../components/FadeIn';
 import { Eyebrow, Section, SectionTitle, CountUp, Bar } from '../components/ui';
 import { say } from '../components/speech';
 import { track } from '../components/analytics';
+import Breadcrumbs from '../components/Breadcrumbs';
 
 /*
  * Калькулятор недоотриманого обороту — покроковий майстер (8 кроків).
@@ -240,6 +241,7 @@ export default function CalculatorPage() {
 
   return (
     <div className="pt-16">
+      <Breadcrumbs items={[{ label: 'Калькулятор розриву' }]} />
       <Section className="grid-bg">
         <FadeIn>
           <Eyebrow>Калькулятор · Недоотриманий оборот · Безкоштовно</Eyebrow>

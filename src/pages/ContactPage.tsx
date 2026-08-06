@@ -1,10 +1,12 @@
 import FadeIn from '../components/FadeIn';
 import { Eyebrow } from '../components/ui';
 import LeadForm from '../components/LeadForm';
+import Breadcrumbs from '../components/Breadcrumbs';
 
 export default function ContactPage() {
   return (
     <div className="pt-16">
+      <Breadcrumbs items={[{ label: 'Контакт' }]} />
       <section className="relative overflow-hidden min-h-[calc(100vh-4rem)] flex items-center grid-bg">
         <div className="glow-lime w-[460px] h-[460px] -bottom-40 -left-40" />
 
