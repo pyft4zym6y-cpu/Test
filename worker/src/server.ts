@@ -48,7 +48,7 @@ let running = false;
 function categorize(name: string): string {
   if (/Синтез|synthesis/i.test(name)) return 'Синтез';
   if (/\.xlsx$/i.test(name) || /ЕКП/i.test(name)) return 'Таблицы (XLSX)';
-  if (/AD-15|roadmap|Scope-|Матрица|дорожн/i.test(name)) return 'План и презентация';
+  if (/AD-15|roadmap|Scope-|Матрица|дорожн|Коммерческое|КП/i.test(name)) return 'План и презентация';
   if (/UX-UI|Эталон|prototype|uxui/i.test(name)) return 'UX / дизайн';
   if (/Конкурент|benchmark/i.test(name)) return 'Конкуренты';
   if (/money|деньг|Причинно|Цена-в-канале/i.test(name)) return 'Деньги';

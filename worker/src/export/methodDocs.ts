@@ -11,6 +11,8 @@ import type { ScopeReport } from '../routing.js';
 import type { CausalMap } from '../causal.js';
 import type { PriceChannelReport } from '../pricechannel.js';
 import type { Synthesis } from '../synthesis.js';
+import type { Kp } from '../kp.js';
+import type { MoneyResult } from '../money.js';
 
 const LIME = 'A9D92F';
 const INK = '12160A';
@@ -55,6 +57,27 @@ export async function exportCausalDocx(ds: AuditDataset, r: CausalMap, out: stri
     k.push(P(`Деньги: ${n.moneyLink}`, { bold: true }));
   });
   k.push(P('Плейбук адресует корневую причину. Симптом без причины в roadmap не попадает.', { italics: true }));
+  await save(k, out);
+}
+
+const rubK = (n: number) => `${Math.round(n).toLocaleString('ru-RU')} ₴`;
+const WAVE_W: Record<number, string> = { 1: '0–3 мес', 2: '3–6 мес', 3: '6–12 мес' };
+export async function exportKpDocx(ds: AuditDataset, kp: Kp, money: MoneyResult | null, scope: ScopeReport | null, out: string): Promise<void> {
+  const k: (Paragraph | Table)[] = [new Paragraph({ text: 'Коммерческое предложение', heading: HeadingLevel.TITLE }), meta(ds, 'на основе аудита · L0')];
+  k.push(H('Для кого')); k.push(P(kp.forClient));
+  k.push(H('Методика')); k.push(P(kp.method, { italics: true }));
+  if (kp.pains.length) { k.push(H('Боли (по причине)')); for (const x of kp.pains) k.push(P(`• ${x}`)); }
+  k.push(H('Цена бездействия'));
+  k.push(P(money ? `Недополученный оборот ≈ ${rubK(money.potentialYear)}/год (консервативно ${rubK(money.consMinYear)}–${rubK(money.consMaxYear)}). Каждый месяц промедления — упущенный оборот.` : 'Считается на слое L1 (нужны трафик, конверсия, чек). На L0 разрывы против эталона уже видны.', { bold: Boolean(money) }));
+  k.push(H('Точка Б')); k.push(P(kp.pointB));
+  if (scope?.waves?.length) {
+    k.push(H('Программа по волнам'));
+    k.push(table(['Волна', 'Срок', 'Что делаем'], scope.waves.map((w) => [String(w.n), WAVE_W[w.n] ?? '', w.items.map((i) => `${i.playbook} ${i.name}`).join('; ')]), [10, 14, 76]));
+  }
+  k.push(H('Как измеряем результат')); k.push(P(kp.howMeasure));
+  k.push(H('Бюджет')); k.push(P('Собирается из cost_base (капитальные разовые + операционные ретейнеры), с разделением на стоимость запуска и месячную нагрузку. Заполняется по подтверждённым ставкам.', { italics: true }));
+  if (kp.scenarios.length) { k.push(H('Сценарии')); for (const s of kp.scenarios) k.push(P(`• ${s.name} — ${s.desc}`)); }
+  if (kp.nextSteps.length) { k.push(H('Следующие шаги')); kp.nextSteps.forEach((s, i) => k.push(P(`${i + 1}. ${s}`))); }
   await save(k, out);
 }
 

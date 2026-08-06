@@ -32,6 +32,8 @@ import { exportMaturityDocx, exportScopeDocx, exportCausalDocx, exportPriceChann
 import { buildWorkbook } from './workbook.js';
 import { makeXlsx } from './xlsx.js';
 import { narrateSynthesis, renderSynthesisMd } from './synthesis.js';
+import { buildKp, renderKpMd } from './kp.js';
+import { exportKpDocx } from './export/methodDocs.js';
 import { knowledgeCount } from './knowledge.js';
 import { hasKey } from './anthropic.js';
 import type { Analysis } from './analyze.js';
@@ -257,6 +259,17 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
           await exportSynthesisDocx(ds, synth, join(dir, 'Синтез-аудита.docx'));
           log('✓ синтез собран');
         } else { log('· синтез не собран (нет ключа/данных)'); }
+
+        // Коммерческое предложение (КП) — переход аудит → продажа программы.
+        if (analysisResult) {
+          log('· коммерческое предложение…');
+          const kp = await buildKp(ds, { analysis: analysisResult, money, engine, scope });
+          if (kp) {
+            await writeFile(join(dir, 'Коммерческое-предложение.md'), renderKpMd(ds, kp, money, scope), 'utf8');
+            await exportKpDocx(ds, kp, money, scope, join(dir, 'Коммерческое-предложение.docx'));
+            log('✓ КП собрано');
+          }
+        }
       }
     }
 
