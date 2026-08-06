@@ -3,10 +3,17 @@
  * таблицы критериев (severity, наблюдение, эталон), конкурентный край и
  * приоритетные правки. Сопроводительный документ первого блока аудита (L0).
  */
-import { Document, Packer, Paragraph, HeadingLevel, TextRun, Table, TableRow, TableCell, WidthType, BorderStyle } from 'docx';
+import { Document, Packer, Paragraph, HeadingLevel, TextRun, Table, TableRow, TableCell, WidthType, BorderStyle, ImageRun } from 'docx';
 import { writeFile } from 'node:fs/promises';
 import type { AuditDataset } from '../report.js';
 import type { UxUiReport, Verdict } from '../uxui.js';
+
+const shot = (b64?: string): Paragraph[] => {
+  if (!b64) return [];
+  try {
+    return [new Paragraph({ children: [new ImageRun({ type: 'jpg', data: Buffer.from(b64, 'base64'), transformation: { width: 520, height: 342 } })], spacing: { after: 100 } })];
+  } catch { return []; }
+};
 
 const MARK: Record<Verdict, string> = { pass: '✓', warn: '≈', fail: '✕', na: '—' };
 const LIME = 'A9D92F';
@@ -64,6 +71,7 @@ export async function exportUxUiDocx(ds: AuditDataset, r: UxUiReport, outPath: s
   kids.push(new Paragraph({ text: 'Постранично: факт против эталона', heading: HeadingLevel.HEADING_1, spacing: { before: 200, after: 100 } }));
   for (const pg of r.pages) {
     kids.push(new Paragraph({ text: `${pg.kindLabel} — ${pg.url}`, heading: HeadingLevel.HEADING_2, spacing: { before: 160, after: 80 } }));
+    for (const s of shot(pg.screenshot)) kids.push(s);
     kids.push(P(`Соответствие голд-стандарту витрины: ${pg.score ?? '—'}%.`, { bold: true }));
     const narr = r.narrative?.perPage.find((x) => x.kind === pg.kindLabel);
     if (narr) kids.push(P(narr.text));

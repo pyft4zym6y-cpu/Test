@@ -4,10 +4,17 @@
  * покрытие композиции и путь клиента против эталонного (нарратив). Аналог
  * примеров pdp_comparison / lanavitta_vs_reference.
  */
-import { Document, Packer, Paragraph, HeadingLevel, TextRun, Table, TableRow, TableCell, WidthType, BorderStyle } from 'docx';
+import { Document, Packer, Paragraph, HeadingLevel, TextRun, Table, TableRow, TableCell, WidthType, BorderStyle, ImageRun } from 'docx';
 import { writeFile } from 'node:fs/promises';
 import type { AuditDataset } from '../report.js';
 import type { PrototypeReport, BlockVerdict } from '../prototype.js';
+
+const shot = (b64?: string): Paragraph[] => {
+  if (!b64) return [];
+  try {
+    return [new Paragraph({ children: [new ImageRun({ type: 'jpg', data: Buffer.from(b64, 'base64'), transformation: { width: 520, height: 342 } })], spacing: { after: 100 } })];
+  } catch { return []; }
+};
 
 const MARK: Record<BlockVerdict, string> = { present: '✓ есть', missing: '✕ нет' };
 const LIME = 'A9D92F';
@@ -57,6 +64,7 @@ export async function exportPrototypeDocx(ds: AuditDataset, r: PrototypeReport, 
 
   for (const pg of r.pages) {
     kids.push(new Paragraph({ text: `${pg.title} — ${pg.url}`, heading: HeadingLevel.HEADING_1, spacing: { before: 220, after: 90 } }));
+    for (const s of shot(pg.screenshot)) kids.push(s);
     kids.push(P(`Покрытие эталонной композиции: ${pg.coverage}%. Эталон: ${pg.chapter}.`, { bold: true }));
     if (pg.principle) kids.push(P(`Принцип эталона: ${pg.principle}`, { italics: true }));
     const narr = r.narrative?.perPage.find((x) => x.title === pg.title);

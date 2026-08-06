@@ -1,0 +1,68 @@
+/**
+ * .docx-экспорт method-документов: матрица зрелости (AD-16), scope по волнам,
+ * причинно-следственная карта, цена в канале. Общий табличный стиль.
+ */
+import { Document, Packer, Paragraph, HeadingLevel, TextRun, Table, TableRow, TableCell, WidthType, BorderStyle } from 'docx';
+import { writeFile } from 'node:fs/promises';
+import type { AuditDataset } from '../report.js';
+import type { MaturityReport } from '../maturity.js';
+import { levelLabel } from '../maturity.js';
+import type { ScopeReport } from '../routing.js';
+import type { CausalMap } from '../causal.js';
+import type { PriceChannelReport } from '../pricechannel.js';
+
+const LIME = 'A9D92F';
+const INK = '12160A';
+const P = (text: string, o: { bold?: boolean; italics?: boolean } = {}) =>
+  new Paragraph({ children: [new TextRun({ text, bold: o.bold, italics: o.italics })], spacing: { after: 80 } });
+const H = (text: string, lvl: (typeof HeadingLevel)[keyof typeof HeadingLevel] = HeadingLevel.HEADING_1) =>
+  new Paragraph({ text, heading: lvl, spacing: { before: 200, after: 100 } });
+const cell = (text: string, o: { head?: boolean; w?: number } = {}) =>
+  new TableCell({ width: o.w ? { size: o.w, type: WidthType.PERCENTAGE } : undefined, shading: o.head ? { fill: LIME } : undefined, margins: { top: 40, bottom: 40, left: 80, right: 80 }, children: [new Paragraph({ children: [new TextRun({ text, bold: o.head, color: o.head ? INK : undefined })] })] });
+const border = { style: BorderStyle.SINGLE, size: 1, color: 'D9DEE6' };
+const table = (head: string[], rows: string[][], widths?: number[]) =>
+  new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, borders: { top: border, bottom: border, left: border, right: border, insideHorizontal: border, insideVertical: border },
+    rows: [new TableRow({ tableHeader: true, children: head.map((h, i) => cell(h, { head: true, w: widths?.[i] })) }), ...rows.map((r) => new TableRow({ children: r.map((c, i) => cell(c, { w: widths?.[i] })) }))] });
+const save = async (kids: (Paragraph | Table)[], out: string) => writeFile(out, await Packer.toBuffer(new Document({ sections: [{ children: kids }] })));
+const meta = (ds: AuditDataset, sub: string) => P(`${ds.client.finalUrl || ds.client.rootUrl} · Commerce OS · ${sub} · ${new Date(ds.takenAt).toLocaleDateString('ru-RU')}`, { italics: true });
+
+export async function exportMaturityDocx(ds: AuditDataset, r: MaturityReport, out: string): Promise<void> {
+  const k: (Paragraph | Table)[] = [new Paragraph({ text: 'Матрица зрелости (AD-16)', heading: HeadingLevel.TITLE }), meta(ds, '18 доменов · L1→L5 · L0')];
+  k.push(P(`Средний уровень по наблюдаемым доменам: ${r.observedAvg ?? '—'}/5. Полная матрица заполняется ответами опросника и доступами.`, { bold: true }));
+  k.push(table(['Домен', 'Что оценивается', 'Уровень', 'Основание'], r.rows.map((d) => [d.domain, d.assesses, levelLabel(d.level), d.basis]), [16, 40, 20, 24]));
+  k.push(P('L1 Хаос → L2 Повторяемо → L3 Определено → L4 Управляемо → L5 Оптимизировано.', { italics: true }));
+  await save(k, out);
+}
+
+export async function exportScopeDocx(ds: AuditDataset, r: ScopeReport, out: string): Promise<void> {
+  const k: (Paragraph | Table)[] = [new Paragraph({ text: 'Scope программы по волнам', heading: HeadingLevel.TITLE }), meta(ds, 'роутинг разрывов в плейбуки · L0')];
+  k.push(P('Каждый плейбук активирован основанием (наблюдение с адресом/цифрой). Волны: тактика 0–3 → ядро 3–6 → стратегия 6–12 мес.', { italics: true }));
+  if (!r.waves.length) k.push(P('Активаций не набрано — витрина близка к стандарту по наблюдаемым сигналам.'));
+  for (const w of r.waves) { k.push(H(w.title)); k.push(table(['Плейбук', 'Методика', 'Основание'], w.items.map((i) => [i.playbook, i.name, i.reasons.join('; ')]), [14, 34, 52])); }
+  if (r.notIncluded.length) { k.push(H('Осознанно НЕ в scope (нет основания на L0)')); for (const n of r.notIncluded) k.push(P(`• ${n}`)); }
+  await save(k, out);
+}
+
+export async function exportCausalDocx(ds: AuditDataset, r: CausalMap, out: string): Promise<void> {
+  const k: (Paragraph | Table)[] = [new Paragraph({ text: 'Причинно-следственная карта', heading: HeadingLevel.TITLE }), meta(ds, 'симптом → причина → деньги · L0')];
+  k.push(P(r.moneyNote));
+  if (!r.nodes.length) k.push(P('Причинных узлов не выделено на текущих данных.'));
+  r.nodes.forEach((n, i) => {
+    k.push(H(`Узел ${i + 1}. Корневая причина: ${n.rootCause}`, HeadingLevel.HEADING_2));
+    if (n.symptoms.length) k.push(P(`Симптомы: ${n.symptoms.join('; ')}`));
+    if (n.evidence.length) k.push(P(`Доказательство (обход): ${n.evidence.join('; ')}`));
+    k.push(P(`Деньги: ${n.moneyLink}`, { bold: true }));
+  });
+  k.push(P('Плейбук адресует корневую причину. Симптом без причины в roadmap не попадает.', { italics: true }));
+  await save(k, out);
+}
+
+export async function exportPriceChannelDocx(ds: AuditDataset, r: PriceChannelReport, out: string): Promise<void> {
+  const label: Record<string, string> = { producer: 'Производитель / владелец бренда', reseller: 'Реселлер чужих брендов', hybrid: 'Гибрид', unknown: 'Требует уточнения' };
+  const k: (Paragraph | Table)[] = [new Paragraph({ text: 'Цена в канале и роль в цепочке', heading: HeadingLevel.TITLE }), meta(ds, 'L0')];
+  k.push(P(`Роль клиента (гипотеза): ${label[r.role]}. ${r.roleBasis}.`, { bold: true }));
+  k.push(P(r.risk, { italics: true }));
+  k.push(H('Протокол проверки цены в канале'));
+  k.push(table(['Что проверить', 'Как', 'Статус'], r.checklist.map((c) => [c.item, c.how, c.status]), [34, 46, 20]));
+  await save(k, out);
+}

@@ -120,6 +120,7 @@ export type PageComposition = {
   chapter: string;
   principle?: string;
   url: string;
+  screenshot?: string;
   blocks: { name: string; role: string; chapter: string; weight: Weight; verdict: BlockVerdict }[];
   coverage: number;                 // % присутствующих core+important блоков
   missingCore: string[];
@@ -144,7 +145,7 @@ function comparePage(p: PageAudit): PageComposition | null {
   const have = weighed.filter((b) => b.verdict === 'present').length;
   const coverage = weighed.length ? Math.round((have / weighed.length) * 100) : 0;
   const missingCore = blocks.filter((b) => b.weight === 'core' && b.verdict === 'missing').map((b) => b.name);
-  return { kind: p.kind, title: ref.title, chapter: ref.chapter, principle: ref.principle, url: p.finalUrl || p.url, blocks, coverage, missingCore };
+  return { kind: p.kind, title: ref.title, chapter: ref.chapter, principle: ref.principle, url: p.finalUrl || p.url, screenshot: p.screenshot, blocks, coverage, missingCore };
 }
 
 /** Детерминированная сверка композиции разобранных страниц с эталонными прототипами. */

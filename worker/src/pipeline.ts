@@ -24,8 +24,14 @@ import { exportBenchmarkDocx } from './export/benchmarkDocx.js';
 import { buildBenchmark, narrateBenchmark, renderBenchmarkMd } from './competitor.js';
 import { exportHypothesesDocx } from './export/hypothesesDocx.js';
 import { buildHypotheses, renderHypothesesMd } from './hypotheses.js';
+import { buildMaturity, renderMaturityMd } from './maturity.js';
+import { buildScope, renderScopeMd } from './routing.js';
+import { buildCausal, renderCausalMd } from './causal.js';
+import { buildPriceChannel, renderPriceChannelMd } from './pricechannel.js';
+import { exportMaturityDocx, exportScopeDocx, exportCausalDocx, exportPriceChannelDocx } from './export/methodDocs.js';
 import { knowledgeCount } from './knowledge.js';
 import { hasKey } from './anthropic.js';
+import type { Analysis } from './analyze.js';
 
 export type AuditOptions = {
   tier?: Tier;
@@ -83,7 +89,10 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
     const id = `${prelaunch ? 'prelaunch' : slug(site)}-t${tier}-${Date.now()}`;
     const dir = join(opts.out ?? 'results', id);
     await mkdir(dir, { recursive: true });
-    await writeFile(join(dir, 'dataset.json'), JSON.stringify(ds, null, 2), 'utf8');
+    // dataset.json без тяжёлых скриншотов (они живут в памяти для документов).
+    const stripShots = (site: SiteCrawl): SiteCrawl => ({ ...site, pages: site.pages.map(({ screenshot, ...p }) => p) });
+    const dsForJson = { ...ds, client: stripShots(ds.client), competitors: ds.competitors.map(stripShots) };
+    await writeFile(join(dir, 'dataset.json'), JSON.stringify(dsForJson, null, 2), 'utf8');
     await writeFile(join(dir, 'L0-report.md'), renderL0Report(ds), 'utf8');
 
     // UX/UI-разбор дизайна против AQC-эталона — часть первого блока аудита (T1/L0,
@@ -143,6 +152,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
 
     const grounding = [engine ? engineFacts(engine) : '', money ? moneyFacts(money) : ''].filter(Boolean).join('\n\n') || undefined;
 
+    let analysisResult: Analysis | null = null;
     if (hasKey()) {
       log(`· анализ по методологии (Claude${opts.agentic ? ', агентный обход' : ''})…`);
       try {
@@ -153,6 +163,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         } else {
           analysis = await analyze(ds, grounding);
         }
+        analysisResult = analysis;
         await writeFile(join(dir, 'analysis.json'), JSON.stringify(analysis, null, 2), 'utf8');
         await writeFile(join(dir, 'AD-15.md'), renderAD15(ds, analysis, engine, money), 'utf8');
         await writeFile(join(dir, 'roadmap.md'), renderRoadmap(ds, analysis), 'utf8');
@@ -173,6 +184,31 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
     }
 
     if (!prelaunch) {
+      // Матрица зрелости (AD-16).
+      const mat = buildMaturity(ds);
+      await writeFile(join(dir, 'maturity.json'), JSON.stringify(mat, null, 2), 'utf8');
+      await writeFile(join(dir, 'Матрица-зрелости.md'), renderMaturityMd(ds, mat), 'utf8');
+      await exportMaturityDocx(ds, mat, join(dir, 'Матрица-зрелости.docx'));
+
+      // Scope программы по волнам (роутинг разрывов в плейбуки).
+      const scope = buildScope(ds, { engine, analysis: analysisResult, hasMoney: Boolean(money) });
+      await writeFile(join(dir, 'scope.json'), JSON.stringify(scope, null, 2), 'utf8');
+      await writeFile(join(dir, 'Scope-по-волнам.md'), renderScopeMd(ds, scope), 'utf8');
+      await exportScopeDocx(ds, scope, join(dir, 'Scope-по-волнам.docx'));
+
+      // Цена в канале и роль в цепочке.
+      const pc = buildPriceChannel(ds);
+      await writeFile(join(dir, 'Цена-в-канале.md'), renderPriceChannelMd(ds, pc), 'utf8');
+      await exportPriceChannelDocx(ds, pc, join(dir, 'Цена-в-канале.docx'));
+
+      // Причинно-следственная карта (нужен анализ).
+      if (analysisResult) {
+        const causal = buildCausal(analysisResult, money);
+        await writeFile(join(dir, 'Причинно-следственная-карта.md'), renderCausalMd(ds, causal), 'utf8');
+        await exportCausalDocx(ds, causal, join(dir, 'Причинно-следственная-карта.docx'));
+      }
+      log(`✓ метод-документы: зрелость (набл. ${mat.observedAvg ?? '—'}/5), scope (${scope.waves.reduce((n, w) => n + w.items.length, 0)} активаций), цена в канале, причинно-следственная карта`);
+
       const cov = buildCoverage(ds, { hasEngine: Boolean(engine), hasMoney: Boolean(money) });
       await writeFile(join(dir, 'coverage.json'), JSON.stringify(cov, null, 2), 'utf8');
       await writeFile(join(dir, 'Охват-и-уверенность.md'), renderCoverageMd(ds, cov), 'utf8');

@@ -235,6 +235,7 @@ export type PageUx = {
   kindLabel: string;
   title: string;
   score: number | null;
+  screenshot?: string;
   results: { aqc: string; domain: string; severity: Severity; title: string; standard: string; verdict: Verdict; observed: string }[];
 };
 
@@ -270,7 +271,7 @@ function evaluatePage(p: PageAudit): PageUx {
   const results = STANDARD
     .filter((c) => c.applies.includes(p.kind))
     .map((c) => { const r = c.evaluate(ux, p); return { aqc: c.aqc, domain: c.domain, severity: c.severity, title: c.title, standard: c.standard, verdict: r.verdict, observed: r.observed }; });
-  return { url: p.finalUrl || p.url, kind: p.kind, kindLabel: KIND_LABEL[p.kind], title: p.title, score: p.score, results };
+  return { url: p.finalUrl || p.url, kind: p.kind, kindLabel: KIND_LABEL[p.kind], title: p.title, score: p.score, screenshot: p.screenshot, results };
 }
 
 /** Детерминированный факт-слой UX/UI: сверка каждой разобранной страницы с AQC-эталоном. */

@@ -46,6 +46,7 @@ export type PageAudit = {
   checks: L0Check[];
   score: number | null; // % пройденных проверок против голд-стандарта
   ux?: UxProbe;         // дизайн-замеры для UX/UI-разбора
+  screenshot?: string;  // первый экран страницы (base64 jpeg) — для документов; не пишется в dataset.json
   error?: string;
 };
 
@@ -294,7 +295,13 @@ async function auditPage(page: Page, url: string, isRoot: boolean): Promise<{ au
   const passed = checks.filter((c) => c.pass).length;
   const score = checks.length ? Math.round((passed / checks.length) * 100) : null;
   const kind = classify(finalUrl, kindSignals, isRoot);
-  return { audit: { url, finalUrl, kind, status, title, checks, score, ux }, tech, links };
+  // Скриншот первого экрана — для UX/прототип-документов. Отключается NO_SCREENSHOTS=1.
+  let screenshot: string | undefined;
+  if (process.env.NO_SCREENSHOTS !== '1') {
+    const buf = await page.screenshot({ type: 'jpeg', quality: 55, clip: { x: 0, y: 0, width: 1366, height: 900 } }).catch(() => null);
+    if (buf) screenshot = buf.toString('base64');
+  }
+  return { audit: { url, finalUrl, kind, status, title, checks, score, ux, screenshot }, tech, links };
 }
 
 /** Контекст браузера с закалкой против бот-защиты (UA, заголовки, timezone, anti-webdriver). */
