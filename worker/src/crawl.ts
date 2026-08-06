@@ -34,6 +34,7 @@ export type UxProbe = {
   guestCheckoutHint: boolean;   // намёк на гостевой чекаут
   smallTapTargets: number;      // кликабельных ниже 40px (Thumb Zone)
   baseFontPx: number;           // базовый кегль (читаемость на мобильном)
+  blocks: Record<string, boolean>; // присутствие блоков композиции (для сверки с эталонным прототипом)
 };
 
 export type PageAudit = {
@@ -203,10 +204,61 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
   ($$('a, button, [role="button"], input[type="submit"]')).slice(0, 200).forEach((el) => { try { const r = el.getBoundingClientRect(); if (r.width > 0 && r.height > 0 && r.height < 40) smallTapTargets++; } catch { /* noop */ } });
   let baseFontPx = 16;
   try { baseFontPx = parseFloat(getComputedStyle(document.body).fontSize) || 16; } catch { /* noop */ }
+  // ── Присутствие блоков композиции (для сверки с эталонным прототипом страницы) ──
+  const hasSel = (s: string) => Boolean($(s));
+  const inLow = (re: RegExp) => re.test(low);
+  const inTxt = (re: RegExp) => re.test(text);
+  const blocks: Record<string, boolean> = {
+    breadcrumbs,
+    hero: hasSel('[class*="hero" i], [class*="banner" i], [class*="slider" i], [class*="slideshow" i], [class*="carousel" i]'),
+    usp_bar: hasSel('[class*="usp" i], [class*="advantage" i], [class*="benefit" i]') || inLow(/чому ми|почему мы|наші переваги|наши преимущества|why us/),
+    search: hasSel('input[type="search"], [class*="search" i] input, form[action*="search" i]'),
+    nav: Boolean(navEl && navEl.querySelectorAll('a').length >= 3),
+    product_grid: productCards >= 8,
+    trust: trustBadges || paymentIcons,
+    reviews,
+    newsletter: hasSel('[class*="newsletter" i], [class*="subscribe" i]') || inLow(/підпис|подпис|newsletter|subscribe/),
+    footer_contacts: hasSel('footer') || inTxt(/контакт|contact|адрес|адреса/),
+    category_title: hasSel('h1'),
+    category_description: hasSel('[class*="category-desc" i], [class*="cat-desc" i], [class*="seo-text" i]'),
+    product_count: hasSel('[class*="count" i], [class*="results" i]') || inTxt(/товар(ів|ов)|результат|products found/),
+    filters,
+    sort: sortControl,
+    view_toggle: hasSel('[class*="view-mode" i], [class*="grid-list" i], [class*="switch-view" i]'),
+    pagination: hasSel('[class*="pagination" i], [rel="next"], [class*="load-more" i]') || inTxt(/наступна|следующая|показати ще|показать ещё|load more/),
+    faq: hasSel('[class*="faq" i]') || inLow(/часті питання|частые вопросы/),
+    product_header: hasSel('h1'),
+    gallery: galleryImages > 0,
+    price: priceVisible,
+    add_to_cart: addToCartProminent || hasSel('[class*="add-to-cart" i], [data-add-to-cart]'),
+    variants: variantSelector,
+    delivery: inTxt(/достав|delivery|shipping/),
+    payment: paymentIcons,
+    description: hasSel('[class*="description" i], [id*="description" i], [class*="tab" i]'),
+    specifications: hasSel('[class*="spec" i], [class*="characteristic" i], [class*="attribute" i]') || inLow(/характеристик|специфікац|specifications/),
+    qa: hasSel('[class*="question" i], [class*="qa" i]') || inLow(/питання та відповіді|вопросы и ответы|q&a/),
+    video: hasSel('iframe[src*="youtube" i], iframe[src*="vimeo" i], video'),
+    related: hasSel('[class*="related" i], [class*="similar" i], [class*="recommend" i], [class*="upsell" i], [class*="cross" i]') || inLow(/схожі товари|похожие товары|з цим товаром|с этим товаром|рекоменд/),
+    recently_viewed: hasSel('[class*="recently" i], [class*="viewed" i]') || inLow(/переглянуті|просмотренные|recently viewed/),
+    qty_control: hasSel('[class*="quantity" i], [class*="qty" i], input[type="number"]'),
+    promo_code: hasSel('[class*="promo" i], [class*="coupon" i], [name*="coupon" i]') || inLow(/промокод|promo code|купон/),
+    delivery_calc: inLow(/розрахувати доставку|рассчитать доставку|calculate shipping/),
+    order_summary: hasSel('[class*="summary" i], [class*="total" i]') || inTxt(/разом до сплати|итого к оплате|order total|сума замовлення|сумма заказа/),
+    wishlist: hasSel('[class*="wishlist" i], [class*="favorite" i], [class*="favourite" i]') || inLow(/список бажань|избранное|wishlist|save for later/),
+    continue_shopping: inTxt(/продовжити покупки|продолжить покупки|continue shopping/),
+    contact_form: hasSel('form input[type="email"], form input[name*="phone" i], form input[name*="tel" i], form input[name*="name" i]'),
+    delivery_selection: hasSel('[class*="delivery" i] input[type="radio"], [class*="shipping" i] input[type="radio"], [name*="delivery" i]'),
+    payment_selection: hasSel('[class*="payment" i] input[type="radio"], [name*="payment" i]'),
+    guest_checkout: guestCheckoutHint,
+    author: hasSel('[class*="author" i], [rel="author"]') || inLow(/автор:/),
+    toc: hasSel('[class*="toc" i], [class*="table-of-contents" i], nav[class*="content" i]'),
+    share: hasSel('[class*="share" i], [class*="social" i] a'),
+  };
+
   const ux: UxProbe = {
     foldButtons, primaryCtaAboveFold, navItems, breadcrumbs, stickyHeader, headingLevels, distinctButtonColors,
     productCards, filters, sortControl, galleryImages, addToCartProminent, variantSelector, priceVisible,
-    trustBadges, paymentIcons, reviews, formFields, guestCheckoutHint, smallTapTargets, baseFontPx,
+    trustBadges, paymentIcons, reviews, formFields, guestCheckoutHint, smallTapTargets, baseFontPx, blocks,
   };
 
   return { checks: out, kindSignals, tech, ux };

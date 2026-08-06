@@ -16,6 +16,8 @@ import { exportAD15Pptx } from './export/pptx.js';
 import { exportReportDocx } from './export/docx.js';
 import { exportUxUiDocx } from './export/uxuiDocx.js';
 import { buildUxUiReport, narrateUxUi, renderUxUiMd } from './uxui.js';
+import { exportPrototypeDocx } from './export/prototypeDocx.js';
+import { buildPrototypeReport, narratePrototype, renderPrototypeMd } from './prototype.js';
 import { hasKey } from './anthropic.js';
 
 export type AuditOptions = {
@@ -88,6 +90,18 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       await writeFile(join(dir, 'UX-UI-разбор.md'), renderUxUiMd(ds, uxui), 'utf8');
       await exportUxUiDocx(ds, uxui, join(dir, 'UX-UI-разбор.docx'));
       log(`✓ UX/UI-разбор: провалов критериев ${uxui.counts.fail} (Critical ${uxui.bySeverity.Critical}, High ${uxui.bySeverity.High})`);
+
+      // Эталонный прототип ↔ композиция клиента (block-by-block, путь клиента против эталона).
+      log('· эталонный прототип ↔ композиция клиента…');
+      const proto = buildPrototypeReport(ds);
+      if (hasKey()) {
+        try { proto.narrative = (await narratePrototype(ds, proto)) ?? undefined; }
+        catch (e) { log(`⚠️ нарратив прототипа не отработал (${String(e).slice(0, 100)}) — оставляю сверку`); }
+      }
+      await writeFile(join(dir, 'prototype.json'), JSON.stringify(proto, null, 2), 'utf8');
+      await writeFile(join(dir, 'Эталон-vs-композиция.md'), renderPrototypeMd(ds, proto), 'utf8');
+      await exportPrototypeDocx(ds, proto, join(dir, 'Эталон-vs-композиция.docx'));
+      log(`✓ прототип-сверка: разобрано типов страниц ${proto.pages.length}`);
     }
 
     let engine: EngineResult | null = null;
