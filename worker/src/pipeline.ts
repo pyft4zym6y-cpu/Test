@@ -47,7 +47,15 @@ export type AuditOptions = {
   log?: (m: string) => void;
 };
 
-export type AuditResult = { id: string; dir: string; summary: string; files: string[] };
+export type AuditMetrics = {
+  compliance: number | null;
+  confidence: { score: number; base: number } | null;
+  health: number | null;
+  benchmarkIndex: number | null;
+  aqcFails: number | null;
+  potentialYear: number | null;
+};
+export type AuditResult = { id: string; dir: string; summary: string; files: string[]; metrics: AuditMetrics };
 
 function slug(url: string): string {
   try { return new URL(url).hostname.replace(/^www\./, '').replace(/[^a-z0-9]+/gi, '-'); }
@@ -56,6 +64,7 @@ function slug(url: string): string {
 
 export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
   const log = opts.log ?? ((m: string) => console.log(m));
+  const metrics: AuditMetrics = { compliance: null, confidence: null, health: null, benchmarkIndex: null, aqcFails: null, potentialYear: null };
   const prelaunch = Boolean(opts.prelaunch);
   const tier: Tier = prelaunch ? 0 : ((opts.tier ?? 1) as Tier);
   const site = opts.site ?? '';
@@ -100,6 +109,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
     if (!prelaunch) {
       log('· UX/UI-разбор страниц против эталона (AQC)…');
       const uxui = buildUxUiReport(ds);
+      metrics.aqcFails = uxui.counts.fail;
       if (hasKey()) {
         try { uxui.narrative = (await narrateUxUi(ds, uxui)) ?? undefined; }
         catch (e) { log(`⚠️ нарратив UX/UI не отработал (${String(e).slice(0, 100)}) — оставляю факт-слой`); }
@@ -124,6 +134,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       // Конкурентный бенчмарк (AD-11) — когда есть обойдённые конкуренты.
       const bench = buildBenchmark(ds);
       if (bench) {
+        metrics.benchmarkIndex = bench.clientIndex;
         log('· конкурентный бенчмарк (AD-11)…');
         if (hasKey()) {
           try { bench.narrative = (await narrateBenchmark(ds, bench)) ?? undefined; }
@@ -139,6 +150,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
     let engine: EngineResult | null = null;
     if (opts.answers) {
       engine = computeEngine(normalizeAnswers(opts.answers));
+      metrics.health = engine.score;
       await writeFile(join(dir, 'engine.json'), JSON.stringify(engine, null, 2), 'utf8');
       log(`· движок: Health Score ${engine.score ?? '—'}/100, разрывов ${engine.gaps.length}, решений ${engine.decisions.length}`);
     }
@@ -146,6 +158,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
     let money: MoneyResult | null = null;
     if (opts.baseline?.levers) {
       money = computeMoney(opts.baseline.levers, opts.baseline.extra ?? []);
+      metrics.potentialYear = money.potentialYear;
       await writeFile(join(dir, 'money.json'), JSON.stringify(money, null, 2), 'utf8');
       log(`· деньги: недополучено ≈ ${Math.round(money.potentialYear).toLocaleString('ru-RU')} ₴/год`);
     }
@@ -210,6 +223,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       log(`✓ метод-документы: зрелость (набл. ${mat.observedAvg ?? '—'}/5), scope (${scope.waves.reduce((n, w) => n + w.items.length, 0)} активаций), цена в канале, причинно-следственная карта`);
 
       const cov = buildCoverage(ds, { hasEngine: Boolean(engine), hasMoney: Boolean(money) });
+      metrics.confidence = { score: cov.confidence.score, base: cov.confidence.base };
       await writeFile(join(dir, 'coverage.json'), JSON.stringify(cov, null, 2), 'utf8');
       await writeFile(join(dir, 'Охват-и-уверенность.md'), renderCoverageMd(ds, cov), 'utf8');
       await exportCoverageDocx(ds, cov, join(dir, 'Охват-и-уверенность.docx'));
@@ -218,11 +232,12 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
 
     const files = (await readdir(dir)).sort();
     const cs = client.pages.filter((p) => p.score !== null);
+    metrics.compliance = cs.length ? Math.round(cs.reduce((s, p) => s + (p.score ?? 0), 0) / cs.length) : null;
     const parts = [`${files.length} файлов`];
-    if (cs.length) parts.push(`соответствие ${Math.round(cs.reduce((s, p) => s + (p.score ?? 0), 0) / cs.length)}%`);
+    if (metrics.compliance != null) parts.push(`соответствие ${metrics.compliance}%`);
     if (engine?.score != null) parts.push(`Health Score ${engine.score}/100`);
     if (money) parts.push(`недополучено ≈ ${Math.round(money.potentialYear).toLocaleString('ru-RU')} ₴/год`);
-    return { id, dir, summary: parts.join(' · '), files };
+    return { id, dir, summary: parts.join(' · '), files, metrics };
   } finally {
     await browser.close().catch(() => {});
   }
