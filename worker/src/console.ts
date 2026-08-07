@@ -87,6 +87,10 @@ details>summary{cursor:pointer;color:var(--mut);font-size:13px;margin-top:4px}
       <div><label>Запрос <span class="hint">— что смотреть</span></label><input id="req" type="text" placeholder="где теряем деньги"></div>
     </div>
     <label class="chk"><input id="agentic" type="checkbox"> Агентный обход <span class="hint">— глубже, дольше</span></label>
+    <details><summary>Из базы клиентов (Supabase, если подключена)</summary>
+      <label>ID клиента <span class="hint">— тянет сайт/ответы/финансы из карточки и пишет результат обратно</span></label>
+      <input id="clientId" type="text" placeholder="uuid карточки клиента">
+    </details>
     <details><summary>Данные для T2–T4 (Health Score и деньги)</summary>
       <label>Ответы опросника <span class="hint">— файл .json (карта вопрос→ответ)</span></label>
       <input id="answers" type="file" accept=".json,application/json">
@@ -138,7 +142,7 @@ function setConn(on,txt){var p=$('conn'); p.textContent=txt; p.className='pill '
 
 function ping(){var s=$('ping'); s.textContent='проверяю…'; s.className='status';
   fetch('/health').then(function(r){return r.json()}).then(function(d){
-    if(d&&d.ok){var k=(typeof d.knowledge==='number'?' · пакетов знаний: '+d.knowledge:''); s.textContent='на связи · ключ Claude: '+(d.hasKey?'есть':'НЕТ')+k; s.className='status ok'; setConn(true,'на связи'+(d.hasKey?'':' · без ключа'));}
+    if(d&&d.ok){var k=(typeof d.knowledge==='number'?' · знаний: '+d.knowledge:''); var st=(d.store?' · база: подключена':''); s.textContent='на связи · ключ Claude: '+(d.hasKey?'есть':'НЕТ')+k+st; s.className='status ok'; setConn(true,'на связи'+(d.hasKey?'':' · без ключа'));}
     else{s.textContent='неожиданный ответ'; s.className='status err'; setConn(false,'ошибка');}
   }).catch(function(){s.textContent='нет связи'; s.className='status err'; setConn(false,'нет связи');});
 }
@@ -156,6 +160,7 @@ function run(){
       competitors:$('comp').value.split('\\n').map(function(x){return x.trim()}).filter(Boolean),
       request:$('req').value.trim(), agentic:$('agentic').checked,
       prelaunch:$('pre').checked, brief:$('brief').value.trim(),
+      clientId:$('clientId').value.trim(),
       answers:answers||null, baseline:baseline||null};
     if(!body.site&&!body.prelaunch){s.textContent='укажите сайт (или отметьте предзапуск)'; s.className='status err'; return;}
     $('go').disabled=true; s.textContent='ставлю в очередь…'; s.className='status';

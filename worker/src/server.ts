@@ -22,6 +22,7 @@ import { hasKey } from './anthropic.js';
 import { knowledgeCount } from './knowledge.js';
 import { CONSOLE_HTML } from './console.js';
 import { makeZip } from './zip.js';
+import { storeEnabled, getClientBundle, saveRun } from './store.js';
 
 const TOKEN = process.env.AUDIT_SERVER_TOKEN || '';
 const PORT = Number(process.env.PORT || 8787);
@@ -38,7 +39,7 @@ type Job = {
   id: string; client: string; tier: number; status: 'queued' | 'running' | 'done' | 'error';
   startedAt: number; finishedAt?: number; log: string[]; summary?: string;
   metrics?: AuditMetrics; resultId?: string; files?: FileRef[]; error?: string;
-  opts?: Record<string, unknown>;
+  opts?: Record<string, unknown>; clientId?: string;
 };
 
 const jobs = new Map<string, Job>();
@@ -73,6 +74,10 @@ async function processQueue(): Promise<void> {
     job.files = r.files.filter((n) => n !== 'job.json').map((n) => ({ name: n, url: `/result/${r.id}/${encodeURIComponent(n)}`, category: categorize(n) }));
     job.status = 'done'; job.finishedAt = Date.now();
     await writeFile(join(OUT, r.id, 'job.json'), JSON.stringify(persistView(job)), 'utf8').catch(() => {});
+    if (job.clientId && storeEnabled()) {
+      const ok = await saveRun(job.clientId, { runId: r.id, summary: r.summary, metrics: r.metrics, files: job.files.map((f) => ({ name: f.name, url: f.url })) });
+      job.log.push(ok ? '· результат записан в карточку клиента (Supabase)' : '⚠️ не удалось записать результат в Supabase');
+    }
   } catch (e) {
     job.status = 'error'; job.error = String(e).slice(0, 600); job.finishedAt = Date.now();
   } finally {
@@ -121,7 +126,7 @@ const server = createServer(async (req, res) => {
   const url = new URL(req.url || '/', 'http://localhost');
   const path = url.pathname;
 
-  if (path === '/health') { json(res, 200, { ok: true, hasKey: hasKey(), knowledge: await knowledgeCount() }); return; }
+  if (path === '/health') { json(res, 200, { ok: true, hasKey: hasKey(), knowledge: await knowledgeCount(), store: storeEnabled() }); return; }
   if (req.method === 'GET' && (path === '/' || path === '/admin')) { cors(res); res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); res.end(CONSOLE_HTML); return; }
 
   // ниже — только по токену
@@ -132,9 +137,22 @@ const server = createServer(async (req, res) => {
   if (req.method === 'POST' && path === '/audit') {
     try {
       const opts = JSON.parse((await readBody(req)) || '{}');
+      const clientId = typeof opts.clientId === 'string' ? opts.clientId.trim() : '';
+      // Коннектор: если задан clientId — дотягиваем вход из карточки клиента (Supabase).
+      if (clientId && storeEnabled()) {
+        const b = await getClientBundle(clientId);
+        if (b) {
+          opts.site = opts.site || b.site;
+          opts.competitors = (opts.competitors && opts.competitors.length) ? opts.competitors : b.competitors;
+          opts.request = opts.request || b.request;
+          opts.tier = opts.tier || b.tier;
+          opts.answers = opts.answers || b.answers;
+          opts.baseline = opts.baseline || b.baseline;
+        }
+      }
       const id = randomUUID();
-      const client = (() => { try { return opts.prelaunch ? 'предзапуск' : new URL(opts.site).hostname.replace(/^www\./, ''); } catch { return opts.site || '—'; } })();
-      const job: Job = { id, client, tier: Number(opts.tier ?? 1), status: 'queued', startedAt: Date.now(), log: [], opts };
+      const client = (() => { try { return opts.prelaunch ? 'предзапуск' : new URL(opts.site).hostname.replace(/^www\./, ''); } catch { return opts.site || clientId || '—'; } })();
+      const job: Job = { id, client, tier: Number(opts.tier ?? 1), status: 'queued', startedAt: Date.now(), log: [], opts, clientId: clientId || undefined };
       jobs.set(id, job);
       queue.push(id);
       setImmediate(processQueue);
