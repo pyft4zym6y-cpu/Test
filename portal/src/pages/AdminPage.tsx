@@ -7,8 +7,18 @@ import { useApp } from '../App';
 type ClientRow = { id: string; name: string; locked?: boolean };
 type MemberRow = { email: string; client_id: string | null; name: string | null; role: string | null; is_admin: boolean };
 
+/* Пароль, который удобно продиктовать: без похожих символов (0/O, 1/l). */
+const genPassword = () => {
+  const abc = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  let s = '';
+  const buf = new Uint32Array(12);
+  crypto.getRandomValues(buf);
+  for (const n of buf) s += abc[n % abc.length];
+  return s;
+};
+
 export default function AdminPage() {
-  const { member } = useApp();
+  const { member, session } = useApp();
   const [clients, setClients] = useState<ClientRow[]>([]);
   const [members, setMembers] = useState<MemberRow[]>([]);
   const [answers, setAnswers] = useState<any[]>([]);
@@ -58,11 +68,57 @@ export default function AdminPage() {
     load();
   };
 
-  /* Отзыв доступа: строка удаляется из members → is_invited=false, войти больше нельзя. */
+  /* Серверные операции с учётками (создать/сменить пароль/удалить) — через
+     /api/brief-users с service-ключом; фронт передаёт свой JWT для проверки прав. */
+  const userApi = async (action: string, email: string, password?: string) => {
+    try {
+      const r = await fetch('/api/brief-users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token ?? ''}` },
+        body: JSON.stringify({ action, email, password }),
+      });
+      return await r.json();
+    } catch {
+      return { error: 'API недоступно (работает на weexp.agency/brief, не в демо)' };
+    }
+  };
+
+  /* Выдача доступа: создаём участника + учётку с паролем. Пару отдаёте клиенту сами. */
+  const [issue, setIssue] = useState({ clientId: '', email: '', name: '', role: 'CEO', password: genPassword() });
+  const [issued, setIssued] = useState<{ email: string; password: string } | null>(null);
+  const issueLogin = async () => {
+    if (!issue.email || !issue.clientId) { setMsg('Выберите клиента и укажите email'); return; }
+    const em = issue.email.trim().toLowerCase();
+    const j = await userApi('create', em, issue.password);
+    if (j.error) { setMsg(`Ошибка: ${j.error}`); return; }
+    const { error } = await supabase.from('members').upsert(
+      { email: em, client_id: issue.clientId, name: issue.name || null, role: issue.role },
+      { onConflict: 'email' },
+    );
+    if (error) { setMsg(`Учётка создана, но участник не добавлен: ${error.message}`); return; }
+    setIssued({ email: em, password: issue.password });
+    setMsg(j.note ? `Готово (${j.note})` : 'Доступ выдан — передайте пару клиенту');
+    setIssue({ ...issue, email: '', name: '', password: genPassword() });
+    load();
+  };
+
+  const changePassword = async (email: string) => {
+    const npw = genPassword();
+    if (!window.confirm(`Сменить пароль для ${email}?\n\nНовый пароль: ${npw}\n\nОн будет показан ещё раз после смены.`)) return;
+    const j = await userApi('set_password', email, npw);
+    if (j.error) { setMsg(`Ошибка: ${j.error}`); return; }
+    setIssued({ email, password: npw });
+    setMsg(`Пароль для ${email} изменён — старый больше не действует`);
+  };
+
+  /* Отзыв доступа: удаляем участника (is_invited=false) и учётку в auth —
+     войти нельзя ни по ссылке, ни по старому паролю. */
   const revokeMember = async (email: string) => {
     if (!window.confirm(`Отозвать доступ у ${email}? Войти в бриф этот адрес больше не сможет.`)) return;
     const { error } = await supabase.from('members').delete().eq('email', email);
-    setMsg(error ? `Ошибка: ${error.message}` : `Доступ ${email} отозван`);
+    if (error) { setMsg(`Ошибка: ${error.message}`); return; }
+    const j = await userApi('delete', email);
+    setMsg(j.error ? `Участник удалён; учётка auth: ${j.error}` : `Доступ ${email} отозван полностью`);
     load();
   };
 
@@ -109,7 +165,7 @@ export default function AdminPage() {
             </div>
           </div>
           <div className="card">
-            <h2 style={{ fontSize: 15 }}>Пригласить участника</h2>
+            <h2 style={{ fontSize: 15 }}>Пригласить участника (вход по ссылке на почту)</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
               <select value={inv.clientId} onChange={(e) => setInv({ ...inv, clientId: e.target.value })}>
                 <option value="">— клиент —</option>
@@ -125,6 +181,50 @@ export default function AdminPage() {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {!DEMO && (
+        <div className="card" style={{ marginTop: 14, borderColor: 'rgba(101,163,13,0.45)' }}>
+          <h2 style={{ fontSize: 15 }}>Выдать логин и пароль (генерируются здесь, передаёте сами)</h2>
+          <p className="sub" style={{ fontSize: 12, marginTop: 4 }}>
+            Пара создаётся на вашей стороне — вы сами решаете, кому её передать. Пароль в любой
+            момент можно сменить (🔑 у участника), доступ — закрыть (✕).
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10, alignItems: 'center' }}>
+            <select value={issue.clientId} onChange={(e) => setIssue({ ...issue, clientId: e.target.value })} style={{ maxWidth: 180 }}>
+              <option value="">— клиент —</option>
+              {clients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+            <input type="email" placeholder="email (это логин)" value={issue.email} onChange={(e) => setIssue({ ...issue, email: e.target.value })} style={{ maxWidth: 220 }} />
+            <input type="text" placeholder="Имя" value={issue.name} onChange={(e) => setIssue({ ...issue, name: e.target.value })} style={{ maxWidth: 130 }} />
+            <select value={issue.role} onChange={(e) => setIssue({ ...issue, role: e.target.value })} style={{ maxWidth: 130 }}>
+              {['CEO', 'Head E-com', 'CFO', 'COO', 'CRM', 'Маркетинг', 'Другое'].map((r) => <option key={r}>{r}</option>)}
+            </select>
+            <input type="text" className="mono" value={issue.password} onChange={(e) => setIssue({ ...issue, password: e.target.value })} style={{ maxWidth: 150 }} title="Пароль — можно свой" />
+            <button className="chip" onClick={() => setIssue({ ...issue, password: genPassword() })} title="Сгенерировать другой">↺</button>
+            <button className="btn" style={{ padding: '10px 16px' }} onClick={issueLogin}>Выдать доступ</button>
+          </div>
+          {issued && (
+            <div className="note" style={{ marginTop: 12 }}>
+              <b>Передайте клиенту</b> (показывается один раз, потом пароль можно только сменить):
+              <div className="mono" style={{ marginTop: 6, fontSize: 13 }}>
+                Адрес: https://weexp.agency/brief/ · вкладка «войти с паролем»<br />
+                Логин: <b>{issued.email}</b><br />
+                Пароль: <b>{issued.password}</b>
+              </div>
+              <button
+                className="chip"
+                style={{ marginTop: 8 }}
+                onClick={() => {
+                  navigator.clipboard?.writeText(`Доступ к брифу weexp · Commerce OS\n\n1. Откройте https://weexp.agency/brief/\n2. Нажмите «войти с паролем»\n3. Логин: ${issued.email}\n   Пароль: ${issued.password}\n\nЗаполнять можно с любого устройства, всё сохраняется автоматически.`);
+                  setMsg('Инструкция с логином и паролем скопирована');
+                }}
+              >
+                Скопировать инструкцию для клиента 📋
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -168,6 +268,13 @@ export default function AdminPage() {
                           <span key={m.email} className="tag" style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
                             {m.name ? `${m.name} · ` : ''}{m.email}{m.role ? ` (${m.role})` : ''}
                             <button
+                              onClick={() => changePassword(m.email)}
+                              title="Сменить пароль (старый перестанет работать)"
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                            >
+                              🔑
+                            </button>
+                            <button
                               onClick={() => revokeMember(m.email)}
                               title="Отозвать доступ"
                               style={{ background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', fontWeight: 800, padding: 0 }}
@@ -186,7 +293,8 @@ export default function AdminPage() {
         </tbody>
       </table>
       <p className="sub" style={{ fontSize: 12, marginTop: 14 }}>
-        «✕» у участника отзывает доступ немедленно (адрес больше не сможет войти).
+        «🔑» — сменить пароль участнику (старый сразу перестаёт работать). «✕» — отозвать доступ
+        полностью: удаляем и участника, и учётную запись, войти нельзя ни по паролю, ни по ссылке.
         «🔒» закрывает приём ответов: бриф у клиента становится только для чтения — блокировка
         работает и на уровне базы данных.
       </p>

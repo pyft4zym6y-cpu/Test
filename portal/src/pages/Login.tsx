@@ -54,7 +54,7 @@ export default function Login() {
       <p className="sub" style={{ marginBottom: 22 }}>
         {mode === 'link'
           ? 'Опросники и передача доступов для аудита. Введите рабочий e-mail — пришлём ссылку для входа, пароль не нужен.'
-          : 'Вход для команды weexp: email и пароль, заданный в админке.'}
+          : 'Введите логин и пароль, которые мы вам передали.'}
       </p>
       {sent ? (
         <div className="card">
@@ -102,12 +102,12 @@ export default function Login() {
             onClick={() => { setMode(mode === 'link' ? 'password' : 'link'); setErr(''); setNotInvited(false); }}
             style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: 11.5, cursor: 'pointer', textAlign: 'left', padding: 0 }}
           >
-            {mode === 'link' ? 'Я консультант — войти с паролем →' : '← Клиентский вход по ссылке на почту'}
+            {mode === 'link' ? 'У меня есть логин и пароль — войти с паролем →' : '← Войти по ссылке на почту'}
           </button>
         </form>
       )}
       <p className="sub" style={{ fontSize: 11.5, marginTop: 16 }}>
-        Мы не запрашиваем пароли у клиентов и не передаём данные третьим лицам ·{' '}
+        Доступ — только по приглашению, данные не передаются третьим лицам ·{' '}
         <Link to="/privacy" style={{ color: 'var(--lime-dark)' }}>как мы обращаемся с данными →</Link>
       </p>
     </div>
