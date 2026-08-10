@@ -48,7 +48,7 @@ weexp — консалтинг e-commerce по методологии **Commerce
 - **kp.ts** — коммерческое предложение.
 - **knowledge.ts** + `worker/knowledge/*.md` — «пакеты знаний»: методичка = md-файл,
   подмешивается в анализ (scope: analyze|uxui|prototype|all). Проверка: `/health`→`knowledge`.
-- **store.ts** — коннектор Supabase (см. правку №1 ниже).
+- **store.ts** — коннектор Supabase: читает `clients`+`answers`, пишет `report_meta`.
 - **zip.ts** — единый .zip-пакет прогона.
 
 Проверка сборки: `cd worker && npm run typecheck`. Тесты детерминированных кусков
@@ -81,14 +81,15 @@ Railway/Supabase. При необходимости владелец встав�
 
 ## 5. Открытые задачи (по приоритету)
 
-1. **Правка №1 — коннектор к РЕАЛЬНОЙ схеме.** `store.ts` сейчас читает выдуманную
-   `audit_clients` — это ДУБЛЬ. Правильно: читать `clients` + агрегировать `answers`
-   (по client_id: `{question_id: answer}` → это и есть `answers` для движка) +
-   `access_status`; писать итог в `report_meta` (money/l0/summary) или в новую
-   `audit_runs(client_id references clients)`. Удалить `worker/supabase/audit-schema.sql`
-   (дубль) — вместо неё использовать существующую схему портала.
-2. **Сайт пишет данные** — чтобы поток был автоматическим, портал уже пишет `answers`;
-   аудитору остаётся их читать (см. п.1). Доступы (`access_status`) — тоже вход.
+1. ✅ **Правка №1 — сделано.** `store.ts` читает существующую схему портала:
+   `clients` (имя) + `answers` (агрегирует в `{question_id: answer}` для движка) и
+   пишет итог прогона в `report_meta` (upsert по `client_id`: `summary` + `l0{runId,
+   metrics,files}`). Дубль `worker/supabase/audit-schema.sql` удалён — отдельная схема
+   не нужна, используется `portal/supabase/schema.sql`. Осталось по желанию: подтянуть
+   URL сайта/конкурентов из соответствующих `answers` (сейчас их вводит оператор),
+   писать также `access_status` как вход и `money` в `report_meta`.
+2. **Сайт уже пишет `answers`** (портал). Аудитор их читает (п.1). Доступы
+   (`access_status`) — потенциальный доп. вход.
 3. **Отдельный репозиторий `audit-worker`** — вынести аудитор из repo сайта. Комплект
    собран локально; запушить не удалось (нужно `add_repo` push + Allow). Альтернатива
    уже применена: Vercel отключён для моей ветки.

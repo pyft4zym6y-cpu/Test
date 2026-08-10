@@ -87,9 +87,9 @@ details>summary{cursor:pointer;color:var(--mut);font-size:13px;margin-top:4px}
       <div><label>Запрос <span class="hint">— что смотреть</span></label><input id="req" type="text" placeholder="где теряем деньги"></div>
     </div>
     <label class="chk"><input id="agentic" type="checkbox"> Агентный обход <span class="hint">— глубже, дольше</span></label>
-    <details><summary>Из базы клиентов (Supabase, если подключена)</summary>
-      <label>ID клиента <span class="hint">— тянет сайт/ответы/финансы из карточки и пишет результат обратно</span></label>
-      <input id="clientId" type="text" placeholder="uuid карточки клиента">
+    <details><summary>Из базы опросника (Supabase, если подключена)</summary>
+      <label>ID клиента <span class="hint">— тянет ответы опросника из базы портала и пишет итог в report_meta</span></label>
+      <input id="clientId" type="text" placeholder="uuid клиента (таблица clients)">
     </details>
     <details><summary>Данные для T2–T4 (Health Score и деньги)</summary>
       <label>Ответы опросника <span class="hint">— файл .json (карта вопрос→ответ)</span></label>

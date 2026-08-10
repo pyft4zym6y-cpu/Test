@@ -138,20 +138,14 @@ const server = createServer(async (req, res) => {
     try {
       const opts = JSON.parse((await readBody(req)) || '{}');
       const clientId = typeof opts.clientId === 'string' ? opts.clientId.trim() : '';
-      // Коннектор: если задан clientId — дотягиваем вход из карточки клиента (Supabase).
+      // Коннектор: если задан clientId — дотягиваем ответы опросника из базы портала.
+      let bundleName: string | undefined;
       if (clientId && storeEnabled()) {
         const b = await getClientBundle(clientId);
-        if (b) {
-          opts.site = opts.site || b.site;
-          opts.competitors = (opts.competitors && opts.competitors.length) ? opts.competitors : b.competitors;
-          opts.request = opts.request || b.request;
-          opts.tier = opts.tier || b.tier;
-          opts.answers = opts.answers || b.answers;
-          opts.baseline = opts.baseline || b.baseline;
-        }
+        if (b) { opts.answers = opts.answers || b.answers; bundleName = b.name; }
       }
       const id = randomUUID();
-      const client = (() => { try { return opts.prelaunch ? 'предзапуск' : new URL(opts.site).hostname.replace(/^www\./, ''); } catch { return opts.site || clientId || '—'; } })();
+      const client = (() => { try { return opts.prelaunch ? 'предзапуск' : new URL(opts.site).hostname.replace(/^www\./, ''); } catch { return bundleName || opts.site || clientId || '—'; } })();
       const job: Job = { id, client, tier: Number(opts.tier ?? 1), status: 'queued', startedAt: Date.now(), log: [], opts, clientId: clientId || undefined };
       jobs.set(id, job);
       queue.push(id);

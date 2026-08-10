@@ -1,13 +1,13 @@
 /**
- * Коннектор аудитор ↔ Supabase (хаб данных). Делает «карточку клиента» источником
- * правды: аудитор ЧИТАЕТ вход по clientId (сайт, конкуренты, ответы опросника,
- * baseline) и ПИШЕТ результат прогона обратно — чтобы и оператор, и клиент видели
- * итог из одного места, без ручного переноса.
+ * Коннектор аудитор ↔ Supabase портала (единый хаб данных). Работает с
+ * СУЩЕСТВУЮЩЕЙ схемой опросника (`portal/supabase/schema.sql`), без дублей:
+ *   читает  clients (имя) + answers (ответы опросника по client_id)
+ *   пишет   report_meta (итог: summary + l0{runId,metrics,files}) — оттуда портал
+ *           показывает результат клиенту/оператору.
  *
- * Через Supabase REST (без SDK). Включается переменными окружения:
+ * Включается переменными окружения того же проекта Supabase, что и портал:
  *   SUPABASE_URL, SUPABASE_SERVICE_KEY  (service role — только на сервере).
- * Схема таблиц — worker/supabase/audit-schema.sql. Если переменных нет — коннектор
- * выключен, аудитор работает как раньше (данные вводятся в форме).
+ * Нет переменных — коннектор выключен, аудитор работает как раньше (ввод в форме).
  */
 const URL = process.env.SUPABASE_URL?.replace(/\/$/, '');
 const KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -15,12 +15,8 @@ const KEY = process.env.SUPABASE_SERVICE_KEY;
 export const storeEnabled = (): boolean => Boolean(URL && KEY);
 
 export type ClientBundle = {
-  site?: string;
-  competitors?: string[];
-  request?: string;
-  tier?: number;
-  answers?: Record<string, unknown> | null;
-  baseline?: unknown;
+  name?: string;
+  answers?: Record<string, string> | null; // {question_id: answer} — из таблицы answers
 };
 
 async function rest(path: string, init: RequestInit = {}): Promise<Response> {
@@ -35,36 +31,45 @@ async function rest(path: string, init: RequestInit = {}): Promise<Response> {
   });
 }
 
-/** Тянет вход аудита по карточке клиента. null — если выключено/не найдено/ошибка. */
+/** Тянет имя клиента и его ответы опросника. null — если выключено/не найдено/ошибка. */
 export async function getClientBundle(clientId: string): Promise<ClientBundle | null> {
   if (!storeEnabled() || !clientId) return null;
   try {
-    const r = await rest(`audit_clients?id=eq.${encodeURIComponent(clientId)}&select=site,competitors,request,tier,answers,baseline&limit=1`);
-    if (!r.ok) return null;
-    const rows = (await r.json()) as any[];
-    const row = rows?.[0];
-    if (!row) return null;
-    return {
-      site: row.site ?? undefined,
-      competitors: Array.isArray(row.competitors) ? row.competitors : undefined,
-      request: row.request ?? undefined,
-      tier: typeof row.tier === 'number' ? row.tier : undefined,
-      answers: row.answers ?? null,
-      baseline: row.baseline ?? null,
-    };
+    const id = encodeURIComponent(clientId);
+    const [cRes, aRes] = await Promise.all([
+      rest(`clients?id=eq.${id}&select=name&limit=1`),
+      rest(`answers?client_id=eq.${id}&select=question_id,answer&limit=2000`),
+    ]);
+    let name: string | undefined;
+    if (cRes.ok) { const rows = (await cRes.json()) as any[]; name = rows?.[0]?.name ?? undefined; }
+    let answers: Record<string, string> | null = null;
+    if (aRes.ok) {
+      const rows = (await aRes.json()) as { question_id: string; answer: string | null }[];
+      if (Array.isArray(rows) && rows.length) {
+        answers = {};
+        for (const r of rows) if (r.question_id && r.answer != null && r.answer !== '') answers[r.question_id] = r.answer;
+      }
+    }
+    if (name === undefined && !answers) return null;
+    return { name, answers };
   } catch { return null; }
 }
 
 export type RunRecord = { runId: string; summary: string; metrics: unknown; files: { name: string; url: string }[] };
 
-/** Пишет результат прогона в карточку клиента (best-effort — не роняет аудит). */
+/** Пишет итог прогона в report_meta клиента (upsert по client_id). best-effort. */
 export async function saveRun(clientId: string, run: RunRecord): Promise<boolean> {
   if (!storeEnabled() || !clientId) return false;
   try {
-    const r = await rest('audit_runs', {
+    const r = await rest('report_meta?on_conflict=client_id', {
       method: 'POST',
-      headers: { Prefer: 'return=minimal' },
-      body: JSON.stringify({ client_id: clientId, run_id: run.runId, summary: run.summary, metrics: run.metrics, files: run.files }),
+      headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({
+        client_id: clientId,
+        status: 'ready',
+        summary: run.summary,
+        l0: { runId: run.runId, metrics: run.metrics, files: run.files, updatedAt: new Date().toISOString() },
+      }),
     });
     return r.ok;
   } catch { return false; }
