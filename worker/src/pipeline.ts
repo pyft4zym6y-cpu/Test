@@ -70,13 +70,22 @@ function slug(url: string): string {
   catch { return 'site'; }
 }
 
+/** Достроить схему к «голому» домену (lanavitta.com → https://lanavitta.com/),
+ *  иначе page.goto падает с «Cannot navigate to invalid URL». */
+function normalizeUrl(raw: string): string {
+  const s = (raw || '').trim().replace(/\s+/g, '');
+  if (!s) return '';
+  const withScheme = /^https?:\/\//i.test(s) ? s : `https://${s}`;
+  try { return new URL(withScheme).toString(); } catch { return withScheme; }
+}
+
 export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
   const log = opts.log ?? ((m: string) => console.log(m));
   const metrics: AuditMetrics = { compliance: null, confidence: null, health: null, benchmarkIndex: null, aqcFails: null, potentialYear: null };
   const prelaunch = Boolean(opts.prelaunch);
   const tier: Tier = prelaunch ? 0 : ((opts.tier ?? 1) as Tier);
-  const site = opts.site ?? '';
-  const competitors = opts.competitors ?? [];
+  const site = normalizeUrl(opts.site ?? '');
+  const competitors = (opts.competitors ?? []).map(normalizeUrl).filter(Boolean);
   if (!site && !prelaunch) throw new Error('Нужен site (или prelaunch для проекта без сайта)');
 
   const spec = TIERS[tier];
