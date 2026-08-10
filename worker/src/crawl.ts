@@ -276,12 +276,22 @@ function classify(url: string, sig: Record<string, boolean>, isRoot: boolean): P
 
 async function auditPage(page: Page, url: string, isRoot: boolean): Promise<{ audit: PageAudit; tech: string[]; links: string[] }> {
   let status: number | null = null;
+  const fail = (msg: string, fUrl = url, ttl = ''): { audit: PageAudit; tech: string[]; links: string[] } =>
+    ({ audit: { url, finalUrl: fUrl, kind: 'other', status, title: ttl, checks: [], score: null, error: msg }, tech: [], links: [] });
   try {
     const resp = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 25000 });
     status = resp?.status() ?? null;
     await page.waitForTimeout(1200); // дать JS дорисоваться
   } catch (e) {
-    return { audit: { url, finalUrl: url, kind: 'other', status, title: '', checks: [], score: null, error: String(e).slice(0, 140) }, tech: [], links: [] };
+    return fail(`сеть: ${String(e).slice(0, 130)}`);
+  }
+  // page.goto НЕ бросает на HTTP-ошибке — проверяем статус сами, иначе страница
+  // «403 Access Denied» ушла бы в аудит как валидная и дала бы мусорный результат.
+  if (status !== null && status >= 400) {
+    const blocked = status === 401 || status === 403 || status === 429;
+    return fail(blocked
+      ? `доступ заблокирован: HTTP ${status} (WAF/бот-защита) — нужен headful/stealth-режим или доступ от клиента`
+      : `сайт вернул HTTP ${status}`, page.url());
   }
   const finalUrl = page.url();
   const title = await page.title().catch(() => '');
@@ -377,7 +387,9 @@ export async function crawlSite(
   };
   try {
     const home = await auditPage(page, rootUrl, true);
-    out.reachable = !home.audit.error && home.audit.status !== 0;
+    // Достижим = нет ошибки И статус в успешном диапазоне (2xx/3xx). HTTP-ошибку
+    // (403/404/5xx) и сетевой сбой auditPage уже пометил как error выше.
+    out.reachable = !home.audit.error && (home.audit.status === null || (home.audit.status >= 200 && home.audit.status < 400));
     out.finalUrl = home.audit.finalUrl;
     out.pages.push(home.audit);
     if (home.audit.error && !out.pages.some((p) => !p.error)) out.error = home.audit.error;
@@ -412,4 +424,20 @@ export async function crawlSite(
     await ctx.close().catch(() => {});
   }
   return out;
+}
+
+/** Человеческая причина недоступности + подсказка оператору (для честного отказа). */
+export function reachabilityDiagnosis(site: SiteCrawl): string {
+  const err = (site.error || site.pages[0]?.error || '').toLowerCase();
+  const st = site.pages[0]?.status ?? null;
+  if (st === 429 || /\b429\b|rate limit|too many/.test(err))
+    return 'Причина: сайт ограничивает частоту запросов (HTTP 429) — повторить позже.';
+  if (st === 403 || st === 401 || /бот-защ|waf|cloudflare|captcha|challenge|заблок/.test(err))
+    return 'Причина: сайт блокирует автоматический доступ (WAF/Cloudflare/бот-защита). Нужен headful/stealth-режим (HEADFUL=1) или доступ от клиента.';
+  if (st !== null && st >= 500) return `Причина: сайт отвечает ошибкой сервера (HTTP ${st}).`;
+  if (st === 404 || /\b404\b/.test(err)) return 'Причина: страница не найдена (HTTP 404) — проверьте URL.';
+  if (/name_not_resolved|dns|enotfound|getaddrinfo/.test(err)) return 'Причина: домен не резолвится (DNS) — проверьте URL.';
+  if (/timeout|timed out|err_connection|refused|reset|err_ssl|err_cert/.test(err))
+    return 'Причина: сайт недоступен по сети (таймаут/соединение/сертификат) — проверьте доступность и URL.';
+  return 'Проверьте URL, доступность сайта и бот-защиту.';
 }

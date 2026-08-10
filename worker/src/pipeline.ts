@@ -4,7 +4,7 @@
  */
 import { writeFile, mkdir, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import { launchBrowser, crawlSite, type SiteCrawl } from './crawl.js';
+import { launchBrowser, crawlSite, reachabilityDiagnosis, type SiteCrawl } from './crawl.js';
 import { computeEngine, normalizeAnswers, engineFacts, type EngineResult } from './portalEngine.js';
 import { computeMoney, moneyFacts, type Levers, type MoneyResult } from './money.js';
 import { renderL0Report, type AuditDataset } from './report.js';
@@ -92,11 +92,29 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
     } else {
       log('· обход клиента…');
       client = await crawlSite(browser, site, 'client');
+      // Гейт достижимости: без реального доступа к сайту аудит не проводим и не
+      // выдаём фиктивных выводов. Останавливаемся честно, с конкретной причиной,
+      // ДО обращения к Claude — иначе модель «аудирует» пустоту и выдаёт отписку.
+      const audited = client.pages.some((p) => p.score !== null);
+      if (!client.reachable || !audited) {
+        const reason = client.error || client.pages[0]?.error || 'сайт не отдал контент (пустой ответ)';
+        log(`✖ доступ к сайту не получен — аудит остановлен: ${reason}`);
+        throw new Error(
+          `Не удалось получить доступ к сайту ${site}: ${reason}. ` +
+          `${reachabilityDiagnosis(client)} ` +
+          `Аудит НЕ проводился — данные не собраны, фиктивные выводы не выпускаются.`,
+        );
+      }
     }
 
     const comps: SiteCrawl[] = [];
     if (prelaunch || tier >= 2) {
-      for (const c of competitors) { log(`· обход конкурента ${c}…`); comps.push(await crawlSite(browser, c, 'competitor')); }
+      for (const c of competitors) {
+        log(`· обход конкурента ${c}…`);
+        const cc = await crawlSite(browser, c, 'competitor');
+        if (!cc.reachable) log(`⚠️ конкурент ${c} недоступен (${cc.error || 'нет ответа'}) — исключён из бенчмарка`);
+        comps.push(cc);
+      }
     }
 
     const ds: AuditDataset = {
