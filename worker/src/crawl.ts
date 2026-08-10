@@ -331,6 +331,11 @@ async function hardenedContext(browser: Browser) {
       'sec-ch-ua-platform': '"Windows"',
     },
   });
+  // tsx/esbuild (keepNames) оборачивает именованные функции хелпером __name(fn,"n").
+  // При page.evaluate тело функции сериализуется и исполняется В СТРАНИЦЕ, где
+  // __name не определён → ReferenceError и обход не собирает данные. Определяем
+  // шим в глобале страницы. Передаём строкой — иначе esbuild обернёт и сам шим.
+  await ctx.addInitScript('globalThis.__name = globalThis.__name || function (t) { return t; };');
   await ctx.addInitScript(() => {
     Object.defineProperty(navigator, 'webdriver', { get: () => false });
     Object.defineProperty(navigator, 'languages', { get: () => ['uk-UA', 'uk', 'ru', 'en'] });
