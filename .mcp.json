@@ -1,0 +1,54 @@
+{
+  "mcpServers": {
+    "openbrand": {
+      "command": "npx",
+      "args": ["-y", "openbrand-mcp"]
+    },
+    "geo-analyzer": {
+      "command": "npx",
+      "args": ["-y", "@houtini/geo-analyzer@latest"],
+      "env": {
+        "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY:-}",
+        "JINA_API_KEY": "${JINA_API_KEY:-}"
+      }
+    },
+    "search-console-mcp": {
+      "command": "npx",
+      "args": ["-y", "search-console-mcp"],
+      "env": {
+        "GOOGLE_APPLICATION_CREDENTIALS": "${GOOGLE_APPLICATION_CREDENTIALS:-}",
+        "BING_API_KEY": "${BING_API_KEY:-}"
+      }
+    },
+    "screaming-frog-seo-spider-mcp-server": {
+      "command": "uvx",
+      "args": ["screaming-frog-mcp"],
+      "env": {
+        "SCREAMING_FROG_PATH": "${SCREAMING_FROG_PATH:-}"
+      }
+    },
+    "codebase-memory": {
+      "command": "npx",
+      "args": ["-y", "codebase-memory-mcp"]
+    },
+    "labelhead-artist-momentum": {
+      "type": "http",
+      "url": "https://labelhead-mcp-public-production.up.railway.app/mcp"
+    },
+    "notfair-googleads": {
+      "type": "http",
+      "url": "https://notfair.co/api/mcp/google_ads"
+    },
+    "posthog": {
+      "type": "http",
+      "url": "https://mcp.posthog.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${POSTHOG_API_KEY:-}"
+      }
+    },
+    "citedy-seo-agent": {
+      "type": "http",
+      "url": "https://mcp.citedy.com/mcp"
+    }
+  }
+}

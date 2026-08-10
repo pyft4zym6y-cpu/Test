@@ -51,6 +51,11 @@ weexp — консалтинг e-commerce по методологии **Commerce
 - **store.ts** — коннектор Supabase: читает `clients`+`answers`, пишет `report_meta`.
 - **zip.ts** — единый .zip-пакет прогона.
 
+**Внешние инструменты (MCP/скиллы):** `worker/TOOLING.md` + `.mcp.json` в корне
+ветки — SEO/analytics/ads/design-серверы (GSC, geo-analyzer, screaming-frog,
+openbrand, posthog и др.). Слой поверх `worker/CONNECTORS.md`. HTTP-серверы из
+облака заблокированы прокси — работают локально; секреты только в env.
+
 Проверка сборки: `cd worker && npm run typecheck`. Тесты детерминированных кусков
 гонялись на синтетике (docx/xlsx валидны). Живой обход в песочнице невозможен
 (нет egress) — только на Railway.
