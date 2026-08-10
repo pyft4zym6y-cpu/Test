@@ -18,6 +18,9 @@ import { exportUxUiDocx } from './export/uxuiDocx.js';
 import { buildUxUiReport, narrateUxUi, renderUxUiMd } from './uxui.js';
 import { exportPrototypeDocx } from './export/prototypeDocx.js';
 import { buildPrototypeReport, narratePrototype, renderPrototypeMd } from './prototype.js';
+import { buildSiteAudit } from './pagereport.js';
+import { renderAuditHtml } from './export/htmlReport.js';
+import { renderPdf } from './pdf.js';
 import { exportCoverageDocx } from './export/coverageDocx.js';
 import { buildCoverage, renderCoverageMd } from './coverage.js';
 import { exportBenchmarkDocx } from './export/benchmarkDocx.js';
@@ -168,6 +171,16 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       await writeFile(join(dir, 'Эталон-vs-композиция.md'), renderPrototypeMd(ds, proto), 'utf8');
       await exportPrototypeDocx(ds, proto, join(dir, 'Эталон-vs-композиция.docx'));
       log(`✓ прототип-сверка: разобрано типов страниц ${proto.pages.length}`);
+
+      // UX/UI Audit A0 — клиентский PDF по визуальному стандарту A0 (эталон↔текущая
+      // постранично, дерево сайта, системные дефекты, приоритет, вывод). Рендер тем
+      // же Chromium. Главный визуальный результат UX/UI-блока.
+      try {
+        const siteAudit = buildSiteAudit(ds);
+        await writeFile(join(dir, 'pagereport.json'), JSON.stringify(siteAudit, null, 2), 'utf8');
+        await renderPdf(renderAuditHtml(siteAudit), join(dir, 'UX-UI-аудит-A0.pdf'), browser);
+        log(`✓ UX/UI Audit A0 (PDF): соответствие эталону ${siteAudit.totalPct}%, системных дефектов ${siteAudit.systemic.length}`);
+      } catch (e) { log(`⚠️ PDF UX/UI Audit A0 не собрался (${String(e).slice(0, 120)}) — остальные материалы не затронуты`); }
 
       // Конкурентный бенчмарк (AD-11) — когда есть обойдённые конкуренты.
       bench = buildBenchmark(ds);

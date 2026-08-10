@@ -14,11 +14,12 @@ import type { PageAudit, PageKind } from './crawl.js';
 import { ask, extractJson, hasKey } from './anthropic.js';
 import { knowledgeFor } from './knowledge.js';
 
-type Weight = 'core' | 'important' | 'nice';
-type Block = { key: string; name: string; role: string; chapter: string; weight: Weight };
+export type Weight = 'core' | 'important' | 'nice';
+export type Block = { key: string; name: string; role: string; chapter: string; weight: Weight };
+export type ReferencePage = { title: string; chapter: string; principle?: string; blocks: Block[] };
 
 /** Эталонные композиции по типам страниц (блок-в-блок из глав UX-энциклопедии). */
-const REFERENCE: Partial<Record<PageKind, { title: string; chapter: string; principle?: string; blocks: Block[] }>> = {
+export const REFERENCE: Partial<Record<PageKind, ReferencePage>> = {
   home: {
     title: 'Главная', chapter: 'гл. 11–12, 26, 30',
     principle: 'Витрина за 5 секунд отвечает: куда я попал, что тут есть, можно ли доверять, с чего начать.',

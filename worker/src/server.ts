@@ -32,6 +32,7 @@ const MIME: Record<string, string> = {
   '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
   '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   '.md': 'text/markdown; charset=utf-8', '.json': 'application/json; charset=utf-8',
+  '.pdf': 'application/pdf', '.html': 'text/html; charset=utf-8',
 };
 
 type FileRef = { name: string; url: string; category: string };
