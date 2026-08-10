@@ -65,10 +65,40 @@ cd mcp-gsc && uv sync
 
 ---
 
-## 2. Скиллы, агенты, плагины (устанавливаются в `~/.claude`, НЕ в репо)
+## 2. Скиллы
+
+### 2.1 Вендорнуты в репо (`.claude/skills/`) — персистентны, грузятся на репо аудитора
+
+Курированный под линзы аудитора набор (**31 скилл**), отобран из запиненных
+коммитов (см. §2.3). Копии полные (SKILL.md + references/scripts), без бинарников.
+
+| Группа | Скиллы |
+| --- | --- |
+| SEO (claude-seo) | `seo-audit` `seo-technical` `seo-ecommerce` `seo-schema` `seo-geo` `seo-competitor-pages` `seo-page` `seo-local` `seo-sxo` |
+| Ads (claude-ads) | `ads-audit` `ads-google` `ads-meta` `ads-attribution` `ads-report` `ads-competitor` `ads-math` `ads-budget` |
+| Marketing/CRO (marketingskills) | `cro` `ab-testing` `competitor-profiling` `site-architecture` `marketing-council` `churn-prevention` |
+| E-commerce (eCommerce-Skills) | `product-page-seo` `competitor-price-analysis` `google-shopping-optimization` `ecommerce-keyword-research` |
+| Design/UX (open-design) | `web-design-guidelines` `creative-director` `plan-design-review` |
+| Диаграммы (openclaw) | `diagram-maker` |
+
+**Сознательно НЕ вендорил:**
+- `anthropics/skills` — дефолтные скиллы, уже есть в окружении; docx/xlsx/pptx
+  дублируют собственные экспортеры аудитора (`worker/src/export/*`).
+- `affaan-m/ecc` — на актуальном коммите там dev/infra-скиллы (kotlin, django,
+  homelab), а не `seo/market-research/council/...` из списка (skillfish резолвит
+  эти имена из своего индекса, не из `skills/` репо). Функции закрыты профильными
+  репозиториями выше.
+- `vercel-labs/skills` — только `find-skills` (мета-поиск), для аудита не нужен.
+- 2 скилла eCommerce-Skills (`minimum-advertised-price`,
+  `shopify-conversion-optimization`) — нестандартный frontmatter, плохо триггерятся;
+  их роль закрывают `competitor-price-analysis` / `cro` / `product-page-seo`.
+
+Добавить/убрать скилл — просто скопировать папку в `.claude/skills/` или удалить её.
+
+### 2.2 Агенты и плагины (ставятся в `~/.claude`, НЕ в репо)
 
 ⚠️ В облачном контейнере эфемерны (см. §0.3). Ставить на **локальной машине**,
-где гоняешь Claude Code, или коммитить нужные скиллы в `.claude/skills/` вручную.
+где гоняешь Claude Code.
 
 ### Плагины (marketplace)
 ```bash
@@ -95,9 +125,8 @@ npx skillfish add affaan-m/ecc lead-intelligence
 ```
 (В исходном списке `diagram-maker`, `seo`, `market-research` шли дважды — дубли убраны.)
 
-### Скилл-репозитории (пины коммитов из исходного списка)
-Клонируются на локальной машине; нужные скиллы копируются в `~/.claude/skills/`
-или (для персистентности аудитора) в `.claude/skills/` этой ветки и коммитятся.
+### 2.3 Источники скиллов (пины коммитов — из них взят набор §2.1)
+Клонировать: `git init && git fetch --depth 1 origin <commit> && git checkout FETCH_HEAD`.
 ```
 vercel-labs/skills            @ 773fb2c7bbf16781670a3520affc4abd0c6151ae
 anthropics/skills             @ 2235be7c60b551f5de82ade908fd3816455afcda
