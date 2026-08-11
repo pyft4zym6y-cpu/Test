@@ -133,7 +133,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
     if (prelaunch || tier >= 2) {
       for (const c of competitors) {
         log(`· обход конкурента ${c}…`);
-        const cc = await crawlSite(browser, c, 'competitor');
+        const cc = await crawlSite(browser, c, 'competitor', { maxPages: 6 });
         if (!cc.reachable) log(`⚠️ конкурент ${c} недоступен (${cc.error || 'нет ответа'}) — исключён из бенчмарка`);
         comps.push(cc);
       }

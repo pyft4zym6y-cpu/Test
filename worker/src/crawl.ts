@@ -5,7 +5,7 @@
  * DOM, определяет платформу и аналитику. Основа тира T1 (годится и для
  * негласного аудита — доступы не нужны).
  */
-import { chromium, type Browser, type Page } from 'playwright';
+import { chromium, type Browser, type BrowserContext, type Page } from 'playwright';
 
 export type L0Check = { id: string; group: string; label: string; pass: boolean; detail?: string };
 export type PageKind = 'home' | 'plp' | 'pdp' | 'cart' | 'checkout' | 'content' | 'faq' | 'other';
@@ -158,17 +158,26 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
     hasProductSchema: /"@type"\s*:\s*"product"/i.test(html),
   };
 
-  // Технологические сигналы (платформа)
+  // Технологические сигналы (платформа). Приоритет: <meta generator> → спец-маркеры
+  // в HTML. Заголовки ответа/cookies добавляются на уровне crawlSite (надёжнее).
   const tech: string[] = [];
-  const push = (re: RegExp, name: string) => { if (re.test(low)) tech.push(name); };
-  push(/cdn\.shopify|shopify\./, 'Shopify');
-  push(/woocommerce|wp-content/, 'WooCommerce/WordPress');
-  push(/mage\/|magento|mage-/, 'Magento');
-  push(/bitrix|bx-/, '1C-Bitrix');
+  const generator = (($('meta[name="generator"]') as HTMLMetaElement | null)?.content ?? '').toLowerCase();
+  const push = (re: RegExp, name: string) => { if (re.test(low) && !tech.includes(name)) tech.push(name); };
+  const pushGen = (re: RegExp, name: string) => { if (re.test(generator) && !tech.includes(name)) tech.unshift(name); };
+  // generator meta — самый надёжный in-page сигнал CMS
+  pushGen(/shopify/, 'Shopify'); pushGen(/woocommerce/, 'WooCommerce'); pushGen(/wordpress/, 'WordPress');
+  pushGen(/prestashop/, 'PrestaShop'); pushGen(/opencart/, 'OpenCart'); pushGen(/magento/, 'Magento');
+  pushGen(/joomla/, 'Joomla'); pushGen(/drupal/, 'Drupal'); pushGen(/tilda/, 'Tilda'); pushGen(/bitrix/, '1C-Bitrix');
+  // разделяем WooCommerce и «просто WordPress»
+  if (/woocommerce|wc-|wc_/.test(low)) push(/.?/, 'WooCommerce');
+  else if (/wp-content|wp-includes|wp-json/.test(low)) push(/.?/, 'WordPress');
+  push(/cdn\.shopify|myshopify|shopify\./, 'Shopify');
+  push(/mage\/|magento|mage-|\/static\/version/, 'Magento');
+  push(/bitrix|bx-|\/bitrix\//, '1C-Bitrix');
   push(/prestashop/, 'PrestaShop');
-  push(/opencart/, 'OpenCart');
-  push(/tilda/, 'Tilda');
-  push(/wix\.com|wixstatic/, 'Wix');
+  push(/opencart|route=product/, 'OpenCart');
+  push(/tilda|tildacdn/, 'Tilda');
+  push(/wix\.com|wixstatic|_wix/, 'Wix');
   push(/insales/, 'InSales');
   push(/horoshop/, 'Хорошоп');
   push(/gtag|googletagmanager/, 'GA4/GTM');
@@ -295,13 +304,15 @@ function classify(url: string, sig: Record<string, boolean>, isRoot: boolean): P
   return 'content';
 }
 
-async function auditPage(page: Page, url: string, isRoot: boolean): Promise<{ audit: PageAudit; tech: string[]; links: string[] }> {
+async function auditPage(page: Page, url: string, isRoot: boolean): Promise<{ audit: PageAudit; tech: string[]; links: string[]; headers?: Record<string, string> }> {
   let status: number | null = null;
+  let headers: Record<string, string> = {};
   const fail = (msg: string, fUrl = url, ttl = ''): { audit: PageAudit; tech: string[]; links: string[] } =>
     ({ audit: { url, finalUrl: fUrl, kind: 'other', status, title: ttl, checks: [], score: null, error: msg }, tech: [], links: [] });
   try {
     const resp = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 25000 });
     status = resp?.status() ?? null;
+    headers = resp?.headers() ?? {};
     await page.waitForTimeout(1200); // дать JS дорисоваться
   } catch (e) {
     return fail(`сеть: ${String(e).slice(0, 130)}`);
@@ -332,7 +343,26 @@ async function auditPage(page: Page, url: string, isRoot: boolean): Promise<{ au
     const buf = await page.screenshot({ type: 'jpeg', quality: 55, clip: { x: 0, y: 0, width: 1366, height: 900 } }).catch(() => null);
     if (buf) screenshot = buf.toString('base64');
   }
-  return { audit: { url, finalUrl, kind, status, title, checks, score, ux, screenshot }, tech, links };
+  return { audit: { url, finalUrl, kind, status, title, checks, score, ux, screenshot }, tech, links, headers };
+}
+
+/** Определение CMS/платформы по заголовкам ответа и cookies (надёжнее HTML). */
+function platformFromHeaders(headers: Record<string, string>): string | null {
+  const h = Object.fromEntries(Object.entries(headers).map(([k, v]) => [k.toLowerCase(), String(v).toLowerCase()]));
+  const cookie = h['set-cookie'] ?? '';
+  const powered = `${h['x-powered-by'] ?? ''} ${h['x-powered-cms'] ?? ''} ${h['powered-by'] ?? ''} ${h['x-generator'] ?? ''}`;
+  const server = h['server'] ?? '';
+  if (h['x-shopid'] || h['x-shopify-stage'] || h['x-sorting-hat-shopid'] || /shopify/.test(powered + server)) return 'Shopify';
+  if (/bitrix/.test(powered) || /bitrix_sm_|bx_user_id|php.{0,3}bitrix/.test(cookie)) return '1C-Bitrix';
+  if (/woocommerce_|wp_woocommerce/.test(cookie)) return 'WooCommerce';
+  if (/wordpress_|wp-settings/.test(cookie) || /wordpress/.test(powered)) return 'WordPress';
+  if (/magento|x-magento/.test(powered) || /x-magento-|mage-cache/.test(JSON.stringify(h))) return 'Magento';
+  if (/prestashop-/.test(cookie) || /prestashop/.test(powered)) return 'PrestaShop';
+  if (/ocsessid/.test(cookie)) return 'OpenCart';
+  if (/tilda/.test(server + powered)) return 'Tilda';
+  if (/horoshop/.test(server + powered + cookie)) return 'Хорошоп';
+  if (/insales/.test(server + powered + cookie)) return 'InSales';
+  return null;
 }
 
 /** Контекст браузера с закалкой против бот-защиты (UA, заголовки, timezone, anti-webdriver). */
@@ -377,25 +407,57 @@ export async function auditSingle(browser: Browser, url: string): Promise<PageAu
   }
 }
 
-/** Отбирает по одному представителю нужных типов страниц из найденных ссылок. */
-function pickCandidates(root: string, links: string[]): string[] {
+/** Парсит sitemap.xml (+ sitemap-index и Sitemap: из robots) → полный список URL сайта. */
+async function fetchSitemapUrls(ctx: BrowserContext, origin: string): Promise<string[]> {
+  const urls = new Set<string>();
+  const seen = new Set<string>();
+  const queue: string[] = [`${origin}/sitemap.xml`, `${origin}/sitemap_index.xml`, `${origin}/sitemap-index.xml`];
+  try {
+    const rob = await ctx.request.get(`${origin}/robots.txt`, { timeout: 8000 }).catch(() => null);
+    if (rob && rob.ok()) { const t = await rob.text().catch(() => ''); for (const m of t.matchAll(/^\s*sitemap:\s*(\S+)/gim)) queue.push(m[1].trim()); }
+  } catch { /* noop */ }
+  let docs = 0;
+  while (queue.length && docs < 12 && urls.size < 3000) {
+    const sm = queue.shift(); if (!sm || seen.has(sm)) continue; seen.add(sm);
+    try {
+      const r = await ctx.request.get(sm, { timeout: 10000 }).catch(() => null);
+      if (!r || !r.ok()) continue;
+      docs++;
+      const xml = (await r.text().catch(() => '')).slice(0, 3_000_000);
+      const isIndex = /<sitemapindex/i.test(xml);
+      for (const m of xml.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/gi)) {
+        const u = m[1].trim();
+        if (isIndex) { if (queue.length < 30 && !seen.has(u)) queue.push(u); }
+        else { try { if (new URL(u).origin === origin) urls.add(u.split('#')[0]); } catch { /* skip */ } }
+        if (urls.size >= 3000) break;
+      }
+    } catch { /* noop */ }
+  }
+  return Array.from(urls);
+}
+
+/** Отбирает представителей нужных типов страниц из найденных ссылок (несколько на тип). */
+function pickCandidates(root: string, links: string[], want: number): string[] {
   let origin: string;
   try { origin = new URL(root).origin; } catch { return []; }
+  const path = (h: string) => { try { return new URL(h).pathname; } catch { return ''; } };
   const internal = Array.from(new Set(links))
     .filter((h) => { try { return new URL(h).origin === origin; } catch { return false; } })
-    .filter((h) => !/\.(jpg|png|webp|svg|pdf|zip|css|js|ico)(\?|$)/i.test(h))
+    .filter((h) => !/\.(jpg|png|webp|svg|pdf|zip|css|js|ico|xml|json)(\?|$)/i.test(h))
     .filter((h) => h !== root && h !== root + '/');
-
-  const pick = (re: RegExp) => internal.find((h) => re.test(new URL(h).pathname));
   const out = new Set<string>();
-  const plp = pick(/category|catalog|shop|collections|katalog|/i) && internal.find((h) => /category|catalog|shop|collections|katalog/i.test(new URL(h).pathname));
-  const pdp = internal.find((h) => /product|tovar|\/p\/|goods|item/i.test(new URL(h).pathname));
-  const cart = internal.find((h) => /cart|basket|korzina|koszyk/i.test(new URL(h).pathname));
-  const content = internal.find((h) => /blog|article|about|o-nas|dostavka|delivery|faq/i.test(new URL(h).pathname));
-  [plp, pdp, cart, content].forEach((u) => u && out.add(u));
-  // добить до 4 представителей любыми внутренними страницами
-  for (const h of internal) { if (out.size >= 4) break; out.add(h); }
-  return Array.from(out).slice(0, 4);
+  const findAll = (re: RegExp, n: number) => internal.filter((h) => re.test(path(h))).slice(0, n).forEach((h) => out.add(h));
+  const add1 = (re: RegExp) => { const h = internal.find((x) => re.test(path(x))); if (h) out.add(h); };
+  findAll(/category|catalog|shop|collections|katalog|categor/i, 2);
+  findAll(/product|tovar|\/p\/|goods|item|\/pr\//i, 3);
+  add1(/cart|basket|korzina|koszyk/i);
+  add1(/checkout|oform|zakaz|order/i);
+  add1(/faq|help|voprosy|pytannya/i);
+  findAll(/blog|article|news|stat/i, 2);
+  add1(/about|o-nas|company|pro-nas|kompan/i);
+  add1(/dostavka|delivery|payment|oplata/i);
+  for (const h of internal) { if (out.size >= want) break; out.add(h); }
+  return Array.from(out).slice(0, want);
 }
 
 export async function crawlSite(
@@ -404,7 +466,7 @@ export async function crawlSite(
   kind: 'client' | 'competitor',
   opts: { maxPages?: number } = {},
 ): Promise<SiteCrawl> {
-  const maxPages = opts.maxPages ?? 5;
+  const maxPages = opts.maxPages ?? 16;
   const ctx = await hardenedContext(browser);
   const page = await ctx.newPage();
   const out: SiteCrawl = {
@@ -427,31 +489,33 @@ export async function crawlSite(
     const addLinks = (arr: string[]) => { for (const h of arr) { try { const u = new URL(h); if (u.origin === origin) { u.hash = ''; linkSet.add(u.toString()); } } catch { /* skip */ } } };
     addLinks(home.links);
 
-    // robots.txt / sitemap.xml
+    // robots.txt + ПОЛНОЕ дерево из sitemap.xml (все URL сайта, а не только с обхода).
     try {
-      const origin = new URL(out.finalUrl).origin;
       const r = await ctx.request.get(`${origin}/robots.txt`, { timeout: 8000 }).catch(() => null);
       out.robotsTxt = Boolean(r && r.ok());
-      const sm = await ctx.request.get(`${origin}/sitemap.xml`, { timeout: 8000 }).catch(() => null);
-      out.sitemapXml = Boolean(sm && sm.ok());
+      const smUrls = await fetchSitemapUrls(ctx, origin);
+      out.sitemapXml = smUrls.length > 0;
+      addLinks(smUrls);
     } catch { /* noop */ }
 
-    // техника
+    // техника: платформа по заголовкам ответа (надёжнее), затем по HTML-сигналам.
     const techSet = new Set(home.tech);
-    out.tech.platform = home.tech.find((t) => !/GA4|GTM|Pixel|Hotjar|Clarity/.test(t)) ?? null;
-    out.tech.analytics = home.tech.filter((t) => /GA4|GTM|Pixel|Hotjar|Clarity/.test(t));
+    const ANALYTICS = /GA4|GTM|Pixel|Hotjar|Clarity/;
+    out.tech.platform = platformFromHeaders(home.headers ?? {}) ?? home.tech.find((t) => !ANALYTICS.test(t)) ?? null;
+    out.tech.analytics = home.tech.filter((t) => ANALYTICS.test(t));
 
-    // представительные страницы
-    const candidates = pickCandidates(out.finalUrl, home.links).slice(0, maxPages - 1);
+    // представительные страницы для постраничного аудита (несколько на тип).
+    const candidates = pickCandidates(out.finalUrl, Array.from(linkSet), maxPages - 1);
     for (const url of candidates) {
       const res = await auditPage(page, url, false);
       out.pages.push(res.audit);
       res.tech.forEach((t) => techSet.add(t));
       addLinks(res.links);
     }
-    out.links = Array.from(linkSet).slice(0, 400);
+    out.links = Array.from(linkSet).slice(0, 2000);
+    out.discoveredLinks = out.links.length;
     out.tech.signals = Array.from(techSet);
-    if (!out.tech.platform) out.tech.platform = out.tech.signals.find((t) => !/GA4|GTM|Pixel|Hotjar|Clarity/.test(t)) ?? null;
+    if (!out.tech.platform) out.tech.platform = out.tech.signals.find((t) => !ANALYTICS.test(t)) ?? null;
   } catch (e) {
     out.error = out.error ?? String(e).slice(0, 160);
   } finally {
