@@ -5,12 +5,12 @@ import FadeIn from '../components/FadeIn';
 import HeroBot from '../components/HeroBot';
 import { say, sayIdle } from '../components/speech';
 import { track } from '../components/analytics';
-import { Eyebrow, Chip } from '../components/ui';
+import { Rocket, ArrowUp, Star, Spark, Scribble, Megaphone } from '../components/Doodles';
 
 const STATS = [
-  { value: '×18', label: 'оборот у кейсі', color: '#65A30D' },
+  { value: '×18', label: 'оборот у кейсі', color: '#4D7C0F' },
   { value: '€900K', label: 'за 18 місяців', color: '#0F9488' },
-  { value: 'TOP-250', label: 'Forbes UA · кейс', color: '#12161C' },
+  { value: 'TOP-250', label: 'Forbes UA · кейс', color: '#111111' },
   { value: '14', label: 'країн', color: '#B45309' },
 ];
 
@@ -23,7 +23,7 @@ const PAINS = [
   {
     n: '01',
     t: 'Реклама дорожчає, прибуток — ні',
-    d: 'CAC росте щоквартала, а кожен новий клієнт купує один раз. Без системи це біг у колесі: вимкнули бюджет — продажі впали.',
+    d: 'CAC росте щокварталу, а кожен новий клієнт купує один раз. Без системи це біг у колесі: вимкнули бюджет — продажі впали.',
     v: '0,64%',
     vl: 'типова конверсія «до» у наших аудитах',
   },
@@ -49,7 +49,7 @@ const PRODUCTS = [
     name: 'Аудит',
     price: 'Фіксована ціна',
     term: '4–6 тижнів',
-    result: 'Розрив у грошах, 19 документів, роадмапа + 4 години консультацій. Далі дієте самі.',
+    result: 'Розрив у грошах, повний пакет документів, роадмапа + 4 години консультацій. Далі дієте самі.',
     say: 'Вхід у систему: аудит, що повертає розрив у гривнях →',
   },
   {
@@ -71,46 +71,48 @@ const PRODUCTS = [
 ];
 
 const CASE_ROW = [
-  { to: '/cases/premium-textile', num: '×18', name: 'Преміум-текстиль', metric: '€48K → €900K · 18 міс', color: '#65A30D' },
-  { to: '/cases/consumer-dtc', num: '+65%', name: 'Consumer DTC · Forbes TOP-250', metric: '6 нових ринків · 9 міс', color: '#0F9488' },
-  { to: '/cases/fashion-apparel', num: '≥19 млн ₴', name: 'Fashion-виробник', metric: 'знайдений розрив на рік', color: '#DB2777' },
-  { to: '/cases/fmcg-distribution', num: '17K SKU', name: 'FMCG-дистрибуція', metric: '+40% продажів · CRM', color: '#B45309' },
+  { to: '/cases/premium-textile', num: '×18', name: 'Преміум-текстиль', metric: '€48K → €900K · 18 міс', color: '#A3E635' },
+  { to: '/cases/consumer-dtc', num: '+65%', name: 'Consumer DTC · Forbes TOP-250', metric: '6 нових ринків · 9 міс', color: '#5EEAD4' },
+  { to: '/cases/fashion-apparel', num: '≥19 млн ₴', name: 'Fashion-виробник', metric: 'знайдений розрив на рік', color: '#F9A8D4' },
+  { to: '/cases/fmcg-distribution', num: '17K SKU', name: 'FMCG-дистрибуція', metric: '+40% продажів · CRM', color: '#FFD100' },
 ];
+
+/* Заголовок-стиль референсу: жирний, uppercase, з маркерними підсвітками */
+const H2 = 'font-extrabold uppercase tracking-tight leading-[1.02]';
 
 export default function Home() {
   const [marqueePaused, setMarqueePaused] = useState(false);
   return (
-    <div className="pt-16">
+    <div className="pt-16 paper-warm" style={{ color: '#111' }}>
       {/* ================= HERO ================= */}
-      <section className="relative grid-bg overflow-hidden">
-        <div className="glow-lime w-[480px] h-[480px] -top-32 -right-24" />
+      <section className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10 py-14 md:py-20">
-          <div className="grid lg:grid-cols-[1.15fr_1fr] gap-12 lg:gap-8 items-center">
+          <div className="grid lg:grid-cols-[1.12fr_1fr] gap-12 lg:gap-10 items-center">
             {/* Left: message */}
-            <div>
+            <div className="relative">
               <FadeIn>
-                <Eyebrow>weexp · Commerce OS™ · операційна система росту</Eyebrow>
-                <h1
-                  className="font-extrabold uppercase tracking-tight"
-                  style={{ fontSize: 'clamp(2.1rem, 4.9vw, 3.9rem)', lineHeight: 1.03 }}
-                >
-                  Збільшуємо{' '}
-                  <span className="font-pixel text-[0.78em] text-[#4D7C0F] inline-block align-baseline leading-none">
-                    виручку
-                  </span>{' '}
+                <div className="flex flex-wrap items-center gap-2.5 mb-6">
+                  <span className="tag-chip lime">weexp</span>
+                  <span className="tag-chip">Commerce OS™</span>
+                  <span className="tag-chip">#системаросту</span>
+                </div>
+                <h1 className={H2} style={{ fontSize: 'clamp(2.3rem, 5.2vw, 4.2rem)' }}>
+                  Збільшуємо <span className="limemark">виручку</span>{' '}
                   <span className="whitespace-nowrap">e-commerce</span>
                   <br />
-                  через CRO, retention і{' '}
-                  <span className="font-pixel text-[0.78em] inline-block align-baseline leading-none">
-                    систему
-                  </span>
+                  через CRO, retention і <span className="marker-underline">систему</span>
+                  <Spark className="inline-block ml-2 -mt-6" style={{ verticalAlign: 'top' }} />
                 </h1>
-                <p className="text-[#5A6472] mt-6 max-w-xl leading-relaxed text-base md:text-lg">
-                  Конверсія 0,8% → 4,2%. Оборот ×18 за 18 місяців. ROI 3.8×. Не гасла — виміряні
-                  кейси. Ми перебудовуємо весь шлях покупки, щоб компанія росла швидше за її
-                  рекламний бюджет.
-                </p>
-                <p className="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-[#4D7C0F] mt-4">
+
+                {/* спіч-бабл із суб-меседжем */}
+                <div className="bubble hard-shadow-sm mt-8 p-5 max-w-xl bg-white">
+                  <p className="text-[#1a1a1a] leading-relaxed text-base md:text-[1.05rem] font-medium">
+                    Конверсія <b>0,8% → 4,2%</b>. Оборот <b>×18</b> за 18 місяців. ROI <b>3.8×</b>.
+                    Не гасла — виміряні кейси. Перебудовуємо весь шлях покупки, щоб компанія росла
+                    швидше за рекламний бюджет.
+                  </p>
+                </div>
+                <p className="font-comic text-[0.82rem] uppercase tracking-[0.08em] text-[#4D7C0F] font-semibold mt-5">
                   Для власників і CEO e-commerce з обігом від ₴1 млн/міс · UA · EU · US
                 </p>
               </FadeIn>
@@ -122,9 +124,9 @@ export default function Home() {
                     onMouseEnter={() => say('Аудит з фіксованою ціною — і твій розрив у грошах на столі. Почнемо?')}
                     onMouseLeave={sayIdle}
                     onClick={() => track('cta_click', { location: 'home_hero' })}
-                    className="flex items-center gap-3 bg-[#A3E635] px-7 py-3.5 text-sm font-bold tracking-wider uppercase text-black hover:brightness-95 transition-[filter]"
+                    className="pill-cta lime text-sm"
                   >
-                    <Play size={14} fill="currentColor" />
+                    <Play size={15} fill="currentColor" />
                     Отримати аудит у грошах
                   </Link>
                   <Link
@@ -132,34 +134,41 @@ export default function Home() {
                     onMouseEnter={() => say('30 секунд — і розрив у гривнях на екрані. Без контактів →')}
                     onMouseLeave={sayIdle}
                     onClick={() => track('cta_click', { location: 'home_hero_calc' })}
-                    className="flex items-center gap-2 border border-black/30 px-7 py-3.5 text-sm tracking-wider uppercase hover:bg-black/5 transition-colors"
+                    className="pill-cta paper text-sm"
                   >
                     Порахувати розрив · 30 сек
-                    <ArrowRight size={14} />
+                    <ArrowRight size={15} />
                   </Link>
                 </div>
               </FadeIn>
 
               <FadeIn delay={0.22}>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-10 max-w-xl">
-                  {STATS.map((s) => (
-                    <div key={s.label} className="card px-4 py-3">
-                      <p className="font-mono font-bold text-xl" style={{ color: s.color }}>
-                        {s.value}
-                      </p>
-                      <p className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-[#5A6472] mt-1">
-                        {s.label}
-                      </p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 mt-10 max-w-xl">
+                  {STATS.map((s, i) => (
+                    <div key={s.label} className="comic-card comic-card-hover rounded-xl px-4 py-3"
+                      style={{ transform: `rotate(${(i % 2 ? 1 : -1) * 0.8}deg)` }}>
+                      <p className="font-comic font-bold text-2xl" style={{ color: s.color }}>{s.value}</p>
+                      <p className="font-comic text-[0.62rem] uppercase tracking-[0.1em] text-[#5A6472] mt-0.5">{s.label}</p>
                     </div>
                   ))}
                 </div>
               </FadeIn>
             </div>
 
-            {/* Right: digital assistant girl */}
+            {/* Right: digital assistant — вирізаний «стикер» + дудли */}
             <FadeIn delay={0.15} x={30} y={0}>
-              <div className="max-w-[440px] mx-auto lg:mx-0 lg:ml-auto w-full">
-                <HeroBot />
+              <div className="relative max-w-[440px] mx-auto lg:mx-0 lg:ml-auto w-full">
+                <Rocket className="absolute -top-6 -left-4 rotate-12" color="#4D7C0F" style={{ width: 44, height: 44 }} />
+                <span className="doodle-label absolute -top-2 right-6 text-2xl">рост ↗</span>
+                <ArrowUp className="absolute bottom-8 -left-8 -rotate-6" />
+                <Star className="absolute -bottom-3 right-10" style={{ width: 26, height: 26 }} />
+                <div className="sticker lime p-3">
+                  <HeroBot />
+                </div>
+                <span className="pill-cta absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs whitespace-nowrap"
+                  style={{ transform: 'translateX(-50%) rotate(-2deg)' }}>
+                  Твій магазин · перезбираємо
+                </span>
               </div>
             </FadeIn>
           </div>
@@ -167,17 +176,17 @@ export default function Home() {
       </section>
 
       {/* ================= BRANDS ================= */}
-      <section data-bot-say="Це бренди й ринки, з якими ми вже працювали — від Henkel і J&J до Amazon та Rozetka." className="border-y border-black/10 py-8 bg-[#F6F7F8]">
+      <section data-bot-say="Бренди й ринки з карʼєрного досвіду засновника — від Henkel і J&J до Amazon та Rozetka." className="comic-border-4 border-x-0 py-8 bg-white">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10">
           <div className="flex items-center justify-between mb-5">
-            <p className="font-pixel text-[0.55rem] uppercase text-black/65">
-              Бренди й ринки, з якими ми вже працювали
+            <p className="font-comic text-xs uppercase tracking-[0.06em] text-[#111] font-semibold">
+              Бренди й ринки з досвіду засновника <span className="text-[#5A6472] normal-case tracking-normal font-normal">(як найманого керівника)</span>
             </p>
             <button
               type="button"
               onClick={() => setMarqueePaused((v) => !v)}
               aria-label={marqueePaused ? 'Відновити стрічку' : 'Зупинити стрічку'}
-              className="font-mono text-[0.62rem] px-2.5 py-1 border border-black/15 text-black/60 hover:text-[#4D7C0F] hover:border-[#65A30D]/50 transition-colors"
+              className="font-comic text-xs px-3 py-1 comic-border rounded-full bg-white hover:bg-[#A3E635] transition-colors"
             >
               {marqueePaused ? '▶' : '❚❚'}
             </button>
@@ -186,7 +195,7 @@ export default function Home() {
         <div className={`marquee-mask overflow-hidden${marqueePaused ? ' marquee-paused' : ''}`}>
           <div className="marquee-track">
             {[...BRANDS, ...BRANDS].map((b, i) => (
-              <Chip key={`${b}-${i}`}>{b}</Chip>
+              <span key={`${b}-${i}`} className="tag-chip whitespace-nowrap">{b}</span>
             ))}
           </div>
         </div>
@@ -195,29 +204,26 @@ export default function Home() {
       {/* ================= PROBLEM ================= */}
       <section
         data-bot-say="Впізнаєш хоч одну з трьох проблем? Тоді далі — про те, як їх закриває система."
-        className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10 py-16 md:py-20"
+        className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10 py-16 md:py-20 relative"
       >
+        <Megaphone className="absolute right-8 top-10 rotate-6 hidden md:block" color="#FF2A17" />
         <FadeIn>
-          <Eyebrow>Проблема · Чому e-commerce застрягає</Eyebrow>
-          <h2
-            className="font-extrabold uppercase tracking-tight"
-            style={{ fontSize: 'clamp(1.6rem, 3.4vw, 2.6rem)' }}
-          >
-            Три причини, чому оборот стоїть на місці
+          <p className="font-comic uppercase tracking-[0.06em] text-[#FF2A17] font-semibold text-sm mb-2">Проблема · чому e-commerce застрягає</p>
+          <h2 className={H2} style={{ fontSize: 'clamp(1.8rem, 3.6vw, 2.8rem)' }}>
+            Три причини, чому <span className="redmark">оборот стоїть</span> на місці
           </h2>
         </FadeIn>
-        <div className="grid md:grid-cols-3 gap-4 mt-9">
+        <div className="grid md:grid-cols-3 gap-5 mt-10">
           {PAINS.map((p, i) => (
             <FadeIn key={p.n} delay={i * 0.08}>
-              <div className="card card-hover accent-top p-6 h-full flex flex-col" style={{ '--accent': '#DC2626' } as React.CSSProperties}>
-                <p className="font-pixel text-[0.5rem] text-[#DC2626]">{p.n}</p>
-                <p className="font-extrabold text-lg mt-2.5">{p.t}</p>
-                <p className="text-[#5A6472] text-[0.82rem] mt-2 leading-relaxed flex-1">{p.d}</p>
-                <div className="mt-4 pt-4 border-t border-black/[0.07]">
-                  <p className="font-mono font-bold text-2xl text-[#DC2626]">{p.v}</p>
-                  <p className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-[#5A6472] mt-1">
-                    {p.vl}
-                  </p>
+              <div className="comic-card comic-card-hover rounded-2xl p-6 h-full flex flex-col"
+                style={{ transform: `rotate(${(i - 1) * 0.6}deg)` }}>
+                <span className="font-comic font-bold text-lg text-[#FF2A17]">{p.n}</span>
+                <p className="font-extrabold text-lg mt-2 leading-snug">{p.t}</p>
+                <p className="text-[#3a3a3a] text-[0.86rem] mt-2.5 leading-relaxed flex-1">{p.d}</p>
+                <div className="mt-4 pt-4 border-t-2 border-dashed border-black/15">
+                  <p className="font-comic font-bold text-3xl text-[#FF2A17]">{p.v}</p>
+                  <p className="font-comic text-[0.62rem] uppercase tracking-[0.1em] text-[#5A6472] mt-1">{p.vl}</p>
                 </div>
               </div>
             </FadeIn>
@@ -228,54 +234,39 @@ export default function Home() {
       {/* ================= COMMERCE OS ================= */}
       <section
         data-bot-say="Commerce OS™ — наш власний фреймворк: 12 модулів, 56 плейбуків, 52 еталони. Не «послуги» — система."
-        className="border-y border-black/10 bg-[#F6F7F8]"
+        className="paper-ink halftone-dark"
       >
         <div className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10 py-16 md:py-20">
           <div className="grid lg:grid-cols-[1.1fr_1fr] gap-10 items-center">
             <FadeIn>
-              <Eyebrow>Рішення · Власна методологія</Eyebrow>
-              <h2
-                className="font-extrabold uppercase tracking-tight"
-                style={{ fontSize: 'clamp(1.7rem, 3.6vw, 2.8rem)' }}
-              >
-                Commerce <span className="font-pixel text-[0.8em] text-[#4D7C0F]">OS™</span> —
-                операційна система росту
+              <p className="font-comic uppercase tracking-[0.06em] text-[#A3E635] font-semibold text-sm mb-2">Рішення · власна методологія</p>
+              <h2 className={`${H2} text-[#FFFDF8]`} style={{ fontSize: 'clamp(1.9rem, 3.8vw, 3rem)' }}>
+                Commerce <span className="limemark" style={{ color: '#111' }}>OS™</span> —
+                <br className="hidden md:block" /> операційна система росту
               </h2>
-              <p className="text-[#5A6472] mt-5 leading-relaxed max-w-xl">
+              <p className="text-[#D6D9DE] mt-5 leading-relaxed max-w-xl">
                 Не набір послуг, а виконуваний фреймворк: кожна проблема бізнесу має свій модуль,
-                кожен модуль — плейбуки з кроками та критеріями приймання, кожна метрика —
-                еталон, до якого її прикладають. Тому результат відтворюваний, а не залежить від
-                натхнення підрядника.
+                кожен модуль — плейбуки з кроками та критеріями приймання, кожна метрика — еталон.
+                Тому результат відтворюваний, а не залежить від натхнення підрядника.
               </p>
               <div className="flex flex-wrap gap-4 mt-7">
-                <Link
-                  to="/os#system"
-                  onClick={() => track('cta_click', { location: 'home_os_system' })}
-                  className="bg-[#12161C] text-white px-6 py-3 font-mono text-xs uppercase tracking-wider hover:opacity-85 transition-opacity"
-                >
+                <Link to="/os#system" onClick={() => track('cta_click', { location: 'home_os_system' })} className="pill-cta lime text-sm">
                   Розібрати систему →
                 </Link>
-                <Link
-                  to="/os#product"
-                  className="border border-black/30 px-6 py-3 font-mono text-xs uppercase tracking-wider hover:bg-black/5 transition-colors"
-                >
-                  Подивитись демо зсередини
-                </Link>
+                <Link to="/os#product" className="pill-cta paper text-sm">Демо зсередини</Link>
               </div>
             </FadeIn>
             <FadeIn delay={0.15}>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3.5">
                 {[
                   { v: '12', l: 'модулів системи · M01–M12' },
                   { v: '56', l: 'виконуваних плейбуків' },
                   { v: '52', l: 'еталонні метрики Gold Standards' },
-                  { v: '16', l: 'документів аудиту клієнту' },
-                ].map((s) => (
-                  <div key={s.l} className="card px-5 py-5">
-                    <p className="font-mono font-bold text-4xl text-[#4D7C0F]">{s.v}</p>
-                    <p className="font-mono text-[0.62rem] uppercase tracking-[0.14em] text-[#5A6472] mt-2 leading-relaxed">
-                      {s.l}
-                    </p>
+                  { v: '19', l: 'документів аудиту клієнту' },
+                ].map((s, i) => (
+                  <div key={s.l} className="rounded-xl px-5 py-5 bg-[#1b1b1b] comic-border" style={{ borderColor: '#A3E635', transform: `rotate(${(i % 2 ? 1 : -1) * 0.7}deg)` }}>
+                    <p className="font-comic font-bold text-4xl text-[#A3E635]">{s.v}</p>
+                    <p className="font-comic text-[0.64rem] uppercase tracking-[0.1em] text-[#B9BEC5] mt-2 leading-relaxed">{s.l}</p>
                   </div>
                 ))}
               </div>
@@ -284,25 +275,21 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ================= WHY OWNERS CHOOSE US ================= */}
+      {/* ================= WHY / MATH ================= */}
       <section
         data-bot-say="Головне питання власника: «Скільки ви мені заробите?» Ось математика рішення — на реальних цифрах кейсів."
         className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10 py-16 md:py-20"
       >
         <FadeIn>
-          <h2
-            className="font-extrabold uppercase tracking-tight"
-            style={{ fontSize: 'clamp(1.6rem, 3.4vw, 2.6rem)' }}
-          >
-            Питання власника: <span className="text-[#4D7C0F]">«Скільки ви мені заробите?»</span>
+          <h2 className={H2} style={{ fontSize: 'clamp(1.8rem, 3.6vw, 2.8rem)' }}>
+            Питання власника: <span className="marker-underline">«Скільки ви мені заробите?»</span>
           </h2>
         </FadeIn>
 
-        {/* Математика рішення */}
         <FadeIn delay={0.1}>
-          <div className="card p-6 md:p-8 mt-8" style={{ borderColor: 'rgba(101,163,13,0.35)' }}>
-            <p className="font-pixel text-[0.5rem] text-[#4D7C0F] mb-5">
-              МАТЕМАТИКА РІШЕННЯ · РЕАЛЬНІ ЦИФРИ КЕЙСІВ
+          <div className="comic-card rounded-2xl p-6 md:p-8 mt-8">
+            <p className="font-comic uppercase tracking-[0.06em] text-[#4D7C0F] font-semibold text-sm mb-5">
+              Математика рішення · реальні цифри кейсів
             </p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-5">
               {[
@@ -311,13 +298,9 @@ export default function Home() {
                 { k: 'Програма', v: 'транші під DoD', d: 'платите за прийнятий результат' },
                 { k: 'ROI року', v: '3.8×', d: 'кейс «Преміум-текстиль»' },
               ].map((s, i) => (
-                <div key={s.k} className="relative">
-                  <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[#5A6472]">
-                    {i + 1} · {s.k}
-                  </p>
-                  <p className="font-mono font-bold text-2xl md:text-[1.7rem] text-[#12161C] mt-1.5">
-                    {s.v}
-                  </p>
+                <div key={s.k}>
+                  <p className="font-comic text-[0.66rem] uppercase tracking-[0.1em] text-[#5A6472]">{i + 1} · {s.k}</p>
+                  <p className="font-comic font-bold text-2xl md:text-[1.8rem] text-[#111] mt-1">{s.v}</p>
                   <p className="text-[#5A6472] text-xs mt-1.5 leading-relaxed">{s.d}</p>
                 </div>
               ))}
@@ -327,28 +310,16 @@ export default function Home() {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-5">
           {[
-            {
-              t: 'Рахуємо в грошах',
-              d: 'Кожен висновок аудиту переведено в гривні проти 52 еталонів Gold Standards. Жодних «покращимо впізнаваність».',
-            },
-            {
-              t: 'Ціни відкриті',
-              d: 'Ми розробили три формати співпраці — кожен знайде свій. Усі ціни відкрито на сторінці «Співпраця», без «зателефонуйте менеджеру».',
-            },
-            {
-              t: 'Бюджет під захистом',
-              d: 'Етапи з Definition of Done і траншами: наступний платіж — після прийнятого результату.',
-            },
-            {
-              t: 'Старт без ризику',
-              d: '11 із 16 документів аудиту готові ще до передачі доступів — ви бачите цінність до того, як відкриваєте дані.',
-            },
+            { t: 'Рахуємо в грошах', d: 'Кожен висновок аудиту переведено в гривні проти 52 еталонів Gold Standards. Жодних «покращимо впізнаваність».' },
+            { t: 'Ціни відкриті', d: 'Три формати співпраці, усі ціни відкрито на сторінці «Співпраця», без «зателефонуйте менеджеру».' },
+            { t: 'Бюджет під захистом', d: 'Етапи з Definition of Done і траншами: наступний платіж — після прийнятого результату.' },
+            { t: 'Старт без ризику', d: 'Частина документів аудиту готова ще до передачі доступів — ви бачите цінність до того, як відкриваєте дані.' },
           ].map((c, i) => (
             <FadeIn key={c.t} delay={0.12 + i * 0.06}>
-              <div className="card card-hover p-6 h-full">
-                <p className="font-pixel text-[0.5rem] text-[#4D7C0F]">0{i + 1}</p>
-                <p className="font-extrabold text-lg mt-2.5">{c.t}</p>
-                <p className="text-[#5A6472] text-[0.82rem] mt-2 leading-relaxed">{c.d}</p>
+              <div className="comic-card comic-card-hover rounded-2xl p-6 h-full">
+                <span className="font-comic font-bold text-lg text-[#4D7C0F]">0{i + 1}</span>
+                <p className="font-extrabold text-lg mt-2 leading-snug">{c.t}</p>
+                <p className="text-[#3a3a3a] text-[0.86rem] mt-2 leading-relaxed">{c.d}</p>
               </div>
             </FadeIn>
           ))}
@@ -358,73 +329,67 @@ export default function Home() {
       {/* ================= PRODUCTS ================= */}
       <section
         data-bot-say="Купують не «агентство», а продукт: три формати з цінами, строками й результатом. Обирай двері за розміром задачі."
-        className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10 py-16 md:py-20"
+        className="bg-white comic-border-4 border-x-0"
       >
-        <FadeIn>
-          <Eyebrow>Продукти · Ціни відкриті</Eyebrow>
-          <div className="flex flex-wrap items-end justify-between gap-6 mb-9">
-            <h2 className="font-extrabold uppercase tracking-tight" style={{ fontSize: 'clamp(1.6rem, 3.4vw, 2.6rem)' }}>
-              Три способи купити ріст
-            </h2>
-            <Link to="/services" className="font-mono text-xs uppercase tracking-wider text-black/60 hover:text-[#4D7C0F] transition-colors">
-              Повні умови →
-            </Link>
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10 py-16 md:py-20">
+          <FadeIn>
+            <div className="flex flex-wrap items-end justify-between gap-6 mb-9">
+              <div>
+                <p className="font-comic uppercase tracking-[0.06em] text-[#4D7C0F] font-semibold text-sm mb-2">Продукти · ціни відкриті</p>
+                <h2 className={H2} style={{ fontSize: 'clamp(1.8rem, 3.6vw, 2.8rem)' }}>
+                  Три способи <span className="limemark">купити ріст</span>
+                </h2>
+              </div>
+              <Link to="/services" className="font-comic text-xs uppercase tracking-wider text-black/60 hover:text-[#4D7C0F] transition-colors">Повні умови →</Link>
+            </div>
+          </FadeIn>
+          <div className="grid md:grid-cols-3 gap-6">
+            {PRODUCTS.map((p, i) => (
+              <FadeIn key={p.n} delay={i * 0.08}>
+                <Link
+                  to="/services"
+                  onMouseEnter={() => say(p.say)}
+                  onMouseLeave={sayIdle}
+                  onClick={() => track('cta_click', { location: `home_product_${p.n}` })}
+                  className="comic-card comic-card-hover rounded-2xl p-7 h-full flex flex-col group block"
+                  style={{ transform: `rotate(${(i - 1) * 0.7}deg)` }}
+                >
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="font-comic font-bold text-lg text-[#4D7C0F]">{p.n}</span>
+                    <span className="font-comic text-[0.66rem] uppercase tracking-wider text-[#5A6472]">{p.term}</span>
+                  </div>
+                  <p className="font-extrabold text-xl mt-3">{p.name}</p>
+                  <p className="font-comic font-bold text-3xl text-[#111] mt-2">{p.price}</p>
+                  <p className="text-[#3a3a3a] text-[0.86rem] mt-3 leading-relaxed flex-1">{p.result}</p>
+                  <span className="font-comic text-xs uppercase tracking-wider mt-6 text-black/65 group-hover:text-[#4D7C0F] transition-colors">Детальніше →</span>
+                </Link>
+              </FadeIn>
+            ))}
           </div>
-        </FadeIn>
-        <div className="grid md:grid-cols-3 gap-5">
-          {PRODUCTS.map((p, i) => (
-            <FadeIn key={p.n} delay={i * 0.08}>
-              <Link
-                to="/services"
-                onMouseEnter={() => say(p.say)}
-                onMouseLeave={sayIdle}
-                onClick={() => track('cta_click', { location: `home_product_${p.n}` })}
-                className="card card-hover accent-top p-7 h-full flex flex-col group"
-                style={{ '--accent': 'var(--lime)' } as React.CSSProperties}
-              >
-                <div className="flex items-baseline justify-between gap-3">
-                  <p className="font-pixel text-[0.55rem] text-[#4D7C0F]">{p.n}</p>
-                  <p className="font-mono text-[0.62rem] uppercase tracking-wider text-[#5A6472]">{p.term}</p>
-                </div>
-                <p className="font-extrabold text-xl mt-3">{p.name}</p>
-                <p className="font-mono font-bold text-3xl text-[#12161C] mt-2">{p.price}</p>
-                <p className="text-[#5A6472] text-[0.82rem] mt-3 leading-relaxed flex-1">{p.result}</p>
-                <p className="font-mono text-xs uppercase tracking-wider mt-6 text-black/65 group-hover:text-[#4D7C0F] transition-colors">
-                  Детальніше →
-                </p>
-              </Link>
-            </FadeIn>
-          ))}
         </div>
       </section>
 
       {/* ================= CASES ROW ================= */}
       <section
         data-bot-say="Чотири мандати — чотири виміряні результати. Клікай будь-який: усередині повний розбір «було → стало»."
-        className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10 pb-16 md:pb-20"
+        className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10 py-16 md:py-20"
       >
         <FadeIn>
-          <Eyebrow>Докази · Кейси з CRM, ERP і GA4</Eyebrow>
+          <p className="font-comic uppercase tracking-[0.06em] text-[#4D7C0F] font-semibold text-sm mb-6">Докази · кейси з CRM, ERP і GA4</p>
         </FadeIn>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {CASE_ROW.map((c, i) => (
             <FadeIn key={c.to} delay={i * 0.07}>
               <Link
                 to={c.to}
                 onClick={() => track('cta_click', { location: 'home_case_row' })}
-                className="card card-hover accent-top p-6 h-full flex flex-col group"
-                style={{ '--accent': c.color } as React.CSSProperties}
+                className="comic-card comic-card-hover rounded-2xl p-6 h-full flex flex-col group block"
+                style={{ transform: `rotate(${(i % 2 ? 1 : -1) * 0.7}deg)` }}
               >
-                <p className="font-mono font-bold text-3xl" style={{ color: c.color }}>
-                  {c.num}
-                </p>
-                <p className="font-bold text-sm mt-2.5 leading-snug flex-1">{c.name}</p>
-                <p className="font-mono text-[0.62rem] uppercase tracking-[0.14em] text-[#5A6472] mt-2">
-                  {c.metric}
-                </p>
-                <p className="font-mono text-xs uppercase tracking-wider mt-4 text-black/60 group-hover:text-[#4D7C0F] transition-colors">
-                  Розбір →
-                </p>
+                <span className="inline-block font-comic font-bold text-3xl px-2 rounded-md" style={{ background: c.color }}>{c.num}</span>
+                <p className="font-bold text-sm mt-3 leading-snug flex-1">{c.name}</p>
+                <p className="font-comic text-[0.64rem] uppercase tracking-[0.1em] text-[#5A6472] mt-2">{c.metric}</p>
+                <span className="font-comic text-xs uppercase tracking-wider mt-4 text-black/60 group-hover:text-[#4D7C0F] transition-colors">Розбір →</span>
               </Link>
             </FadeIn>
           ))}
@@ -442,24 +407,23 @@ export default function Home() {
             onMouseEnter={() => say('Порахуємо, скільки грошей лишається на столі? 4 питання, 30 секунд →')}
             onMouseLeave={sayIdle}
             onClick={() => track('cta_click', { location: 'home_calculator_teaser' })}
-            className="card card-hover accent-top p-8 md:p-10 flex flex-col md:flex-row md:items-center justify-between gap-6 group"
-            style={{ '--accent': '#DB2777' } as React.CSSProperties}
+            className="relative block rounded-3xl p-8 md:p-11 flex flex-col md:flex-row md:items-center justify-between gap-6 group bg-[#A3E635] comic-border-4 hard-shadow overflow-hidden"
           >
-            <div>
-              <p className="font-pixel text-[0.55rem] text-[#DB2777] mb-3">
-                КАЛЬКУЛЯТОР · БЕЗКОШТОВНО · БЕЗ КОНТАКТІВ
+            <Scribble className="absolute right-40 top-6 hidden md:block" color="#111" />
+            <Star className="absolute right-10 bottom-6" style={{ width: 30, height: 30 }} />
+            <div className="relative">
+              <p className="font-comic uppercase tracking-[0.06em] text-[#111] font-semibold text-sm mb-3">
+                Калькулятор · безкоштовно · без контактів
               </p>
-              <p className="font-extrabold text-2xl md:text-3xl">
-                Скільки обороту ви недоотримуєте щороку?
+              <p className="font-extrabold text-2xl md:text-4xl leading-[1.05]">
+                Скільки обороту ви <span className="marker-underline-sun">недоотримуєте</span> щороку?
               </p>
-              <p className="text-[#5A6472] text-sm mt-2.5 max-w-xl leading-relaxed">
-                4 питання проти еталонів вашої ніші — і розрив у гривнях на екрані. Та сама
-                модель, якою ми рахуємо аудити.
+              <p className="text-[#1a1a1a] text-sm md:text-base mt-3 max-w-xl leading-relaxed font-medium">
+                4 питання проти еталонів вашої ніші — і розрив у гривнях на екрані. Та сама модель,
+                якою ми рахуємо аудити.
               </p>
             </div>
-            <span className="shrink-0 self-start md:self-auto font-mono text-sm uppercase tracking-wider border border-black/30 px-7 py-3.5 group-hover:bg-[#12161C] group-hover:text-white group-hover:border-[#12161C] transition-colors">
-              Порахувати →
-            </span>
+            <span className="pill-cta shrink-0 self-start md:self-auto text-sm">Порахувати →</span>
           </Link>
         </FadeIn>
       </section>

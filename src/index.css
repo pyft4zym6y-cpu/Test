@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Caveat:wght@600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -291,4 +292,130 @@ body,
   .menu-link {
     transition: none;
   }
+}
+
+/* ============================================================
+   КОМІКС-ДИЗАЙН-СИСТЕМА weexp (адаптація school/ + lime-акцент)
+   Палітра: paper/ink/brand-red/sun-yellow + lime (акцент бренду).
+   ============================================================ */
+:root {
+  --paper: #FFFDF8;
+  --ink: #111111;
+  --brand-red: #FF2A17;
+  --sun: #FFD100;
+  --lime-comic: #A3E635;
+  --lime-ink: #4D7C0F;
+}
+
+.font-comic { font-family: 'Oswald', 'Arial Narrow', sans-serif; }
+.font-hand { font-family: 'Caveat', cursive; }
+
+.paper { background: var(--paper); }
+.paper-ink { background: var(--ink); color: var(--paper); }
+
+/* растрові крапки друкованого коміксу */
+.halftone {
+  background-image: radial-gradient(rgba(17,17,17,0.12) 1.2px, transparent 1.2px);
+  background-size: 14px 14px;
+}
+.halftone-lime {
+  background-image: radial-gradient(rgba(77,124,15,0.22) 1.4px, transparent 1.4px);
+  background-size: 16px 16px;
+}
+.halftone-dark {
+  background-image: radial-gradient(rgba(255,255,255,0.10) 1.4px, transparent 1.4px);
+  background-size: 16px 16px;
+}
+
+/* обводки та жорсткі тіні */
+.comic-border { border: 3px solid var(--ink); }
+.comic-border-4 { border: 4px solid var(--ink); }
+.hard-shadow { box-shadow: 6px 6px 0 var(--ink); }
+.hard-shadow-sm { box-shadow: 4px 4px 0 var(--ink); }
+.hard-shadow-lime { box-shadow: 6px 6px 0 var(--lime-ink); }
+.hard-shadow-red { box-shadow: 6px 6px 0 var(--brand-red); }
+.hard-shadow-sun { box-shadow: 6px 6px 0 var(--sun); }
+
+/* highlight-плашки всередині заголовків */
+.limemark { display: inline-block; background: var(--lime-comic); padding: 0 0.16em; transform: rotate(-1.5deg); }
+.redmark  { display: inline-block; background: var(--brand-red); color: #fff; padding: 0 0.16em; transform: rotate(-1.5deg); }
+.sunmark  { display: inline-block; background: var(--sun); padding: 0 0.16em; transform: rotate(1deg); }
+
+/* спіч-бабл із хвостиком */
+.bubble { position: relative; border: 3px solid var(--ink); background: #fff; border-radius: 16px; }
+.bubble::after {
+  content: ''; position: absolute; bottom: -14px; left: 40px; width: 22px; height: 22px;
+  background: #fff; border-right: 3px solid var(--ink); border-bottom: 3px solid var(--ink);
+  transform: skewX(28deg) rotate(45deg);
+}
+
+/* комікс-кнопка з натиском */
+.comic-btn {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  border: 3px solid var(--ink); box-shadow: 5px 5px 0 var(--ink);
+  font-family: 'Oswald', sans-serif; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.03em; transition: transform .08s ease, box-shadow .08s ease;
+}
+.comic-btn:hover { transform: translate(2px, 2px); box-shadow: 3px 3px 0 var(--ink); }
+.comic-btn:active { transform: translate(5px, 5px); box-shadow: 0 0 0 var(--ink); }
+
+/* комікс-картка */
+.comic-card {
+  background: #fff; border: 3px solid var(--ink); box-shadow: 6px 6px 0 var(--ink);
+  transition: transform .1s ease, box-shadow .1s ease;
+}
+.comic-card-hover:hover { transform: translate(-2px, -2px); box-shadow: 9px 9px 0 var(--ink); }
+
+/* ---- референс «agency meme poster» (Social Comet / Agency Life) ---- */
+/* тепла паперова текстура фону */
+.paper-warm {
+  background-color: #F7F3EA;
+  background-image:
+    radial-gradient(rgba(17,17,17,0.03) 1px, transparent 1px),
+    radial-gradient(rgba(17,17,17,0.02) 1px, transparent 1px);
+  background-size: 22px 22px, 22px 22px;
+  background-position: 0 0, 11px 11px;
+}
+
+/* маркерне підкреслення від руки */
+.marker-underline {
+  background-image: linear-gradient(120deg, transparent 0, transparent 0);
+  box-shadow: inset 0 -0.14em 0 rgba(163,230,53,0.85);
+  padding: 0 0.04em;
+}
+.marker-underline-pink { box-shadow: inset 0 -0.14em 0 rgba(236,72,153,0.55); }
+.marker-underline-sun  { box-shadow: inset 0 -0.14em 0 rgba(255,209,0,0.85); }
+
+/* кругла пілюля-CTA (як «Aa jao. Kar denge.») */
+.pill-cta {
+  display: inline-flex; align-items: center; gap: 0.55rem;
+  background: var(--ink); color: #fff; border-radius: 999px;
+  padding: 0.85rem 1.6rem; font-weight: 800; letter-spacing: -0.01em;
+  border: 3px solid var(--ink); transition: transform .12s ease, background .15s ease;
+}
+.pill-cta:hover { transform: translateY(-2px) rotate(-1deg); }
+.pill-cta.lime { background: var(--lime-comic); color: var(--ink); }
+.pill-cta.paper { background: #fff; color: var(--ink); }
+
+/* хэштег-чип */
+.tag-chip {
+  display: inline-flex; align-items: center; border-radius: 999px;
+  border: 2px solid var(--ink); background: #fff; padding: 0.3rem 0.85rem;
+  font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 0.72rem;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.tag-chip.lime { background: var(--lime-comic); }
+.tag-chip.sun { background: var(--sun); }
+
+/* стикер-обводка навколо вирізаного фото/арту */
+.sticker {
+  border: 4px solid var(--ink); border-radius: 20px; background: #fff;
+  box-shadow: 8px 8px 0 var(--ink); overflow: hidden;
+}
+.sticker.lime { box-shadow: 8px 8px 0 var(--lime-ink); }
+
+/* рукописна дудл-мітка */
+.doodle-label {
+  font-family: 'Caveat', cursive; font-weight: 700; color: var(--lime-ink);
+  transform: rotate(-6deg); display: inline-block;
 }
