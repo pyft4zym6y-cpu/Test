@@ -34,8 +34,8 @@ export default function RedHero() {
             transition={{ duration: 0.8, delay: 0.15, ease: 'easeOut' }}
             className="text-white text-[16px] h-[100px] w-full max-w-[400px] leading-[1.6] mb-[40px] uppercase tracking-wider mx-auto"
           >
-            We built this platform with a single purpose to eliminate operational chaos and restore
-            balance to your daily business routine
+            Ми створили цю школу з єдиною метою — прибрати хаос з e-commerce і виховати нове
+            покоління архітекторів цифрового бізнесу
           </motion.p>
 
           <motion.div
@@ -44,7 +44,7 @@ export default function RedHero() {
             transition={{ duration: 0.9, delay: 0.3, ease: 'easeOut' }}
             className="font-marck text-white text-[120px] leading-none mb-[32px]"
           >
-            S.P.D
+            П.С.
           </motion.div>
 
           <motion.div
@@ -54,12 +54,12 @@ export default function RedHero() {
             className="text-white leading-[1.6] mb-[100px] md:mb-24 w-full flex flex-col items-center font-light"
           >
             <p className="mb-[24px] text-[16px] w-[400px] max-w-full text-center">
-              I Was Exhausted By Software That Demanded More Effort Than It Actually Saved. That Is
-              Why We Engineered An Autonomous Architecture That Operates Silently In The Background.
+              Я втомився від навчання, що вимагає більше зусиль, ніж дає результату. Тому програма
+              школи зібрана з реальної практики — аудитів і трансформацій живих інтернет-магазинів.
             </p>
             <p className="text-[16px] w-[400px] max-w-full text-center">
-              Your Business Should Serve Your Life, Not Consume It. Let Our Algorithms Handle The
-              Heavy Lifting, So You Can Focus On The Vision.
+              Бізнес має служити вашому життю, а не поглинати його. Опануйте архітектуру
+              e-commerce — і система працюватиме на вас, поки ви фокусуєтеся на візії.
             </p>
           </motion.div>
         </div>
