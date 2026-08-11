@@ -118,6 +118,8 @@ export type SiteAuditReport = {
   systemic: SystemicDefect[];
   verdict: string;
   warning?: string; // пробел покрытия (напр. PDP не разобрана) — вывод с оговоркой
+  pageTypes: import('./crawl.js').PageTypeCoverage[]; // карта уникальных типов страниц
+  soft404: boolean | null;
 };
 
 const MAX_BY_WEIGHT: Record<Weight, number> = { core: 4, important: 3, nice: 2 };
@@ -159,6 +161,27 @@ function qualityPenalty(key: string, p: PageAudit): string | null {
   return null;
 }
 
+/** Блок «есть», если он в карте блоков ИЛИ виден соответствующим измерением UxProbe —
+ *  иначе противоречия вида «✕ Сортировка есть» (blocks не знал, а sortControl знал). */
+function uxHas(key: string, p: PageAudit): boolean {
+  const ux = p.ux;
+  if (!ux) return false;
+  switch (key) {
+    case 'sort': return ux.sortControl;
+    case 'filters': return ux.filters;
+    case 'trust': return ux.trustBadges;
+    case 'payment': return ux.paymentIcons;
+    case 'reviews': return ux.reviews;
+    case 'variants': return ux.variantSelector;
+    case 'price': return ux.priceVisible;
+    case 'add_to_cart': return ux.addToCartProminent;
+    case 'contact_form': return ux.formFields > 0;
+    case 'gallery': return ux.galleryImages > 0;
+    case 'breadcrumbs': return ux.breadcrumbs;
+    default: return false;
+  }
+}
+
 /** Слово-вердикт как в референсе: сильно / частично / проверить / слабо / критично / нет. */
 function wordFor(state: BlockState, weight: Weight): string {
   if (state === 'ok') return 'сильно';
@@ -179,7 +202,7 @@ function buildPage(p: PageAudit): PageReport | null {
   if (!ref) return null;
   const present = p.ux?.blocks ?? {};
   const rows: BlockRow[] = ref.blocks.map((b) => {
-    const has = Boolean(present[b.key]);
+    const has = Boolean(present[b.key]) || uxHas(b.key, p);
     const state: BlockState = has ? 'ok' : (b.weight === 'nice' || L0_UNCERTAIN.has(b.key) ? 'check' : 'gap');
     const max = MAX_BY_WEIGHT[b.weight];
     let score = state === 'ok' ? max : state === 'check' ? 1 : 0;
@@ -233,7 +256,12 @@ function systemicDefects(ds: AuditDataset): SystemicDefect[] {
   // Аналитика/платформа как системный сигнал.
   if (!ds.client.tech.analytics.length) out.push({ title: 'Аналитика не обнаружена (GA4/GTM/Pixel)', detail: 'Без событий невозможно измерять воронку — рекомендации нельзя проверить деньгами.', dims: ['ANL'] });
   if (!ds.client.sitemapXml) out.push({ title: 'Нет sitemap.xml', detail: 'Хуже индексация всего каталога — системный SEO-риск.', dims: ['SEO', 'TECH'] });
-  return out.slice(0, 6);
+  // Правило карты сайта: отсутствующая ОБЯЗАТЕЛЬНАЯ страница — находка, а не пропуск.
+  for (const t of ds.client.pageTypes ?? []) {
+    if (t.mandatory && t.status === 'не найдена') out.push({ title: `Не найдена обязательная страница: ${t.label}`, detail: 'Искали в sitemap, по ссылкам обхода и пробой стандартных адресов. Для магазина это базовая страница — её отсутствие ломает доверие/право/путь покупки.', dims: t.id.startsWith('legal') ? ['LAW', 'COMM'] : ['UX', 'CRO'] });
+  }
+  if (ds.client.soft404 === true) out.push({ title: 'Несуществующие URL отдают 200 («мягкая 404»)', detail: 'Мусорные адреса индексируются как страницы — раздувание индекса и размывание веса. Нужен честный 404-статус.', dims: ['SEO', 'TECH'] });
+  return out.slice(0, 8);
 }
 
 function verdictLine(pct: number): string {
@@ -273,7 +301,7 @@ export function buildSiteAudit(ds: AuditDataset): SiteAuditReport {
     warning = 'Карточка товара (PDP) не попала в выборку обхода — главный конвертирующий тип страницы не разобран. Балл соответствия относится только к разобранным типам; вывод по витрине — с оговоркой до разбора PDP.';
     verdict = `По разобранным типам — ${totalPct}%, но PDP не разобрана: вывод о витрине неполный (пробел покрытия, а не «всё хорошо»).`;
   }
-  return { client, takenAt: ds.takenAt, tier: ds.tier, pages, tree, totalScore, totalMax, totalPct, systemic: systemicDefects(ds), verdict, warning };
+  return { client, takenAt: ds.takenAt, tier: ds.tier, pages, tree, totalScore, totalMax, totalPct, systemic: systemicDefects(ds), verdict, warning, pageTypes: ds.client.pageTypes ?? [], soft404: ds.client.soft404 ?? null };
 }
 
 export { KIND_LABEL };

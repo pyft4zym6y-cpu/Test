@@ -39,6 +39,26 @@ function treeSection(r: SiteAuditReport): string {
   </section>`;
 }
 
+function pageTypesSection(r: SiteAuditReport): string {
+  if (!r.pageTypes.length) return '';
+  const cls = (s: string) => (s === 'разобрана' ? 'ok' : s === 'найдена' ? 'check' : s === 'не найдена' ? 'gap' : '');
+  const mark = (s: string) => (s === 'разобрана' ? '✓' : s === 'найдена' ? '◐' : s === 'не найдена' ? '✕' : '○');
+  const row = (t: SiteAuditReport['pageTypes'][number]) => `<tr>
+    <td class="pt-name">${esc(t.label)}</td>
+    <td class="pt-st ${cls(t.status)}">${mark(t.status)} ${esc(t.status)}</td>
+    <td class="pt-url">${t.url ? esc(t.url.replace(/^https?:\/\//, '')) : '—'}</td>
+  </tr>`;
+  const mand = r.pageTypes.filter((t) => t.mandatory);
+  const varr = r.pageTypes.filter((t) => !t.mandatory);
+  const missing = mand.filter((t) => t.status === 'не найдена').length;
+  return `<section class="block"><h2>Карта уникальных страниц: обязательные и переменные</h2>
+    <p class="lead">Правило: карта строится из sitemap + ссылок обхода + активной пробы стандартных адресов; разбирается представитель каждого типа. ${missing ? `<b class="gap">Не найдено обязательных страниц: ${missing}</b> — это находки аудита.` : 'Все обязательные страницы найдены.'}${r.soft404 === true ? ' <b class="gap">Несуществующие URL отдают 200 («мягкая 404»).</b>' : ''}</p>
+    <div class="pt-grid">
+      <div><h3>Обязательные (100% должны быть)</h3><table><thead><tr><th>Страница</th><th>Статус</th><th>URL</th></tr></thead><tbody>${mand.map(row).join('')}</tbody></table></div>
+      <div><h3>Переменные (по модели бизнеса)</h3><table><thead><tr><th>Страница</th><th>Статус</th><th>URL</th></tr></thead><tbody>${varr.map(row).join('')}</tbody></table></div>
+    </div></section>`;
+}
+
 function pageSection(p: PageReport): string {
   const blockRows = p.rows.map((b: BlockRow, i: number) => `<tr class="row-${STATE_CLS[b.state]}">
     <td class="b-name"><span class="b-num">${String(i + 1).padStart(2, '0')}</span>${esc(b.name)}<span class="b-weight ${b.weight}">${b.weight === 'core' ? 'ядро' : b.weight === 'important' ? 'важно' : 'опц.'}</span><span class="b-dims">${dimBadges(b.dims)}</span></td>
@@ -186,12 +206,16 @@ export function renderAuditHtml(r: SiteAuditReport): string {
   .rq-dims{white-space:nowrap;width:70px;} .rq-req{font-weight:600;color:var(--ink);} .rq-why{color:#333;}
   .fixes{margin-top:12px;} .fix-table td{padding:4px 6px;border-bottom:1px solid var(--line);font-size:10px;vertical-align:top;}
   .fx-n{color:var(--muted);width:16px;} .fx-what{font-weight:700;white-space:nowrap;} .fx-crit{font-weight:700;white-space:nowrap;} .fx-why{color:#333;}
+  /* page types map */
+  .pt-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;}
+  .pt-name{font-weight:600;font-size:9.5px;} .pt-st{white-space:nowrap;font-size:9px;font-weight:600;} .pt-url{color:var(--muted);font-size:8.5px;word-break:break-all;}
   /* systemic */
   .sys-list{margin:6px 0 0;padding-left:18px;} .sys-list li{margin:5px 0;} .s-dims{margin-left:4px;}
   .footer{margin-top:16px;padding-top:8px;border-top:1px solid var(--line);color:var(--muted);font-size:8.5px;}
   </style></head><body>
   ${cover}
   ${treeSection(r)}
+  ${pageTypesSection(r)}
   ${r.pages.map(pageSection).join('')}
   ${systemicSection(r)}
   <section class="block">

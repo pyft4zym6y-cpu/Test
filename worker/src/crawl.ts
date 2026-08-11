@@ -71,6 +71,8 @@ export type SiteCrawl = {
   pages: PageAudit[];
   discoveredLinks: number;
   links: string[]; // внутренние URL, найденные обходом (для SEO-дерева)
+  pageTypes?: PageTypeCoverage[]; // карта уникальных типов страниц (100% + переменные)
+  soft404?: boolean | null;       // несуществующий URL отдаёт 200 («мягкая 404») — дефект индексации
   error?: string;
 };
 
@@ -476,6 +478,48 @@ function pickCandidates(root: string, links: string[], want: number): string[] {
   return Array.from(out).slice(0, want);
 }
 
+/* ── Реестр уникальных типов страниц e-commerce ──
+ * Правило аудита: карта сайта строится из sitemap + ссылок обхода + АКТИВНОЙ ПРОБЫ
+ * известных путей; разбирается представитель КАЖДОГО найденного типа. Обязательный
+ * тип, не найденный нигде, — это находка аудита («страницы нет»), а не пропуск. */
+export type PageTypeStatus = 'разобрана' | 'найдена' | 'не найдена' | 'вне обхода (A1)';
+export type PageTypeCoverage = { id: string; label: string; mandatory: boolean; url?: string; status: PageTypeStatus };
+type PageTypeDef = { id: string; label: string; mandatory: boolean; match: RegExp; probes: string[]; kind?: PageKind };
+
+export const PAGE_TYPE_REGISTRY: PageTypeDef[] = [
+  // ── 100%: обязаны существовать у любого магазина ──
+  { id: 'home', label: 'Главная', mandatory: true, match: /^\/$/, probes: [], kind: 'home' },
+  { id: 'plp', label: 'Каталог / категория (PLP)', mandatory: true, match: /category|catalog|katalog|collection|shop/i, probes: ['/katalog/', '/catalog/', '/shop/'], kind: 'plp' },
+  { id: 'pdp', label: 'Карточка товара (PDP)', mandatory: true, match: /product|tovar|\/p\/|goods|item|route=product/i, probes: [], kind: 'pdp' },
+  { id: 'cart', label: 'Корзина', mandatory: true, match: /\/(cart|korzina|basket|koshyk)(\/|$)/i, probes: ['/cart/', '/cart', '/korzina/', '/basket/'], kind: 'cart' },
+  { id: 'checkout', label: 'Чекаут (оформление)', mandatory: true, match: /checkout|oform|zamovlennya|order\b/i, probes: ['/checkout/', '/checkout'], kind: 'checkout' },
+  { id: 'search', label: 'Результаты поиска', mandatory: true, match: /\/search|[?&](s|q|query|search)=/i, probes: ['/search/?q=test', '/?s=test', '/index.php?route=product/search&search=test'] },
+  { id: 'contacts', label: 'Контакты', mandatory: true, match: /contact|kontakt/i, probes: ['/contacts/', '/contact/', '/kontakty/'] },
+  { id: 'delivery-payment', label: 'Доставка и оплата', mandatory: true, match: /delivery|dostavka|shipping|payment|oplata/i, probes: ['/delivery/', '/dostavka/', '/dostavka-i-oplata/', '/shipping/'] },
+  { id: 'about', label: 'О компании / бренде', mandatory: true, match: /about|o-nas|pro-nas|company/i, probes: ['/about/', '/about-us/', '/pro-nas/', '/o-nas/'] },
+  { id: 'legal-terms', label: 'Оферта / условия продажи', mandatory: true, match: /oferta|offer|terms|umovy|dogovir|usloviya/i, probes: ['/oferta/', '/terms/', '/umovy/', '/publichna-oferta/'] },
+  { id: 'legal-privacy', label: 'Политика конфиденциальности', mandatory: true, match: /privacy|konfiden|personal-data|polityka/i, probes: ['/privacy/', '/privacy-policy/', '/konfidencijnist/'] },
+  { id: 'legal-return', label: 'Возврат и обмен', mandatory: true, match: /return|povernennya|vozvrat|obmin|obmen|refund/i, probes: ['/povernennya/', '/vozvrat/', '/returns/', '/obmin-ta-povernennya/'] },
+  // ── Переменные: есть при соответствующей модели/зрелости ──
+  { id: 'faq', label: 'FAQ', mandatory: false, match: /\/(faq|help|pytannya|voprosy)(\/|$)/i, probes: ['/faq/', '/faq'], kind: 'faq' },
+  { id: 'blog', label: 'Блог / статьи', mandatory: false, match: /\/(blog|news|articles?|statti)(\/|$)/i, probes: ['/blog/', '/news/'] },
+  { id: 'sale', label: 'Акции / распродажа', mandatory: false, match: /sale|akci|promo|discount|znyzhk|rasprodazha/i, probes: ['/sale/', '/akcii/'] },
+  { id: 'new', label: 'Новинки', mandatory: false, match: /novynky|novinki|\/new(\/|$)/i, probes: [] },
+  { id: 'reviews-page', label: 'Отзывы о магазине', mandatory: false, match: /\/(vidhuky|otzyvy|reviews|testimonials)(\/|$)/i, probes: ['/reviews/', '/vidhuky/'] },
+  { id: 'b2b', label: 'B2B / опт', mandatory: false, match: /b2b|\/opt(\/|$)|wholesale|dealer/i, probes: ['/b2b/', '/opt/'] },
+  { id: 'corporate', label: 'Корпоративные / HoReCa', mandatory: false, match: /korp|corporate|horeca/i, probes: [] },
+  { id: 'loyalty', label: 'Программа лояльности / бонусы', mandatory: false, match: /loyal|bonus|cashback/i, probes: ['/loyalty/', '/bonus/'] },
+  { id: 'account', label: 'Личный кабинет / вход', mandatory: false, match: /account|login|signin|cabinet|profil/i, probes: ['/account/', '/login/', '/index.php?route=account/login'] },
+  { id: 'wishlist', label: 'Избранное / wishlist', mandatory: false, match: /wishlist|izbrannoe|obrane/i, probes: [] },
+  { id: 'compare', label: 'Сравнение товаров', mandatory: false, match: /compare|porivnyannya|sravnenie/i, probes: [] },
+  { id: 'brands', label: 'Бренды / производители', mandatory: false, match: /\/(brands?|brendy|manufacturer)(\/|$)/i, probes: [] },
+  { id: 'gift-cert', label: 'Подарочные сертификаты', mandatory: false, match: /gift-?card|sertyfikat|certificate|podarunkov/i, probes: [] },
+  { id: 'stores', label: 'Магазины / точки продаж', mandatory: false, match: /\/(stores?|shops|magazyny|adresy)(\/|$)/i, probes: [] },
+  { id: 'guides', label: 'Гайды / уход / подбор', mandatory: false, match: /care|dogliad|guide|gid|yak-obraty|how-to/i, probes: [] },
+  { id: 'lang', label: 'Языковые версии', mandatory: false, match: /^\/(en|ru|ua|uk|pl|de)(\/|$)/i, probes: [] },
+  { id: 'thankyou', label: 'Спасибо за заказ', mandatory: false, match: /thank|success|spasibo|dyakuyemo/i, probes: [] }, // обычно недостижима без покупки
+];
+
 export async function crawlSite(
   browser: Browser,
   rootUrl: string,
@@ -514,14 +558,40 @@ export async function crawlSite(
       addLinks(smUrls);
     } catch { /* noop */ }
 
+    // Активная проба известных путей: обязательный тип, которого нет в дереве,
+    // ищем руками по стандартным адресам (sitemap часто не содержит корзину/поиск/правовые).
+    const lpath = (h: string) => { try { const u = new URL(h); return u.pathname + u.search; } catch { return ''; } };
+    const typeHit = (t: { match: RegExp }) => Array.from(linkSet).find((h) => t.match.test(lpath(h)));
+    if (kind === 'client') {
+      for (const t of PAGE_TYPE_REGISTRY) {
+        if (!t.probes.length || typeHit(t)) continue;
+        for (const pr of t.probes) {
+          try {
+            const r = await ctx.request.get(origin + pr, { timeout: 6000, maxRedirects: 3 }).catch(() => null);
+            if (r && r.status() < 400) { linkSet.add(origin + pr); break; }
+          } catch { /* noop */ }
+        }
+      }
+      // «Мягкая 404»: несуществующий URL обязан отдавать 404, иначе мусор индексируется.
+      try {
+        const r404 = await ctx.request.get(`${origin}/weexp-404-probe-${Math.random().toString(36).slice(2)}`, { timeout: 6000 }).catch(() => null);
+        out.soft404 = r404 ? r404.status() < 400 : null;
+      } catch { out.soft404 = null; }
+    }
+
     // техника: платформа по заголовкам ответа (надёжнее), затем по HTML-сигналам.
     const techSet = new Set(home.tech);
     const ANALYTICS = /GA4|GTM|Pixel|Hotjar|Clarity/;
     out.tech.platform = platformFromHeaders(home.headers ?? {}) ?? home.tech.find((t) => !ANALYTICS.test(t)) ?? null;
     out.tech.analytics = home.tech.filter((t) => ANALYTICS.test(t));
 
-    // представительные страницы для постраничного аудита (несколько на тип).
-    const candidates = pickCandidates(out.finalUrl, Array.from(linkSet), maxPages - 1);
+    // представительные страницы: пикер по ключевым словам + представитель КАЖДОГО
+    // найденного типа из реестра (правило: разобрана каждая уникальная страница).
+    const kw = pickCandidates(out.finalUrl, Array.from(linkSet), maxPages - 1);
+    const reps = kind === 'client'
+      ? PAGE_TYPE_REGISTRY.filter((t) => t.id !== 'home').map((t) => typeHit(t)).filter((u): u is string => Boolean(u))
+      : [];
+    const candidates = Array.from(new Set([...reps, ...kw])).filter((u) => u !== out.finalUrl).slice(0, Math.max(maxPages - 1, kind === 'client' ? 22 : 0));
     for (const url of candidates) {
       const res = await auditPage(page, url, false);
       out.pages.push(res.audit);
@@ -532,6 +602,18 @@ export async function crawlSite(
     out.discoveredLinks = out.links.length;
     out.tech.signals = Array.from(techSet);
     if (!out.tech.platform) out.tech.platform = out.tech.signals.find((t) => !ANALYTICS.test(t)) ?? null;
+
+    // Карта уникальных типов страниц: разобрана / найдена / не найдена.
+    if (kind === 'client') {
+      out.pageTypes = PAGE_TYPE_REGISTRY.map((t): PageTypeCoverage => {
+        const crawled = out.pages.find((p) => !p.error && (t.kind ? p.kind === t.kind : t.match.test(lpath(p.finalUrl || p.url))));
+        const inTree = typeHit(t);
+        if (crawled) return { id: t.id, label: t.label, mandatory: t.mandatory, url: crawled.finalUrl, status: 'разобрана' };
+        if (inTree) return { id: t.id, label: t.label, mandatory: t.mandatory, url: inTree, status: 'найдена' };
+        if (t.id === 'thankyou') return { id: t.id, label: t.label, mandatory: t.mandatory, status: 'вне обхода (A1)' };
+        return { id: t.id, label: t.label, mandatory: t.mandatory, status: 'не найдена' };
+      });
+    }
   } catch (e) {
     out.error = out.error ?? String(e).slice(0, 160);
   } finally {
