@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import FadeIn from '../components/FadeIn';
 import { Eyebrow, Section, SectionTitle, Stat, Chip } from '../components/ui';
@@ -541,6 +542,17 @@ function CaseStory({ data }: { data: CaseData }) {
 
 export default function CaseDetailPage() {
   const { slug } = useParams();
+  // Унікальний title/description кейса (техбеклог SEO-аудиту: до цього всі кейси
+  // ділили один заголовок «Кейс — weexp»). Підписуємо як BlogPostPage — сторінка сама.
+  useEffect(() => {
+    const cover = CASE_COVERS.find((c) => c.slug === slug);
+    if (!cover) return;
+    document.title = `${cover.title} — кейс weexp`;
+    const d = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
+    if (d && cover.text) d.content = `Кейс weexp: ${cover.title}. ${cover.text}`;
+    const ogT = document.querySelector('meta[property="og:title"]') as HTMLMetaElement | null;
+    if (ogT) ogT.content = document.title;
+  }, [slug]);
   if (!slug || !CASES[slug]) return <Navigate to="/cases" replace />;
 
   const idx = CASE_COVERS.findIndex((c) => c.slug === slug);
