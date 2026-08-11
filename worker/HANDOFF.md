@@ -48,6 +48,12 @@ weexp — консалтинг e-commerce по методологии **Commerce
 - **kp.ts** — коммерческое предложение.
 - **knowledge.ts** + `worker/knowledge/*.md` — «пакеты знаний»: методичка = md-файл,
   подмешивается в анализ (scope: analyze|uxui|prototype|all). Проверка: `/health`→`knowledge`.
+  Дистилляты методологии weexp: `10-synthesis-consolidation` (остаточный вклад без
+  двойного счёта), `20-method-frame` (слои A0–A2, E0–E5, симптом≠причина),
+  `30-domain-lenses` (18 модулей). Полный плагин — в аплоаде `weexp_round8.zip`.
+- **A0-отчёты (PDF)**: `pagereport`/`htmlReport` (UX/UI), `execDiagHtml` (зонтик),
+  `seoarch`/`seoArchHtml`, `techaudit`, `contentaudit`, `competitorHtml`, `channels`
+  — единый каркас `export/reportShell.ts`, рендер `pdf.ts` (Chromium). Стандарт — A0.
 - **store.ts** — коннектор Supabase: читает `clients`+`answers`, пишет `report_meta`.
 - **zip.ts** — единый .zip-пакет прогона.
 
