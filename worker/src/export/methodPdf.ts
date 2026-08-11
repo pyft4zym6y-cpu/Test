@@ -10,6 +10,7 @@ import type { HypothesisRegister } from '../hypotheses.js';
 import type { ScopeReport } from '../routing.js';
 import type { PriceChannelReport } from '../pricechannel.js';
 import type { Synthesis } from '../synthesis.js';
+import type { CausalMap } from '../causal.js';
 
 const head = (kicker: string, h1: string, client: string, date: string, meta: [string, string][], scoreBig?: { val: string; cap: string; cls: string }, note?: string) => `<section class="cover"><div class="cov-bar"></div><div class="cov-body">
   <div class="kicker">${esc(kicker)}</div><h1>${esc(h1)}</h1>
@@ -96,6 +97,35 @@ export function renderPriceChannelPdf(p: PriceChannelReport, client: string, dat
     <table><thead><tr><th>Проверка</th><th>Как проверяем</th><th>Статус</th></tr></thead><tbody>${rows}</tbody></table></section>`;
   const extra = `.pcx-item{font-weight:700;} .pcx-how{color:#333;font-size:10px;} .pcx-st{font-weight:700;white-space:nowrap;}`;
   return doc(`Цена в канале A0 · ${client}`, head('Commerce OS · Цена в канале · A0', `Ценовая позиция и роль в цепочке: ${roleRu[p.role]}`, client, date, [['Роль', roleRu[p.role]]], undefined, 'Цена в собственном канале не должна быть выше, чем на маркетплейсах и у реселлеров. Реальные уровни цен и MAP уточняются на A1.') + body + foot('Цена в канале A0', client, date), extra);
+}
+
+/* ── Причинно-следственная карта ── */
+export function renderCausalPdf(c: CausalMap, client: string, date: string): string {
+  const nodes = c.nodes.map((n, i) => `<div class="cz">
+    <div class="cz-n">${i + 1}</div>
+    <div class="cz-flow">
+      <div class="cz-col symptoms"><span class="cz-k">Симптомы (что видно)</span>${n.symptoms.length ? `<ul>${n.symptoms.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>` : '<p>—</p>'}</div>
+      <div class="cz-arrow">→</div>
+      <div class="cz-col cause"><span class="cz-k">Корневая причина</span><b>${esc(n.rootCause)}</b>${n.evidence.length ? `<span class="cz-ev">Доказательство: ${esc(n.evidence.join('; '))}</span>` : ''}</div>
+      <div class="cz-arrow">→</div>
+      <div class="cz-col money"><span class="cz-k">Деньги</span>${esc(n.moneyLink)}</div>
+    </div>
+  </div>`).join('');
+  const body = `<section class="block"><h2>Симптом → корневая причина → деньги</h2>
+    <p class="lead">Работаем с причиной, а не с симптомом: один дефект даёт находки во многих местах, а чинится один раз. Деньги — один раз на узел, без двойного счёта.</p>
+    ${c.nodes.length ? nodes : '<p class="lead">Причинных узлов не выделено на текущих данных.</p>'}
+    <div class="concl warn" style="margin-top:10px"><b>Экономика.</b> ${esc(c.moneyNote)}</div></section>`;
+  const extra = `.cz{display:flex;gap:8px;margin:10px 0;page-break-inside:avoid;}
+    .cz-n{flex:0 0 22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;}
+    .cz-flow{flex:1;display:grid;grid-template-columns:1fr auto 1.2fr auto 1fr;gap:6px;align-items:stretch;}
+    .cz-col{border:1px solid var(--line);border-radius:6px;padding:7px 9px;font-size:9.5px;background:var(--soft);}
+    .cz-col.cause{border-color:var(--gap);background:#fff5f5;} .cz-col.cause b{display:block;font-size:10.5px;}
+    .cz-col.money{border-color:var(--check);}
+    .cz-k{display:block;font-size:7px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);font-weight:700;margin-bottom:3px;}
+    .cz-ev{display:block;margin-top:4px;font-size:8px;color:var(--muted);}
+    .cz-arrow{align-self:center;color:var(--muted);font-size:13px;font-weight:700;}
+    .cz-col ul{margin:0;padding-left:14px;} .cz-col li{margin:1px 0;}`;
+  return doc(`Причинно-следственная карта A0 · ${client}`, head('Commerce OS · Причинно-следственная карта · A0', `${c.nodes.length} корневых причин объясняют наблюдаемые симптомы`, client, date, [['Узлов', String(c.nodes.length)]], undefined, 'Карта связывает разрозненные симптомы с корневыми причинами: плейбук адресует причину; симптом без причины в roadmap не попадает.') + body + foot('Причинно-следственная карта A0', client, date), extra);
 }
 
 /* ── Синтез аудита ── */

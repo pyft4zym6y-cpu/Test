@@ -30,7 +30,7 @@ import { renderContentAuditHtml } from './export/contentAuditHtml.js';
 import { renderCompetitorHtml } from './export/competitorHtml.js';
 import { buildChannels } from './channels.js';
 import { renderChannelsHtml } from './export/channelsHtml.js';
-import { renderMaturityPdf, renderCoveragePdf, renderHypothesesPdf, renderScopePdf, renderPriceChannelPdf, renderSynthesisPdf } from './export/methodPdf.js';
+import { renderMaturityPdf, renderCoveragePdf, renderHypothesesPdf, renderScopePdf, renderPriceChannelPdf, renderSynthesisPdf, renderCausalPdf } from './export/methodPdf.js';
 import { buildIntelligence, narrateIntelligence } from './intelligence.js';
 import { renderIntelligenceHtml } from './export/intelligenceHtml.js';
 import { buildActivation } from './activation.js';
@@ -314,9 +314,13 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       await writeFile(join(dir, 'pricechannel.json'), JSON.stringify(pc, null, 2), 'utf8');
       await pdf(renderPriceChannelPdf(pc, cn, D), 'Цена-в-канале-A0.pdf');
 
-      // Причинно-следственная карта (данные; PDF-диаграмма — отдельно).
+      // Причинно-следственная карта → PDF (симптом → причина → деньги).
       let causal = null as ReturnType<typeof buildCausal> | null;
-      if (analysisResult) { causal = buildCausal(analysisResult, money); await writeFile(join(dir, 'causal.json'), JSON.stringify(causal, null, 2), 'utf8'); }
+      if (analysisResult) {
+        causal = buildCausal(analysisResult, money);
+        await writeFile(join(dir, 'causal.json'), JSON.stringify(causal, null, 2), 'utf8');
+        await pdf(renderCausalPdf(causal, cn, D), 'Причинно-следственная-карта-A0.pdf');
+      }
       log(`✓ метод-документы (PDF): зрелость (набл. ${mat.observedAvg ?? '—'}/5), scope (${scope.waves.reduce((n, w) => n + w.items.length, 0)} активаций), цена в канале`);
 
       const cov = buildCoverage(ds, { hasEngine: Boolean(engine), hasMoney: Boolean(money) });

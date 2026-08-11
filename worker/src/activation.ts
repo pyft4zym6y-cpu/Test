@@ -27,6 +27,7 @@ const DOC_DOMAINS: Record<string, string[]> = {
   'Матрица-зрелости-A0.pdf': ['commerce'],
   'Цена-в-канале-A0.pdf': ['pricing'],
   'Синтез-аудита-A0.pdf': ['synthesis'],
+  'Причинно-следственная-карта-A0.pdf': ['synthesis'],
   'Реестр-гипотез-A0.pdf': ['synthesis'],
   'Scope-по-волнам-A0.pdf': ['synthesis'],
   'Охват-и-уверенность-A0.pdf': ['commerce'],

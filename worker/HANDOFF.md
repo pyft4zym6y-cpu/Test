@@ -52,9 +52,18 @@ weexp — консалтинг e-commerce по методологии **Commerce
   двойного счёта), `20-method-frame` (слои A0–A2, E0–E5, симптом≠причина),
   `30-domain-lenses` (18 модулей). Полный исходник 22 OS-скиллов — справочником в
   `worker/reference/weexp-os/` (НЕ автозагружается; источник для дистилляции).
-- **A0-отчёты (PDF)**: `pagereport`/`htmlReport` (UX/UI), `execDiagHtml` (зонтик),
-  `seoarch`/`seoArchHtml`, `techaudit`, `contentaudit`, `competitorHtml`, `channels`
-  — единый каркас `export/reportShell.ts`, рендер `pdf.ts` (Chromium). Стандарт — A0.
+- **A0-отчёты (PDF, единый каркас `export/reportShell.ts`, рендер `pdf.ts`)**:
+  **Commerce Intelligence** (`intelligence` — 36 слоёв, цепочки дедукции, зрелость 1–5,
+  флагман), Executive Diagnostic (`execDiagHtml`), UX/UI постраничный референс-уровня
+  (`pagereport`/`htmlReport` — блоки 01-NN, «что сейчас» с измерениями, детальный эталон,
+  оценки-слова), SEO Architecture (`seoarch`), Технический (`techaudit`), Content
+  (`contentaudit`), Конкуренты (`competitorHtml`), Каналы (`channels`), метод-PDF
+  (`methodPdf`: зрелость-дашборд, охват, гипотезы, scope, цена в канале, синтез,
+  причинно-следственная карта). Правило вывода: **PDF (клиенту) + JSON (данные)**,
+  .md/.docx-дубли убраны (КП — docx). `activation.ts` — гейт покрытия доменов
+  (round12): вердикт «аудит не завершён», если обязательный домен молчит.
+- **Обход**: sitemap.xml → полное дерево (до 2000 URL), 16 страниц по типам,
+  CMS по заголовкам/cookies/generator (кейс lanavitta: OpenCart).
 - **store.ts** — коннектор Supabase: читает `clients`+`answers`, пишет `report_meta`.
 - **zip.ts** — единый .zip-пакет прогона.
 
