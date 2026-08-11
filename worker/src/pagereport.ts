@@ -41,6 +41,44 @@ const DIM_BY_BLOCK: Record<string, Dim[]> = {
   guest_checkout: ['CRO', 'UX'],
 };
 
+/** Сквозные требования по типу страницы (наскрізні вимоги из эталонов): не UX-блоки,
+ *  а технические/коммерческие требования (TECH/PERF/SEO/ANL/A11Y/PRICE/LAW). */
+export type ReqRow = { dims: Dim[]; req: string; why: string };
+const REQUIREMENTS: Partial<Record<PageKind, ReqRow[]>> = {
+  pdp: [
+    { dims: ['TECH', 'SEO'], req: 'Разметка Product + Offer + AggregateRating + QAPage; один canonical на модель', why: 'Без Offer нет цены и наличия в выдаче; отзывы товара не смешиваются с отзывами магазина' },
+    { dims: ['PERF'], req: 'Галерея с lazy-load, главное фото в приоритете загрузки, формат WebP', why: 'Карточка с 5 типами медиа — самая тяжёлая страница сайта, LCP решает здесь' },
+    { dims: ['SEO'], req: 'Title с моделью, составом и размером; уникальный description; без «грн грн» от шаблона', why: 'Дефект шаблона множится на все карточки сразу' },
+    { dims: ['CONT'], req: 'Атрибуты из справочника, не руками; фото привязаны к правильной коллекции', why: 'Перепутанные фотоактивы — прямая причина возвратов «пришло не то»' },
+    { dims: ['ANL'], req: 'События: просмотр, выбор варианта, зум фото, раскрытие ухода, запрос образца, добавление в корзину', why: 'Без события на выбор варианта нельзя понять, какой цвет/размер реально берут' },
+    { dims: ['A11Y'], req: 'Свотчи цвета с текстовым названием; управление галереей с клавиатуры', why: 'Состояние, переданное только цветом, недоступно части пользователей' },
+    { dims: ['PRICE'], req: 'Цена не выше, чем в собственных каналах на маркетплейсах', why: 'Покупатель сравнивает за минуту; дороже на своём сайте — потерянная конверсия и доверие' },
+    { dims: ['LAW'], req: 'Старая цена соответствует действительности; состав и страна происхождения точны', why: 'Постоянная «скидка» от завышенной базы — риск по закону о рекламе' },
+  ],
+  plp: [
+    { dims: ['SEO', 'TECH'], req: 'Пагинация индексируема (rel next/canonical), фасеты не плодят дубли URL', why: 'Фильтры без контроля индексации создают тысячи почти одинаковых страниц' },
+    { dims: ['SEO', 'CONT'], req: 'Уникальный H1 и SEO-описание категории; хлебные крошки с разметкой', why: 'Категория — главная посадочная под тематические запросы' },
+    { dims: ['PERF'], req: 'Ленивая подгрузка карточек, изображения WebP с размерами', why: 'Длинный листинг — тяжёлая страница; CLS и LCP роняют выдачу и конверсию' },
+    { dims: ['ANL'], req: 'События: применение фильтра, сортировка, переход в карточку', why: 'Без событий фильтрации не видно, где теряется выбор' },
+  ],
+  home: [
+    { dims: ['SEO', 'TECH'], req: 'Schema Organization + WebSite + SearchAction; один H1', why: 'Базовые сущности бренда в выдаче и sitelinks-поиск' },
+    { dims: ['PERF'], req: 'LCP-баннер оптимизирован, шрифты с preload, без баннеров-«прыжков»', why: 'Первый экран главной — лицо скорости всего сайта' },
+    { dims: ['LAW'], req: 'Условия акций, оферта, контакты и реквизиты доступны из футера', why: 'Юридические сигналы доверия и требования закона' },
+  ],
+  checkout: [
+    { dims: ['SEC'], req: 'HTTPS, видимые сигналы безопасности оплаты, PCI-совместимый эквайринг', why: 'Тревога безопасности на оплате — прямая причина брошенных заказов' },
+    { dims: ['ANL'], req: 'События каждого шага чекаута (контакты→доставка→оплата→успех)', why: 'Без пошаговых событий не видно, на каком шаге теряются заказы' },
+    { dims: ['LAW'], req: 'Итоговая стоимость (доставка, комиссии) показана до оплаты', why: '39% отказов в чекауте — из-за скрытых затрат, всплывших поздно' },
+    { dims: ['A11Y'], req: 'Формы с label, ошибки полей доступны и понятны', why: 'Недоступная форма чекаута теряет часть заказов молча' },
+  ],
+  content: [
+    { dims: ['AEO', 'GEO'], req: 'Article/FAQPage разметка; самодостаточные ответы 40–60 слов', why: 'То, что попадает в блок прямых ответов и цитируется AI-системами' },
+    { dims: ['LINK'], req: '2–3 ссылки из статьи в каталог/смежные материалы', why: 'Статья отвечает и должна вести в товар, а не в тупик' },
+    { dims: ['CONT'], req: 'Автор, дата обновления, экспертность (E-E-A-T)', why: 'Сигналы доверия для поиска и AI-выдачи' },
+  ],
+};
+
 export type BlockState = 'ok' | 'check' | 'gap'; // ✅ есть · ⚪ проверить · 🔴 нет
 export type BlockRow = {
   name: string; role: string; chapter: string; weight: Weight; dims: Dim[];
@@ -53,6 +91,7 @@ export type PageReport = {
   score: number; max: number; complianceScore: number | null; // score голд-стандарта страницы (%)
   counts: { ok: number; check: number; gap: number };
   rows: BlockRow[];
+  requirements: ReqRow[]; // сквозные требования (TECH/PERF/SEO/ANL/A11Y/PRICE/LAW)
   strong: string[];       // что сделано сильно
   fixes: { what: string; crit: 'Блокирующая' | 'Высокая' | 'Средняя'; why: string }[];
 };
@@ -99,7 +138,7 @@ function buildPage(p: PageAudit): PageReport | null {
     .map((r) => ({ what: `Добавить: ${r.name}`, crit: CRIT_BY_WEIGHT[r.weight], why: r.role }));
   const pct = max ? Math.round((score / max) * 100) : 0;
   const conclusion = pageConclusion(ref.title, rows, pct);
-  return { kind: p.kind, title: ref.title, chapter: ref.chapter, principle: ref.principle, url: p.finalUrl || p.url, conclusion, screenshot: p.screenshot, score, max, complianceScore: p.score, counts, rows, strong, fixes };
+  return { kind: p.kind, title: ref.title, chapter: ref.chapter, principle: ref.principle, url: p.finalUrl || p.url, conclusion, screenshot: p.screenshot, score, max, complianceScore: p.score, counts, rows, requirements: REQUIREMENTS[p.kind] ?? [], strong, fixes };
 }
 
 /** Заголовок-вывод страницы (A0 §8): не «Карточка товара», а управленческий вывод. */

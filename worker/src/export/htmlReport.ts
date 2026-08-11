@@ -54,6 +54,9 @@ function pageSection(p: PageReport): string {
   const fixes = p.fixes.length ? `<div class="fixes"><h3>Приоритет доработок</h3><table class="fix-table"><tbody>${
     p.fixes.slice(0, 6).map((f, i) => `<tr><td class="fx-n">${i + 1}</td><td class="fx-what">${esc(f.what)}</td><td class="fx-crit ${f.crit === 'Блокирующая' ? 'gap' : f.crit === 'Высокая' ? 'check' : ''}">${f.crit}</td><td class="fx-why">${esc(f.why)}</td></tr>`).join('')
   }</tbody></table></div>` : '';
+  const reqs = p.requirements.length ? `<div class="reqs"><h3>Сквозные требования</h3><table class="req-table"><thead><tr><th>Измерения</th><th>Требование</th><th>Почему</th></tr></thead><tbody>${
+    p.requirements.map((q) => `<tr><td class="rq-dims">${dimBadges(q.dims)}</td><td class="rq-req">${esc(q.req)}</td><td class="rq-why">${esc(q.why)}</td></tr>`).join('')
+  }</tbody></table></div>` : '';
   const strong = p.strong.length ? `<div class="strong"><b>Сделано сильно:</b> ${p.strong.map(esc).join(' · ')}</div>` : '';
   return `<section class="block page">
     <div class="page-head">
@@ -76,6 +79,7 @@ function pageSection(p: PageReport): string {
         <table class="block-table"><thead><tr><th>Эталонный блок</th><th>Что должно быть</th><th>Сейчас</th><th>Оценка</th><th>Измерения</th></tr></thead><tbody>${blockRows}</tbody></table>
       </div>
     </div>
+    ${reqs}
     ${fixes}
   </section>`;
 }
@@ -164,6 +168,10 @@ export function renderAuditHtml(r: SiteAuditReport): string {
   .st{font-size:12px;line-height:1;} .st.ok{color:var(--ok);} .st.check{color:var(--check);} .st.gap{color:var(--gap);}
   .row-gap .b-name{color:var(--gap);}
   .dim{display:inline-block;font-size:7px;font-weight:700;letter-spacing:.3px;color:#475467;background:#EEF1F4;border-radius:3px;padding:1px 3px;margin:1px 2px 1px 0;}
+  .reqs{margin-top:12px;page-break-inside:avoid;} .req-table{width:100%;border-collapse:collapse;}
+  .req-table th{font-size:8.5px;text-transform:uppercase;color:var(--muted);text-align:left;padding:5px 6px;border-bottom:1px solid var(--line);letter-spacing:.3px;}
+  .req-table td{padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:top;font-size:10px;}
+  .rq-dims{white-space:nowrap;width:70px;} .rq-req{font-weight:600;color:var(--ink);} .rq-why{color:#333;}
   .fixes{margin-top:12px;} .fix-table td{padding:4px 6px;border-bottom:1px solid var(--line);font-size:10px;vertical-align:top;}
   .fx-n{color:var(--muted);width:16px;} .fx-what{font-weight:700;white-space:nowrap;} .fx-crit{font-weight:700;white-space:nowrap;} .fx-why{color:#333;}
   /* systemic */
