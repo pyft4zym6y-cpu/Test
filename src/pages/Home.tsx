@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
 import { track } from '../components/analytics';
 import {
   ScrollProgress,
@@ -11,6 +11,9 @@ import {
   Magnetic,
   useParallax,
 } from '../components/immersive';
+import ShaderBackground from '../components/ShaderBackground';
+import Cursor from '../components/Cursor';
+import Preloader from '../components/Preloader';
 import heroPhoto from '../assets/pavlo-hero.jpg';
 import portraitPhoto from '../assets/pavlo-portrait.jpg';
 
@@ -55,7 +58,7 @@ const OS_GRID = [
 
 const H = 'font-grotesk font-bold uppercase tracking-tight leading-[1.02]';
 
-/* ─── HERO с параллаксом и kinetic-манифестом ─── */
+/* ─── HERO: живой WebGL-фон + маскированное фото + kinetic-манифест ─── */
 function Hero() {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
@@ -63,19 +66,40 @@ function Hero() {
   const photoY = useTransform(scrollYProgress, [0, 1], ['0%', '18%']);
   const contentY = useTransform(scrollYProgress, [0, 1], ['0%', '-14%']);
   const contentOpacity = useTransform(scrollYProgress, [0, 0.75], [1, 0]);
-  const scrimOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.4]);
+
+  // mouse-параллакс: контент и фото едут в противоход курсору
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const cx = useSpring(useTransform(mx, [-0.5, 0.5], [14, -14]), { stiffness: 120, damping: 20 });
+  const cy = useSpring(useTransform(my, [-0.5, 0.5], [10, -10]), { stiffness: 120, damping: 20 });
+  const px = useSpring(useTransform(mx, [-0.5, 0.5], [-22, 22]), { stiffness: 90, damping: 22 });
+  const onMove = (e: React.MouseEvent) => {
+    const r = ref.current?.getBoundingClientRect();
+    if (!r) return;
+    mx.set((e.clientX - r.left) / r.width - 0.5);
+    my.set((e.clientY - r.top) / r.height - 0.5);
+  };
+
+  const PHOTO_MASK = 'linear-gradient(90deg, transparent 0%, transparent 28%, rgba(0,0,0,0.5) 48%, #000 66%)';
 
   return (
-    <section ref={ref} className="relative min-h-[100vh] flex items-end overflow-hidden">
-      <motion.img
-        src={heroPhoto}
-        alt="Засновник weexp"
-        style={{ scale: photoScale, y: photoY }}
-        className="absolute inset-0 w-full h-full object-cover object-right will-change-transform"
-      />
-      <motion.div style={{ opacity: scrimOpacity }} className="absolute inset-0 photo-scrim" />
+    <section ref={ref} onMouseMove={onMove} className="relative min-h-[100vh] flex items-end overflow-hidden ed-dark">
+      {/* живой шейдер-фон */}
+      <div className="absolute inset-0">
+        <ShaderBackground />
+      </div>
+      {/* фото основателя — маскировано слева, живёт поверх шейдера справа */}
+      <motion.div style={{ x: px }} className="absolute inset-0 will-change-transform">
+        <motion.img
+          src={heroPhoto}
+          alt="Засновник weexp"
+          style={{ scale: photoScale, y: photoY, WebkitMaskImage: PHOTO_MASK, maskImage: PHOTO_MASK }}
+          className="absolute inset-0 w-full h-full object-cover object-right will-change-transform"
+        />
+      </motion.div>
+      <div className="absolute inset-0 photo-scrim pointer-events-none" />
       <motion.div
-        style={{ y: contentY, opacity: contentOpacity }}
+        style={{ y: contentY, opacity: contentOpacity, x: cx, translateY: cy }}
         className="relative w-full max-w-7xl mx-auto px-5 sm:px-8 md:px-12 pb-16 md:pb-24 pt-40"
       >
         <motion.p
@@ -248,6 +272,8 @@ function PortraitSplit() {
 export default function Home() {
   return (
     <div className="ed-dark ed-grain" style={{ fontFamily: 'Manrope, system-ui, sans-serif' }}>
+      <Preloader />
+      <Cursor />
       <ScrollProgress />
 
       <Hero />
@@ -382,8 +408,9 @@ export default function Home() {
       {/* ================= CALCULATOR CTA ================= */}
       <section className="max-w-7xl mx-auto px-5 sm:px-8 md:px-12 py-20 md:py-28">
         <Rise>
-          <Link to="/calculator" onClick={() => track('cta_click', { location: 'home_calculator_teaser' })} className="block border border-[rgba(255,255,255,0.12)] p-10 md:p-16 flex flex-col md:flex-row md:items-center justify-between gap-8 group hover:border-[rgba(199,249,75,0.5)] transition-colors">
-            <div>
+          <Link to="/calculator" onClick={() => track('cta_click', { location: 'home_calculator_teaser' })} className="relative block overflow-hidden border border-[rgba(255,255,255,0.12)] p-10 md:p-16 flex flex-col md:flex-row md:items-center justify-between gap-8 group hover:border-[rgba(199,249,75,0.5)] transition-colors">
+            <div className="absolute inset-0 opacity-40 pointer-events-none"><ShaderBackground /></div>
+            <div className="relative">
               <p className="kicker-ed mb-5">Калькулятор · безкоштовно · без контактів</p>
               <p className={`${H}`} style={{ fontSize: 'clamp(1.9rem, 3.8vw, 3rem)' }}>
                 Скільки обороту ви <span className="acid">недоотримуєте</span> щороку?
@@ -393,7 +420,7 @@ export default function Home() {
                 якою ми рахуємо аудити.
               </p>
             </div>
-            <Magnetic className="shrink-0 self-start md:self-auto">
+            <Magnetic className="relative shrink-0 self-start md:self-auto">
               <span className="btn-ed solid">Порахувати <ArrowRight size={16} /></span>
             </Magnetic>
           </Link>
