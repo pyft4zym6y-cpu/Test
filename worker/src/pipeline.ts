@@ -18,8 +18,9 @@ import { exportUxUiDocx } from './export/uxuiDocx.js';
 import { buildUxUiReport, narrateUxUi, renderUxUiMd } from './uxui.js';
 import { exportPrototypeDocx } from './export/prototypeDocx.js';
 import { buildPrototypeReport, narratePrototype, renderPrototypeMd } from './prototype.js';
-import { buildSiteAudit } from './pagereport.js';
+import { buildSiteAudit, type SiteAuditReport } from './pagereport.js';
 import { renderAuditHtml } from './export/htmlReport.js';
+import { renderExecDiagnostic } from './export/execDiagHtml.js';
 import { renderPdf } from './pdf.js';
 import { exportCoverageDocx } from './export/coverageDocx.js';
 import { buildCoverage, renderCoverageMd } from './coverage.js';
@@ -147,6 +148,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
     let uxui: UxUiReport | null = null;
     let proto: PrototypeReport | null = null;
     let bench: BenchmarkReport | null = null;
+    let siteAudit: SiteAuditReport | null = null;
     if (!prelaunch) {
       log('· UX/UI-разбор страниц против эталона (AQC)…');
       uxui = buildUxUiReport(ds);
@@ -176,7 +178,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       // постранично, дерево сайта, системные дефекты, приоритет, вывод). Рендер тем
       // же Chromium. Главный визуальный результат UX/UI-блока.
       try {
-        const siteAudit = buildSiteAudit(ds);
+        siteAudit = buildSiteAudit(ds);
         await writeFile(join(dir, 'pagereport.json'), JSON.stringify(siteAudit, null, 2), 'utf8');
         await renderPdf(renderAuditHtml(siteAudit), join(dir, 'UX-UI-аудит-A0.pdf'), browser);
         log(`✓ UX/UI Audit A0 (PDF): соответствие эталону ${siteAudit.totalPct}%, системных дефектов ${siteAudit.systemic.length}`);
@@ -280,6 +282,13 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       await writeFile(join(dir, 'Охват-и-уверенность.md'), renderCoverageMd(ds, cov), 'utf8');
       await exportCoverageDocx(ds, cov, join(dir, 'Охват-и-уверенность.docx'));
       log(`✓ охват аудита + Confidence Score ${cov.confidence.score}/${cov.confidence.base} (${cov.confidence.band})`);
+
+      // Executive Diagnostic A0 — зонтичный клиентский PDF, сводит все аудиты (A0 §13).
+      try {
+        const execHtml = renderExecDiagnostic(ds, { siteAudit, analysis: analysisResult, engine, money, bench, coverage: cov });
+        await renderPdf(execHtml, join(dir, 'Executive-Diagnostic-A0.pdf'), browser);
+        log('✓ Executive Diagnostic A0 (PDF): зонтичный отчёт собран');
+      } catch (e) { log(`⚠️ Executive Diagnostic не собрался (${String(e).slice(0, 120)}) — остальные материалы не затронуты`); }
 
       // Единая книга аудита (ЕКП) в XLSX — табличные документы одним файлом.
       const compliance0 = client.pages.filter((pp) => pp.score !== null);
