@@ -48,8 +48,10 @@ function pageSection(p: PageReport): string {
     <td class="b-dims">${dimBadges(b.dims)}</td>
   </tr>`).join('');
   const pct = p.max ? Math.round((p.score / p.max) * 100) : 0;
+  const anns = (p.annotations ?? []).map((a, i) => `<span class="ann ${a.tone}" style="left:${(a.x / 1366 * 100).toFixed(1)}%;top:${(a.y / 900 * 100).toFixed(1)}%;width:${(a.w / 1366 * 100).toFixed(1)}%;height:${(a.h / 900 * 100).toFixed(1)}%"><b>${i + 1}</b></span>`).join('');
+  const annLegend = (p.annotations ?? []).length ? `<div class="ann-legend">${p.annotations.map((a, i) => `<span class="lg ${a.tone}">${i + 1} ${esc(a.label)}</span>`).join('')}</div>` : '';
   const shot = p.screenshot
-    ? `<figure class="shot"><img src="data:image/jpeg;base64,${p.screenshot}" alt="Первый экран ${esc(p.title)}"/><figcaption>Текущий первый экран · ${esc(p.url.replace(/^https?:\/\//, ''))}</figcaption></figure>`
+    ? `<figure class="shot"><div class="shot-wrap"><img src="data:image/jpeg;base64,${p.screenshot}" alt="Первый экран ${esc(p.title)}"/>${anns}</div><figcaption>Текущий первый экран · ${esc(p.url.replace(/^https?:\/\//, ''))}</figcaption>${annLegend}</figure>`
     : `<div class="shot noshot">Скриншот первого экрана недоступен (обход без скриншотов)</div>`;
   const fixes = p.fixes.length ? `<div class="fixes"><h3>Приоритет доработок</h3><table class="fix-table"><tbody>${
     p.fixes.slice(0, 6).map((f, i) => `<tr><td class="fx-n">${i + 1}</td><td class="fx-what">${esc(f.what)}</td><td class="fx-crit ${f.crit === 'Блокирующая' ? 'gap' : f.crit === 'Высокая' ? 'check' : ''}">${f.crit}</td><td class="fx-why">${esc(f.why)}</td></tr>`).join('')
@@ -156,6 +158,13 @@ export function renderAuditHtml(r: SiteAuditReport): string {
   .page-grid{display:grid;grid-template-columns:62mm 1fr;gap:14px;align-items:start;}
   .shot img{width:100%;border:1px solid var(--line);border-radius:4px;display:block;}
   .shot figcaption{color:var(--muted);font-size:8.5px;margin-top:4px;}
+  .shot-wrap{position:relative;line-height:0;}
+  .ann{position:absolute;border:2px solid var(--ok);border-radius:3px;box-shadow:0 0 0 1px rgba(255,255,255,.5);}
+  .ann.warn{border-color:var(--gap);} .ann b{position:absolute;top:-9px;left:-9px;width:15px;height:15px;border-radius:50%;background:var(--ok);color:#fff;font-size:9px;line-height:15px;text-align:center;font-weight:800;}
+  .ann.warn b{background:var(--gap);}
+  .ann-legend{margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;}
+  .ann-legend .lg{font-size:8px;padding:1px 5px;border-radius:10px;background:var(--soft);border:1px solid var(--line);}
+  .ann-legend .lg.warn{color:var(--gap);}
   .noshot{border:1px dashed var(--line);border-radius:4px;padding:24px 10px;text-align:center;color:var(--muted);font-size:9px;}
   .counts{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 8px;}
   .cnt{font-size:9px;padding:3px 7px;border-radius:20px;background:var(--soft);border:1px solid var(--line);}

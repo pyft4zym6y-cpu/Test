@@ -263,7 +263,7 @@ const DEFAULT_UX: UxProbe = {
   foldButtons: 0, primaryCtaAboveFold: false, navItems: 0, breadcrumbs: false, stickyHeader: false, headingLevels: 0,
   distinctButtonColors: 0, productCards: 0, filters: false, sortControl: false, galleryImages: 0, addToCartProminent: false,
   variantSelector: false, priceVisible: false, trustBadges: false, paymentIcons: false, reviews: false, formFields: 0,
-  guestCheckoutHint: false, smallTapTargets: 0, baseFontPx: 16, blocks: {},
+  guestCheckoutHint: false, smallTapTargets: 0, baseFontPx: 16, blocks: {}, annotations: [],
 };
 
 function evaluatePage(p: PageAudit): PageUx {

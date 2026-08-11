@@ -35,7 +35,11 @@ export type UxProbe = {
   smallTapTargets: number;      // кликабельных ниже 40px (Thumb Zone)
   baseFontPx: number;           // базовый кегль (читаемость на мобильном)
   blocks: Record<string, boolean>; // присутствие блоков композиции (для сверки с эталонным прототипом)
+  annotations: Annotation[];    // маркеры на скриншоте первого экрана (A0 §9) — координаты во вьюпорте 1366×900
 };
+
+/** Маркер для аннотации скриншота: рамка+подпись на элементе первого экрана. */
+export type Annotation = { label: string; x: number; y: number; w: number; h: number; tone: 'good' | 'warn' };
 
 export type PageAudit = {
   url: string;
@@ -257,10 +261,25 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
     share: hasSel('[class*="share" i], [class*="social" i] a'),
   };
 
+  // Аннотации скриншота (A0 §9): координаты ключевых элементов первого экрана.
+  const annotations: Annotation[] = [];
+  try {
+    const clip = (r: DOMRect) => r.width > 4 && r.height > 4 && r.top < vh && r.top > -20 && r.left < 1366 && r.left > -20;
+    const mk = (el: Element | null | undefined, label: string, tone: 'good' | 'warn') => {
+      if (!el || annotations.length >= 4) return;
+      try { const r = el.getBoundingClientRect(); if (clip(r)) annotations.push({ label, x: Math.round(Math.max(0, r.left)), y: Math.round(Math.max(0, r.top)), w: Math.round(Math.min(r.width, 1366 - r.left)), h: Math.round(Math.min(r.height, 900 - r.top)), tone }); } catch { /* noop */ }
+    };
+    const foldBtns = btns.filter(inFold);
+    const cta = foldBtns.slice().sort((a, b) => { try { const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect(); return rb.width * rb.height - ra.width * ra.height; } catch { return 0; } })[0];
+    if (cta && primaryCtaAboveFold) mk(cta, 'Главный CTA', 'good');
+    mk($('input[type="search"], [class*="search" i] input, form[action*="search" i]'), 'Поиск', 'good');
+    mk(foldBtns.find((el) => /(в корзину|в кошик|додати|add to cart|купить|купити|buy)/i.test(el.textContent ?? '')), 'В корзину', 'good');
+  } catch { /* noop */ }
+
   const ux: UxProbe = {
     foldButtons, primaryCtaAboveFold, navItems, breadcrumbs, stickyHeader, headingLevels, distinctButtonColors,
     productCards, filters, sortControl, galleryImages, addToCartProminent, variantSelector, priceVisible,
-    trustBadges, paymentIcons, reviews, formFields, guestCheckoutHint, smallTapTargets, baseFontPx, blocks,
+    trustBadges, paymentIcons, reviews, formFields, guestCheckoutHint, smallTapTargets, baseFontPx, blocks, annotations,
   };
 
   return { checks: out, kindSignals, tech, ux };

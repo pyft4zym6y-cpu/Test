@@ -10,7 +10,7 @@
  * «проверить», а не «нет».
  */
 import type { AuditDataset } from './report.js';
-import type { PageAudit, PageKind } from './crawl.js';
+import type { PageAudit, PageKind, Annotation } from './crawl.js';
 import { REFERENCE, type Weight } from './prototype.js';
 
 /** 18 измерений метода (та же таксономия, что в эталонах). */
@@ -96,6 +96,7 @@ export type PageReport = {
   kind: PageKind; title: string; chapter: string; principle?: string; url: string;
   conclusion: string;     // заголовок-вывод (A0 §8: заголовок = управленческий вывод)
   screenshot?: string;    // первый экран (base64 jpeg) — для скриншота слева (A0 §9)
+  annotations: Annotation[]; // маркеры на скриншоте (A0 §9)
   score: number; max: number; complianceScore: number | null; // score голд-стандарта страницы (%)
   counts: { ok: number; check: number; gap: number };
   rows: BlockRow[];
@@ -146,7 +147,7 @@ function buildPage(p: PageAudit): PageReport | null {
     .map((r) => ({ what: `Добавить: ${r.name}`, crit: CRIT_BY_WEIGHT[r.weight], why: r.role }));
   const pct = max ? Math.round((score / max) * 100) : 0;
   const conclusion = pageConclusion(ref.title, rows, pct);
-  return { kind: p.kind, title: ref.title, chapter: ref.chapter, principle: ref.principle, url: p.finalUrl || p.url, conclusion, screenshot: p.screenshot, score, max, complianceScore: p.score, counts, rows, requirements: REQUIREMENTS[p.kind] ?? [], strong, fixes };
+  return { kind: p.kind, title: ref.title, chapter: ref.chapter, principle: ref.principle, url: p.finalUrl || p.url, conclusion, screenshot: p.screenshot, annotations: p.ux?.annotations ?? [], score, max, complianceScore: p.score, counts, rows, requirements: REQUIREMENTS[p.kind] ?? [], strong, fixes };
 }
 
 /** Заголовок-вывод страницы (A0 §8): не «Карточка товара», а управленческий вывод. */
