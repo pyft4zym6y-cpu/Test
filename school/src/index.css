@@ -1,10 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=Italiana&family=Manrope:wght@400;600&family=Marck+Script&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Manrope:wght@400;600;800&family=Caveat:wght@600;700&family=Marck+Script&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-manrope: "Manrope", sans-serif;
-  --font-italiana: "Italiana", serif;
+  --font-oswald: "Oswald", sans-serif;
+  --font-caveat: "Caveat", cursive;
   --font-marck: "Marck Script", cursive;
+
+  --color-paper: #FFFDF8;
+  --color-ink: #111111;
+  --color-brand: #FF0000;
+  --color-sun: #FFD100;
 }
 
 html {
@@ -13,7 +19,87 @@ html {
 
 body {
   font-family: var(--font-manrope);
-  background: #0a0a0a;
-  color: #fff;
+  background: var(--color-paper);
+  color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
+}
+
+/* ---- комікс-утиліти ---- */
+
+/* растрові крапки як у друкованих коміксів */
+.halftone {
+  background-image: radial-gradient(rgba(17, 17, 17, 0.12) 1.2px, transparent 1.2px);
+  background-size: 14px 14px;
+}
+
+.halftone-red {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.18) 1.4px, transparent 1.4px);
+  background-size: 16px 16px;
+}
+
+.comic-border {
+  border: 3px solid var(--color-ink);
+}
+
+.hard-shadow {
+  box-shadow: 8px 8px 0 var(--color-ink);
+}
+
+.hard-shadow-sm {
+  box-shadow: 5px 5px 0 var(--color-ink);
+}
+
+.hard-shadow-red {
+  box-shadow: 8px 8px 0 var(--color-brand);
+}
+
+/* червона плашка всередині заголовка: "Stop [shouting]" */
+.redmark {
+  display: inline-block;
+  background: var(--color-brand);
+  color: #fff;
+  padding: 0 0.18em;
+  transform: rotate(-1.5deg);
+}
+
+.yellowmark {
+  display: inline-block;
+  background: var(--color-sun);
+  padding: 0 0.18em;
+  transform: rotate(1deg);
+}
+
+/* спіч-бабл із хвостиком */
+.bubble {
+  position: relative;
+  border: 3px solid var(--color-ink);
+  background: #fff;
+  border-radius: 14px;
+}
+.bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -14px;
+  left: 34px;
+  width: 22px;
+  height: 22px;
+  background: #fff;
+  border-right: 3px solid var(--color-ink);
+  border-bottom: 3px solid var(--color-ink);
+  transform: skewX(28deg) rotate(45deg);
+}
+
+/* біжучий рядок */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 22s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none; }
+  html { scroll-behavior: auto; }
 }

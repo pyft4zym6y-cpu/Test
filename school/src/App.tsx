@@ -1,29 +1,49 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
+import { HashRouter, Route, Routes, useLocation } from 'react-router-dom';
 import Nav from './components/Nav';
-import RedHero from './components/RedHero';
-import Ecosystem from './components/Ecosystem';
-import Program from './components/Program';
-import Courses from './components/Courses';
-import Enroll from './components/Enroll';
 import Footer from './components/Footer';
+import Home from './pages/Home';
+import About from './pages/About';
+import Courses from './pages/Courses';
+import CourseDetail from './pages/CourseDetail';
+import ProgramPage from './pages/ProgramPage';
+import Enroll from './pages/Enroll';
+import Faq from './pages/Faq';
+import Contacts from './pages/Contacts';
+import { Privacy, Terms } from './pages/Legal';
+import NotFound from './pages/NotFound';
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
 
 export default function App() {
-  const [courseId, setCourseId] = useState('full');
-
-  const enroll = (id: string) => {
-    setCourseId(id);
-    document.getElementById('enroll')?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   return (
-    <div id="top" className="font-manrope">
-      <Nav />
-      <RedHero />
-      <Ecosystem />
-      <Program />
-      <Courses onEnroll={enroll} />
-      <Enroll courseId={courseId} onCourseChange={setCourseId} />
-      <Footer />
-    </div>
+    <HashRouter>
+      <ScrollToTop />
+      <div className="font-manrope min-h-screen flex flex-col">
+        <Nav />
+        <main className="flex-1">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/courses" element={<Courses />} />
+            <Route path="/courses/:id" element={<CourseDetail />} />
+            <Route path="/program" element={<ProgramPage />} />
+            <Route path="/enroll" element={<Enroll />} />
+            <Route path="/faq" element={<Faq />} />
+            <Route path="/contacts" element={<Contacts />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
+        <Footer />
+      </div>
+    </HashRouter>
   );
 }
