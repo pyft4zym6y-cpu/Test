@@ -48,6 +48,7 @@ const queue: string[] = [];
 let running = false;
 
 function categorize(name: string): string {
+  if (/-A0\.pdf$/i.test(name) || /Executive-Diagnostic|SEO-Architecture|Технический-аудит/i.test(name)) return 'Аудиты A0 (PDF)';
   if (/Синтез|synthesis/i.test(name)) return 'Синтез';
   if (/\.xlsx$/i.test(name) || /ЕКП/i.test(name)) return 'Таблицы (XLSX)';
   if (/AD-15|roadmap|Scope-|Матрица|дорожн|Коммерческое|КП/i.test(name)) return 'План и презентация';

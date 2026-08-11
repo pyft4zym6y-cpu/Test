@@ -23,6 +23,8 @@ import { renderAuditHtml } from './export/htmlReport.js';
 import { renderExecDiagnostic } from './export/execDiagHtml.js';
 import { buildSeoArch } from './seoarch.js';
 import { renderSeoArchHtml } from './export/seoArchHtml.js';
+import { buildTechAudit } from './techaudit.js';
+import { renderTechAuditHtml } from './export/techAuditHtml.js';
 import { renderPdf } from './pdf.js';
 import { exportCoverageDocx } from './export/coverageDocx.js';
 import { buildCoverage, renderCoverageMd } from './coverage.js';
@@ -193,6 +195,14 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await renderPdf(renderSeoArchHtml(seo), join(dir, 'SEO-Architecture-A0.pdf'), browser);
         log(`✓ SEO Architecture A0 (PDF): ссылок ${seo.totals.links}, проблемных узлов ${seo.issues.length}`);
       } catch (e) { log(`⚠️ PDF SEO Architecture A0 не собрался (${String(e).slice(0, 120)})`); }
+
+      // Технический внешний аудит A0 — категории проверок из обхода (A0).
+      try {
+        const tech = buildTechAudit(ds);
+        await writeFile(join(dir, 'techaudit.json'), JSON.stringify(tech, null, 2), 'utf8');
+        await renderPdf(renderTechAuditHtml(tech), join(dir, 'Технический-аудит-A0.pdf'), browser);
+        log(`✓ Технический аудит A0 (PDF): пройдено ${tech.score.pct}%, blocked ${tech.blocked.length}`);
+      } catch (e) { log(`⚠️ PDF Технический аудит A0 не собрался (${String(e).slice(0, 120)})`); }
 
       // Конкурентный бенчмарк (AD-11) — когда есть обойдённые конкуренты.
       bench = buildBenchmark(ds);
