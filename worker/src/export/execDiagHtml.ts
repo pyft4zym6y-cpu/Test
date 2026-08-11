@@ -4,7 +4,7 @@
  * вывод→факты (§14). Тянет то, что воркер уже считает (UX/UI, деньги, конкуренты,
  * зрелость, coverage, гипотезы); недостающее помечает PARTIAL/BLOCKED (§15).
  */
-import { esc, dimBadges, scoreColor, doc } from './reportShell.js';
+import { esc, dimBadges, scoreColor, doc, conclusionSection } from './reportShell.js';
 import type { AuditDataset } from '../report.js';
 import type { SiteAuditReport } from '../pagereport.js';
 import type { Analysis, Finding } from '../analyze.js';
@@ -168,8 +168,21 @@ export function renderExecDiagnostic(ds: AuditDataset, inp: ExecInputs): string 
   s.push(section('13. Какие данные нужны (Data Request)', 'Что открыть, чтобы перевести гипотезы в факт на A1–A2.',
     `<ul>${(inp.analysis?.openQuestions?.length ? inp.analysis.openQuestions : ['Доступ к GA4', 'Выгрузка заказов за 6–12 мес', 'Доступ к CRM и рекламным кабинетам']).slice(0, 8).map((q) => `<li>${esc(q)}</li>`).join('')}</ul>`, 'DONE'));
 
-  s.push(`<section class="block"><h2>14. Следующий уровень</h2><p class="lead">A0 — внешний срез. A1: данные и подтверждение гипотез. A2: аналитика, экономика, фактические потери по этапам воронки.</p>
-    <div class="footer">Commerce OS · Executive Diagnostic A0 · ${esc(name)} · ${esc(date)}. Слой A0: внешний обход без доступов. Оценки — наблюдение, не факт по данным клиента; отсутствие данных не выдаётся за факт и не скрывается (A0 §15.7). Заблокированные разделы отмечены статусом BLOCKED и закрываются на следующем уровне.</div></section>`);
+  // 14. Итоговый вывод — законченная мысль зонтичного отчёта, а не обрыв на списке.
+  const statuses = { done: 0, partial: 0, blocked: 0 };
+  for (const html of s) { statuses.done += (html.match(/chip done/g) ?? []).length; statuses.partial += (html.match(/chip partial/g) ?? []).length; statuses.blocked += (html.match(/chip blocked/g) ?? []).length; }
+  const worstUx = ux ? [...ux.pages].filter((p) => p.max).sort((a, b) => a.score / a.max - b.score / b.max)[0] : null;
+  s.push(`${conclusionSection([
+    `${verdict.split('. ').slice(0, 2).join('. ')}${/\.$/.test(verdict) ? '' : '.'} Диагностика охватила ${s.length} управленческих разделов: ${statuses.done} доказаны внешне, ${statuses.partial} закрыты частично, ${statuses.blocked} ждут доступов — статусы выставлены честно, чтобы решение принималось на реальной, а не нарисованной полноте данных.`,
+    ux
+      ? `Состояние витрины: ${ux.totalPct}% соответствия эталону; ${ux.systemic.length ? `${ux.systemic.length} системных дефектов уровня шаблона — самая дешёвая точка приложения усилий (правятся один раз, работают на всём сайте)` : 'системных дефектов шаблонов нет'}${worstUx ? `; слабейшая страница пути — ${worstUx.title} (${Math.round((worstUx.score / worstUx.max) * 100)}%)` : ''}. ${inp.bench ? `Рыночная позиция — ${inp.bench.clientRank}/${inp.bench.totalSites} (индекс ${inp.bench.clientIndex}/100).` : ''}`
+      : 'Витрина не разобрана — состояние UX/UI не оценивалось.',
+    inp.money
+      ? `Экономика разрыва оценена: недополучено ≈ ${rub(inp.money.potentialYear)}/год при доведении воронки до целевой — это верхняя рамка для бюджета программы изменений.`
+      : 'Экономика разрыва на этом слое сознательно не считалась (нет baseline): любая цифра была бы выдумкой. Она появляется первой после передачи данных — и превращает приоритеты этого отчёта в бюджетные решения.',
+    `Порядок действий зафиксирован в связанных документах: причинно-следственная карта → scope по волнам → реестр гипотез. Управленческое решение, которое требуется сейчас, — не «какие правки внести», а открыть данные (раздел 13) и согласовать волну 1.`,
+  ], `A1: передать доступы из Data Request (раздел 13) — за ним следуют подтверждение гипотез, экономика и старт волны 1.`, '14. Итоговый вывод')}
+    <section class="block"><div class="footer">Commerce OS · Executive Diagnostic A0 · ${esc(name)} · ${esc(date)}. Слой A0: внешний обход без доступов. Оценки — наблюдение, не факт по данным клиента; отсутствие данных не выдаётся за факт и не скрывается (A0 §15.7). Заблокированные разделы отмечены статусом BLOCKED и закрываются на следующем уровне.</div></section>`);
 
   return doc(`Executive Diagnostic A0 · ${name}`, cover + s.join(''));
 }

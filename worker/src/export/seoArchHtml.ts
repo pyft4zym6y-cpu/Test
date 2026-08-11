@@ -2,7 +2,7 @@
  * SEO Architecture A0 — клиентский PDF (A0 §10): видимое дерево → проблемные узлы
  * → рекомендуемое дерево. Единый визуальный стандарт (reportShell).
  */
-import { esc, dimBadges, doc } from './reportShell.js';
+import { esc, dimBadges, doc, methodologySection, swSection, recsSection, conclusionSection, type SectionRec } from './reportShell.js';
 import type { SeoArchReport, Purpose } from '../seoarch.js';
 
 const PURPOSE_RU: Record<Purpose, string> = { commercial: 'коммерческий', informational: 'информационный', system: 'системный' };
@@ -49,12 +49,46 @@ export function renderSeoArchHtml(r: SeoArchReport): string {
 
   const rec = `<section class="block"><h2>Рекомендуемое дерево</h2>
     <p class="lead">Как должна выглядеть архитектура, чтобы не плодить дубли и раздавать вес правильно.</p>
-    <ul>${r.recommended.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
-    <div class="footer">Commerce OS · SEO Architecture A0 · ${esc(r.client)} · ${esc(date)}. Слой A0: дерево по видимым ссылкам, on-page — выборка. Отсутствие данных не выдаётся за факт (A0 §15.7); полное дерево, дубли и техническая SEO уточняются на A1.</div></section>`;
+    <ul>${r.recommended.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>`;
+
+  // ── Консалтинговый каркас ──
+  const meth = methodologySection({
+    goal: 'Оценить, помогает ли архитектура сайта собирать поисковый спрос — или распыляет вес по дублям и пустым веткам.',
+    sources: [`Внутренние ссылки обхода + sitemap.xml (${r.totals.links} URL в дереве)`, `On-page проверка ${r.totals.crawled} представительных страниц`, 'robots.txt / sitemap.xml с корня'],
+    scope: `Дерево L1 (${r.totals.l1} разделов, глубина до ${r.totals.maxDepth}), проблемные узлы, индексируемость, доля параметрических URL (${paramShare}%).`,
+    limits: 'A0 строит дерево по видимым ссылкам — полное дерево, реальные дубли в индексе и позиции проверяются на A1 (Search Console, полный crawl).',
+  });
+
+  const okNodes = r.tree.filter((t) => t.severity === 'ok');
+  const badNodes = r.tree.filter((t) => t.severity === 'gap');
+  const strengths = [
+    ...(r.indexability.robots && r.indexability.sitemap ? ['Индексируемость управляется: robots.txt и sitemap.xml на месте — поисковик получает карту сайта, а не собирает её сам'] : []),
+    ...(paramShare <= 10 ? [`Низкая доля параметрических URL (${paramShare}%) — дерево не разъедается фильтрационными дублями`] : []),
+    ...(okNodes.length ? [`Здоровые разделы: ${okNodes.slice(0, 4).map((t) => t.label).join(', ')} — структура этих веток отвечает назначению`] : []),
+  ];
+  const weaknesses = [
+    ...(!r.indexability.sitemap ? ['Нет sitemap.xml — индексация отдана на волю обходчика, новые страницы попадают в индекс с задержкой'] : []),
+    ...(!r.indexability.robots ? ['Нет robots.txt — фасеты и служебные URL индексируются бесконтрольно'] : []),
+    ...(paramShare > 10 ? [`Параметрические URL — ${paramShare}% дерева: вес размывается по дублям фильтров`] : []),
+    ...r.issues.slice(0, 5).map((i) => `${i.node} (L${i.level}): ${i.problem}`),
+  ];
+  const recsList: SectionRec[] = [
+    ...r.issues.slice(0, 5).map((i): SectionRec => ({ pr: i.level <= 1 ? 'P0' : 'P1', action: `${i.node}: ${i.action}`, effect: `Закрывает «${i.problem}»` })),
+    ...r.recommended.slice(0, 3).map((x): SectionRec => ({ pr: 'P2', action: x, effect: 'Архитектура раздаёт вес целевым страницам' })),
+  ];
+  const concl = conclusionSection([
+    `Дерево из ${r.totals.links} URL (${r.totals.l1} разделов первого уровня, глубина до ${r.totals.maxDepth}) ${badNodes.length ? `содержит ${badNodes.length} проблемных узлов и ${r.issues.length} зафиксированных SEO-разрывов` : 'структурно здорово по видимым признакам'}. ${paramShare > 10 ? `Доля URL с параметрами (${paramShare}%) означает, что заметная часть ссылочного веса уходит в неиндексируемые или дублирующие адреса.` : 'Паразитных параметрических веток в значимом объёме не видно.'}`,
+    r.issues.length
+      ? `Архитектурные проблемы каталога — это не «технические мелочи»: каждая ветка с дублями или без назначения конкурирует за позиции сама с собой. Приоритет — узлы верхних уровней (L1–L2): они раздают вес всем страницам ниже.`
+      : 'Явных структурных конфликтов не выявлено; резерв роста лежит в расширении семантики (новые посадочные под спрос), а не в починке существующего.',
+    'Вывод сделан по видимой архитектуре (слой A0). Фактические позиции, каннибализация запросов и полнота индекса проверяются на A1 через Search Console — там же подтверждается или снимается каждый из перечисленных рисков.',
+  ], 'A1: Search Console (запросы, позиции, покрытие индекса) + полный crawl — превращает карту рисков в план восстановления трафика с цифрами.');
+
+  const foot = `<section class="block"><div class="footer">Commerce OS · SEO Architecture A0 · ${esc(r.client)} · ${esc(date)}. Слой A0: дерево по видимым ссылкам, on-page — выборка. Отсутствие данных не выдаётся за факт (A0 §15.7); полное дерево, дубли и техническая SEO уточняются на A1.</div></section>`;
 
   const extra = `
     .t-node{white-space:nowrap;} .t-purpose{color:#333;font-size:10px;} .t-count{font-weight:800;text-align:right;} .t-note{font-size:9.5px;}
     .st{font-size:11px;} .st.ok{color:var(--ok);} .st.check{color:var(--check);} .st.gap{color:var(--gap);}
     .i-node{white-space:nowrap;} .i-lvl{display:inline-block;margin-left:5px;font-size:7.5px;color:var(--muted);} .i-act{color:#333;}`;
-  return doc(`SEO Architecture A0 · ${r.client}`, cover + tree + issues + rec, extra);
+  return doc(`SEO Architecture A0 · ${r.client}`, cover + meth + tree + issues + rec + swSection(strengths, weaknesses) + recsSection(recsList) + concl + foot, extra);
 }

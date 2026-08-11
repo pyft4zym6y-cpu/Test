@@ -56,6 +56,74 @@ export const SHARED_CSS = `
   .chip.done{color:var(--ok);border-color:var(--ok);} .chip.partial{color:var(--check);border-color:var(--check);} .chip.blocked{color:var(--gap);border-color:var(--gap);}
 `;
 
+/* ── Консалтинговый каркас отчёта (единый для всей сюиты) ──
+ * Каждый документ = завершённая услуга: контекст и методология → анализ →
+ * сильные стороны и зоны риска → приоритизированные рекомендации → итоговый
+ * вывод. Стандарты: принципы аудита ISO 19011 (доказательность, независимость),
+ * MECE-структура разделов, пирамида Минто (вывод впереди, доказательства ниже). */
+
+export const CONSULT_CSS = `
+  .meth{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;margin:6px 0 2px;}
+  .meth .mi{border-left:3px solid var(--line);padding:2px 0 2px 10px;}
+  .meth .mi b{display:block;font-size:8.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:2px;}
+  .meth .mi div{font-size:10px;color:#222;}
+  .meth ul{margin:0;padding-left:14px;} .meth li{margin:1px 0;}
+  .sw{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0;}
+  .sw .col{border:1px solid var(--line);border-radius:6px;padding:9px 11px;}
+  .sw .col.plus{border-top:3px solid var(--ok);} .sw .col.minus{border-top:3px solid var(--gap);}
+  .sw h3{margin:0 0 5px;font-size:11px;} .sw ul{margin:0;padding-left:14px;} .sw li{margin:3px 0;font-size:9.5px;color:#222;}
+  .pr{display:inline-block;font-size:8px;font-weight:800;padding:1px 6px;border-radius:3px;color:#fff;white-space:nowrap;}
+  .pr.P0{background:var(--gap);} .pr.P1{background:var(--check);} .pr.P2{background:#64748b;}
+  .final{border:1px solid var(--line);border-left:4px solid var(--ink);border-radius:0 6px 6px 0;background:var(--soft);padding:12px 14px;margin:8px 0;}
+  .final p{margin:0 0 8px;font-size:10.5px;color:#1a1f27;line-height:1.55;} .final p:last-child{margin:0;}
+  .final .nx{border-top:1px solid var(--line);margin-top:8px;padding-top:8px;font-size:10px;color:#333;}
+`;
+
+/** «Контекст, цель и методология» — паспорт документа, читается за 20 секунд. */
+export function methodologySection(o: { goal: string; sources: string[]; scope: string; limits: string; standards?: string[] }): string {
+  const std = o.standards ?? ['Принципы аудита ISO 19011: вывод только из доказательства', 'MECE: разделы не пересекаются и покрывают предмет целиком', 'Пирамида Минто: управленческий вывод впереди, доказательства ниже', 'A0 §15.7: предположение не выдаётся за факт, заблокированное не скрывается'];
+  return `<section class="block"><h2>Контекст, цель и методология</h2>
+    <div class="meth">
+      <div class="mi"><b>Цель документа</b><div>${esc(o.goal)}</div></div>
+      <div class="mi"><b>Охват</b><div>${esc(o.scope)}</div></div>
+      <div class="mi"><b>Источники данных</b><div><ul>${o.sources.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div></div>
+      <div class="mi"><b>Стандарты методологии</b><div><ul>${std.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div></div>
+      <div class="mi" style="grid-column:1/-1"><b>Границы применимости</b><div>${esc(o.limits)}</div></div>
+    </div></section>`;
+}
+
+/** «Сильные стороны / Зоны риска» — оценка, а не список задач. */
+export function swSection(strengths: string[], weaknesses: string[]): string {
+  const li = (xs: string[], empty: string) => (xs.length ? xs.map((x) => `<li>${esc(x)}</li>`).join('') : `<li>${esc(empty)}</li>`);
+  return `<section class="block"><h2>Сильные стороны и зоны риска</h2>
+    <div class="sw">
+      <div class="col plus"><h3 class="ok">Сильные стороны</h3><ul>${li(strengths, 'Явных сильных сторон на этом слое не зафиксировано — см. зоны риска.')}</ul></div>
+      <div class="col minus"><h3 class="gap">Зоны риска</h3><ul>${li(weaknesses, 'Критичных зон риска на этом слое не выявлено.')}</ul></div>
+    </div></section>`;
+}
+
+export type SectionRec = { pr: 'P0' | 'P1' | 'P2'; action: string; effect: string };
+
+/** Приоритизированные рекомендации: P0 — сейчас, P1 — квартал, P2 — стратегия. */
+export function recsSection(recs: SectionRec[], lead = 'Рекомендации следуют из зафиксированных разрывов; приоритет — по близости к деньгам и стоимости внедрения.'): string {
+  if (!recs.length) return '';
+  const order: Record<string, number> = { P0: 0, P1: 1, P2: 2 };
+  const rows = [...recs].sort((a, b) => order[a.pr] - order[b.pr]).map((r) => `<tr>
+    <td style="width:34px"><span class="pr ${r.pr}">${r.pr}</span></td>
+    <td class="rc-act">${esc(r.action)}</td>
+    <td class="rc-eff">${esc(r.effect)}</td>
+  </tr>`).join('');
+  return `<section class="block"><h2>Рекомендации</h2><p class="lead">${esc(lead)}</p>
+    <table><thead><tr><th>Приоритет</th><th>Действие</th><th>Ожидаемый эффект</th></tr></thead><tbody>${rows}</tbody></table></section>`;
+}
+
+/** «Итоговый вывод» — законченная мысль документа + связка со следующим шагом. */
+export function conclusionSection(paragraphs: string[], next?: string, title = 'Итоговый вывод'): string {
+  return `<section class="block"><h2>${esc(title)}</h2>
+    <div class="final">${paragraphs.map((p) => `<p>${esc(p)}</p>`).join('')}
+    ${next ? `<div class="nx"><b>Следующий шаг:</b> ${esc(next)}</div>` : ''}</div></section>`;
+}
+
 export function doc(title: string, bodyHtml: string, extraCss = ''): string {
-  return `<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>${esc(title)}</title><style>${SHARED_CSS}${extraCss}</style></head><body>${bodyHtml}</body></html>`;
+  return `<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>${esc(title)}</title><style>${SHARED_CSS}${CONSULT_CSS}${extraCss}</style></head><body>${bodyHtml}</body></html>`;
 }

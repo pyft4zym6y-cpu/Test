@@ -52,7 +52,7 @@ import { narrateSynthesis, renderSynthesisMd } from './synthesis.js';
 import { buildKp, renderKpMd } from './kp.js';
 import { exportKpDocx } from './export/methodDocs.js';
 import { knowledgeCount } from './knowledge.js';
-import { hasKey } from './anthropic.js';
+import { hasKey, apiErrorHint } from './anthropic.js';
 import type { Analysis } from './analyze.js';
 import type { UxUiReport } from './uxui.js';
 import type { PrototypeReport } from './prototype.js';
@@ -288,7 +288,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         catch (e) { log(`⚠️ PDF Реестр гипотез не собрался (${String(e).slice(0, 120)})`); }
         log(`✓ анализ собран, реестр гипотез (${hyp.items.length})`);
       } catch (e) {
-        log(`⚠️ аналитический слой не отработал: ${String(e).slice(0, 160)}`);
+        log(`⚠️ аналитический слой не отработал: ${String(e).slice(0, 160)}${apiErrorHint(e)}`);
       }
     } else {
       log('· ANTHROPIC_API_KEY не задан — только обход и L0-отчёт (для AD-15/деньги нужен ключ)');

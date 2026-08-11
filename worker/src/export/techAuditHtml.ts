@@ -3,7 +3,7 @@
  * Категории со статусом, таблица проверок, честная пометка BLOCKED (нужен
  * инструмент/доступ на A1).
  */
-import { esc, dimBadges, scoreColor, doc } from './reportShell.js';
+import { esc, dimBadges, scoreColor, doc, methodologySection, swSection, recsSection, conclusionSection, type SectionRec } from './reportShell.js';
 import type { TechReport, TStatus } from '../techaudit.js';
 
 const MARK: Record<TStatus, string> = { ok: '✓', check: '◐', gap: '✕', blocked: '⛔' };
@@ -39,11 +39,47 @@ export function renderTechAuditHtml(r: TechReport): string {
     </section>`;
   }).join('');
 
-  const footer = `<section class="block"><h2>Что дальше</h2>
-    <p class="lead">На A1 добавляются измерения, недоступные внешне: Core Web Vitals (PageSpeed/CrUX), заголовки безопасности сервера, полный технический crawl и лог-анализ индексации.</p>
-    <div class="footer">Commerce OS · Технический внешний аудит A0 · ${esc(r.client)} · ${esc(date)}. Слой A0: внешний обход. Отсутствие данных не выдаётся за факт и не скрывается (A0 §15.7); BLOCKED-проверки закрываются на A1 инструментом/доступом.</div></section>`;
+  // ── Консалтинговый каркас: оценка из фактов, а не список задач ──
+  const allChecks = r.categories.flatMap((c) => c.checks.map((ch) => ({ ...ch, cat: c.title })));
+  const okChecks = allChecks.filter((c) => c.status === 'ok');
+  const gapChecks = allChecks.filter((c) => c.status === 'gap');
+  const checkChecks = allChecks.filter((c) => c.status === 'check');
+  const okCats = r.categories.filter((c) => c.status === 'ok').map((c) => c.title);
+  const gapCats = r.categories.filter((c) => c.status === 'gap').map((c) => c.title);
+
+  const meth = methodologySection({
+    goal: 'Зафиксировать состояние технического фундамента витрины по внешним признакам: что работает, что сломано, что измеримо только инструментами.',
+    sources: ['Внешний обход: отрендеренный DOM всех разобранных страниц', 'robots.txt и sitemap.xml с корня домена', 'Замеры мобильности (тап-цели, кегль) из рендера'],
+    scope: `${r.score.total} измеримых проверок в ${r.categories.length} категориях; ${r.blocked.length} проверок помечены BLOCKED (нужен инструмент/доступ).`,
+    limits: 'Слой A0 видит клиентскую часть. Core Web Vitals, заголовки сервера, лог индексации — на A1 (PageSpeed/CrUX, доступ к серверу и Search Console).',
+  });
+
+  const strengths = [
+    ...(okCats.length ? [`Категории без единого замечания: ${okCats.join(', ')} — этот фундамент можно не трогать и строить на нём`] : []),
+    ...okChecks.slice(0, 5).map((c) => `${c.label} (${c.cat}): ${c.note} — работает на всех проверенных страницах`),
+  ];
+  const weaknesses = [
+    ...(gapCats.length ? [`Провальные категории: ${gapCats.join(', ')} — систематический разрыв, не случайность`] : []),
+    ...gapChecks.slice(0, 6).map((c) => `${c.label}: ${c.note} — ${c.rec}`),
+    ...(gapChecks.length ? [] : checkChecks.slice(0, 3).map((c) => `${c.label}: ${c.note} — неустойчиво, проверить шаблон`)),
+  ];
+  const recs: SectionRec[] = [
+    ...gapChecks.map((c): SectionRec => ({ pr: /schema|sitemap|robots|canonical|noindex|https|аналитик/i.test(c.label) ? 'P0' : 'P1', action: c.rec, effect: `Закрывает разрыв «${c.label}» (${c.cat})` })),
+    ...checkChecks.filter((c) => c.rec !== '—').slice(0, 4).map((c): SectionRec => ({ pr: 'P2', action: c.rec, effect: `Стабилизирует «${c.label}» (${c.note})` })),
+  ];
+
+  const worstCat = [...r.categories].sort((a, b) => b.checks.filter((c) => c.status === 'gap').length - a.checks.filter((c) => c.status === 'gap').length)[0];
+  const concl = conclusionSection([
+    `Из ${r.score.total} измеримых проверок пройдено ${r.score.passed} (${r.score.pct}%). ${r.score.pct >= 70 ? 'Технический фундамент рабочий: он не блокирует рост, и вложения дадут отдачу поверх него.' : r.score.pct >= 45 ? 'Фундамент неровный: часть систем работает, но разрывы в ключевых категориях гасят эффект остальных вложений.' : 'Фундамент проблемный: технические разрывы будут съедать эффект любых маркетинговых и UX-вложений, пока не закрыты.'}`,
+    gapChecks.length
+      ? `Главная зона потерь — «${worstCat?.title}»: ${gapChecks.slice(0, 3).map((c) => c.label.toLowerCase()).join(', ')}. Это не косметика: каждая из этих позиций напрямую влияет на то, как поисковые системы видят и показывают витрину, то есть на бесплатный трафик.`
+      : 'Систематических технических провалов не зафиксировано — редкая ситуация, которую стоит закрепить регламентом релизов (перед каждым релизом гонять этот же чек-лист).',
+    `${r.blocked.length} проверок (${r.blocked.join(', ') || '—'}) невозможно провести без инструментов и доступов — они не «хорошие» и не «плохие», а неизвестные. По правилу A0 §15.7 они не засчитываются ни в плюс, ни в минус до измерения на A1.`,
+  ], 'A1: PageSpeed/CrUX (Core Web Vitals), проверка заголовков сервера, полный crawl (Screaming Frog) и связка с Search Console.');
+
+  const footer = `<section class="block"><div class="footer">Commerce OS · Технический внешний аудит A0 · ${esc(r.client)} · ${esc(date)}. Слой A0: внешний обход. Отсутствие данных не выдаётся за факт и не скрывается (A0 §15.7); BLOCKED-проверки закрываются на A1 инструментом/доступом.</div></section>`;
 
   const extra = `.c-name{font-weight:600;white-space:nowrap;} .c-st{white-space:nowrap;font-size:9.5px;} .c-note{color:var(--muted);font-size:10px;white-space:nowrap;} .c-rec{color:#333;}
     .st{font-size:12px;} .st.ok{color:var(--ok);} .st.check{color:var(--check);} .st.gap{color:var(--gap);} .cat-dims{font-weight:400;}`;
-  return doc(`Технический аудит A0 · ${r.client}`, cover + cats + footer, extra);
+  return doc(`Технический аудит A0 · ${r.client}`, cover + meth + cats + swSection(strengths, weaknesses) + recsSection(recs) + concl + footer, extra);
 }

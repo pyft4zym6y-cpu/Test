@@ -3,7 +3,7 @@
  * параметрам + вывод, рейтинг по взвешенному индексу, white space (свободная
  * ниша). Оборачивает готовый BenchmarkReport (competitor.ts) в стандарт A0.
  */
-import { esc, scoreColor, doc } from './reportShell.js';
+import { esc, scoreColor, doc, methodologySection, swSection, recsSection, conclusionSection, type SectionRec } from './reportShell.js';
 import type { BenchmarkReport, ParamRow } from '../competitor.js';
 
 const host = (u: string) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; } };
@@ -53,6 +53,31 @@ export function renderCompetitorHtml(b: BenchmarkReport, client: string, takenAt
     <p class="lead">Параметры, слабые у всех на рынке — здесь можно вырваться вперёд без гонки.</p>
     <ul>${b.whiteSpace.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>` : '';
 
+  // ── Консалтинговый каркас ──
+  const meth = methodologySection({
+    goal: 'Определить позицию клиента относительно рынка по внешним признакам витрины: где ведём, где отстаём, где на рынке свободная ниша.',
+    sources: [`Обход клиента и ${b.totalSites - 1} конкурентов тем же движком проверок`, 'Взвешенный внешний индекс (голд-стандарт, доверие, каталог, мобильные и др.)'],
+    scope: `${b.params.length} параметров сравнения · ${b.totalSites} сайтов · единая шкала (эталон = 100).`,
+    limits: 'Сравниваются только публичные признаки витрин. Трафик, экономика и цены конкурентов на этом слое не видны — позиции по ним не заявляются.',
+  });
+  const behindRows = b.params.filter((p) => p.position === 'behind');
+  const strengths = [
+    ...(b.clientRank === 1 ? [`Первое место из ${b.totalSites} по внешнему индексу (${b.clientIndex}/100) — витрина задаёт стандарт выборки`] : []),
+    ...b.params.filter((p) => p.position === 'lead').map((p) => `${p.name}: ${p.client} против лучших ${p.marketMax} у рынка — параметр-опора`),
+  ];
+  const weaknesses = behindRows.map((p) => `${p.name}: ${p.client} против ${p.marketMax} у лучшего конкурента — рынок здесь задаёт ожидание, которому витрина не отвечает`);
+  const recs: SectionRec[] = [
+    ...behindRows.slice(0, 4).map((p, i): SectionRec => ({ pr: i < 2 ? 'P0' : 'P1', action: `Закрыть отставание «${p.name}» до уровня лучшего на рынке (${p.marketMax})`, effect: 'Снимает причину выбора конкурента в сравнении витрин' })),
+    ...b.whiteSpace.slice(0, 2).map((x): SectionRec => ({ pr: 'P2', action: `Занять свободную нишу: ${x}`, effect: 'Параметр слаб у всех — преимущество без гонки' })),
+  ];
+  const concl = conclusionSection([
+    `Позиция клиента — ${b.clientRank} из ${b.totalSites} с индексом ${b.clientIndex}/100. ${b.clientRank === 1 ? 'Лидерство по внешним признакам — актив, но оно измерено по витринам: устойчивость лидерства проверяется трафиком и экономикой.' : `Разрыв с лидером сосредоточен в ${behindRows.length} параметрах — это конкретный, конечный список, а не «всё плохо».`}`,
+    b.whiteSpace.length
+      ? `Свободная ниша: ${b.whiteSpace.join('; ')}. Это параметры, слабые у всех участников выборки — вложение здесь даёт отличие, которое конкуренты не смогут быстро скопировать, потому что им придётся начинать с нуля.`
+      : 'Свободных ниш в выборке не обнаружено: рынок плотный, выигрывать придётся исполнением, а не пустыми клетками.',
+    'Сравнение статично (срез на дату) и внешне. Повторный замер после внедрения рекомендаций покажет динамику позиции; экономика конкурентов остаётся вне досягаемости и не имитируется.',
+  ], 'T2+: регулярный бенчмарк (раз в квартал) + анализ трафика конкурентов внешними сервисами — позиция превращается из фото в кино.');
+
   const foot = `<section class="block"><h2>Итог</h2>
     <div class="concl-grid" style="font-size:10.5px">
       <span class="k ok">Ведём</span><span class="v">${b.clientLeads.length ? esc(b.clientLeads.join(', ')) : '—'}</span>
@@ -62,5 +87,5 @@ export function renderCompetitorHtml(b: BenchmarkReport, client: string, takenAt
 
   const extra = `.r-pos{color:var(--muted);width:20px;} .r-name{font-weight:700;} .r-idx{font-weight:800;text-align:right;} tr.me{background:var(--soft);}
     .pm-name{font-weight:600;} .pm-c,.pm-m,.pm-e{font-weight:800;text-align:center;width:52px;} .pm-m,.pm-e{color:var(--muted);} .pm-pos{font-weight:700;white-space:nowrap;}`;
-  return doc(`Конкурентный анализ A0 · ${client}`, cover + ranking + params + ws + foot, extra);
+  return doc(`Конкурентный анализ A0 · ${client}`, cover + meth + ranking + params + ws + swSection(strengths, weaknesses) + recsSection(recs) + concl + foot, extra);
 }

@@ -44,10 +44,12 @@ export function buildHypotheses(a: Analysis): HypothesisRegister {
     if (!hypothesis) return;
     items.push({ id: `H-${String(n++).padStart(2, '0')}`, area, hypothesis, basis, verifyBy: verifyBy(area), falsifyIf: `Опровергается, если ${falsifyIf(area)}.`, confidence });
   };
+  // confidence нормирована в 0..1 (normConfidence) — пороги и константы в той же шкале,
+  // иначе в PDF выходит «2500%» и в реестр попадают ВСЕ находки подряд.
   for (const f of a.findings) {
-    if (f.confidence < 60) add(f.area, f.fact, f.why || 'наблюдение L0', f.confidence);
+    if (f.confidence < 0.6) add(f.area, f.fact, f.why || 'наблюдение L0', f.confidence);
   }
-  for (const m of a.missingFacts) add('данные', m, 'факт недоступен на слое L0', 25);
+  for (const m of a.missingFacts) add('данные', m, 'факт недоступен на слое L0', 0.25);
   return { items };
 }
 

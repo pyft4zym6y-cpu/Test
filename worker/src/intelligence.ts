@@ -8,7 +8,7 @@
  */
 import type { AuditDataset } from './report.js';
 import type { PageAudit } from './crawl.js';
-import { ask, extractJson, hasKey } from './anthropic.js';
+import { ask, extractJson, hasKey, apiErrorHint } from './anthropic.js';
 import { knowledgeFor } from './knowledge.js';
 
 export type CIEvidence = 'E0' | 'E1' | 'E2' | 'E3';
@@ -230,5 +230,5 @@ export async function narrateIntelligence(ds: AuditDataset, ci: CIReport, log?: 
       if (l) { if (note.deduced) l.deduced = note.deduced; if (note.decision) l.decision = note.decision; }
     }
     if (Array.isArray(n.chains)) ci.chains.push(...n.chains.filter((c) => c && c.observed && c.action).slice(0, 4));
-  } catch (e) { log?.(`⚠️ CI-дедукции Claude не отработали (${String(e).slice(0, 100)}) — детерминированный слой сохранён`); }
+  } catch (e) { log?.(`⚠️ CI-дедукции Claude не отработали (${String(e).slice(0, 100)})${apiErrorHint(e)} — детерминированный слой сохранён`); }
 }

@@ -199,7 +199,7 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
   const primaryCtaAboveFold = btns.some((el) => { if (!inFold(el)) return false; try { const r = el.getBoundingClientRect(); return r.width * r.height >= 3000; } catch { return false; } });
   const navEl = $('nav') || $('[role="navigation"]') || $('header');
   const navItems = navEl ? navEl.querySelectorAll('a').length : $$('header a').length;
-  const breadcrumbs = Boolean($('[class*="breadcrumb" i]') || $('[aria-label*="breadcrumb" i]')) || /breadcrumblist/i.test(html);
+  const breadcrumbs = Boolean($('[class*="breadcrumb" i]') || $('[aria-label*="breadcrumb" i]') || $('[itemtype*="BreadcrumbList" i]') || $('ul[class*="crumb" i], ol[class*="crumb" i]')) || /breadcrumblist/i.test(html);
   const headerEl = $('header');
   let stickyHeader = false;
   try { if (headerEl) { const pos = getComputedStyle(headerEl).position; stickyHeader = pos === 'sticky' || pos === 'fixed'; } } catch { /* noop */ }
@@ -207,16 +207,38 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
   const colorSet = new Set<string>();
   btns.slice(0, 40).forEach((el) => { try { const c = getComputedStyle(el).backgroundColor; if (c && c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent') colorSet.add(c); } catch { /* noop */ } });
   const distinctButtonColors = colorSet.size;
-  const filters = Boolean($('[class*="filter" i]') || $('[class*="facet" i]') || $('aside input[type="checkbox"]'));
-  const sortControl = Boolean($('select[class*="sort" i]') || $('[class*="sort" i] select') || $('[class*="orderby" i]'));
-  const galleryEl = $('[class*="gallery" i]') || $('[class*="slider" i]') || $('[class*="thumbs" i]');
-  const galleryImages = galleryEl ? galleryEl.querySelectorAll('img').length : 0;
+  // Мультистратегийная детекция (прод-урок: одиночный селектор «теряет из виду»
+  // элементы, которые по факту есть). Каждый элемент ищется ВСЕМИ доступными
+  // способами: класс/ID/name, data-атрибуты, href-параметры, текстовые маркеры,
+  // schema-разметка. Положительный ответ любой стратегии = элемент есть.
+  const hrefHas = (re: RegExp) => $$('a[href]').some((a) => re.test((a as HTMLAnchorElement).getAttribute('href') ?? ''));
+  const filters = Boolean(
+    $('[class*="filter" i]') || $('[class*="facet" i]') || $('[id*="filter" i]') || $('[data-filter]')
+    || $('aside input[type="checkbox"]') || $('[class*="sidebar" i] input[type="checkbox"]')
+    || $('input[name*="price" i][type="number"], [class*="price-range" i], [class*="range-slider" i]')
+    || $$('form input[type="checkbox"]').length >= 5,
+  ) || hrefHas(/[?&](filter|f%5B|f\[|attr|brand)=/i) || /(фільтр|фильтр|подбор по параметрам)/i.test(text);
+  const sortControl = Boolean(
+    $('select[class*="sort" i]') || $('[class*="sort" i] select') || $('[class*="orderby" i]')
+    || $('select[name*="sort" i]') || $('select[id*="sort" i]') || $('[data-sort]') || $('[class*="sorting" i]'),
+  ) || hrefHas(/[?&](sort|order|orderby)=/i) || /(сортування|сортировка|sort by|за популярніст|по популярности|спочатку дорож|сначала дорог)/i.test(text);
+  const galleryEl = $('[class*="gallery" i]') || $('[class*="slider" i]') || $('[class*="thumbs" i]') || $('[class*="carousel" i]') || $('[class*="product-image" i]') || $('[class*="fotorama" i]') || $('[data-fancybox]')?.closest('div');
+  let galleryImages = galleryEl ? galleryEl.querySelectorAll('img').length : 0;
+  if (!galleryImages) galleryImages = $$('a[href$=".jpg"] img, a[href$=".jpeg"] img, a[href$=".png"] img, a[href$=".webp"] img, [itemprop="image"]').length;
   const addToCartProminent = btns.some((el) => { const t = (el.textContent ?? '').toLowerCase(); return /(в корзину|в кошик|додати|add to cart|купить|купити|buy)/.test(t) && inFold(el); });
-  const variantSelector = Boolean($('[class*="variant" i]') || $('[class*="swatch" i]') || $('select[name*="attribute" i]') || $('[class*="option" i] button') || $('[class*="size" i] button'));
-  const priceVisible = /(₴|грн|zł|pln|€|eur|usd|\$)\s?\d|\d\s?(₴|грн|zł)/i.test(text);
-  const trustBadges = /гарант|guarantee|поверненн|возврат|return|безпеч|secure|сертифікат|офіційн|официальн|оригінал/i.test(text);
-  const paymentIcons = Boolean($('[class*="payment" i] img') || $('img[src*="visa" i]') || $('img[src*="mastercard" i]') || $('img[alt*="visa" i]')) || /visa|mastercard|google pay|apple pay|liqpay|privat24|monobank|наложен|післяплат|нова пошта/i.test(low);
-  const reviews = /відгук|отзыв|review|рейтинг|rating|★|☆/i.test(low);
+  const variantSelector = Boolean(
+    $('[class*="variant" i]') || $('[class*="swatch" i]') || $('select[name*="attribute" i]')
+    || $('[class*="option" i] button') || $('[class*="size" i] button') || $('[data-option]')
+    || $('input[type="radio"][name*="option" i], input[type="radio"][name*="variant" i]')
+    || $('[class*="color" i] a, [class*="color" i] button') || $('form[action*="cart" i] select'),
+  );
+  const priceVisible = /(₴|грн|zł|pln|€|eur|usd|\$)\s?\d|\d\s?(₴|грн|zł)/i.test(text) || Boolean($('[itemprop="price"], [class*="price" i]'));
+  const trustBadges = /гарант|guarantee|поверненн|возврат|return|безпеч|secure|сертифікат|офіційн|официальн|оригінал/i.test(text)
+    || Boolean($('[class*="trust" i], [class*="guarantee" i], [class*="warranty" i]'));
+  const paymentIcons = Boolean($('[class*="payment" i] img') || $('[class*="payments" i]') || $('img[src*="visa" i]') || $('img[src*="mastercard" i]') || $('img[alt*="visa" i]') || $('img[src*="pay" i]')) || /visa|mastercard|google pay|apple pay|liqpay|privat24|monobank|наложен|післяплат|нова пошта/i.test(low);
+  const reviews = /відгук|отзыв|review|рейтинг|rating|★|☆/i.test(low)
+    || Boolean($('[class*="review" i], [class*="rating" i], [itemprop="review"], [itemprop="aggregateRating"]'))
+    || /"aggregateRating"/i.test(html);
   const formFields = $$('form input:not([type="hidden"]), form select, form textarea').length;
   const guestCheckoutHint = /без реєстрац|без регистрац|guest|гостев|как гость|як гість/i.test(text);
   let smallTapTargets = 0;
@@ -231,12 +253,12 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
     breadcrumbs,
     hero: hasSel('[class*="hero" i], [class*="banner" i], [class*="slider" i], [class*="slideshow" i], [class*="carousel" i]'),
     usp_bar: hasSel('[class*="usp" i], [class*="advantage" i], [class*="benefit" i]') || inLow(/чому ми|почему мы|наші переваги|наши преимущества|why us/),
-    search: hasSel('input[type="search"], [class*="search" i] input, form[action*="search" i]'),
+    search: hasSel('input[type="search"], [class*="search" i] input, form[action*="search" i], input[name="search" i], input[name="q"], input[placeholder*="пошук" i], input[placeholder*="поиск" i], input[placeholder*="search" i], [class*="search" i] button'),
     nav: Boolean(navEl && navEl.querySelectorAll('a').length >= 3),
     product_grid: productCards >= 8,
     trust: trustBadges || paymentIcons,
     reviews,
-    newsletter: hasSel('[class*="newsletter" i], [class*="subscribe" i]') || inLow(/підпис|подпис|newsletter|subscribe/),
+    newsletter: hasSel('[class*="newsletter" i], [class*="subscribe" i], footer input[type="email"]') || inLow(/підпис|подпис|newsletter|subscribe/),
     footer_contacts: hasSel('footer') || inTxt(/контакт|contact|адрес|адреса/),
     category_title: hasSel('h1'),
     category_description: hasSel('[class*="category-desc" i], [class*="cat-desc" i], [class*="seo-text" i]'),
@@ -244,7 +266,7 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
     filters,
     sort: sortControl,
     view_toggle: hasSel('[class*="view-mode" i], [class*="grid-list" i], [class*="switch-view" i]'),
-    pagination: hasSel('[class*="pagination" i], [rel="next"], [class*="load-more" i]') || inTxt(/наступна|следующая|показати ще|показать ещё|load more/),
+    pagination: hasSel('[class*="pagination" i], [rel="next"], [class*="load-more" i], [class*="pager" i]') || inTxt(/наступна|следующая|показати ще|показать ещё|load more/) || Array.from(document.querySelectorAll('a[href]')).some((a) => /[?&](page|p)=\d/.test(a.getAttribute('href') ?? '')),
     faq: hasSel('[class*="faq" i]') || inLow(/часті питання|частые вопросы/),
     product_header: hasSel('h1'),
     gallery: galleryImages > 0,
@@ -253,13 +275,13 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
     variants: variantSelector,
     delivery: inTxt(/достав|delivery|shipping/),
     payment: paymentIcons,
-    description: hasSel('[class*="description" i], [id*="description" i], [class*="tab" i]'),
-    specifications: hasSel('[class*="spec" i], [class*="characteristic" i], [class*="attribute" i]') || inLow(/характеристик|специфікац|specifications/),
+    description: hasSel('[class*="description" i], [id*="description" i], [class*="tab" i], [itemprop="description"]') || inLow(/"description"\s*:/),
+    specifications: hasSel('[class*="spec" i], [class*="characteristic" i], [class*="attribute" i], [id*="spec" i]') || inLow(/характеристик|специфікац|specifications/) || Boolean(document.querySelector('main dl, [class*="product" i] table')),
     qa: hasSel('[class*="question" i], [class*="qa" i]') || inLow(/питання та відповіді|вопросы и ответы|q&a/),
     video: hasSel('iframe[src*="youtube" i], iframe[src*="vimeo" i], video'),
     related: hasSel('[class*="related" i], [class*="similar" i], [class*="recommend" i], [class*="upsell" i], [class*="cross" i]') || inLow(/схожі товари|похожие товары|з цим товаром|с этим товаром|рекоменд/),
     recently_viewed: hasSel('[class*="recently" i], [class*="viewed" i]') || inLow(/переглянуті|просмотренные|recently viewed/),
-    qty_control: hasSel('[class*="quantity" i], [class*="qty" i], input[type="number"]'),
+    qty_control: hasSel('[class*="quantity" i], [class*="qty" i], input[type="number"], [class*="counter" i], [class*="stepper" i]'),
     promo_code: hasSel('[class*="promo" i], [class*="coupon" i], [name*="coupon" i]') || inLow(/промокод|promo code|купон/),
     delivery_calc: inLow(/розрахувати доставку|рассчитать доставку|calculate shipping/),
     order_summary: hasSel('[class*="summary" i], [class*="total" i]') || inTxt(/разом до сплати|итого к оплате|order total|сума замовлення|сумма заказа/),

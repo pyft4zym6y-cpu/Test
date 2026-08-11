@@ -6,6 +6,7 @@
  */
 import type { SiteAuditReport, PageReport, BlockRow, BlockState } from '../pagereport.js';
 import { DIMS, type Dim } from '../pagereport.js';
+import { CONSULT_CSS, methodologySection, swSection, recsSection, conclusionSection, type SectionRec } from './reportShell.js';
 
 const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const STATE_MARK: Record<BlockState, string> = { ok: '✓', check: '◐', gap: '✕' };
@@ -113,9 +114,58 @@ function systemicSection(r: SiteAuditReport): string {
   </section>`;
 }
 
+/** Консалтинговые секции: методология, сильные/слабые стороны, рекомендации, итог. */
+function consultSections(r: SiteAuditReport): { meth: string; sw: string; recs: string; concl: string } {
+  const cov = r.tree.length;
+  const meth = methodologySection({
+    goal: 'Постранично сверить витрину с эталонной композицией Commerce OS: какие решающие блоки есть, какие потеряны и что это значит для пути клиента.',
+    sources: [`Внешний обход: ${cov} страниц, скриншоты первого экрана, отрендеренный DOM`, 'Эталонные прототипы по типам страниц (референсы Commerce OS)', 'Карта уникальных страниц: sitemap + обход + активная проба адресов'],
+    scope: `Каждая разобранная страница блок за блоком (ядро/важно/опционально) + сквозные требования + системные дефекты шаблонов.`,
+    limits: '«Не обнаружено» ≠ «отсутствует» (скрытые табы/JS помечены «проверить»). Влияние на конверсию в деньгах утверждается только по данным аналитики (A2).',
+  });
+
+  const goodPages = r.pages.filter((p) => p.max && (p.score / p.max) >= 0.7);
+  const badPages = r.pages.filter((p) => p.max && (p.score / p.max) < 0.45);
+  const strongBits = Array.from(new Set(r.pages.flatMap((p) => p.strong))).slice(0, 4);
+  const missingMand = r.pageTypes.filter((t) => t.mandatory && t.status === 'не найдена');
+  const strengths = [
+    ...goodPages.slice(0, 3).map((p) => `${p.title}: ${Math.round((p.score / p.max) * 100)}% соответствия эталону — композиция страницы работает на решение`),
+    ...(strongBits.length ? [`Сильные элементы витрины: ${strongBits.join('; ')}`] : []),
+    ...(r.systemic.length === 0 ? ['Системных дефектов шаблонов не выявлено — проблемы точечные, а не наследуемые'] : []),
+  ];
+  const weaknesses = [
+    ...badPages.slice(0, 3).map((p) => `${p.title}: ${Math.round((p.score / p.max) * 100)}% — страница теряет ядровые блоки эталона`),
+    ...r.systemic.slice(0, 4).map((s) => `${s.title} — дефект шаблона, тиражируется на все страницы`),
+    ...(missingMand.length ? [`Не найдены обязательные страницы: ${missingMand.map((t) => t.label).join(', ')}`] : []),
+    ...(r.soft404 === true ? ['«Мягкая 404»: несуществующие URL отдают 200 — мусор в индексе и ложные пробы'] : []),
+  ];
+
+  const critRank: Record<string, 'P0' | 'P1' | 'P2'> = { 'Блокирующая': 'P0', 'Высокая': 'P1' };
+  const seen = new Set<string>();
+  const recsList: SectionRec[] = [];
+  for (const p of r.pages) for (const f of p.fixes) {
+    if (seen.has(f.what) || recsList.length >= 8) continue;
+    seen.add(f.what);
+    recsList.push({ pr: critRank[f.crit] ?? 'P2', action: `${p.title}: ${f.what}`, effect: f.why });
+  }
+
+  const worst = [...r.pages].filter((p) => p.max).sort((a, b) => a.score / a.max - b.score / b.max)[0];
+  const gapsOfWorst = worst ? worst.rows.filter((b) => b.state === 'gap' && b.weight === 'core').map((b) => b.name).slice(0, 4) : [];
+  const concl = conclusionSection([
+    `Соответствие витрины эталону — ${r.totalPct}% (${r.totalScore}/${r.totalMax} по ${cov} типам страниц). ${r.totalPct >= 70 ? 'Композиция в целом собрана: путь клиента не рвётся на уровне структуры, резерв — в качестве исполнения блоков.' : r.totalPct >= 45 ? 'Каркас есть, но на пути клиента есть страницы, где эталонная логика «увидел → поверил → купил» нарушена — именно там теряется конверсия.' : 'Композиция витрины существенно расходится с эталоном: клиент вынужден додумывать за сайт, и это прямые потери на каждом шаге воронки.'}`,
+    worst
+      ? `Самое слабое звено — ${worst.title} (${Math.round((worst.score / worst.max) * 100)}%)${gapsOfWorst.length ? `: отсутствуют ядровые блоки ${gapsOfWorst.join(', ')}` : ''}. ${r.systemic.length ? `Плюс ${r.systemic.length} системных дефектов уровня шаблона — они правятся один раз и дают эффект на всём сайте, поэтому стоят первыми в очереди.` : 'Системных дефектов уровня шаблона нет — работа предстоит постраничная.'}`
+      : 'Страницы для сравнения не разобраны — вывод по композиции невозможен.',
+    `${r.warning ? `Ограничение покрытия: ${r.warning} ` : ''}Оценки этого слоя — наблюдение по внешнему обходу; блоки со статусом «проверить» могут существовать в скрытых состояниях. Подтверждение влияния на выручку — задача A2 (аналитика, записи сессий).`,
+  ], 'A1–A2: записи сессий и воронка GA4 по слабым страницам → подтверждённые точки потерь → дизайн-спринт по приоритетам из этого отчёта.');
+
+  return { meth, sw: swSection(strengths, weaknesses), recs: recsSection(recsList), concl };
+}
+
 export function renderAuditHtml(r: SiteAuditReport): string {
   const date = new Date(r.takenAt).toLocaleDateString('ru-RU');
   const cov = r.tree.length;
+  const cs = consultSections(r);
   const cover = `<section class="cover">
     <div class="cov-bar"></div>
     <div class="cov-body">
@@ -212,15 +262,21 @@ export function renderAuditHtml(r: SiteAuditReport): string {
   /* systemic */
   .sys-list{margin:6px 0 0;padding-left:18px;} .sys-list li{margin:5px 0;} .s-dims{margin-left:4px;}
   .footer{margin-top:16px;padding-top:8px;border-top:1px solid var(--line);color:var(--muted);font-size:8.5px;}
+  table{width:100%;border-collapse:collapse;}
+  th{font-size:8.5px;text-transform:uppercase;color:var(--muted);text-align:left;padding:5px 6px;border-bottom:1px solid var(--line);letter-spacing:.3px;}
+  td{padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:top;}
+  ${CONSULT_CSS}
   </style></head><body>
   ${cover}
+  ${cs.meth}
   ${treeSection(r)}
   ${pageTypesSection(r)}
   ${r.pages.map(pageSection).join('')}
   ${systemicSection(r)}
+  ${cs.sw}
+  ${cs.recs}
+  ${cs.concl}
   <section class="block">
-    <h2>Что дальше</h2>
-    <p class="lead">A0 — внешний срез. Чтобы перевести наблюдения в факт и деньги, нужен следующий уровень доказательности (A1–A2): аналитика (GA4), выгрузка заказов, доступ к CRM и рекламным кабинетам.</p>
     <div class="footer">Commerce OS · UX/UI Аудит A0 · ${esc(r.client)} · ${esc(date)}. Слой A0: внешний обход без доступов. Оценки — наблюдение, не факт по данным клиента; отсутствие данных не выдаётся за факт и не скрывается (A0 §15.7).</div>
   </section>
   </body></html>`;
