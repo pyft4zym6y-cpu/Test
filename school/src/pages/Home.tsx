@@ -4,6 +4,7 @@ import { TOTALS } from '../data/program';
 import { SCHOOL } from '../data/school';
 import CourseCard from '../components/CourseCard';
 import CareerTrack from '../components/CareerTrack';
+import { Guarantee, Results, TrustStrip } from '../components/Trust';
 import {
   Bubble,
   Burst,
@@ -302,10 +303,13 @@ export default function Home() {
         ]}
       />
       <WhoYouBecome />
+      <Results />
       <MissionTeaser />
       <Numbers />
       <CoursesTeaser />
+      <TrustStrip />
       <CareerTrack />
+      <Guarantee />
       <Manifesto />
       <CtaStrip />
     </>

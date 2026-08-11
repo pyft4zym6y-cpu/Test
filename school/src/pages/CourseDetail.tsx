@@ -1,5 +1,6 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { courseById, courseLevels, courseStats, fmtPrice, levelsLabel } from '../data/courses';
+import { Guarantee, Included, TrustStrip } from '../components/Trust';
 import {
   ComicButton,
   Eyebrow,
@@ -125,7 +126,14 @@ export default function CourseDetail() {
           ))}
         </div>
 
-        <Pop className="mt-12">
+      </Section>
+
+      <TrustStrip />
+      <Included />
+      <Guarantee />
+
+      <Section className="!pt-0">
+        <Pop>
           <div className="comic-border bg-sun hard-shadow p-8 md:p-10 text-center">
             <H2 className="!mb-3">Звучить як твій курс?</H2>
             <p className="font-semibold text-[15px] mb-6">

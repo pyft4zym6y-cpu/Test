@@ -3,6 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import { COURSES, courseById, fmtPrice, levelsLabel } from '../data/courses';
 import { SCHOOL } from '../data/school';
 import { PageHead, Pop, Section } from '../components/comic';
+import { CertBadge } from '../components/Trust';
+import { GUARANTEE } from '../data/school';
 
 const inputCls =
   'w-full comic-border bg-white px-5 py-4 text-[15px] placeholder-ink/35 focus:outline-none focus:bg-paper transition-colors';
@@ -119,6 +121,13 @@ export default function Enroll() {
                   Заявки розбирає особисто засновник школи. Відповідь — протягом одного робочого
                   дня.
                 </p>
+                <div className="flex items-center gap-4 mt-5 pt-5 border-t-[3px] border-ink">
+                  <CertBadge size={54} />
+                  <p className="text-[12.5px] leading-snug font-semibold text-ink/70">
+                    Сертифікат школи після фінального чек-листа · {GUARANTEE.title} — повне
+                    повернення
+                  </p>
+                </div>
                 <div className="font-marck text-brand text-[48px] leading-none mt-3">П.С.</div>
               </div>
             </div>
