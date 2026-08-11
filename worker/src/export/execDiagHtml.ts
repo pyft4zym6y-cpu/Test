@@ -25,14 +25,16 @@ const rub = (n: number) => `${Math.round(n).toLocaleString('ru-RU')} ₴`;
 const eLevel = (conf: number) => (conf >= 0.8 ? 'E3' : conf >= 0.6 ? 'E2' : 'E1'); // L0 внешний — потолок E3
 const clientName = (ds: AuditDataset) => { try { return new URL(ds.client.finalUrl).hostname.replace(/^www\./, ''); } catch { return ds.client.finalUrl; } };
 
-/** Карточка «главный вывод» (A0 §8). */
+/** Карточка «главный вывод» (A0 §8). «Влияние» показываем только если отличается от «Разрыва». */
 function conclCard(c: { title: string; sev?: 'crit' | 'warn'; see: string; proof: string; ref: string; gap: string; impact: string; conf: string; unknown: string; next: string }): string {
-  return `<div class="concl ${c.sev ?? ''}"><h3>${esc(c.title)}</h3><div class="concl-grid">
+  const impactRow = c.impact && c.impact !== c.gap ? `<span class="k">Влияние</span><span class="v">${esc(c.impact)}</span>` : '';
+  const title = c.title.length > 120 ? c.title.slice(0, 117) + '…' : c.title;
+  return `<div class="concl ${c.sev ?? ''}"><h3>${esc(title)}</h3><div class="concl-grid">
     <span class="k">Что видим</span><span class="v">${esc(c.see)}</span>
     <span class="k">Доказательство</span><span class="v">${esc(c.proof)}</span>
     <span class="k">Сравнение</span><span class="v">${esc(c.ref)}</span>
     <span class="k">Разрыв</span><span class="v">${esc(c.gap)}</span>
-    <span class="k">Влияние</span><span class="v">${esc(c.impact)}</span>
+    ${impactRow}
     <span class="k">Уверенность</span><span class="v">${esc(c.conf)}</span>
     <span class="k">Что неизвестно</span><span class="v">${esc(c.unknown)}</span>
     <span class="k">Следующий шаг</span><span class="v">${esc(c.next)}</span>
@@ -72,10 +74,13 @@ export function renderExecDiagnostic(ds: AuditDataset, inp: ExecInputs): string 
   const verdict = inp.analysis?.summary || ux?.verdict || 'Внешняя диагностика витрины по слою A0.';
   const posture = ux ? ux.totalPct : null;
 
-  // Cover
+  // Cover: заголовок = первое предложение вердикта, но обложка не резиновая —
+  // длинный вывод усечь и уменьшить кегль (реальный прогон дал заголовок на 9 строк).
+  const h1raw = verdict.split('. ')[0];
+  const h1txt = (h1raw.length > 160 ? h1raw.slice(0, 157) + '…' : h1raw) + '.';
   const cover = `<section class="cover"><div class="cov-bar"></div><div class="cov-body">
     <div class="kicker">Commerce OS · Executive Diagnostic · слой A0</div>
-    <h1>${esc(verdict.split('. ')[0])}.</h1>
+    <h1${h1txt.length > 90 ? ' style="font-size:22px"' : ''}>${esc(h1txt)}</h1>
     <div class="cov-meta">
       <div><span class="lbl">Клиент</span><span class="val">${esc(name)}</span></div>
       <div><span class="lbl">Дата</span><span class="val">${esc(date)}</span></div>
@@ -121,9 +126,20 @@ export function renderExecDiagnostic(ds: AuditDataset, inp: ExecInputs): string 
 
   // UX/UI карта
   s.push(section('5. Карта UX/UI', ux ? ux.verdict : 'UX/UI-срез по типам страниц.',
-    ux ? `<table><thead><tr><th>Тип страницы</th><th>Соответствие</th><th>%</th></tr></thead><tbody>${
-      ux.tree.map((t) => `<tr><td>${esc(t.title)}</td><td><span class="bar"><i class="fill ${scoreColor(t.pct)}" style="width:${t.pct}%"></i></span></td><td class="${scoreColor(t.pct)}">${t.pct}%</td></tr>`).join('')
-    }</tbody></table><p class="lead">Детально — в отдельном документе «UX/UI Audit A0».</p>` : '<p class="lead">Страницы не разобраны.</p>', ux ? 'DONE' : 'BLOCKED'));
+    ux ? (() => {
+      // Свернуть дубли типа «(доп.)»: показываем первые 2 на тип + агрегат остальных.
+      const shown: typeof ux.tree = []; const extra = new Map<string, { n: number; sum: number }>();
+      const seenN = new Map<string, number>();
+      for (const t of ux.tree) {
+        const base = t.title.replace(/ \(доп\.\)$/, '');
+        const n = (seenN.get(base) ?? 0) + 1; seenN.set(base, n);
+        if (n <= 2) shown.push(t);
+        else { const e = extra.get(base) ?? { n: 0, sum: 0 }; e.n++; e.sum += t.pct; extra.set(base, e); }
+      }
+      const rows = shown.map((t) => `<tr><td>${esc(t.title)}</td><td><span class="bar"><i class="fill ${scoreColor(t.pct)}" style="width:${t.pct}%"></i></span></td><td class="${scoreColor(t.pct)}">${t.pct}%</td></tr>`).join('')
+        + Array.from(extra.entries()).map(([base, e]) => { const avg = Math.round(e.sum / e.n); return `<tr><td>${esc(base)} — ещё ${e.n} страниц</td><td><span class="bar"><i class="fill ${scoreColor(avg)}" style="width:${avg}%"></i></span></td><td class="${scoreColor(avg)}">~${avg}%</td></tr>`; }).join('');
+      return `<table><thead><tr><th>Тип страницы</th><th>Соответствие</th><th>%</th></tr></thead><tbody>${rows}</tbody></table><p class="lead">Детально — в отдельном документе «UX/UI Audit A0».</p>`;
+    })() : '<p class="lead">Страницы не разобраны.</p>', ux ? 'DONE' : 'BLOCKED'));
 
   // SEO карта
   const seoFails = countGroupFails(ds, 'SEO');

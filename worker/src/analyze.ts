@@ -68,13 +68,20 @@ export function datasetToPrompt(ds: AuditDataset, engineFactsStr?: string): stri
   return L.join('\n');
 }
 
+/** Уверенность к доле 0..1: модель может вернуть 25 (проценты) — иначе в отчёте «2500%». */
+export function normConfidence(c: unknown): number {
+  let n = typeof c === 'number' && Number.isFinite(c) ? c : 0.5;
+  if (n > 1) n = n / 100;
+  return Math.max(0, Math.min(1, n));
+}
+
 export async function analyze(ds: AuditDataset, engineFactsStr?: string): Promise<Analysis> {
   const text = await ask(systemFor(ds) + (await knowledgeFor('analyze')), datasetToPrompt(ds, engineFactsStr), 8000);
   const a = extractJson<Partial<Analysis>>(text);
   return {
     summary: a.summary ?? '',
     healthNote: a.healthNote ?? '',
-    findings: a.findings ?? [],
+    findings: (a.findings ?? []).map((f) => ({ ...f, confidence: normConfidence(f?.confidence) })),
     pains: a.pains ?? [],
     competitors: a.competitors ?? '',
     missingFacts: a.missingFacts ?? [],

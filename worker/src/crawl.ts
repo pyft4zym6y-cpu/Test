@@ -172,7 +172,9 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
   if (/woocommerce|wc-|wc_/.test(low)) push(/.?/, 'WooCommerce');
   else if (/wp-content|wp-includes|wp-json/.test(low)) push(/.?/, 'WordPress');
   push(/cdn\.shopify|myshopify|shopify\./, 'Shopify');
-  push(/mage\/|magento|mage-|\/static\/version/, 'Magento');
+  // ВАЖНО: не использовать /mage\/|mage-/ — матчится внутри "image/", "image-" (реальный
+  // прод-баг: OpenCart-сайт определился как Magento из-за путей картинок).
+  push(/magento|x-magento|\/static\/version\d/, 'Magento');
   push(/bitrix|bx-|\/bitrix\//, '1C-Bitrix');
   push(/prestashop/, 'PrestaShop');
   push(/opencart|route=product/, 'OpenCart');
@@ -296,7 +298,15 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
 
 function classify(url: string, sig: Record<string, boolean>, isRoot: boolean): PageKind {
   if (isRoot) return 'home';
-  try { if (/\/(faq|help|dopomoga|voprosy|pytannya|questions|q-?a)(\/|$)/i.test(new URL(url).pathname)) return 'faq'; } catch { /* not a url */ }
+  // Сначала — надёжная классификация по URL: сервисные/контентные страницы часто
+  // содержат карточки-виджеты в футере и ошибочно уходили в PLP (прод-баг:
+  // blog/about/contact/delivery определились как «Каталог»).
+  try {
+    const p = new URL(url).pathname;
+    if (/^\/(en|ru|ua|uk|pl|de)\/?$/i.test(p)) return 'home'; // языковое зеркало главной
+    if (/\/(faq|help|dopomoga|voprosy|pytannya|questions|q-?a)(\/|$)/i.test(p)) return 'faq';
+    if (/\/(blog|news|article|stat|about|o-nas|about-us|pro-nas|company|kompan|contact|kontakt|delivery|dostavka|payment|oplata|terms|privacy|policy|guarantee|warranty|return|povern|compare|korp-|horeca|b2b|opt|wholesale)(\/|-|$)/i.test(p)) return 'content';
+  } catch { /* not a url */ }
   if (sig.isCheckoutUrl) return 'checkout';
   if (sig.isCartUrl) return 'cart';
   if (sig.hasProductSchema || (sig.addToCart && !sig.manyCards) || sig.isProductUrl) return 'pdp';
@@ -450,6 +460,12 @@ function pickCandidates(root: string, links: string[], want: number): string[] {
   const add1 = (re: RegExp) => { const h = internal.find((x) => re.test(path(x))); if (h) out.add(h); };
   findAll(/category|catalog|shop|collections|katalog|categor/i, 2);
   findAll(/product|tovar|\/p\/|goods|item|\/pr\//i, 3);
+  // Товары без ключевых слов в URL: на многих платформах (OpenCart с SEO-URL и др.)
+  // карточки живут В КОРНЕ как слаги (/pled-bovaria-siryj/). Признак: большая группа
+  // одиночных дефисных слагов. Берём 3 кандидата — classify() подтвердит тип по DOM.
+  const SERVICE_RE = /blog|news|article|about|contact|kontakt|delivery|dostavka|payment|oplata|faq|help|terms|privacy|policy|compare|cart|checkout|account|login|search|katalog|catalog|category|collection|shop|korp|horeca|b2b|opt|wishlist|^\/?(en|ru|ua|uk|pl|de)$/i;
+  const rootSlugs = internal.filter((h) => { const p = path(h); const m = p.match(/^\/([a-z0-9-]{10,})\/?$/i); return Boolean(m && m[1].includes('-') && !SERVICE_RE.test(p)); });
+  if (rootSlugs.length >= 20) rootSlugs.slice(0, 3).forEach((h) => out.add(h));
   add1(/cart|basket|korzina|koszyk/i);
   add1(/checkout|oform|zakaz|order/i);
   add1(/faq|help|voprosy|pytannya/i);

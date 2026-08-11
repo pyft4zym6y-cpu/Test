@@ -117,6 +117,7 @@ export type SiteAuditReport = {
   totalScore: number; totalMax: number; totalPct: number;
   systemic: SystemicDefect[];
   verdict: string;
+  warning?: string; // пробел покрытия (напр. PDP не разобрана) — вывод с оговоркой
 };
 
 const MAX_BY_WEIGHT: Record<Weight, number> = { core: 4, important: 3, nice: 2 };
@@ -262,7 +263,17 @@ export function buildSiteAudit(ds: AuditDataset): SiteAuditReport {
   const totalPct = totalMax ? Math.round((totalScore / totalMax) * 100) : 0;
   let client = ds.client.finalUrl;
   try { client = new URL(ds.client.finalUrl).hostname.replace(/^www\./, ''); } catch { /* noop */ }
-  return { client, takenAt: ds.takenAt, tier: ds.tier, pages, tree, totalScore, totalMax, totalPct, systemic: systemicDefects(ds), verdict: verdictLine(totalPct) };
+  // Пробел покрытия: коммерческий сайт без разобранной PDP — вывод даём с оговоркой,
+  // а не «близко к эталону» (реальный прогон: 88% при полном отсутствии PDP в выборке).
+  const hasPdp = pages.some((p) => p.kind === 'pdp');
+  const looksCommerce = pages.some((p) => ['plp', 'cart', 'checkout'].includes(p.kind)) || (ds.client.links ?? []).length > 100;
+  let verdict = verdictLine(totalPct);
+  let warning: string | undefined;
+  if (!hasPdp && looksCommerce) {
+    warning = 'Карточка товара (PDP) не попала в выборку обхода — главный конвертирующий тип страницы не разобран. Балл соответствия относится только к разобранным типам; вывод по витрине — с оговоркой до разбора PDP.';
+    verdict = `По разобранным типам — ${totalPct}%, но PDP не разобрана: вывод о витрине неполный (пробел покрытия, а не «всё хорошо»).`;
+  }
+  return { client, takenAt: ds.takenAt, tier: ds.tier, pages, tree, totalScore, totalMax, totalPct, systemic: systemicDefects(ds), verdict, warning };
 }
 
 export { KIND_LABEL };

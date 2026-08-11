@@ -51,9 +51,11 @@ export function renderCoveragePdf(c: CoverageReport, client: string, date: strin
   const body = `<section class="block"><h2>Что доказано, что требует данных</h2>
     <p class="lead">Охват по видам анализа и уверенность вывода. Уверенность = не выше самого слабого звена.</p>
     <table><thead><tr><th>Вид анализа</th><th>Статус</th><th>Комментарий</th></tr></thead><tbody>${rows}</tbody></table></section>
-    ${conf.raisedBy.length ? `<section class="block"><h2>Что повысило уверенность</h2><ul>${conf.raisedBy.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>` : ''}`;
+    ${conf.raisedBy.length ? `<section class="block"><h2>Что поднимет уверенность</h2><ul>${conf.raisedBy.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>` : ''}`;
   const extra = `.cv-name{font-weight:700;} .cv-st{font-weight:700;white-space:nowrap;} .cv-note{color:#333;font-size:10px;}`;
-  return doc(`Охват и уверенность A0 · ${client}`, head('Commerce OS · Охват и уверенность · A0', `Confidence Score ${conf.score}/${conf.base} — «${conf.band}»`, client, date, [['Confidence', `${conf.score}/${conf.base}`]], { val: `${pct}%`, cap: `уверенность вывода · «${conf.band}»`, cls: scoreColor(pct) }, 'A0 — внешний срез; потолок уверенности низкий. Доступы и данные на A1–A2 поднимают Confidence.') + body + foot('Охват и уверенность A0', client, date), extra);
+  // Цвет большой цифры — не зелёный на A0 (потолок уверенности низкий по определению).
+  const confCls = /высок/i.test(conf.band) ? 'ok' : 'check';
+  return doc(`Охват и уверенность A0 · ${client}`, head('Commerce OS · Охват и уверенность · A0', `Confidence Score ${conf.score}/${conf.base} — «${conf.band}»`, client, date, [['Confidence', `${conf.score}/${conf.base}`]], { val: `${pct}%`, cap: `уверенность вывода · «${conf.band}»`, cls: confCls }, 'A0 — внешний срез; потолок уверенности низкий. Доступы и данные на A1–A2 поднимают Confidence.') + body + foot('Охват и уверенность A0', client, date), extra);
 }
 
 /* ── Реестр гипотез ── */
@@ -76,7 +78,7 @@ export function renderHypothesesPdf(h: HypothesisRegister, client: string, date:
 /* ── Scope по волнам ── */
 export function renderScopePdf(s: ScopeReport, client: string, date: string): string {
   const total = s.waves.reduce((n, w) => n + w.items.length, 0);
-  const waves = s.waves.map((w) => `<section class="block"><h2>Волна ${w.n}. ${esc(w.title)}</h2>
+  const waves = s.waves.map((w) => `<section class="block"><h2>${/^волна/i.test(w.title) ? esc(w.title) : `Волна ${w.n}. ${esc(w.title)}`}</h2>
     <p class="lead">Что даёт волна: ${w.items.length} активаций плейбуков; каждая волна — самостоятельный результат.</p>
     <table><thead><tr><th>Плейбук</th><th>Почему включён</th></tr></thead><tbody>${
       w.items.map((it) => `<tr><td class="sc-pb">${esc(it.name || it.playbook)}</td><td class="sc-why">${esc(it.reasons.join('; '))}</td></tr>`).join('')

@@ -110,6 +110,7 @@ export function renderAuditHtml(r: SiteAuditReport): string {
         <div class="big ${scoreColor(r.totalPct)}">${r.totalPct}<span>%</span></div>
         <div class="big-cap">соответствие эталону · ${r.totalScore}/${r.totalMax} по ${cov} типам страниц</div>
       </div>
+      ${r.warning ? `<div class="coverage" style="border-left-color:var(--gap);margin-bottom:8px"><b>⚠ Пробел покрытия.</b> ${esc(r.warning)}</div>` : ''}
       <div class="coverage">
         <b>Coverage Map (A0):</b> разобрано типов страниц — ${cov}. Слой A0 — внешний обход без доступов:
         оценки «наблюдение», не факт по данным клиента. «Не обнаружено» ≠ «отсутствует» (возможны скрытые блоки/JS/табы) — такие помечены «проверить».

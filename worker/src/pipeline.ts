@@ -220,7 +220,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       // цепочки наблюдаем→дедуцируем→проверить→решение, зрелость 1–5). Флагман.
       try {
         const ci = buildIntelligence(ds);
-        if (hasKey()) { log('· Commerce Intelligence: дедукции (Claude)…'); await narrateIntelligence(ds, ci); }
+        if (hasKey()) { log('· Commerce Intelligence: дедукции (Claude)…'); await narrateIntelligence(ds, ci, log); }
         await writeFile(join(dir, 'intelligence.json'), JSON.stringify(ci, null, 2), 'utf8');
         await renderPdf(renderIntelligenceHtml(ci), join(dir, 'Commerce-Intelligence-Audit-A0.pdf'), browser);
         log(`✓ Commerce Intelligence A0 (PDF): зрелость ${ci.maturity.level}/5 «${ci.maturity.name}», слоёв ${ci.layers.length}, цепочек ${ci.chains.length}`);

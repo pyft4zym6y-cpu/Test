@@ -32,7 +32,7 @@ function agg(ds: AuditDataset, id: string): { passed: number; total: number } {
 function statusOf(passed: number, total: number): TStatus {
   if (!total) return 'check';
   if (passed === total) return 'ok';
-  if (passed === 0) return 'gap';
+  if (passed / total < 0.35) return 'gap'; // 2/16 — это провал, а не «проверить»
   return 'check';
 }
 
@@ -90,8 +90,9 @@ export function buildTechAudit(ds: AuditDataset): TechReport {
     ] },
   ];
 
-  // Статус категории = худший из проверок.
-  for (const c of cats) c.status = c.checks.reduce<TStatus>((s, ch) => worst(s, ch.status), 'ok');
+  // Статус категории = худший из ИЗМЕРЕННЫХ проверок; blocked (нужен инструмент) не
+  // делает всю категорию «недоступной» — это инфо-строка, а не результат.
+  for (const c of cats) c.status = c.checks.filter((ch) => ch.status !== 'blocked').reduce<TStatus>((s, ch) => worst(s, ch.status), 'ok');
 
   const passed = cats.reduce((s, c) => s + c.checks.filter((ch) => ch.status === 'ok').length, 0);
   const total = cats.reduce((s, c) => s + c.checks.filter((ch) => ch.status !== 'blocked').length, 0);

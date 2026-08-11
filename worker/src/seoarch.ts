@@ -54,10 +54,14 @@ export function buildSeoArch(ds: AuditDataset): SeoArchReport {
     return purposeOf(path);
   };
 
-  // Группировка по L1-сегменту.
+  // Группировка по L1-сегменту. Одиночные дефисные слаги в корне — почти всегда
+  // товары/страницы с SEO-URL (прод-кейс: 755 «разделов» по 1 URL) — агрегируем
+  // в один узел, а не раздуваем дерево.
   const groups = new Map<string, { count: number; params: number; children: Set<string>; purpose: Purpose }>();
+  let rootSlugCount = 0;
   for (const p of parsed) {
     const l1 = p.segs[0] ?? '/';
+    if (p.segs.length === 1 && /-/.test(l1) && l1.length >= 10) { rootSlugCount++; continue; }
     const g = groups.get(l1) ?? { count: 0, params: 0, children: new Set<string>(), purpose: 'informational' as Purpose };
     g.count += 1; if (p.hasParams) g.params += 1; if (p.segs[1]) g.children.add(p.segs[1]);
     groups.set(l1, g);
@@ -67,16 +71,26 @@ export function buildSeoArch(ds: AuditDataset): SeoArchReport {
     const note = g.params >= 3 ? `${g.params} URL с параметрами — риск дублей` : `${g.children.size} подраздел.`;
     return { label: label === '/' ? '(корень)' : `/${label}/`, path: '/' + label, count: g.count, purpose: purposeFor('/' + label, g.params), params: g.params, severity, note };
   });
+  if (rootSlugCount >= 20) tree.unshift({ label: '(слаги в корне — вероятно товары)', path: '/', count: rootSlugCount, purpose: 'commercial', params: 0, severity: 'check', note: `${rootSlugCount} одиночных URL в корне — карточки с SEO-адресами; подтвердить разбором PDP` });
 
   // Проблемные узлы (§10): on-page с разобранных страниц + структурные.
   const issues: SeoIssue[] = [];
   const SEO_LABEL: Record<string, string> = { title: 'Title', desc: 'Meta description', canonical: 'Canonical', h1: 'H1', 'schema-product': 'Schema Product', 'schema-org': 'Schema Organization', og: 'Open Graph', hreflang: 'hreflang', noindex: 'noindex' };
   for (const p of ds.client.pages) {
     if (p.error || !p.checks.length) continue;
-    const fails = p.checks.filter((c) => c.group === 'SEO' && !c.pass).map((c) => SEO_LABEL[c.id] ?? c.label);
-    if (!fails.length) continue;
     const { segs, path } = segsOf(p.finalUrl || p.url);
-    issues.push({ node: path || '/', level: Math.max(1, segs.length), purpose: purposeFor(path), problem: `Нет: ${fails.join(', ')}`, dupes: '—', index: ds.client.sitemapXml ? 'в sitemap' : 'нет sitemap', action: 'Заполнить мета/разметку на шаблоне типа страницы', dims: ['SEO', 'TECH'] });
+    const purpose = purposeFor(path);
+    // Не требовать товарную разметку от контентных страниц, Organization — не с главной:
+    // иначе шум «Schema Product на /about» хоронит реальные проблемы.
+    const fails = p.checks.filter((c) => {
+      if (c.group !== 'SEO' || c.pass) return false;
+      if (c.id === 'schema-product') return p.kind === 'pdp' || p.kind === 'plp';
+      if (c.id === 'schema-org') return p.kind === 'home';
+      if (c.id === 'hreflang') return false; // сайт-уровневая настройка — не постраничная проблема
+      return true;
+    }).map((c) => SEO_LABEL[c.id] ?? c.label);
+    if (!fails.length) continue;
+    issues.push({ node: path || '/', level: Math.max(1, segs.length), purpose, problem: `Вне нормы: ${fails.join(', ')}`, dupes: '—', index: ds.client.sitemapXml ? 'в sitemap' : 'нет sitemap', action: 'Заполнить мета/разметку на шаблоне типа страницы', dims: ['SEO', 'TECH'] });
   }
   // Структурные дефекты из дерева.
   const paramNode = tree.find((t) => t.severity === 'gap');

@@ -9,7 +9,7 @@
 import type { Browser } from 'playwright';
 import { createMessage } from './anthropic.js';
 import { auditSingle } from './crawl.js';
-import { datasetToPrompt, systemFor, type Analysis } from './analyze.js';
+import { datasetToPrompt, systemFor, normConfidence, type Analysis } from './analyze.js';
 import type { AuditDataset } from './report.js';
 
 const ANALYSIS_SCHEMA = {
@@ -121,7 +121,7 @@ export async function agentAnalyze(browser: Browser, ds: AuditDataset, opts: { m
 
 function normalize(a: any): Analysis {
   return {
-    summary: a?.summary ?? '', healthNote: a?.healthNote ?? '', findings: a?.findings ?? [], pains: a?.pains ?? [],
+    summary: a?.summary ?? '', healthNote: a?.healthNote ?? '', findings: (a?.findings ?? []).map((f: any) => ({ ...f, confidence: normConfidence(f?.confidence) })), pains: a?.pains ?? [],
     competitors: a?.competitors ?? '', missingFacts: a?.missingFacts ?? [], scope: a?.scope ?? [], openQuestions: a?.openQuestions ?? [],
   };
 }

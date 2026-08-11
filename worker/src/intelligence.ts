@@ -58,10 +58,15 @@ function extractSignals(ds: AuditDataset) {
     const m = p.match(/^\/([^/]+)\/[^/]+/);
     if (m && PRODUCT_RE.test(p)) catSet.add(m[1]);
   }
+  // Товары с SEO-URL без ключевых слов: одиночные дефисные слаги в корне
+  // (прод-кейс: «~0 товаров» при 755 карточках в корне).
+  const SERVICE_RE = /blog|news|article|about|contact|kontakt|delivery|dostavka|payment|oplata|faq|help|terms|privacy|policy|compare|cart|checkout|account|login|search|katalog|catalog|category|collection|shop|korp|horeca|b2b|opt|wishlist/;
+  const rootSlugs = links.filter((h) => { const p = path(h); const m = p.match(/^\/([a-z0-9-]{10,})\/?$/i); return Boolean(m && m[1].includes('-') && !SERVICE_RE.test(p)); }).length;
+  const kwProducts = count(PRODUCT_RE);
   return {
     treeSize: links.length,
-    products: count(PRODUCT_RE),
-    categories: Math.max(count(/category|catalog|collection|katalog/), catSet.size),
+    products: kwProducts >= 20 ? kwProducts : Math.max(kwProducts, rootSlugs >= 20 ? rootSlugs : 0),
+    categories: Math.max(count(/category|catalog|collection|katalog/) ? new Set(links.map((h) => { const m = path(h).match(/^\/(?:katalog|catalog|category|collection)s?\/([^/?]+)/); return m?.[1] ?? ''; }).filter(Boolean)).size : 0, catSet.size),
     blogPosts: count(/blog|article|news|stat/),
     hasCart: has(/cart|korzina|basket/) || block('add_to_cart'),
     hasCheckout: pages.some((p) => p.kind === 'checkout') || has(/checkout|oform|order/),
@@ -108,7 +113,10 @@ function maturity(s: Signals): CIReport['maturity'] {
   const l2 = Boolean(s.analytics) && s.sitemap && (s.reviews || s.filters);
   const l3 = s.newsletter && (s.wishlist || s.hasSale) && s.pixel;
   const l4 = s.multiLang && s.hasB2B;
-  const level = (l4 && l3 ? 4 : l3 && l2 ? 3 : l2 ? 2 : 1) as 1 | 2 | 3 | 4;
+  let level = (l4 && l3 ? 4 : l3 && l2 ? 3 : l2 ? 2 : 1) as 1 | 2 | 3 | 4;
+  // Потолок без машинного слоя: витрина без Schema Product не «масштабируемая
+  // платформа», сколько бы языков и механик ни было (прод-кейс: 4/5 при нулевой разметке).
+  if (!s.schemaProduct && level > 3) level = 3;
   const basisParts = [
     `аналитика: ${s.analytics || 'нет'}`, `sitemap: ${s.sitemap ? 'да' : 'нет'}`,
     `отзывы: ${s.reviews ? 'да' : 'не видно'}`, `retention-механики: ${s.newsletter ? 'подписка' : 'не видно'}${s.wishlist ? '+wishlist' : ''}`,
@@ -209,7 +217,7 @@ const CI_SYSTEM = `Ты — эксперт Commerce OS. По фактам вне
 {"verdict":"1-2 предложения о бизнесе и его зрелости","layerNotes":[{"id":"<id слоя>","deduced":"уточнённая дедукция","decision":"уточнённое решение"}],"chains":[{"observed":"","implies":"","verify":"","impact":"","action":""}]}
 layerNotes — только для слоёв, где есть что уточнить (5-12 шт). chains — 2-4 ДОПОЛНИТЕЛЬНЫЕ цепочки, не повторяющие данные.`;
 
-export async function narrateIntelligence(ds: AuditDataset, ci: CIReport): Promise<void> {
+export async function narrateIntelligence(ds: AuditDataset, ci: CIReport, log?: (m: string) => void): Promise<void> {
   if (!hasKey()) return;
   try {
     const facts = ci.layers.map((l) => `[${l.id}] ${l.name}: ${l.observed}`).join('\n');
@@ -222,5 +230,5 @@ export async function narrateIntelligence(ds: AuditDataset, ci: CIReport): Promi
       if (l) { if (note.deduced) l.deduced = note.deduced; if (note.decision) l.decision = note.decision; }
     }
     if (Array.isArray(n.chains)) ci.chains.push(...n.chains.filter((c) => c && c.observed && c.action).slice(0, 4));
-  } catch { /* нарратив опционален */ }
+  } catch (e) { log?.(`⚠️ CI-дедукции Claude не отработали (${String(e).slice(0, 100)}) — детерминированный слой сохранён`); }
 }

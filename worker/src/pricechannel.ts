@@ -23,10 +23,17 @@ export function buildPriceChannel(ds: AuditDataset): PriceChannelReport {
   const isProducer = /виробник|производ|власн(ий)? бренд|собствен\w* бренд|own brand|manufactur/.test(hay);
   const isReseller = /реселлер|дистриб|перепрода|reseller|официальн\w* дилер|офіційн\w* дилер/.test(hay);
   let role: Role = 'unknown';
+  let roleBasis = 'определено по формулировке запроса/брифа (гипотеза, подтвердить)';
   if (isProducer && isReseller) role = 'hybrid';
   else if (isProducer) role = 'producer';
   else if (isReseller) role = 'reseller';
-  const roleBasis = role === 'unknown' ? 'из запроса/брифа роль не ясна — уточнить у собственника' : 'определено по формулировке запроса/брифа (гипотеза, подтвердить)';
+  // Fallback по витрине: при пустом брифе роль читается из структуры сайта —
+  // B2B/опт/HoReCa-разделы у витрины с собственным брендом = производитель-гипотеза.
+  if (role === 'unknown') {
+    const hasB2B = (ds.client.links ?? []).some((h) => { try { return /b2b|opt|wholesale|dealer|horeca|corporate|korp-/.test(new URL(h).pathname.toLowerCase()); } catch { return false; } });
+    if (hasB2B) { role = 'producer'; roleBasis = 'по витрине: B2B/опт/корпоративные разделы — признак производителя/владельца бренда (гипотеза, подтвердить)'; }
+    else roleBasis = 'из запроса/брифа роль не ясна — уточнить у собственника';
+  }
 
   const checklist: PriceChannelReport['checklist'] = [
     { item: 'Цена того же товара у реселлеров', how: 'прайс-агрегаторы (Hotline/Price) + поиск по названию/артикулу', status: 'нужны входы' },
