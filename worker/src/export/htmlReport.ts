@@ -40,12 +40,11 @@ function treeSection(r: SiteAuditReport): string {
 }
 
 function pageSection(p: PageReport): string {
-  const blockRows = p.rows.map((b: BlockRow) => `<tr class="row-${STATE_CLS[b.state]}">
-    <td class="b-name">${esc(b.name)}<span class="b-weight ${b.weight}">${b.weight === 'core' ? 'ядро' : b.weight === 'important' ? 'важно' : 'опц.'}</span></td>
-    <td class="b-role">${esc(b.role)}</td>
-    <td class="b-state"><span class="st ${STATE_CLS[b.state]}">${STATE_MARK[b.state]}</span> ${STATE_WORD[b.state]}</td>
-    <td class="b-score ${STATE_CLS[b.state]}">${b.score}/${b.max}</td>
-    <td class="b-dims">${dimBadges(b.dims)}</td>
+  const blockRows = p.rows.map((b: BlockRow, i: number) => `<tr class="row-${STATE_CLS[b.state]}">
+    <td class="b-name"><span class="b-num">${String(i + 1).padStart(2, '0')}</span>${esc(b.name)}<span class="b-weight ${b.weight}">${b.weight === 'core' ? 'ядро' : b.weight === 'important' ? 'важно' : 'опц.'}</span><span class="b-dims">${dimBadges(b.dims)}</span></td>
+    <td class="b-now"><span class="st ${STATE_CLS[b.state]}">${STATE_MARK[b.state]}</span> ${esc(b.now)}</td>
+    <td class="b-should">${esc(b.should)}</td>
+    <td class="b-score ${STATE_CLS[b.state]}">${b.score}/${b.max}<span class="b-word">${esc(b.wordVerdict)}</span></td>
   </tr>`).join('');
   const pct = p.max ? Math.round((p.score / p.max) * 100) : 0;
   const anns = (p.annotations ?? []).map((a, i) => `<span class="ann ${a.tone}" style="left:${(a.x / 1366 * 100).toFixed(1)}%;top:${(a.y / 900 * 100).toFixed(1)}%;width:${(a.w / 1366 * 100).toFixed(1)}%;height:${(a.h / 900 * 100).toFixed(1)}%"><b>${i + 1}</b></span>`).join('');
@@ -67,8 +66,8 @@ function pageSection(p: PageReport): string {
       ${p.principle ? `<p class="principle">Принцип эталона: ${esc(p.principle)}</p>` : ''}
     </div>
     <div class="page-grid">
-      <div class="page-left">
-        ${shot}
+      <div class="page-left">${shot}</div>
+      <div class="page-right">
         <div class="counts">
           <span class="cnt ok"><b>${p.counts.ok}</b> есть</span>
           <span class="cnt check"><b>${p.counts.check}</b> проверить</span>
@@ -77,10 +76,8 @@ function pageSection(p: PageReport): string {
         </div>
         ${strong}
       </div>
-      <div class="page-right">
-        <table class="block-table"><thead><tr><th>Эталонный блок</th><th>Что должно быть</th><th>Сейчас</th><th>Оценка</th><th>Измерения</th></tr></thead><tbody>${blockRows}</tbody></table>
-      </div>
     </div>
+    <table class="block-table"><thead><tr><th>Блок эталона</th><th>Что сейчас</th><th>Что должно быть (эталон)</th><th>Оценка</th></tr></thead><tbody>${blockRows}</tbody></table>
     ${reqs}
     ${fixes}
   </section>`;
@@ -156,7 +153,8 @@ export function renderAuditHtml(r: SiteAuditReport): string {
   .fill{display:block;height:100%;border-radius:5px;} .fill.ok{background:var(--ok);} .fill.check{background:var(--check);} .fill.gap{background:var(--gap);}
   /* page section */
   .page-head h2{margin-top:2px;} .principle{color:var(--muted);font-style:italic;margin:4px 0 12px;font-size:10.5px;}
-  .page-grid{display:grid;grid-template-columns:62mm 1fr;gap:14px;align-items:start;}
+  .page-grid{display:grid;grid-template-columns:62mm 1fr;gap:14px;align-items:start;margin-bottom:10px;}
+  .block-table{margin-top:2px;}
   .shot img{width:100%;border:1px solid var(--line);border-radius:4px;display:block;}
   .shot figcaption{color:var(--muted);font-size:8.5px;margin-top:4px;}
   .shot-wrap{position:relative;line-height:0;}
@@ -173,10 +171,13 @@ export function renderAuditHtml(r: SiteAuditReport): string {
   .strong{font-size:9.5px;color:#333;margin-top:6px;}
   .block-table th{font-size:8.5px;text-transform:uppercase;color:var(--muted);text-align:left;padding:5px 6px;border-bottom:1px solid var(--line);letter-spacing:.3px;}
   .block-table td{padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:top;}
-  .b-name{font-weight:700;white-space:nowrap;} .b-weight{display:inline-block;margin-left:5px;font-size:7.5px;font-weight:600;color:var(--muted);text-transform:uppercase;}
-  .b-weight.core{color:var(--ink);} .b-role{color:#333;font-size:10px;} .b-state{white-space:nowrap;font-size:9.5px;} .b-score{font-weight:800;white-space:nowrap;}
-  .st{font-size:12px;line-height:1;} .st.ok{color:var(--ok);} .st.check{color:var(--check);} .st.gap{color:var(--gap);}
-  .row-gap .b-name{color:var(--gap);}
+  .b-name{font-weight:700;width:110px;font-size:10px;} .b-num{display:inline-block;color:var(--lime);font-weight:800;margin-right:4px;}
+  .b-weight{display:block;font-size:7.5px;font-weight:600;color:var(--muted);text-transform:uppercase;}
+  .b-weight.core{color:var(--ink);} .b-dims{display:block;margin-top:2px;}
+  .b-now{font-size:9.5px;color:#222;width:130px;} .b-should{font-size:9px;color:#444;}
+  .b-score{font-weight:800;white-space:nowrap;text-align:center;} .b-word{display:block;font-weight:600;font-size:8px;}
+  .st{font-size:11px;line-height:1;} .st.ok{color:var(--ok);} .st.check{color:var(--check);} .st.gap{color:var(--gap);}
+  .row-gap .b-name{color:var(--gap);} .row-gap .b-now{color:var(--gap);}
   .dim{display:inline-block;font-size:7px;font-weight:700;letter-spacing:.3px;color:#475467;background:#EEF1F4;border-radius:3px;padding:1px 3px;margin:1px 2px 1px 0;}
   .reqs{margin-top:12px;page-break-inside:avoid;} .req-table{width:100%;border-collapse:collapse;}
   .req-table th{font-size:8.5px;text-transform:uppercase;color:var(--muted);text-align:left;padding:5px 6px;border-bottom:1px solid var(--line);letter-spacing:.3px;}

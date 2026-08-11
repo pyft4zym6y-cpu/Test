@@ -91,6 +91,8 @@ export type BlockState = 'ok' | 'check' | 'gap'; // ✅ есть · ⚪ пров
 export type BlockRow = {
   name: string; role: string; chapter: string; weight: Weight; dims: Dim[];
   state: BlockState; score: number; max: number; wordVerdict: string;
+  now: string;    // что сейчас — фактическое наблюдение с измерениями обхода
+  should: string; // что должно быть — детальный эталон (Частина А референса)
 };
 export type PageReport = {
   kind: PageKind; title: string; chapter: string; principle?: string; url: string;
@@ -118,7 +120,50 @@ export type SiteAuditReport = {
 };
 
 const MAX_BY_WEIGHT: Record<Weight, number> = { core: 4, important: 3, nice: 2 };
-const WORD: Record<BlockState, string> = { ok: 'сильно', check: 'проверить', gap: 'нет' };
+
+/** «Что сейчас» — фактическое наблюдение по блоку с измерениями обхода (Частина Б референса). */
+function nowFor(key: string, p: PageAudit): string {
+  const ux = p.ux;
+  if (!ux) return 'нет данных обхода';
+  const b = ux.blocks ?? {};
+  const has = Boolean(b[key]);
+  switch (key) {
+    case 'gallery': return ux.galleryImages > 0 ? `Галерея: ${ux.galleryImages} изображений${ux.galleryImages < 4 ? ' — меньше эталонных 5 типов медиа' : ''}` : 'Галерея не обнаружена';
+    case 'nav': return `Пунктов в главном меню: ${ux.navItems}${ux.navItems > 12 ? ' — перегруз (закон Хика)' : ''}`;
+    case 'search': return has ? 'Поиск обнаружен' : 'Поиск не обнаружен в DOM';
+    case 'breadcrumbs': case 'product_header': case 'category_title':
+      return has ? 'Обнаружен' : 'Не обнаружен';
+    case 'price': return ux.priceVisible ? 'Цена видна сразу' : 'Цена в первом экране не обнаружена';
+    case 'add_to_cart': return ux.addToCartProminent ? `CTA в первом экране; кликабельных элементов над сгибом: ${ux.foldButtons}${ux.distinctButtonColors > 3 ? `; цветов кнопок ${ux.distinctButtonColors} — приоритет CTA размыт` : ''}` : 'Кнопка покупки в первом экране не распознана';
+    case 'variants': return ux.variantSelector ? 'Выбор варианта есть' : 'Выбор варианта не обнаружен';
+    case 'trust': return ux.trustBadges ? 'Сигналы гарантии/возврата найдены в тексте' : 'Гарантии/возврат в точке решения не обнаружены';
+    case 'payment': return ux.paymentIcons ? 'Платёжные сигналы (иконки/способы) есть' : 'Платёжные сигналы не обнаружены';
+    case 'reviews': return ux.reviews ? 'Отзывы/рейтинг обнаружены' : 'Отзывы не обнаружены ни на одном экране';
+    case 'filters': return ux.filters ? 'Фильтры/фасеты есть' : 'Фильтры не обнаружены';
+    case 'sort': return ux.sortControl ? 'Сортировка есть' : 'Сортировка не обнаружена';
+    case 'contact_form': return ux.formFields > 0 ? `Форма: ${ux.formFields} видимых полей${ux.formFields > 8 ? ' — длинная (трение)' : ''}` : 'Форма не обнаружена';
+    case 'guest_checkout': return ux.guestCheckoutHint ? 'Намёк на гостевой чекаут есть' : 'Гостевой чекаут не виден — возможно, требуется регистрация';
+    default: return has ? 'Обнаружен' : 'Не обнаружен';
+  }
+}
+
+/** Понижение балла за слабое качество присутствующего блока (есть ≠ хорошо). */
+function qualityPenalty(key: string, p: PageAudit): string | null {
+  const ux = p.ux;
+  if (!ux) return null;
+  if (key === 'gallery' && ux.galleryImages > 0 && ux.galleryImages < 3) return 'галерея тоньше эталона';
+  if (key === 'add_to_cart' && ux.distinctButtonColors > 4) return 'приоритет CTA размыт цветами кнопок';
+  if (key === 'nav' && ux.navItems > 12) return 'меню перегружено';
+  if (key === 'contact_form' && ux.formFields > 8) return 'форма длиннее нормы';
+  return null;
+}
+
+/** Слово-вердикт как в референсе: сильно / частично / проверить / слабо / критично / нет. */
+function wordFor(state: BlockState, weight: Weight): string {
+  if (state === 'ok') return 'сильно';
+  if (state === 'check') return 'проверить';
+  return weight === 'core' ? 'критично' : weight === 'important' ? 'слабо' : 'нет';
+}
 const CRIT_BY_WEIGHT: Record<Weight, 'Блокирующая' | 'Высокая' | 'Средняя'> = { core: 'Блокирующая', important: 'Высокая', nice: 'Средняя' };
 // Блоки, которые на L0 (внешний обход) достоверно не подтвердить при отсутствии —
 // помечаем «проверить», а не «нет» (могут быть за табом/в JS/размётке).
@@ -136,8 +181,13 @@ function buildPage(p: PageAudit): PageReport | null {
     const has = Boolean(present[b.key]);
     const state: BlockState = has ? 'ok' : (b.weight === 'nice' || L0_UNCERTAIN.has(b.key) ? 'check' : 'gap');
     const max = MAX_BY_WEIGHT[b.weight];
-    const score = state === 'ok' ? max : state === 'check' ? 1 : 0;
-    return { name: b.name, role: b.role, chapter: b.chapter, weight: b.weight, dims: DIM_BY_BLOCK[b.key] ?? ['UX'], state, score, max, wordVerdict: WORD[state] };
+    let score = state === 'ok' ? max : state === 'check' ? 1 : 0;
+    let word = wordFor(state, b.weight);
+    let now = nowFor(b.key, p);
+    const penalty = state === 'ok' ? qualityPenalty(b.key, p) : null;
+    if (penalty) { score = Math.max(1, score - 1); word = 'частично'; }
+    if (state === 'check' && /^Не обнаружен/.test(now)) now += ' — возможно за табом/JS, проверить';
+    return { name: b.name, role: b.role, chapter: b.chapter, weight: b.weight, dims: DIM_BY_BLOCK[b.key] ?? ['UX'], state, score, max, wordVerdict: word, now, should: b.detail ?? b.role };
   });
   const score = rows.reduce((s, r) => s + r.score, 0);
   const max = rows.reduce((s, r) => s + r.max, 0);
