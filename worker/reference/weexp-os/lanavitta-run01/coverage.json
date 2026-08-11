@@ -1,0 +1,221 @@
+[
+ {
+  "domain": "identity-os",
+  "modules_run": [
+   "01 · идентичность",
+   "01 · поле конкурентов, метод 5 канальные"
+  ],
+  "access_layer": "L0",
+  "status": "проверено",
+  "findings_count": 1,
+  "blocked_by": null,
+  "evidence_ceiling": "E4"
+ },
+ {
+  "domain": "legal-os",
+  "modules_run": [
+   "16"
+  ],
+  "access_layer": "L0",
+  "status": "проверено",
+  "findings_count": 3,
+  "blocked_by": null,
+  "evidence_ceiling": "E4"
+ },
+ {
+  "domain": "ux-os",
+  "modules_run": [
+   "04"
+  ],
+  "access_layer": "L0",
+  "status": "проверено",
+  "findings_count": 1,
+  "blocked_by": null,
+  "evidence_ceiling": "E4"
+ },
+ {
+  "domain": "merchandising-os",
+  "modules_run": [
+   "07"
+  ],
+  "access_layer": "L0",
+  "status": "проверено",
+  "findings_count": 1,
+  "blocked_by": null,
+  "evidence_ceiling": "E4"
+ },
+ {
+  "domain": "content-os",
+  "modules_run": [
+   "06"
+  ],
+  "access_layer": "L0",
+  "status": "проверено",
+  "findings_count": 1,
+  "blocked_by": null,
+  "evidence_ceiling": "E4"
+ },
+ {
+  "domain": "ops-os",
+  "modules_run": [
+   "17 · частичный L0"
+  ],
+  "access_layer": "L0",
+  "status": "проверено",
+  "findings_count": 1,
+  "blocked_by": null,
+  "evidence_ceiling": "E4"
+ },
+ {
+  "domain": "brand-os",
+  "modules_run": [
+   "02"
+  ],
+  "access_layer": "L0",
+  "status": "проверено",
+  "findings_count": 1,
+  "blocked_by": null,
+  "evidence_ceiling": "E2"
+ },
+ {
+  "domain": "seo-os",
+  "modules_run": [
+   "05"
+  ],
+  "access_layer": "L0",
+  "status": "проверено",
+  "findings_count": 3,
+  "blocked_by": null,
+  "evidence_ceiling": "E4"
+ },
+ {
+  "domain": "pricing-os",
+  "modules_run": [
+   "09 · цена в канале"
+  ],
+  "access_layer": "L0",
+  "status": "проверено",
+  "findings_count": 1,
+  "blocked_by": null,
+  "evidence_ceiling": "E2"
+ },
+ {
+  "domain": "marketplace-os",
+  "modules_run": [
+   "13"
+  ],
+  "access_layer": "L0",
+  "status": "проверено",
+  "findings_count": 1,
+  "blocked_by": null,
+  "evidence_ceiling": "E2"
+ },
+ {
+  "domain": "build-os",
+  "modules_run": [
+   "10 · частичный L0"
+  ],
+  "access_layer": "L0",
+  "status": "проверено",
+  "findings_count": 1,
+  "blocked_by": null,
+  "evidence_ceiling": "E4"
+ },
+ {
+  "domain": "data-os",
+  "modules_run": [
+   "03 · частичный L0"
+  ],
+  "access_layer": "L0",
+  "status": "проверено",
+  "findings_count": 1,
+  "blocked_by": null,
+  "evidence_ceiling": "E2"
+ },
+ {
+  "domain": "product-os",
+  "modules_run": [
+   "08 · частичный L0"
+  ],
+  "access_layer": "L0",
+  "status": "проверено",
+  "findings_count": 0,
+  "blocked_by": null,
+  "evidence_ceiling": "E2"
+ },
+ {
+  "domain": "retention-os",
+  "modules_run": [
+   "12 · частичный L0"
+  ],
+  "access_layer": "L0",
+  "status": "проверено",
+  "findings_count": 0,
+  "blocked_by": null,
+  "evidence_ceiling": "E2"
+ },
+ {
+  "domain": "paid-os",
+  "modules_run": [
+   "11 · частичный L0"
+  ],
+  "access_layer": "L0",
+  "status": "проверено",
+  "findings_count": 0,
+  "blocked_by": null,
+  "evidence_ceiling": "E2"
+ },
+ {
+  "domain": "finance-os",
+  "modules_run": [
+   "14 · частичный L0"
+  ],
+  "access_layer": "L0",
+  "status": "проверено",
+  "findings_count": 0,
+  "blocked_by": null,
+  "evidence_ceiling": "E2"
+ },
+ {
+  "domain": "people-os",
+  "modules_run": [
+   "18 · частичный L0"
+  ],
+  "access_layer": "L0",
+  "status": "проверено",
+  "findings_count": 0,
+  "blocked_by": null,
+  "evidence_ceiling": "E2"
+ },
+ {
+  "domain": "b2b-os",
+  "modules_run": [
+   "15 · L0"
+  ],
+  "access_layer": "L0",
+  "status": "проверено",
+  "findings_count": 0,
+  "blocked_by": null,
+  "evidence_ceiling": "E2"
+ },
+ {
+  "domain": "commerce-os",
+  "modules_run": [
+   "00 · оркестрация"
+  ],
+  "access_layer": "L0",
+  "status": "неприменимо",
+  "findings_count": 0,
+  "blocked_by": "собственного модуля аудита нет",
+  "evidence_ceiling": "E2"
+ },
+ {
+  "domain": "synthesis-os",
+  "modules_run": [],
+  "access_layer": "L0",
+  "status": "неприменимо",
+  "findings_count": 0,
+  "blocked_by": "не исследует",
+  "evidence_ceiling": "E2"
+ }
+]

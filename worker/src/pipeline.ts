@@ -31,6 +31,9 @@ import { renderCompetitorHtml } from './export/competitorHtml.js';
 import { buildChannels } from './channels.js';
 import { renderChannelsHtml } from './export/channelsHtml.js';
 import { renderMaturityPdf, renderCoveragePdf, renderHypothesesPdf, renderScopePdf, renderPriceChannelPdf, renderSynthesisPdf } from './export/methodPdf.js';
+import { buildIntelligence, narrateIntelligence } from './intelligence.js';
+import { renderIntelligenceHtml } from './export/intelligenceHtml.js';
+import { buildActivation } from './activation.js';
 import { renderPdf } from './pdf.js';
 import { exportCoverageDocx } from './export/coverageDocx.js';
 import { buildCoverage, renderCoverageMd } from './coverage.js';
@@ -213,6 +216,16 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         log(`✓ Content Audit A0 (PDF): типов страниц ${content.rows.length}`);
       } catch (e) { log(`⚠️ PDF Content Audit A0 не собрался (${String(e).slice(0, 120)})`); }
 
+      // Commerce Intelligence Audit A0 — реконструкция бизнеса из сайта (35+ слоёв,
+      // цепочки наблюдаем→дедуцируем→проверить→решение, зрелость 1–5). Флагман.
+      try {
+        const ci = buildIntelligence(ds);
+        if (hasKey()) { log('· Commerce Intelligence: дедукции (Claude)…'); await narrateIntelligence(ds, ci); }
+        await writeFile(join(dir, 'intelligence.json'), JSON.stringify(ci, null, 2), 'utf8');
+        await renderPdf(renderIntelligenceHtml(ci), join(dir, 'Commerce-Intelligence-Audit-A0.pdf'), browser);
+        log(`✓ Commerce Intelligence A0 (PDF): зрелость ${ci.maturity.level}/5 «${ci.maturity.name}», слоёв ${ci.layers.length}, цепочек ${ci.chains.length}`);
+      } catch (e) { log(`⚠️ Commerce Intelligence не собрался (${String(e).slice(0, 120)})`); }
+
       // Аудит каналов A0 — внешние сигналы каналов (A0).
       try {
         const channels = buildChannels(ds);
@@ -339,6 +352,17 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
           }
         }
       }
+    }
+
+    // Coverage/Activation Engine (round12): все ли ОБЯЗАТЕЛЬНЫЕ домены типа бизнеса
+    // проверены этим прогоном. Молчащий обязательный домен — не «всё хорошо».
+    if (!prelaunch) {
+      try {
+        const produced = await readdir(dir);
+        const act = buildActivation(ds, produced);
+        await writeFile(join(dir, 'activation.json'), JSON.stringify(act, null, 2), 'utf8');
+        log(`${act.complete ? '✓' : '✖'} покрытие доменов (${act.businessType}): ${act.verdict}`);
+      } catch (e) { log(`⚠️ активационный гейт не отработал (${String(e).slice(0, 100)})`); }
     }
 
     const files = (await readdir(dir)).sort();
