@@ -66,6 +66,7 @@ export type SiteCrawl = {
   tech: Tech;
   pages: PageAudit[];
   discoveredLinks: number;
+  links: string[]; // внутренние URL, найденные обходом (для SEO-дерева)
   error?: string;
 };
 
@@ -388,7 +389,7 @@ export async function crawlSite(
   const page = await ctx.newPage();
   const out: SiteCrawl = {
     rootUrl, finalUrl: rootUrl, kind, reachable: false, robotsTxt: false, sitemapXml: false,
-    tech: { platform: null, analytics: [], signals: [] }, pages: [], discoveredLinks: 0,
+    tech: { platform: null, analytics: [], signals: [] }, pages: [], discoveredLinks: 0, links: [],
   };
   try {
     const home = await auditPage(page, rootUrl, true);
@@ -399,6 +400,12 @@ export async function crawlSite(
     out.pages.push(home.audit);
     if (home.audit.error && !out.pages.some((p) => !p.error)) out.error = home.audit.error;
     out.discoveredLinks = home.links.length;
+
+    // Внутренние ссылки для SEO-дерева (URL, а не только счётчик).
+    const origin = (() => { try { return new URL(out.finalUrl).origin; } catch { return ''; } })();
+    const linkSet = new Set<string>();
+    const addLinks = (arr: string[]) => { for (const h of arr) { try { const u = new URL(h); if (u.origin === origin) { u.hash = ''; linkSet.add(u.toString()); } } catch { /* skip */ } } };
+    addLinks(home.links);
 
     // robots.txt / sitemap.xml
     try {
@@ -420,7 +427,9 @@ export async function crawlSite(
       const res = await auditPage(page, url, false);
       out.pages.push(res.audit);
       res.tech.forEach((t) => techSet.add(t));
+      addLinks(res.links);
     }
+    out.links = Array.from(linkSet).slice(0, 400);
     out.tech.signals = Array.from(techSet);
     if (!out.tech.platform) out.tech.platform = out.tech.signals.find((t) => !/GA4|GTM|Pixel|Hotjar|Clarity/.test(t)) ?? null;
   } catch (e) {

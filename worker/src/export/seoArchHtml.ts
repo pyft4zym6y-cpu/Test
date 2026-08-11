@@ -1,0 +1,60 @@
+/**
+ * SEO Architecture A0 — клиентский PDF (A0 §10): видимое дерево → проблемные узлы
+ * → рекомендуемое дерево. Единый визуальный стандарт (reportShell).
+ */
+import { esc, dimBadges, doc } from './reportShell.js';
+import type { SeoArchReport, Purpose } from '../seoarch.js';
+
+const PURPOSE_RU: Record<Purpose, string> = { commercial: 'коммерческий', informational: 'информационный', system: 'системный' };
+
+export function renderSeoArchHtml(r: SeoArchReport): string {
+  const date = new Date(r.takenAt).toLocaleDateString('ru-RU');
+  const paramShare = r.totals.links ? Math.round((r.totals.paramUrls / r.totals.links) * 100) : 0;
+
+  const cover = `<section class="cover"><div class="cov-bar"></div><div class="cov-body">
+    <div class="kicker">Commerce OS · SEO Architecture · слой A0</div>
+    <h1>${esc(r.verdict)}</h1>
+    <div class="cov-meta">
+      <div><span class="lbl">Клиент</span><span class="val">${esc(r.client)}</span></div>
+      <div><span class="lbl">Дата</span><span class="val">${esc(date)}</span></div>
+      <div><span class="lbl">Ссылок в дереве</span><span class="val">${r.totals.links}</span></div>
+    </div>
+    <div class="coverage"><b>Что видно на A0:</b> дерево строится из внутренних ссылок обхода — структурные дефекты (параметрические дубли, глубина, назначение узлов) видны из URL. On-page SEO проверено на ${r.totals.crawled} представительных страницах (выборка L0). Полное дерево и лог-анализ — на A1. robots: ${r.indexability.robots ? 'есть' : 'нет'} · sitemap.xml: ${r.indexability.sitemap ? 'есть' : '<span class="gap">нет</span>'} · разделов L1: ${r.totals.l1} · глубина: ${r.totals.maxDepth} · URL с параметрами: ${paramShare}%.</div>
+  </div></section>`;
+
+  const maxCount = Math.max(1, ...r.tree.map((t) => t.count));
+  const treeRows = r.tree.map((t) => `<tr>
+    <td class="t-node"><span class="st ${t.severity}">${t.severity === 'gap' ? '●' : t.severity === 'check' ? '◐' : '○'}</span> <b>${esc(t.label)}</b></td>
+    <td class="t-purpose">${PURPOSE_RU[t.purpose]}</td>
+    <td class="t-bar"><span class="bar"><i class="fill ${t.severity}" style="width:${Math.round((t.count / maxCount) * 100)}%"></i></span></td>
+    <td class="t-count">${t.count}</td>
+    <td class="t-note ${t.severity}">${esc(t.note)}</td>
+  </tr>`).join('');
+  const tree = `<section class="block"><h2>Видимое дерево сайта</h2>
+    <p class="lead">Разделы первого уровня по числу найденных URL. Цвет — риск (параметрические дубли), не украшение.</p>
+    <table><thead><tr><th>Раздел (L1)</th><th>Назначение</th><th>Объём URL</th><th>Кол-во</th><th>Сигнал</th></tr></thead><tbody>${treeRows}</tbody></table></section>`;
+
+  const issueRows = r.issues.map((i) => `<tr>
+    <td class="i-node"><b>${esc(i.node)}</b><span class="i-lvl">L${i.level}</span></td>
+    <td>${PURPOSE_RU[i.purpose]}</td>
+    <td class="gap">${esc(i.problem)}</td>
+    <td>${esc(i.dupes)}</td>
+    <td>${esc(i.index)}</td>
+    <td class="i-act">${esc(i.action)}</td>
+    <td>${dimBadges(i.dims)}</td>
+  </tr>`).join('');
+  const issues = `<section class="block"><h2>Проблемные узлы</h2>
+    <p class="lead">Узлы дерева с SEO-пробелами и структурными рисками (A0 §10).</p>
+    ${r.issues.length ? `<table><thead><tr><th>Узел</th><th>Назначение</th><th>Проблема</th><th>Дубли</th><th>Индексируемость</th><th>Рекомендуемое действие</th><th>Изм.</th></tr></thead><tbody>${issueRows}</tbody></table>` : '<p class="lead">Критичных SEO-узлов на выборке L0 не зафиксировано.</p>'}</section>`;
+
+  const rec = `<section class="block"><h2>Рекомендуемое дерево</h2>
+    <p class="lead">Как должна выглядеть архитектура, чтобы не плодить дубли и раздавать вес правильно.</p>
+    <ul>${r.recommended.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+    <div class="footer">Commerce OS · SEO Architecture A0 · ${esc(r.client)} · ${esc(date)}. Слой A0: дерево по видимым ссылкам, on-page — выборка. Отсутствие данных не выдаётся за факт (A0 §15.7); полное дерево, дубли и техническая SEO уточняются на A1.</div></section>`;
+
+  const extra = `
+    .t-node{white-space:nowrap;} .t-purpose{color:#333;font-size:10px;} .t-count{font-weight:800;text-align:right;} .t-note{font-size:9.5px;}
+    .st{font-size:11px;} .st.ok{color:var(--ok);} .st.check{color:var(--check);} .st.gap{color:var(--gap);}
+    .i-node{white-space:nowrap;} .i-lvl{display:inline-block;margin-left:5px;font-size:7.5px;color:var(--muted);} .i-act{color:#333;}`;
+  return doc(`SEO Architecture A0 · ${r.client}`, cover + tree + issues + rec, extra);
+}

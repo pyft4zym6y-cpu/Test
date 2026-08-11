@@ -21,6 +21,8 @@ import { buildPrototypeReport, narratePrototype, renderPrototypeMd } from './pro
 import { buildSiteAudit, type SiteAuditReport } from './pagereport.js';
 import { renderAuditHtml } from './export/htmlReport.js';
 import { renderExecDiagnostic } from './export/execDiagHtml.js';
+import { buildSeoArch } from './seoarch.js';
+import { renderSeoArchHtml } from './export/seoArchHtml.js';
 import { renderPdf } from './pdf.js';
 import { exportCoverageDocx } from './export/coverageDocx.js';
 import { buildCoverage, renderCoverageMd } from './coverage.js';
@@ -101,7 +103,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
   try {
     let client: SiteCrawl;
     if (prelaunch) {
-      client = { rootUrl: site || '(сайт в разработке)', finalUrl: site || 'Новый проект', kind: 'client', reachable: false, robotsTxt: false, sitemapXml: false, tech: { platform: null, analytics: [], signals: [] }, pages: [], discoveredLinks: 0 };
+      client = { rootUrl: site || '(сайт в разработке)', finalUrl: site || 'Новый проект', kind: 'client', reachable: false, robotsTxt: false, sitemapXml: false, tech: { platform: null, analytics: [], signals: [] }, pages: [], discoveredLinks: 0, links: [] };
     } else {
       log('· обход клиента…');
       client = await crawlSite(browser, site, 'client');
@@ -183,6 +185,14 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await renderPdf(renderAuditHtml(siteAudit), join(dir, 'UX-UI-аудит-A0.pdf'), browser);
         log(`✓ UX/UI Audit A0 (PDF): соответствие эталону ${siteAudit.totalPct}%, системных дефектов ${siteAudit.systemic.length}`);
       } catch (e) { log(`⚠️ PDF UX/UI Audit A0 не собрался (${String(e).slice(0, 120)}) — остальные материалы не затронуты`); }
+
+      // SEO Architecture A0 — видимое дерево → проблемные узлы → рекомендуемое (A0 §10).
+      try {
+        const seo = buildSeoArch(ds);
+        await writeFile(join(dir, 'seoarch.json'), JSON.stringify(seo, null, 2), 'utf8');
+        await renderPdf(renderSeoArchHtml(seo), join(dir, 'SEO-Architecture-A0.pdf'), browser);
+        log(`✓ SEO Architecture A0 (PDF): ссылок ${seo.totals.links}, проблемных узлов ${seo.issues.length}`);
+      } catch (e) { log(`⚠️ PDF SEO Architecture A0 не собрался (${String(e).slice(0, 120)})`); }
 
       // Конкурентный бенчмарк (AD-11) — когда есть обойдённые конкуренты.
       bench = buildBenchmark(ds);
