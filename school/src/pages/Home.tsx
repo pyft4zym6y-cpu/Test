@@ -3,6 +3,7 @@ import { COURSES } from '../data/courses';
 import { TOTALS } from '../data/program';
 import { SCHOOL } from '../data/school';
 import CourseCard from '../components/CourseCard';
+import CareerTrack from '../components/CareerTrack';
 import {
   Bubble,
   Burst,
@@ -304,6 +305,7 @@ export default function Home() {
       <MissionTeaser />
       <Numbers />
       <CoursesTeaser />
+      <CareerTrack />
       <Manifesto />
       <CtaStrip />
     </>

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { SCHOOL } from '../data/school';
+import { WeexpLogo } from './CareerTrack';
 
 const COLS = [
   {
@@ -40,7 +41,21 @@ export default function Footer() {
           <p className="text-white/70 text-[14px] leading-relaxed max-w-xs mb-4">
             {SCHOOL.tagline}. Від новачка до E-Commerce Director — системно, практично, без води.
           </p>
-          <div className="font-marck text-[40px] leading-none text-brand">П.С.</div>
+          <div className="font-marck text-[40px] leading-none text-brand mb-6">П.С.</div>
+          <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-white/40 mb-2.5">
+            Кар'єрний партнер
+          </div>
+          <a
+            href={SCHOOL.career.partnerUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2.5 text-white hover:text-brand transition-colors"
+          >
+            <WeexpLogo size={22} />
+            <span className="font-oswald font-semibold uppercase tracking-wide text-[15px]">
+              {SCHOOL.career.partner}
+            </span>
+          </a>
         </div>
         {COLS.map((col) => (
           <div key={col.title}>
