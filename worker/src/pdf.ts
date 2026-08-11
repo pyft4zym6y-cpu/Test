@@ -1,14 +1,36 @@
 /**
- * HTML → PDF тем же Chromium (Playwright), что уже стоит для обхода.
- * page.pdf работает только в headless — печатает фон, формат A4 из @page-CSS.
+ * HTML → PDF. ВАЖНО: page.pdf() работает ТОЛЬКО в headless-Chromium, а обходной
+ * браузер может быть headful (HEADFUL=1 для бот-защиты). Поэтому PDF-рендер
+ * держит СОБСТВЕННЫЙ всегда-headless браузер (синглтон на процесс) и игнорирует
+ * переданный обходной. Иначе на проде с HEADFUL=1 падал каждый PDF, оставляя
+ * только JSON.
  */
 import { writeFile } from 'node:fs/promises';
-import type { Browser } from 'playwright';
-import { launchBrowser } from './crawl.js';
+import { chromium, type Browser } from 'playwright';
 
-export async function renderPdf(html: string, outPath: string, browser?: Browser): Promise<void> {
-  const own = !browser;
-  const b = browser ?? (await launchBrowser());
+let pdfBrowser: Browser | null = null;
+
+async function getPdfBrowser(): Promise<Browser> {
+  if (pdfBrowser && pdfBrowser.isConnected()) return pdfBrowser;
+  const executablePath = process.env.CHROME_PATH || undefined; // тот же escape hatch, что у обхода
+  pdfBrowser = await chromium.launch({
+    headless: true, // безусловно: PDF в headful невозможен
+    ...(executablePath ? { executablePath } : {}),
+    args: ['--no-sandbox', '--disable-dev-shm-usage'],
+  });
+  return pdfBrowser;
+}
+
+/** Закрыть PDF-браузер (вызывать в конце прогона). */
+export async function closePdfBrowser(): Promise<void> {
+  await pdfBrowser?.close().catch(() => {});
+  pdfBrowser = null;
+}
+
+/** Рендер HTML в PDF. Третий аргумент оставлен для совместимости и игнорируется —
+ *  рендер всегда идёт в собственном headless-браузере. */
+export async function renderPdf(html: string, outPath: string, _crawlBrowser?: Browser): Promise<void> {
+  const b = await getPdfBrowser();
   const ctx = await b.newContext();
   try {
     const page = await ctx.newPage();
@@ -17,6 +39,5 @@ export async function renderPdf(html: string, outPath: string, browser?: Browser
     await writeFile(outPath, buf);
   } finally {
     await ctx.close().catch(() => {});
-    if (own) await b.close().catch(() => {});
   }
 }

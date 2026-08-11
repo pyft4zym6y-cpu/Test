@@ -75,15 +75,21 @@ export async function agentAnalyze(browser: Browser, ds: AuditDataset, opts: { m
     `\n\nУ тебя есть инструменты: crawl_page (обойти ещё страницу браузером), fetch_url (скачать текст любой страницы — в т.ч. макеты Figma по ссылке, страницы конкурентов), web_search (поиск в вебе — конкуренты, ниша, бренд, цена в канале). Сначала добери недостающие факты инструментами (2–6 вызовов), затем вызови finish с полным анализом. Не выдумывай — если факт не подтверждён, помечай допущением и клади в missingFacts/openQuestions.`;
   const messages: any[] = [{ role: 'user', content: datasetToPrompt(ds, opts.engineFactsStr) + '\n\nВеди аудит. Добери факты инструментами, затем вызови finish.' }];
 
+  // Серверные тулы (web_search) исполняются в контейнере API: его id из ответа
+  // ОБЯЗАН эхо-передаваться в следующие вызовы, иначе 400 «container_id is required».
+  let containerId: string | undefined;
+
   for (let step = 0; step < maxSteps; step++) {
     let resp: any;
     try {
-      resp = await createMessage({ max_tokens: 8000, system, tools: tools(webSearch), thinking: { type: 'adaptive' }, output_config: { effort: 'medium' }, messages });
+      resp = await createMessage({ max_tokens: 8000, system, tools: tools(webSearch), thinking: { type: 'adaptive' }, output_config: { effort: 'medium' }, messages, ...(containerId ? { container: containerId } : {}) });
     } catch (e) {
-      // web_search может быть недоступен на модели/тарифе — отключаем и повторяем шаг
-      if (webSearch && /web_search|tool/i.test(String(e))) { webSearch = false; continue; }
+      // web_search может быть недоступен на модели/тарифе, либо контейнерная связка
+      // порвалась — отключаем серверный тул и повторяем шаг на клиентских тулзах.
+      if (webSearch && /web_search|tool|container/i.test(String(e))) { webSearch = false; containerId = undefined; continue; }
       throw e;
     }
+    containerId = resp?.container?.id ?? containerId;
 
     if (resp.stop_reason === 'pause_turn') { messages.push({ role: 'assistant', content: resp.content }); continue; }
 
@@ -107,7 +113,7 @@ export async function agentAnalyze(browser: Browser, ds: AuditDataset, opts: { m
 
   // бюджет шагов исчерпан — форсируем finish одним запросом
   messages.push({ role: 'user', content: 'Бюджет шагов исчерпан. Немедленно вызови finish с лучшим анализом на текущих фактах.' });
-  const last: any = await createMessage({ max_tokens: 8000, system, tools: tools(false), tool_choice: { type: 'tool', name: 'finish' }, messages });
+  const last: any = await createMessage({ max_tokens: 8000, system, tools: tools(false), tool_choice: { type: 'tool', name: 'finish' }, messages, ...(containerId ? { container: containerId } : {}) });
   const fb = last.content?.find((b: any) => b.type === 'tool_use' && b.name === 'finish');
   if (fb) return normalize(fb.input);
   throw new Error('Агент не сдал finish за отведённые шаги');

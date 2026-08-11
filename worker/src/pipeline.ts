@@ -34,7 +34,7 @@ import { renderMaturityPdf, renderCoveragePdf, renderHypothesesPdf, renderScopeP
 import { buildIntelligence, narrateIntelligence } from './intelligence.js';
 import { renderIntelligenceHtml } from './export/intelligenceHtml.js';
 import { buildActivation } from './activation.js';
-import { renderPdf } from './pdf.js';
+import { renderPdf, closePdfBrowser } from './pdf.js';
 import { exportCoverageDocx } from './export/coverageDocx.js';
 import { buildCoverage, renderCoverageMd } from './coverage.js';
 import { exportBenchmarkDocx } from './export/benchmarkDocx.js';
@@ -379,5 +379,6 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
     return { id, dir, summary: parts.join(' · '), files, metrics };
   } finally {
     await browser.close().catch(() => {});
+    await closePdfBrowser();
   }
 }
