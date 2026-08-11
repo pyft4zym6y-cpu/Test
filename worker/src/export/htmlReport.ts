@@ -129,7 +129,8 @@ export function renderAuditHtml(r: SiteAuditReport): string {
   h3{font-size:12px;margin:10px 0 4px;font-weight:700;}
   .lead{color:var(--muted);margin:0 0 8px;font-size:10.5px;}
   .ok{color:var(--ok);} .check{color:var(--check);} .gap{color:var(--gap);}
-  .block{padding:14px 0;border-top:1px solid var(--line);page-break-inside:avoid;}
+  .block{padding:10px 0 4px;border-top:1px solid var(--line);}
+  .block h2{page-break-after:avoid;}
   .page{page-break-before:always;}
   /* cover */
   .cover{position:relative;min-height:250mm;padding:0;page-break-after:always;}

@@ -17,9 +17,12 @@ export const SHARED_CSS = `
   h1{font-size:30px;line-height:1.15;margin:0 0 18px;font-weight:800;letter-spacing:-.5px;}
   h2{font-size:17px;margin:0 0 6px;font-weight:800;letter-spacing:-.2px;}
   h3{font-size:12px;margin:10px 0 4px;font-weight:700;}
-  .lead{color:var(--muted);margin:0 0 8px;font-size:10.5px;}
+  .lead{color:var(--muted);margin:0 0 6px;font-size:10.5px;}
   .ok{color:var(--ok);} .check{color:var(--check);} .gap{color:var(--gap);}
-  .block{padding:14px 0;border-top:1px solid var(--line);page-break-inside:avoid;}
+  /* Секции текут естественно (без orphan-пустот от avoid); неразрывны только мелкие блоки */
+  .block{padding:10px 0 4px;border-top:1px solid var(--line);}
+  .block h2{page-break-after:avoid;}
+  table{page-break-inside:auto;} tr,thead{page-break-inside:avoid;}
   .page{page-break-before:always;}
   /* cover */
   .cover{position:relative;min-height:250mm;padding:0;page-break-after:always;}
