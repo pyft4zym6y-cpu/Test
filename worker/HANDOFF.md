@@ -50,7 +50,8 @@ weexp — консалтинг e-commerce по методологии **Commerce
   подмешивается в анализ (scope: analyze|uxui|prototype|all). Проверка: `/health`→`knowledge`.
   Дистилляты методологии weexp: `10-synthesis-consolidation` (остаточный вклад без
   двойного счёта), `20-method-frame` (слои A0–A2, E0–E5, симптом≠причина),
-  `30-domain-lenses` (18 модулей). Полный плагин — в аплоаде `weexp_round8.zip`.
+  `30-domain-lenses` (18 модулей). Полный исходник 22 OS-скиллов — справочником в
+  `worker/reference/weexp-os/` (НЕ автозагружается; источник для дистилляции).
 - **A0-отчёты (PDF)**: `pagereport`/`htmlReport` (UX/UI), `execDiagHtml` (зонтик),
   `seoarch`/`seoArchHtml`, `techaudit`, `contentaudit`, `competitorHtml`, `channels`
   — единый каркас `export/reportShell.ts`, рендер `pdf.ts` (Chromium). Стандарт — A0.

@@ -1,0 +1,95 @@
+---
+name: people-os
+description: Роли и организационная структура: матрица роль-функция, RACI, найм, онбординг, ритмы управления. Используй при вопросах о команде клиента, штатном расписании, зонах ответственности.
+---
+
+# people-os · eCom OS / weexp
+
+**Уровень:** сквозной · **Полнота (на момент сборки плагина):** 32/100 · внедрён внешний материал (раунд 4): _hr-skills (tuanductran) — job-architecture, org-design, job-description, salary-benchmarking, recruiting, onboarding_
+
+## 01 · Purpose
+Роли, RACI, ритмы, стыки с отделами.
+
+**Чего скил не делает:** решения вне своей зоны ответственности передаёт соседнему скилу или synthesis-os. Не ведёт собственных нумераций реестров — читает и пополняет реестры ядра commerce-os.
+
+## 02 · Objects
+Владеет: —
+Владение объектом — ровно одно на объект. Второй владелец объекта = дефект архитектуры.
+
+## 03 · Inputs
+- Конфигурация от identity-os (тип × отрасль × масштаб)
+- Данные от data-os (жёсткая связь, если применимо)
+- identity-os
+
+## 04 · Methods
+_Протоколы порядка шагов заполняются по мере прогона на проектах (см. Journal / Реестр гипотез). Каждый метод должен содержать: с чем сверяем, где граница передачи человеку._
+Пара As-Is/To-Be обязательна: способ снятия текущего состояния (As-Is) описывается здесь же.
+
+**Матрица роль↔функция и профили (hr-skills, tuanductran, раунд 4 — 163 узкоспециализированных HR-скилла, из них релевантны e-commerce консалтингу):**
+- `hr-job-architecture` + `hr-organizational-design` — формализация матрицы роль↔функция, которой в документе не хватало (было: список 110 позиций без привязки).
+- `hr-job-description` + `hr-salary-benchmarking` — профили под найм с вилками, конкретно закрывает мини-ТЗ документа «10 профилей ключевых ролей».
+- `hr-recruiting` + `hr-onboarding` — процесс найма и первую неделю (пересекается с onboarding-планом из nexu-io/open-design, уже отмеченным в HR-скиллах маркетплейса).
+- `hr-organization-effectiveness` — оргструктура под масштаб (актуально при росте команды eCom OS/RAY.UA).
+
+## 05 · Evidence
+Вес доказательства — по общей иерархии (см. `knowledge/base/04-crosscheck/evidence-hierarchy.md`).
+
+## 06 · Standards
+Эталоны в разрезе тип × отрасль — см. `knowledge/registries/standards-catalog.md`. Эталон без источника не эталон, а мнение.
+
+## 07 · Findings
+Пишутся по единому контракту находки (см. `knowledge/registries/findings-contract.md`). Единица обмена с synthesis-os.
+
+## 08 · Outputs
+Артефакты — коды из `knowledge/registries/artifacts-catalog.md`.
+
+## 09 · Quality Gates
+Определяется по мере заполнения Methods/Standards. Пример условия: AQC выше порога, все блоки эталона разобраны.
+
+## 10 · Metrics
+Срок проявления эффекта — обязательное поле, заполняется по мере прогонов.
+
+## 11 · Maturity
+5 уровней: нет процесса · чек-лист · стандарт · измеряется · данные.
+
+## 12 · Dependencies
+- **Входящие:** identity-os
+- **Исходящие:** Матрица компетенций (гейт квалификации)
+
+## 13 · Аудит-модуль
+Модуль аудита живёт здесь (не в commerce-os): чек-лист, слой доступа (L0–L3), метод, выход в отчёт.
+
+## 14 · AI Layer
+Профиль агента заполняется последним — от протоколов, а не наоборот.
+
+---
+
+## Внешние источники · 14 шт · уровень E2, карантин не пройден
+
+Лежат в `external/people-os/`. У каждого рядом `SOURCE.md` с репозиторием, лицензией и статусом. **Ни один не является эталоном** до прохождения карантина (`knowledge/base/02-quarantine/`). Используются как источник гипотез и как ориентир, а не как основание вывода.
+
+| подпапка | КБ |
+|---|---|
+| `external/people-os/influence-and-negotiation` | 27 |
+| `external/people-os/cs-ux-researcher` | 23 |
+| `external/people-os/engineering-hiring-rubric` | 22 |
+| `external/people-os/high-output-management` | 20 |
+| `external/people-os/job-post-builder` | 15 |
+| `external/people-os/talent-acquisition` | 14 |
+| `external/people-os/capacity-planner` | 11 |
+| `external/people-os/team-composition-analysis` | 7 |
+| `external/people-os/product-strategist` | 7 |
+| `external/people-os/interview-system-designer` | 6 |
+| `external/people-os/role-redesign-for-ai` | 6 |
+| `external/people-os/hiring-rubric` | 5 |
+| `external/people-os/first-hire-plan` | 4 |
+| `external/people-os/org-chart` | 2 |
+
+## Что уже есть (по документу-источнику)
+Часть оргструктуры и ролей, реестр из 110 позиций как список
+
+## Чего не хватает (по документу-источнику)
+Матрица роль↔функция, профили под найм, онбординг, ритмы управления, стыки
+
+## Статус готовности
+Скил считается черновиком, пока не пройдены все 5 условий: заполненность, исполнимость, связность, совместимость, проверенность (прогон на реальном проекте). Черновик не подключается к synthesis-os.
