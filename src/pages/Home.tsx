@@ -1,15 +1,25 @@
+import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
-import FadeIn from '../components/FadeIn';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { track } from '../components/analytics';
+import {
+  ScrollProgress,
+  LineReveal,
+  Rise,
+  CountUp,
+  Magnetic,
+  useParallax,
+} from '../components/immersive';
 import heroPhoto from '../assets/pavlo-hero.jpg';
 import portraitPhoto from '../assets/pavlo-portrait.jpg';
 
+/* числовые статы с частями для count-up */
 const STATS = [
-  { v: '×18', l: 'оборот у кейсі' },
-  { v: '€900K', l: 'за 18 місяців' },
-  { v: 'TOP-250', l: 'Forbes UA · кейс' },
-  { v: '14', l: 'країн' },
+  { to: 18, prefix: '×', suffix: '', l: 'оборот у кейсі', acid: true },
+  { to: 900, prefix: '€', suffix: 'K', l: 'за 18 місяців', acid: false },
+  { to: 250, prefix: 'TOP-', suffix: '', l: 'Forbes UA · кейс', acid: false },
+  { to: 14, prefix: '', suffix: '', l: 'країн', acid: false },
 ];
 
 const BRANDS = [
@@ -36,51 +46,222 @@ const CASE_ROW = [
   { to: '/cases/fmcg-distribution', num: '17K SKU', name: 'FMCG-дистрибуція', metric: '+40% продажів · CRM' },
 ];
 
+const OS_GRID = [
+  { to: 12, l: 'модулів системи · M01–M12' },
+  { to: 56, l: 'виконуваних плейбуків' },
+  { to: 52, l: 'еталонні метрики Gold Standards' },
+  { to: 19, l: 'документів аудиту клієнту' },
+];
+
 const H = 'font-grotesk font-bold uppercase tracking-tight leading-[1.02]';
+
+/* ─── HERO с параллаксом и kinetic-манифестом ─── */
+function Hero() {
+  const ref = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
+  const photoScale = useTransform(scrollYProgress, [0, 1], [1.08, 1.28]);
+  const photoY = useTransform(scrollYProgress, [0, 1], ['0%', '18%']);
+  const contentY = useTransform(scrollYProgress, [0, 1], ['0%', '-14%']);
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.75], [1, 0]);
+  const scrimOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.4]);
+
+  return (
+    <section ref={ref} className="relative min-h-[100vh] flex items-end overflow-hidden">
+      <motion.img
+        src={heroPhoto}
+        alt="Засновник weexp"
+        style={{ scale: photoScale, y: photoY }}
+        className="absolute inset-0 w-full h-full object-cover object-right will-change-transform"
+      />
+      <motion.div style={{ opacity: scrimOpacity }} className="absolute inset-0 photo-scrim" />
+      <motion.div
+        style={{ y: contentY, opacity: contentOpacity }}
+        className="relative w-full max-w-7xl mx-auto px-5 sm:px-8 md:px-12 pb-16 md:pb-24 pt-40"
+      >
+        <motion.p
+          className="kicker-ed"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <span className="dot" />weexp · Commerce OS™ · маніфест
+        </motion.p>
+        <LineReveal
+          as="h1"
+          className={`${H} mt-7`}
+          style={{ fontSize: 'clamp(2.6rem, 6vw, 5.4rem)' }}
+          lines={[
+            <>Трафік — це</>,
+            <span className="acid">орендована увага.</span>,
+            <>Ми будуємо систему,</>,
+            <>яка накопичує вартість.</>,
+          ]}
+        />
+        <motion.p
+          className="text-[#B7BCC4] mt-8 max-w-xl leading-relaxed text-base md:text-lg"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.55, ease: [0.16, 1, 0.3, 1] }}
+        >
+          Конверсія 0,8% → 4,2%. Оборот ×18 за 18 місяців. ROI 3.8×. Не гасла — виміряні кейси.
+          Перебудовуємо весь шлях покупки, щоб компанія росла швидше за рекламний бюджет.
+        </motion.p>
+        <motion.p
+          className="kicker-ed mt-6 tracking-[0.18em] text-[0.66rem]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.7 }}
+        >
+          Для власників і CEO e-commerce з обігом від ₴1 млн/міс · UA · EU · US
+        </motion.p>
+        <motion.div
+          className="flex flex-wrap gap-4 mt-9"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.75, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <Magnetic>
+            <Link to="/contact" onClick={() => track('cta_click', { location: 'home_hero' })} className="btn-ed solid">
+              Отримати аудит у грошах <ArrowRight size={16} />
+            </Link>
+          </Magnetic>
+          <Magnetic>
+            <Link to="/calculator" onClick={() => track('cta_click', { location: 'home_hero_calc' })} className="btn-ed">
+              Порахувати розрив · 30 сек
+            </Link>
+          </Magnetic>
+        </motion.div>
+      </motion.div>
+
+      {/* индикатор скролла */}
+      <motion.div
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.1, duration: 1 }}
+        style={{ opacity: contentOpacity }}
+      >
+        <span className="kicker-ed text-[0.55rem] tracking-[0.3em]">SCROLL</span>
+        <motion.div
+          className="w-[1px] h-8 bg-gradient-to-b from-[var(--acid)] to-transparent"
+          animate={{ scaleY: [0.3, 1, 0.3], originY: 0 }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      </motion.div>
+    </section>
+  );
+}
+
+/* ─── Горизонтальный pinned-скролл кейсов ─── */
+function CasesScroll() {
+  const ref = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] });
+  const x = useTransform(scrollYProgress, [0, 1], ['2%', '-72%']);
+
+  return (
+    <section ref={ref} className="relative h-[320vh] ed-panel hair-top">
+      <div className="sticky top-0 h-screen flex flex-col justify-center overflow-hidden">
+        <div className="max-w-7xl mx-auto w-full px-5 sm:px-8 md:px-12 mb-10 md:mb-14">
+          <p className="kicker-ed mb-4">Докази · 06 · кейси з CRM, ERP і GA4</p>
+          <h2 className={H} style={{ fontSize: 'clamp(1.8rem, 4vw, 3.2rem)' }}>
+            Цифри, які <span className="acid">рухаються</span>
+          </h2>
+        </div>
+        <motion.div style={{ x }} className="flex gap-5 md:gap-8 pl-5 sm:pl-8 md:pl-[max(3rem,calc((100vw-80rem)/2+3rem))] will-change-transform">
+          {CASE_ROW.map((c) => (
+            <Link
+              key={c.to}
+              to={c.to}
+              onClick={() => track('cta_click', { location: 'home_case_scroll' })}
+              className="card-ed group shrink-0 w-[78vw] sm:w-[58vw] md:w-[40vw] lg:w-[32vw] p-8 md:p-10 flex flex-col justify-between min-h-[52vh] md:min-h-[46vh]"
+            >
+              <div className="flex items-start justify-between">
+                <span className="kicker-ed text-[0.6rem]">Кейс</span>
+                <ArrowUpRight size={22} className="text-[#3A3F47] group-hover:text-[var(--acid)] transition-colors" />
+              </div>
+              <div>
+                <p className="stat-ed text-5xl md:text-7xl acid">{c.num}</p>
+                <p className="font-grotesk font-semibold text-xl md:text-2xl text-[#F3F5F7] mt-5">{c.name}</p>
+                <p className="kicker-ed mt-3 text-[0.62rem] tracking-[0.06em]" style={{ textTransform: 'none' }}>{c.metric}</p>
+              </div>
+            </Link>
+          ))}
+          <Link
+            to="/cases"
+            onClick={() => track('cta_click', { location: 'home_case_scroll_all' })}
+            className="shrink-0 w-[60vw] sm:w-[40vw] md:w-[28vw] lg:w-[22vw] flex items-center justify-center border border-dashed border-[rgba(255,255,255,0.18)] hover:border-[var(--acid)] transition-colors group"
+          >
+            <span className="btn-ed">Усі кейси <ArrowRight size={16} /></span>
+          </Link>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Портрет с параллаксом ─── */
+function PortraitSplit() {
+  const ref = useRef<HTMLElement>(null);
+  const y = useParallax(ref as React.RefObject<HTMLElement>, 60);
+  return (
+    <section className="grid lg:grid-cols-2 items-stretch hair-b overflow-hidden">
+      <div ref={ref as React.RefObject<HTMLDivElement>} className="relative min-h-[420px] lg:min-h-[600px] overflow-hidden order-2 lg:order-1">
+        <motion.img
+          src={portraitPhoto}
+          alt="Засновник weexp"
+          style={{ y }}
+          className="absolute -inset-y-[10%] inset-x-0 w-full h-[120%] object-cover duotone will-change-transform"
+        />
+        <div className="absolute inset-0 photo-scrim-b lg:hidden" />
+      </div>
+      <div className="order-1 lg:order-2 flex items-center px-5 sm:px-8 md:px-12 py-16 md:py-24 lg:hair-l">
+        <div>
+          <Rise><p className="kicker-ed mb-4">Питання власника · 04</p></Rise>
+          <LineReveal
+            className={H}
+            style={{ fontSize: 'clamp(1.9rem, 3.6vw, 3rem)' }}
+            lines={[<>«Скільки ви</>, <span className="acid">мені заробите?»</span>]}
+          />
+          <div className="mt-9 space-y-6 max-w-lg">
+            {[
+              { t: 'Рахуємо в грошах', d: 'Кожен висновок аудиту переведено в гривні проти 52 еталонів Gold Standards. Жодних «покращимо впізнаваність».' },
+              { t: 'Ціни відкриті', d: 'Три формати співпраці, усі ціни на сторінці «Співпраця», без «зателефонуйте менеджеру».' },
+              { t: 'Бюджет під захистом', d: 'Етапи з Definition of Done і траншами: наступний платіж — після прийнятого результату.' },
+            ].map((c, i) => (
+              <Rise key={c.t} delay={i * 0.08}>
+                <div className="flex gap-5 hair-top pt-6">
+                  <span className="stat-ed text-lg text-[#3A3F47]">0{i + 1}</span>
+                  <div>
+                    <p className="font-grotesk font-semibold text-lg text-[#F3F5F7]">{c.t}</p>
+                    <p className="text-[#9AA1AB] text-sm mt-1.5 leading-relaxed">{c.d}</p>
+                  </div>
+                </div>
+              </Rise>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function Home() {
   return (
     <div className="ed-dark ed-grain" style={{ fontFamily: 'Manrope, system-ui, sans-serif' }}>
-      {/* ================= HERO ================= */}
-      <section className="relative min-h-[92vh] flex items-end overflow-hidden">
-        <img src={heroPhoto} alt="Засновник weexp" className="absolute inset-0 w-full h-full object-cover object-right" />
-        <div className="absolute inset-0 photo-scrim" />
-        <div className="relative w-full max-w-7xl mx-auto px-5 sm:px-8 md:px-12 pb-16 md:pb-24 pt-40">
-          <FadeIn>
-            <p className="kicker-ed"><span className="dot" />weexp · Commerce OS™ · маніфест</p>
-            <h1 className={`${H} mt-7`} style={{ fontSize: 'clamp(2.6rem, 6vw, 5.4rem)' }}>
-              Трафік — це<br />
-              <span className="acid">орендована увага.</span><br />
-              Ми будуємо систему,<br />
-              яка накопичує вартість.
-            </h1>
-            <p className="text-[#B7BCC4] mt-8 max-w-xl leading-relaxed text-base md:text-lg">
-              Конверсія 0,8% → 4,2%. Оборот ×18 за 18 місяців. ROI 3.8×. Не гасла — виміряні кейси.
-              Перебудовуємо весь шлях покупки, щоб компанія росла швидше за рекламний бюджет.
-            </p>
-            <p className="kicker-ed mt-6 tracking-[0.18em] text-[0.66rem]">
-              Для власників і CEO e-commerce з обігом від ₴1 млн/міс · UA · EU · US
-            </p>
-            <div className="flex flex-wrap gap-4 mt-9">
-              <Link to="/contact" onClick={() => track('cta_click', { location: 'home_hero' })} className="btn-ed solid">
-                Отримати аудит у грошах <ArrowRight size={16} />
-              </Link>
-              <Link to="/calculator" onClick={() => track('cta_click', { location: 'home_hero_calc' })} className="btn-ed">
-                Порахувати розрив · 30 сек
-              </Link>
-            </div>
-          </FadeIn>
-        </div>
-      </section>
+      <ScrollProgress />
 
-      {/* ================= STAT STRIP ================= */}
+      <Hero />
+
+      {/* ================= STAT STRIP (count-up) ================= */}
       <section className="hair-b ed-panel">
         <div className="max-w-7xl mx-auto px-5 sm:px-8 md:px-12 grid grid-cols-2 md:grid-cols-4">
           {STATS.map((s, i) => (
-            <div key={s.l} className={`py-8 md:py-10 ${i ? 'hair-l' : ''} px-5 first:pl-0`}>
-              <p className={`stat-ed text-4xl md:text-5xl ${i === 0 ? 'acid' : 'text-[#F3F5F7]'}`}>{s.v}</p>
+            <Rise key={s.l} delay={i * 0.08} className={`py-8 md:py-10 ${i ? 'hair-l' : ''} px-5 first:pl-0`}>
+              <p className={`stat-ed text-4xl md:text-5xl ${s.acid ? 'acid' : 'text-[#F3F5F7]'}`}>
+                <CountUp to={s.to} prefix={s.prefix} suffix={s.suffix} />
+              </p>
               <p className="kicker-ed mt-3 text-[0.62rem] tracking-[0.16em]">{s.l}</p>
-            </div>
+            </Rise>
           ))}
         </div>
       </section>
@@ -101,15 +282,15 @@ export default function Home() {
 
       {/* ================= PROBLEM ================= */}
       <section className="max-w-7xl mx-auto px-5 sm:px-8 md:px-12 py-20 md:py-28">
-        <FadeIn>
-          <p className="kicker-ed mb-4">Проблема · 02</p>
-          <h2 className={H} style={{ fontSize: 'clamp(2rem, 4vw, 3.2rem)' }}>
-            Три причини, чому <span className="acid">оборот стоїть</span> на місці
-          </h2>
-        </FadeIn>
+        <Rise><p className="kicker-ed mb-4">Проблема · 02</p></Rise>
+        <LineReveal
+          className={H}
+          style={{ fontSize: 'clamp(2rem, 4vw, 3.2rem)' }}
+          lines={[<>Три причини, чому</>, <><span className="acid">оборот стоїть</span> на місці</>]}
+        />
         <div className="mt-12 md:mt-16">
           {PAINS.map((p, i) => (
-            <FadeIn key={p.n} delay={i * 0.08}>
+            <Rise key={p.n} delay={i * 0.06}>
               <div className={`grid md:grid-cols-[auto_1fr_auto] gap-6 md:gap-12 items-start py-8 md:py-10 hair-top ${i === PAINS.length - 1 ? 'hair-b' : ''}`}>
                 <p className="stat-ed text-3xl md:text-4xl text-[#3A3F47]">{p.n}</p>
                 <div>
@@ -118,10 +299,10 @@ export default function Home() {
                 </div>
                 <div className="md:text-right md:min-w-[180px]">
                   <p className="stat-ed text-3xl md:text-4xl acid">{p.v}</p>
-                  <p className="kicker-ed mt-2 text-[0.58rem] tracking-[0.12em] normal-case md:text-right" style={{ letterSpacing: '0.02em', textTransform: 'none' }}>{p.vl}</p>
+                  <p className="kicker-ed mt-2 text-[0.58rem] tracking-[0.12em]" style={{ letterSpacing: '0.02em', textTransform: 'none' }}>{p.vl}</p>
                 </div>
               </div>
-            </FadeIn>
+            </Rise>
           ))}
         </div>
       </section>
@@ -130,74 +311,46 @@ export default function Home() {
       <section className="ed-panel hair-b hair-top">
         <div className="max-w-7xl mx-auto px-5 sm:px-8 md:px-12 py-20 md:py-28">
           <div className="grid lg:grid-cols-[1.05fr_1fr] gap-12 lg:gap-16 items-center">
-            <FadeIn>
-              <p className="kicker-ed mb-4">Рішення · власна методологія</p>
-              <h2 className={H} style={{ fontSize: 'clamp(2rem, 4.2vw, 3.4rem)' }}>
-                Commerce <span className="acid">OS™</span> — операційна система росту
-              </h2>
-              <p className="text-[#9AA1AB] mt-6 leading-relaxed max-w-xl">
-                Не набір послуг, а виконуваний фреймворк: кожна проблема бізнесу має свій модуль,
-                кожен модуль — плейбуки з кроками та критеріями приймання, кожна метрика — еталон.
-                Результат відтворюваний, а не залежить від натхнення підрядника.
-              </p>
-              <div className="flex flex-wrap gap-4 mt-8">
-                <Link to="/os#system" onClick={() => track('cta_click', { location: 'home_os_system' })} className="btn-ed solid">Розібрати систему <ArrowRight size={16} /></Link>
-                <Link to="/os#product" className="btn-ed">Демо зсередини</Link>
-              </div>
-            </FadeIn>
-            <FadeIn delay={0.15}>
+            <div>
+              <Rise><p className="kicker-ed mb-4">Рішення · власна методологія</p></Rise>
+              <LineReveal
+                className={H}
+                style={{ fontSize: 'clamp(2rem, 4.2vw, 3.4rem)' }}
+                lines={[<>Commerce <span className="acid">OS™</span></>, <>операційна система росту</>]}
+              />
+              <Rise delay={0.1}>
+                <p className="text-[#9AA1AB] mt-6 leading-relaxed max-w-xl">
+                  Не набір послуг, а виконуваний фреймворк: кожна проблема бізнесу має свій модуль,
+                  кожен модуль — плейбуки з кроками та критеріями приймання, кожна метрика — еталон.
+                  Результат відтворюваний, а не залежить від натхнення підрядника.
+                </p>
+              </Rise>
+              <Rise delay={0.16}>
+                <div className="flex flex-wrap gap-4 mt-8">
+                  <Magnetic><Link to="/os#system" onClick={() => track('cta_click', { location: 'home_os_system' })} className="btn-ed solid">Розібрати систему <ArrowRight size={16} /></Link></Magnetic>
+                  <Magnetic><Link to="/os#product" className="btn-ed">Демо зсередини</Link></Magnetic>
+                </div>
+              </Rise>
+            </div>
+            <Rise delay={0.15}>
               <div className="grid grid-cols-2 gap-px bg-[rgba(255,255,255,0.10)] border border-[rgba(255,255,255,0.10)]">
-                {[
-                  { v: '12', l: 'модулів системи · M01–M12' },
-                  { v: '56', l: 'виконуваних плейбуків' },
-                  { v: '52', l: 'еталонні метрики Gold Standards' },
-                  { v: '19', l: 'документів аудиту клієнту' },
-                ].map((s) => (
+                {OS_GRID.map((s) => (
                   <div key={s.l} className="ed-dark px-6 py-8">
-                    <p className="stat-ed text-5xl acid">{s.v}</p>
+                    <p className="stat-ed text-5xl acid"><CountUp to={s.to} /></p>
                     <p className="kicker-ed mt-3 text-[0.6rem] tracking-[0.12em] leading-relaxed">{s.l}</p>
                   </div>
                 ))}
               </div>
-            </FadeIn>
+            </Rise>
           </div>
         </div>
       </section>
 
-      {/* ================= PORTRAIT / OWNER QUESTION ================= */}
-      <section className="grid lg:grid-cols-2 items-stretch hair-b">
-        <div className="relative min-h-[420px] lg:min-h-[560px] overflow-hidden order-2 lg:order-1">
-          <img src={portraitPhoto} alt="Засновник weexp" className="absolute inset-0 w-full h-full object-cover duotone" />
-          <div className="absolute inset-0 photo-scrim-b lg:hidden" />
-        </div>
-        <div className="order-1 lg:order-2 flex items-center px-5 sm:px-8 md:px-12 py-16 md:py-24 lg:hair-l">
-          <FadeIn>
-            <p className="kicker-ed mb-4">Питання власника · 04</p>
-            <h2 className={H} style={{ fontSize: 'clamp(1.9rem, 3.6vw, 3rem)' }}>
-              «Скільки ви <span className="acid">мені заробите?»</span>
-            </h2>
-            <div className="mt-9 space-y-6 max-w-lg">
-              {[
-                { t: 'Рахуємо в грошах', d: 'Кожен висновок аудиту переведено в гривні проти 52 еталонів Gold Standards. Жодних «покращимо впізнаваність».' },
-                { t: 'Ціни відкриті', d: 'Три формати співпраці, усі ціни на сторінці «Співпраця», без «зателефонуйте менеджеру».' },
-                { t: 'Бюджет під захистом', d: 'Етапи з Definition of Done і траншами: наступний платіж — після прийнятого результату.' },
-              ].map((c, i) => (
-                <div key={c.t} className="flex gap-5 hair-top pt-6">
-                  <span className="stat-ed text-lg text-[#3A3F47]">0{i + 1}</span>
-                  <div>
-                    <p className="font-grotesk font-semibold text-lg text-[#F3F5F7]">{c.t}</p>
-                    <p className="text-[#9AA1AB] text-sm mt-1.5 leading-relaxed">{c.d}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </FadeIn>
-        </div>
-      </section>
+      <PortraitSplit />
 
       {/* ================= PRODUCTS ================= */}
       <section className="max-w-7xl mx-auto px-5 sm:px-8 md:px-12 py-20 md:py-28">
-        <FadeIn>
+        <Rise>
           <div className="flex flex-wrap items-end justify-between gap-6 mb-12">
             <div>
               <p className="kicker-ed mb-4">Продукти · ціни відкриті</p>
@@ -205,10 +358,10 @@ export default function Home() {
             </div>
             <Link to="/services" className="btn-ed">Повні умови <ArrowUpRight size={15} /></Link>
           </div>
-        </FadeIn>
+        </Rise>
         <div className="grid md:grid-cols-3 gap-px bg-[rgba(255,255,255,0.10)] border border-[rgba(255,255,255,0.10)]">
           {PRODUCTS.map((p, i) => (
-            <FadeIn key={p.n} delay={i * 0.08}>
+            <Rise key={p.n} delay={i * 0.08}>
               <Link to="/services" onClick={() => track('cta_click', { location: `home_product_${p.n}` })} className="ed-dark block p-8 h-full flex flex-col group hover:bg-[#101216] transition-colors">
                 <div className="flex items-baseline justify-between">
                   <span className="stat-ed text-2xl text-[#3A3F47]">{p.n}</span>
@@ -219,35 +372,16 @@ export default function Home() {
                 <p className="text-[#9AA1AB] text-sm mt-4 leading-relaxed flex-1">{p.result}</p>
                 <span className="kicker-ed text-[0.62rem] mt-8 group-hover:text-[#C7F94B] transition-colors inline-flex items-center gap-1.5">Детальніше <ArrowUpRight size={13} /></span>
               </Link>
-            </FadeIn>
+            </Rise>
           ))}
         </div>
       </section>
 
-      {/* ================= CASES ================= */}
-      <section className="ed-panel hair-top hair-b">
-        <div className="max-w-7xl mx-auto px-5 sm:px-8 md:px-12 py-20 md:py-28">
-          <FadeIn><p className="kicker-ed mb-10">Докази · кейси з CRM, ERP і GA4</p></FadeIn>
-          <div>
-            {CASE_ROW.map((c, i) => (
-              <FadeIn key={c.to} delay={i * 0.06}>
-                <Link to={c.to} onClick={() => track('cta_click', { location: 'home_case_row' })} className="grid md:grid-cols-[220px_1fr_auto] gap-4 md:gap-10 items-center py-7 hair-top group hover:bg-[#0A0B0D] transition-colors px-2 -mx-2">
-                  <p className="stat-ed text-4xl md:text-5xl acid">{c.num}</p>
-                  <div>
-                    <p className="font-grotesk font-semibold text-lg md:text-xl text-[#F3F5F7]">{c.name}</p>
-                    <p className="kicker-ed mt-1.5 text-[0.6rem] tracking-[0.1em]" style={{ textTransform: 'none', letterSpacing: '0.02em' }}>{c.metric}</p>
-                  </div>
-                  <ArrowUpRight size={22} className="text-[#3A3F47] group-hover:text-[#C7F94B] transition-colors hidden md:block" />
-                </Link>
-              </FadeIn>
-            ))}
-          </div>
-        </div>
-      </section>
+      <CasesScroll />
 
       {/* ================= CALCULATOR CTA ================= */}
       <section className="max-w-7xl mx-auto px-5 sm:px-8 md:px-12 py-20 md:py-28">
-        <FadeIn>
+        <Rise>
           <Link to="/calculator" onClick={() => track('cta_click', { location: 'home_calculator_teaser' })} className="block border border-[rgba(255,255,255,0.12)] p-10 md:p-16 flex flex-col md:flex-row md:items-center justify-between gap-8 group hover:border-[rgba(199,249,75,0.5)] transition-colors">
             <div>
               <p className="kicker-ed mb-5">Калькулятор · безкоштовно · без контактів</p>
@@ -259,9 +393,11 @@ export default function Home() {
                 якою ми рахуємо аудити.
               </p>
             </div>
-            <span className="btn-ed solid shrink-0 self-start md:self-auto">Порахувати <ArrowRight size={16} /></span>
+            <Magnetic className="shrink-0 self-start md:self-auto">
+              <span className="btn-ed solid">Порахувати <ArrowRight size={16} /></span>
+            </Magnetic>
           </Link>
-        </FadeIn>
+        </Rise>
       </section>
     </div>
   );
