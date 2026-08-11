@@ -34,6 +34,10 @@ import { renderMaturityPdf, renderCoveragePdf, renderHypothesesPdf, renderScopeP
 import { buildIntelligence, narrateIntelligence } from './intelligence.js';
 import { renderIntelligenceHtml } from './export/intelligenceHtml.js';
 import { buildActivation } from './activation.js';
+import { buildMechanics } from './mechanics.js';
+import { renderMechanicsHtml } from './export/mechanicsHtml.js';
+import { runJourney, buildJourneyReport } from './journey.js';
+import { renderJourneyHtml } from './export/journeyHtml.js';
 import { renderPdf, closePdfBrowser } from './pdf.js';
 import { exportCoverageDocx } from './export/coverageDocx.js';
 import { buildCoverage, renderCoverageMd } from './coverage.js';
@@ -161,6 +165,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
     let proto: PrototypeReport | null = null;
     let bench: BenchmarkReport | null = null;
     let siteAudit: SiteAuditReport | null = null;
+    let ciReport: ReturnType<typeof buildIntelligence> | null = null;
     if (!prelaunch) {
       log('· UX/UI-разбор страниц против эталона (AQC)…');
       uxui = buildUxUiReport(ds);
@@ -220,11 +225,31 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       // цепочки наблюдаем→дедуцируем→проверить→решение, зрелость 1–5). Флагман.
       try {
         const ci = buildIntelligence(ds);
+        ciReport = ci;
         if (hasKey()) { log('· Commerce Intelligence: дедукции (Claude)…'); await narrateIntelligence(ds, ci, log); }
         await writeFile(join(dir, 'intelligence.json'), JSON.stringify(ci, null, 2), 'utf8');
         await renderPdf(renderIntelligenceHtml(ci), join(dir, 'Commerce-Intelligence-Audit-A0.pdf'), browser);
         log(`✓ Commerce Intelligence A0 (PDF): зрелость ${ci.maturity.level}/5 «${ci.maturity.name}», слоёв ${ci.layers.length}, цепочек ${ci.chains.length}`);
       } catch (e) { log(`⚠️ Commerce Intelligence не собрался (${String(e).slice(0, 120)})`); }
+
+      // Маркетинговые механики A0 — реестр 34 механик (AOV/retention/конверсия/доверие/охват).
+      try {
+        const mech = buildMechanics(ds);
+        await writeFile(join(dir, 'mechanics.json'), JSON.stringify(mech, null, 2), 'utf8');
+        await renderPdf(renderMechanicsHtml(mech), join(dir, 'Маркетинговые-механики-A0.pdf'), browser);
+        log(`✓ Маркетинговые механики A0 (PDF): активно ${mech.score.have}/${mech.score.measurable} (${mech.score.pct}%)`);
+      } catch (e) { log(`⚠️ PDF Маркетинговые механики не собрался (${String(e).slice(0, 120)})`); }
+
+      // Карта пути клиента A0 — фактический walk-through: поиск → карточка →
+      // корзина → чекаут + тупики. Реальный браузер, заказ не оформляется.
+      try {
+        log('· journey: прохожу путь клиента (поиск → корзина → чекаут)…');
+        const steps = await runJourney(browser, site, log);
+        const jr = buildJourneyReport(steps, ds.client.finalUrl, ds.takenAt);
+        await writeFile(join(dir, 'journey.json'), JSON.stringify(jr, null, 2), 'utf8');
+        await renderPdf(renderJourneyHtml(jr), join(dir, 'Карта-пути-клиента-A0.pdf'), browser);
+        log(`✓ Карта пути клиента A0 (PDF): пройдено ${jr.passed}/${jr.steps.length}, тупиков ${jr.deadends}`);
+      } catch (e) { log(`⚠️ Карта пути клиента не собралась (${String(e).slice(0, 120)})`); }
 
       // Аудит каналов A0 — внешние сигналы каналов (A0).
       try {
@@ -314,13 +339,15 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       await writeFile(join(dir, 'pricechannel.json'), JSON.stringify(pc, null, 2), 'utf8');
       await pdf(renderPriceChannelPdf(pc, cn, D), 'Цена-в-канале-A0.pdf');
 
-      // Причинно-следственная карта → PDF (симптом → причина → деньги).
-      let causal = null as ReturnType<typeof buildCausal> | null;
-      if (analysisResult) {
-        causal = buildCausal(analysisResult, money);
-        await writeFile(join(dir, 'causal.json'), JSON.stringify(causal, null, 2), 'utf8');
-        await pdf(renderCausalPdf(causal, cn, D), 'Причинно-следственная-карта-A0.pdf');
-      }
+      // Причинно-следственная карта → PDF (симптом → причина → деньги). Строится
+      // ВСЕГДА: без аналитического слоя узлы достраиваются детерминированно из
+      // системных дефектов и CI-цепочек (прод-кейс: карта была неполной/пустой).
+      const causal = buildCausal(analysisResult, money, {
+        systemic: siteAudit?.systemic ?? [],
+        chains: ciReport?.chains ?? [],
+      });
+      await writeFile(join(dir, 'causal.json'), JSON.stringify(causal, null, 2), 'utf8');
+      await pdf(renderCausalPdf(causal, cn, D), 'Причинно-следственная-карта-A0.pdf');
       log(`✓ метод-документы (PDF): зрелость (набл. ${mat.observedAvg ?? '—'}/5), scope (${scope.waves.reduce((n, w) => n + w.items.length, 0)} активаций), цена в канале`);
 
       const cov = buildCoverage(ds, { hasEngine: Boolean(engine), hasMoney: Boolean(money) });

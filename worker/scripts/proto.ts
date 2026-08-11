@@ -34,6 +34,10 @@ import { buildPriceChannel } from '../src/pricechannel.js';
 import { buildCausal } from '../src/causal.js';
 import { buildCoverage } from '../src/coverage.js';
 import { renderMaturityPdf, renderCoveragePdf, renderHypothesesPdf, renderScopePdf, renderPriceChannelPdf, renderSynthesisPdf, renderCausalPdf } from '../src/export/methodPdf.js';
+import { buildMechanics } from '../src/mechanics.js';
+import { renderMechanicsHtml } from '../src/export/mechanicsHtml.js';
+import { buildJourneyReport, type JourneyStep } from '../src/journey.js';
+import { renderJourneyHtml } from '../src/export/journeyHtml.js';
 import { renderPdf, closePdfBrowser } from '../src/pdf.js';
 
 const ORIGIN = 'https://lavanda-home.example';
@@ -143,7 +147,7 @@ function mkClient(): SiteCrawl {
       { category_title: true, product_count: true, filters: true, sort: true, pagination: true, breadcrumbs: true, product_grid: true, category_description: false, view_toggle: false, search: true, nav: true, footer_contacts: true },
       { productCards: 24 }),
     mkPage('pdp', '/komplekt-postelnoe-bele-satin-101/', 'Комплект постельного белья сатин', [...common, 'schema-product', 'reviews', 'og'],
-      { product_header: true, gallery: true, price: true, add_to_cart: true, variants: true, delivery: true, payment: true, description: true, specifications: true, trust: true, breadcrumbs: true, reviews: false, qa: false, video: false, related: false, recently_viewed: false, search: true, nav: true, footer_contacts: true },
+      { product_header: true, gallery: true, price: true, add_to_cart: true, variants: true, delivery: true, payment: true, description: true, specifications: true, trust: true, breadcrumbs: true, reviews: false, qa: false, video: false, related: false, recently_viewed: false, search: true, nav: true, footer_contacts: true, installment: true, messenger: true },
       { galleryImages: 4 }),
     mkPage('pdp', '/komplekt-pledy-cotton-104/', 'Плед хлопковый Cotton', [...common, 'schema-product', 'reviews', 'desc'],
       { product_header: true, gallery: true, price: true, add_to_cart: true, variants: false, delivery: true, payment: true, description: true, specifications: false, trust: true, breadcrumbs: true, reviews: false, qa: false, related: false, search: true, nav: true, footer_contacts: true },
@@ -301,6 +305,23 @@ async function main(): Promise<void> {
   await pdf(renderMaturityPdf(buildMaturity(ds), cn, D), 'Матрица-зрелости-A0.pdf');
   await pdf(renderScopePdf(buildScope(ds, { analysis: ANALYSIS }), cn, D), 'Scope-по-волнам-A0.pdf');
   await pdf(renderPriceChannelPdf(buildPriceChannel(ds), cn, D), 'Цена-в-канале-A0.pdf');
+  await pdf(renderMechanicsHtml(buildMechanics(ds)), 'Маркетинговые-механики-A0.pdf');
+
+  // Journey — синтетический протокол прохождения (в бою шаги выполняет реальный браузер)
+  const JS = (n: number, stage: string, action: string, expected: string, result: string, status: JourneyStep['status'], dims: JourneyStep['dims']): JourneyStep => ({ n, stage, action, expected, result, status, dims });
+  const journeySteps: JourneyStep[] = [
+    JS(1, 'Вход', 'Открываю главную страницу', 'Страница отвечает и рендерится', 'открылась (HTTP 200)', 'пройден', ['UX', 'TECH']),
+    JS(2, 'Поиск', 'Ввожу запрос «подарунок» и жму Enter', 'Выдача с товарами или внятное «не найдено» с альтернативами', 'выдача с товарами', 'пройден', ['UX', 'CRO']),
+    JS(3, 'Каталог', 'Перехожу из меню в каталог', 'Листинг с товарами открывается за один клик', 'листинг открылся: /katalog/postelnoe-bele/', 'пройден', ['UX', 'SEO']),
+    JS(4, 'Карточка', 'Открываю первый товар из листинга', 'Карточка с ценой и кнопкой «в корзину»', 'карточка открылась, кнопка покупки на месте', 'пройден', ['UX', 'CRO']),
+    JS(5, 'Добавление в корзину', 'Нажимаю «в корзину» на карточке', 'Явное подтверждение: счётчик корзины растёт или всплывает окно', 'нажатие без видимой реакции — покупатель не понимает, добавилось ли', 'спотыкание', ['CRO', 'UX']),
+    JS(6, 'Избранное', 'Нажимаю «в избранное» на карточке', 'Товар сохраняется без принудительной регистрации', 'кнопка избранного не найдена на карточке', 'не найден', ['UX', 'MKT']),
+    JS(7, 'Корзина', 'Открываю корзину', 'Добавленный товар в корзине: количество, сумма, следующий шаг', 'корзина открылась, состав и сумма читаются', 'пройден', ['CRO', 'UX']),
+    JS(8, 'Чекаут', 'Перехожу к оформлению (не оформляю заказ)', 'Форма ≤8–10 полей, гостевой заказ возможен', 'форма из 9 видимых полей, похоже на принудительную регистрацию', 'спотыкание', ['CRO', 'UX']),
+    JS(9, 'Тупик: страница 404', 'Открываю несуществующий адрес', 'Честная 404 с навигацией и поиском — мягкая посадка', '404 с навигацией — покупатель не теряется', 'пройден', ['SEO', 'UX']),
+  ];
+  await pdf(renderJourneyHtml(buildJourneyReport(journeySteps, ds.client.finalUrl, ds.takenAt)), 'Карта-пути-клиента-A0.pdf');
+
   const cov = buildCoverage(ds, {});
   await pdf(renderCoveragePdf(cov, cn, D), 'Охват-и-уверенность-A0.pdf');
   await pdf(renderCausalPdf(buildCausal(ANALYSIS, null), cn, D), 'Причинно-следственная-карта-A0.pdf');

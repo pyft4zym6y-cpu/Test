@@ -1,9 +1,9 @@
 /**
- * SEO Architecture A0 — клиентский PDF (A0 §10): видимое дерево → проблемные узлы
+ * SEO Architecture A0 — клиентский PDF: видимое дерево → проблемные узлы
  * → рекомендуемое дерево. Единый визуальный стандарт (reportShell).
  */
 import { esc, dimBadges, doc, methodologySection, swSection, recsSection, conclusionSection, type SectionRec } from './reportShell.js';
-import type { SeoArchReport, Purpose } from '../seoarch.js';
+import { ONPAGE_COLS, ONPAGE_LABEL, type SeoArchReport, type Purpose } from '../seoarch.js';
 
 const PURPOSE_RU: Record<Purpose, string> = { commercial: 'коммерческий', informational: 'информационный', system: 'системный' };
 
@@ -44,8 +44,18 @@ export function renderSeoArchHtml(r: SeoArchReport): string {
     <td>${dimBadges(i.dims)}</td>
   </tr>`).join('');
   const issues = `<section class="block"><h2>Проблемные узлы</h2>
-    <p class="lead">Узлы дерева с SEO-пробелами и структурными рисками (A0 §10).</p>
+    <p class="lead">Узлы дерева с SEO-пробелами и структурными рисками.</p>
     ${r.issues.length ? `<table><thead><tr><th>Узел</th><th>Назначение</th><th>Проблема</th><th>Дубли</th><th>Индексируемость</th><th>Рекомендуемое действие</th><th>Изм.</th></tr></thead><tbody>${issueRows}</tbody></table>` : '<p class="lead">Критичных SEO-узлов на выборке L0 не зафиксировано.</p>'}</section>`;
+
+  // Постраничный on-page срез: фактические значения, а не только статусы.
+  const opHead = ONPAGE_COLS.map((c) => `<th>${esc(ONPAGE_LABEL[c])}</th>`).join('');
+  const opRows = r.onpage.map((row) => `<tr>
+    <td class="op-url"><b>${esc(row.kind)}</b><span>${esc(row.url)}</span></td>
+    ${ONPAGE_COLS.map((c) => { const cell = row.cells[c]; const na = cell?.note === 'н/п'; return `<td class="op-c ${na ? 'na' : cell?.ok ? 'ok' : 'gap'}">${na ? '·' : cell?.ok ? '✓' : '✕'} <i>${esc(cell?.note ?? '—')}</i></td>`; }).join('')}
+  </tr>`).join('');
+  const onpage = r.onpage.length ? `<section class="block"><h2>On-page постранично: фактические значения</h2>
+    <p class="lead">Норма: Title 15–70 символов, Description 50–170, ровно один H1, canonical на каждом шаблоне, Product-разметка на карточках и листингах. «н/п» — проверка неприменима к типу страницы.</p>
+    <table><thead><tr><th>Страница</th>${opHead}</tr></thead><tbody>${opRows}</tbody></table></section>` : '';
 
   const rec = `<section class="block"><h2>Рекомендуемое дерево</h2>
     <p class="lead">Как должна выглядеть архитектура, чтобы не плодить дубли и раздавать вес правильно.</p>
@@ -84,11 +94,14 @@ export function renderSeoArchHtml(r: SeoArchReport): string {
     'Вывод сделан по видимой архитектуре (слой A0). Фактические позиции, каннибализация запросов и полнота индекса проверяются на A1 через Search Console — там же подтверждается или снимается каждый из перечисленных рисков.',
   ], 'A1: Search Console (запросы, позиции, покрытие индекса) + полный crawl — превращает карту рисков в план восстановления трафика с цифрами.');
 
-  const foot = `<section class="block"><div class="footer">Commerce OS · SEO Architecture A0 · ${esc(r.client)} · ${esc(date)}. Слой A0: дерево по видимым ссылкам, on-page — выборка. Отсутствие данных не выдаётся за факт (A0 §15.7); полное дерево, дубли и техническая SEO уточняются на A1.</div></section>`;
+  const foot = `<section class="block"><div class="footer">Commerce OS · SEO Architecture A0 · ${esc(r.client)} · ${esc(date)}. Слой A0: дерево по видимым ссылкам, on-page — выборка. Отсутствие данных не выдаётся за факт; полное дерево, дубли и техническая SEO уточняются на A1.</div></section>`;
 
   const extra = `
     .t-node{white-space:nowrap;} .t-purpose{color:#333;font-size:10px;} .t-count{font-weight:800;text-align:right;} .t-note{font-size:9.5px;}
+    .op-url{white-space:nowrap;} .op-url b{display:block;font-size:9.5px;} .op-url span{font-size:8px;color:var(--muted);}
+    .op-c{font-size:8.5px;font-weight:700;white-space:nowrap;} .op-c i{font-style:normal;font-weight:400;color:var(--muted);display:block;font-size:7.5px;}
+    .op-c.ok{color:var(--ok);} .op-c.gap{color:var(--gap);} .op-c.na{color:var(--muted);}
     .st{font-size:11px;} .st.ok{color:var(--ok);} .st.check{color:var(--check);} .st.gap{color:var(--gap);}
     .i-node{white-space:nowrap;} .i-lvl{display:inline-block;margin-left:5px;font-size:7.5px;color:var(--muted);} .i-act{color:#333;}`;
-  return doc(`SEO Architecture A0 · ${r.client}`, cover + meth + tree + issues + rec + swSection(strengths, weaknesses) + recsSection(recsList) + concl + foot, extra);
+  return doc(`SEO Architecture A0 · ${r.client}`, cover + meth + tree + onpage + issues + rec + swSection(strengths, weaknesses) + recsSection(recsList) + concl + foot, extra);
 }

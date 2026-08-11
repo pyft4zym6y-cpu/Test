@@ -24,17 +24,17 @@ export const SHARED_CSS = `
   .block h2{page-break-after:avoid;}
   table{page-break-inside:auto;} tr,thead{page-break-inside:avoid;}
   .page{page-break-before:always;}
-  /* cover */
-  .cover{position:relative;min-height:250mm;padding:0;page-break-after:always;}
+  /* cover — компактная шапка: без пустой титульной страницы (прод-жалоба на «белые пробелы») */
+  .cover{position:relative;padding:0;margin-bottom:14px;}
   .cov-bar{position:absolute;left:0;top:0;width:8px;height:100%;background:var(--lime);}
-  .cov-body{padding:24px 6px 0 20px;}
+  .cov-body{padding:12px 6px 10px 20px;}
   .kicker,.page-kicker{color:var(--lime);font-weight:700;text-transform:uppercase;letter-spacing:.6px;font-size:10px;margin-bottom:14px;}
-  .cov-meta{display:flex;gap:34px;margin:22px 0 30px;}
+  .cov-meta{display:flex;gap:34px;margin:14px 0 16px;}
   .cov-meta .lbl{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.5px;}
   .cov-meta .val{display:block;font-size:15px;font-weight:700;}
-  .cov-score{display:flex;align-items:baseline;gap:16px;margin:8px 0 26px;}
-  .cov-score .big{font-size:64px;font-weight:800;line-height:1;letter-spacing:-2px;}
-  .cov-score .big span{font-size:26px;}
+  .cov-score{display:flex;align-items:baseline;gap:16px;margin:6px 0 14px;}
+  .cov-score .big{font-size:52px;font-weight:800;line-height:1;letter-spacing:-2px;}
+  .cov-score .big span{font-size:22px;}
   .big-cap{color:var(--muted);font-size:12px;}
   .coverage{background:var(--soft);border-left:3px solid var(--lime);padding:12px 14px;border-radius:0 6px 6px 0;font-size:10px;color:#333;max-width:150mm;}
   table{width:100%;border-collapse:collapse;}
@@ -44,7 +44,7 @@ export const SHARED_CSS = `
   .bar{display:block;width:100%;height:8px;background:var(--line);border-radius:5px;overflow:hidden;min-width:110px;}
   .fill{display:block;height:100%;border-radius:5px;} .fill.ok{background:var(--ok);} .fill.check{background:var(--check);} .fill.gap{background:var(--gap);}
   .footer{margin-top:16px;padding-top:8px;border-top:1px solid var(--line);color:var(--muted);font-size:8.5px;}
-  /* conclusion card (A0 §8) */
+  /* conclusion card */
   .concl{border:1px solid var(--line);border-left:4px solid var(--lime);border-radius:0 6px 6px 0;padding:10px 12px;margin:8px 0;page-break-inside:avoid;}
   .concl.crit{border-left-color:var(--gap);} .concl.warn{border-left-color:var(--check);}
   .concl h3{margin:0 0 6px;font-size:13px;}
@@ -81,7 +81,7 @@ export const CONSULT_CSS = `
 
 /** «Контекст, цель и методология» — паспорт документа, читается за 20 секунд. */
 export function methodologySection(o: { goal: string; sources: string[]; scope: string; limits: string; standards?: string[] }): string {
-  const std = o.standards ?? ['Принципы аудита ISO 19011: вывод только из доказательства', 'MECE: разделы не пересекаются и покрывают предмет целиком', 'Пирамида Минто: управленческий вывод впереди, доказательства ниже', 'A0 §15.7: предположение не выдаётся за факт, заблокированное не скрывается'];
+  const std = o.standards ?? ['Принципы аудита ISO 19011: вывод только из доказательства', 'MECE: разделы не пересекаются и покрывают предмет целиком', 'Пирамида Минто: управленческий вывод впереди, доказательства ниже', 'Честные данные: предположение не выдаётся за факт, заблокированное не скрывается'];
   return `<section class="block"><h2>Контекст, цель и методология</h2>
     <div class="meth">
       <div class="mi"><b>Цель документа</b><div>${esc(o.goal)}</div></div>

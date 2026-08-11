@@ -13,14 +13,22 @@ export type CausalMap = { nodes: CausalNode[]; moneyNote: string };
 
 const rub = (n: number) => `${Math.round(n).toLocaleString('ru-RU')} ₴`;
 
-export function buildCausal(a: Analysis, money: MoneyResult | null): CausalMap {
+/** Детерминированный источник узлов, когда аналитический слой (Claude) недоступен:
+ *  системные дефекты UX/UI + цепочки Commerce Intelligence сворачиваются в
+ *  причинные узлы. Карта не должна оставаться пустой из-за баланса API. */
+export type DetSources = {
+  systemic?: { title: string; detail: string }[];
+  chains?: { observed: string; implies: string; action: string }[];
+};
+
+export function buildCausal(a: Analysis | null, money: MoneyResult | null, det?: DetSources): CausalMap {
   const moneyNote = money
     ? `Общий недополученный оборот ≈ ${rub(money.potentialYear)}/год (цепная атрибуция). Деньги распределяются по узлам через рычаги воронки — не складывать разрывы напрямую.`
     : 'Деньги считаются на слое L1 (нужны трафик, конверсия, чек). На L0 — качественная связь причины с эффектом.';
 
   const topLever = money ? [...money.waterfall].sort((x, y) => y.contribYear - x.contribYear)[0] : null;
 
-  const nodes: CausalNode[] = a.pains.map((p) => ({
+  const nodes: CausalNode[] = (a?.pains ?? []).map((p) => ({
     rootCause: p.cause,
     symptoms: p.symptoms ?? [],
     evidence: p.evidence ?? [],
@@ -28,11 +36,29 @@ export function buildCausal(a: Analysis, money: MoneyResult | null): CausalMap {
   }));
 
   // Если болей нет, но есть находки-гипотезы — свернуть их в причины по видам.
-  if (!nodes.length && a.findings.length) {
+  if (!nodes.length && a?.findings.length) {
     const byArea = new Map<string, string[]>();
     for (const f of a.findings) { const arr = byArea.get(f.area) ?? []; arr.push(f.fact); byArea.set(f.area, arr); }
     for (const [area, facts] of byArea) nodes.push({ rootCause: `Системная слабина: ${area}`, symptoms: facts, evidence: [], moneyLink: 'эффект в обороте — оценивается на L1' });
   }
+
+  // Детерминированное достраивание: карта пополняется из системных дефектов и
+  // CI-цепочек даже без аналитического слоя (и в дополнение к нему — до 7 узлов).
+  const have = new Set(nodes.map((x) => x.rootCause.toLowerCase()));
+  const push = (x: CausalNode) => { if (!have.has(x.rootCause.toLowerCase()) && nodes.length < 7) { nodes.push(x); have.add(x.rootCause.toLowerCase()); } };
+  const sys = det?.systemic ?? [];
+  if (sys.length >= 2) push({
+    rootCause: 'Шаблоны витрины не доведены до эталона (дефекты уровня шаблона)',
+    symptoms: sys.map((s) => s.title),
+    evidence: ['проявляются на всех разобранных страницах — значит, живут в шаблоне, а не на странице'],
+    moneyLink: money ? 'входит в общий недополученный оборот (см. экономику)' : 'эффект в обороте — оценивается на L1',
+  });
+  for (const c of det?.chains ?? []) push({
+    rootCause: c.implies,
+    symptoms: [c.observed],
+    evidence: ['наблюдение внешнего обхода'],
+    moneyLink: 'эффект в обороте — оценивается на L1',
+  });
 
   return { nodes, moneyNote };
 }

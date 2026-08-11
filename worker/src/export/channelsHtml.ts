@@ -19,7 +19,7 @@ export function renderChannelsHtml(r: ChannelsReport): string {
       <div><span class="lbl">Дата</span><span class="val">${esc(date)}</span></div>
       <div><span class="lbl">Каналов зашито</span><span class="val">${r.wired}/${r.rows.length}</span></div>
     </div>
-    <div class="coverage"><b>Что видно на A0:</b> только то, что «зашито» в сайт — трекинг, соцсети, retention-блоки. Фактическая эффективность каналов (платка, email, маркетплейсы) требует доступа к кабинетам и данным — вынесено на A2 (${r.blocked} канала BLOCKED). Отсутствие данных не выдаётся за факт (A0 §15.7).</div>
+    <div class="coverage"><b>Что видно на A0:</b> только то, что «зашито» в сайт — трекинг, соцсети, retention-блоки. Фактическая эффективность каналов (платка, email, маркетплейсы) требует доступа к кабинетам и данным — вынесено на A2 (${r.blocked} канала BLOCKED). Отсутствие данных не выдаётся за факт.</div>
   </div></section>`;
 
   const rows = r.rows.map((ch) => `<tr>
@@ -64,7 +64,7 @@ export function renderChannelsHtml(r: ChannelsReport): string {
     `Оценка эффективности (расходы, ROAS, доля выручки) на этом слое невозможна и не имитируется: ${blockedRows.map((x) => x.channel.toLowerCase()).join(', ')} — закрываются доступами на A2.`,
   ], 'A2: доступ к GA4 и рекламным кабинетам — фактическая экономика каналов, после чего этот отчёт превращается из карты инфраструктуры в карту эффективности.');
 
-  const foot = `<section class="block"><div class="footer">Commerce OS · Аудит каналов A0 · ${esc(r.client)} · ${esc(date)}. Слой A0: внешние сигналы. Отсутствие данных не выдаётся за факт и не скрывается (A0 §15.7); эффективность каналов закрывается на A2.</div></section>`;
+  const foot = `<section class="block"><div class="footer">Commerce OS · Аудит каналов A0 · ${esc(r.client)} · ${esc(date)}. Слой A0: внешние сигналы. Отсутствие данных не выдаётся за факт и не скрывается; эффективность каналов закрывается на A2.</div></section>`;
 
   const extra = `.ch-name{font-weight:700;white-space:nowrap;} .ch-sig{color:#333;} .ch-st{white-space:nowrap;font-size:9.5px;} .ch-next{color:#333;font-size:10px;}
     .st{font-size:12px;} .st.ok{color:var(--ok);} .st.check{color:var(--check);} .st.gap{color:var(--gap);}`;

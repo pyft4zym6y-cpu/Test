@@ -291,6 +291,15 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
     delivery_selection: hasSel('[class*="delivery" i] input[type="radio"], [class*="shipping" i] input[type="radio"], [name*="delivery" i]'),
     payment_selection: hasSel('[class*="payment" i] input[type="radio"], [name*="payment" i]'),
     guest_checkout: guestCheckoutHint,
+    // сигналы маркетинговых механик (реестр механик)
+    free_ship_progress: inTxt(/до безкоштовної доставки|до бесплатной доставки|безкоштовна доставка від|бесплатная доставка от|free shipping (over|from)/),
+    installment: inTxt(/оплата частинами|оплата частями|розстрочк|рассрочк|покупка частями|monobank част|приватбанк част/),
+    messenger: hasSel('[href*="t.me/"], [href*="viber://"], [href*="wa.me/"], [class*="jivo" i], [class*="tawk" i], [class*="crisp" i], [class*="intercom" i]') || inLow(/jivo|tawk\.to|crisp\.chat|livechat|binotel|ringostat.?chat/),
+    callback: hasSel('[class*="callback" i], [class*="call-back" i]') || inTxt(/зворотн(ий|ій) дзвінок|обратный звонок|перезвон/),
+    urgency: hasSel('[class*="countdown" i], [class*="timer" i]') || inTxt(/встигни|успей|осталось \d|залишилось \d|поспішай/),
+    bonus_points: inTxt(/бонусні бали|бонусные баллы|кешбек|кэшбек|cashback|бонусний рахунок|бонусный счет|програма лояльност|программа лояльност/),
+    back_in_stock: inTxt(/повідомити про наявність|сообщить о поступлении|notify when available|немає в наявності.*повідомити/),
+    referral: inTxt(/приведи друга|запроси друга|referral|реферальн/),
     author: hasSel('[class*="author" i], [rel="author"]') || inLow(/автор:/),
     toc: hasSel('[class*="toc" i], [class*="table-of-contents" i], nav[class*="content" i]'),
     share: hasSel('[class*="share" i], [class*="social" i] a'),
@@ -548,7 +557,8 @@ export async function crawlSite(
   kind: 'client' | 'competitor',
   opts: { maxPages?: number } = {},
 ): Promise<SiteCrawl> {
-  const maxPages = opts.maxPages ?? 16;
+  // Клиент разбирается глубоко (все типы страниц + представители), конкурент — выборочно.
+  const maxPages = opts.maxPages ?? 24;
   const ctx = await hardenedContext(browser);
   const page = await ctx.newPage();
   const out: SiteCrawl = {
@@ -613,7 +623,7 @@ export async function crawlSite(
     const reps = kind === 'client'
       ? PAGE_TYPE_REGISTRY.filter((t) => t.id !== 'home').map((t) => typeHit(t)).filter((u): u is string => Boolean(u))
       : [];
-    const candidates = Array.from(new Set([...reps, ...kw])).filter((u) => u !== out.finalUrl).slice(0, Math.max(maxPages - 1, kind === 'client' ? 22 : 0));
+    const candidates = Array.from(new Set([...reps, ...kw])).filter((u) => u !== out.finalUrl).slice(0, Math.max(maxPages - 1, kind === 'client' ? 30 : 0));
     for (const url of candidates) {
       const res = await auditPage(page, url, false);
       out.pages.push(res.audit);

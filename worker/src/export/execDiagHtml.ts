@@ -1,5 +1,5 @@
 /**
- * Executive Diagnostic A0 — зонтичный клиентский PDF (A0 §13): сводит все аудиты
+ * Executive Diagnostic A0 — зонтичный клиентский PDF: сводит все аудиты
  * в 15–25 страниц, каждый раздел начинается с вывода (A0 §8-карточки), иерархия
  * вывод→факты (§14). Тянет то, что воркер уже считает (UX/UI, деньги, конкуренты,
  * зрелость, coverage, гипотезы); недостающее помечает PARTIAL/BLOCKED (§15).
@@ -25,7 +25,7 @@ const rub = (n: number) => `${Math.round(n).toLocaleString('ru-RU')} ₴`;
 const eLevel = (conf: number) => (conf >= 0.8 ? 'E3' : conf >= 0.6 ? 'E2' : 'E1'); // L0 внешний — потолок E3
 const clientName = (ds: AuditDataset) => { try { return new URL(ds.client.finalUrl).hostname.replace(/^www\./, ''); } catch { return ds.client.finalUrl; } };
 
-/** Карточка «главный вывод» (A0 §8). «Влияние» показываем только если отличается от «Разрыва». */
+/** Карточка «главный вывод». «Влияние» показываем только если отличается от «Разрыва». */
 function conclCard(c: { title: string; sev?: 'crit' | 'warn'; see: string; proof: string; ref: string; gap: string; impact: string; conf: string; unknown: string; next: string }): string {
   const impactRow = c.impact && c.impact !== c.gap ? `<span class="k">Влияние</span><span class="v">${esc(c.impact)}</span>` : '';
   const title = c.title.length > 120 ? c.title.slice(0, 117) + '…' : c.title;
@@ -87,9 +87,9 @@ export function renderExecDiagnostic(ds: AuditDataset, inp: ExecInputs): string 
       <div><span class="lbl">Тир</span><span class="val">T${ds.tier}</span></div>
     </div>
     ${posture != null ? `<div class="cov-score"><div class="big ${scoreColor(posture)}">${posture}<span>%</span></div><div class="big-cap">внешнее соответствие эталону (UX/UI)</div></div>` : ''}
-    <div class="coverage"><b>Coverage Map (A0 §15):</b> A0 — внешний срез без доступов. Разделы со статусом:
+    <div class="coverage"><b>Coverage Map:</b> A0 — внешний срез без доступов. Разделы со статусом:
       <span class="chip done">DONE</span> внешне доказано · <span class="chip partial">PARTIAL</span> частично ·
-      <span class="chip blocked">BLOCKED</span> нужен доступ/данные. Отсутствие данных не выдаётся за факт и не скрывается (A0 §15.7).</div>
+      <span class="chip blocked">BLOCKED</span> нужен доступ/данные. Отсутствие данных не выдаётся за факт и не скрывается.</div>
   </div></section>`;
 
   // Разделы A0 §13
@@ -182,7 +182,7 @@ export function renderExecDiagnostic(ds: AuditDataset, inp: ExecInputs): string 
       : 'Экономика разрыва на этом слое сознательно не считалась (нет baseline): любая цифра была бы выдумкой. Она появляется первой после передачи данных — и превращает приоритеты этого отчёта в бюджетные решения.',
     `Порядок действий зафиксирован в связанных документах: причинно-следственная карта → scope по волнам → реестр гипотез. Управленческое решение, которое требуется сейчас, — не «какие правки внести», а открыть данные (раздел 13) и согласовать волну 1.`,
   ], `A1: передать доступы из Data Request (раздел 13) — за ним следуют подтверждение гипотез, экономика и старт волны 1.`, '14. Итоговый вывод')}
-    <section class="block"><div class="footer">Commerce OS · Executive Diagnostic A0 · ${esc(name)} · ${esc(date)}. Слой A0: внешний обход без доступов. Оценки — наблюдение, не факт по данным клиента; отсутствие данных не выдаётся за факт и не скрывается (A0 §15.7). Заблокированные разделы отмечены статусом BLOCKED и закрываются на следующем уровне.</div></section>`);
+    <section class="block"><div class="footer">Commerce OS · Executive Diagnostic A0 · ${esc(name)} · ${esc(date)}. Слой A0: внешний обход без доступов. Оценки — наблюдение, не факт по данным клиента; отсутствие данных не выдаётся за факт и не скрывается. Заблокированные разделы отмечены статусом BLOCKED и закрываются на следующем уровне.</div></section>`);
 
   return doc(`Executive Diagnostic A0 · ${name}`, cover + s.join(''));
 }

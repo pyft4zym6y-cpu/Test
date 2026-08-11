@@ -23,7 +23,7 @@ export function renderTechAuditHtml(r: TechReport): string {
     </div>
     <div class="cov-score"><div class="big ${scoreColor(r.score.pct)}">${r.score.pct}<span>%</span></div><div class="big-cap">технических проверок пройдено · ${r.score.passed}/${r.score.total}</div></div>
     <div class="coverage"><b>Что видно на A0:</b> проверки выполняются по отрендеренному DOM разобранных страниц (внешний обход).
-    ${r.blocked.length ? `Не измеримо внешними средствами и вынесено на A1: ${esc(r.blocked.join(', '))}.` : ''} Отсутствие данных не выдаётся за факт (A0 §15.7).</div>
+    ${r.blocked.length ? `Не измеримо внешними средствами и вынесено на A1: ${esc(r.blocked.join(', '))}.` : ''} Отсутствие данных не выдаётся за факт.</div>
   </div></section>`;
 
   const cats = r.categories.map((c) => {
@@ -74,10 +74,10 @@ export function renderTechAuditHtml(r: TechReport): string {
     gapChecks.length
       ? `Главная зона потерь — «${worstCat?.title}»: ${gapChecks.slice(0, 3).map((c) => c.label.toLowerCase()).join(', ')}. Это не косметика: каждая из этих позиций напрямую влияет на то, как поисковые системы видят и показывают витрину, то есть на бесплатный трафик.`
       : 'Систематических технических провалов не зафиксировано — редкая ситуация, которую стоит закрепить регламентом релизов (перед каждым релизом гонять этот же чек-лист).',
-    `${r.blocked.length} проверок (${r.blocked.join(', ') || '—'}) невозможно провести без инструментов и доступов — они не «хорошие» и не «плохие», а неизвестные. По правилу A0 §15.7 они не засчитываются ни в плюс, ни в минус до измерения на A1.`,
+    `${r.blocked.length} проверок (${r.blocked.join(', ') || '—'}) невозможно провести без инструментов и доступов — они не «хорошие» и не «плохие», а неизвестные. По принципу честных данных они не засчитываются ни в плюс, ни в минус до измерения на A1.`,
   ], 'A1: PageSpeed/CrUX (Core Web Vitals), проверка заголовков сервера, полный crawl (Screaming Frog) и связка с Search Console.');
 
-  const footer = `<section class="block"><div class="footer">Commerce OS · Технический внешний аудит A0 · ${esc(r.client)} · ${esc(date)}. Слой A0: внешний обход. Отсутствие данных не выдаётся за факт и не скрывается (A0 §15.7); BLOCKED-проверки закрываются на A1 инструментом/доступом.</div></section>`;
+  const footer = `<section class="block"><div class="footer">Commerce OS · Технический внешний аудит A0 · ${esc(r.client)} · ${esc(date)}. Слой A0: внешний обход. Отсутствие данных не выдаётся за факт и не скрывается; BLOCKED-проверки закрываются на A1 инструментом/доступом.</div></section>`;
 
   const extra = `.c-name{font-weight:600;white-space:nowrap;} .c-st{white-space:nowrap;font-size:9.5px;} .c-note{color:var(--muted);font-size:10px;white-space:nowrap;} .c-rec{color:#333;}
     .st{font-size:12px;} .st.ok{color:var(--ok);} .st.check{color:var(--check);} .st.gap{color:var(--gap);} .cat-dims{font-weight:400;}`;

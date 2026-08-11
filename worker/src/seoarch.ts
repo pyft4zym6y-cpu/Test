@@ -10,15 +10,23 @@ import type { Dim } from './pagereport.js';
 export type Purpose = 'commercial' | 'informational' | 'system';
 export type TreeNode = { label: string; path: string; count: number; purpose: Purpose; params: number; severity: 'ok' | 'check' | 'gap'; note: string };
 export type SeoIssue = { node: string; level: number; purpose: Purpose; problem: string; dupes: string; index: string; action: string; dims: Dim[] };
+export type OnPageCell = { ok: boolean; note: string };
+export type OnPageRow = { url: string; kind: string; cells: Record<string, OnPageCell> };
 export type SeoArchReport = {
   client: string; takenAt: string;
   totals: { links: number; l1: number; paramUrls: number; maxDepth: number; crawled: number };
   indexability: { robots: boolean; sitemap: boolean };
   tree: TreeNode[];
   issues: SeoIssue[];
+  onpage: OnPageRow[];
   recommended: string[];
   verdict: string;
 };
+
+/** Постраничный on-page срез с фактическими значениями (длина title/description,
+ *  число H1 и т.д.) — «слабый SEO-аудит» лечится конкретикой, а не статусами. */
+export const ONPAGE_COLS = ['title', 'desc', 'h1', 'canonical', 'schema-product', 'schema-crumbs', 'og'] as const;
+export const ONPAGE_LABEL: Record<string, string> = { title: 'Title', desc: 'Description', h1: 'H1', canonical: 'Canonical', 'schema-product': 'Schema Product', 'schema-crumbs': 'Schema Crumbs', og: 'Open Graph' };
 
 function purposeOf(path: string): Purpose {
   if (/(catalog|katalog|category|categor|shop|collection|product|tovar|goods|\/p\/|item|cart|korzina|basket|checkout|order|oform)/i.test(path)) return 'commercial';
@@ -98,6 +106,21 @@ export function buildSeoArch(ds: AuditDataset): SeoArchReport {
   if (maxDepth >= 4) issues.push({ node: `глубина ${maxDepth}`, level: maxDepth, purpose: 'commercial', problem: 'Глубокая вложенность каталога — важные страницы далеко от корня', dupes: '—', index: 'хуже сканируется', action: 'Уплостить дерево, добавить хабы/перелинковку', dims: ['SEO', 'LINK'] });
   if (!ds.client.sitemapXml) issues.push({ node: '/sitemap.xml', level: 1, purpose: 'system', problem: 'Нет sitemap.xml', dupes: '—', index: 'нет карты для поисковика', action: 'Сгенерировать и отправить sitemap.xml в Search Console', dims: ['SEO', 'TECH'] });
 
+  // Постраничный on-page: фактические значения из проверок (detail).
+  const KIND_RU: Record<string, string> = { home: 'Главная', plp: 'Каталог', pdp: 'Карточка', cart: 'Корзина', checkout: 'Чекаут', content: 'Контент', faq: 'FAQ', other: 'Прочее' };
+  const onpage: OnPageRow[] = ds.client.pages.filter((p) => !p.error && p.checks.length).map((p) => {
+    const { path } = segsOf(p.finalUrl || p.url);
+    const cells: Record<string, OnPageCell> = {};
+    for (const id of ONPAGE_COLS) {
+      const c = p.checks.find((x) => x.id === id);
+      if (!c) { cells[id] = { ok: false, note: '—' }; continue; }
+      // Schema Product требуем только там, где он уместен — на остальных «н/п».
+      if (id === 'schema-product' && !['pdp', 'plp'].includes(p.kind)) { cells[id] = { ok: true, note: 'н/п' }; continue; }
+      cells[id] = { ok: c.pass, note: c.detail ?? (c.pass ? 'есть' : 'нет') };
+    }
+    return { url: path || '/', kind: KIND_RU[p.kind] ?? p.kind, cells };
+  });
+
   const recommended: string[] = [
     'Одна модель = одна карточка (canonical), варианты — параметром; убрать дубли «цвет как страница»',
     'Категории с уникальным H1 + SEO-описанием как посадочные под тематические запросы',
@@ -110,5 +133,5 @@ export function buildSeoArch(ds: AuditDataset): SeoArchReport {
     : issues.length ? 'Каркас дерева читаемый, но есть узлы с SEO-пробелами и структурными рисками.'
     : 'Структура дерева в целом здоровая по внешним признакам.';
 
-  return { client, takenAt: ds.takenAt, totals: { links: links.length, l1: groups.size, paramUrls, maxDepth, crawled: ds.client.pages.filter((p) => !p.error).length }, indexability: { robots: ds.client.robotsTxt, sitemap: ds.client.sitemapXml }, tree, issues, recommended, verdict };
+  return { client, takenAt: ds.takenAt, totals: { links: links.length, l1: groups.size, paramUrls, maxDepth, crawled: ds.client.pages.filter((p) => !p.error).length }, indexability: { robots: ds.client.robotsTxt, sitemap: ds.client.sitemapXml }, tree, issues, onpage, recommended, verdict };
 }

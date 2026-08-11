@@ -23,7 +23,7 @@ export function renderIntelligenceHtml(r: CIReport): string {
       <div><span class="lbl">Платформа</span><span class="val">${esc(r.config.platform)}</span></div>
     </div>
     <div class="cov-score"><div class="big ${lvlCls}">${r.maturity.level}<span>/5</span></div><div class="big-cap">уровень зрелости · «${esc(r.maturity.name)}»</div></div>
-    <div class="coverage"><b>Что это.</b> Сайт — источник данных для реконструкции бизнеса: модель → клиент → продукт → коммерция → маркетинг → технологии → операции → расширение → рост. Каждый слой — цепочка «наблюдаем → дедуцируем → проверить данными → решение». Дедукция ≠ факт: помечена и закрывается данными на A1–A2. Отсутствие данных не выдаётся за факт (A0 §15.7).</div>
+    <div class="coverage"><b>Что это.</b> Сайт — источник данных для реконструкции бизнеса: модель → клиент → продукт → коммерция → маркетинг → технологии → операции → расширение → рост. Каждый слой — цепочка «наблюдаем → дедуцируем → проверить данными → решение». Дедукция ≠ факт: помечена и закрывается данными на A1–A2. Отсутствие данных не выдаётся за факт.</div>
   </div></section>`;
 
   const cfg = `<section class="block"><h2>Реконструкция бизнес-модели</h2>
@@ -95,7 +95,7 @@ export function renderIntelligenceHtml(r: CIReport): string {
     `Переход на ступень ${nextLevel} («${r.maturity.ladder.find((l) => l.level === nextLevel)?.name ?? ''}») — это и есть стратегическая рамка программы: точки роста выше отобраны как кратчайший путь к ней, а не как список всего хорошего.`,
   ], 'A1: интервью с собственником + доступы (аналитика, заказы) — дедукции превращаются в подтверждённые факты, и карта бизнеса становится основой коммерческого предложения.');
 
-  const foot = `<section class="block"><div class="footer">Commerce OS · Commerce Intelligence Audit A0 · ${esc(r.client)} · ${esc(date)}. Слой A0: внешний срез; дедукции — гипотезы с указанным способом проверки. Отсутствие данных не выдаётся за факт и не скрывается (A0 §15.7).</div></section>`;
+  const foot = `<section class="block"><div class="footer">Commerce OS · Commerce Intelligence Audit A0 · ${esc(r.client)} · ${esc(date)}. Слой A0: внешний срез; дедукции — гипотезы с указанным способом проверки. Отсутствие данных не выдаётся за факт и не скрывается.</div></section>`;
 
   const extra = `
     .ci-name{font-weight:700;white-space:nowrap;font-size:10px;} .ci-name .ci-st{display:block;font-weight:600;font-size:7.5px;text-transform:uppercase;letter-spacing:.3px;}

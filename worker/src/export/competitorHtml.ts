@@ -1,5 +1,5 @@
 /**
- * Конкурентный анализ A0 — клиентский PDF (A0 §12): клиент × рынок × эталон по
+ * Конкурентный анализ A0 — клиентский PDF: клиент × рынок × эталон по
  * параметрам + вывод, рейтинг по взвешенному индексу, white space (свободная
  * ниша). Оборачивает готовый BenchmarkReport (competitor.ts) в стандарт A0.
  */
@@ -25,7 +25,7 @@ export function renderCompetitorHtml(b: BenchmarkReport, client: string, takenAt
       <div><span class="lbl">Место</span><span class="val">${b.clientRank}/${b.totalSites}</span></div>
     </div>
     <div class="cov-score"><div class="big ${scoreColor(b.clientIndex)}">${b.clientIndex}<span>/100</span></div><div class="big-cap">взвешенный внешний индекс</div></div>
-    <div class="coverage"><b>Что видно на A0:</b> сравнение по публичным внешним признакам (обход клиента и конкурентов). Внутренняя экономика, цены и performance конкурентов недоступны — только то, что видно снаружи. Отсутствие данных не выдаётся за факт (A0 §15.7).</div>
+    <div class="coverage"><b>Что видно на A0:</b> сравнение по публичным внешним признакам (обход клиента и конкурентов). Внутренняя экономика, цены и performance конкурентов недоступны — только то, что видно снаружи. Отсутствие данных не выдаётся за факт.</div>
   </div></section>`;
 
   const rankRows = b.ranking.map((s, i) => `<tr class="${s.isClient ? 'me' : ''}">
@@ -46,7 +46,7 @@ export function renderCompetitorHtml(b: BenchmarkReport, client: string, takenAt
     <td class="pm-pos ${POS_CLS[p.position]}">${POS_WORD[p.position]}</td>
   </tr>`).join('');
   const params = `<section class="block"><h2>Клиент против рынка по параметрам</h2>
-    <p class="lead">Клиент — значение клиента; Рынок — лучший из конкурентов; Эталон — 100. Вывод — позиция клиента (A0 §12).</p>
+    <p class="lead">Клиент — значение клиента; Рынок — лучший из конкурентов; Эталон — 100. Вывод — позиция клиента.</p>
     <table><thead><tr><th>Параметр</th><th>Клиент</th><th>Рынок</th><th>Эталон</th><th>Вывод</th></tr></thead><tbody>${paramRows}</tbody></table></section>`;
 
   const ws = b.whiteSpace.length ? `<section class="block"><h2>Свободная ниша (white space)</h2>
@@ -83,7 +83,7 @@ export function renderCompetitorHtml(b: BenchmarkReport, client: string, takenAt
       <span class="k ok">Ведём</span><span class="v">${b.clientLeads.length ? esc(b.clientLeads.join(', ')) : '—'}</span>
       <span class="k gap">Отстаём</span><span class="v">${b.clientBehind.length ? esc(b.clientBehind.join(', ')) : '—'}</span>
     </div>
-    <div class="footer">Commerce OS · Конкурентный анализ A0 · ${esc(client)} · ${esc(date)}. Слой A0: только публичные внешние признаки. Отсутствие данных не выдаётся за факт и не скрывается (A0 §15.7); performance и экономика конкурентов — вне A0.</div></section>`;
+    <div class="footer">Commerce OS · Конкурентный анализ A0 · ${esc(client)} · ${esc(date)}. Слой A0: только публичные внешние признаки. Отсутствие данных не выдаётся за факт и не скрывается; performance и экономика конкурентов — вне A0.</div></section>`;
 
   const extra = `.r-pos{color:var(--muted);width:20px;} .r-name{font-weight:700;} .r-idx{font-weight:800;text-align:right;} tr.me{background:var(--soft);}
     .pm-name{font-weight:600;} .pm-c,.pm-m,.pm-e{font-weight:800;text-align:center;width:52px;} .pm-m,.pm-e{color:var(--muted);} .pm-pos{font-weight:700;white-space:nowrap;}`;

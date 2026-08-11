@@ -19,6 +19,7 @@ export type ContentReport = {
   client: string; takenAt: string;
   rows: ContentRow[];
   avg: { completeness: number; usefulness: number; persuasiveness: number; intent: number };
+  unparsed: { label: string; url: string }[];
   strengths: string[];
   weaknesses: string[];
   recommendations: { pr: 'P0' | 'P1' | 'P2'; action: string; effect: string }[];
@@ -71,6 +72,14 @@ export function buildContentAudit(ds: AuditDataset): ContentReport {
       : 'Контент закрывает основные вопросы решения';
     rows.push({ pageType: KIND_LABEL[p.kind], url: shortUrl(p.url), object: spec.object, completeness, usefulness, persuasiveness, intent, crit, note });
   }
+  // Страницы, найденные картой типов, но не попавшие в разбор — честно перечисляются,
+  // а не молчат («нет всех ключевых страниц» из прод-фидбека).
+  const parsedUrls = new Set(rows.map((r) => r.url));
+  const unparsed = (ds.client.pageTypes ?? [])
+    .filter((t) => t.status === 'найдена' && t.url)
+    .map((t) => ({ label: t.label, url: shortUrl(t.url!) }))
+    .filter((t) => !parsedUrls.has(t.url));
+
   const avgOf = (f: (r: ContentRow) => number) => rows.length ? Math.round((rows.reduce((s, r) => s + f(r), 0) / rows.length) * 10) / 10 : 0;
   const avg = { completeness: avgOf((r) => r.completeness), usefulness: avgOf((r) => r.usefulness), persuasiveness: avgOf((r) => r.persuasiveness), intent: avgOf((r) => r.intent) };
   const overall = rows.length ? (avg.completeness + avg.usefulness + avg.persuasiveness + avg.intent) / 4 : 0;
@@ -112,5 +121,5 @@ export function buildContentAudit(ds: AuditDataset): ContentReport {
     `Вывод сформирован по наличию решающих блоков (слой A0, наблюдение). Он отвечает на вопрос «есть ли на странице то, что нужно для решения», но не «насколько хорошо это написано» — качество текста, уникальность и тональность проверяются на A1 с доступом к контенту и Search Console.`,
   ];
 
-  return { client, takenAt: ds.takenAt, rows, avg, strengths, weaknesses, recommendations, verdict, conclusion };
+  return { client, takenAt: ds.takenAt, rows, avg, unparsed, strengths, weaknesses, recommendations, verdict, conclusion };
 }

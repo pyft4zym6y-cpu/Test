@@ -19,7 +19,7 @@ const head = (kicker: string, h1: string, client: string, date: string, meta: [s
   ${note ? `<div class="coverage">${note}</div>` : ''}
 </div></section>`;
 
-const foot = (name: string, client: string, date: string, extra = '') => `<section class="block"><div class="footer">Commerce OS · ${esc(name)} · ${esc(client)} · ${esc(date)}. Слой A0: внешний срез. Отсутствие данных не выдаётся за факт и не скрывается (A0 §15.7).${extra ? ' ' + esc(extra) : ''}</div></section>`;
+const foot = (name: string, client: string, date: string, extra = '') => `<section class="block"><div class="footer">Commerce OS · ${esc(name)} · ${esc(client)} · ${esc(date)}. Слой A0: внешний срез. Отсутствие данных не выдаётся за факт и не скрывается.${extra ? ' ' + esc(extra) : ''}</div></section>`;
 
 /* ── Матрица зрелости (дашборд) ── */
 export function renderMaturityPdf(m: MaturityReport, client: string, date: string): string {
