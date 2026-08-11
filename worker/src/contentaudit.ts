@@ -26,9 +26,10 @@ const CONTENT_SPEC: Partial<Record<PageKind, Spec>> = {
   plp: { object: 'Описание категории', completeness: ['category_title', 'category_description', 'product_count'], usefulness: ['filters', 'sort'], persuasiveness: ['reviews', 'faq'], intent: ['product_grid', 'category_description'] },
   pdp: { object: 'Описание товара', completeness: ['description', 'specifications', 'gallery'], usefulness: ['specifications', 'delivery', 'qa'], persuasiveness: ['reviews', 'trust'], intent: ['price', 'description', 'add_to_cart'] },
   content: { object: 'Статья / материал', completeness: ['product_header', 'toc'], usefulness: ['related'], persuasiveness: ['author'], intent: ['related'] },
+  faq: { object: 'Ответы FAQ', completeness: ['faq', 'search'], usefulness: ['related', 'contact_form'], persuasiveness: ['faq', 'contact_form'], intent: ['search', 'faq'] },
 };
 
-const KIND_LABEL: Record<PageKind, string> = { home: 'Главная', plp: 'Каталог', pdp: 'Карточка', cart: 'Корзина', checkout: 'Чекаут', content: 'Контент', other: 'Прочее' };
+const KIND_LABEL: Record<PageKind, string> = { home: 'Главная', plp: 'Каталог', pdp: 'Карточка', cart: 'Корзина', checkout: 'Чекаут', content: 'Контент', faq: 'FAQ', other: 'Прочее' };
 
 function scoreDim(blocks: Record<string, boolean>, keys: string[]): number {
   if (!keys.length) return 1;

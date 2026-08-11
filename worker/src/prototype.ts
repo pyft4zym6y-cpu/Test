@@ -99,6 +99,17 @@ export const REFERENCE: Partial<Record<PageKind, ReferencePage>> = {
       { key: 'trust', name: 'Элементы доверия', role: 'безопасность оплаты', chapter: 'гл. 25.16', weight: 'important' },
     ],
   },
+  faq: {
+    title: 'FAQ / частые вопросы', chapter: 'FAQ',
+    principle: 'FAQ читают и люди, и поисковые/AI-системы с одной целью — получить прямой ответ. Каждый ответ самодостаточен, ведёт дальше и снимает возражение до покупки.',
+    blocks: [
+      { key: 'search', name: 'Заголовок + поиск по вопросам', role: 'вход в страницу: предметный H1 и поиск (после 20 вопросов категории не спасают)', chapter: 'FAQ 01', weight: 'core' },
+      { key: 'faq', name: 'Категории и топ-вопросы', role: 'топ-5 закрывают половину обращений; категории с URL — посадки', chapter: 'FAQ 02', weight: 'core' },
+      { key: 'contact_form', name: 'Блок «не нашли ответ» + контакт', role: 'форма вопроса — источник реальных формулировок покупателей', chapter: 'FAQ 04', weight: 'important' },
+      { key: 'related', name: 'Выходы в каталог из ответов', role: 'ответил — и ведёт в товар, а не в тупик', chapter: 'FAQ 05', weight: 'important' },
+      { key: 'breadcrumbs', name: 'Хлебные крошки', role: 'положение и возврат', chapter: 'FAQ 01', weight: 'nice' },
+    ],
+  },
   content: {
     title: 'Контент / блог', chapter: 'гл. 35–36',
     principle: 'Статья ведёт от вопроса к товару: отвечает на запрос и мягко переводит в каталог.',

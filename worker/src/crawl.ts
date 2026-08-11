@@ -8,7 +8,7 @@
 import { chromium, type Browser, type Page } from 'playwright';
 
 export type L0Check = { id: string; group: string; label: string; pass: boolean; detail?: string };
-export type PageKind = 'home' | 'plp' | 'pdp' | 'cart' | 'checkout' | 'content' | 'other';
+export type PageKind = 'home' | 'plp' | 'pdp' | 'cart' | 'checkout' | 'content' | 'faq' | 'other';
 
 /** Дизайн-замеры страницы (для UX/UI-разбора против AQC-эталона). Всё измеримо
  *  из отрендеренного DOM на T1 — без доступов. */
@@ -268,6 +268,7 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
 
 function classify(url: string, sig: Record<string, boolean>, isRoot: boolean): PageKind {
   if (isRoot) return 'home';
+  try { if (/\/(faq|help|dopomoga|voprosy|pytannya|questions|q-?a)(\/|$)/i.test(new URL(url).pathname)) return 'faq'; } catch { /* not a url */ }
   if (sig.isCheckoutUrl) return 'checkout';
   if (sig.isCartUrl) return 'cart';
   if (sig.hasProductSchema || (sig.addToCart && !sig.manyCards) || sig.isProductUrl) return 'pdp';

@@ -17,7 +17,7 @@ export type AuditDataset = {
 };
 
 const KIND_LABEL: Record<PageAudit['kind'], string> = {
-  home: 'Главная', plp: 'Каталог/PLP', pdp: 'Карточка/PDP', cart: 'Корзина', checkout: 'Чекаут', content: 'Контент', other: 'Прочее',
+  home: 'Главная', plp: 'Каталог/PLP', pdp: 'Карточка/PDP', cart: 'Корзина', checkout: 'Чекаут', content: 'Контент', faq: 'FAQ', other: 'Прочее',
 };
 
 function siteScore(site: SiteCrawl): number | null {

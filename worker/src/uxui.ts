@@ -256,7 +256,7 @@ export type UxNarrative = {
 };
 
 const KIND_LABEL: Record<PageKind, string> = {
-  home: 'Главная', plp: 'Каталог/PLP', pdp: 'Карточка/PDP', cart: 'Корзина', checkout: 'Чекаут', content: 'Контент', other: 'Прочее',
+  home: 'Главная', plp: 'Каталог/PLP', pdp: 'Карточка/PDP', cart: 'Корзина', checkout: 'Чекаут', content: 'Контент', faq: 'FAQ', other: 'Прочее',
 };
 
 const DEFAULT_UX: UxProbe = {
