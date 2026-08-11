@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { courseStats, levelsLabel, type Course } from '../data/courses';
+import { courseStats, fmtPrice, levelsLabel, type Course } from '../data/courses';
 import { Hand } from './comic';
 
 export default function CourseCard({ course, index = 0 }: { course: Course; index?: number }) {
@@ -45,16 +45,36 @@ export default function CourseCard({ course, index = 0 }: { course: Course; inde
         {course.audience}. {course.result}.
       </p>
 
-      <div className="flex items-center justify-between gap-3">
+      <div
+        className={`flex items-end justify-between gap-3 border-t-[3px] pt-4 ${
+          course.featured ? 'border-white/40' : 'border-ink'
+        }`}
+      >
+        <div>
+          <div className="flex items-baseline gap-2.5">
+            <span className="font-oswald font-bold text-[28px] leading-none">
+              {fmtPrice(course.price)}
+            </span>
+            {course.oldPrice && (
+              <span
+                className={`text-[14px] font-bold line-through ${
+                  course.featured ? 'text-white/60' : 'text-ink/40'
+                }`}
+              >
+                {fmtPrice(course.oldPrice)}
+              </span>
+            )}
+          </div>
+          <div
+            className={`text-[12px] font-extrabold uppercase tracking-wider mt-1.5 ${
+              course.featured ? 'text-white/80' : 'text-ink/50'
+            }`}
+          >
+            {course.duration} · {stats.modules} модулів
+          </div>
+        </div>
         <span
-          className={`text-[12px] font-extrabold uppercase tracking-wider ${
-            course.featured ? 'text-white/80' : 'text-ink/50'
-          }`}
-        >
-          {stats.modules} модулів · {stats.questions} питань
-        </span>
-        <span
-          className={`font-oswald font-bold uppercase text-[14px] group-hover:translate-x-1 transition-transform ${
+          className={`font-oswald font-bold uppercase text-[14px] group-hover:translate-x-1 transition-transform whitespace-nowrap ${
             course.featured ? 'text-white' : 'text-brand'
           }`}
         >

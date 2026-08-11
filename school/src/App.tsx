@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { HashRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Route, Routes, useLocation } from 'react-router-dom';
 import Nav from './components/Nav';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -21,9 +21,13 @@ function ScrollToTop() {
   return null;
 }
 
+// Прод — BrowserRouter (чисті URL для SEO, rewrites у vercel.json).
+// Демо-збірка одним файлом — HashRouter: VITE_HASH_ROUTER=1 npm run build
+const Router = import.meta.env.VITE_HASH_ROUTER === '1' ? HashRouter : BrowserRouter;
+
 export default function App() {
   return (
-    <HashRouter>
+    <Router>
       <ScrollToTop />
       <div className="font-manrope min-h-screen flex flex-col">
         <Nav />
@@ -44,6 +48,6 @@ export default function App() {
         </main>
         <Footer />
       </div>
-    </HashRouter>
+    </Router>
   );
 }

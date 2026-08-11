@@ -1,5 +1,5 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { courseById, courseLevels, courseStats, levelsLabel } from '../data/courses';
+import { courseById, courseLevels, courseStats, fmtPrice, levelsLabel } from '../data/courses';
 import {
   ComicButton,
   Eyebrow,
@@ -38,6 +38,22 @@ export default function CourseDetail() {
           </div>
           <H1 className="mb-4">{course.name}</H1>
           <Hand className="text-brand block mb-6">{course.hook}</Hand>
+          <div className="inline-flex flex-wrap items-center gap-x-6 gap-y-2 comic-border bg-white hard-shadow-sm px-6 py-4 mb-8 -rotate-[0.5deg]">
+            <span className="font-oswald font-bold text-[32px] leading-none">
+              {fmtPrice(course.price)}
+            </span>
+            {course.oldPrice && (
+              <span className="text-[16px] font-bold line-through text-ink/40">
+                {fmtPrice(course.oldPrice)}
+              </span>
+            )}
+            <span className="text-[12px] font-extrabold uppercase tracking-wider text-ink/60">
+              {course.duration} навчання
+            </span>
+            <span className="inline-block comic-border bg-sun px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wider">
+              Оплата частинами
+            </span>
+          </div>
           <div className="flex flex-wrap gap-4">
             <ComicButton to={`/enroll?course=${course.id}`}>Записатися на курс</ComicButton>
             <ComicButton to="/program" variant="white">

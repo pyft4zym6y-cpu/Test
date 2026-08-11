@@ -30,6 +30,22 @@ Project → **Settings → Git → Production Branch** → вписати
    запропонує прив'язати піддомен. Якщо ні: у DNS реєстратора додати
    CNAME `school` → `cname.vercel-dns.com`.
 
+## Крок 4. Приймання заявок (env-змінні)
+
+Форма запису шле POST на `/api/enroll` (serverless-функція в `school/api/`).
+Щоб заявки приходили, у Vercel-проєкті школи: **Settings → Environment
+Variables** → додати:
+
+- `RESEND_API_KEY` — той самий ключ Resend, що на основному сайті
+  (обовʼязково для email-каналу);
+- `NOTIFY_EMAIL` / `NOTIFY_FROM` — опційно (за замовчуванням — пошта
+  засновника);
+- `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` — опційно, дублювання заявок у
+  Telegram (створити бота через @BotFather, chat_id — свій).
+
+Після додавання змінних — Redeploy. Поки змінні не задані, форма
+автоматично відкриває поштовий клієнт (mailto) — заявки не губляться.
+
 ## Що вже готово в репозиторії
 
 - `school/vercel.json` — кеш-заголовки для статичних асетів.
