@@ -84,6 +84,7 @@ export async function buildSocialAudit(ds: AuditDataset, log?: (m: string) => vo
   const recommendations: Rec[] = [
     ...(lost.length ? [{ pr: 'P0' as const, action: `Привязать найденные профили к витрине: ${lost.map((p) => p.platform).join(', ')}`, effect: 'Существующая аудитория начинает работать на сайт' }] : []),
     ...(linked === 0 ? [{ pr: 'P1' as const, action: 'Завести и привязать 1–2 профильные площадки (для товарного бренда — Instagram + TikTok)', effect: 'Прогрев, ретаргетинг-аудитории, соц. доказательство' }] : []),
+    { pr: 'P1', action: 'Наполнение профилей: контент-план из pillars бренда (продуктовый контент, UGC, соц. доказательство). Инструмент: скилы sm-content-matrix / sm-post-writer / sm-reels-scripting (A1)', effect: 'Живой профиль = живой магазин; регулярные касания без роста бюджета' },
     { pr: 'P2', action: 'Единые ссылки на соцсети в футере/шапке всех шаблонов + UTM-разметка', effect: 'Измеримость соц-трафика в аналитике' },
   ];
   const verdict = linked >= 3 ? `Соцконтур привязан (${linked} платформ) — базовый уровень есть, вопрос в активности.`
