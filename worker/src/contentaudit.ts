@@ -63,13 +63,17 @@ export function buildContentAudit(ds: AuditDataset): ContentReport {
     const persuasiveness = scoreDim(b, spec.persuasiveness);
     const intent = scoreDim(b, spec.intent);
     const min = Math.min(completeness, usefulness, persuasiveness, intent);
-    const crit: ContentRow['crit'] = (completeness <= 2 || intent <= 2) ? 'H' : (min <= 3 ? 'M' : 'L');
+    // Провал ЛЮБОГО измерения (≤2) критичен: страница с убедительностью 1/5 не
+    // может быть «средней» (логическая ошибка шкалы из QA-оценки пакета).
+    const crit: ContentRow['crit'] = min <= 2 ? 'H' : (min <= 3 ? 'M' : 'L');
     const dims: [string, number][] = [['полнота', completeness], ['полезность', usefulness], ['убедительность', persuasiveness], ['интент', intent]];
     const weak = dims.filter(([, v]) => v <= 2).map(([k]) => k);
     const missing = [...spec.completeness, ...spec.persuasiveness].filter((k) => !b[k]).slice(0, 3);
-    const note = weak.length
+    const words = p.ux?.bodyWords ?? 0;
+    const thin = words > 0 && words < (p.kind === 'pdp' ? 150 : p.kind === 'content' ? 300 : 80);
+    const note = `${weak.length
       ? `Слабо: ${weak.join(', ')}${missing.length ? ` — нет блоков: ${missing.join(', ')}` : ''}`
-      : 'Контент закрывает основные вопросы решения';
+      : 'Контент закрывает основные вопросы решения'}${thin ? `. Тонкий текст: ~${words} слов` : ''}`;
     rows.push({ pageType: KIND_LABEL[p.kind], url: shortUrl(p.url), object: spec.object, completeness, usefulness, persuasiveness, intent, crit, note });
   }
   // Страницы, найденные картой типов, но не попавшие в разбор — честно перечисляются,

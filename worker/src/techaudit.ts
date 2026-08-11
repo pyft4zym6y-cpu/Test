@@ -74,7 +74,20 @@ export function buildTechAudit(ds: AuditDataset): TechReport {
     { title: 'Безопасность', dims: ['SEC'], status: 'ok', checks: [
       check('https', 'HTTPS', 'Перевести весь сайт на HTTPS, настроить редиректы'),
       check('cookies', 'Cookie / consent (ЕС)', 'Добавить cookie-consent для рынков ЕС'),
-      blockedCheck('Заголовки безопасности (CSP/HSTS)', 'Требует ответных заголовков сервера — проверяется на A1'),
+      ...(ds.client.secHeaders ? [
+        site(ds.client.secHeaders.hsts, 'HSTS (strict-transport-security)', 'Включить HSTS на сервере — защита от downgrade-атак'),
+        site(ds.client.secHeaders.csp, 'Content-Security-Policy', 'Задать CSP — защита от XSS и внедрений'),
+        site(ds.client.secHeaders.xfo, 'Защита от clickjacking (XFO/CSP)', 'Добавить X-Frame-Options или frame-ancestors'),
+      ] : [blockedCheck('Заголовки безопасности (CSP/HSTS)', 'Ответ сервера не получен — проверяется на A1')]),
+    ] },
+    // GEO/AEO: видимость в AI-выдаче (эталон 2025–2026: доступ AI-краулеров + llms.txt + разметка).
+    { title: 'AI-видимость (GEO/AEO)', dims: ['GEO', 'AEO', 'SEO'], status: 'ok', checks: [
+      ...(ds.client.ai ? [
+        site(ds.client.ai.blockedBots.length === 0, 'AI-краулеры не заблокированы', `Открыть в robots.txt: ${ds.client.ai.blockedBots.join(', ') || '—'} — иначе бренд невидим в AI-ответах`),
+        site(ds.client.ai.llmsTxt, 'llms.txt (навигация для LLM)', 'Добавить llms.txt в корень — структурированный указатель ключевого контента для AI-систем'),
+      ] : [blockedCheck('Доступ AI-краулеров / llms.txt', 'robots.txt не прочитан — проверяется на A1')]),
+      check('schema-product', 'Разметка для извлечения фактов', 'JSON-LD Product/Offer — точность извлечения фактов LLM растёт с ~16% до ~54% (ориентир)'),
+      check('schema-crumbs', 'Структура для цитирования', 'BreadcrumbList + чёткая иерархия заголовков — выше цитируемость пассажей'),
     ] },
     { title: 'Мобильность', dims: ['MOB', 'A11Y'], status: 'ok', checks: [
       check('viewport', 'Viewport', 'Добавить meta viewport для корректного мобильного рендера'),

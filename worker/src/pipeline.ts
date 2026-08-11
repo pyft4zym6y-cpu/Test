@@ -38,6 +38,8 @@ import { buildMechanics } from './mechanics.js';
 import { renderMechanicsHtml } from './export/mechanicsHtml.js';
 import { runJourney, buildJourneyReport } from './journey.js';
 import { renderJourneyHtml } from './export/journeyHtml.js';
+import { buildBacklog, renderBacklogHtml, type RawRec } from './backlog.js';
+import { buildQa, renderQaHtml } from './qa.js';
 import { renderPdf, closePdfBrowser } from './pdf.js';
 import { exportCoverageDocx } from './export/coverageDocx.js';
 import { buildCoverage, renderCoverageMd } from './coverage.js';
@@ -101,7 +103,11 @@ function normalizeUrl(raw: string): string {
 }
 
 export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
-  const log = opts.log ?? ((m: string) => console.log(m));
+  const baseLog = opts.log ?? ((m: string) => console.log(m));
+  // Дебаг-журнал: каждая нестыковка/предупреждение прогона фиксируется и попадает
+  // в Протокол синергии/QA — находка не теряется в логе, а становится задачей.
+  const debugLog: string[] = [];
+  const log = (m: string) => { if (/⚠️|✖/.test(m)) debugLog.push(m.replace(/^[⚠️✖]+\s*/, '')); baseLog(m); };
   const metrics: AuditMetrics = { compliance: null, confidence: null, health: null, benchmarkIndex: null, aqcFails: null, potentialYear: null };
   const prelaunch = Boolean(opts.prelaunch);
   const tier: Tier = prelaunch ? 0 : ((opts.tier ?? 1) as Tier);
@@ -166,6 +172,12 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
     let bench: BenchmarkReport | null = null;
     let siteAudit: SiteAuditReport | null = null;
     let ciReport: ReturnType<typeof buildIntelligence> | null = null;
+    let contentReport: ReturnType<typeof buildContentAudit> | null = null;
+    let mechReport: ReturnType<typeof buildMechanics> | null = null;
+    let journeyReport: ReturnType<typeof buildJourneyReport> | null = null;
+    let techReport: ReturnType<typeof buildTechAudit> | null = null;
+    let seoReport: ReturnType<typeof buildSeoArch> | null = null;
+    let maturityReport: ReturnType<typeof buildMaturity> | null = null;
     if (!prelaunch) {
       log('· UX/UI-разбор страниц против эталона (AQC)…');
       uxui = buildUxUiReport(ds);
@@ -190,8 +202,20 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       // UX/UI Audit A0 — клиентский PDF по визуальному стандарту A0 (эталон↔текущая
       // постранично, дерево сайта, системные дефекты, приоритет, вывод). Рендер тем
       // же Chromium. Главный визуальный результат UX/UI-блока.
+      // Journey ДО постраничного разбора: интерактивные дефекты walk-through
+      // понижают оценки блоков (статический балл не противоречит прохождению).
+      let journeySteps: ReturnType<typeof buildJourneyReport>['steps'] = [];
       try {
-        siteAudit = buildSiteAudit(ds);
+        log('· journey: прохожу путь клиента (поиск → корзина → чекаут + мобильный)…');
+        journeySteps = await runJourney(browser, site, log);
+        journeyReport = buildJourneyReport(journeySteps, ds.client.finalUrl, ds.takenAt);
+        await writeFile(join(dir, 'journey.json'), JSON.stringify(journeyReport, null, 2), 'utf8');
+        await renderPdf(renderJourneyHtml(journeyReport), join(dir, 'Карта-пути-клиента-A0.pdf'), browser);
+        log(`✓ Карта пути клиента A0 (PDF): пройдено ${journeyReport.passed}/${journeyReport.steps.length}, тупиков ${journeyReport.deadends}`);
+      } catch (e) { log(`⚠️ Карта пути клиента не собралась (${String(e).slice(0, 120)})`); }
+
+      try {
+        siteAudit = buildSiteAudit(ds, { journey: journeySteps });
         await writeFile(join(dir, 'pagereport.json'), JSON.stringify(siteAudit, null, 2), 'utf8');
         await renderPdf(renderAuditHtml(siteAudit), join(dir, 'UX-UI-аудит-A0.pdf'), browser);
         log(`✓ UX/UI Audit A0 (PDF): соответствие эталону ${siteAudit.totalPct}%, системных дефектов ${siteAudit.systemic.length}`);
@@ -199,7 +223,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
 
       // SEO Architecture A0 — видимое дерево → проблемные узлы → рекомендуемое (A0 §10).
       try {
-        const seo = buildSeoArch(ds);
+        const seo = buildSeoArch(ds); seoReport = seo;
         await writeFile(join(dir, 'seoarch.json'), JSON.stringify(seo, null, 2), 'utf8');
         await renderPdf(renderSeoArchHtml(seo), join(dir, 'SEO-Architecture-A0.pdf'), browser);
         log(`✓ SEO Architecture A0 (PDF): ссылок ${seo.totals.links}, проблемных узлов ${seo.issues.length}`);
@@ -207,7 +231,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
 
       // Технический внешний аудит A0 — категории проверок из обхода (A0).
       try {
-        const tech = buildTechAudit(ds);
+        const tech = buildTechAudit(ds); techReport = tech;
         await writeFile(join(dir, 'techaudit.json'), JSON.stringify(tech, null, 2), 'utf8');
         await renderPdf(renderTechAuditHtml(tech), join(dir, 'Технический-аудит-A0.pdf'), browser);
         log(`✓ Технический аудит A0 (PDF): пройдено ${tech.score.pct}%, blocked ${tech.blocked.length}`);
@@ -215,7 +239,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
 
       // Content Audit A0 — контент по способности вести к решению (A0 §11).
       try {
-        const content = buildContentAudit(ds);
+        const content = buildContentAudit(ds); contentReport = content;
         await writeFile(join(dir, 'contentaudit.json'), JSON.stringify(content, null, 2), 'utf8');
         await renderPdf(renderContentAuditHtml(content), join(dir, 'Content-Audit-A0.pdf'), browser);
         log(`✓ Content Audit A0 (PDF): типов страниц ${content.rows.length}`);
@@ -234,22 +258,11 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
 
       // Маркетинговые механики A0 — реестр 34 механик (AOV/retention/конверсия/доверие/охват).
       try {
-        const mech = buildMechanics(ds);
+        const mech = buildMechanics(ds); mechReport = mech;
         await writeFile(join(dir, 'mechanics.json'), JSON.stringify(mech, null, 2), 'utf8');
         await renderPdf(renderMechanicsHtml(mech), join(dir, 'Маркетинговые-механики-A0.pdf'), browser);
         log(`✓ Маркетинговые механики A0 (PDF): активно ${mech.score.have}/${mech.score.measurable} (${mech.score.pct}%)`);
       } catch (e) { log(`⚠️ PDF Маркетинговые механики не собрался (${String(e).slice(0, 120)})`); }
-
-      // Карта пути клиента A0 — фактический walk-through: поиск → карточка →
-      // корзина → чекаут + тупики. Реальный браузер, заказ не оформляется.
-      try {
-        log('· journey: прохожу путь клиента (поиск → корзина → чекаут)…');
-        const steps = await runJourney(browser, site, log);
-        const jr = buildJourneyReport(steps, ds.client.finalUrl, ds.takenAt);
-        await writeFile(join(dir, 'journey.json'), JSON.stringify(jr, null, 2), 'utf8');
-        await renderPdf(renderJourneyHtml(jr), join(dir, 'Карта-пути-клиента-A0.pdf'), browser);
-        log(`✓ Карта пути клиента A0 (PDF): пройдено ${jr.passed}/${jr.steps.length}, тупиков ${jr.deadends}`);
-      } catch (e) { log(`⚠️ Карта пути клиента не собралась (${String(e).slice(0, 120)})`); }
 
       // Аудит каналов A0 — внешние сигналы каналов (A0).
       try {
@@ -325,7 +338,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       const pdf = async (html: string, name: string) => { try { await renderPdf(html, join(dir, name), browser); } catch (e) { log(`⚠️ PDF ${name} не собрался (${String(e).slice(0, 100)})`); } };
 
       // Матрица зрелости (AD-16) → PDF-дашборд.
-      const mat = buildMaturity(ds);
+      const mat = buildMaturity(ds); maturityReport = mat;
       await writeFile(join(dir, 'maturity.json'), JSON.stringify(mat, null, 2), 'utf8');
       await pdf(renderMaturityPdf(mat, cn, D), 'Матрица-зрелости-A0.pdf');
 
@@ -393,6 +406,34 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         const act = buildActivation(ds, produced);
         await writeFile(join(dir, 'activation.json'), JSON.stringify(act, null, 2), 'utf8');
         log(`${act.complete ? '✓' : '✖'} покрытие доменов (${act.businessType}): ${act.verdict}`);
+      } catch (e) { log(`⚠️ активационный гейт не отработал (${String(e).slice(0, 100)})`); }
+
+      // ── Сводный бэклог: все рекомендации всех документов → один дедуплицированный план. ──
+      try {
+        const cn2 = clientName(ds); const D2 = new Date(ds.takenAt).toLocaleDateString('ru-RU');
+        const raw: RawRec[] = [
+          ...(siteAudit?.pages.flatMap((p) => p.fixes.map((f) => ({ pr: (f.crit === 'Блокирующая' ? 'P0' : f.crit === 'Высокая' ? 'P1' : 'P2') as RawRec['pr'], action: `${p.title}: ${f.what}`, effect: f.why, source: 'UX/UI' }))) ?? []),
+          ...(contentReport?.recommendations.map((r) => ({ ...r, source: 'Контент' })) ?? []),
+          ...(mechReport?.recommendations.map((r) => ({ ...r, source: 'Механики' })) ?? []),
+          ...(journeyReport?.recommendations.map((r) => ({ ...r, source: 'Путь клиента' })) ?? []),
+          ...(techReport?.categories.flatMap((c) => c.checks.filter((ch) => ch.status === 'gap').map((ch) => ({ pr: 'P1' as const, action: ch.rec, effect: `Закрывает «${ch.label}»`, source: 'Технический' }))) ?? []),
+          ...(seoReport?.issues.map((i) => ({ pr: (i.level <= 1 ? 'P0' : 'P1') as RawRec['pr'], action: `${i.node}: ${i.action}`, effect: i.problem, source: 'SEO' })) ?? []),
+          ...(ciReport?.chains.map((c, i) => ({ pr: (i < 2 ? 'P0' : 'P1') as RawRec['pr'], action: c.action, effect: c.impact, source: 'CI' })) ?? []),
+        ];
+        const backlog = buildBacklog(cn2, ds.takenAt, raw);
+        await writeFile(join(dir, 'backlog.json'), JSON.stringify(backlog, null, 2), 'utf8');
+        await renderPdf(renderBacklogHtml(backlog), join(dir, 'Сводный-бэклог-A0.pdf'), browser);
+        log(`✓ Сводный бэклог (PDF): ${backlog.rawCount} рекомендаций → ${backlog.items.length} работ`);
+
+        // ── Протокол синергии и QA: пакет проверяет сам себя, нестыковки → резолюции. ──
+        const qa = await buildQa(cn2, ds.takenAt, {
+          siteAudit, content: contentReport, mech: mechReport, journey: journeyReport,
+          tech: techReport, seo: seoReport, ci: ciReport, bench, maturity: maturityReport,
+          backlog, money,
+        }, debugLog, log);
+        await writeFile(join(dir, 'qa.json'), JSON.stringify(qa, null, 2), 'utf8');
+        await renderPdf(renderQaHtml(qa), join(dir, 'Протокол-синергии-QA-A0.pdf'), browser);
+        log(`✓ Протокол синергии/QA (PDF): проверок ${qa.checksRun}, находок ${qa.findings.length}`);
       } catch (e) { log(`⚠️ активационный гейт не отработал (${String(e).slice(0, 100)})`); }
     }
 

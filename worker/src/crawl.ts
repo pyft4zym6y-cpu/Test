@@ -34,6 +34,7 @@ export type UxProbe = {
   guestCheckoutHint: boolean;   // намёк на гостевой чекаут
   smallTapTargets: number;      // кликабельных ниже 40px (Thumb Zone)
   baseFontPx: number;           // базовый кегль (читаемость на мобильном)
+  bodyWords: number;            // слов в тексте страницы (thin-content сигнал)
   blocks: Record<string, boolean>; // присутствие блоков композиции (для сверки с эталонным прототипом)
   annotations: Annotation[];    // маркеры на скриншоте первого экрана (A0 §9) — координаты во вьюпорте 1366×900
 };
@@ -73,6 +74,8 @@ export type SiteCrawl = {
   links: string[]; // внутренние URL, найденные обходом (для SEO-дерева)
   pageTypes?: PageTypeCoverage[]; // карта уникальных типов страниц (100% + переменные)
   soft404?: boolean | null;       // несуществующий URL отдаёт 200 («мягкая 404») — дефект индексации
+  ai?: { llmsTxt: boolean; blockedBots: string[] }; // GEO/AEO: llms.txt и доступ AI-краулеров
+  secHeaders?: { csp: boolean; hsts: boolean; xfo: boolean }; // заголовки безопасности главной
   error?: string;
 };
 
@@ -243,6 +246,7 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
   const guestCheckoutHint = /без реєстрац|без регистрац|guest|гостев|как гость|як гість/i.test(text);
   let smallTapTargets = 0;
   ($$('a, button, [role="button"], input[type="submit"]')).slice(0, 200).forEach((el) => { try { const r = el.getBoundingClientRect(); if (r.width > 0 && r.height > 0 && r.height < 40) smallTapTargets++; } catch { /* noop */ } });
+  const bodyWords = (document.body?.textContent ?? '').trim().split(/\s+/).length;
   let baseFontPx = 16;
   try { baseFontPx = parseFloat(getComputedStyle(document.body).fontSize) || 16; } catch { /* noop */ }
   // ── Присутствие блоков композиции (для сверки с эталонным прототипом страницы) ──
@@ -323,7 +327,7 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
   const ux: UxProbe = {
     foldButtons, primaryCtaAboveFold, navItems, breadcrumbs, stickyHeader, headingLevels, distinctButtonColors,
     productCards, filters, sortControl, galleryImages, addToCartProminent, variantSelector, priceVisible,
-    trustBadges, paymentIcons, reviews, formFields, guestCheckoutHint, smallTapTargets, baseFontPx, blocks, annotations,
+    trustBadges, paymentIcons, reviews, formFields, guestCheckoutHint, smallTapTargets, baseFontPx, bodyWords, blocks, annotations,
   };
 
   return { checks: out, kindSignals, tech, ux };
@@ -585,6 +589,20 @@ export async function crawlSite(
     try {
       const r = await ctx.request.get(`${origin}/robots.txt`, { timeout: 8000 }).catch(() => null);
       out.robotsTxt = Boolean(r && r.ok());
+      // GEO/AEO-слой: не заблокированы ли AI-краулеры и есть ли llms.txt.
+      if (kind === 'client') {
+        try {
+          const robotsBody = out.robotsTxt && r ? await r.text() : '';
+          const BOTS = ['GPTBot', 'OAI-SearchBot', 'ClaudeBot', 'Claude-SearchBot', 'PerplexityBot', 'Google-Extended'];
+          const blockedBots = BOTS.filter((b) => new RegExp(`user-agent:\\s*${b}[\\s\\S]{0,200}?disallow:\\s*/\\s*$`, 'im').test(robotsBody));
+          const llms = await ctx.request.get(`${origin}/llms.txt`, { timeout: 6000 }).catch(() => null);
+          const llmsTxt = Boolean(llms && llms.ok() && (await llms.text().catch(() => '')).trim().length > 20);
+          out.ai = { llmsTxt, blockedBots };
+          const hd = await ctx.request.get(origin, { timeout: 8000, maxRedirects: 3 }).catch(() => null);
+          const H = (n: string) => Boolean(hd?.headers()?.[n]);
+          out.secHeaders = { csp: H('content-security-policy'), hsts: H('strict-transport-security'), xfo: H('x-frame-options') || H('content-security-policy') };
+        } catch { /* noop */ }
+      }
       const smUrls = await fetchSitemapUrls(ctx, origin);
       out.sitemapXml = smUrls.length > 0;
       addLinks(smUrls);

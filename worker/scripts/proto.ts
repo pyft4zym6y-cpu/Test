@@ -39,6 +39,8 @@ import { renderMechanicsHtml } from '../src/export/mechanicsHtml.js';
 import { buildJourneyReport, type JourneyStep } from '../src/journey.js';
 import { renderJourneyHtml } from '../src/export/journeyHtml.js';
 import { renderPdf, closePdfBrowser } from '../src/pdf.js';
+import { buildBacklog, renderBacklogHtml, type RawRec } from '../src/backlog.js';
+import { buildQa, renderQaHtml } from '../src/qa.js';
 
 const ORIGIN = 'https://lavanda-home.example';
 const OUT = process.argv[2] || 'proto-out';
@@ -69,7 +71,7 @@ function mkUx(blocks: Record<string, boolean>, over: Partial<UxProbe> = {}): UxP
     sortControl: Boolean(blocks.sort), galleryImages: 0, addToCartProminent: Boolean(blocks.add_to_cart),
     variantSelector: Boolean(blocks.variants), priceVisible: Boolean(blocks.price), trustBadges: Boolean(blocks.trust),
     paymentIcons: Boolean(blocks.payment), reviews: Boolean(blocks.reviews), formFields: 0, guestCheckoutHint: Boolean(blocks.guest_checkout),
-    smallTapTargets: 2, baseFontPx: 15, blocks, annotations: [], ...over,
+    smallTapTargets: 2, baseFontPx: 15, bodyWords: 420, blocks, annotations: [], ...over,
   };
 }
 
@@ -292,21 +294,6 @@ async function main(): Promise<void> {
   const done: string[] = [];
   const pdf = async (html: string, name: string) => { await renderPdf(html, out(name)); done.push(name); console.log('✓', name); };
 
-  const siteAudit = buildSiteAudit(ds);
-  await pdf(renderAuditHtml(siteAudit), 'UX-UI-аудит-A0.pdf');
-  await pdf(renderSeoArchHtml(buildSeoArch(ds)), 'SEO-Architecture-A0.pdf');
-  await pdf(renderTechAuditHtml(buildTechAudit(ds)), 'Технический-аудит-A0.pdf');
-  await pdf(renderContentAuditHtml(buildContentAudit(ds)), 'Content-Audit-A0.pdf');
-  await pdf(renderIntelligenceHtml(buildIntelligence(ds)), 'Commerce-Intelligence-Audit-A0.pdf');
-  await pdf(renderChannelsHtml(buildChannels(ds)), 'Аудит-каналов-A0.pdf');
-  const bench = buildBenchmark(ds);
-  if (bench) await pdf(renderCompetitorHtml(bench, cn, ds.takenAt), 'Конкурентный-анализ-A0.pdf');
-  await pdf(renderHypothesesPdf(buildHypotheses(ANALYSIS), cn, D), 'Реестр-гипотез-A0.pdf');
-  await pdf(renderMaturityPdf(buildMaturity(ds), cn, D), 'Матрица-зрелости-A0.pdf');
-  await pdf(renderScopePdf(buildScope(ds, { analysis: ANALYSIS }), cn, D), 'Scope-по-волнам-A0.pdf');
-  await pdf(renderPriceChannelPdf(buildPriceChannel(ds), cn, D), 'Цена-в-канале-A0.pdf');
-  await pdf(renderMechanicsHtml(buildMechanics(ds)), 'Маркетинговые-механики-A0.pdf');
-
   // Journey — синтетический протокол прохождения (в бою шаги выполняет реальный браузер)
   const JS = (n: number, stage: string, action: string, expected: string, result: string, status: JourneyStep['status'], dims: JourneyStep['dims']): JourneyStep => ({ n, stage, action, expected, result, status, dims });
   const journeySteps: JourneyStep[] = [
@@ -319,14 +306,52 @@ async function main(): Promise<void> {
     JS(7, 'Корзина', 'Открываю корзину', 'Добавленный товар в корзине: количество, сумма, следующий шаг', 'корзина открылась, состав и сумма читаются', 'пройден', ['CRO', 'UX']),
     JS(8, 'Чекаут', 'Перехожу к оформлению (не оформляю заказ)', 'Форма ≤8–10 полей, гостевой заказ возможен', 'форма из 9 видимых полей, похоже на принудительную регистрацию', 'спотыкание', ['CRO', 'UX']),
     JS(9, 'Тупик: страница 404', 'Открываю несуществующий адрес', 'Честная 404 с навигацией и поиском — мягкая посадка', '404 с навигацией — покупатель не теряется', 'пройден', ['SEO', 'UX']),
+    JS(10, 'Мобильный: вход', 'Открываю главную на смартфоне (390px)', 'Страница адаптивна, без горизонтального скролла', 'адаптив в порядке', 'пройден', ['MOB', 'UX']),
+    JS(11, 'Мобильный: покупка', 'Открываю карточку и проверяю кнопку «в корзину» под палец', 'Кнопка достижима и ≥40px (thumb zone)', 'кнопка покупки удобна для тапа', 'пройден', ['MOB', 'CRO']),
   ];
-  await pdf(renderJourneyHtml(buildJourneyReport(journeySteps, ds.client.finalUrl, ds.takenAt)), 'Карта-пути-клиента-A0.pdf');
+  const journeyReport = buildJourneyReport(journeySteps, ds.client.finalUrl, ds.takenAt);
+  await pdf(renderJourneyHtml(journeyReport), 'Карта-пути-клиента-A0.pdf');
+
+  const siteAudit = buildSiteAudit(ds, { journey: journeySteps });
+  await pdf(renderAuditHtml(siteAudit), 'UX-UI-аудит-A0.pdf');
+  await pdf(renderSeoArchHtml(buildSeoArch(ds)), 'SEO-Architecture-A0.pdf');
+  await pdf(renderTechAuditHtml(buildTechAudit(ds)), 'Технический-аудит-A0.pdf');
+  await pdf(renderContentAuditHtml(buildContentAudit(ds)), 'Content-Audit-A0.pdf');
+  await pdf(renderIntelligenceHtml(buildIntelligence(ds)), 'Commerce-Intelligence-Audit-A0.pdf');
+  await pdf(renderChannelsHtml(buildChannels(ds)), 'Аудит-каналов-A0.pdf');
+  const bench = buildBenchmark(ds);
+  if (bench) await pdf(renderCompetitorHtml(bench, cn, ds.takenAt), 'Конкурентный-анализ-A0.pdf');
+  await pdf(renderHypothesesPdf(buildHypotheses(ANALYSIS), cn, D), 'Реестр-гипотез-A0.pdf');
+  await pdf(renderMaturityPdf(buildMaturity(ds), cn, D), 'Матрица-зрелости-A0.pdf');
+  await pdf(renderScopePdf(buildScope(ds, { analysis: ANALYSIS }), cn, D), 'Scope-по-волнам-A0.pdf');
+  await pdf(renderPriceChannelPdf(buildPriceChannel(ds), cn, D), 'Цена-в-канале-A0.pdf');
+  const mech = buildMechanics(ds);
+  await pdf(renderMechanicsHtml(mech), 'Маркетинговые-механики-A0.pdf');
 
   const cov = buildCoverage(ds, {});
   await pdf(renderCoveragePdf(cov, cn, D), 'Охват-и-уверенность-A0.pdf');
   await pdf(renderCausalPdf(buildCausal(ANALYSIS, null), cn, D), 'Причинно-следственная-карта-A0.pdf');
   await pdf(renderSynthesisPdf(SYNTHESIS, cn, D), 'Синтез-аудита-A0.pdf');
   await pdf(renderExecDiagnostic(ds, { siteAudit, analysis: ANALYSIS, engine: null, money: null, bench, coverage: cov }), 'Executive-Diagnostic-A0.pdf');
+
+  // Сводный бэклог + Протокол синергии/QA
+  const contentR = buildContentAudit(ds);
+  const seoR = buildSeoArch(ds);
+  const techR = buildTechAudit(ds);
+  const ciR = buildIntelligence(ds);
+  const raw: RawRec[] = [
+    ...siteAudit.pages.flatMap((p) => p.fixes.map((f) => ({ pr: (f.crit === 'Блокирующая' ? 'P0' : f.crit === 'Высокая' ? 'P1' : 'P2') as RawRec['pr'], action: `${p.title}: ${f.what}`, effect: f.why, source: 'UX/UI' }))),
+    ...contentR.recommendations.map((r) => ({ ...r, source: 'Контент' })),
+    ...mech.recommendations.map((r) => ({ ...r, source: 'Механики' })),
+    ...journeyReport.recommendations.map((r) => ({ ...r, source: 'Путь клиента' })),
+    ...techR.categories.flatMap((c) => c.checks.filter((ch) => ch.status === 'gap').map((ch) => ({ pr: 'P1' as const, action: ch.rec, effect: `Закрывает «${ch.label}»`, source: 'Технический' }))),
+    ...seoR.issues.map((i) => ({ pr: (i.level <= 1 ? 'P0' : 'P1') as RawRec['pr'], action: `${i.node}: ${i.action}`, effect: i.problem, source: 'SEO' })),
+    ...ciR.chains.map((c, i) => ({ pr: (i < 2 ? 'P0' : 'P1') as RawRec['pr'], action: c.action, effect: c.impact, source: 'CI' })),
+  ];
+  const backlog = buildBacklog(cn, ds.takenAt, raw);
+  await pdf(renderBacklogHtml(backlog), 'Сводный-бэклог-A0.pdf');
+  const qa = await buildQa(cn, ds.takenAt, { siteAudit, content: contentR, mech, journey: journeyReport, tech: techR, seo: seoR, ci: ciR, bench, maturity: buildMaturity(ds), backlog, money: null }, ['аналитический слой не отработал: Your credit balance is too low (пример записи прогона)']);
+  await pdf(renderQaHtml(qa), 'Протокол-синергии-QA-A0.pdf');
 
   await closePdfBrowser();
   console.log(`Готово: ${done.length} PDF в ${OUT}`);

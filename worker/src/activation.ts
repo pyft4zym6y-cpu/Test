@@ -33,6 +33,8 @@ const DOC_DOMAINS: Record<string, string[]> = {
   'Охват-и-уверенность-A0.pdf': ['commerce'],
   'Маркетинговые-механики-A0.pdf': ['commerce', 'retention', 'merchandising'],
   'Карта-пути-клиента-A0.pdf': ['ux', 'commerce'],
+  'Сводный-бэклог-A0.pdf': ['synthesis'],
+  'Протокол-синергии-QA-A0.pdf': ['synthesis'],
   'pagereport.json': ['product'],
 };
 

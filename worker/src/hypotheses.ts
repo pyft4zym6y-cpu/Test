@@ -8,7 +8,7 @@
 import type { AuditDataset } from './report.js';
 import type { Analysis } from './analyze.js';
 
-export type Hypothesis = { id: string; area: string; hypothesis: string; basis: string; verifyBy: string; falsifyIf: string; confidence: number };
+export type Hypothesis = { id: string; area: string; hypothesis: string; basis: string; verifyBy: string; falsifyIf: string; confidence: number; owner: string; cost: string };
 export type HypothesisRegister = { items: Hypothesis[] };
 
 function verifyBy(area: string): string {
@@ -42,7 +42,11 @@ export function buildHypotheses(a: Analysis): HypothesisRegister {
   let n = 1;
   const add = (area: string, hypothesis: string, basis: string, confidence: number) => {
     if (!hypothesis) return;
-    items.push({ id: `H-${String(n++).padStart(2, '0')}`, area, hypothesis, basis, verifyBy: verifyBy(area), falsifyIf: `Опровергается, если ${falsifyIf(area)}.`, confidence });
+    const a = area.toLowerCase();
+    // Владелец проверки: данные/доступы даёт клиент, измерения делает агентство.
+    const owner = /данн|доступ|деньг|оборот|заказ|прайс|опт/.test(a) ? 'клиент (данные/доступы)' : 'агентство (измерение) + клиент (доступ)';
+    const cost = /seo|техник|контент/.test(a) ? 'низкая (часы, инструменты есть)' : /ux|cro|конверс/.test(a) ? 'средняя (записи сессий/тест)' : 'низкая–средняя (выгрузка + разбор)';
+    items.push({ id: `H-${String(n++).padStart(2, '0')}`, area, hypothesis, basis, verifyBy: verifyBy(area), falsifyIf: `Опровергается, если ${falsifyIf(area)}.`, confidence, owner, cost });
   };
   // confidence нормирована в 0..1 (normConfidence) — пороги и константы в той же шкале,
   // иначе в PDF выходит «2500%» и в реестр попадают ВСЕ находки подряд.

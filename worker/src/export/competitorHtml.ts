@@ -12,9 +12,14 @@ const POS_WORD: Record<ParamRow['position'], string> = { lead: 'ведём', par
 
 export function renderCompetitorHtml(b: BenchmarkReport, client: string, takenAt: string): string {
   const date = new Date(takenAt).toLocaleDateString('ru-RU');
+  // Статистическая честность: при выборке <5 сайтов «рыночное лидерство» не
+  // заявляется — только позиция в выборке (QA-претензия «лидируем на 3 сайтах»).
+  const small = b.totalSites < 5;
   const verdict = b.narrative?.summary
-    || (b.clientRank === 1 ? `Лидируем по внешним признакам: индекс ${b.clientIndex}/100, 1-е место из ${b.totalSites}.`
-      : `Место ${b.clientRank} из ${b.totalSites} по внешнему индексу (${b.clientIndex}/100) — рынок опережает по ${b.clientBehind.length} параметрам.`);
+    || (b.clientRank === 1
+      ? (small ? `Первое место в выборке из ${b.totalSites} сайтов (индекс ${b.clientIndex}/100) — для вывода о рынке нужно 4+ конкурентов.`
+        : `Лидируем по внешним признакам: индекс ${b.clientIndex}/100, 1-е место из ${b.totalSites}.`)
+      : `Место ${b.clientRank} из ${b.totalSites} ${small ? 'в выборке' : 'по внешнему индексу'} (${b.clientIndex}/100) — впереди по ${b.clientBehind.length} параметрам другие сайты.`);
 
   const cover = `<section class="cover"><div class="cov-bar"></div><div class="cov-body">
     <div class="kicker">Commerce OS · Конкурентный анализ · слой A0</div>
@@ -56,13 +61,13 @@ export function renderCompetitorHtml(b: BenchmarkReport, client: string, takenAt
   // ── Консалтинговый каркас ──
   const meth = methodologySection({
     goal: 'Определить позицию клиента относительно рынка по внешним признакам витрины: где ведём, где отстаём, где на рынке свободная ниша.',
-    sources: [`Обход клиента и ${b.totalSites - 1} конкурентов тем же движком проверок`, 'Взвешенный внешний индекс (голд-стандарт, доверие, каталог, мобильные и др.)'],
+    sources: [`Обход клиента и ${b.totalSites - 1} конкурентов тем же движком проверок`, `Веса индекса (опубликованы, сумма = 100%): ${b.params.map((p) => p.name).join(', ')} — состав и вес каждого параметра приведены в таблице ниже`],
     scope: `${b.params.length} параметров сравнения · ${b.totalSites} сайтов · единая шкала (эталон = 100).`,
-    limits: 'Сравниваются только публичные признаки витрин. Трафик, экономика и цены конкурентов на этом слое не видны — позиции по ним не заявляются.',
+    limits: `Сравниваются только публичные признаки витрин; трафик и экономика конкурентов не видны. ${b.totalSites < 5 ? `Выборка из ${b.totalSites} сайтов статистически мала: выводы читаются как «в выборке», не как «на рынке».` : ''}`,
   });
   const behindRows = b.params.filter((p) => p.position === 'behind');
   const strengths = [
-    ...(b.clientRank === 1 ? [`Первое место из ${b.totalSites} по внешнему индексу (${b.clientIndex}/100) — витрина задаёт стандарт выборки`] : []),
+    ...(b.clientRank === 1 ? [`Первое место в выборке из ${b.totalSites} сайтов (${b.clientIndex}/100)${b.totalSites < 5 ? ' — вывод о рынке требует расширения выборки' : ' — витрина задаёт стандарт'}`] : []),
     ...b.params.filter((p) => p.position === 'lead').map((p) => `${p.name}: ${p.client} против лучших ${p.marketMax} у рынка — параметр-опора`),
   ];
   const weaknesses = behindRows.map((p) => `${p.name}: ${p.client} против ${p.marketMax} у лучшего конкурента — рынок здесь задаёт ожидание, которому витрина не отвечает`);

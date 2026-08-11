@@ -87,6 +87,7 @@ export function renderExecDiagnostic(ds: AuditDataset, inp: ExecInputs): string 
       <div><span class="lbl">Тир</span><span class="val">T${ds.tier}</span></div>
     </div>
     ${posture != null ? `<div class="cov-score"><div class="big ${scoreColor(posture)}">${posture}<span>%</span></div><div class="big-cap">внешнее соответствие эталону (UX/UI)</div></div>` : ''}
+    ${inp.money ? '' : `<div class="coverage" style="border-left-color:var(--gap);margin-bottom:8px"><b>Экономика не посчитана — и это первое решение, которое нужно принять.</b> Для денежной оценки каждого разрыва достаточно трёх цифр от владельца: месячный трафик, конверсия в заказ, средний чек. После их передачи бэклог и причинная карта получают денежные вилки вместо ориентиров. Аудит сознательно не выдумывает цифры (принцип честных данных).</div>`}
     <div class="coverage"><b>Coverage Map:</b> A0 — внешний срез без доступов. Разделы со статусом:
       <span class="chip done">DONE</span> внешне доказано · <span class="chip partial">PARTIAL</span> частично ·
       <span class="chip blocked">BLOCKED</span> нужен доступ/данные. Отсутствие данных не выдаётся за факт и не скрывается.</div>

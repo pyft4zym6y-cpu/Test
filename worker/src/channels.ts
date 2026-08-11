@@ -30,7 +30,9 @@ export function buildChannels(ds: AuditDataset): ChannelsReport {
     { channel: 'Ретаргетинг / Pixel', signal: has(/Pixel/) ? 'Meta Pixel есть' : 'не обнаружен', status: has(/Pixel/) ? 'ok' : 'check', next: 'A2: качество событий покупки, аудитории', dims: ['ANL', 'MKT'] },
     { channel: 'Поведенческая аналитика', signal: has(/Hotjar|Clarity/) ? [has(/Hotjar/) && 'Hotjar', has(/Clarity/) && 'MS Clarity'].filter(Boolean).join(' + ') : 'не обнаружена', status: has(/Hotjar|Clarity/) ? 'ok' : 'check', next: 'A2: карты кликов, записи, воронки' + (has(/Hotjar/) && has(/Clarity/) ? '; два инструмента одновременно — лишний вес, оставить один' : ''), dims: ['ANL', 'UX'] },
     { channel: 'Соцсети', signal: anyCheck('social') ? 'привязаны' : 'не обнаружены', status: st(anyCheck('social')), next: anyCheck('social') ? 'A1: активность и трафик из соцсетей' : 'Привязать соцсети, вести трафик на витрину', dims: ['MKT'] },
-    { channel: 'Email / SMS удержание', signal: anyBlock('newsletter') ? 'форма подписки есть' : 'не обнаружена', status: anyBlock('newsletter') ? 'ok' : 'gap', next: anyBlock('newsletter') ? 'A2: доля выручки email/SMS, флоу, deliverability' : 'Добавить захват контакта и welcome-флоу', dims: ['MKT', 'CRO'] },
+    // Внутренние retention-механики (подписка, баллы, триггеры) — в отчёте
+    // «Маркетинговые механики»; здесь только каналы привлечения и измерения,
+    // чтобы два документа не пересекались зонами ответственности.
     { channel: 'Органический поиск', signal: `${ds.client.sitemapXml ? 'sitemap есть' : 'нет sitemap'}, robots ${ds.client.robotsTxt ? 'есть' : 'нет'}`, status: ds.client.sitemapXml ? 'ok' : 'check', next: 'Детали — в SEO Architecture A0; позиции — Search Console на A1', dims: ['SEO'] },
     { channel: 'Платная реклама (Google/Meta Ads)', signal: 'снаружи не измеряется', status: 'blocked', next: 'A2: доступ к кабинетам — структура, расходы, ROAS', dims: ['MKT', 'ANL'] },
     { channel: 'Маркетплейсы', signal: 'публичные карточки — вне обхода сайта', status: 'blocked', next: 'A1: проверить присутствие; A2 — performance по данным', dims: ['MKT', 'COMP'] },

@@ -199,6 +199,30 @@ export async function runJourney(browser: Browser, origin: string, log?: (m: str
   } finally {
     await ctx.close().catch(() => {});
   }
+
+  /* 10 · Мобильный проход (компактный): вход → карточка → в корзину на 390×844. */
+  const mctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1' });
+  const mp = await mctx.newPage();
+  mp.setDefaultTimeout(12000);
+  try {
+    const resp = await mp.goto(origin, { waitUntil: 'domcontentloaded', timeout: 25000 }).catch(() => null);
+    const mOk = Boolean(resp && resp.status() < 400);
+    const horiz = mOk ? await mp.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 5).catch(() => false) : false;
+    add('Мобильный: вход', 'Открываю главную на смартфоне (390px)', 'Страница адаптивна, без горизонтального скролла', mOk ? (horiz ? 'горизонтальный скролл — вёрстка вылезает за экран' : 'адаптив в порядке') : 'не открылась', mOk ? (horiz ? 'спотыкание' : 'пройден') : 'тупик', ['MOB', 'UX']);
+    if (mOk) {
+      const prod = mp.locator(PRODUCT_LINK).first();
+      let mPdp = false;
+      if (await prod.count()) { await prod.click({ timeout: 8000 }).catch(() => {}); await mp.waitForTimeout(1200); mPdp = (await mp.locator(ADD_TO_CART).count()) > 0; }
+      const btn = mPdp ? mp.locator(ADD_TO_CART).first() : null;
+      let tapOk = false;
+      if (btn) { try { const bb = await btn.boundingBox(); tapOk = Boolean(bb && bb.height >= 40); } catch { /* noop */ } }
+      add('Мобильный: покупка', 'Открываю карточку и проверяю кнопку «в корзину» под палец', 'Кнопка достижима и ≥40px (thumb zone)', mPdp ? (tapOk ? 'кнопка покупки удобна для тапа' : 'кнопка покупки мала или недостижима без зума') : 'карточка на мобильном не открылась', mPdp ? (tapOk ? 'пройден' : 'спотыкание') : 'тупик', ['MOB', 'CRO']);
+    } else {
+      add('Мобильный: покупка', '—', 'Кнопка покупки под палец', 'шаг недостижим: мобильная главная не открылась', 'не проверялся', ['MOB']);
+    }
+  } catch { add('Мобильный: вход', 'Открываю главную на смартфоне', 'Адаптив без скролла', 'сбой мобильного контекста', 'спотыкание', ['MOB']); }
+  finally { await mctx.close().catch(() => {}); }
+
   log?.(`· journey: шагов ${steps.length}, тупиков ${steps.filter((s) => s.status === 'тупик').length}`);
   return steps;
 }

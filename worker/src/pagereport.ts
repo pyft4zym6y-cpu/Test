@@ -271,8 +271,39 @@ function verdictLine(pct: number): string {
   return 'Витрина далеко от эталона: рвётся путь клиента на большинстве типов страниц.';
 }
 
+/** Journey-связка: интерактивный дефект шага понижает оценку соответствующего
+ *  блока страницы (прод-претензия: «карточка 82%, а кнопка "в корзину" не даёт
+ *  реакции — как так?»). Статический балл не должен противоречить прохождению. */
+export type JourneyLink = { stage: string; status: string; result: string };
+const JOURNEY_TO_BLOCK: { stageRe: RegExp; kind: PageKind; blockName: RegExp }[] = [
+  { stageRe: /добавление в корзину/i, kind: 'pdp', blockName: /корзин|cta|кнопк/i },
+  { stageRe: /^поиск/i, kind: 'home', blockName: /поиск/i },
+  { stageRe: /^корзина/i, kind: 'cart', blockName: /состав|итог|summary/i },
+  { stageRe: /^чекаут/i, kind: 'checkout', blockName: /форма|контакт/i },
+  { stageRe: /избранное/i, kind: 'pdp', blockName: /wishlist|избранн/i },
+];
+function applyJourney(pages: PageReport[], journey: JourneyLink[]): void {
+  for (const step of journey) {
+    if (step.status !== 'тупик' && step.status !== 'спотыкание') continue;
+    const map = JOURNEY_TO_BLOCK.find((m) => m.stageRe.test(step.stage));
+    if (!map) continue;
+    const page = pages.find((p) => p.kind === map.kind);
+    if (!page) continue;
+    const row = page.rows.find((r) => map.blockName.test(r.name)) ?? page.rows.find((r) => r.state === 'ok' && /cta|кнопк|корзин|форма/i.test(r.name));
+    if (!row || row.state === 'gap') continue;
+    const drop = step.status === 'тупик' ? row.score : Math.min(row.score, Math.max(1, row.score - 1));
+    page.score -= step.status === 'тупик' ? row.score : row.score - drop;
+    row.score = step.status === 'тупик' ? 0 : drop;
+    row.state = step.status === 'тупик' ? 'gap' : 'check';
+    row.wordVerdict = step.status === 'тупик' ? 'критично' : 'проверить';
+    row.now = `${row.now}. Journey: ${step.result}`;
+    page.counts = { ok: page.rows.filter((r) => r.state === 'ok').length, check: page.rows.filter((r) => r.state === 'check').length, gap: page.rows.filter((r) => r.state === 'gap').length };
+    page.fixes.unshift({ what: `Интерактивный дефект (journey): ${step.stage.toLowerCase()}`, crit: step.status === 'тупик' ? 'Блокирующая' : 'Высокая', why: step.result });
+  }
+}
+
 /** Собирает полную модель постраничного аудита по эталону. */
-export function buildSiteAudit(ds: AuditDataset): SiteAuditReport {
+export function buildSiteAudit(ds: AuditDataset, opts: { journey?: JourneyLink[] } = {}): SiteAuditReport {
   const seen = new Set<PageKind>();
   const pages: PageReport[] = [];
   const tree: SiteTreeRow[] = [];
@@ -286,6 +317,7 @@ export function buildSiteAudit(ds: AuditDataset): SiteAuditReport {
       tree.push({ title: `${ref.title} (доп.)`, url: p.finalUrl || p.url, kind: p.kind, score: 0, max: 0, pct: p.score ?? 0 });
     }
   }
+  if (opts.journey?.length) applyJourney(pages, opts.journey);
   const totalScore = pages.reduce((s, p) => s + p.score, 0);
   const totalMax = pages.reduce((s, p) => s + p.max, 0);
   const totalPct = totalMax ? Math.round((totalScore / totalMax) * 100) : 0;

@@ -7,7 +7,7 @@ import { esc, doc, scoreColor, methodologySection, conclusionSection } from './r
 import type { MaturityReport } from '../maturity.js';
 import type { CoverageReport, LensStatus } from '../coverage.js';
 import type { HypothesisRegister } from '../hypotheses.js';
-import type { ScopeReport } from '../routing.js';
+import { PB_META, type ScopeReport } from '../routing.js';
 import type { PriceChannelReport } from '../pricechannel.js';
 import type { Synthesis } from '../synthesis.js';
 import type { CausalMap } from '../causal.js';
@@ -43,7 +43,7 @@ export function renderMaturityPdf(m: MaturityReport, client: string, date: strin
     goal: 'Показать, насколько системно управляется каждый домен бизнеса — от хаоса (L1) до оптимизации (L5) — и где зрелость ограничивает рост.',
     sources: ['Внешний обход: проверки и блоки страниц по доменам', 'Пороговая модель Commerce OS (доля пройденных проверок → уровень)'],
     scope: `${m.rows.length} доменов; на A0 наблюдаемы ${observedRows.length}, остальные ждут данных.`,
-    limits: 'Уровень домена «нужны данные» не оценивается и не усредняется — внешне его зрелость не видна.',
+    limits: 'Уровень домена «нужны данные» не оценивается и не усредняется — внешне его зрелость не видна. Важно: здесь измеряется управляемость отдельных ДОМЕНОВ (L1–L5); уровень в Commerce Intelligence — ступень развития бизнес-модели. Это разные шкалы, их числа и не должны совпадать.',
   });
   const conclM = conclusionSection([
     avg != null
@@ -94,11 +94,12 @@ export function renderHypothesesPdf(h: HypothesisRegister, client: string, date:
     <td class="h-hyp"><b>${esc(i.hypothesis)}</b><span class="h-area">${esc(i.area)}</span></td>
     <td class="h-basis">${esc(i.basis)}</td>
     <td class="h-verify">✓ ${esc(i.verifyBy)}<br>✕ ${esc(i.falsifyIf)}</td>
+    <td class="h-own">${esc(i.owner)}<span class="h-cost">${esc(i.cost)}</span></td>
     <td class="h-conf ${cCls(i.confidence)}">${Math.round(i.confidence * 100)}%</td>
   </tr>`).join('');
   const body = `<section class="block"><h2>Гипотезы: что проверить и чем опровергнуть</h2>
     <p class="lead">На L0 большинство выводов — гипотезы: у каждой способ подтверждения и условие опровержения (A1–A2).</p>
-    ${h.items.length ? `<table><thead><tr><th>ID</th><th>Гипотеза</th><th>Основание</th><th>Проверка / опровержение</th><th>Увер.</th></tr></thead><tbody>${rows}</tbody></table>` : '<p class="lead">Гипотезы появятся после аналитического слоя (нужен ключ Claude).</p>'}</section>`;
+    ${h.items.length ? `<table><thead><tr><th>ID</th><th>Гипотеза</th><th>Основание</th><th>Проверка / опровержение</th><th>Владелец · стоимость</th><th>Увер.</th></tr></thead><tbody>${rows}</tbody></table>` : '<p class="lead">Гипотезы появятся после аналитического слоя (нужен ключ Claude).</p>'}</section>`;
   const areas = Array.from(new Set(h.items.map((i) => i.area)));
   const lowConf = h.items.filter((i) => i.confidence < 0.5).length;
   const conclH = conclusionSection([
@@ -108,7 +109,7 @@ export function renderHypothesesPdf(h: HypothesisRegister, client: string, date:
     'У каждой гипотезы указано, какие данные её подтверждают и какой факт опровергает. Это превращает следующий шаг работ из «доверьтесь нам» в конечный список измерений с заранее известным критерием результата.',
     'По мере поступления данных гипотеза либо становится находкой-фактом (и попадает в основной отчёт), либо опровергается и снимается. Реестр живой: его пустение — метрика прогресса программы.',
   ], 'A1–A2: выполнить проверки по столбцу «Как проверить», начиная с гипотез, стоящих за P0-рекомендациями других отчётов.');
-  const extra = `.h-id{color:var(--muted);white-space:nowrap;} .h-hyp{font-weight:400;} .h-hyp b{display:block;} .h-area{font-size:8px;color:var(--muted);text-transform:uppercase;} .h-basis{color:#333;font-size:10px;} .h-verify{font-size:9px;color:#333;} .h-conf{font-weight:800;white-space:nowrap;}`;
+  const extra = `.h-id{color:var(--muted);white-space:nowrap;} .h-hyp{font-weight:400;} .h-hyp b{display:block;} .h-area{font-size:8px;color:var(--muted);text-transform:uppercase;} .h-basis{color:#333;font-size:10px;} .h-verify{font-size:9px;color:#333;} .h-conf{font-weight:800;white-space:nowrap;} .h-own{font-size:8.5px;color:#333;} .h-cost{display:block;color:var(--muted);font-size:8px;}`;
   return doc(`Реестр гипотез A0 · ${client}`, head('Commerce OS · Реестр гипотез · A0', `${h.items.length} гипотез со способом проверки и опровержения`, client, date, [['Гипотез', String(h.items.length)]], undefined, 'Реестр незнания: то, что нельзя утверждать на A0. Каждая гипотеза закрывается конкретными данными на следующем уровне.') + body + conclH + foot('Реестр гипотез A0', client, date), extra);
 }
 
@@ -117,8 +118,8 @@ export function renderScopePdf(s: ScopeReport, client: string, date: string): st
   const total = s.waves.reduce((n, w) => n + w.items.length, 0);
   const waves = s.waves.map((w) => `<section class="block"><h2>${/^волна/i.test(w.title) ? esc(w.title) : `Волна ${w.n}. ${esc(w.title)}`}</h2>
     <p class="lead">Что даёт волна: ${w.items.length} активаций плейбуков; каждая волна — самостоятельный результат.</p>
-    <table><thead><tr><th>Плейбук</th><th>Почему включён</th></tr></thead><tbody>${
-      w.items.map((it) => `<tr><td class="sc-pb">${esc(it.name || it.playbook)}</td><td class="sc-why">${esc(it.reasons.join('; '))}</td></tr>`).join('')
+    <table><thead><tr><th>Плейбук</th><th>Что входит</th><th>Почему включён</th><th>Усилия · срок</th></tr></thead><tbody>${
+      w.items.map((it) => { const m = PB_META[it.playbook]; return `<tr><td class="sc-pb">${esc(it.name || it.playbook)}<span class="sc-code">${esc(it.playbook)}</span></td><td class="sc-what">${esc(m?.what ?? '—')}</td><td class="sc-why">${esc(it.reasons.join('; '))}</td><td class="sc-eff">${esc(m ? `${m.effort} · ${m.duration}` : '—')}</td></tr>`; }).join('')
     }</tbody></table></section>`).join('');
   const ni = s.notIncluded.length ? `<section class="block"><h2>Вне scope на этом этапе</h2><ul>${s.notIncluded.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>` : '';
   const w1 = s.waves.find((w) => w.n === 1);
@@ -131,7 +132,7 @@ export function renderScopePdf(s: ScopeReport, client: string, date: string): st
       : 'Тактических работ (волна 1) не требуется — программа начинается с ядровых изменений.',
     'Волны режутся по времени и зависимостям, а не по качеству: каждая волна — самостоятельный результат с измеримым эффектом, а не «этап большого проекта», который нельзя сдать частями.',
   ], 'Согласовать волну 1 и метрики её успеха; деньги на каждую активацию считаются после baseline-данных (A1).');
-  const extra = `.sc-pb{font-weight:700;white-space:nowrap;} .sc-why{color:#333;}`;
+  const extra = `.sc-pb{font-weight:700;white-space:nowrap;} .sc-pb .sc-code{display:block;font-weight:400;font-size:7.5px;color:var(--muted);} .sc-what{font-size:9px;color:#333;} .sc-why{color:#333;font-size:9px;} .sc-eff{font-size:9px;white-space:nowrap;color:#333;}`;
   return doc(`Scope по волнам A0 · ${client}`, head('Commerce OS · Scope программы · A0', `Программа из ${s.waves.length} волн (${total} активаций), режем по волнам, а не по качеству`, client, date, [['Волн', String(s.waves.length)], ['Активаций', String(total)]], undefined, 'Разбивка работ на волны: каждая волна даёт измеримый результат сама по себе и не ждёт следующих. Приоритет — по остаточному вкладу и зависимостям.') + waves + ni + conclS + foot('Scope по волнам A0', client, date), extra);
 }
 
