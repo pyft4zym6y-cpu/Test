@@ -35,6 +35,7 @@ export type UxProbe = {
   smallTapTargets: number;      // кликабельных ниже 40px (Thumb Zone)
   baseFontPx: number;           // базовый кегль (читаемость на мобильном)
   bodyWords: number;            // слов в тексте страницы (thin-content сигнал)
+  socialLinks: string[];        // внешние ссылки на соцпрофили (для аудита соцсетей)
   blocks: Record<string, boolean>; // присутствие блоков композиции (для сверки с эталонным прототипом)
   annotations: Annotation[];    // маркеры на скриншоте первого экрана (A0 §9) — координаты во вьюпорте 1366×900
 };
@@ -247,6 +248,8 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
   let smallTapTargets = 0;
   ($$('a, button, [role="button"], input[type="submit"]')).slice(0, 200).forEach((el) => { try { const r = el.getBoundingClientRect(); if (r.width > 0 && r.height > 0 && r.height < 40) smallTapTargets++; } catch { /* noop */ } });
   const bodyWords = (document.body?.textContent ?? '').trim().split(/\s+/).length;
+  const socialLinks = Array.from(new Set($$('a[href]').map((a) => (a as HTMLAnchorElement).href)
+    .filter((h) => /instagram\.com|facebook\.com|tiktok\.com|youtube\.com|t\.me\/|pinterest\.|linkedin\.com|x\.com\/|twitter\.com/i.test(h)))).slice(0, 12);
   let baseFontPx = 16;
   try { baseFontPx = parseFloat(getComputedStyle(document.body).fontSize) || 16; } catch { /* noop */ }
   // ── Присутствие блоков композиции (для сверки с эталонным прототипом страницы) ──
@@ -327,7 +330,7 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
   const ux: UxProbe = {
     foldButtons, primaryCtaAboveFold, navItems, breadcrumbs, stickyHeader, headingLevels, distinctButtonColors,
     productCards, filters, sortControl, galleryImages, addToCartProminent, variantSelector, priceVisible,
-    trustBadges, paymentIcons, reviews, formFields, guestCheckoutHint, smallTapTargets, baseFontPx, bodyWords, blocks, annotations,
+    trustBadges, paymentIcons, reviews, formFields, guestCheckoutHint, smallTapTargets, baseFontPx, bodyWords, socialLinks, blocks, annotations,
   };
 
   return { checks: out, kindSignals, tech, ux };

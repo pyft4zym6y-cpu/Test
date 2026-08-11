@@ -41,6 +41,8 @@ import { renderJourneyHtml } from '../src/export/journeyHtml.js';
 import { renderPdf, closePdfBrowser } from '../src/pdf.js';
 import { buildBacklog, renderBacklogHtml, type RawRec } from '../src/backlog.js';
 import { buildQa, renderQaHtml } from '../src/qa.js';
+import { buildSocialAudit, buildMentionsAudit, buildReviewsAudit } from '../src/externalAudits.js';
+import { renderSocialHtml, renderMentionsHtml, renderReviewsHtml } from '../src/export/externalHtml.js';
 
 const ORIGIN = 'https://lavanda-home.example';
 const OUT = process.argv[2] || 'proto-out';
@@ -71,7 +73,7 @@ function mkUx(blocks: Record<string, boolean>, over: Partial<UxProbe> = {}): UxP
     sortControl: Boolean(blocks.sort), galleryImages: 0, addToCartProminent: Boolean(blocks.add_to_cart),
     variantSelector: Boolean(blocks.variants), priceVisible: Boolean(blocks.price), trustBadges: Boolean(blocks.trust),
     paymentIcons: Boolean(blocks.payment), reviews: Boolean(blocks.reviews), formFields: 0, guestCheckoutHint: Boolean(blocks.guest_checkout),
-    smallTapTargets: 2, baseFontPx: 15, bodyWords: 420, blocks, annotations: [], ...over,
+    smallTapTargets: 2, baseFontPx: 15, bodyWords: 420, socialLinks: [], blocks, annotations: [], ...over,
   };
 }
 
@@ -327,6 +329,29 @@ async function main(): Promise<void> {
   await pdf(renderPriceChannelPdf(buildPriceChannel(ds), cn, D), 'Цена-в-канале-A0.pdf');
   const mech = buildMechanics(ds);
   await pdf(renderMechanicsHtml(mech), 'Маркетинговые-механики-A0.pdf');
+
+  // Внешний контур (синтетические результаты web-поиска — в бою собирает Claude)
+  ds.client.pages[0].ux!.socialLinks = ['https://instagram.com/lavanda.home', 'https://facebook.com/lavandahome'];
+  const social = await buildSocialAudit(ds, undefined, [
+    { platform: 'Instagram', url: 'https://instagram.com/lavanda.home', found: 'на сайте', activity: '~12 тыс. подписчиков, посты 2–3 р/нед', note: 'живой профиль, ведёт на сайт' },
+    { platform: 'Facebook', url: 'https://facebook.com/lavandahome', found: 'на сайте', activity: '~4 тыс., дубли Instagram', note: 'ведётся по остаточному принципу' },
+    { platform: 'TikTok', url: 'https://tiktok.com/@lavanda.home', found: 'поиском', activity: '~3 тыс., 2 видео за 90 дней', note: 'профиль существует, но НЕ привязан к сайту' },
+  ]);
+  await pdf(renderSocialHtml(social), 'Аудит-соцсетей-A0.pdf');
+  const mentions = await buildMentionsAudit(ds, undefined, [
+    { source: 'Hotline.ua', kind: 'каталог', tone: 'нейтрально', what: 'Карточка магазина с ценами, 4 отзыва, профиль не заполнен брендом' },
+    { source: 'Форум родителей (обсуждение текстиля)', kind: 'форум', tone: 'позитив', what: 'Рекомендуют качество сатина, спрашивают о размерах — бренд в диалоге не участвует' },
+    { source: 'Rozetka (продавец-посредник)', kind: 'маркетплейс', tone: 'нейтрально', what: 'Товары бренда продаёт третье лицо на 8–12% дороже; карточки без фирменных фото' },
+    { source: 'Instagram-обзорщик домашнего декора', kind: 'соцсети', tone: 'позитив', what: 'Обзор комплекта с отметкой бренда, ~15 тыс. просмотров' },
+    { source: 'Отзовик otzyvua', kind: 'отзовик', tone: 'негатив', what: 'Две жалобы на сроки доставки в декабре — без ответа магазина' },
+  ]);
+  await pdf(renderMentionsHtml(mentions), 'Внешний-инфофон-A0.pdf');
+  const reviews = await buildReviewsAudit(ds, undefined, [
+    { place: 'Google Maps', kind: 'внешний', status: 'найдено', rating: '4.6/5', count: '~38', note: 'хвалят качество, две жалобы на упаковку' },
+    { place: 'Rozetka (карточки посредника)', kind: 'внешний', status: 'найдено', rating: '4.4/5', count: '~57', note: 'отзывы копятся у посредника, не у бренда' },
+    { place: 'Trustpilot', kind: 'внешний', status: 'не найдено', rating: '—', count: '—', note: 'профиль не создан' },
+  ]);
+  await pdf(renderReviewsHtml(reviews), 'Аудит-отзывов-A0.pdf');
 
   const cov = buildCoverage(ds, {});
   await pdf(renderCoveragePdf(cov, cn, D), 'Охват-и-уверенность-A0.pdf');

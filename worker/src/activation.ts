@@ -35,6 +35,9 @@ const DOC_DOMAINS: Record<string, string[]> = {
   'Карта-пути-клиента-A0.pdf': ['ux', 'commerce'],
   'Сводный-бэклог-A0.pdf': ['synthesis'],
   'Протокол-синергии-QA-A0.pdf': ['synthesis'],
+  'Аудит-соцсетей-A0.pdf': ['paid', 'brand'],
+  'Внешний-инфофон-A0.pdf': ['brand'],
+  'Аудит-отзывов-A0.pdf': ['commerce', 'brand'],
   'pagereport.json': ['product'],
 };
 

@@ -39,6 +39,8 @@ import { renderMechanicsHtml } from './export/mechanicsHtml.js';
 import { runJourney, buildJourneyReport } from './journey.js';
 import { renderJourneyHtml } from './export/journeyHtml.js';
 import { buildBacklog, renderBacklogHtml, type RawRec } from './backlog.js';
+import { buildSocialAudit, buildMentionsAudit, buildReviewsAudit } from './externalAudits.js';
+import { renderSocialHtml, renderMentionsHtml, renderReviewsHtml } from './export/externalHtml.js';
 import { buildQa, renderQaHtml } from './qa.js';
 import { renderPdf, closePdfBrowser } from './pdf.js';
 import { exportCoverageDocx } from './export/coverageDocx.js';
@@ -263,6 +265,27 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await renderPdf(renderMechanicsHtml(mech), join(dir, 'Маркетинговые-механики-A0.pdf'), browser);
         log(`✓ Маркетинговые механики A0 (PDF): активно ${mech.score.have}/${mech.score.measurable} (${mech.score.pct}%)`);
       } catch (e) { log(`⚠️ PDF Маркетинговые механики не собрался (${String(e).slice(0, 120)})`); }
+
+      // Внешний контур: соцсети, инфофон бренда, отзывы (сайт + внешние площадки).
+      // Внешний слой собирает Claude web_search; без ключа — честный BLOCKED-режим.
+      try {
+        const social = await buildSocialAudit(ds, log);
+        await writeFile(join(dir, 'social.json'), JSON.stringify(social, null, 2), 'utf8');
+        await renderPdf(renderSocialHtml(social), join(dir, 'Аудит-соцсетей-A0.pdf'), browser);
+        log(`✓ Аудит соцсетей A0 (PDF): привязано ${social.linked}/${social.profiles.length}${social.searched ? ', внешний поиск выполнен' : ''}`);
+      } catch (e) { log(`⚠️ Аудит соцсетей не собрался (${String(e).slice(0, 120)})`); }
+      try {
+        const mentions = await buildMentionsAudit(ds, log);
+        await writeFile(join(dir, 'mentions.json'), JSON.stringify(mentions, null, 2), 'utf8');
+        await renderPdf(renderMentionsHtml(mentions), join(dir, 'Внешний-инфофон-A0.pdf'), browser);
+        log(`✓ Внешний инфофон A0 (PDF): упоминаний ${mentions.mentions.length}${mentions.searched ? '' : ' (поиск заблокирован)'}`);
+      } catch (e) { log(`⚠️ Внешний инфофон не собрался (${String(e).slice(0, 120)})`); }
+      try {
+        const reviews = await buildReviewsAudit(ds, log);
+        await writeFile(join(dir, 'reviews.json'), JSON.stringify(reviews, null, 2), 'utf8');
+        await renderPdf(renderReviewsHtml(reviews), join(dir, 'Аудит-отзывов-A0.pdf'), browser);
+        log(`✓ Аудит отзывов A0 (PDF): источников ${reviews.sources.length}`);
+      } catch (e) { log(`⚠️ Аудит отзывов не собрался (${String(e).slice(0, 120)})`); }
 
       // Аудит каналов A0 — внешние сигналы каналов (A0).
       try {
