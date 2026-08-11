@@ -28,6 +28,8 @@ import { renderTechAuditHtml } from './export/techAuditHtml.js';
 import { buildContentAudit } from './contentaudit.js';
 import { renderContentAuditHtml } from './export/contentAuditHtml.js';
 import { renderCompetitorHtml } from './export/competitorHtml.js';
+import { buildChannels } from './channels.js';
+import { renderChannelsHtml } from './export/channelsHtml.js';
 import { renderPdf } from './pdf.js';
 import { exportCoverageDocx } from './export/coverageDocx.js';
 import { buildCoverage, renderCoverageMd } from './coverage.js';
@@ -214,6 +216,14 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await renderPdf(renderContentAuditHtml(content), join(dir, 'Content-Audit-A0.pdf'), browser);
         log(`✓ Content Audit A0 (PDF): типов страниц ${content.rows.length}`);
       } catch (e) { log(`⚠️ PDF Content Audit A0 не собрался (${String(e).slice(0, 120)})`); }
+
+      // Аудит каналов A0 — внешние сигналы каналов (A0).
+      try {
+        const channels = buildChannels(ds);
+        await writeFile(join(dir, 'channels.json'), JSON.stringify(channels, null, 2), 'utf8');
+        await renderPdf(renderChannelsHtml(channels), join(dir, 'Аудит-каналов-A0.pdf'), browser);
+        log(`✓ Аудит каналов A0 (PDF): зашито ${channels.wired}/${channels.rows.length}, blocked ${channels.blocked}`);
+      } catch (e) { log(`⚠️ PDF Аудит каналов A0 не собрался (${String(e).slice(0, 120)})`); }
 
       // Конкурентный бенчмарк (AD-11) — когда есть обойдённые конкуренты.
       bench = buildBenchmark(ds);
