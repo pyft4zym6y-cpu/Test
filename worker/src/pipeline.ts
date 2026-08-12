@@ -415,6 +415,16 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         log(`✓ Реестр находок (PDF)${opts.premium ? ' + премиум' : ''}: ${rs.total} находок (P0 ${rs.p0} / P1 ${rs.p1} / P2 ${rs.p2}), exposure ≈ ${rs.exposureYear.toLocaleString('ru-RU')} ₴/год`);
       } catch (e) { log(`⚠️ реестр находок не собран (${String(e).slice(0, 100)})`); }
 
+      // ── Итоговое резюме: команда / сроки / бюджет / тактика vs стратегия из реестра. ──
+      if (registry?.length) {
+        try {
+          const { buildEngagement, renderEngagementHtml } = await import('./engagement.js');
+          const eng = buildEngagement(cn, ds.takenAt, registry);
+          await renderPdf(renderEngagementHtml(eng), join(dir, 'Итоговое-резюме.pdf'), browser);
+          log(`✓ Итоговое резюме (PDF): ${eng.tactical.count} тактических / ${eng.strategic.count} стратегических, команда ${eng.team.length} ролей`);
+        } catch (e) { log(`⚠️ итоговое резюме не собрано (${String(e).slice(0, 80)})`); }
+      }
+
       // Причинно-следственная карта → PDF (симптом → причина → деньги). Строится
       // ВСЕГДА: без аналитического слоя узлы достраиваются детерминированно из
       // системных дефектов и CI-цепочек; узлы связываются с ID реестра находок.
