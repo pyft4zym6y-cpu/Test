@@ -26,4 +26,5 @@
 .agent-mute:hover { color:var(--paper); border-color:var(--steel-600); }
 @keyframes blink { 50%{ opacity:0; } }
 @media (prefers-reduced-motion:reduce){ .agent-caret{ animation:none; } }
-@media (max-width:560px){ .agent{ max-width:76vw; } .agent-line{ max-width:56vw; } }
+/* на мобиле ужимаем, чтобы не сталкиваться со Score HUD справа */
+@media (max-width:640px){ .agent{ max-width:52vw; padding:9px 10px; gap:9px; } .agent-line{ max-width:34vw; } .agent-mute{ display:none; } }

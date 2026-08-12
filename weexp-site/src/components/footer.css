@@ -1,0 +1,12 @@
+.ft { border-top:1px solid var(--hair); padding:clamp(48px,8vh,88px) 0 30px; margin-top:clamp(40px,8vh,90px); }
+.ft-grid { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:clamp(24px,4vw,56px); }
+.ft-logo { background:none; border:none; color:var(--paper); font-family:var(--display); font-weight:700; font-size:24px; letter-spacing:-.01em; cursor:pointer; padding:0; }
+.ft-tag { color:var(--steel-400); font-size:14px; max-width:34ch; margin:14px 0 16px; line-height:1.5; }
+.ft-mail { color:var(--paper); text-decoration:none; font-size:12px; letter-spacing:.04em; border-bottom:1px solid var(--mark); padding-bottom:2px; }
+.ft-col { display:flex; flex-direction:column; gap:11px; align-items:flex-start; }
+.ft-h { font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--steel-600); margin-bottom:3px; }
+.ft-col button, .ft-col a { background:none; border:none; color:var(--steel-400); font-size:13px; cursor:pointer; text-decoration:none; text-align:left; padding:0; transition:color .2s; }
+.ft-col button:hover, .ft-col a:hover { color:var(--paper); }
+.ft-meta { color:var(--steel-600); font-size:11px; letter-spacing:.06em; }
+.ft-bottom { display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; margin-top:clamp(36px,6vh,64px); padding-top:20px; border-top:1px solid var(--hair); font-size:10.5px; letter-spacing:.06em; color:var(--steel-600); text-transform:uppercase; }
+@media (max-width:720px){ .ft-grid{ grid-template-columns:1fr 1fr; } .ft-brand{ grid-column:1 / -1; } }

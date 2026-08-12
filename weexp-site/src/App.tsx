@@ -14,7 +14,9 @@ import { Usp } from '@/components/Usp';
 import { States } from '@/components/States';
 import { Alternatives } from '@/components/Alternatives';
 import { Founder } from '@/components/Founder';
+import { Team } from '@/components/Team';
 import { Contact } from '@/components/Contact';
+import { Footer } from '@/components/Footer';
 import { ScoreHUD } from '@/components/ScoreHUD';
 import { Agent } from '@/components/Agent';
 import '@/lib/primitives.css';
@@ -38,7 +40,9 @@ export default function App() {
       <States />
       <Alternatives />
       <Founder />
+      <Team />
       <Contact />
+      <Footer />
       <ScoreHUD />
       <Agent />
     </ScoreProvider>
