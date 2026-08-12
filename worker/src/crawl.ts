@@ -30,6 +30,7 @@ export type UxProbe = {
   trustBadges: boolean;         // гарантия/возврат/безопасность
   paymentIcons: boolean;        // платёжные и контактные сигналы доверия
   reviews: boolean;             // отзывы/рейтинг
+  reviewCount?: number;         // распознанное число отзывов (schema reviewCount/ratingCount или текст «N відгуків»)
   formFields: number;           // видимых полей формы (длина чекаута)
   guestCheckoutHint: boolean;   // намёк на гостевой чекаут
   smallTapTargets: number;      // кликабельных ниже 40px (Thumb Zone)
@@ -252,6 +253,13 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
   const reviews = /відгук|отзыв|review|рейтинг|rating|★|☆/i.test(low)
     || Boolean($('[class*="review" i], [class*="rating" i], [itemprop="review"], [itemprop="aggregateRating"]'))
     || /"aggregateRating"/i.test(html);
+  // Число отзывов: сперва из schema (reviewCount/ratingCount), иначе из текста «N відгуків/отзывов».
+  const reviewCount = (() => {
+    const mSchema = html.match(/"(?:reviewCount|ratingCount)"\s*:\s*"?(\d{1,6})/i);
+    if (mSchema) return parseInt(mSchema[1], 10);
+    const mText = text.match(/(\d{1,5})\s*(відгук|відгуків|відгука|отзыв|отзыва|отзывов|review|reviews|оцінок|оцінка)/i);
+    return mText ? parseInt(mText[1], 10) : 0;
+  })();
   const formFields = $$('form input:not([type="hidden"]), form select, form textarea').length;
   const guestCheckoutHint = /без реєстрац|без регистрац|guest|гостев|как гость|як гість/i.test(text);
   let smallTapTargets = 0;
@@ -339,7 +347,7 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
   const ux: UxProbe = {
     foldButtons, primaryCtaAboveFold, navItems, breadcrumbs, stickyHeader, headingLevels, distinctButtonColors,
     productCards, filters, sortControl, galleryImages, addToCartProminent, variantSelector, priceVisible,
-    trustBadges, paymentIcons, reviews, formFields, guestCheckoutHint, smallTapTargets, baseFontPx, bodyWords, socialLinks, blocks, annotations,
+    trustBadges, paymentIcons, reviews, reviewCount, formFields, guestCheckoutHint, smallTapTargets, baseFontPx, bodyWords, socialLinks, blocks, annotations,
   };
 
   return { checks: out, kindSignals, tech, ux };
