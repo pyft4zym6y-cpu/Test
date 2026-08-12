@@ -1,0 +1,14 @@
+.tf { position:relative; height:360vh; }
+.tf-stage {
+  position:sticky; top:0; height:100vh; overflow:hidden; background:var(--ink-800);
+  display:flex; align-items:center;
+}
+.tf-canvas { position:absolute; inset:0; width:100%; height:100%; z-index:0; }
+.tf-copy { position:relative; z-index:2; }
+.tf-state { position:absolute; max-width:22ch; }
+.tf-state h2 { font-size:clamp(34px,6vw,88px); line-height:.98; margin:18px 0 0; }
+.tf-state p { margin-top:18px; max-width:32ch; color:var(--steel-400); font-size:clamp(15px,1.6vw,19px); }
+.tf-state.after { opacity:0; }
+.tf-state.after h2 { color:#EAF1EE; }
+/* the two states occupy the same anchor; copy sits left, map fills the stage */
+.tf-copy { min-height:40vh; }

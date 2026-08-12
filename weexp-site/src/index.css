@@ -1,0 +1,50 @@
+/* Real brand faces (Unbounded display + IBM Plex) via @fontsource — no CDN. */
+@import '@fontsource/unbounded/600.css';
+@import '@fontsource/unbounded/700.css';
+@import '@fontsource/unbounded/800.css';
+@import '@fontsource/ibm-plex-sans/400.css';
+@import '@fontsource/ibm-plex-sans/500.css';
+@import '@fontsource/ibm-plex-sans/600.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+
+:root {
+  --ink-900:#0A1218; --ink-800:#0F1A21; --ink-700:#16242C; --ink-600:#1E3038;
+  --verd-900:#143A31; --verd-800:#1F5648; --verd-700:#2A6D5C; --verd-600:#3A8873; --verd-500:#6FAA9A;
+  --mark:#D6362B; --mark-600:#F08379;
+  --steel-700:#6E7C86; --steel-600:#94A0A8; --steel-400:#D3D9DC;
+  --vel:#E7EAE7; --paper:#fff;
+  --hair:rgba(199,210,214,.18);
+
+  --display:'Unbounded','Arial Black',system-ui,sans-serif;
+  --sans:'IBM Plex Sans',system-ui,Arial,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+
+  /* global scroll progress 0..1, written by ScoreProvider */
+  --p:0;
+}
+
+* { box-sizing:border-box; margin:0; padding:0; }
+html { -webkit-text-size-adjust:100%; }
+body {
+  font-family:var(--sans); color:var(--vel); line-height:1.55;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  /* the whole site is one world that shifts ink -> emerald with the score */
+  background:
+    color-mix(in srgb, var(--verd-900) calc(var(--p) * 78%), var(--ink-900));
+  transition:background .15s linear;
+}
+.mono { font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:.04em; }
+.mk { color:var(--mark); }
+.eyebrow {
+  font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--steel-600); display:flex; align-items:center; gap:14px;
+}
+.eyebrow::after { content:""; height:1px; flex:1; background:var(--hair); }
+
+.wrap { width:min(100%,1320px); margin:0 auto; padding:0 clamp(20px,5vw,68px); }
+h1,h2 { font-family:var(--display); font-weight:800; letter-spacing:-.035em; line-height:.98; text-wrap:balance; color:var(--paper); }
+
+:focus-visible { outline:2px solid var(--mark); outline-offset:3px; }
+
+@media (prefers-reduced-motion:reduce){ body{ transition:none; } }
