@@ -7,6 +7,7 @@
  * слой заблокирован», без имитации данных.
  */
 import { createMessage, hasKey, extractJson, apiErrorHint } from './anthropic.js';
+import { reachGrounding } from './agentReach.js';
 import type { AuditDataset } from './report.js';
 
 /* ── Общий web-research вызов: web_search + строгий JSON в финале ── */
@@ -60,9 +61,10 @@ export async function buildSocialAudit(ds: AuditDataset, log?: (m: string) => vo
 
   // Внешний слой: активность профилей и потерянные (непривязанные) аккаунты.
   let searched = false;
+  const grounding = external !== undefined ? '' : await reachGrounding(client, 'social', log);
   const ext = external !== undefined ? external : await webResearch<{ profiles?: { platform: string; url?: string; activity?: string; note?: string }[] }>(
     'Ты — аудитор соцсетей e-commerce бренда. Найди официальные соцпрофили бренда и оцени базово: живой ли профиль (частота постов за 90 дней), порядок подписчиков, ведёт ли на сайт. Только факты из поиска; чего не нашёл — не выдумывай. Верни СТРОГО JSON {"profiles":[{"platform":"Instagram","url":"","activity":"~N подписчиков, посты раз в N дней","note":"вывод одной фразой"}]}',
-    `Бренд: ${client}. Известные профили с сайта: ${onSite.join(', ') || 'нет'}. Найди и оцени профили (Instagram, Facebook, TikTok, YouTube, Telegram).`, log,
+    `Бренд: ${client}. Известные профили с сайта: ${onSite.join(', ') || 'нет'}. Найди и оцени профили (Instagram, Facebook, TikTok, YouTube, Telegram).${grounding}`, log,
   ).then((r) => r?.profiles ?? null);
   if (ext) {
     searched = true;
@@ -109,9 +111,10 @@ export type MentionsReport = {
 
 export async function buildMentionsAudit(ds: AuditDataset, log?: (m: string) => void, external?: Mention[] | null): Promise<MentionsReport> {
   const client = hostOf(ds);
+  const grounding = external !== undefined ? '' : await reachGrounding(client, 'mentions', log);
   const ext = external !== undefined ? external : await webResearch<{ mentions?: Mention[] }>(
     'Ты — аналитик репутации e-commerce бренда. Найди, что и где пишут о бренде в интернете: СМИ, каталоги, форумы, маркетплейсы, соцобсуждения, отраслевые площадки. По каждому источнику: тип площадки, тональность, суть 1 фразой. Только найденные факты, ничего не выдумывай; если упоминаний мало — так и скажи в what. Верни СТРОГО JSON {"mentions":[{"source":"название площадки","kind":"СМИ|каталог|форум|маркетплейс|соцсети|отзовик","tone":"позитив|нейтрально|негатив","what":"суть 1 фразой","url":"..."}]} (5-12 записей)',
-    `Бренд/домен: ${client}. Найди упоминания бренда за пределами его сайта.`, log,
+    `Бренд/домен: ${client}. Найди упоминания бренда за пределами его сайта.${grounding}`, log,
   ).then((r) => r?.mentions ?? null);
   const searched = Boolean(ext);
   const mentions: Mention[] = ext ?? [];
@@ -168,9 +171,10 @@ export async function buildReviewsAudit(ds: AuditDataset, log?: (m: string) => v
     { place: 'Карточки товаров (PDP)', kind: 'на сайте', status: pdps.length ? (onPdp ? `отзывы на ${onPdp}/${pdps.length} разобранных` : 'отзывов нет ни на одной разобранной') : 'PDP не разобраны', rating: schemaRating ? 'в разметке' : 'разметки нет', count: pdpReviewCount > 0 ? `~${pdpReviewCount} (выборка ${pdps.length} карт.)` : (onPdp ? 'есть, число не распознано' : '—'), note: onPdp ? 'механика работает — проверить наполнение' : 'точка решения без социального доказательства' },
     { place: 'Страница отзывов о магазине', kind: 'на сайте', status: reviewsPage && reviewsPage.status !== 'не найдена' ? reviewsPage.status : 'не найдена', rating: '—', count: '—', note: reviewsPage && reviewsPage.status !== 'не найдена' ? 'репутационная страница есть' : 'репутация магазина не собрана в одном месте' },
   ];
+  const grounding = external !== undefined ? '' : await reachGrounding(client, 'reviews', log);
   const ext = external !== undefined ? external : await webResearch<{ sources?: { place: string; status?: string; rating?: string; count?: string; note?: string }[] }>(
     'Ты — аудитор репутации e-commerce. Найди отзывы о магазине/бренде на внешних площадках: Google Maps, маркетплейсы (Rozetka/Prom и локальные), отзовики, Trustpilot. По каждой: рейтинг, порядок числа отзывов, суть претензий/похвал 1 фразой. Только факты поиска. Верни СТРОГО JSON {"sources":[{"place":"площадка","status":"найдено|не найдено","rating":"4.2/5","count":"~120","note":"суть 1 фразой"}]} (3-8 записей)',
-    `Магазин/бренд: ${client}. Найди отзывы о нём на внешних площадках.`, log,
+    `Магазин/бренд: ${client}. Найди отзывы о нём на внешних площадках.${grounding}`, log,
   ).then((r) => r?.sources ?? null);
   const searched = Boolean(ext);
   if (ext) for (const e of ext) sources.push({ place: e.place, kind: 'внешний', status: e.status ?? 'найдено', rating: e.rating ?? 'н/д', count: e.count ?? 'н/д', note: e.note ?? '' });
