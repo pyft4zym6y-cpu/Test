@@ -28,15 +28,14 @@ function treeSection(r: SiteAuditReport): string {
       <td class="tree-name">${esc(t.title)}</td>
       <td class="tree-url">${esc(t.url.replace(/^https?:\/\//, ''))}</td>
       <td class="tree-bar"><span class="bar"><i class="fill ${cls}" style="width:${t.pct}%"></i></span></td>
-      <td class="tree-score ${cls}">${t.max ? `${t.score}/${t.max}` : '—'}</td>
       <td class="tree-pct ${cls}">${t.pct}%</td>
     </tr>`;
   }).join('');
   return `<section class="block tree">
     <h2>Дерево сайта: где рвётся путь клиента</h2>
-    <p class="lead">Постраничная оценка соответствия эталонной композиции. Цвет — severity, не украшение.</p>
-    <table class="tree-table"><thead><tr><th>Тип страницы</th><th>URL</th><th>Соответствие эталону</th><th>Балл</th><th>%</th></tr></thead><tbody>${rows}</tbody>
-    <tfoot><tr><td colspan="3">Итого по разобранным страницам</td><td class="${scoreColor(r.totalPct)}">${r.totalScore}/${r.totalMax}</td><td class="${scoreColor(r.totalPct)}">${r.totalPct}%</td></tr></tfoot></table>
+    <p class="lead">Постраничная оценка соответствия эталонной композиции (% выполненных блоков эталона). Цвет — severity, не украшение. Разбивка по баллам блоков — в карточке каждой страницы ниже.</p>
+    <table class="tree-table"><thead><tr><th>Тип страницы</th><th>URL</th><th>Соответствие эталону</th><th>Балл, %</th></tr></thead><tbody>${rows}</tbody>
+    <tfoot><tr><td colspan="3">Итого по разобранным страницам (${r.totalScore}/${r.totalMax} блоков)</td><td class="${scoreColor(r.totalPct)}">${r.totalPct}%</td></tr></tfoot></table>
   </section>`;
 }
 

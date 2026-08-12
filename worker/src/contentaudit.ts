@@ -42,6 +42,16 @@ const CONTENT_SPEC: Partial<Record<PageKind, Spec>> = {
 const KIND_LABEL: Record<PageKind, string> = { home: 'Главная', plp: 'Каталог', pdp: 'Карточка', cart: 'Корзина', checkout: 'Чекаут', content: 'Контент', faq: 'FAQ', other: 'Прочее' };
 const DIM_LABEL: Record<string, string> = { completeness: 'полнота', usefulness: 'полезность', persuasiveness: 'убедительность', intent: 'соответствие интенту' };
 
+// Человеко-понятные названия блоков для колонки «Комментарий» (что именно добавить).
+const BLOCK_RU: Record<string, string> = {
+  reviews: 'отзывы', trust: 'блок доверия (гарантия/возврат)', specifications: 'характеристики',
+  description: 'описание товара', gallery: 'галерею фото', related: 'похожие/сопутствующие товары',
+  delivery: 'условия доставки', payment: 'способы оплаты', faq: 'частые вопросы', usp_bar: 'блок преимуществ',
+  category_description: 'SEO-описание категории', category_title: 'заголовок категории', newsletter: 'подписку',
+  video: 'видео', qa: 'вопросы-ответы', specifications_table: 'таблицу характеристик', hero: 'первый экран',
+  product_count: 'счётчик товаров', filters: 'фильтры', sort: 'сортировку',
+};
+
 function scoreDim(blocks: Record<string, boolean>, keys: string[]): number {
   if (!keys.length) return 1;
   const present = keys.filter((k) => blocks[k]).length;
@@ -69,11 +79,22 @@ export function buildContentAudit(ds: AuditDataset): ContentReport {
     const dims: [string, number][] = [['полнота', completeness], ['полезность', usefulness], ['убедительность', persuasiveness], ['интент', intent]];
     const weak = dims.filter(([, v]) => v <= 2).map(([k]) => k);
     const missing = [...spec.completeness, ...spec.persuasiveness].filter((k) => !b[k]).slice(0, 3);
+    const missingRu = missing.map((k) => BLOCK_RU[k] ?? k);
     const words = p.ux?.bodyWords ?? 0;
-    const thin = words > 0 && words < (p.kind === 'pdp' ? 150 : p.kind === 'content' ? 300 : 80);
-    const note = `${weak.length
-      ? `Слабо: ${weak.join(', ')}${missing.length ? ` — нет блоков: ${missing.join(', ')}` : ''}`
-      : 'Контент закрывает основные вопросы решения'}${thin ? `. Тонкий текст: ~${words} слов` : ''}`;
+    const targetWords = p.kind === 'pdp' ? 150 : p.kind === 'content' ? 300 : 80;
+    const thin = words > 0 && words < targetWords;
+    // Язык версии vs фактический язык контента (замечание владельца).
+    const urlLangM = p.url.match(/\/(ua|uk|ru|en|pl|de)(\/|$)/i);
+    const urlLang = urlLangM ? urlLangM[1].toLowerCase().replace('uk', 'ua') : null;
+    const cLang = p.ux?.contentLang;
+    const langMismatch = urlLang && cLang && cLang !== '?' && cLang !== 'cyr' && urlLang !== cLang;
+    const note = [
+      weak.length
+        ? `Слабо: ${weak.join(', ')}${missingRu.length ? `. Добавить: ${missingRu.join(', ')}` : ''}`
+        : 'Контент закрывает основные вопросы решения',
+      thin ? `Текст тонкий (~${words} слов) — расширить минимум до ~${targetWords}` : '',
+      langMismatch ? `⚠ язык версии «${urlLang}», а контент похоже на «${cLang}» — проверить локализацию` : '',
+    ].filter(Boolean).join('. ');
     rows.push({ pageType: KIND_LABEL[p.kind], url: shortUrl(p.url), object: spec.object, completeness, usefulness, persuasiveness, intent, crit, note });
   }
   // Страницы, найденные картой типов, но не попавшие в разбор — честно перечисляются,

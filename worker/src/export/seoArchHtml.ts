@@ -31,7 +31,7 @@ export function renderSeoArchHtml(r: SeoArchReport): string {
     <td class="t-note ${t.severity}">${esc(t.note)}</td>
   </tr>`).join('');
   const tree = `<section class="block"><h2>Видимое дерево сайта</h2>
-    <p class="lead">Разделы первого уровня по числу найденных URL. Цвет — риск (параметрические дубли), не украшение.</p>
+    <p class="lead">Разделы первого уровня по числу найденных URL. Колонка «Сигнал» — короткая диагностика раздела: либо риск дублей (много URL с GET-параметрами — их надо закрывать canonical/robots, иначе поиск индексирует копии), либо объём вложенности (сколько подразделов внутри). Цвет: зелёный — норма, жёлтый — внимание, красный — риск дублей.</p>
     <table><thead><tr><th>Раздел (L1)</th><th>Назначение</th><th>Объём URL</th><th>Кол-во</th><th>Сигнал</th></tr></thead><tbody>${treeRows}</tbody></table></section>`;
 
   const issueRows = r.issues.map((i) => `<tr>

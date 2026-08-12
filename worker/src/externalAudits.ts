@@ -128,7 +128,7 @@ export async function buildMentionsAudit(ds: AuditDataset, log?: (m: string) => 
   const recommendations: Rec[] = [
     ...(neg.length ? [{ pr: 'P0' as const, action: 'Ответить на негатив на внешних площадках от имени бренда', effect: 'Негатив с ответом работает на доверие; без ответа — против бренда' }] : []),
     ...(searched && mentions.length < 4 ? [{ pr: 'P1' as const, action: 'Программа внешнего присутствия: каталоги, отраслевые подборки, PR-размещения', effect: 'Инфофон + E-E-A-T сигналы для поиска и AI-выдачи' }] : []),
-    { pr: 'P2', action: 'Регулярный мониторинг упоминаний (повтор этого свода раз в квартал)', effect: 'Негатив перехватывается до того, как его увидит покупатель' },
+    { pr: 'P2', action: `Мониторинг упоминаний с частотой по риску (${neg.length >= 2 ? 'еженедельно — активный негатив' : neg.length === 1 || mentions.length >= 8 ? 'раз в 2 недели — заметный объём' : mentions.length >= 3 ? 'раз в месяц' : 'раз в квартал — низкий объём'}): чем больше объём и негатив, тем чаще`, effect: 'Негатив перехватывается до того, как его увидит покупатель; частота растёт с риском' },
   ];
   const verdict = !searched ? 'Инфофон бренда: внешний слой заблокирован — детерминированных данных вне сайта нет.'
     : !mentions.length ? 'Упоминаний бренда за пределами сайта не найдено — инфофон пуст.'
@@ -161,9 +161,11 @@ export async function buildReviewsAudit(ds: AuditDataset, log?: (m: string) => v
   const onSitePresent = pages.some((p) => p.ux?.reviews);
   const schemaRating = pages.some((p) => p.checks.some((c) => c.id === 'schema-product' && c.pass));
   const reviewsPage = ds.client.pageTypes?.find((t) => t.id === 'reviews-page');
+  // Распознанное число отзывов по разобранным карточкам (schema reviewCount или текст).
+  const pdpReviewCount = pdps.reduce((s, p) => s + (p.ux?.reviewCount ?? 0), 0);
 
   const sources: ReviewSource[] = [
-    { place: 'Карточки товаров (PDP)', kind: 'на сайте', status: pdps.length ? (onPdp ? `отзывы на ${onPdp}/${pdps.length} разобранных` : 'отзывов нет ни на одной разобранной') : 'PDP не разобраны', rating: schemaRating ? 'в разметке' : 'разметки нет', count: '—', note: onPdp ? 'механика работает — проверить наполнение' : 'точка решения без социального доказательства' },
+    { place: 'Карточки товаров (PDP)', kind: 'на сайте', status: pdps.length ? (onPdp ? `отзывы на ${onPdp}/${pdps.length} разобранных` : 'отзывов нет ни на одной разобранной') : 'PDP не разобраны', rating: schemaRating ? 'в разметке' : 'разметки нет', count: pdpReviewCount > 0 ? `~${pdpReviewCount} (выборка ${pdps.length} карт.)` : (onPdp ? 'есть, число не распознано' : '—'), note: onPdp ? 'механика работает — проверить наполнение' : 'точка решения без социального доказательства' },
     { place: 'Страница отзывов о магазине', kind: 'на сайте', status: reviewsPage && reviewsPage.status !== 'не найдена' ? reviewsPage.status : 'не найдена', rating: '—', count: '—', note: reviewsPage && reviewsPage.status !== 'не найдена' ? 'репутационная страница есть' : 'репутация магазина не собрана в одном месте' },
   ];
   const ext = external !== undefined ? external : await webResearch<{ sources?: { place: string; status?: string; rating?: string; count?: string; note?: string }[] }>(

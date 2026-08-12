@@ -36,6 +36,7 @@ export type UxProbe = {
   smallTapTargets: number;      // кликабельных ниже 40px (Thumb Zone)
   baseFontPx: number;           // базовый кегль (читаемость на мобильном)
   bodyWords: number;            // слов в тексте страницы (thin-content сигнал)
+  contentLang: string;          // распознанный язык контента: ua|ru|en|cyr|? (сверка с языковой версией)
   socialLinks: string[];        // внешние ссылки на соцпрофили (для аудита соцсетей)
   blocks: Record<string, boolean>; // присутствие блоков композиции (для сверки с эталонным прототипом)
   annotations: Annotation[];    // маркеры на скриншоте первого экрана (A0 §9) — координаты во вьюпорте 1366×900
@@ -265,6 +266,20 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
   let smallTapTargets = 0;
   ($$('a, button, [role="button"], input[type="submit"]')).slice(0, 200).forEach((el) => { try { const r = el.getBoundingClientRect(); if (r.width > 0 && r.height > 0 && r.height < 40) smallTapTargets++; } catch { /* noop */ } });
   const bodyWords = (document.body?.textContent ?? '').trim().split(/\s+/).length;
+  // Язык контента: украинские маркеры (і/ї/є/ґ) vs русские (ы/э/ъ) + латиница — для сверки
+  // с языковой версией URL (страница /ua/ должна быть на украинском).
+  const langSample = text.slice(0, 8000);
+  const uaM = (langSample.match(/[іїєґ]/g) || []).length;
+  const ruM = (langSample.match(/[ыэъ]/g) || []).length;
+  const cyrM = (langSample.match(/[а-яіїєґ]/g) || []).length;
+  const latM = (langSample.match(/[a-z]/g) || []).length;
+  let contentLang = '?';
+  if (cyrM + latM > 40) {
+    if (latM > cyrM * 2) contentLang = 'en';
+    else if (uaM > ruM && uaM > 0) contentLang = 'ua';
+    else if (ruM > uaM && ruM > 0) contentLang = 'ru';
+    else contentLang = 'cyr';
+  }
   const socialLinks = Array.from(new Set($$('a[href]').map((a) => (a as HTMLAnchorElement).href)
     .filter((h) => /instagram\.com|facebook\.com|tiktok\.com|youtube\.com|t\.me\/|pinterest\.|linkedin\.com|x\.com\/|twitter\.com/i.test(h)))).slice(0, 12);
   let baseFontPx = 16;
@@ -347,7 +362,7 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
   const ux: UxProbe = {
     foldButtons, primaryCtaAboveFold, navItems, breadcrumbs, stickyHeader, headingLevels, distinctButtonColors,
     productCards, filters, sortControl, galleryImages, addToCartProminent, variantSelector, priceVisible,
-    trustBadges, paymentIcons, reviews, reviewCount, formFields, guestCheckoutHint, smallTapTargets, baseFontPx, bodyWords, socialLinks, blocks, annotations,
+    trustBadges, paymentIcons, reviews, reviewCount, formFields, guestCheckoutHint, smallTapTargets, baseFontPx, bodyWords, contentLang, socialLinks, blocks, annotations,
   };
 
   return { checks: out, kindSignals, tech, ux };

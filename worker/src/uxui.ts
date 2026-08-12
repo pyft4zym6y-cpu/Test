@@ -262,8 +262,8 @@ const KIND_LABEL: Record<PageKind, string> = {
 const DEFAULT_UX: UxProbe = {
   foldButtons: 0, primaryCtaAboveFold: false, navItems: 0, breadcrumbs: false, stickyHeader: false, headingLevels: 0,
   distinctButtonColors: 0, productCards: 0, filters: false, sortControl: false, galleryImages: 0, addToCartProminent: false,
-  variantSelector: false, priceVisible: false, trustBadges: false, paymentIcons: false, reviews: false, formFields: 0,
-  guestCheckoutHint: false, smallTapTargets: 0, baseFontPx: 16, bodyWords: 0, socialLinks: [], blocks: {}, annotations: [],
+  variantSelector: false, priceVisible: false, trustBadges: false, paymentIcons: false, reviews: false, reviewCount: 0, formFields: 0,
+  guestCheckoutHint: false, smallTapTargets: 0, baseFontPx: 16, bodyWords: 0, contentLang: '?', socialLinks: [], blocks: {}, annotations: [],
 };
 
 function evaluatePage(p: PageAudit): PageUx {

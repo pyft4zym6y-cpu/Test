@@ -57,7 +57,7 @@ export function renderMentionsHtml(r: MentionsReport): string {
   const table = `<section class="block"><h2>Свод упоминаний</h2>
     ${r.mentions.length ? `<table><thead><tr><th>Площадка</th><th>Тип</th><th>Тон</th><th>Что пишут</th></tr></thead><tbody>${rows}</tbody></table>` : `<p class="lead">${r.searched ? 'Упоминаний за пределами сайта не найдено — инфофон пуст.' : 'Внешний слой заблокирован — свод собирается при доступном ключе API.'}</p>`}</section>`;
   return doc(`Внешний инфофон · ${r.client}`,
-    cover('Commerce OS · Внешний инфофон бренда · внешний аудит витрины', r.verdict, r.client, r.takenAt, [['Упоминаний', String(r.mentions.length)]],
+    cover('Commerce OS · Внешний инфофон бренда · внешний аудит витрины', r.verdict, r.client, r.takenAt, [['Упоминаний', r.searched ? String(r.mentions.length) : 'N/A — поиск не выполнен']],
       '<b>Что это.</b> Что пишут о бренде в интернете и где: свод упоминаний с тональностью. Инфофон — это и репутация перед покупкой, и E-E-A-T сигнал для поисковых и AI-систем.')
     + meth + table + swSection(r.strengths, r.weaknesses) + recsSection(r.recommendations) + conclusionSection(r.conclusion, 'Следующий этап: регулярный мониторинг упоминаний (квартальный повтор свода) + программа внешнего присутствия.') + footer('Внешний инфофон бренда', r.client, r.takenAt),
     `.x-p{font-weight:800;} .x-k{font-size:9px;color:var(--muted);white-space:nowrap;} .x-st{font-weight:700;white-space:nowrap;font-size:9px;} .x-st.ok{color:var(--ok);} .x-st.check{color:var(--check);} .x-st.gap{color:var(--gap);} .x-n{font-size:9.5px;color:#333;}`);
