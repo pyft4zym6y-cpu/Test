@@ -12,7 +12,7 @@ const BRANDS = ['Henkel', 'SC Johnson', 'Kimberly-Clark', 'Schwarzkopf', 'J&J', 
 
 export function Engine() {
   return (
-    <section className="engine">
+    <section className="engine" data-say="Commerce OS™: 12 модулів, 56 плейбуків, 52 еталони. Зростання стає повторюваним.">
       <div className="wrap">
         <FadeIn><Eyebrow>Рішення · власна методологія</Eyebrow></FadeIn>
         <FadeIn delay={0.05}><h2 className="engine-h">Commerce&nbsp;OS™ — операційна система росту</h2></FadeIn>

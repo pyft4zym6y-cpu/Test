@@ -29,7 +29,7 @@ const PROOF_STATS = [
 
 export function Proof() {
   return (
-    <section className="proof">
+    <section className="proof" data-say="Кейс «преміум-текстиль»: оборот ×18, €48K → €900K за 18 місяців. Спочатку — цифра.">
       <div className="wrap">
         <FadeIn><Eyebrow>Доказ · кейс з CRM, ERP і GA4</Eyebrow></FadeIn>
         <FadeIn delay={0.05}><h2 className="proof-h">Спочатку — <span className="mk">що це дає</span>.</h2></FadeIn>

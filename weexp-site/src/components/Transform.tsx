@@ -153,7 +153,7 @@ export function Transform() {
   }, []);
 
   return (
-    <section className="tf" ref={actRef}>
+    <section className="tf" ref={actRef} data-say="Хаос збирається в систему: кожна «втрата» стає вузлом, який працює без вас.">
       <div className="tf-stage" ref={stageRef}>
         <canvas className="tf-canvas" ref={cvRef} />
         <div className="wrap tf-copy">

@@ -12,7 +12,7 @@ const ROWS: [string, string, string, string, string][] = [
 
 export function Alternatives() {
   return (
-    <section className="alt">
+    <section className="alt" data-say="Агенція, найм, фрілансер — усі щось лишають. Ми лишаємо систему, що працює без нас.">
       <div className="wrap">
         <div className="eyebrow">02 · Позиціювання</div>
         <h2 className="alt-h">Відбудова від трьох альтернатив</h2>

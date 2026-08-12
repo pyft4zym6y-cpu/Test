@@ -3,7 +3,7 @@ import './close.css';
 
 export function Close() {
   return (
-    <section className="close">
+    <section className="close" data-say="Наступний крок — діагноз у грошах. Далі рішення ухвалюєте ви.">
       <div className="wrap">
         <div className="eyebrow">03 · Наступний крок</div>
         <motion.h2 className="close-h"

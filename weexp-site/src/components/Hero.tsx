@@ -5,7 +5,7 @@ const ease = [0.22, 1, 0.36, 1] as const;
 
 export function Hero() {
   return (
-    <header className="hero">
+    <header className="hero" data-say="Система замість героїзму. Ми — операційний партнер, а не консультант збоку.">
       <div className="wrap hero-chrome mono">
         <span className="hero-logo">WEEXP</span>
         <span>Операційний партнер · e-commerce</span>
