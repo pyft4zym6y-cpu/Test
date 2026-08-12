@@ -582,7 +582,7 @@ export const PAGE_TYPE_REGISTRY: PageTypeDef[] = [
   { id: 'account', label: 'Личный кабинет / вход', mandatory: false, match: /account|login|signin|cabinet|profil/i, probes: ['/account/', '/login/', '/index.php?route=account/login'] },
   { id: 'wishlist', label: 'Избранное / wishlist', mandatory: false, match: /wishlist|izbrannoe|obrane/i, probes: [] },
   { id: 'compare', label: 'Сравнение товаров', mandatory: false, match: /compare|porivnyannya|sravnenie/i, probes: [] },
-  { id: 'brands', label: 'Бренды / производители', mandatory: false, match: /\/(brands?|brendy|manufacturer)(\/|$)/i, probes: [] },
+  { id: 'brands', label: 'Бренды / производители (для мультибрендовых магазинов; для собственного производителя — неприменимо)', mandatory: false, match: /\/(brands?|brendy|manufacturer)(\/|$)/i, probes: [] },
   { id: 'gift-cert', label: 'Подарочные сертификаты', mandatory: false, match: /gift-?card|sertyfikat|certificate|podarunkov/i, probes: [] },
   { id: 'stores', label: 'Магазины / точки продаж', mandatory: false, match: /\/(stores?|shops|magazyny|adresy)(\/|$)/i, probes: [] },
   { id: 'guides', label: 'Гайды / уход / подбор', mandatory: false, match: /care|dogliad|guide|gid|yak-obraty|how-to/i, probes: [] },
