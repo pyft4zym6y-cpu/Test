@@ -7,6 +7,7 @@
 import type { SiteAuditReport, PageReport, BlockRow, BlockState } from '../pagereport.js';
 import { DIMS, type Dim } from '../pagereport.js';
 import { CONSULT_CSS, methodologySection, swSection, recsSection, conclusionSection, type SectionRec } from './reportShell.js';
+import { svgDonut, svgBars } from './charts.js';
 
 const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const STATE_MARK: Record<BlockState, string> = { ok: '✓', check: '◐', gap: '✕' };
@@ -31,11 +32,24 @@ function treeSection(r: SiteAuditReport): string {
       <td class="tree-pct ${cls}">${t.pct}%</td>
     </tr>`;
   }).join('');
+  // Агрегатное распределение состояний эталонных блоков по всей витрине.
+  const allBlocks = r.pages.flatMap((p) => p.rows);
+  const nOk = allBlocks.filter((b) => b.state === 'ok').length;
+  const nCheck = allBlocks.filter((b) => b.state === 'check').length;
+  const nGap = allBlocks.filter((b) => b.state === 'gap').length;
+  const stateDonut = allBlocks.length ? `<div class="chart-wrap">${svgDonut([
+    { label: 'Есть', value: nOk, color: '#16a34a' },
+    { label: 'Проверить', value: nCheck, color: '#d97706' },
+    { label: 'Нет', value: nGap, color: '#dc2626' },
+  ].filter((x) => x.value > 0), { title: 'Эталонные блоки по всей витрине', centerLabel: `${r.totalPct}%` })}
+    <p class="chart-cap">Сколько блоков эталонной композиции присутствует, требует проверки или отсутствует — суммарно по всем разобранным страницам.<sup class="fn">1</sup></p></div>` : '';
   return `<section class="block tree">
     <h2>Дерево сайта: где рвётся путь клиента</h2>
     <p class="lead">Постраничная оценка соответствия эталонной композиции (% выполненных блоков эталона). Цвет — severity, не украшение. Разбивка по баллам блоков — в карточке каждой страницы ниже.</p>
+    ${stateDonut}
     <table class="tree-table"><thead><tr><th>Тип страницы</th><th>URL</th><th>Соответствие эталону</th><th>Балл, %</th></tr></thead><tbody>${rows}</tbody>
     <tfoot><tr><td colspan="3">Итого по разобранным страницам (${r.totalScore}/${r.totalMax} блоков)</td><td class="${scoreColor(r.totalPct)}">${r.totalPct}%</td></tr></tfoot></table>
+    <p class="fn-note"><sup>1</sup> «Проверить» — блок не обнаружен внешним обходом, но может существовать в скрытом состоянии (JS-таб, аккордеон); он не засчитывается как «нет», чтобы не завышать severity. «Соответствие эталону» — доля засчитанных блоков от максимума по типу страницы.</p>
   </section>`;
 }
 

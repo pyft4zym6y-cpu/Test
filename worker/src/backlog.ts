@@ -6,6 +6,7 @@
  * по источникам, усилия — эвристика по теме (матрица Impact/Effort).
  */
 import { esc, doc, methodologySection, conclusionSection } from './export/reportShell.js';
+import { svgDonut } from './export/charts.js';
 import type { Finding } from './registry.js';
 
 export type RawRec = { pr: 'P0' | 'P1' | 'P2'; action: string; effect: string; source: string };
@@ -142,8 +143,15 @@ export function renderBacklogHtml(r: BacklogReport): string {
     <td class="bk-f">${EFFORT_RU[i.effort]}</td>
     <td class="bk-s">${i.sources.map((s) => `<span class="chip">${esc(s)}</span>`).join(' ')}</td>
   </tr>`).join('');
+  const nP = (p: string) => r.items.filter((i) => i.pr === p).length;
+  const prDonut = r.items.length ? `<div class="chart-wrap">${svgDonut([
+    { label: 'P0 — сейчас', value: nP('P0'), color: '#dc2626' },
+    { label: 'P1 — квартал', value: nP('P1'), color: '#d97706' },
+    { label: 'P2 — стратегия', value: nP('P2'), color: '#64748b' },
+  ].filter((x) => x.value > 0), { title: 'План работ по приоритету', centerLabel: String(r.items.length) })}</div>` : '';
   const table = `<section class="block"><h2>План работ</h2>
     <p class="lead">P0 — сейчас (работает с уже оплаченным трафиком), P1 — квартал, P2 — стратегия.</p>
+    ${prDonut}
     <table><thead><tr><th>Приор.</th><th>Работа</th><th>Ожидаемый эффект</th><th>Деньги (ориентир)</th><th>Усилия</th><th>Требуют документы</th></tr></thead><tbody>${rows}</tbody></table></section>`;
   const concl = conclusionSection(r.conclusion, 'Согласовать P0-блок как волну 1; после baseline (3 цифры: трафик, конверсия, чек) каждая строка получает денежную вилку вместо ориентира.');
   const foot = `<section class="block"><div class="footer">Commerce OS · Сводный бэклог · ${esc(r.client)} · ${esc(date)}. Единственный источник приоритетов пакета; частные списки в документах — доказательная база, не конкурирующие планы.</div></section>`;

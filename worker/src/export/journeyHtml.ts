@@ -4,6 +4,7 @@
  * тупиковые сценарии) с эталонным ожиданием на каждом шаге.
  */
 import { esc, dimBadges, doc, methodologySection, swSection, recsSection, conclusionSection } from './reportShell.js';
+import { svgDonut } from './charts.js';
 import type { JourneyReport, JourneyStep, StepStatus } from '../journey.js';
 
 const CLS: Record<StepStatus, string> = { 'пройден': 'ok', 'спотыкание': 'check', 'тупик': 'gap', 'не найден': 'check', 'не проверялся': 'na' };
@@ -42,9 +43,20 @@ export function renderJourneyHtml(r: JourneyReport): string {
     <p class="lead">Шаг за шагом: что сделали → что должно произойти по эталону → что произошло фактически.</p>
     <table><thead><tr><th>#</th><th>Этап</th><th>Действие</th><th>Эталонное ожидание</th><th>Фактический результат</th><th>Статус</th><th>Изм.</th></tr></thead><tbody>${rows}</tbody></table></section>`;
 
+  const checked = r.steps.filter((s) => s.status !== 'не проверялся');
+  const cnt = (st: StepStatus) => checked.filter((s) => s.status === st).length;
+  const distSegs = [
+    { label: 'Пройден', value: cnt('пройден'), color: '#16a34a' },
+    { label: 'Спотыкание', value: cnt('спотыкание'), color: '#d97706' },
+    { label: 'Не найден', value: cnt('не найден'), color: '#0F9488' },
+    { label: 'Тупик', value: cnt('тупик'), color: '#dc2626' },
+  ].filter((s) => s.value > 0);
+  const dist = distSegs.length ? `<div class="chart-wrap">${svgDonut(distSegs, { title: 'Распределение шагов пути по статусу', centerLabel: `${r.passed}/${checked.length}` })}</div>` : '';
   const flow = `<section class="block"><h2>Воронка пути: где рвётся</h2>
-    <div class="jflow">${r.steps.filter((s) => s.status !== 'не проверялся').map((s) => `<div class="jf ${CLS[s.status]}"><b>${MARK[s.status]}</b><span>${esc(s.stage)}</span></div>`).join('<i class="jf-a">→</i>')}</div>
-    <p class="lead">Каждый шаг оплачен трафиком предыдущих: обрыв в конце пути стоит дороже обрыва в начале.</p></section>`;
+    <div class="jflow">${checked.map((s) => `<div class="jf ${CLS[s.status]}"><b>${MARK[s.status]}</b><span>${esc(s.stage)}</span></div>`).join('<i class="jf-a">→</i>')}</div>
+    <p class="lead">Каждый шаг оплачен трафиком предыдущих: обрыв в конце пути стоит дороже обрыва в начале.<sup class="fn">1</sup></p>
+    ${dist}
+    <p class="fn-note"><sup>1</sup> Статус шага — результат фактического воспроизведения действия браузером на дату аудита. Сбои классифицируются по источнику (дефект витрины / ограничение теста / сеть); в воронку как «тупик» попадают только подтверждённые дефекты витрины, а не ошибки окружения теста.</p></section>`;
 
   const concl = conclusionSection(r.conclusion, 'Следующий этап: мобильный проход + тест оплаты + сверка каждого шага с фактической воронкой GA4 (где по данным теряется больше всего).');
   const foot = `<section class="block"><div class="footer">Commerce OS · Карта пути клиента · ${esc(r.client)} · ${esc(date)}. Протокол автоматизированного прохождения на дату аудита; заказ не оформлялся. Отсутствие данных не выдаётся за факт и не скрывается.</div></section>`;

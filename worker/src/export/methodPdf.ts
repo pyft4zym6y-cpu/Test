@@ -4,6 +4,7 @@
  * синтез аудита. Оборачивают уже считаемые воркером модели.
  */
 import { esc, doc, scoreColor, methodologySection, conclusionSection } from './reportShell.js';
+import { svgRadar, svgDonut, svgBars } from './charts.js';
 import type { MaturityReport } from '../maturity.js';
 import type { CoverageReport, LensStatus } from '../coverage.js';
 import type { HypothesisRegister } from '../hypotheses.js';
@@ -33,10 +34,16 @@ export function renderMaturityPdf(m: MaturityReport, client: string, date: strin
     <td class="m-src ${r.source === 'L0' ? '' : 'gap'}">${esc(r.source === 'L0' ? 'внешний обход' : r.source)}</td>
   </tr>`).join('');
   const avg = m.observedAvg;
+  const observedRows = m.rows.filter((r) => r.level != null);
+  const radar = observedRows.length >= 3
+    ? `<div class="chart-wrap">${svgRadar(observedRows.map((r) => ({ axis: r.domain, value: r.level as number })), { max: 5, title: 'Профиль зрелости по доменам (0–5)' })}
+        <p class="chart-cap">Чем ближе вершина к краю — тем системнее управляется домен. Провалы к центру — зоны, где рост упирается в ручное управление.<sup class="fn">1</sup></p></div>`
+    : '';
   const body = `<section class="block"><h2>Зрелость по доменам (наблюдение внешнего обхода)</h2>
     <p class="lead">Шкала 0–5: 0 — отсутствует, 5 — системно управляется. «Нужны данные» — уровень внешне не подтвердить (следующий этап).</p>
-    <table><thead><tr><th>Домен</th><th>Что оценивает</th><th>Уровень</th><th></th><th>Источник</th></tr></thead><tbody>${rows}</tbody></table></section>`;
-  const observedRows = m.rows.filter((r) => r.level != null);
+    ${radar}
+    <table><thead><tr><th>Домен</th><th>Что оценивает</th><th>Уровень</th><th></th><th>Источник</th></tr></thead><tbody>${rows}</tbody></table>
+    <p class="fn-note"><sup>1</sup> Радар строится только по наблюдаемым доменам (${observedRows.length} из ${m.rows.length}); домены «нужны данные» на диаграмму не выносятся, чтобы отсутствие данных не читалось как ноль.</p></section>`;
   const best = [...observedRows].sort((a, b) => (b.level ?? 0) - (a.level ?? 0))[0];
   const worstD = [...observedRows].sort((a, b) => (a.level ?? 0) - (b.level ?? 0))[0];
   const meth = methodologySection({
@@ -50,7 +57,7 @@ export function renderMaturityPdf(m: MaturityReport, client: string, date: strin
       ? `Средняя зрелость по наблюдаемым доменам — ${avg}/5. ${avg >= 3.5 ? 'Управление системное: процессы определены, дальше — управляемость по данным.' : avg >= 2.5 ? 'Бизнес между «повторяемо» и «определено»: практики есть, но они держатся на людях, а не на системе — рост будет упираться в ручное управление.' : 'Зрелость низкая: большинство доменов работает в режиме реакций. Любая программа роста должна начинаться с систематизации, иначе эффект не удержится.'}`
       : 'Наблюдаемых доменов недостаточно для средней оценки — матрица заполняется данными после передачи доступов (следующий этап).',
     best && worstD && best !== worstD
-      ? `Самый зрелый домен — ${best.domain} (${best.level}/5): на него можно опираться. Самый слабый — ${worstD.domain} (${worstD.level}/5): он задаёт потолок всей системе, потому что зрелость цепочки равна зрелости слабейшего звена.`
+      ? `Самый зрелый домен — ${best.domain} (${best.level}/5): на него можно опираться. Самый слабый — ${worstD.domain} (${worstD.level}/5): он тянет систему вниз, потому что путь покупателя проходит через все домены, и клиент упирается в самое слабое звено раньше, чем оценит сильные.`
       : 'Разброс уровней между доменами минимален — система развивается равномерно.',
     `${m.rows.length - observedRows.length} доменов помечены «нужны данные»: их зрелость определяется опросником и доступами после передачи доступов (следующий этап). Матрица при этом не перестраивается — уточняется только уверенность (закон метода).`,
   ], 'Следующий этап: опросник собственника + доступы → полная матрица всех доменов и целевые уровни на 12 месяцев.');
@@ -66,9 +73,22 @@ export function renderCoveragePdf(c: CoverageReport, client: string, date: strin
   const rows = c.lenses.map((l) => `<tr><td class="cv-name">${esc(l.name)}</td><td class="cv-st ${cls[l.status]}">${word[l.status]}</td><td class="cv-note">${esc(l.note)}</td></tr>`).join('');
   const conf = c.confidence;
   const pct = conf.base ? Math.round((conf.score / conf.base) * 100) : 0;
+  const nCov = c.lenses.filter((l) => l.status === 'covered').length;
+  const nPart = c.lenses.filter((l) => l.status === 'partial').length;
+  const nExt = c.lenses.filter((l) => l.status === 'external').length;
+  const nGate = c.lenses.filter((l) => l.status === 'needs-access').length;
+  const donutSegs = [
+    { label: 'Покрыто', value: nCov, color: '#16a34a' },
+    { label: 'Частично', value: nPart, color: '#d97706' },
+    { label: 'Внешне', value: nExt, color: '#0F9488' },
+    { label: 'Нужен доступ', value: nGate, color: '#dc2626' },
+  ].filter((s) => s.value > 0);
+  const donut = `<div class="chart-wrap">${svgDonut(donutSegs, { title: 'Охват анализа по статусу линз', centerLabel: `${nCov}/${c.lenses.length}` })}</div>`;
   const body = `<section class="block"><h2>Что доказано, что требует данных</h2>
     <p class="lead">Охват по видам анализа и уверенность вывода. Уверенность зависит от полноты данных и качества доказательств (формула ниже) и ограничена потолком тира.</p>
-    <table><thead><tr><th>Вид анализа</th><th>Статус</th><th>Комментарий</th></tr></thead><tbody>${rows}</tbody></table></section>
+    ${donut}
+    <table><thead><tr><th>Вид анализа</th><th>Статус</th><th>Комментарий</th></tr></thead><tbody>${rows}</tbody></table>
+    <p class="fn-note"><sup>1</sup> «Покрыто» — вывод подтверждён внешним обходом; «частично» — есть сигнал, но нужен факт из данных; «внешне» — закрывается сторонним сервисом; «нужен доступ» — раскрывается после передачи доступов. Непокрытая линза не пропущена — у неё указан способ закрытия.</p></section>
     <section class="block"><h2>Как считается уверенность</h2>
       <p class="lead">Confidence Score = потолок тира × полнота данных × качество доказательств. Это не «экспертное число»: качество доказательств — средняя уверенность находок реестра, где на уровне каждой находки уже учтены сила доказательства, воспроизводимость и источник (сайт / данные / тест).</p>
       ${conf.evidenceQuality != null ? `<div class="concl-grid"><span class="k">Полнота данных</span><span class="v">${Math.round((conf.dataCompleteness ?? 0) * 100)}%</span><span class="k">Качество доказательств</span><span class="v">${Math.round((conf.evidenceQuality ?? 0) * 100)}% (по реестру находок)</span><span class="k">Потолок тира</span><span class="v">${conf.base}</span></div>` : ''}</section>

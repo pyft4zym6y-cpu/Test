@@ -4,6 +4,7 @@
  * приоритет и «где встречается». Делает единую машину видимой в рабочем документе.
  */
 import { doc, esc, methodologySection, conclusionSection } from './reportShell.js';
+import { svgBars, svgDonut } from './charts.js';
 import type { Finding } from '../registry.js';
 import { registrySummary } from '../registry.js';
 
@@ -45,9 +46,25 @@ export function renderRegistryHtml(client: string, takenAt: string, findings: Fi
     ],
   });
 
+  // Топ-10 находок по деньгам — горизонтальные столбцы (тон по приоритету).
+  const prTone = (p: string) => (p === 'P0' ? 'gap' : p === 'P1' ? 'check' : undefined);
+  const topByMoney = [...findings].filter((f) => f.revenueExposure > 0).sort((a, b) => b.revenueExposure - a.revenueExposure).slice(0, 10);
+  const moneyBars = topByMoney.length
+    ? `<div class="chart-wrap">${svgBars(topByMoney.map((f) => ({ label: `${f.id} · ${f.title}`, value: Math.round(f.revenueExposure / 1000), tone: prTone(f.priority) })), { title: 'Топ находок по revenue exposure (тыс. ₴/год)', unit: 'k' })}
+        <p class="chart-cap">Столбцы — годовой оборот, которого касается находка; цвет — приоритет (красный P0, оранжевый P1). Деньги не задваиваются: сумма по рычагу делится между находками пропорционально их вкладу.<sup class="fn">1</sup></p></div>`
+    : '';
+  const prDonut = (s.p0 + s.p1 + s.p2) > 0
+    ? `<div class="chart-wrap">${svgDonut([
+        { label: 'P0 — критично', value: s.p0, color: '#dc2626' },
+        { label: 'P1 — важно', value: s.p1, color: '#d97706' },
+        { label: 'P2 — стратегия', value: s.p2, color: '#64748b' },
+      ].filter((x) => x.value > 0), { title: 'Находки по приоритету', centerLabel: String(s.total) })}</div>`
+    : '';
   const table = `<section class="block"><h2>Находки — по приоритету</h2>
     <p class="lead">Сортировка: полоса приоритета → Impact × Confidence × Revenue / Cost. «Уверенность» — детерминированная (Evidence × Reproducibility × Source × Coverage), не экспертная.</p>
-    <table><thead><tr><th>ID</th><th>Приор.</th><th>Находка · где встречается</th><th>Уверен.</th><th>Impact×Conf</th><th>Revenue/год</th></tr></thead><tbody>${rows || '<tr><td colspan="6">Находок не зафиксировано.</td></tr>'}</tbody></table></section>`;
+    ${prDonut}${moneyBars}
+    <table><thead><tr><th>ID</th><th>Приор.</th><th>Находка · где встречается</th><th>Уверен.</th><th>Impact×Conf</th><th>Revenue/год</th></tr></thead><tbody>${rows || '<tr><td colspan="6">Находок не зафиксировано.</td></tr>'}</tbody></table>
+    <p class="fn-note"><sup>1</sup> Revenue exposure — верхняя граница годового оборота, на который влияет находка, атрибутированная по рычагу денежной модели; это «сколько на кону», а не гарантированный прирост от исправления.</p></section>`;
 
   const concl = conclusionSection([
     `В реестре ${s.total} находок: ${s.p0} критичных (P0), ${s.p1} важных (P1), ${s.p2} стратегических (P2). Суммарный revenue exposure ≈ ${fmt(s.exposureYear)}/год — деньги, которых касаются находки (без задваивания между шагами воронки одного рычага).`,

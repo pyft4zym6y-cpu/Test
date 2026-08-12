@@ -5,6 +5,7 @@
  * рекомендации, итоговый вывод. Единый визуальный стандарт (reportShell).
  */
 import { esc, doc, methodologySection, swSection, recsSection, conclusionSection } from './reportShell.js';
+import { svgRadar } from './charts.js';
 import type { ContentReport, ContentRow } from '../contentaudit.js';
 
 const rateCls = (v: number) => (v >= 4 ? 'ok' : v >= 3 ? 'check' : 'gap');
@@ -56,8 +57,17 @@ export function renderContentAuditHtml(r: ContentReport): string {
     <td class="p-crit ${critCls(row.crit)}">${critWord(row.crit)}</td>
     <td class="p-note">${esc(row.note)}</td>
   </tr>`).join('');
+  const radar = `<div class="chart-wrap">${svgRadar([
+    { axis: 'Полнота', value: r.avg.completeness },
+    { axis: 'Полезность', value: r.avg.usefulness },
+    { axis: 'Убедительность', value: r.avg.persuasiveness },
+    { axis: 'Интент', value: r.avg.intent },
+  ], { max: 5, title: 'Профиль контента по 4 измерениям (среднее, 0–5)' })}
+    <p class="chart-cap">Провал любой из осей к центру — это место, где контент перестаёт вести к решению. Самая короткая ось задаёт, за что браться первым.<sup class="fn">1</sup></p></div>`;
   const table = `<section class="block"><h2>Контент постранично</h2>
     <p class="lead">Оценка 1–5 по каждой разобранной странице: 1 — не снимает вопросы выбора, 5 — ведёт к решению без внешних поисков.</p>
+    ${radar}
+    <p class="fn-note"><sup>1</sup> Значения — среднее по ${r.rows.length} разобранным страницам. На внешнем слое оценка ставится по наличию и составу решающих блоков; качество формулировок уточняется после доступа к контенту.</p>
     <table><thead><tr><th>Страница</th><th>Объект</th><th>Полнота</th><th>Полезность</th><th>Убедит.</th><th>Интент</th><th>Критич.</th><th>Комментарий</th></tr></thead>
       <tbody>${rows}</tbody>
       <tfoot><tr><td colspan="2">Среднее по ${r.rows.length} страницам</td><td>${rate(r.avg.completeness)}</td><td>${rate(r.avg.usefulness)}</td><td>${rate(r.avg.persuasiveness)}</td><td>${rate(r.avg.intent)}</td><td colspan="2"></td></tr></tfoot></table></section>`;

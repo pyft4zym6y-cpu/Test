@@ -3,6 +3,7 @@
  * сигналы по каналам + честная пометка BLOCKED (нужен доступ к кабинетам на A2).
  */
 import { esc, dimBadges, doc, methodologySection, swSection, recsSection, conclusionSection, type SectionRec } from './reportShell.js';
+import { svgDonut } from './charts.js';
 import type { ChannelsReport, ChStatus } from '../channels.js';
 
 const MARK: Record<ChStatus, string> = { ok: '✓', check: '◐', gap: '✕', blocked: '⛔' };
@@ -29,15 +30,23 @@ export function renderChannelsHtml(r: ChannelsReport): string {
     <td class="ch-next">${esc(ch.next)}</td>
     <td>${dimBadges(ch.dims)}</td>
   </tr>`).join('');
-  const table = `<section class="block"><h2>Каналы: внешние сигналы</h2>
-    <p class="lead">Что видно снаружи по каждому каналу и что уточнит следующий уровень доступа.</p>
-    <table><thead><tr><th>Канал</th><th>Внешний сигнал</th><th>Статус</th><th>Что даст следующий этап</th><th>Изм.</th></tr></thead><tbody>${rows}</tbody></table></section>`;
-
   // ── Консалтинговый каркас ──
   const okRows = r.rows.filter((x) => x.status === 'ok');
   const gapRows = r.rows.filter((x) => x.status === 'gap');
   const checkRows = r.rows.filter((x) => x.status === 'check');
   const blockedRows = r.rows.filter((x) => x.status === 'blocked');
+
+  const chDonut = r.rows.length ? `<div class="chart-wrap">${svgDonut([
+    { label: 'Зашит', value: okRows.length, color: '#16a34a' },
+    { label: 'Проверить', value: checkRows.length, color: '#d97706' },
+    { label: 'Не задействован', value: gapRows.length, color: '#dc2626' },
+    { label: 'Нужен доступ', value: blockedRows.length, color: '#0F9488' },
+  ].filter((x) => x.value > 0), { title: 'Каналы по готовности инфраструктуры', centerLabel: `${r.wired}/${r.rows.length}` })}
+    <p class="chart-cap">Зелёный — контур привлечения/удержания встроен в витрину; красный — канал не задействован (упущенный контур); бирюзовый — эффективность измерима только из кабинетов.</p></div>` : '';
+  const table = `<section class="block"><h2>Каналы: внешние сигналы</h2>
+    <p class="lead">Что видно снаружи по каждому каналу и что уточнит следующий уровень доступа.</p>
+    ${chDonut}
+    <table><thead><tr><th>Канал</th><th>Внешний сигнал</th><th>Статус</th><th>Что даст следующий этап</th><th>Изм.</th></tr></thead><tbody>${rows}</tbody></table></section>`;
 
   const meth = methodologySection({
     goal: 'Определить, какая инфраструктура привлечения и удержания реально «зашита» в витрину, и какие каналы бизнес не использует вовсе.',

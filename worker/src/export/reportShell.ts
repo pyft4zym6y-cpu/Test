@@ -54,6 +54,13 @@ export const SHARED_CSS = `
   .chip{display:inline-block;font-size:8.5px;font-weight:700;padding:2px 7px;border-radius:20px;border:1px solid var(--line);background:var(--soft);margin:1px 3px 1px 0;}
   .chip.ok{color:var(--ok);} .chip.check{color:var(--check);} .chip.gap{color:var(--gap);}
   .chip.done{color:var(--ok);border-color:var(--ok);} .chip.partial{color:var(--check);border-color:var(--check);} .chip.blocked{color:var(--gap);border-color:var(--gap);}
+  /* charts + footnotes */
+  .chart-wrap{margin:8px 0 10px;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--soft);page-break-inside:avoid;}
+  .chart-wrap.row{display:flex;gap:18px;align-items:center;flex-wrap:wrap;}
+  .chart-cap{color:var(--muted);font-size:9px;margin:6px 0 0;line-height:1.4;}
+  sup.fn{color:var(--lime);font-weight:700;font-size:7px;}
+  .fn-note{margin:8px 0 0;padding-top:6px;border-top:1px dotted var(--line);color:var(--muted);font-size:8.5px;line-height:1.4;}
+  .fn-note sup{color:var(--lime);font-weight:700;}
 `;
 
 /* ── Консалтинговый каркас отчёта (единый для всей сюиты) ──
