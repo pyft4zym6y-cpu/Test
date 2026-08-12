@@ -40,12 +40,13 @@ body,
 }
 
 :focus-visible {
-  outline: 2px solid #65a30d;
+  outline: 2px solid #E11D2A;
   outline-offset: 2px;
 }
 
 ::selection {
-  background: rgba(163, 230, 53, 0.4);
+  background: rgba(225, 29, 42, 0.45);
+  color: #fff;
 }
 
 .font-pixel {
@@ -308,11 +309,20 @@ body,
   --snow: #F3F5F7;
   --ash: #9AA1AB;
   --ash-dim: #626873;
-  --acid: #C7F94B;      /* єдиний акцент — кислотний lime */
-  --acid-deep: #A3E635;
+  /* КІНО-РОЗВОРОТ: єдиний акцент — кінематографічний червоний */
+  --acid: #E11D2A;      /* cinematic red (токен лишив як --acid для сумісності) */
+  --acid-deep: #B3111C;
+  --blood: #7A0A12;
+  --ember: #FF3B30;
 }
 
 .font-grotesk { font-family: 'Oswald', 'Helvetica Neue', Arial, sans-serif; }
+/* кінематографічний серіф-дисплей для драматичних заголовків */
+.font-cinema {
+  font-family: 'Playfair Display', 'Bodoni Moda', 'Didot', 'GFS Didot', Georgia, 'Times New Roman', serif;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
 
 /* темна база */
 .ed-dark { background: var(--void); color: var(--snow); }
@@ -351,7 +361,7 @@ body,
   color: var(--snow); transition: border-color .2s ease, background .2s ease, color .2s ease;
 }
 .btn-ed:hover { border-color: var(--snow); }
-.btn-ed.solid { background: var(--acid); color: #0A0B0D; border-color: var(--acid); }
+.btn-ed.solid { background: var(--acid); color: #fff; border-color: var(--acid); }
 .btn-ed.solid:hover { background: var(--acid-deep); border-color: var(--acid-deep); }
 
 /* фото-скрим для тексту поверх знімка */
@@ -365,4 +375,106 @@ body,
 
 /* картка редакторська — тонка лінія, без тіней-іграшок */
 .card-ed { background: var(--graphite); border: 1px solid var(--hair); transition: border-color .25s ease, transform .25s ease; }
-.card-ed:hover { border-color: rgba(199,249,75,0.5); transform: translateY(-3px); }
+.card-ed:hover { border-color: rgba(225,29,42,0.6); transform: translateY(-3px); }
+
+/* ============================================================
+   КІНО-ШАР: червоний круг, кіно-віньєтка, кінострічка,
+   hover-reveal список, гліч, «розділи як книга/фільм».
+   ============================================================ */
+
+/* Гігантський червоний круг за фігурою (мотив із референсу) */
+.red-orb {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 42% 38%, var(--ember) 0%, var(--acid) 34%, var(--blood) 78%, #3a0509 100%);
+  box-shadow: 0 0 140px 20px rgba(225,29,42,0.35), inset 0 0 120px rgba(0,0,0,0.45);
+}
+.red-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid rgba(225,29,42,0.55);
+}
+
+/* кіношна віньєтка + плівкове зерно поверх темряви */
+.cine-vignette::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 42%, transparent 40%, rgba(0,0,0,0.55) 82%, #000 100%);
+}
+
+/* червоний duotone для «кіношних» знімків — глибокі чорні, щоб приховати
+   службові підписи, «вшиті» у вихідні знімки */
+.duotone-red {
+  filter: grayscale(1) contrast(1.32) brightness(0.66) saturate(0);
+}
+.duotone-red-wrap { position: relative; }
+.duotone-red-wrap::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(10,6,8,0.35), rgba(225,29,42,0.4));
+  mix-blend-mode: color;
+}
+
+/* Кінострічка: перфорація по краях */
+.sprocket-t, .sprocket-b {
+  position: absolute; left: 0; right: 0; height: 20px;
+  background-image: radial-gradient(circle, #0000 0 5px, transparent 5px);
+  background: repeating-linear-gradient(90deg, transparent 0 14px, transparent 14px 20px);
+}
+.sprocket {
+  position: absolute; left: 0; right: 0; height: 26px;
+  display: flex; gap: 20px; padding: 0 14px; align-items: center;
+  pointer-events: none;
+}
+.sprocket span { width: 18px; height: 12px; border-radius: 2px; background: #000; flex-shrink: 0; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06); }
+.sprocket.t { top: 0; }
+.sprocket.b { bottom: 0; }
+
+/* hover-reveal editorial список: величезні рядки, при ховері рядок стає червоним */
+.reveal-row {
+  position: relative;
+  display: block;
+  transition: color .35s ease;
+  color: #7A8089;
+}
+.reveal-row:hover { color: var(--snow); }
+.reveal-row .rr-title { transition: transform .5s cubic-bezier(.16,1,.3,1), color .35s ease; }
+.reveal-row:hover .rr-title { transform: translateX(clamp(12px, 2vw, 40px)); color: var(--snow); }
+.reveal-row:hover .rr-index { color: var(--acid); }
+/* плаваюче прев'ю, що йде за курсором */
+.reveal-media {
+  position: fixed; top: 0; left: 0; z-index: 60;
+  width: clamp(220px, 22vw, 340px); aspect-ratio: 4/5;
+  pointer-events: none; opacity: 0; transform: translate(-50%,-50%) scale(0.85);
+  transition: opacity .3s ease, transform .5s cubic-bezier(.16,1,.3,1);
+  overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+}
+.reveal-media.on { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+.reveal-media img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Гліч / RGB-split для кіношних заголовків при ховері */
+.glitch { position: relative; display: inline-block; }
+.glitch:hover::before, .glitch:hover::after {
+  content: attr(data-text); position: absolute; inset: 0; pointer-events: none;
+  clip-path: inset(0 0 0 0);
+}
+.glitch:hover::before { color: var(--ember); transform: translate(-2px,-1px); mix-blend-mode: screen; animation: glitch-x .28s steps(2) infinite; }
+.glitch:hover::after  { color: #16c0e6;  transform: translate(2px,1px);   mix-blend-mode: screen; animation: glitch-x .32s steps(2) infinite reverse; }
+@keyframes glitch-x { 0%{clip-path:inset(0 0 82% 0)} 50%{clip-path:inset(60% 0 8% 0)} 100%{clip-path:inset(20% 0 50% 0)} }
+
+/* «розділ як книга/фільм» — велика акт-мітка */
+.act-mark {
+  font-family: 'Oswald', sans-serif; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.4em; font-size: 0.7rem; color: var(--acid);
+}
+.act-huge {
+  font-family: 'Playfair Display', Georgia, serif; font-weight: 800;
+  -webkit-text-stroke: 1px rgba(255,255,255,0.14); color: transparent;
+  line-height: 0.8;
+}
+
+/* червоний хейрлайн-роздільник */
+.hair-red { border-top: 1px solid rgba(225,29,42,0.35); }
+
+@media (prefers-reduced-motion: reduce) {
+  .glitch:hover::before, .glitch:hover::after { animation: none; }
+  .reveal-media { transition: opacity .2s ease; }
+}

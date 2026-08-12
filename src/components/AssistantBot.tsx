@@ -273,10 +273,10 @@ export default function AssistantBot() {
         >
           <X size={13} />
         </button>
-        <p className="font-pixel text-[0.45rem] text-[#4D7C0F] mb-1.5">WEEXP·OS</p>
+        <p className="font-pixel text-[0.45rem] text-[var(--acid)] mb-1.5">WEEXP·OS</p>
         <p className="font-mono text-[0.64rem] md:text-[0.66rem] leading-relaxed text-[#12161C] min-h-[2.4em]">
           {typed}
-          <span className="cursor-blink text-[#4D7C0F]">▊</span>
+          <span className="cursor-blink text-[var(--acid)]">▊</span>
         </p>
       </div>
 

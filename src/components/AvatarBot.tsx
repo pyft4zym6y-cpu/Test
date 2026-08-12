@@ -44,8 +44,8 @@ export default function AvatarBot({
   }, []);
 
   const ink = '#12161C';
-  const lime = '#A3E635';
-  const limeDark = '#65A30D';
+  const lime = '#FF3B30';
+  const limeDark = '#B3111C';
   const panel = '#F1F3F0';
 
   return (

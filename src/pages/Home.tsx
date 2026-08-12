@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
@@ -11,7 +11,6 @@ import {
   Magnetic,
   useParallax,
 } from '../components/immersive';
-import ShaderBackground from '../components/ShaderBackground';
 import Cursor from '../components/Cursor';
 import Preloader from '../components/Preloader';
 import heroPhoto from '../assets/pavlo-hero.jpg';
@@ -58,21 +57,25 @@ const OS_GRID = [
 
 const H = 'font-grotesk font-bold uppercase tracking-tight leading-[1.02]';
 
-/* ─── HERO: живой WebGL-фон + маскированное фото + kinetic-манифест ─── */
+/* ─── HERO: кіношний. Величезний червоний круг за фігурою засновника,
+   серіф-заголовок, віньєтка й mouse-параллакс шарів (мотив із референсу). ─── */
 function Hero() {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
-  const photoScale = useTransform(scrollYProgress, [0, 1], [1.08, 1.28]);
-  const photoY = useTransform(scrollYProgress, [0, 1], ['0%', '18%']);
-  const contentY = useTransform(scrollYProgress, [0, 1], ['0%', '-14%']);
+  const photoScale = useTransform(scrollYProgress, [0, 1], [1.05, 1.22]);
+  const photoY = useTransform(scrollYProgress, [0, 1], ['0%', '14%']);
+  const orbScale = useTransform(scrollYProgress, [0, 1], [1, 1.35]);
+  const orbY = useTransform(scrollYProgress, [0, 1], ['0%', '22%']);
+  const contentY = useTransform(scrollYProgress, [0, 1], ['0%', '-16%']);
   const contentOpacity = useTransform(scrollYProgress, [0, 0.75], [1, 0]);
 
-  // mouse-параллакс: контент и фото едут в противоход курсору
+  // mouse-параллакс шарів: круг, фото і контент рухаються з різною глибиною
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
-  const cx = useSpring(useTransform(mx, [-0.5, 0.5], [14, -14]), { stiffness: 120, damping: 20 });
-  const cy = useSpring(useTransform(my, [-0.5, 0.5], [10, -10]), { stiffness: 120, damping: 20 });
-  const px = useSpring(useTransform(mx, [-0.5, 0.5], [-22, 22]), { stiffness: 90, damping: 22 });
+  const cx = useSpring(useTransform(mx, [-0.5, 0.5], [10, -10]), { stiffness: 120, damping: 20 });
+  const orbX = useSpring(useTransform(mx, [-0.5, 0.5], [-34, 34]), { stiffness: 70, damping: 22 });
+  const orbMy = useSpring(useTransform(my, [-0.5, 0.5], [-22, 22]), { stiffness: 70, damping: 22 });
+  const photoX = useSpring(useTransform(mx, [-0.5, 0.5], [-16, 16]), { stiffness: 90, damping: 22 });
   const onMove = (e: React.MouseEvent) => {
     const r = ref.current?.getBoundingClientRect();
     if (!r) return;
@@ -80,63 +83,77 @@ function Hero() {
     my.set((e.clientY - r.top) / r.height - 0.5);
   };
 
-  const PHOTO_MASK = 'linear-gradient(90deg, transparent 0%, transparent 28%, rgba(0,0,0,0.5) 48%, #000 66%)';
+  const PHOTO_MASK = 'linear-gradient(90deg, transparent 0%, transparent 48%, rgba(0,0,0,0.55) 62%, #000 76%)';
 
   return (
-    <section ref={ref} onMouseMove={onMove} className="relative min-h-[100vh] flex items-end overflow-hidden ed-dark">
-      {/* живой шейдер-фон */}
-      <div className="absolute inset-0">
-        <ShaderBackground />
-      </div>
-      {/* фото основателя — маскировано слева, живёт поверх шейдера справа */}
-      <motion.div style={{ x: px }} className="absolute inset-0 will-change-transform">
+    <section
+      ref={ref}
+      onMouseMove={onMove}
+      className="relative min-h-[100vh] flex items-end overflow-hidden cine-vignette"
+      style={{ background: 'radial-gradient(130% 120% at 66% 8%, #14090b 0%, #0A0608 48%, #050405 100%)' }}
+    >
+      {/* ── ВЕЛИКИЙ ЧЕРВОНИЙ КРУГ за фігурою ── */}
+      <motion.div
+        style={{ scale: orbScale, y: orbY, x: orbX, translateY: orbMy }}
+        className="absolute right-[-8%] md:right-[4%] top-1/2 -translate-y-1/2 will-change-transform"
+        aria-hidden
+      >
+        <div className="red-orb" style={{ width: 'min(78vh, 62vw)', height: 'min(78vh, 62vw)' }} />
+        <div className="red-ring" style={{ inset: '-6%', width: 'auto', height: 'auto' }} />
+      </motion.div>
+
+      {/* ── ФОТО ЗАСНОВНИКА поверх круга, кіношний контраст ── */}
+      <motion.div style={{ x: photoX }} className="absolute inset-0 will-change-transform">
         <motion.img
           src={heroPhoto}
           alt="Засновник weexp"
           style={{ scale: photoScale, y: photoY, WebkitMaskImage: PHOTO_MASK, maskImage: PHOTO_MASK }}
-          className="absolute inset-0 w-full h-full object-cover object-right will-change-transform"
+          className="absolute inset-0 w-full h-full object-cover object-[70%_center] duotone-red will-change-transform"
         />
       </motion.div>
-      <div className="absolute inset-0 photo-scrim pointer-events-none" />
+
+      {/* легкий скрим під текст зліва */}
+      <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(90deg, rgba(5,4,5,0.98) 0%, rgba(5,4,5,0.9) 30%, rgba(5,4,5,0.4) 55%, rgba(5,4,5,0.05) 80%, transparent 100%)' }} />
+
       <motion.div
-        style={{ y: contentY, opacity: contentOpacity, x: cx, translateY: cy }}
+        style={{ y: contentY, opacity: contentOpacity, x: cx }}
         className="relative w-full max-w-7xl mx-auto px-5 sm:px-8 md:px-12 pb-16 md:pb-24 pt-40"
       >
         <motion.p
-          className="kicker-ed"
+          className="act-mark flex items-center gap-3"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
         >
-          <span className="dot" />weexp · Commerce OS™ · маніфест
+          <span className="inline-block w-8 h-px bg-[var(--acid)]" />ACT I · МАНІФЕСТ
         </motion.p>
-        <LineReveal
-          as="h1"
-          className={`${H} mt-7`}
-          style={{ fontSize: 'clamp(2.6rem, 6vw, 5.4rem)' }}
-          lines={[
-            <>Трафік — це</>,
-            <span className="acid">орендована увага.</span>,
-            <>Ми будуємо систему,</>,
-            <>яка накопичує вартість.</>,
-          ]}
-        />
+
+        {/* серіф-заголовок з gliтч-акцентом */}
+        <h1 className="mt-6" style={{ fontSize: 'clamp(2.7rem, 6.4vw, 6rem)', lineHeight: 0.98 }}>
+          <LineReveal
+            as="span"
+            className="font-cinema block text-[#F3F5F7]"
+            lines={[
+              <>Трафік — це</>,
+              <span className="acid italic" data-text="орендована увага." >орендована увага.</span>,
+            ]}
+          />
+          <LineReveal
+            as="span"
+            className={`${H} block mt-3`}
+            style={{ fontSize: 'clamp(1.5rem, 3.4vw, 3.1rem)' }}
+            lines={[<>Ми будуємо систему, яка</>, <>накопичує вартість.</>]}
+          />
+        </h1>
+
         <motion.p
-          className="text-[#B7BCC4] mt-8 max-w-xl leading-relaxed text-base md:text-lg"
+          className="text-[#C2C6CC] mt-8 max-w-xl leading-relaxed text-base md:text-lg"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.55, ease: [0.16, 1, 0.3, 1] }}
         >
           Конверсія 0,8% → 4,2%. Оборот ×18 за 18 місяців. ROI 3.8×. Не гасла — виміряні кейси.
           Перебудовуємо весь шлях покупки, щоб компанія росла швидше за рекламний бюджет.
-        </motion.p>
-        <motion.p
-          className="kicker-ed mt-6 tracking-[0.18em] text-[0.66rem]"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.7 }}
-        >
-          Для власників і CEO e-commerce з обігом від ₴1 млн/міс · UA · EU · US
         </motion.p>
         <motion.div
           className="flex flex-wrap gap-4 mt-9"
@@ -176,48 +193,61 @@ function Hero() {
   );
 }
 
-/* ─── Горизонтальный pinned-скролл кейсов ─── */
+/* ─── Кінострічка: горизонтальний pinned-скролл кейсів як кадри плівки
+   з перфорацією по краях (мотив «кіноленти»). ─── */
 function CasesScroll() {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] });
   const x = useTransform(scrollYProgress, [0, 1], ['2%', '-72%']);
+  const holes = Array.from({ length: 40 });
 
   return (
-    <section ref={ref} className="relative h-[320vh] ed-panel hair-top">
+    <section ref={ref} className="relative h-[320vh] hair-top" style={{ background: '#050405' }}>
       <div className="sticky top-0 h-screen flex flex-col justify-center overflow-hidden">
-        <div className="max-w-7xl mx-auto w-full px-5 sm:px-8 md:px-12 mb-10 md:mb-14">
-          <p className="kicker-ed mb-4">Докази · 06 · кейси з CRM, ERP і GA4</p>
-          <h2 className={H} style={{ fontSize: 'clamp(1.8rem, 4vw, 3.2rem)' }}>
-            Цифри, які <span className="acid">рухаються</span>
+        <div className="max-w-7xl mx-auto w-full px-5 sm:px-8 md:px-12 mb-8 md:mb-12">
+          <p className="act-mark mb-4">ACT IV · КІНОСТРІЧКА ДОКАЗІВ</p>
+          <h2 className="font-cinema text-[#F3F5F7]" style={{ fontSize: 'clamp(2rem, 4.6vw, 3.6rem)', lineHeight: 0.95 }}>
+            Цифри, які <span className="acid italic">рухаються</span>
           </h2>
         </div>
-        <motion.div style={{ x }} className="flex gap-5 md:gap-8 pl-5 sm:pl-8 md:pl-[max(3rem,calc((100vw-80rem)/2+3rem))] will-change-transform">
-          {CASE_ROW.map((c) => (
+
+        {/* смуга плівки */}
+        <div className="relative border-y border-[rgba(255,255,255,0.12)] bg-[#0A0708] py-8 md:py-10">
+          {/* перфорація зверху/знизу */}
+          <div className="sprocket t">{holes.map((_, i) => <span key={i} />)}</div>
+          <div className="sprocket b">{holes.map((_, i) => <span key={i} />)}</div>
+
+          <motion.div style={{ x }} className="flex gap-3 md:gap-4 pl-5 sm:pl-8 md:pl-[max(3rem,calc((100vw-80rem)/2+3rem))] will-change-transform">
+            {CASE_ROW.map((c, i) => (
+              <Link
+                key={c.to}
+                to={c.to}
+                onClick={() => track('cta_click', { location: 'home_case_scroll' })}
+                data-cursor
+                className="relative group shrink-0 w-[80vw] sm:w-[56vw] md:w-[38vw] lg:w-[30vw] min-h-[46vh] md:min-h-[42vh] flex flex-col justify-between p-7 md:p-9 border-x border-[rgba(255,255,255,0.1)] bg-gradient-to-b from-[#100a0b] to-[#080607] hover:from-[#1a0c0e] transition-colors overflow-hidden"
+              >
+                <div className="red-orb absolute -right-16 -bottom-16 opacity-0 group-hover:opacity-25 transition-opacity duration-500" style={{ width: 200, height: 200 }} />
+                <div className="relative flex items-center justify-between">
+                  <span className="kicker-ed text-[0.58rem]">КАДР {String(i + 1).padStart(2, '0')}</span>
+                  <ArrowUpRight size={20} className="text-[#3A3F47] group-hover:text-[var(--acid)] transition-colors" />
+                </div>
+                <div className="relative">
+                  <p className="font-cinema acid" style={{ fontSize: 'clamp(2.8rem, 6vw, 4.6rem)', lineHeight: 0.9 }}>{c.num}</p>
+                  <p className="font-grotesk font-semibold uppercase tracking-tight text-lg md:text-2xl text-[#F3F5F7] mt-4">{c.name}</p>
+                  <p className="kicker-ed mt-3 text-[0.6rem] tracking-[0.04em]" style={{ textTransform: 'none' }}>{c.metric}</p>
+                </div>
+              </Link>
+            ))}
             <Link
-              key={c.to}
-              to={c.to}
-              onClick={() => track('cta_click', { location: 'home_case_scroll' })}
-              className="card-ed group shrink-0 w-[78vw] sm:w-[58vw] md:w-[40vw] lg:w-[32vw] p-8 md:p-10 flex flex-col justify-between min-h-[52vh] md:min-h-[46vh]"
+              to="/cases"
+              onClick={() => track('cta_click', { location: 'home_case_scroll_all' })}
+              data-cursor
+              className="shrink-0 w-[60vw] sm:w-[40vw] md:w-[26vw] lg:w-[20vw] flex items-center justify-center border-x border border-dashed border-[rgba(225,29,42,0.4)] hover:border-[var(--acid)] transition-colors"
             >
-              <div className="flex items-start justify-between">
-                <span className="kicker-ed text-[0.6rem]">Кейс</span>
-                <ArrowUpRight size={22} className="text-[#3A3F47] group-hover:text-[var(--acid)] transition-colors" />
-              </div>
-              <div>
-                <p className="stat-ed text-5xl md:text-7xl acid">{c.num}</p>
-                <p className="font-grotesk font-semibold text-xl md:text-2xl text-[#F3F5F7] mt-5">{c.name}</p>
-                <p className="kicker-ed mt-3 text-[0.62rem] tracking-[0.06em]" style={{ textTransform: 'none' }}>{c.metric}</p>
-              </div>
+              <span className="btn-ed">Усі кейси <ArrowRight size={16} /></span>
             </Link>
-          ))}
-          <Link
-            to="/cases"
-            onClick={() => track('cta_click', { location: 'home_case_scroll_all' })}
-            className="shrink-0 w-[60vw] sm:w-[40vw] md:w-[28vw] lg:w-[22vw] flex items-center justify-center border border-dashed border-[rgba(255,255,255,0.18)] hover:border-[var(--acid)] transition-colors group"
-          >
-            <span className="btn-ed">Усі кейси <ArrowRight size={16} /></span>
-          </Link>
-        </motion.div>
+          </motion.div>
+        </div>
       </div>
     </section>
   );
@@ -265,6 +295,84 @@ function PortraitSplit() {
           </div>
         </div>
       </div>
+    </section>
+  );
+}
+
+/* ─── Hover-reveal editorial-список продуктів: рядок реагує, кіно-кадр
+   у червоному duotone летить за курсором (сигнатурний award-ефект). ─── */
+const REVEAL_IMG = [portraitPhoto, heroPhoto, portraitPhoto];
+function RevealProducts() {
+  const mediaRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const [active, setActive] = useState<number | null>(null);
+
+  const onMove = (e: React.MouseEvent) => {
+    const m = mediaRef.current;
+    if (!m) return;
+    m.style.left = `${e.clientX}px`;
+    m.style.top = `${e.clientY}px`;
+  };
+  const enter = (i: number) => {
+    setActive(i);
+    if (imgRef.current) imgRef.current.src = REVEAL_IMG[i];
+    mediaRef.current?.classList.add('on');
+  };
+  const leave = () => {
+    setActive(null);
+    mediaRef.current?.classList.remove('on');
+  };
+
+  return (
+    <section className="max-w-7xl mx-auto px-5 sm:px-8 md:px-12 py-20 md:py-28" onMouseMove={onMove}>
+      <Rise>
+        <div className="flex flex-wrap items-end justify-between gap-6 mb-10 md:mb-14">
+          <div>
+            <p className="act-mark mb-4">ACT III · ПРОДУКТИ</p>
+            <h2 className="font-cinema text-[#F3F5F7]" style={{ fontSize: 'clamp(2.2rem, 5vw, 4rem)', lineHeight: 0.95 }}>
+              Три способи <span className="acid italic">купити ріст</span>
+            </h2>
+          </div>
+          <Link to="/services" className="btn-ed">Повні умови <ArrowUpRight size={15} /></Link>
+        </div>
+      </Rise>
+
+      {/* плаваючий кіно-кадр */}
+      <div ref={mediaRef} className="reveal-media duotone-red-wrap hidden md:block">
+        <img ref={imgRef} src={REVEAL_IMG[0]} alt="" className="duotone-red" />
+      </div>
+
+      <div className="hair-red border-t">
+        {PRODUCTS.map((p, i) => (
+          <Link
+            key={p.n}
+            to="/services"
+            onClick={() => track('cta_click', { location: `home_product_${p.n}` })}
+            onMouseEnter={() => enter(i)}
+            onMouseLeave={leave}
+            data-cursor
+            className={`reveal-row group flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-6 py-7 md:py-11 hair-b ${active !== null && active !== i ? 'opacity-40' : 'opacity-100'} transition-opacity duration-300`}
+          >
+            <span className="flex items-baseline gap-4 md:gap-7 min-w-0">
+              <span className="rr-index stat-ed text-2xl md:text-3xl text-[#3A3F47] transition-colors shrink-0">{p.n}</span>
+              <span className="rr-title font-cinema text-3xl md:text-5xl lg:text-6xl text-inherit leading-none">{p.name}</span>
+            </span>
+            <span className="flex items-center gap-5 md:gap-8 shrink-0">
+              <span className="stat-ed text-base md:text-xl acid text-right">{p.price}</span>
+              <span className="kicker-ed text-[0.62rem] whitespace-nowrap inline-flex items-center gap-2">
+                {p.term}
+                <ArrowUpRight size={16} className="text-[#3A3F47] group-hover:text-[var(--acid)] transition-colors" />
+              </span>
+            </span>
+          </Link>
+        ))}
+      </div>
+      <Rise>
+        <p className="text-[#8A9099] text-sm mt-8 max-w-2xl leading-relaxed">
+          Кожен формат — фіксований результат і Definition of Done. Наведіть на рядок, щоб побачити кадр;
+          повні умови й ціни — на сторінці «Послуги».
+        </p>
+      </Rise>
     </section>
   );
 }
@@ -374,42 +482,15 @@ export default function Home() {
 
       <PortraitSplit />
 
-      {/* ================= PRODUCTS ================= */}
-      <section className="max-w-7xl mx-auto px-5 sm:px-8 md:px-12 py-20 md:py-28">
-        <Rise>
-          <div className="flex flex-wrap items-end justify-between gap-6 mb-12">
-            <div>
-              <p className="kicker-ed mb-4">Продукти · ціни відкриті</p>
-              <h2 className={H} style={{ fontSize: 'clamp(2rem, 4vw, 3.2rem)' }}>Три способи <span className="acid">купити ріст</span></h2>
-            </div>
-            <Link to="/services" className="btn-ed">Повні умови <ArrowUpRight size={15} /></Link>
-          </div>
-        </Rise>
-        <div className="grid md:grid-cols-3 gap-px bg-[rgba(255,255,255,0.10)] border border-[rgba(255,255,255,0.10)]">
-          {PRODUCTS.map((p, i) => (
-            <Rise key={p.n} delay={i * 0.08}>
-              <Link to="/services" onClick={() => track('cta_click', { location: `home_product_${p.n}` })} className="ed-dark block p-8 h-full flex flex-col group hover:bg-[#101216] transition-colors">
-                <div className="flex items-baseline justify-between">
-                  <span className="stat-ed text-2xl text-[#3A3F47]">{p.n}</span>
-                  <span className="kicker-ed text-[0.6rem]">{p.term}</span>
-                </div>
-                <p className="font-grotesk font-semibold text-2xl mt-6 text-[#F3F5F7]">{p.name}</p>
-                <p className="stat-ed text-xl acid mt-2">{p.price}</p>
-                <p className="text-[#9AA1AB] text-sm mt-4 leading-relaxed flex-1">{p.result}</p>
-                <span className="kicker-ed text-[0.62rem] mt-8 group-hover:text-[#C7F94B] transition-colors inline-flex items-center gap-1.5">Детальніше <ArrowUpRight size={13} /></span>
-              </Link>
-            </Rise>
-          ))}
-        </div>
-      </section>
+      <RevealProducts />
 
       <CasesScroll />
 
       {/* ================= CALCULATOR CTA ================= */}
       <section className="max-w-7xl mx-auto px-5 sm:px-8 md:px-12 py-20 md:py-28">
         <Rise>
-          <Link to="/calculator" onClick={() => track('cta_click', { location: 'home_calculator_teaser' })} className="relative block overflow-hidden border border-[rgba(255,255,255,0.12)] p-10 md:p-16 flex flex-col md:flex-row md:items-center justify-between gap-8 group hover:border-[rgba(199,249,75,0.5)] transition-colors">
-            <div className="absolute inset-0 opacity-40 pointer-events-none"><ShaderBackground /></div>
+          <Link to="/calculator" onClick={() => track('cta_click', { location: 'home_calculator_teaser' })} className="relative block overflow-hidden border border-[rgba(225,29,42,0.35)] p-10 md:p-16 flex flex-col md:flex-row md:items-center justify-between gap-8 group hover:border-[rgba(225,29,42,0.7)] transition-colors" style={{ background: 'radial-gradient(120% 140% at 90% 20%, rgba(122,10,18,0.5) 0%, rgba(10,6,8,0.4) 55%, transparent 100%)' }}>
+            <div className="red-orb absolute -right-24 -top-24 opacity-30 pointer-events-none" style={{ width: 320, height: 320 }} />
             <div className="relative">
               <p className="kicker-ed mb-5">Калькулятор · безкоштовно · без контактів</p>
               <p className={`${H}`} style={{ fontSize: 'clamp(1.9rem, 3.8vw, 3rem)' }}>
