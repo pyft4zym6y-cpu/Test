@@ -48,8 +48,8 @@ export async function exportPrototypeDocx(ds: AuditDataset, r: PrototypeReport, 
   const site = ds.client.finalUrl || ds.client.rootUrl;
 
   kids.push(new Paragraph({ text: 'Эталонный прототип ↔ композиция клиента', heading: HeadingLevel.TITLE }));
-  kids.push(P(`${site} · Commerce OS · слой L0 (внешний обход) · ${new Date(ds.takenAt).toLocaleDateString('ru-RU')}`, { italics: true }));
-  kids.push(P('Страница разбирается как композиция — состав и порядок блоков — и сверяется с эталонной композицией своего типа (главы UX-энциклопедии: PDP 23, PLP 22, Cart 24, Checkout 25). Результат — путь клиента против эталонного пути. Наблюдение L0; «не обнаружено» ≠ «отсутствует».', { italics: true }));
+  kids.push(P(`${site} · Commerce OS · внешний обход витрины без доступов · ${new Date(ds.takenAt).toLocaleDateString('ru-RU')}`, { italics: true }));
+  kids.push(P('Страница разбирается как композиция — состав и порядок блоков — и сверяется с эталонной композицией своего типа (главы UX-энциклопедии: PDP 23, PLP 22, Cart 24, Checkout 25). Результат — путь клиента против эталонного пути. Наблюдение внешнего обхода; «не обнаружено» ≠ «отсутствует».', { italics: true }));
 
   if (!r.pages.length) {
     kids.push(P('Страницы не разобраны (сайт недоступен/бот-защита).'));

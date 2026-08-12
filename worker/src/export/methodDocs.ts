@@ -30,7 +30,7 @@ const save = async (kids: (Paragraph | Table)[], out: string) => writeFile(out, 
 const meta = (ds: AuditDataset, sub: string) => P(`${ds.client.finalUrl || ds.client.rootUrl} · Commerce OS · ${sub} · ${new Date(ds.takenAt).toLocaleDateString('ru-RU')}`, { italics: true });
 
 export async function exportMaturityDocx(ds: AuditDataset, r: MaturityReport, out: string): Promise<void> {
-  const k: (Paragraph | Table)[] = [new Paragraph({ text: 'Матрица зрелости (AD-16)', heading: HeadingLevel.TITLE }), meta(ds, '18 доменов · L1→L5 · L0')];
+  const k: (Paragraph | Table)[] = [new Paragraph({ text: 'Матрица зрелости (AD-16)', heading: HeadingLevel.TITLE }), meta(ds, '18 доменов · L1→L5 · внешний обход витрины')];
   k.push(P(`Средний уровень по наблюдаемым доменам: ${r.observedAvg ?? '—'}/5. Полная матрица заполняется ответами опросника и доступами.`, { bold: true }));
   k.push(table(['Домен', 'Что оценивается', 'Уровень', 'Основание'], r.rows.map((d) => [d.domain, d.assesses, levelLabel(d.level), d.basis]), [16, 40, 20, 24]));
   k.push(P('L1 Хаос → L2 Повторяемо → L3 Определено → L4 Управляемо → L5 Оптимизировано.', { italics: true }));
@@ -38,16 +38,16 @@ export async function exportMaturityDocx(ds: AuditDataset, r: MaturityReport, ou
 }
 
 export async function exportScopeDocx(ds: AuditDataset, r: ScopeReport, out: string): Promise<void> {
-  const k: (Paragraph | Table)[] = [new Paragraph({ text: 'Scope программы по волнам', heading: HeadingLevel.TITLE }), meta(ds, 'роутинг разрывов в плейбуки · L0')];
+  const k: (Paragraph | Table)[] = [new Paragraph({ text: 'Scope программы по волнам', heading: HeadingLevel.TITLE }), meta(ds, 'роутинг разрывов в плейбуки · внешний обход витрины')];
   k.push(P('Каждый плейбук активирован основанием (наблюдение с адресом/цифрой). Волны: тактика 0–3 → ядро 3–6 → стратегия 6–12 мес.', { italics: true }));
   if (!r.waves.length) k.push(P('Активаций не набрано — витрина близка к стандарту по наблюдаемым сигналам.'));
   for (const w of r.waves) { k.push(H(w.title)); k.push(table(['Плейбук', 'Методика', 'Основание'], w.items.map((i) => [i.playbook, i.name, i.reasons.join('; ')]), [14, 34, 52])); }
-  if (r.notIncluded.length) { k.push(H('Осознанно НЕ в scope (нет основания на L0)')); for (const n of r.notIncluded) k.push(P(`• ${n}`)); }
+  if (r.notIncluded.length) { k.push(H('Осознанно НЕ в scope (нет основания во внешнем аудите)')); for (const n of r.notIncluded) k.push(P(`• ${n}`)); }
   await save(k, out);
 }
 
 export async function exportCausalDocx(ds: AuditDataset, r: CausalMap, out: string): Promise<void> {
-  const k: (Paragraph | Table)[] = [new Paragraph({ text: 'Причинно-следственная карта', heading: HeadingLevel.TITLE }), meta(ds, 'симптом → причина → деньги · L0')];
+  const k: (Paragraph | Table)[] = [new Paragraph({ text: 'Причинно-следственная карта', heading: HeadingLevel.TITLE }), meta(ds, 'симптом → причина → деньги · внешний обход витрины')];
   k.push(P(r.moneyNote));
   if (!r.nodes.length) k.push(P('Причинных узлов не выделено на текущих данных.'));
   r.nodes.forEach((n, i) => {
@@ -63,12 +63,12 @@ export async function exportCausalDocx(ds: AuditDataset, r: CausalMap, out: stri
 const rubK = (n: number) => `${Math.round(n).toLocaleString('ru-RU')} ₴`;
 const WAVE_W: Record<number, string> = { 1: '0–3 мес', 2: '3–6 мес', 3: '6–12 мес' };
 export async function exportKpDocx(ds: AuditDataset, kp: Kp, money: MoneyResult | null, scope: ScopeReport | null, out: string): Promise<void> {
-  const k: (Paragraph | Table)[] = [new Paragraph({ text: 'Коммерческое предложение', heading: HeadingLevel.TITLE }), meta(ds, 'на основе аудита · L0')];
+  const k: (Paragraph | Table)[] = [new Paragraph({ text: 'Коммерческое предложение', heading: HeadingLevel.TITLE }), meta(ds, 'на основе аудита · внешний обход витрины')];
   k.push(H('Для кого')); k.push(P(kp.forClient));
   k.push(H('Методика')); k.push(P(kp.method, { italics: true }));
   if (kp.pains.length) { k.push(H('Боли (по причине)')); for (const x of kp.pains) k.push(P(`• ${x}`)); }
   k.push(H('Цена бездействия'));
-  k.push(P(money ? `Недополученный оборот ≈ ${rubK(money.potentialYear)}/год (консервативно ${rubK(money.consMinYear)}–${rubK(money.consMaxYear)}). Каждый месяц промедления — упущенный оборот.` : 'Считается на слое L1 (нужны трафик, конверсия, чек). На L0 разрывы против эталона уже видны.', { bold: Boolean(money) }));
+  k.push(P(money ? `Недополученный оборот ≈ ${rubK(money.potentialYear)}/год (консервативно ${rubK(money.consMinYear)}–${rubK(money.consMaxYear)}). Каждый месяц промедления — упущенный оборот.` : 'Считается после передачи доступов (нужны трафик, конверсия, чек). Во внешнем аудите разрывы против эталона уже видны.', { bold: Boolean(money) }));
   k.push(H('Точка Б')); k.push(P(kp.pointB));
   if (scope?.waves?.length) {
     k.push(H('Программа по волнам'));
@@ -82,7 +82,7 @@ export async function exportKpDocx(ds: AuditDataset, kp: Kp, money: MoneyResult 
 }
 
 export async function exportSynthesisDocx(ds: AuditDataset, s: Synthesis, out: string): Promise<void> {
-  const k: (Paragraph | Table)[] = [new Paragraph({ text: 'Синтез аудита', heading: HeadingLevel.TITLE }), meta(ds, 'взаимосвязи всех линз · L0')];
+  const k: (Paragraph | Table)[] = [new Paragraph({ text: 'Синтез аудита', heading: HeadingLevel.TITLE }), meta(ds, 'взаимосвязи всех линз · внешний обход витрины')];
   k.push(P(s.headline, { bold: true }));
   if (s.crossLinks.length) {
     k.push(H('Взаимосвязи (компаундные эффекты)'));
@@ -102,7 +102,7 @@ export async function exportSynthesisDocx(ds: AuditDataset, s: Synthesis, out: s
 
 export async function exportPriceChannelDocx(ds: AuditDataset, r: PriceChannelReport, out: string): Promise<void> {
   const label: Record<string, string> = { producer: 'Производитель / владелец бренда', reseller: 'Реселлер чужих брендов', hybrid: 'Гибрид', unknown: 'Требует уточнения' };
-  const k: (Paragraph | Table)[] = [new Paragraph({ text: 'Цена в канале и роль в цепочке', heading: HeadingLevel.TITLE }), meta(ds, 'L0')];
+  const k: (Paragraph | Table)[] = [new Paragraph({ text: 'Цена в канале и роль в цепочке', heading: HeadingLevel.TITLE }), meta(ds, 'внешний обход витрины')];
   k.push(P(`Роль клиента (гипотеза): ${label[r.role]}. ${r.roleBasis}.`, { bold: true }));
   k.push(P(r.risk, { italics: true }));
   k.push(H('Протокол проверки цены в канале'));

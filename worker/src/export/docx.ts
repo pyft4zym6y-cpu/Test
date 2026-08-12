@@ -32,9 +32,9 @@ export async function exportReportDocx(ds: AuditDataset, a: Analysis, engine: En
   const cs = clientScore(ds);
   const kids: Paragraph[] = [];
 
-  kids.push(new Paragraph({ text: `Аудит ${clientName(ds)} — отчёт L0`, heading: HeadingLevel.TITLE }));
-  kids.push(P(`Commerce OS · тир T${ds.tier} · слой L0 (внешний обход без доступов) · ${new Date(ds.takenAt).toLocaleDateString('ru-RU')}`, { italics: true }));
-  kids.push(P('Все оценки — «наблюдение L0», порядок величины, не факт по данным клиента. Деньги считаются на слое L1 после доступов.', { italics: true }));
+  kids.push(new Paragraph({ text: `Аудит ${clientName(ds)} — внешний обход витрины без доступов`, heading: HeadingLevel.TITLE }));
+  kids.push(P(`Commerce OS · внешний обход витрины без доступов · ${new Date(ds.takenAt).toLocaleDateString('ru-RU')}`, { italics: true }));
+  kids.push(P('Все оценки — «наблюдение внешнего обхода», порядок величины, не факт по данным клиента. Деньги считаются после передачи доступов.', { italics: true }));
 
   kids.push(H('Резюме для собственника', HeadingLevel.HEADING_1));
   kids.push(P(a.summary || '—'));

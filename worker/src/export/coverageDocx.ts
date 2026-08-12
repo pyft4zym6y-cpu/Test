@@ -8,7 +8,7 @@ import type { AuditDataset } from '../report.js';
 import type { CoverageReport, LensStatus } from '../coverage.js';
 
 const STATUS_LABEL: Record<LensStatus, string> = {
-  covered: '✓ покрыт (L0)', partial: '≈ частично (L0)', external: '⭙ внешний сервис', 'needs-access': '🔒 нужны доступы',
+  covered: '✓ покрыт (внешний обход)', partial: '≈ частично (внешний обход)', external: '⭙ внешний сервис', 'needs-access': '🔒 нужны доступы',
 };
 const LIME = 'A9D92F';
 const INK = '12160A';
@@ -27,7 +27,7 @@ const table = (head: string[], rows: string[][], widths?: number[]) =>
 export async function exportCoverageDocx(ds: AuditDataset, c: CoverageReport, outPath: string): Promise<void> {
   const kids: (Paragraph | Table)[] = [];
   kids.push(new Paragraph({ text: 'Охват аудита и уверенность отчёта', heading: HeadingLevel.TITLE }));
-  kids.push(P(`${ds.client.finalUrl || ds.client.rootUrl} · Commerce OS · тир T${ds.tier} · ${new Date(ds.takenAt).toLocaleDateString('ru-RU')}`, { italics: true }));
+  kids.push(P(`${ds.client.finalUrl || ds.client.rootUrl} · Commerce OS · внешний аудит витрины · ${new Date(ds.takenAt).toLocaleDateString('ru-RU')}`, { italics: true }));
 
   kids.push(new Paragraph({ text: 'Confidence Score отчёта', heading: HeadingLevel.HEADING_1, spacing: { before: 200, after: 100 } }));
   kids.push(P(`${c.confidence.score}/${c.confidence.base} — уверенность ${c.confidence.band}.`, { bold: true }));

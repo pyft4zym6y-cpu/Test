@@ -26,7 +26,7 @@ const table = (head: string[], rows: { cells: string[]; colors?: (string | undef
 export async function exportBenchmarkDocx(ds: AuditDataset, r: BenchmarkReport, outPath: string): Promise<void> {
   const kids: (Paragraph | Table)[] = [];
   kids.push(new Paragraph({ text: 'Конкурентный бенчмарк', heading: HeadingLevel.TITLE }));
-  kids.push(P(`${ds.client.finalUrl || ds.client.rootUrl} · Commerce OS · AD-11 · слой L0 · ${new Date(ds.takenAt).toLocaleDateString('ru-RU')}`, { italics: true }));
+  kids.push(P(`${ds.client.finalUrl || ds.client.rootUrl} · Commerce OS · AD-11 · внешний обход витрины без доступов · ${new Date(ds.takenAt).toLocaleDateString('ru-RU')}`, { italics: true }));
   if (r.narrative?.summary) kids.push(P(r.narrative.summary));
   kids.push(P(`Индекс клиента: ${r.clientIndex}/100 — место ${r.clientRank} из ${r.totalSites}.`, { bold: true }));
 

@@ -24,7 +24,7 @@ const table = (head: string[], rows: string[][], widths?: number[]) =>
 export async function exportHypothesesDocx(ds: AuditDataset, r: HypothesisRegister, outPath: string): Promise<void> {
   const kids: (Paragraph | Table)[] = [];
   kids.push(new Paragraph({ text: 'Реестр гипотез (AD-19)', heading: HeadingLevel.TITLE }));
-  kids.push(P(`${ds.client.finalUrl || ds.client.rootUrl} · Commerce OS · слой L0 · ${new Date(ds.takenAt).toLocaleDateString('ru-RU')}`, { italics: true }));
+  kids.push(P(`${ds.client.finalUrl || ds.client.rootUrl} · Commerce OS · внешний обход витрины без доступов · ${new Date(ds.takenAt).toLocaleDateString('ru-RU')}`, { italics: true }));
   if (!r.items.length) {
     kids.push(P('Гипотез не выделено: находки достаточно подтверждены на текущем тире.'));
     await writeFile(outPath, await Packer.toBuffer(new Document({ sections: [{ children: kids }] })));
