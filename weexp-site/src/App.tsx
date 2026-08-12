@@ -1,5 +1,6 @@
 import { ScoreProvider } from '@/lib/score';
 import { useLenis } from '@/lib/useLenis';
+import { Nav } from '@/components/Nav';
 import { Hero } from '@/components/Hero';
 import { Transform } from '@/components/Transform';
 import { Proof } from '@/components/Proof';
@@ -10,7 +11,8 @@ import { DemoOS } from '@/components/DemoOS';
 import { Calculator } from '@/components/Calculator';
 import { Manifest } from '@/components/Manifest';
 import { Alternatives } from '@/components/Alternatives';
-import { Close } from '@/components/Close';
+import { Founder } from '@/components/Founder';
+import { Contact } from '@/components/Contact';
 import { ScoreHUD } from '@/components/ScoreHUD';
 import { Agent } from '@/components/Agent';
 import '@/lib/primitives.css';
@@ -19,17 +21,20 @@ export default function App() {
   useLenis();
   return (
     <ScoreProvider>
+      <Nav />
+      <span id="top" />
       <Hero />
       <Transform />
       <Proof />
-      <Engine />
+      <div id="system"><Engine /></div>
       <Flywheel />
-      <Cases />
+      <div id="cases"><Cases /></div>
       <DemoOS />
-      <Calculator />
+      <div id="calc"><Calculator /></div>
       <Manifest />
       <Alternatives />
-      <Close />
+      <Founder />
+      <Contact />
       <ScoreHUD />
       <Agent />
     </ScoreProvider>

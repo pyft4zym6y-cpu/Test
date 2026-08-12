@@ -7,6 +7,7 @@ export function useLenis() {
   useEffect(() => {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const lenis = new Lenis({ duration: 1.05, smoothWheel: true });
+    (window as unknown as { __lenis?: Lenis }).__lenis = lenis; // для якорей навигации
     lenis.on('scroll', ScrollTrigger.update);
     const raf = (time: number) => lenis.raf(time * 1000);
     gsap.ticker.add(raf);
