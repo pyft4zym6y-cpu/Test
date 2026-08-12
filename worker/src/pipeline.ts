@@ -448,6 +448,17 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await renderPdf(renderBacklogHtml(backlog), join(dir, 'Сводный-бэклог-A0.pdf'), browser);
         log(`✓ Сводный бэклог (PDF): ${backlog.rawCount} рекомендаций → ${backlog.items.length} работ`);
 
+        // ── Единый реестр находок: все отчёты → один scored-список (общий ID, детерминированная
+        //    уверенность, revenue exposure, приоритет). Ядро «единой машины». ──
+        try {
+          const { feedFromReports } = await import('./registryFeed.js');
+          const { buildRegistry, registrySummary } = await import('./registry.js');
+          const registry = buildRegistry(feedFromReports(raw, journeyReport), { money });
+          const rs = registrySummary(registry);
+          await writeFile(join(dir, 'registry.json'), JSON.stringify(registry, null, 2), 'utf8');
+          log(`✓ Реестр находок: ${rs.total} находок (P0 ${rs.p0} / P1 ${rs.p1} / P2 ${rs.p2}), exposure ≈ ${rs.exposureYear.toLocaleString('ru-RU')} ₴/год`);
+        } catch (e) { log(`⚠️ реестр находок не собран (${String(e).slice(0, 100)})`); }
+
         // ── Протокол синергии и QA: пакет проверяет сам себя, нестыковки → резолюции. ──
         const qa = await buildQa(cn2, ds.takenAt, {
           siteAudit, content: contentReport, mech: mechReport, journey: journeyReport,
