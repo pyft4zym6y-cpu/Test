@@ -12,6 +12,12 @@
     },
     "ui-ux-pro-max-skill": {
       "source": { "source": "github", "repo": "nextlevelbuilder/ui-ux-pro-max-skill" }
+    },
+    "claude-design-skills": {
+      "source": { "source": "github", "repo": "freshtechbro/claudedesignskills" }
+    },
+    "web-animation-skills": {
+      "source": { "source": "github", "repo": "iart-ai/web-animation-skills" }
     }
   },
   "enabledPlugins": {
