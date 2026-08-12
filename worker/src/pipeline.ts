@@ -72,6 +72,7 @@ export type AuditOptions = {
   competitors?: string[];
   request?: string;
   agentic?: boolean;
+  premium?: boolean;            // премиум-экспертиза: подключить внешних профильных агентов
   prelaunch?: boolean;
   brief?: string;
   answers?: Record<string, unknown> | null;
@@ -452,10 +453,27 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
           const { buildRegistry, registrySummary } = await import('./registry.js');
           const { renderRegistryHtml } = await import('./export/registryHtml.js');
           registry = buildRegistry(feedFromReports(raw, journeyReport), { money });
+
+          // ── ПРЕМИУМ-ЭКСПЕРТИЗА (отдельный тумблер): внешние профильные агенты
+          //    перепроверяют/дополняют/углубляют находки и вливаются в тот же реестр. ──
+          if (opts.premium) {
+            try {
+              const { runExperts } = await import('./experts/runner.js');
+              const { applyVerifications } = await import('./registry.js');
+              const { renderPremiumHtml } = await import('./export/premiumHtml.js');
+              const expertResults = await runExperts({ dataset: ds, baseFindings: registry, log });
+              const expertInputs = expertResults.flatMap((r) => r.findings);
+              if (expertInputs.length) registry = buildRegistry([...feedFromReports(raw, journeyReport), ...expertInputs], { money });
+              const nAdj = applyVerifications(registry, expertResults.flatMap((r) => r.verifications));
+              await renderPdf(renderPremiumHtml(cn2, ds.takenAt, expertResults), join(dir, 'Премиум-экспертиза.pdf'), browser);
+              log(`✓ Премиум-экспертиза: агентов ${expertResults.filter((r) => r.ran).length}/${expertResults.length}, находок +${expertInputs.length}, перепроверок применено ${nAdj}`);
+            } catch (e) { log(`⚠️ премиум-экспертиза не отработала (${String(e).slice(0, 100)})`); }
+          }
+
           const rs = registrySummary(registry);
           await writeFile(join(dir, 'registry.json'), JSON.stringify(registry, null, 2), 'utf8');
           await renderPdf(renderRegistryHtml(cn2, ds.takenAt, registry), join(dir, 'Реестр-находок.pdf'), browser);
-          log(`✓ Реестр находок (PDF): ${rs.total} находок (P0 ${rs.p0} / P1 ${rs.p1} / P2 ${rs.p2}), exposure ≈ ${rs.exposureYear.toLocaleString('ru-RU')} ₴/год`);
+          log(`✓ Реестр находок (PDF)${opts.premium ? ' + премиум' : ''}: ${rs.total} находок (P0 ${rs.p0} / P1 ${rs.p1} / P2 ${rs.p2}), exposure ≈ ${rs.exposureYear.toLocaleString('ru-RU')} ₴/год`);
         } catch (e) { log(`⚠️ реестр находок не собран (${String(e).slice(0, 100)})`); }
 
         // ── Сводный беклог ИЗ реестра (fallback на сырые рекомендации, если реестр не собрался). ──

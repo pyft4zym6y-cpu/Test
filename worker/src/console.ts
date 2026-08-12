@@ -31,6 +31,14 @@ input,select,textarea{width:100%;background:var(--panel2);border:1px solid var(-
 textarea{min-height:56px;resize:vertical}
 .row{display:flex;gap:12px;flex-wrap:wrap}.row>div{flex:1;min-width:150px}
 .chk{display:flex;align-items:center;gap:9px;margin-top:12px;font-weight:600}.chk input{width:auto}
+.chk.premium{background:linear-gradient(90deg,rgba(199,160,32,.12),transparent);border:1px solid rgba(199,160,32,.35);border-radius:8px;padding:9px 11px}
+.experts{margin-top:8px;display:flex;flex-direction:column;gap:7px}
+.exp{border:1px solid var(--line,#2a2f3a);border-radius:7px;padding:8px 10px}
+.exp-h{display:flex;align-items:center;gap:8px;font-size:13px}
+.exp-w{font-size:12px;color:var(--mut);margin-top:3px}
+.exp-s{font-size:11px;color:var(--mut);opacity:.8;margin-top:3px}
+.ebadge{font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;margin-left:auto;white-space:nowrap}
+.ebadge.on{color:#16a34a;border:1px solid #16a34a}.ebadge.auth{color:#d97706;border:1px solid #d97706}.ebadge.plan{color:#64748b;border:1px solid #64748b}
 button{cursor:pointer;border:0;border-radius:11px;padding:11px 18px;font:inherit;font-weight:700}
 .primary{background:var(--lime);color:#12160a}.primary:hover{background:var(--lime2)}.primary:disabled{opacity:.5;cursor:default}
 .ghost{background:var(--panel2);color:var(--ink);border:1px solid var(--line);font-weight:600}
@@ -87,6 +95,10 @@ details>summary{cursor:pointer;color:var(--mut);font-size:13px;margin-top:4px}
       <div><label>Запрос <span class="hint">— что смотреть</span></label><input id="req" type="text" placeholder="где теряем деньги"></div>
     </div>
     <label class="chk"><input id="agentic" type="checkbox"> Агентный обход <span class="hint">— глубже, дольше</span></label>
+    <label class="chk premium"><input id="premium" type="checkbox" onchange="togglePremium()"> ⭐ Премиум-экспертиза <span class="hint">— внешние профильные агенты: перепроверяют, дополняют, углубляют</span></label>
+    <details id="premiumBox" class="hidden"><summary>Агенты премиум-экспертизы <span id="premiumCount" class="hint"></span></summary>
+      <div id="expertList" class="experts"><span class="hint">загрузка каталога…</span></div>
+    </details>
     <details><summary>Из базы опросника (Supabase, если подключена)</summary>
       <label>ID клиента <span class="hint">— тянет ответы опросника из базы портала и пишет итог в report_meta</span></label>
       <input id="clientId" type="text" placeholder="uuid клиента (таблица clients)">
@@ -150,6 +162,27 @@ function ping(){var s=$('ping'); s.textContent='проверяю…'; s.classNam
 function readJson(inp){return new Promise(function(res){var f=inp.files&&inp.files[0]; if(!f){res(null);return;} var r=new FileReader(); r.onload=function(){try{res(JSON.parse(r.result))}catch(e){res({__error:'файл '+f.name+' не JSON'})}}; r.onerror=function(){res(null)}; r.readAsText(f);});
 }
 
+var EXPERTS_LOADED=false;
+function togglePremium(){
+  var on=$('premium').checked; var box=$('premiumBox');
+  if(on){ box.classList.remove('hidden'); box.open=true; if(!EXPERTS_LOADED) loadExperts(); }
+  else { box.classList.add('hidden'); box.open=false; }
+}
+function loadExperts(){
+  var el=$('expertList');
+  fetch('/experts',{headers:hdr()}).then(function(r){return r.json()}).then(function(d){
+    if(!d||!d.experts){el.innerHTML='<span class="hint">каталог недоступен</span>';return;}
+    EXPERTS_LOADED=true;
+    var avail=d.experts.filter(function(e){return e.available}).length;
+    $('premiumCount').textContent='— '+avail+'/'+d.experts.length+' готовы';
+    el.innerHTML=d.experts.map(function(e){
+      var badge=e.available?'<span class="ebadge on">готов</span>':(e.status==='planned'?'<span class="ebadge plan">в разработке</span>':'<span class="ebadge auth">нужен доступ</span>');
+      return '<div class="exp"><div class="exp-h"><b>'+e.name+'</b>'+badge+'</div>'+
+        '<div class="exp-w">'+e.what+'</div>'+
+        '<div class="exp-s">усиливает: '+(e.strengthens||[]).join(', ')+(e.credEnv?(' · доступ: '+e.credEnv):'')+'</div></div>';
+    }).join('');
+  }).catch(function(){el.innerHTML='<span class="hint">каталог недоступен (нет связи)</span>';});
+}
 function run(){
   var s=$('run'); if(!TOK()){s.textContent='введите токен'; s.className='status err'; return;}
   Promise.all([readJson($('answers')), readJson($('baseline'))]).then(function(a){
@@ -159,6 +192,7 @@ function run(){
     var body={tier:Number($('tier').value), site:$('site').value.trim(),
       competitors:$('comp').value.split('\\n').map(function(x){return x.trim()}).filter(Boolean),
       request:$('req').value.trim(), agentic:$('agentic').checked,
+      premium:$('premium').checked,
       prelaunch:$('pre').checked, brief:$('brief').value.trim(),
       clientId:$('clientId').value.trim(),
       answers:answers||null, baseline:baseline||null};

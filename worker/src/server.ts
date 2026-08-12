@@ -21,6 +21,7 @@ import { runAudit, type AuditMetrics } from './pipeline.js';
 import { hasKey } from './anthropic.js';
 import { knowledgeCount } from './knowledge.js';
 import { CONSOLE_HTML } from './console.js';
+import { catalogCards } from './experts/catalog.js';
 import { makeZip } from './zip.js';
 import { storeEnabled, getClientBundle, saveRun } from './store.js';
 
@@ -163,6 +164,12 @@ const server = createServer(async (req, res) => {
   }
 
   // Список прогонов (история)
+  // Каталог премиум-агентов (перечень для тумблера «Премиум-экспертиза» в UI)
+  if (req.method === 'GET' && path === '/experts') {
+    json(res, 200, { ok: true, experts: catalogCards() });
+    return;
+  }
+
   if (req.method === 'GET' && path === '/jobs') {
     const list = Array.from(jobs.values()).sort((a, b) => b.startedAt - a.startedAt).slice(0, 40)
       .map((j) => ({ id: j.id, client: j.client, tier: j.tier, status: j.status, startedAt: j.startedAt, finishedAt: j.finishedAt, summary: j.summary }));

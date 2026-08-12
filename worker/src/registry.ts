@@ -215,6 +215,31 @@ const BAND_RANK: Record<Priority, number> = { P0: 0, P1: 1, P2: 2 };
 /** Сортировка: полоса → priorityScore ↓ → impactConfidence ↓. */
 function rank(f: Finding): number { return BAND_RANK[f.priority] * 1e12 - f.priorityScore; }
 
+/** Применяет перепроверки премиум-агентов: корректирует уверенность и приоритет
+ *  находок (по ID или по семантическому key). Используется в премиум-экспертизе. */
+export function applyVerifications(
+  findings: Finding[],
+  verifications: { targetId?: string; targetKey?: string; confidenceDelta?: number }[],
+): number {
+  const byId = new Map(findings.map((f) => [f.id, f]));
+  const byKey = new Map<string, Finding[]>();
+  for (const f of findings) { if (f.key) (byKey.get(f.key) ?? byKey.set(f.key, []).get(f.key)!).push(f); }
+  let applied = 0;
+  for (const v of verifications) {
+    const targets = v.targetId && byId.has(v.targetId) ? [byId.get(v.targetId)!]
+      : v.targetKey && byKey.has(v.targetKey) ? byKey.get(v.targetKey)! : [];
+    for (const f of targets) {
+      if (v.confidenceDelta) {
+        f.confidence = Math.round(Math.max(0, Math.min(1, f.confidence + v.confidenceDelta)) * 100) / 100;
+        f.impactConfidence = Math.round((Math.min(5, Math.max(1, f.impact)) / 5) * f.confidence * 100) / 100;
+        f.priority = band(f.impact, f.confidence, f.funnelStep, f.impactConfidence);
+        applied++;
+      }
+    }
+  }
+  return applied;
+}
+
 /** Короткая сводка реестра для exec/беклога. */
 export function registrySummary(findings: Finding[]): { total: number; p0: number; p1: number; p2: number; exposureYear: number } {
   return {
