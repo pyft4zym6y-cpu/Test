@@ -10,6 +10,8 @@ import { Cases } from '@/components/Cases';
 import { DemoOS } from '@/components/DemoOS';
 import { Calculator } from '@/components/Calculator';
 import { Manifest } from '@/components/Manifest';
+import { Usp } from '@/components/Usp';
+import { States } from '@/components/States';
 import { Alternatives } from '@/components/Alternatives';
 import { Founder } from '@/components/Founder';
 import { Contact } from '@/components/Contact';
@@ -27,11 +29,13 @@ export default function App() {
       <Transform />
       <Proof />
       <div id="system"><Engine /></div>
+      <Usp />
       <Flywheel />
       <div id="cases"><Cases /></div>
       <DemoOS />
       <div id="calc"><Calculator /></div>
       <Manifest />
+      <States />
       <Alternatives />
       <Founder />
       <Contact />
