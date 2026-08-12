@@ -60,6 +60,11 @@ function categorize(name: string): string {
   return 'Прочее';
 }
 
+// Клиенту показываем и упаковываем только рабочие документы (Word/Excel/PDF/PowerPoint).
+// Служебные .json (registry/backlog/coverage/qa/activation/job…) остаются на диске для
+// внутренних потребителей и портала, но в веб-интерфейс и в архив не попадают.
+const isClientDoc = (name: string) => /\.(pdf|docx|xlsx|pptx)$/i.test(name);
+
 const persistView = (j: Job) => ({ id: j.id, client: j.client, tier: j.tier, status: j.status, startedAt: j.startedAt, finishedAt: j.finishedAt, summary: j.summary, metrics: j.metrics, resultId: j.resultId, files: j.files });
 
 async function processQueue(): Promise<void> {
@@ -73,7 +78,7 @@ async function processQueue(): Promise<void> {
     job.status = 'running';
     const r = await runAudit({ ...(job.opts as any), out: OUT, log: (m: string) => { job.log.push(m); if (job.log.length > 800) job.log.shift(); } });
     job.resultId = r.id; job.summary = r.summary; job.metrics = r.metrics;
-    job.files = r.files.filter((n) => n !== 'job.json').map((n) => ({ name: n, url: `/result/${r.id}/${encodeURIComponent(n)}`, category: categorize(n) }));
+    job.files = r.files.filter(isClientDoc).map((n) => ({ name: n, url: `/result/${r.id}/${encodeURIComponent(n)}`, category: categorize(n) }));
     job.status = 'done'; job.finishedAt = Date.now();
     await writeFile(join(OUT, r.id, 'job.json'), JSON.stringify(persistView(job)), 'utf8').catch(() => {});
     if (job.clientId && storeEnabled()) {
@@ -181,7 +186,7 @@ const server = createServer(async (req, res) => {
     if (!j || !j.resultId) { json(res, 404, { ok: false, error: 'пакет недоступен' }); return; }
     try {
       const dir = join(OUT, basename(j.resultId));
-      const names = (await readdir(dir)).filter((n) => n !== 'job.json' && !n.startsWith('.'));
+      const names = (await readdir(dir)).filter((n) => isClientDoc(n) && !n.startsWith('.'));
       const entries = [];
       for (const n of names) { const st = await stat(join(dir, n)).catch(() => null); if (st && st.isFile()) entries.push({ name: n, data: await readFile(join(dir, n)) }); }
       const zip = makeZip(entries);
