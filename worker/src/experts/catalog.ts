@@ -102,6 +102,51 @@ export const EXPERT_CATALOG: Expert[] = [
     provider: 'http', credEnv: 'REPUTATION_API_KEY', status: 'needs-auth',
     strengthens: ['Внешний инфофон', 'Аудит отзывов'],
   }, 'Агент репутации подключён — расширенный свод упоминаний добавлен'),
+
+  // ── РОАДМАПА (планируется): приоритетные направления e-commerce-экспертизы. Многие
+  //    из «браузерных» строятся БЕЗ внешнего ключа — в нашем же Playwright/на бесплатных API. ──
+  externalExpert({
+    id: 'accessibility', name: 'Доступность (a11y / WCAG)', domain: 'cro',
+    what: 'Полный тест доступности (клавиатура, контраст, ARIA, labels, тач-цели) — axe-core в нашем же браузере, без внешнего ключа',
+    provider: 'builtin', status: 'planned',
+    strengthens: ['UX/UI', 'Технический аудит', 'Юридический (доступность)'],
+  }, ''),
+  externalExpert({
+    id: 'performance-cwv', name: 'Производительность / Core Web Vitals', domain: 'tech',
+    what: 'Фактические LCP/CLS/INP (PageSpeed Insights + поле CrUX) — измерение, а не требование; бесплатный API',
+    provider: 'http', credEnv: 'PSI_KEY', status: 'planned',
+    strengthens: ['Технический аудит', 'SEO Architecture', 'UX/UI'],
+  }, ''),
+  externalExpert({
+    id: 'ad-library', name: 'Реклама конкурентов (ad libraries)', domain: 'ads',
+    what: 'Креативы, форматы и активность конкурентов в Meta Ad Library и Google Ads Transparency — публичные данные, без кабинетов',
+    provider: 'http', status: 'planned',
+    strengthens: ['Аудит каналов', 'Конкурентный анализ'],
+  }, ''),
+  externalExpert({
+    id: 'backlinks', name: 'Ссылочный профиль / авторитет', domain: 'seo',
+    what: 'Referring domains, авторитет, анкоры, токсичность ссылок (Ahrefs/Semrush/Serpstat)',
+    provider: 'http', credEnv: 'AHREFS_KEY', status: 'planned',
+    strengthens: ['SEO Architecture'],
+  }, ''),
+  externalExpert({
+    id: 'traffic-intelligence', name: 'Оценка трафика и каналов', domain: 'competitors',
+    what: 'Внешняя оценка объёма трафика и микса каналов (SimilarWeb) — картина спроса без доступа к GA4',
+    provider: 'http', credEnv: 'SIMILARWEB_KEY', status: 'planned',
+    strengthens: ['Аудит каналов', 'Конкурентный анализ', 'Деньги'],
+  }, ''),
+  externalExpert({
+    id: 'marketplace-price', name: 'Цена в канале / маркетплейсы', domain: 'competitors',
+    what: 'Цена у реселлеров и на маркетплейсах (прайс-агрегаторы, Rozetka/Prom/Amazon) — закрывает пустой отчёт «Цена в канале»',
+    provider: 'http', credEnv: 'PRICE_API_KEY', status: 'planned',
+    strengthens: ['Цена в канале', 'Конкурентный анализ'],
+  }, ''),
+  externalExpert({
+    id: 'social-listening', name: 'Соцпрослушка (share of voice)', domain: 'reputation',
+    what: 'Объём и тональность упоминаний в соцсетях и форумах, share of voice vs конкуренты (Brand24/YouScan)',
+    provider: 'http', credEnv: 'SOCIAL_LISTEN_KEY', status: 'planned',
+    strengthens: ['Внешний инфофон', 'Соцсети'],
+  }, ''),
 ];
 
 /** Карточки каталога для веб-интерфейса (+ доступность в текущем окружении). */
