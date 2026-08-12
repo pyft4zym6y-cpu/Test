@@ -35,6 +35,7 @@ export type ExpertContext = {
   dataset: AuditDataset;
   baseFindings: Finding[];      // базовый реестр — агент может его перепроверять
   log: (m: string) => void;
+  browser?: import('playwright').Browser;  // для «браузерных» агентов (a11y, ad-library)
 };
 
 /** Перепроверка существующей находки внешним агентом. */

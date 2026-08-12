@@ -9,6 +9,7 @@
  */
 import type { Expert, ExpertCard, ExpertResult, Verification } from './types.js';
 import { geoReadiness, securitySignals, geoAeoWeb } from './builtinAgents.js';
+import { performanceCwv, accessibilityAxe } from './waveOneAgents.js';
 
 /** Встроенный агент второго мнения: перепроверяет базовые находки детерминированно. */
 const qaCrossVerify: Expert = {
@@ -72,6 +73,8 @@ export const EXPERT_CATALOG: Expert[] = [
   geoReadiness,
   securitySignals,
   geoAeoWeb,
+  performanceCwv,
+  accessibilityAxe,
   externalExpert({
     id: 'seo-search-console', name: 'Google Search Console — SEO факты', domain: 'seo',
     what: 'Реальные позиции, запросы, индексация, Core Web Vitals и schema-валидация вместо внешних наблюдений',
@@ -105,18 +108,6 @@ export const EXPERT_CATALOG: Expert[] = [
 
   // ── РОАДМАПА (планируется): приоритетные направления e-commerce-экспертизы. Многие
   //    из «браузерных» строятся БЕЗ внешнего ключа — в нашем же Playwright/на бесплатных API. ──
-  externalExpert({
-    id: 'accessibility', name: 'Доступность (a11y / WCAG)', domain: 'cro',
-    what: 'Полный тест доступности (клавиатура, контраст, ARIA, labels, тач-цели) — axe-core в нашем же браузере, без внешнего ключа',
-    provider: 'builtin', status: 'planned',
-    strengthens: ['UX/UI', 'Технический аудит', 'Юридический (доступность)'],
-  }, ''),
-  externalExpert({
-    id: 'performance-cwv', name: 'Производительность / Core Web Vitals', domain: 'tech',
-    what: 'Фактические LCP/CLS/INP (PageSpeed Insights + поле CrUX) — измерение, а не требование; бесплатный API',
-    provider: 'http', credEnv: 'PSI_KEY', status: 'planned',
-    strengthens: ['Технический аудит', 'SEO Architecture', 'UX/UI'],
-  }, ''),
   externalExpert({
     id: 'ad-library', name: 'Реклама конкурентов (ad libraries)', domain: 'ads',
     what: 'Креативы, форматы и активность конкурентов в Meta Ad Library и Google Ads Transparency — публичные данные, без кабинетов',

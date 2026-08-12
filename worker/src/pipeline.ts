@@ -401,7 +401,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
             const { runExperts } = await import('./experts/runner.js');
             const { applyVerifications } = await import('./registry.js');
             const { renderPremiumHtml } = await import('./export/premiumHtml.js');
-            const expertResults = await runExperts({ dataset: ds, baseFindings: registry, log });
+            const expertResults = await runExperts({ dataset: ds, baseFindings: registry, log, browser });
             const expertInputs = expertResults.flatMap((r) => r.findings);
             if (expertInputs.length) registry = buildRegistry([...feedFromReports(registryRaw, journeyReport), ...expertInputs], { money });
             const nAdj = applyVerifications(registry, expertResults.flatMap((r) => r.verifications));
