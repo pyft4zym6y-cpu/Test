@@ -38,7 +38,7 @@ import { buildMechanics } from './mechanics.js';
 import { renderMechanicsHtml } from './export/mechanicsHtml.js';
 import { runJourney, buildJourneyReport } from './journey.js';
 import { renderJourneyHtml } from './export/journeyHtml.js';
-import { buildBacklog, renderBacklogHtml, type RawRec } from './backlog.js';
+import { buildBacklog, buildBacklogFromRegistry, renderBacklogHtml, type RawRec } from './backlog.js';
 import { buildSocialAudit, buildMentionsAudit, buildReviewsAudit } from './externalAudits.js';
 import { renderSocialHtml, renderMentionsHtml, renderReviewsHtml } from './export/externalHtml.js';
 import { buildQa, renderQaHtml } from './qa.js';
@@ -443,23 +443,26 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
           ...(seoReport?.issues.map((i) => ({ pr: (i.level <= 1 ? 'P0' : 'P1') as RawRec['pr'], action: `${i.node}: ${i.action}`, effect: i.problem, source: 'SEO' })) ?? []),
           ...(ciReport?.chains.map((c, i) => ({ pr: (i < 2 ? 'P0' : 'P1') as RawRec['pr'], action: c.action, effect: c.impact, source: 'CI' })) ?? []),
         ];
-        const backlog = buildBacklog(cn2, ds.takenAt, raw);
-        await writeFile(join(dir, 'backlog.json'), JSON.stringify(backlog, null, 2), 'utf8');
-        await renderPdf(renderBacklogHtml(backlog), join(dir, 'Сводный-бэклог-A0.pdf'), browser);
-        log(`✓ Сводный бэклог (PDF): ${backlog.rawCount} рекомендаций → ${backlog.items.length} работ`);
-
-        // ── Единый реестр находок: все отчёты → один scored-список (общий ID, детерминированная
-        //    уверенность, revenue exposure, приоритет). Ядро «единой машины». ──
+        // ── Единый реестр находок СНАЧАЛА: все отчёты → один scored-список (общий ID,
+        //    детерминированная уверенность, revenue exposure, приоритет). Ядро «единой
+        //    машины» — из него же строится сводный беклог (единая точка правды). ──
+        let registry: import('./registry.js').Finding[] | null = null;
         try {
           const { feedFromReports } = await import('./registryFeed.js');
           const { buildRegistry, registrySummary } = await import('./registry.js');
           const { renderRegistryHtml } = await import('./export/registryHtml.js');
-          const registry = buildRegistry(feedFromReports(raw, journeyReport), { money });
+          registry = buildRegistry(feedFromReports(raw, journeyReport), { money });
           const rs = registrySummary(registry);
           await writeFile(join(dir, 'registry.json'), JSON.stringify(registry, null, 2), 'utf8');
           await renderPdf(renderRegistryHtml(cn2, ds.takenAt, registry), join(dir, 'Реестр-находок.pdf'), browser);
           log(`✓ Реестр находок (PDF): ${rs.total} находок (P0 ${rs.p0} / P1 ${rs.p1} / P2 ${rs.p2}), exposure ≈ ${rs.exposureYear.toLocaleString('ru-RU')} ₴/год`);
         } catch (e) { log(`⚠️ реестр находок не собран (${String(e).slice(0, 100)})`); }
+
+        // ── Сводный беклог ИЗ реестра (fallback на сырые рекомендации, если реестр не собрался). ──
+        const backlog = registry ? buildBacklogFromRegistry(cn2, ds.takenAt, registry, raw.length) : buildBacklog(cn2, ds.takenAt, raw);
+        await writeFile(join(dir, 'backlog.json'), JSON.stringify(backlog, null, 2), 'utf8');
+        await renderPdf(renderBacklogHtml(backlog), join(dir, 'Сводный-бэклог.pdf'), browser);
+        log(`✓ Сводный бэклог (PDF)${registry ? ' из реестра' : ''}: ${backlog.rawCount} рекомендаций → ${backlog.items.length} работ`);
 
         // ── Протокол синергии и QA: пакет проверяет сам себя, нестыковки → резолюции. ──
         const qa = await buildQa(cn2, ds.takenAt, {
