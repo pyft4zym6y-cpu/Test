@@ -4,6 +4,7 @@
  * ответов просим строгий JSON и парсим устойчиво.
  */
 import Anthropic from '@anthropic-ai/sdk';
+import { maybeCompress } from './headroom.js';
 
 export const MODEL = process.env.AUDIT_MODEL || 'claude-opus-5';
 
@@ -22,6 +23,8 @@ export async function createMessage(params: any): Promise<any> {
 }
 
 export async function ask(system: string, user: string, maxTokens = 8000): Promise<string> {
+  // Опциональное сжатие крупного payload (headroom-ai) — no-op по умолчанию; системный промпт не трогаем.
+  const userMsg = await maybeCompress(user);
   // adaptive thinking / effort могут опережать типы установленного SDK — параметры валидны на API
   const params: any = {
     model: MODEL,
@@ -29,7 +32,7 @@ export async function ask(system: string, user: string, maxTokens = 8000): Promi
     system,
     thinking: { type: 'adaptive' },
     output_config: { effort: 'medium' },
-    messages: [{ role: 'user', content: user }],
+    messages: [{ role: 'user', content: userMsg }],
   };
   const resp = await get().messages.create(params);
   return resp.content
