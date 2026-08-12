@@ -13,11 +13,14 @@ export function Manifest() {
     const el = ref.current;
     if (!el || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const split = new SplitType(el, { types: 'words' });
-    // подсветить ключевую фразу
-    split.words?.forEach((w) => { if (/Independence|Score/i.test(w.textContent || '')) w.classList.add('mk'); });
+    // подсветить ключевую фразу; она остаётся полностью зажжённой (акцент + AA-контраст)
+    const words = split.words ?? [];
+    words.forEach((w) => { if (/Independence|Score/i.test(w.textContent || '')) w.classList.add('mk'); });
+    const reveal = words.filter((w) => !w.classList.contains('mk'));
     const ctx = gsap.context(() => {
-      gsap.from(split.words, {
-        opacity: 0.14, stagger: 0.04,
+      // floor 0.4 (не 0.14): даже «непроявленный» крупный текст проходит AA-контраст (axe)
+      gsap.from(reveal, {
+        opacity: 0.4, stagger: 0.04,
         scrollTrigger: { trigger: el, start: 'top 82%', end: 'bottom 58%', scrub: 0.6 },
       });
     }, el);
