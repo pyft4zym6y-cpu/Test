@@ -3,6 +3,7 @@
  * → рекомендуемое дерево. Единый визуальный стандарт (reportShell).
  */
 import { esc, dimBadges, doc, methodologySection, swSection, recsSection, conclusionSection, type SectionRec } from './reportShell.js';
+import { svgBars, svgDonut } from './charts.js';
 import { ONPAGE_COLS, ONPAGE_LABEL, type SeoArchReport, type Purpose } from '../seoarch.js';
 
 const PURPOSE_RU: Record<Purpose, string> = { commercial: 'коммерческий', informational: 'информационный', system: 'системный' };
@@ -30,9 +31,20 @@ export function renderSeoArchHtml(r: SeoArchReport): string {
     <td class="t-count">${t.count}</td>
     <td class="t-note ${t.severity}">${esc(t.note)}</td>
   </tr>`).join('');
+  const sevOk = r.tree.filter((t) => t.severity === 'ok').length;
+  const sevCheck = r.tree.filter((t) => t.severity === 'check').length;
+  const sevGap = r.tree.filter((t) => t.severity === 'gap').length;
+  const treeDonut = r.tree.length ? `<div class="chart-wrap">${svgDonut([
+    { label: 'Норма', value: sevOk, tone: 'ok' },
+    { label: 'Внимание', value: sevCheck, tone: 'check' },
+    { label: 'Риск дублей', value: sevGap, tone: 'gap' },
+  ].filter((s) => s.value > 0), { title: 'Разделы L1 по сигналу', centerLabel: String(r.tree.length) })}
+    <p class="chart-cap">Доля красных секторов показывает, насколько дерево засоряется параметрическими дублями: чем их больше, тем сильнее вес размывается по копиям фильтров.<sup class="fn">1</sup></p></div>` : '';
   const tree = `<section class="block"><h2>Видимое дерево сайта</h2>
     <p class="lead">Разделы первого уровня по числу найденных URL. Колонка «Сигнал» — короткая диагностика раздела: либо риск дублей (много URL с GET-параметрами — их надо закрывать canonical/robots, иначе поиск индексирует копии), либо объём вложенности (сколько подразделов внутри). Цвет: зелёный — норма, жёлтый — внимание, красный — риск дублей.</p>
-    <table><thead><tr><th>Раздел (L1)</th><th>Назначение</th><th>Объём URL</th><th>Кол-во</th><th>Сигнал</th></tr></thead><tbody>${treeRows}</tbody></table></section>`;
+    ${treeDonut}
+    <table><thead><tr><th>Раздел (L1)</th><th>Назначение</th><th>Объём URL</th><th>Кол-во</th><th>Сигнал</th></tr></thead><tbody>${treeRows}</tbody></table>
+    <p class="fn-note"><sup>1</sup> Сигнал раздела определён по доле URL с GET-параметрами в видимых ссылках обхода (≥8 — риск, ≥3 — внимание). Реальные дубли в индексе подтверждаются после передачи доступов (следующий этап; Search Console, полный crawl).</p></section>`;
 
   const issueRows = r.issues.map((i) => `<tr>
     <td class="i-node"><b>${esc(i.node)}</b><span class="i-lvl">L${i.level}</span></td>
@@ -53,9 +65,19 @@ export function renderSeoArchHtml(r: SeoArchReport): string {
     <td class="op-url"><b>${esc(row.kind)}</b><span>${esc(row.url)}</span></td>
     ${ONPAGE_COLS.map((c) => { const cell = row.cells[c]; const na = cell?.note === 'н/п'; return `<td class="op-c ${na ? 'na' : cell?.ok ? 'ok' : 'gap'}">${na ? '·' : cell?.ok ? '✓' : '✕'} <i>${esc(cell?.note ?? '—')}</i></td>`; }).join('')}
   </tr>`).join('');
+  const opScores = r.onpage.map((row) => {
+    const applic = ONPAGE_COLS.filter((c) => row.cells[c] && row.cells[c].note !== 'н/п');
+    const passed = applic.filter((c) => row.cells[c].ok).length;
+    const pct = applic.length ? Math.round((passed / applic.length) * 100) : 0;
+    return { label: row.kind, value: pct };
+  });
+  const opBars = r.onpage.length ? `<div class="chart-wrap">${svgBars(opScores.map((p) => ({ label: p.label, value: p.value, max: 100, tone: p.value >= 70 ? 'ok' : p.value >= 45 ? 'check' : 'gap' })), { title: 'On-page балл по страницам', unit: '%' })}
+    <p class="chart-cap">Балл — доля пройденных on-page проверок из применимых к типу страницы. Чем короче столбец, тем больше незакрытых элементов на шаблоне этой страницы.<sup class="fn">1</sup></p></div>` : '';
   const onpage = r.onpage.length ? `<section class="block"><h2>On-page постранично: фактические значения</h2>
     <p class="lead">Норма: Title 15–70 символов, Description 50–170, ровно один H1, canonical на каждом шаблоне, Product-разметка на карточках и листингах. «н/п» — проверка неприменима к типу страницы.</p>
-    <table><thead><tr><th>Страница</th>${opHead}</tr></thead><tbody>${opRows}</tbody></table></section>` : '';
+    ${opBars}
+    <table><thead><tr><th>Страница</th>${opHead}</tr></thead><tbody>${opRows}</tbody></table>
+    <p class="fn-note"><sup>1</sup> Балл считается по применимым к типу страницы проверкам (Title, Description, H1, canonical, разметка, Open Graph); «н/п» из знаменателя исключены. Оценка по выборке ${r.totals.crawled} представительных страниц внешнего обхода — не по всему сайту.</p></section>` : '';
 
   const rec = `<section class="block"><h2>Рекомендуемое дерево</h2>
     <p class="lead">Как должна выглядеть архитектура, чтобы не плодить дубли и раздавать вес правильно.</p>

@@ -4,6 +4,7 @@
  * инструмент/доступ на A1).
  */
 import { esc, dimBadges, scoreColor, doc, methodologySection, swSection, recsSection, conclusionSection, type SectionRec } from './reportShell.js';
+import { svgDonut } from './charts.js';
 import type { TechReport, TStatus } from '../techaudit.js';
 
 const MARK: Record<TStatus, string> = { ok: '✓', check: '◐', gap: '✕', blocked: '⛔' };
@@ -47,6 +48,19 @@ export function renderTechAuditHtml(r: TechReport): string {
   const okCats = r.categories.filter((c) => c.status === 'ok').map((c) => c.title);
   const gapCats = r.categories.filter((c) => c.status === 'gap').map((c) => c.title);
 
+  // Пончик распределения статусов измеримых проверок (blocked — «нужны доступы» — не входит).
+  const nOk = okChecks.length, nWarn = checkChecks.length, nGap = gapChecks.length;
+  const statusTotal = nOk + nWarn + nGap;
+  const statusDonut = statusTotal > 0 ? `<section class="block"><h2>Итог по проверкам</h2>
+    <div class="chart-wrap">${svgDonut([
+      { label: 'Пройдено', value: nOk, color: '#16a34a' },
+      { label: 'Проверить', value: nWarn, color: '#d97706' },
+      { label: 'Провал', value: nGap, color: '#dc2626' },
+    ].filter((x) => x.value > 0), { title: 'Статусы технических проверок', centerLabel: `${nOk}/${statusTotal}` })}
+      <p class="chart-cap">Зелёное — измеримые проверки, пройденные на всех разобранных страницах; оранжевое — неустойчиво (пройдено на части страниц); красное — систематический разрыв.${r.blocked.length ? ` ${r.blocked.length} проверок со статусом «нужны доступы» в диаграмму не входят.` : ''}<sup class="fn">1</sup></p></div>
+    <p class="fn-note"><sup>1</sup> Статус считается по внешнему обходу отрендеренного DOM: «пройдено» — признак присутствует на всех разобранных страницах, «провал» — менее 35% страниц. Это наблюдение по клиентской части, а не гарантия серверной конфигурации; проверки «нужны доступы» измеряются после передачи доступов.</p>
+    </section>` : '';
+
   const meth = methodologySection({
     goal: 'Зафиксировать состояние технического фундамента витрины по внешним признакам: что работает, что сломано, что измеримо только инструментами.',
     sources: ['Внешний обход: отрендеренный DOM всех разобранных страниц', 'robots.txt и sitemap.xml с корня домена', 'Замеры мобильности (тап-цели, кегль) из рендера'],
@@ -81,5 +95,5 @@ export function renderTechAuditHtml(r: TechReport): string {
 
   const extra = `.c-name{font-weight:600;white-space:nowrap;} .c-st{white-space:nowrap;font-size:9.5px;} .c-note{color:var(--muted);font-size:10px;white-space:nowrap;} .c-rec{color:#333;}
     .st{font-size:12px;} .st.ok{color:var(--ok);} .st.check{color:var(--check);} .st.gap{color:var(--gap);} .cat-dims{font-weight:400;}`;
-  return doc(`Технический аудит · ${r.client}`, cover + meth + cats + swSection(strengths, weaknesses) + recsSection(recs) + concl + footer, extra);
+  return doc(`Технический аудит · ${r.client}`, cover + meth + cats + statusDonut + swSection(strengths, weaknesses) + recsSection(recs) + concl + footer, extra);
 }

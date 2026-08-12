@@ -5,6 +5,7 @@
  * зрелость, coverage, гипотезы); недостающее помечает PARTIAL/BLOCKED (§15).
  */
 import { esc, dimBadges, scoreColor, doc, conclusionSection } from './reportShell.js';
+import { svgDonut, svgGauge } from './charts.js';
 import type { AuditDataset } from '../report.js';
 import type { SiteAuditReport } from '../pagereport.js';
 import type { Analysis, Finding } from '../analyze.js';
@@ -112,6 +113,14 @@ export function renderExecDiagnostic(ds: AuditDataset, inp: ExecInputs): string 
   if (inp.registry?.length) {
     const top = inp.registry.slice(0, 8);
     const p0 = inp.registry.filter((f) => f.priority === 'P0').length;
+    const p1 = inp.registry.filter((f) => f.priority === 'P1').length;
+    const p2 = inp.registry.filter((f) => f.priority === 'P2').length;
+    const prDonut = `<div class="chart-wrap">${svgDonut([
+      { label: 'P0 — критично', value: p0, color: '#dc2626' },
+      { label: 'P1 — важно', value: p1, color: '#d97706' },
+      { label: 'P2 — стратегия', value: p2, color: '#64748b' },
+    ].filter((x) => x.value > 0), { title: 'Находки по приоритету', centerLabel: String(inp.registry.length) })}
+      <p class="chart-cap">Единый реестр всех аудитов; полоса приоритета = Impact × Confidence × Revenue / Cost. С красного сектора начинается работа.</p></div>`;
     const rows = top.map((f) => `<tr>
       <td style="font-weight:800;white-space:nowrap">${esc(f.id)}</td>
       <td><span class="pr ${f.priority}">${f.priority}</span></td>
@@ -121,7 +130,7 @@ export function renderExecDiagnostic(ds: AuditDataset, inp: ExecInputs): string 
     </tr>`).join('');
     s.push(section('2а. Топ находок — единый реестр',
       `Все аудиты сведены в один реестр: ${inp.registry.length} находок, критичных P0 — ${p0}. Приоритет = Impact × Confidence × Revenue / Cost; одна проблема = один ID через все отчёты.`,
-      `<table><thead><tr><th>ID</th><th>Приор.</th><th>Находка · где встречается</th><th>Уверен.</th><th>Revenue/год</th></tr></thead><tbody>${rows}</tbody></table>`, 'DONE'));
+      `${prDonut}<table><thead><tr><th>ID</th><th>Приор.</th><th>Находка · где встречается</th><th>Уверен.</th><th>Revenue/год</th></tr></thead><tbody>${rows}</tbody></table>`, 'DONE'));
   }
 
   // Карта разрывов
@@ -129,8 +138,12 @@ export function renderExecDiagnostic(ds: AuditDataset, inp: ExecInputs): string 
   if (ux) gapRows.push(`<tr><td>UX/UI композиция</td><td class="${scoreColor(ux.totalPct)}">${ux.totalPct}% соответствия</td><td>${ux.systemic.length} системных дефектов</td></tr>`);
   if (inp.engine?.score != null) gapRows.push(`<tr><td>Health Score</td><td>${inp.engine.score}/100 «${esc(inp.engine.band)}»</td><td>${inp.engine.gaps.length} критических разрывов</td></tr>`);
   if (inp.bench) gapRows.push(`<tr><td>Конкурентный индекс</td><td>${inp.bench.clientIndex}/100</td><td>место ${inp.bench.clientRank}/${inp.bench.totalSites}</td></tr>`);
+  const healthGauge = inp.engine?.score != null
+    ? `<div class="chart-wrap row"><div style="text-align:center">${svgGauge(inp.engine.score, { max: 100, label: `Health Score · «${inp.engine.band}»` })}</div>
+        <p class="chart-cap" style="flex:1;min-width:180px">Сводный индекс здоровья витрины по внешним признакам (0–100). Это оценка состояния БИЗНЕСА, в отличие от Confidence Score — достоверности нашего разбора.</p></div>`
+    : '';
   s.push(section('3. Карта основных разрывов', 'Где витрина дальше всего от эталона и рынка.',
-    gapRows.length ? `<table><thead><tr><th>Домен</th><th>Оценка</th><th>Разрыв</th></tr></thead><tbody>${gapRows.join('')}</tbody></table>` : '<p class="lead">Карта разрывов собирается из UX/UI, движка и бенчмарка.</p>',
+    (gapRows.length ? `${healthGauge}<table><thead><tr><th>Домен</th><th>Оценка</th><th>Разрыв</th></tr></thead><tbody>${gapRows.join('')}</tbody></table>` : '<p class="lead">Карта разрывов собирается из UX/UI, движка и бенчмарка.</p>'),
     gapRows.length ? 'DONE' : 'PARTIAL'));
 
   // Экономика разрыва

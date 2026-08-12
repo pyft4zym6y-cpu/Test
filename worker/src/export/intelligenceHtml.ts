@@ -5,6 +5,7 @@
  * цепочки дедукции, лестница зрелости, точки роста. Стандарт A0 (reportShell).
  */
 import { esc, doc, methodologySection, swSection, recsSection, conclusionSection, type SectionRec } from './reportShell.js';
+import { svgDonut } from './charts.js';
 import type { CIReport, CILayer, CIStatus } from '../intelligence.js';
 
 const ST_CLS: Record<CIStatus, string> = { observed: 'ok', deduced: 'check', 'needs-data': 'gap' };
@@ -35,6 +36,18 @@ export function renderIntelligenceHtml(r: CIReport): string {
       <tr><th>Языки/рынки</th><td>${esc(r.config.langs.join(', ') || 'один язык')}</td></tr>
       <tr><th>Основание зрелости</th><td>${esc(r.maturity.basis)}</td></tr>
     </tbody></table></section>`;
+
+  const nObs = r.layers.filter((l) => l.status === 'observed').length;
+  const nDed = r.layers.filter((l) => l.status === 'deduced').length;
+  const nNeed = r.layers.filter((l) => l.status === 'needs-data').length;
+  const stackDonut = r.layers.length ? `<section class="block"><h2>Слои бизнес-модели: что доказано, что дедукция</h2>
+    <div class="chart-wrap">${svgDonut([
+      { label: 'Наблюдение', value: nObs, color: '#16a34a' },
+      { label: 'Дедукция', value: nDed, color: '#d97706' },
+      { label: 'Нужны данные', value: nNeed, color: '#dc2626' },
+    ].filter((x) => x.value > 0), { title: 'Слои интеллект-карты по статусу', centerLabel: `${nObs}/${r.layers.length}` })}
+      <p class="chart-cap">Зелёный — слой подтверждён внешним наблюдением; оранжевый — обоснованная дедукция (гипотеза со способом проверки); красный — раскрывается только с доступами.<sup class="fn">1</sup></p></div>
+    <p class="fn-note"><sup>1</sup> Дедукция — не факт: у каждого такого слоя в таблицах ниже указан способ проверки. После передачи доступов дедукции переходят в наблюдение, и уверенность карты растёт без перестройки её структуры.</p></section>` : '';
 
   const groups = Array.from(new Set(r.layers.map((l) => l.group)));
   const layerSections = groups.map((g) => {
@@ -111,5 +124,5 @@ export function renderIntelligenceHtml(r: CIReport): string {
     .rung b{display:block;font-size:16px;} .rung span{font-size:8.5px;line-height:1.2;display:block;}
     .rung.has{border-color:var(--ok);color:var(--ink);} .rung.cur{background:var(--ink);color:#fff;border-color:var(--ink);}
     ol{margin:4px 0;padding-left:18px;} ol li{margin:3px 0;}`;
-  return doc(`Commerce Intelligence Audit · ${r.client}`, cover + meth + cfg + layerSections + chains + ladder + opps + swSection(strengths, weaknesses) + recsSection(recs) + concl + foot, extra);
+  return doc(`Commerce Intelligence Audit · ${r.client}`, cover + meth + cfg + stackDonut + layerSections + chains + ladder + opps + swSection(strengths, weaknesses) + recsSection(recs) + concl + foot, extra);
 }

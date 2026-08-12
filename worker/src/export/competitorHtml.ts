@@ -4,6 +4,7 @@
  * ниша). Оборачивает готовый BenchmarkReport (competitor.ts) в стандарт A0.
  */
 import { esc, scoreColor, doc, methodologySection, swSection, recsSection, conclusionSection, type SectionRec } from './reportShell.js';
+import { svgRadar } from './charts.js';
 import type { BenchmarkReport, ParamRow } from '../competitor.js';
 
 const host = (u: string) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; } };
@@ -50,9 +51,13 @@ export function renderCompetitorHtml(b: BenchmarkReport, client: string, takenAt
     <td class="pm-e">100</td>
     <td class="pm-pos ${POS_CLS[p.position]}">${POS_WORD[p.position]}</td>
   </tr>`).join('');
+  const paramRadar = b.params.length >= 3 ? `<div class="chart-wrap">${svgRadar(b.params.map((p) => ({ axis: p.name, value: p.client })), { max: 100, title: 'Профиль клиента по параметрам (0–100)' })}
+    <p class="chart-cap">Форма показывает, по каким параметрам витрина ведёт, а по каким проседает. Значения рынка (лучший конкурент) и эталона — в таблице ниже.<sup class="fn">1</sup></p></div>` : '';
   const params = `<section class="block"><h2>Клиент против рынка по параметрам</h2>
     <p class="lead">Клиент — значение клиента; Рынок — лучший из конкурентов; Эталон — 100. Вывод — позиция клиента.</p>
-    <table><thead><tr><th>Параметр</th><th>Клиент</th><th>Рынок</th><th>Эталон</th><th>Вывод</th></tr></thead><tbody>${paramRows}</tbody></table></section>`;
+    ${paramRadar}
+    <table><thead><tr><th>Параметр</th><th>Клиент</th><th>Рынок</th><th>Эталон</th><th>Вывод</th></tr></thead><tbody>${paramRows}</tbody></table>
+    <p class="fn-note"><sup>1</sup> Радар строится по значению клиента (шкала 0–100, эталон = 100). Сравниваются только публичные признаки витрин; трафик и экономика конкурентов внешнему аудиту не видны.</p></section>`;
 
   const ws = b.whiteSpace.length ? `<section class="block"><h2>Свободная ниша (white space)</h2>
     <p class="lead">Параметры, слабые у всех на рынке — здесь можно вырваться вперёд без гонки.</p>

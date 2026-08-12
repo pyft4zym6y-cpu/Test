@@ -4,6 +4,7 @@
  * внешним сигналом и эффектом + консалтинговый каркас.
  */
 import { esc, dimBadges, doc, methodologySection, swSection, recsSection, conclusionSection } from './reportShell.js';
+import { svgDonut } from './charts.js';
 import type { MechanicsReport, MechRow, MechStatus } from '../mechanics.js';
 
 const CLS: Record<MechStatus, string> = { 'есть': 'ok', 'нет': 'gap', 'проверить': 'check', 'не видно снаружи': 'na' };
@@ -30,11 +31,25 @@ export function renderMechanicsHtml(r: MechanicsReport): string {
     limits: 'Внешний срез видит витрину, но не email/CRM-контуры: такие механики помечены «не видно снаружи» и подтверждаются после передачи доступов (следующий этап). Эффекты указаны как отраслевые ориентиры — фактический вклад меряется после внедрения.',
   });
 
+  const nOk = r.rows.filter((x) => x.status === 'есть').length;
+  const nCheck = r.rows.filter((x) => x.status === 'проверить').length;
+  const nGap = r.rows.filter((x) => x.status === 'нет').length;
+  const nHidden = r.rows.filter((x) => x.status === 'не видно снаружи').length;
+  const mechDonut = r.rows.length ? `<div class="chart-wrap">${svgDonut([
+    { label: 'Есть', value: nOk, color: '#16a34a' },
+    { label: 'Проверить', value: nCheck, color: '#d97706' },
+    { label: 'Нет', value: nGap, color: '#dc2626' },
+    { label: 'Не видно снаружи', value: nHidden, color: '#0F9488' },
+  ].filter((x) => x.value > 0), { title: 'Механики по статусу', centerLabel: `${r.score.have}/${r.score.measurable}` })}
+    <p class="chart-cap">Зелёный — механика работает; красный — измерима снаружи, но не задействована; бирюзовый — живёт в email/CRM и снаружи не видна (это не «нет»). Центр — активных из измеримых снаружи.<sup class="fn">1</sup></p></div>` : '';
+
   const groupBar = `<section class="block"><h2>Насыщенность контуров</h2>
+    ${mechDonut}
     <div class="gb">${r.byGroup.map((g) => {
       const p = g.total ? Math.round((g.have / g.total) * 100) : 0;
       return `<div class="gb-i"><div class="gb-t">${esc(g.group)}</div><span class="bar"><i class="fill ${p >= 60 ? 'ok' : p >= 30 ? 'check' : 'gap'}" style="width:${p}%"></i></span><div class="gb-n">${g.have}/${g.total}</div></div>`;
-    }).join('')}</div></section>`;
+    }).join('')}</div>
+    <p class="fn-note"><sup>1</sup> Статус выставлен внешней детекцией (блоки, ссылки, тех-сигналы). Знаменатель центра — механики, измеримые снаружи (${r.score.measurable}); механики email/CRM исключены из процента и показаны отдельным сегментом.</p></section>`;
 
   const groups = Array.from(new Set(r.rows.map((x) => x.group)));
   const tables = groups.map((g) => {

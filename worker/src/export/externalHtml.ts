@@ -3,6 +3,7 @@
  * Аудит отзывов (сайт + внешние площадки). Консалтинговый каркас reportShell.
  */
 import { esc, doc, methodologySection, swSection, recsSection, conclusionSection } from './reportShell.js';
+import { svgDonut, svgGauge } from './charts.js';
 import type { SocialReport, MentionsReport, ReviewsReport } from '../externalAudits.js';
 
 const cover = (kicker: string, verdict: string, client: string, takenAt: string, meta: [string, string][], note: string) => {
@@ -29,9 +30,17 @@ export function renderSocialHtml(r: SocialReport): string {
     scope: `${r.profiles.length} платформ × два слоя (привязка + внешний поиск); оценка активности — базовая.`,
     limits: 'Базовый уровень: наличие, привязка, порядок активности. Вовлечённость, контент и реклама — SMM-аудит после передачи доступов (следующий этап).',
   });
+  const statusDonut = r.profiles.length ? `<div class="chart-wrap">${svgDonut([
+    { label: 'Привязан к сайту', value: r.profiles.filter((p) => p.found === 'на сайте').length, color: '#16a34a' },
+    { label: 'Найден поиском', value: r.profiles.filter((p) => p.found === 'поиском').length, color: '#d97706' },
+    { label: 'Не найден', value: r.profiles.filter((p) => p.found === 'не найдено').length, color: '#dc2626' },
+  ].filter((x) => x.value > 0), { title: 'Платформы по статусу привязки', centerLabel: `${r.linked}/${r.profiles.length}` })}
+    <p class="chart-cap">Зелёный — профиль привязан к витрине; оранжевый — существует, но с сайта не привязан (актив теряется); красный — присутствие не обнаружено.<sup class="fn">1</sup></p></div>` : '';
   const table = `<section class="block"><h2>Платформы: привязка и активность</h2>
     <p class="lead">«Поиском» — профиль существует, но с витрины на него нет ссылки: актив есть, на сайт не работает.</p>
-    <table><thead><tr><th>Платформа</th><th>Статус</th><th>Профиль</th><th>Активность (базово)</th><th>Вывод</th></tr></thead><tbody>${rows}</tbody></table></section>`;
+    ${statusDonut}
+    <table><thead><tr><th>Платформа</th><th>Статус</th><th>Профиль</th><th>Активность (базово)</th><th>Вывод</th></tr></thead><tbody>${rows}</tbody></table>
+    <p class="fn-note"><sup>1</sup> Статус — из обхода витрины (наличие привязки) и внешнего поиска на дату аудита. «Не найден» означает отсутствие следа в обходе и поиске, а не гарантированное отсутствие профиля.</p></section>`;
   return doc(`Аудит соцсетей · ${r.client}`,
     cover('Commerce OS · Аудит соцсетей (базово) · внешний аудит витрины', r.verdict, r.client, r.takenAt, [['Привязано', `${r.linked}/${r.profiles.length}`]],
       '<b>Что это.</b> Базовый аудит соц-контура: какие платформы привязаны к витрине, какие профили существуют, но не привязаны, и жив ли каждый профиль. Соцсети для e-commerce — доверие нового покупателя, ретаргетинг и повторные касания.')
@@ -54,8 +63,20 @@ export function renderMentionsHtml(r: MentionsReport): string {
     scope: `${r.mentions.length} упоминаний в своде; тональность и суть каждой записи.`,
     limits: 'Поисковый срез на дату — не полный мониторинг с историей. Упоминания в закрытых сообществах и мессенджерах не видны.',
   });
+  const totalM = r.mentions.length;
+  const posM = r.mentions.filter((m) => m.tone === 'позитив').length;
+  const negM = r.mentions.filter((m) => m.tone === 'негатив').length;
+  const neuM = totalM - posM - negM;
+  const sentimentDonut = totalM > 0 ? `<div class="chart-wrap">${svgDonut([
+    { label: 'Позитив', value: posM, color: '#16a34a' },
+    { label: 'Нейтрал', value: neuM, color: '#64748b' },
+    { label: 'Негатив', value: negM, color: '#dc2626' },
+  ].filter((x) => x.value > 0), { title: 'Тональность упоминаний', centerLabel: String(totalM) })}
+    <p class="chart-cap">Распределение тональности по ${totalM} упоминаниям; негатив без ответа бренда — приоритет реакции.<sup class="fn">1</sup></p></div>` : '';
   const table = `<section class="block"><h2>Свод упоминаний</h2>
-    ${r.mentions.length ? `<table><thead><tr><th>Площадка</th><th>Тип</th><th>Тон</th><th>Что пишут</th></tr></thead><tbody>${rows}</tbody></table>` : `<p class="lead">${r.searched ? 'Упоминаний за пределами сайта не найдено — инфофон пуст.' : 'Внешний слой заблокирован — свод собирается при доступном ключе API.'}</p>`}</section>`;
+    ${sentimentDonut}
+    ${r.mentions.length ? `<table><thead><tr><th>Площадка</th><th>Тип</th><th>Тон</th><th>Что пишут</th></tr></thead><tbody>${rows}</tbody></table>` : `<p class="lead">${r.searched ? 'Упоминаний за пределами сайта не найдено — инфофон пуст.' : 'Внешний слой заблокирован — свод собирается при доступном ключе API.'}</p>`}
+    ${totalM > 0 ? '<p class="fn-note"><sup>1</sup> Тональность — экспертная оценка внешних упоминаний на дату аудита (поисковый срез), не верифицированные метрики площадок; «нейтрал» включает записи без явной окраски.</p>' : ''}</section>`;
   return doc(`Внешний инфофон · ${r.client}`,
     cover('Commerce OS · Внешний инфофон бренда · внешний аудит витрины', r.verdict, r.client, r.takenAt, [['Упоминаний', r.searched ? String(r.mentions.length) : 'N/A — поиск не выполнен']],
       '<b>Что это.</b> Что пишут о бренде в интернете и где: свод упоминаний с тональностью. Инфофон — это и репутация перед покупкой, и E-E-A-T сигнал для поисковых и AI-систем.')
@@ -77,9 +98,18 @@ export function renderReviewsHtml(r: ReviewsReport): string {
     scope: `${r.sources.length} источников в двух слоях (сайт + внешние площадки).`,
     limits: 'Внешние рейтинги — срез на дату; подлинность отзывов не верифицируется. Управление репутацией — процесс следующего этапа (после передачи доступов).',
   });
+  const ratedExt = r.sources.filter((s) => s.kind === 'внешний').map((s) => {
+    const m = /(\d+(?:[.,]\d+)?)/.exec(s.rating);
+    return m ? parseFloat(m[1].replace(',', '.')) : NaN;
+  }).filter((v) => v > 0 && v <= 5);
+  const avgRating = ratedExt.length ? Math.round((ratedExt.reduce((a, b) => a + b, 0) / ratedExt.length) * 10) / 10 : 0;
+  const ratingGauge = ratedExt.length ? `<div class="chart-wrap">${svgGauge(avgRating, { max: 5, label: 'ср. внешний рейтинг', tone: avgRating >= 4 ? 'ok' : avgRating >= 3 ? 'check' : 'gap' })}
+    <p class="chart-cap">Средний рейтинг по ${ratedExt.length} внешним площадкам с распознанной оценкой (шкала 0–5).<sup class="fn">1</sup></p></div>` : '';
   const table = `<section class="block"><h2>Источники отзывов: сайт и внешние площадки</h2>
     <p class="lead">Покупатель всегда находит отзывы — вопрос в том, какие и где. Задача бренда: собрать их на своём домене и управлять внешними.</p>
-    <table><thead><tr><th>Источник</th><th>Статус</th><th>Рейтинг</th><th>Кол-во</th><th>Вывод</th></tr></thead><tbody>${rows}</tbody></table></section>`;
+    ${ratingGauge}
+    <table><thead><tr><th>Источник</th><th>Статус</th><th>Рейтинг</th><th>Кол-во</th><th>Вывод</th></tr></thead><tbody>${rows}</tbody></table>
+    ${ratedExt.length ? '<p class="fn-note"><sup>1</sup> Рейтинг — поисковый срез на дату аудита, усреднённый по площадкам с распознанной оценкой; методики площадок и подлинность отзывов не верифицируются.</p>' : ''}</section>`;
   return doc(`Аудит отзывов · ${r.client}`,
     cover('Commerce OS · Аудит отзывов · внешний аудит витрины', r.verdict, r.client, r.takenAt, [['Источников', String(r.sources.length)]],
       '<b>Что это.</b> Отзывы в два слоя: на сайте (карточки, страница отзывов, разметка) и на внешних площадках (карты, маркетплейсы, отзовики). Социальное доказательство — самый дешёвый усилитель конверсии из существующих.')

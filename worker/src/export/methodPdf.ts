@@ -120,9 +120,20 @@ export function renderHypothesesPdf(h: HypothesisRegister, client: string, date:
     <td class="h-own">${esc(i.owner)}<span class="h-cost">${esc(i.cost)}</span></td>
     <td class="h-conf ${cCls(i.confidence)}">${Math.round(i.confidence * 100)}%</td>
   </tr>`).join('');
+  const nHi = h.items.filter((i) => i.confidence >= 0.7).length;
+  const nMid = h.items.filter((i) => i.confidence >= 0.5 && i.confidence < 0.7).length;
+  const nLo = h.items.filter((i) => i.confidence < 0.5).length;
+  const confDonut = h.items.length ? `<div class="chart-wrap">${svgDonut([
+    { label: 'Высокая (≥70%)', value: nHi, color: '#16a34a' },
+    { label: 'Средняя (50–70%)', value: nMid, color: '#d97706' },
+    { label: 'Низкая (<50%)', value: nLo, color: '#dc2626' },
+  ].filter((x) => x.value > 0), { title: 'Гипотезы по уверенности', centerLabel: String(h.items.length) })}
+    <p class="chart-cap">Красный сектор — гипотезы, которые нельзя класть в основу решений до проверки. Пустение этого сектора по мере поступления данных — метрика прогресса.<sup class="fn">1</sup></p></div>` : '';
   const body = `<section class="block"><h2>Гипотезы: что проверить и чем опровергнуть</h2>
     <p class="lead">Во внешнем аудите большинство выводов — гипотезы: у каждой способ подтверждения и условие опровержения (после передачи доступов и подключения аналитики).</p>
-    ${h.items.length ? `<table><thead><tr><th>ID</th><th>Гипотеза</th><th>Основание</th><th>Проверка / опровержение</th><th>Владелец · стоимость</th><th>Увер.</th></tr></thead><tbody>${rows}</tbody></table>` : '<p class="lead">Гипотезы появятся после аналитического слоя (нужен ключ Claude).</p>'}</section>`;
+    ${confDonut}
+    ${h.items.length ? `<table><thead><tr><th>ID</th><th>Гипотеза</th><th>Основание</th><th>Проверка / опровержение</th><th>Владелец · стоимость</th><th>Увер.</th></tr></thead><tbody>${rows}</tbody></table>
+    <p class="fn-note"><sup>1</sup> Уверенность гипотезы — детерминированная оценка на текущих данных; проверка по столбцу «способ подтверждения» переводит гипотезу либо в факт-находку, либо снимает её.</p>` : '<p class="lead">Гипотезы появятся после аналитического слоя (нужен ключ Claude).</p>'}</section>`;
   const areas = Array.from(new Set(h.items.map((i) => i.area)));
   const lowConf = h.items.filter((i) => i.confidence < 0.5).length;
   const conclH = conclusionSection([
@@ -144,6 +155,10 @@ export function renderScopePdf(s: ScopeReport, client: string, date: string): st
     <table><thead><tr><th>Плейбук</th><th>Что входит</th><th>Почему включён</th><th>Усилия · срок</th></tr></thead><tbody>${
       w.items.map((it) => { const m = PB_META[it.playbook]; return `<tr><td class="sc-pb">${esc(it.name || it.playbook)}<span class="sc-code">${esc(it.playbook)}</span></td><td class="sc-what">${esc(m?.what ?? '—')}</td><td class="sc-why">${esc(it.reasons.join('; '))}</td><td class="sc-eff">${esc(m ? `${m.effort} · ${m.duration}` : '—')}</td></tr>`; }).join('')
     }</tbody></table></section>`).join('');
+  const waveBars = s.waves.length >= 2 ? `<section class="block"><h2>Распределение работ по волнам</h2>
+    <div class="chart-wrap">${svgBars(s.waves.map((w) => ({ label: /^волна/i.test(w.title) ? w.title : `Волна ${w.n}. ${w.title}`, value: w.items.length, tone: w.n === 1 ? 'ok' : w.n === 2 ? 'check' : undefined })), { title: 'Активаций плейбуков по волнам', unit: '' })}
+      <p class="chart-cap">Волна 1 (зелёная) — быстрые окупаемые работы, разблокируют измеримость следующих. Волны режутся по зависимостям, а не по объёму.<sup class="fn">1</sup></p></div>
+    <p class="fn-note"><sup>1</sup> Каждая активация имеет трассу «основание → плейбук → волна»; в scope не попадает ничего, под чем нет наблюдения с адресом или цифрой.</p></section>` : '';
   const ni = s.notIncluded.length ? `<section class="block"><h2>Вне scope на этом этапе</h2><ul>${s.notIncluded.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>` : '';
   const w1 = s.waves.find((w) => w.n === 1);
   const conclS = conclusionSection([
@@ -191,10 +206,18 @@ export function renderCausalPdf(c: CausalMap, client: string, date: string): str
       <div class="cz-col money"><span class="cz-k">Деньги</span>${esc(n.moneyLink)}</div>
     </div>
   </div>`).join('');
+  // Столбцы: сколько наблюдаемых симптомов сводит каждая корневая причина (визуализация консолидации).
+  const consolidation = c.nodes.filter((n) => n.symptoms.length > 0);
+  const causeBars = consolidation.length >= 2
+    ? `<div class="chart-wrap">${svgBars(consolidation.map((n) => ({ label: n.rootCause, value: n.symptoms.length, tone: n.symptoms.length >= 3 ? 'gap' : 'check' })), { title: 'Симптомов сводится к одной причине', unit: '' })}
+        <p class="chart-cap">Каждый столбец — сколько разрозненных симптомов объясняет одна корневая причина. Чинится причина один раз — эффект снимается со всех её симптомов.<sup class="fn">1</sup></p></div>`
+    : '';
   const body = `<section class="block"><h2>Симптом → корневая причина → деньги</h2>
     <p class="lead">Работаем с причиной, а не с симптомом: один дефект даёт находки во многих местах, а чинится один раз. Деньги — один раз на узел, без двойного счёта.</p>
+    ${causeBars}
     ${c.nodes.length ? nodes : '<p class="lead">Причинных узлов не выделено на текущих данных.</p>'}
-    <div class="concl warn" style="margin-top:10px"><b>Экономика.</b> ${esc(c.moneyNote)}</div></section>`;
+    <div class="concl warn" style="margin-top:10px"><b>Экономика.</b> ${esc(c.moneyNote)}</div>
+    ${consolidation.length >= 2 ? '<p class="fn-note"><sup>1</sup> Столбец считает подтверждённые симптомы, привязанные к узлу на дату аудита; деньги атрибутируются узлу один раз (без двойного счёта между симптомами одной причины).</p>' : ''}</section>`;
   const extra = `.cz{display:flex;gap:8px;margin:10px 0;page-break-inside:avoid;}
     .cz-n{flex:0 0 22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;}
     .cz-flow{flex:1;display:grid;grid-template-columns:1fr auto 1.2fr auto 1fr;gap:6px;align-items:stretch;}
