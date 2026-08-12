@@ -67,8 +67,11 @@ export function renderCoveragePdf(c: CoverageReport, client: string, date: strin
   const conf = c.confidence;
   const pct = conf.base ? Math.round((conf.score / conf.base) * 100) : 0;
   const body = `<section class="block"><h2>Что доказано, что требует данных</h2>
-    <p class="lead">Охват по видам анализа и уверенность вывода. Уверенность = не выше самого слабого звена.</p>
+    <p class="lead">Охват по видам анализа и уверенность вывода. Уверенность зависит от полноты данных и качества доказательств (формула ниже) и ограничена потолком тира.</p>
     <table><thead><tr><th>Вид анализа</th><th>Статус</th><th>Комментарий</th></tr></thead><tbody>${rows}</tbody></table></section>
+    <section class="block"><h2>Как считается уверенность</h2>
+      <p class="lead">Confidence Score = потолок тира × полнота данных × качество доказательств. Это не «экспертное число»: качество доказательств — средняя уверенность находок реестра, где на уровне каждой находки уже учтены сила доказательства, воспроизводимость и источник (сайт / данные / тест).</p>
+      ${conf.evidenceQuality != null ? `<div class="concl-grid"><span class="k">Полнота данных</span><span class="v">${Math.round((conf.dataCompleteness ?? 0) * 100)}%</span><span class="k">Качество доказательств</span><span class="v">${Math.round((conf.evidenceQuality ?? 0) * 100)}% (по реестру находок)</span><span class="k">Потолок тира</span><span class="v">${conf.base}</span></div>` : ''}</section>
     ${conf.raisedBy.length ? `<section class="block"><h2>Что поднимет уверенность</h2><ul>${conf.raisedBy.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>` : ''}`;
   const covered = c.lenses.filter((l) => l.status === 'covered').length;
   const partial = c.lenses.filter((l) => l.status === 'partial').length;
@@ -163,7 +166,7 @@ export function renderCausalPdf(c: CausalMap, client: string, date: string): str
     <div class="cz-flow">
       <div class="cz-col symptoms"><span class="cz-k">Симптомы (что видно)</span>${n.symptoms.length ? `<ul>${n.symptoms.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>` : '<p>—</p>'}</div>
       <div class="cz-arrow">→</div>
-      <div class="cz-col cause"><span class="cz-k">Корневая причина</span><b>${esc(n.rootCause)}</b>${n.evidence.length ? `<span class="cz-ev">Доказательство: ${esc(n.evidence.join('; '))}</span>` : ''}</div>
+      <div class="cz-col cause"><span class="cz-k">Корневая причина</span><b>${esc(n.rootCause)}</b>${n.evidence.length ? `<span class="cz-ev">Доказательство: ${esc(n.evidence.join('; '))}</span>` : ''}${n.findingIds?.length ? `<span class="cz-ev">Находки реестра: ${esc(n.findingIds.join(', '))}</span>` : ''}</div>
       <div class="cz-arrow">→</div>
       <div class="cz-col money"><span class="cz-k">Деньги</span>${esc(n.moneyLink)}</div>
     </div>

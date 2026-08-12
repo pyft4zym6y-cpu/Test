@@ -181,6 +181,9 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
     let techReport: ReturnType<typeof buildTechAudit> | null = null;
     let seoReport: ReturnType<typeof buildSeoArch> | null = null;
     let maturityReport: ReturnType<typeof buildMaturity> | null = null;
+    // Единый реестр находок (строится до причинной карты/охвата/exec — единая точка правды).
+    let registry: import('./registry.js').Finding[] | null = null;
+    let registryRaw: RawRec[] = [];
     if (!prelaunch) {
       log('· UX/UI-разбор страниц против эталона (AQC)…');
       uxui = buildUxUiReport(ds);
@@ -376,18 +379,55 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       await writeFile(join(dir, 'pricechannel.json'), JSON.stringify(pc, null, 2), 'utf8');
       await pdf(renderPriceChannelPdf(pc, cn, D), 'Цена-в-канале-A0.pdf');
 
+      // ── ЕДИНЫЙ РЕЕСТР НАХОДОК — строится ДО причинной карты/охвата/exec, чтобы они
+      //    читали из него (единая точка правды: одни ID, одна уверенность, одни деньги).
+      //    + премиум-экспертиза, если включён тумблер. ──
+      registryRaw = [
+        ...(siteAudit?.pages.flatMap((p) => p.fixes.map((f) => ({ pr: (f.crit === 'Блокирующая' ? 'P0' : f.crit === 'Высокая' ? 'P1' : 'P2') as RawRec['pr'], action: `${p.title}: ${f.what}`, effect: f.why, source: 'UX/UI' }))) ?? []),
+        ...(contentReport?.recommendations.map((r) => ({ ...r, source: 'Контент' })) ?? []),
+        ...(mechReport?.recommendations.map((r) => ({ ...r, source: 'Механики' })) ?? []),
+        ...(journeyReport?.recommendations.map((r) => ({ ...r, source: 'Путь клиента' })) ?? []),
+        ...(techReport?.categories.flatMap((c) => c.checks.filter((ch) => ch.status === 'gap').map((ch) => ({ pr: 'P1' as const, action: ch.rec, effect: `Закрывает «${ch.label}»`, source: 'Технический' }))) ?? []),
+        ...(seoReport?.issues.map((i) => ({ pr: (i.level <= 1 ? 'P0' : 'P1') as RawRec['pr'], action: `${i.node}: ${i.action}`, effect: i.problem, source: 'SEO' })) ?? []),
+        ...(ciReport?.chains.map((c, i) => ({ pr: (i < 2 ? 'P0' : 'P1') as RawRec['pr'], action: c.action, effect: c.impact, source: 'CI' })) ?? []),
+      ];
+      try {
+        const { feedFromReports } = await import('./registryFeed.js');
+        const { buildRegistry, registrySummary } = await import('./registry.js');
+        const { renderRegistryHtml } = await import('./export/registryHtml.js');
+        registry = buildRegistry(feedFromReports(registryRaw, journeyReport), { money });
+        if (opts.premium) {
+          try {
+            const { runExperts } = await import('./experts/runner.js');
+            const { applyVerifications } = await import('./registry.js');
+            const { renderPremiumHtml } = await import('./export/premiumHtml.js');
+            const expertResults = await runExperts({ dataset: ds, baseFindings: registry, log });
+            const expertInputs = expertResults.flatMap((r) => r.findings);
+            if (expertInputs.length) registry = buildRegistry([...feedFromReports(registryRaw, journeyReport), ...expertInputs], { money });
+            const nAdj = applyVerifications(registry, expertResults.flatMap((r) => r.verifications));
+            await renderPdf(renderPremiumHtml(cn, ds.takenAt, expertResults), join(dir, 'Премиум-экспертиза.pdf'), browser);
+            log(`✓ Премиум-экспертиза: агентов ${expertResults.filter((r) => r.ran).length}/${expertResults.length}, находок +${expertInputs.length}, перепроверок применено ${nAdj}`);
+          } catch (e) { log(`⚠️ премиум-экспертиза не отработала (${String(e).slice(0, 100)})`); }
+        }
+        const rs = registrySummary(registry);
+        await writeFile(join(dir, 'registry.json'), JSON.stringify(registry, null, 2), 'utf8');
+        await renderPdf(renderRegistryHtml(cn, ds.takenAt, registry), join(dir, 'Реестр-находок.pdf'), browser);
+        log(`✓ Реестр находок (PDF)${opts.premium ? ' + премиум' : ''}: ${rs.total} находок (P0 ${rs.p0} / P1 ${rs.p1} / P2 ${rs.p2}), exposure ≈ ${rs.exposureYear.toLocaleString('ru-RU')} ₴/год`);
+      } catch (e) { log(`⚠️ реестр находок не собран (${String(e).slice(0, 100)})`); }
+
       // Причинно-следственная карта → PDF (симптом → причина → деньги). Строится
       // ВСЕГДА: без аналитического слоя узлы достраиваются детерминированно из
-      // системных дефектов и CI-цепочек (прод-кейс: карта была неполной/пустой).
+      // системных дефектов и CI-цепочек; узлы связываются с ID реестра находок.
       const causal = buildCausal(analysisResult, money, {
         systemic: siteAudit?.systemic ?? [],
         chains: ciReport?.chains ?? [],
+        findings: registry ?? [],
       });
       await writeFile(join(dir, 'causal.json'), JSON.stringify(causal, null, 2), 'utf8');
       await pdf(renderCausalPdf(causal, cn, D), 'Причинно-следственная-карта-A0.pdf');
       log(`✓ метод-документы (PDF): зрелость (набл. ${mat.observedAvg ?? '—'}/5), scope (${scope.waves.reduce((n, w) => n + w.items.length, 0)} активаций), цена в канале`);
 
-      const cov = buildCoverage(ds, { hasEngine: Boolean(engine), hasMoney: Boolean(money) });
+      const cov = buildCoverage(ds, { hasEngine: Boolean(engine), hasMoney: Boolean(money), findings: registry ?? [] });
       metrics.confidence = { score: cov.confidence.score, base: cov.confidence.base };
       await writeFile(join(dir, 'coverage.json'), JSON.stringify(cov, null, 2), 'utf8');
       await pdf(renderCoveragePdf(cov, cn, D), 'Охват-и-уверенность-A0.pdf');
@@ -395,7 +435,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
 
       // Executive Diagnostic A0 — зонтичный клиентский PDF, сводит все аудиты (A0 §13).
       try {
-        const execHtml = renderExecDiagnostic(ds, { siteAudit, analysis: analysisResult, engine, money, bench, coverage: cov });
+        const execHtml = renderExecDiagnostic(ds, { siteAudit, analysis: analysisResult, engine, money, bench, coverage: cov, registry: registry ?? [] });
         await renderPdf(execHtml, join(dir, 'Executive-Diagnostic-A0.pdf'), browser);
         log('✓ Executive Diagnostic A0 (PDF): зонтичный отчёт собран');
       } catch (e) { log(`⚠️ Executive Diagnostic не собрался (${String(e).slice(0, 120)}) — остальные материалы не затронуты`); }
@@ -432,52 +472,10 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         log(`${act.complete ? '✓' : '✖'} покрытие доменов (${act.businessType}): ${act.verdict}`);
       } catch (e) { log(`⚠️ активационный гейт не отработал (${String(e).slice(0, 100)})`); }
 
-      // ── Сводный бэклог: все рекомендации всех документов → один дедуплицированный план. ──
+      // ── Сводный бэклог ИЗ реестра (реестр собран выше — единая точка правды). ──
       try {
-        const cn2 = clientName(ds); const D2 = new Date(ds.takenAt).toLocaleDateString('ru-RU');
-        const raw: RawRec[] = [
-          ...(siteAudit?.pages.flatMap((p) => p.fixes.map((f) => ({ pr: (f.crit === 'Блокирующая' ? 'P0' : f.crit === 'Высокая' ? 'P1' : 'P2') as RawRec['pr'], action: `${p.title}: ${f.what}`, effect: f.why, source: 'UX/UI' }))) ?? []),
-          ...(contentReport?.recommendations.map((r) => ({ ...r, source: 'Контент' })) ?? []),
-          ...(mechReport?.recommendations.map((r) => ({ ...r, source: 'Механики' })) ?? []),
-          ...(journeyReport?.recommendations.map((r) => ({ ...r, source: 'Путь клиента' })) ?? []),
-          ...(techReport?.categories.flatMap((c) => c.checks.filter((ch) => ch.status === 'gap').map((ch) => ({ pr: 'P1' as const, action: ch.rec, effect: `Закрывает «${ch.label}»`, source: 'Технический' }))) ?? []),
-          ...(seoReport?.issues.map((i) => ({ pr: (i.level <= 1 ? 'P0' : 'P1') as RawRec['pr'], action: `${i.node}: ${i.action}`, effect: i.problem, source: 'SEO' })) ?? []),
-          ...(ciReport?.chains.map((c, i) => ({ pr: (i < 2 ? 'P0' : 'P1') as RawRec['pr'], action: c.action, effect: c.impact, source: 'CI' })) ?? []),
-        ];
-        // ── Единый реестр находок СНАЧАЛА: все отчёты → один scored-список (общий ID,
-        //    детерминированная уверенность, revenue exposure, приоритет). Ядро «единой
-        //    машины» — из него же строится сводный беклог (единая точка правды). ──
-        let registry: import('./registry.js').Finding[] | null = null;
-        try {
-          const { feedFromReports } = await import('./registryFeed.js');
-          const { buildRegistry, registrySummary } = await import('./registry.js');
-          const { renderRegistryHtml } = await import('./export/registryHtml.js');
-          registry = buildRegistry(feedFromReports(raw, journeyReport), { money });
-
-          // ── ПРЕМИУМ-ЭКСПЕРТИЗА (отдельный тумблер): внешние профильные агенты
-          //    перепроверяют/дополняют/углубляют находки и вливаются в тот же реестр. ──
-          if (opts.premium) {
-            try {
-              const { runExperts } = await import('./experts/runner.js');
-              const { applyVerifications } = await import('./registry.js');
-              const { renderPremiumHtml } = await import('./export/premiumHtml.js');
-              const expertResults = await runExperts({ dataset: ds, baseFindings: registry, log });
-              const expertInputs = expertResults.flatMap((r) => r.findings);
-              if (expertInputs.length) registry = buildRegistry([...feedFromReports(raw, journeyReport), ...expertInputs], { money });
-              const nAdj = applyVerifications(registry, expertResults.flatMap((r) => r.verifications));
-              await renderPdf(renderPremiumHtml(cn2, ds.takenAt, expertResults), join(dir, 'Премиум-экспертиза.pdf'), browser);
-              log(`✓ Премиум-экспертиза: агентов ${expertResults.filter((r) => r.ran).length}/${expertResults.length}, находок +${expertInputs.length}, перепроверок применено ${nAdj}`);
-            } catch (e) { log(`⚠️ премиум-экспертиза не отработала (${String(e).slice(0, 100)})`); }
-          }
-
-          const rs = registrySummary(registry);
-          await writeFile(join(dir, 'registry.json'), JSON.stringify(registry, null, 2), 'utf8');
-          await renderPdf(renderRegistryHtml(cn2, ds.takenAt, registry), join(dir, 'Реестр-находок.pdf'), browser);
-          log(`✓ Реестр находок (PDF)${opts.premium ? ' + премиум' : ''}: ${rs.total} находок (P0 ${rs.p0} / P1 ${rs.p1} / P2 ${rs.p2}), exposure ≈ ${rs.exposureYear.toLocaleString('ru-RU')} ₴/год`);
-        } catch (e) { log(`⚠️ реестр находок не собран (${String(e).slice(0, 100)})`); }
-
-        // ── Сводный беклог ИЗ реестра (fallback на сырые рекомендации, если реестр не собрался). ──
-        const backlog = registry ? buildBacklogFromRegistry(cn2, ds.takenAt, registry, raw.length) : buildBacklog(cn2, ds.takenAt, raw);
+        const cn2 = clientName(ds);
+        const backlog = registry ? buildBacklogFromRegistry(cn2, ds.takenAt, registry, registryRaw.length) : buildBacklog(cn2, ds.takenAt, registryRaw);
         await writeFile(join(dir, 'backlog.json'), JSON.stringify(backlog, null, 2), 'utf8');
         await renderPdf(renderBacklogHtml(backlog), join(dir, 'Сводный-бэклог.pdf'), browser);
         log(`✓ Сводный бэклог (PDF)${registry ? ' из реестра' : ''}: ${backlog.rawCount} рекомендаций → ${backlog.items.length} работ`);

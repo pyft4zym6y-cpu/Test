@@ -19,6 +19,7 @@ export type ExecInputs = {
   money: MoneyResult | null;
   bench: BenchmarkReport | null;
   coverage: { confidence: { score: number; base: number; band: string } } | null;
+  registry?: import('../registry.js').Finding[];  // единый реестр — топ находок в exec
 };
 
 const rub = (n: number) => `${Math.round(n).toLocaleString('ru-RU')} ₴`;
@@ -106,6 +107,22 @@ export function renderExecDiagnostic(ds: AuditDataset, inp: ExecInputs): string 
     </tbody></table>`, 'PARTIAL'));
 
   s.push(section('2. Главные выводы', '5–10 управленческих выводов во внешнем аудите (каждый — с доказательством и уровнем уверенности).', keyFindings(inp), inp.analysis ? 'DONE' : 'BLOCKED'));
+
+  // Топ единого реестра находок — все аудиты сведены в одну приоритизированную таблицу.
+  if (inp.registry?.length) {
+    const top = inp.registry.slice(0, 8);
+    const p0 = inp.registry.filter((f) => f.priority === 'P0').length;
+    const rows = top.map((f) => `<tr>
+      <td style="font-weight:800;white-space:nowrap">${esc(f.id)}</td>
+      <td><span class="pr ${f.priority}">${f.priority}</span></td>
+      <td>${esc(f.title)}${f.refs?.length ? ` <span style="color:var(--muted);font-size:8px">${esc(f.refs.join(', '))}</span>` : ''}</td>
+      <td style="text-align:right">${Math.round(f.confidence * 100)}%</td>
+      <td style="text-align:right;white-space:nowrap">${f.revenueExposure ? `${Math.round(f.revenueExposure).toLocaleString('ru-RU')} ₴` : '—'}</td>
+    </tr>`).join('');
+    s.push(section('2а. Топ находок — единый реестр',
+      `Все аудиты сведены в один реестр: ${inp.registry.length} находок, критичных P0 — ${p0}. Приоритет = Impact × Confidence × Revenue / Cost; одна проблема = один ID через все отчёты.`,
+      `<table><thead><tr><th>ID</th><th>Приор.</th><th>Находка · где встречается</th><th>Уверен.</th><th>Revenue/год</th></tr></thead><tbody>${rows}</tbody></table>`, 'DONE'));
+  }
 
   // Карта разрывов
   const gapRows: string[] = [];

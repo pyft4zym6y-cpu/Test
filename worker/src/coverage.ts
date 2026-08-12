@@ -9,18 +9,19 @@
  * Детерминированно, без модели. Работает на T1/L0.
  */
 import type { AuditDataset } from './report.js';
+import type { Finding } from './registry.js';
 import { TIERS } from './tiers.js';
 
 export type LensStatus = 'covered' | 'partial' | 'external' | 'needs-access';
 export type Lens = { name: string; status: LensStatus; note: string };
 
-export type Confidence = { score: number; base: number; band: string; raisedBy: string[] };
+export type Confidence = { score: number; base: number; band: string; raisedBy: string[]; dataCompleteness?: number; evidenceQuality?: number };
 export type CoverageReport = { lenses: Lens[]; confidence: Confidence };
 
 const analysablePages = (ds: AuditDataset) => ds.client.pages.filter((p) => !p.error && p.checks.length).length;
 
 /** Карта 13 видов аудита + Confidence Score от полноты данных. */
-export function buildCoverage(ds: AuditDataset, opts: { hasEngine?: boolean; hasMoney?: boolean } = {}): CoverageReport {
+export function buildCoverage(ds: AuditDataset, opts: { hasEngine?: boolean; hasMoney?: boolean; findings?: Finding[] } = {}): CoverageReport {
   const comps = ds.competitors.length;
   const pages = analysablePages(ds);
   const analytics = ds.client.tech.analytics.length > 0;
@@ -51,11 +52,21 @@ export function buildCoverage(ds: AuditDataset, opts: { hasEngine?: boolean; has
     { ok: Boolean(opts.hasMoney), raise: 'подать baseline/выгрузки (деньги цепной атрибуцией)' },
   ];
   const ratio = factors.filter((f) => f.ok).length / factors.length;
-  const score = Math.min(base, Math.round(base * (0.6 + 0.4 * ratio)));
+  // Качество доказательств — средняя уверенность находок реестра (в ней уже заложено
+  // Evidence × Reproducibility × Source × Coverage на уровне каждой находки).
+  const fnds = opts.findings ?? [];
+  const evidenceQuality = fnds.length ? fnds.reduce((s, f) => s + f.confidence, 0) / fnds.length : null;
+  // Confidence отчёта = потолок тира × (полнота данных ⊗ качество доказательств).
+  const dataFactor = 0.6 + 0.4 * ratio;
+  const evFactor = evidenceQuality != null ? (0.7 + 0.3 * evidenceQuality) : 1;
+  const score = Math.min(base, Math.round(base * dataFactor * evFactor));
   const band = score >= 80 ? 'высокая' : score >= 60 ? 'хорошая' : score >= 40 ? 'средняя' : 'предварительная';
-  const raisedBy = factors.filter((f) => !f.ok).map((f) => f.raise);
+  const raisedBy = [
+    ...factors.filter((f) => !f.ok).map((f) => f.raise),
+    ...(evidenceQuality != null && evidenceQuality < 0.6 ? ['усилить доказательную базу находок (низкая средняя уверенность реестра — много наблюдений/тест-сайд без подтверждения)'] : []),
+  ];
 
-  return { lenses, confidence: { score, base, band, raisedBy } };
+  return { lenses, confidence: { score, base, band, raisedBy, dataCompleteness: Math.round(ratio * 100) / 100, evidenceQuality: evidenceQuality != null ? Math.round(evidenceQuality * 100) / 100 : undefined } };
 }
 
 const STATUS_LABEL: Record<LensStatus, string> = {
@@ -71,6 +82,8 @@ export function renderCoverageMd(ds: AuditDataset, c: CoverageReport): string {
   out.push(`_Commerce OS · тир T${ds.tier} · ${new Date(ds.takenAt).toLocaleDateString('ru-RU')}_`);
   out.push('');
   out.push(`**Confidence Score отчёта: ${c.confidence.score}/${c.confidence.base} — уверенность ${c.confidence.band}.** Это достоверность НАШЕГО разбора на текущих данных (не состояние бизнеса — то Health Score). Потолок ${c.confidence.base} задан тиром T${ds.tier}.`);
+  out.push('');
+  out.push(`Формула: **потолок тира × полнота данных × качество доказательств**${c.confidence.evidenceQuality != null ? ` (полнота ${Math.round((c.confidence.dataCompleteness ?? 0) * 100)}%, качество доказательств ${Math.round((c.confidence.evidenceQuality ?? 0) * 100)}% — средняя уверенность находок реестра, где уже учтены сила доказательства, воспроизводимость и источник)` : ''}.`);
   if (c.confidence.raisedBy.length) {
     out.push('');
     out.push('Что поднимет уверенность:');

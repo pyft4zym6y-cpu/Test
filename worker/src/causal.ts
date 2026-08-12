@@ -7,8 +7,9 @@
 import type { AuditDataset } from './report.js';
 import type { Analysis } from './analyze.js';
 import type { MoneyResult } from './money.js';
+import type { Finding } from './registry.js';
 
-export type CausalNode = { rootCause: string; symptoms: string[]; evidence: string[]; moneyLink: string };
+export type CausalNode = { rootCause: string; symptoms: string[]; evidence: string[]; moneyLink: string; findingIds?: string[] };
 export type CausalMap = { nodes: CausalNode[]; moneyNote: string };
 
 const rub = (n: number) => `${Math.round(n).toLocaleString('ru-RU')} ₴`;
@@ -19,6 +20,7 @@ const rub = (n: number) => `${Math.round(n).toLocaleString('ru-RU')} ₴`;
 export type DetSources = {
   systemic?: { title: string; detail: string }[];
   chains?: { observed: string; implies: string; action: string }[];
+  findings?: Finding[];   // единый реестр — узлы связываются с ID находок и их деньгами
 };
 
 export function buildCausal(a: Analysis | null, money: MoneyResult | null, det?: DetSources): CausalMap {
@@ -60,6 +62,24 @@ export function buildCausal(a: Analysis | null, money: MoneyResult | null, det?:
     moneyLink: 'эффект в обороте — оценивается на L1',
   });
 
+  // Связь с единым реестром находок: каждому узлу — ID находок по текстовому
+  // пересечению; если у связанных находок есть деньги, узел получает реальную
+  // сумму revenue exposure (а не общий ориентир воронки).
+  const findings = det?.findings ?? [];
+  if (findings.length) {
+    for (const node of nodes) {
+      const hay = `${node.rootCause} ${node.symptoms.join(' ')}`.toLowerCase();
+      const linked = findings.filter((f) => {
+        const words = f.title.toLowerCase().split(/[^a-zа-яё0-9]+/i).filter((w) => w.length >= 5);
+        return words.some((w) => hay.includes(w)) || Boolean(f.funnelStep && hay.includes(f.funnelStep));
+      });
+      if (!linked.length) continue;
+      node.findingIds = linked.map((f) => f.id).slice(0, 8);
+      const rev = linked.reduce((s, f) => s + f.revenueExposure, 0);
+      if (rev > 0) node.moneyLink = `≈ ${rub(rev)}/год по связанным находкам (${node.findingIds.slice(0, 4).join(', ')}${node.findingIds.length > 4 ? '…' : ''})`;
+    }
+  }
+
   return { nodes, moneyNote };
 }
 
@@ -77,6 +97,7 @@ export function renderCausalMd(ds: AuditDataset, r: CausalMap): string {
     out.push(`## Узел ${i + 1}. Корневая причина: ${n.rootCause}`);
     if (n.symptoms.length) out.push(`**Симптомы:** ${n.symptoms.join('; ')}`);
     if (n.evidence.length) out.push(`**Доказательство (обход):** ${n.evidence.join('; ')}`);
+    if (n.findingIds?.length) out.push(`**Находки реестра:** ${n.findingIds.join(', ')}`);
     out.push(`**Деньги:** ${n.moneyLink}`);
     out.push('');
   });
