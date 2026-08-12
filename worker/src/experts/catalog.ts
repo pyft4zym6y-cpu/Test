@@ -8,6 +8,7 @@
  * чтобы премиум давал ценность немедленно и путь перепроверки был реально задействован.
  */
 import type { Expert, ExpertCard, ExpertResult, Verification } from './types.js';
+import { geoReadiness, securitySignals, geoAeoWeb } from './builtinAgents.js';
 
 /** Встроенный агент второго мнения: перепроверяет базовые находки детерминированно. */
 const qaCrossVerify: Expert = {
@@ -66,18 +67,17 @@ function externalExpert(card: ExpertCard, onAvailableNote: string): Expert {
 /** ПЕРЕЧЕНЬ агентов премиум-экспертизы (порядок = порядок в UI). */
 export const EXPERT_CATALOG: Expert[] = [
   qaCrossVerify,
+  // ── Работают без нового ключа: детерминированные (нулевой ключ) + веб-поиск через
+  //    уже имеющийся ключ воркера. ──
+  geoReadiness,
+  securitySignals,
+  geoAeoWeb,
   externalExpert({
     id: 'seo-search-console', name: 'Google Search Console — SEO факты', domain: 'seo',
     what: 'Реальные позиции, запросы, индексация, Core Web Vitals и schema-валидация вместо внешних наблюдений',
     provider: 'mcp', credEnv: 'GSC_TOKEN', status: 'needs-auth',
     strengthens: ['SEO Architecture', 'Технический аудит', 'Реестр находок'],
   }, 'Search Console подключён — SEO-факты добавлены'),
-  externalExpert({
-    id: 'geo-aeo', name: 'GEO / AI-видимость', domain: 'geo',
-    what: 'Цитируемость бренда в ChatGPT/Perplexity/Gemini, llms.txt и пригодность контента к извлечению LLM',
-    provider: 'http', credEnv: 'GEO_API_KEY', status: 'needs-auth',
-    strengthens: ['Внешний инфофон', 'SEO Architecture', 'Контент-аудит'],
-  }, 'GEO-агент подключён — оценка AI-видимости добавлена'),
   externalExpert({
     id: 'competitor-bench', name: 'Конкурентный бенчмарк', domain: 'competitors',
     what: 'Client vs 3–5 конкурентов по checkout/PDP/PLP, ассортименту, ценам и механикам — лобовое сравнение',

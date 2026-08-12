@@ -10,7 +10,7 @@ import { createMessage, hasKey, extractJson, apiErrorHint } from './anthropic.js
 import type { AuditDataset } from './report.js';
 
 /* ── Общий web-research вызов: web_search + строгий JSON в финале ── */
-async function webResearch<T>(system: string, user: string, log?: (m: string) => void): Promise<T | null> {
+export async function webResearch<T>(system: string, user: string, log?: (m: string) => void): Promise<T | null> {
   if (!hasKey()) return null;
   try {
     let containerId: string | undefined;
