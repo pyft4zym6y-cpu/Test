@@ -50,12 +50,22 @@ export function inferKey(text: string): string | undefined {
 
 const DATA_SOURCES = new Set(['SEO', 'Технический', 'CI']);
 
+// Сквозная тема (key) сводится в КАНОНИЧЕСКИЙ домен, чтобы одна проблема из разных
+// отчётов (напр. чекаут из UX и из Journey) слилась в одну находку с общим ID.
+const KEY_DOMAIN: Record<string, string> = {
+  'checkout-flow': 'checkout-os', 'guest-checkout': 'checkout-os',
+  'site-search': 'ux-os', 'pdp-reviews': 'reputation-os', 'reviews-schema': 'reputation-os',
+  'free-ship-claim': 'ux-os', 'offer-missing': 'legal-os',
+};
+const domainFor = (key: string | undefined, fallback: string) => (key && KEY_DOMAIN[key]) ? KEY_DOMAIN[key] : fallback;
+
 /** RawRec (из беклога) → FindingInput. */
 function fromRaw(r: RawRec): FindingInput {
   const text = `${r.action} ${r.effect}`;
+  const key = inferKey(text);
   return {
-    domain: SOURCE_DOMAIN[r.source] ?? 'other-os',
-    key: inferKey(text),
+    domain: domainFor(key, SOURCE_DOMAIN[r.source] ?? 'other-os'),
+    key,
     title: r.action,
     gap: r.effect,
     funnelStep: inferFunnel(text),
@@ -72,9 +82,10 @@ function fromJourney(j: JourneyReport): FindingInput[] {
     .map((s): FindingInput => {
       const text = `${s.stage} ${s.result}`;
       const impact = s.status === 'тупик' ? 4 : s.status === 'не найден' ? 3 : 3;
+      const key = inferKey(text);
       return {
-        domain: 'journey-os',
-        key: inferKey(text),
+        domain: domainFor(key, 'journey-os'),
+        key,
         title: `${s.stage}: ${s.expected}`,
         as_is: s.result,
         gap: s.result,

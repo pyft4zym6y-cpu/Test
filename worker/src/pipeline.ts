@@ -453,10 +453,12 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         try {
           const { feedFromReports } = await import('./registryFeed.js');
           const { buildRegistry, registrySummary } = await import('./registry.js');
+          const { renderRegistryHtml } = await import('./export/registryHtml.js');
           const registry = buildRegistry(feedFromReports(raw, journeyReport), { money });
           const rs = registrySummary(registry);
           await writeFile(join(dir, 'registry.json'), JSON.stringify(registry, null, 2), 'utf8');
-          log(`✓ Реестр находок: ${rs.total} находок (P0 ${rs.p0} / P1 ${rs.p1} / P2 ${rs.p2}), exposure ≈ ${rs.exposureYear.toLocaleString('ru-RU')} ₴/год`);
+          await renderPdf(renderRegistryHtml(cn2, ds.takenAt, registry), join(dir, 'Реестр-находок.pdf'), browser);
+          log(`✓ Реестр находок (PDF): ${rs.total} находок (P0 ${rs.p0} / P1 ${rs.p1} / P2 ${rs.p2}), exposure ≈ ${rs.exposureYear.toLocaleString('ru-RU')} ₴/год`);
         } catch (e) { log(`⚠️ реестр находок не собран (${String(e).slice(0, 100)})`); }
 
         // ── Протокол синергии и QA: пакет проверяет сам себя, нестыковки → резолюции. ──

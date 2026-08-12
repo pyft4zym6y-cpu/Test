@@ -142,13 +142,18 @@ export function buildRegistry(inputs: FindingInput[], ctx: RegistryCtx = {}): Fi
     const key = `${f.domain}::${f.key ? f.key.toLowerCase() : norm(f.title)}`;
     const prev = byKey.get(key);
     if (!prev) { byKey.set(key, { ...f, refs: [...(f.refs ?? [])] }); continue; }
-    // слияние: держим больший impact, лучшее доказательство, объединяем refs
+    // слияние: держим СИЛЬНЕЙШИЕ сигналы (impact, доказательство, воспроизводимость,
+    // источник) и объединяем refs — находка, подтверждённая несколькими отчётами,
+    // становится увереннее, а не теряет силу первого встреченного экземпляра.
     prev.impact = Math.max(prev.impact, f.impact);
     prev.refs = Array.from(new Set([...(prev.refs ?? []), ...(f.refs ?? [])]));
     if (!prev.evidence && f.evidence) prev.evidence = f.evidence;
     if (!prev.as_is && f.as_is) prev.as_is = f.as_is;
     if (!prev.gap && f.gap) prev.gap = f.gap;
+    if (!prev.funnelStep && f.funnelStep) prev.funnelStep = f.funnelStep;
     if (f.evidenceLevel && (!prev.evidenceLevel || EVIDENCE_W[f.evidenceLevel] > EVIDENCE_W[prev.evidenceLevel])) prev.evidenceLevel = f.evidenceLevel;
+    if (f.reproducibility && reproWeight(f.reproducibility) > reproWeight(prev.reproducibility)) prev.reproducibility = f.reproducibility;
+    if (f.source && (SOURCE_W[f.source] ?? 0) > (SOURCE_W[prev.source ?? 'unknown'] ?? 0)) prev.source = f.source;
   }
   const merged = Array.from(byKey.values());
 
