@@ -1,14 +1,16 @@
 import { useEffect } from 'react';
 import Lenis from 'lenis';
+import { gsap, ScrollTrigger } from './gsap';
 
-/** Плавный инерционный скролл (Lenis). Основа «сочного» ощущения одного дайджеста. */
+/** Плавный скролл (Lenis), связанный с GSAP ticker + ScrollTrigger — единый источник времени. */
 export function useLenis() {
   useEffect(() => {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const lenis = new Lenis({ duration: 1.05, smoothWheel: true });
-    let raf = 0;
-    const loop = (t: number) => { lenis.raf(t); raf = requestAnimationFrame(loop); };
-    raf = requestAnimationFrame(loop);
-    return () => { cancelAnimationFrame(raf); lenis.destroy(); };
+    lenis.on('scroll', ScrollTrigger.update);
+    const raf = (time: number) => lenis.raf(time * 1000);
+    gsap.ticker.add(raf);
+    gsap.ticker.lagSmoothing(0);
+    return () => { gsap.ticker.remove(raf); lenis.destroy(); };
   }, []);
 }

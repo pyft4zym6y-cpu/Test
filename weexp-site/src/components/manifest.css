@@ -1,0 +1,7 @@
+.mf { padding:clamp(80px,18vh,200px) 0; }
+.mf-text {
+  font-family:var(--display); font-weight:700; letter-spacing:-.025em; line-height:1.14;
+  font-size:clamp(26px,4.2vw,58px); color:var(--paper); max-width:20ch; margin-top:26px; text-wrap:balance;
+}
+.mf-text .word { will-change:opacity; }
+.mf-text .mk { color:var(--mark); }

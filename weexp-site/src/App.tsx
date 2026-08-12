@@ -8,6 +8,7 @@ import { Flywheel } from '@/components/Flywheel';
 import { Cases } from '@/components/Cases';
 import { DemoOS } from '@/components/DemoOS';
 import { Calculator } from '@/components/Calculator';
+import { Manifest } from '@/components/Manifest';
 import { Alternatives } from '@/components/Alternatives';
 import { Close } from '@/components/Close';
 import { ScoreHUD } from '@/components/ScoreHUD';
@@ -26,6 +27,7 @@ export default function App() {
       <Cases />
       <DemoOS />
       <Calculator />
+      <Manifest />
       <Alternatives />
       <Close />
       <ScoreHUD />
