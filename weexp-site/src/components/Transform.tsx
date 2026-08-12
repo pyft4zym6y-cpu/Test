@@ -1,12 +1,41 @@
 import { useEffect, useRef } from 'react';
+import * as THREE from 'three';
 import './transform.css';
 
-const hex = (h: string) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
-const INK = hex('#0F1A21'), VERD = hex('#1F5648'), CORAL = hex('#D6362B'), NODE = hex('#6FAA9A');
-const mix = (a: number[], b: number[], t: number) => `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * t)).join(',')})`;
+/**
+ * Transform — флагманский переход «до»→«після». WebGL: поле частиц-«втрат» на шейдере
+ * пересобирается в упорядоченную System Map по прогрессу скролла; мир течёт ink→emerald;
+ * копия морфится. Прогресс — из позиции секции (pinned), как единый язык сайта.
+ */
+const hex = (h: string) => [parseInt(h.slice(1, 3), 16) / 255, parseInt(h.slice(3, 5), 16) / 255, parseInt(h.slice(5, 7), 16) / 255];
+// Фон стадии считаем в plain sRGB (без color-management three, иначе зелёный «выцветает»).
+const INK255 = [15, 26, 33], VERD255 = [31, 86, 72]; // #0F1A21, #1F5648
+const mixRgb = (a: number[], b: number[], t: number) => `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * t)).join(',')})`;
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
-type P = { cx: number; cy: number; tx: number; ty: number; _x: number; _y: number; ph: number; sp: number };
+const VERT = /* glsl */`
+  uniform float uProg; uniform float uTime; uniform float uSize;
+  attribute vec3 aChaos; attribute vec3 aTarget; attribute float aRand;
+  varying float vProg;
+  void main(){
+    vProg = uProg;
+    vec3 pos = mix(aChaos, aTarget, uProg);
+    float drift = (1.0 - uProg) * 22.0;
+    pos.x += cos(uTime * (0.4 + aRand) + aRand * 6.28) * drift;
+    pos.y += sin(uTime * (0.4 + aRand) + aRand * 6.28) * drift;
+    vec4 mv = modelViewMatrix * vec4(pos, 1.0);
+    gl_Position = projectionMatrix * mv;
+    gl_PointSize = (1.6 + uProg * 2.0) * uSize;
+  }`;
+const FRAG = /* glsl */`
+  precision mediump float;
+  uniform vec3 uCoral; uniform vec3 uNode;
+  varying float vProg;
+  void main(){
+    vec2 d = gl_PointCoord - vec2(0.5);
+    if (dot(d, d) > 0.25) discard;
+    gl_FragColor = vec4(mix(uCoral, uNode, vProg), 0.35 + vProg * 0.55);
+  }`;
 
 export function Transform() {
   const actRef = useRef<HTMLElement>(null);
@@ -17,51 +46,94 @@ export function Transform() {
 
   useEffect(() => {
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const cv = cvRef.current!, ctx = cv.getContext('2d')!;
-    const act = actRef.current!, stage = stageRef.current!;
-    let W = 0, H = 0, cols = 0, rows = 0, particles: P[] = [], progress = reduce ? 1 : 0, tPhase = 0, raf = 0;
+    const cv = cvRef.current!, act = actRef.current!, stage = stageRef.current!;
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true });
+    } catch { return; } // нет WebGL — сцена просто пустая, копия/фон работают
+    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
 
-    function layout() {
-      const dpr = Math.min(devicePixelRatio || 1, 2);
+    const scene = new THREE.Scene();
+    let W = cv.clientWidth, H = cv.clientHeight;
+    const cam = new THREE.OrthographicCamera(0, W, 0, H, -100, 100);
+    cam.position.z = 10;
+
+    let cols = 0, rows = 0, N = 0;
+    let points: THREE.Points, lines: THREE.LineSegments;
+    let chaos: Float32Array, target: Float32Array, edgePos: Float32Array;
+    const uniforms = {
+      uProg: { value: reduce ? 1 : 0 }, uTime: { value: 0 }, uSize: { value: renderer.getPixelRatio() },
+      uCoral: { value: new THREE.Color(...hex('#D6362B') as [number, number, number]) },
+      uNode: { value: new THREE.Color(...hex('#6FAA9A') as [number, number, number]) },
+    };
+
+    function build() {
       W = cv.clientWidth; H = cv.clientHeight;
-      cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      renderer.setSize(W, H, false);
+      cam.right = W; cam.bottom = H; cam.updateProjectionMatrix();
+      if (points) { scene.remove(points); points.geometry.dispose(); }
+      if (lines) { scene.remove(lines); lines.geometry.dispose(); }
       const aspect = W / H;
       cols = Math.max(6, Math.round(9 * Math.min(1.4, aspect)));
       rows = Math.max(5, Math.round((cols / aspect) * 0.78));
+      N = cols * rows;
       const bw = Math.min(W * 0.78, 1180), bh = Math.min(H * 0.6, 600);
       const bx = (W - bw) / 2, by = (H - bh) / 2 + H * 0.03;
-      particles = [];
+      chaos = new Float32Array(N * 3); target = new Float32Array(N * 3);
+      const rand = new Float32Array(N);
       for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
-        const tx = bx + (c / (cols - 1)) * bw, ty = by + (r / (rows - 1)) * bh;
-        particles.push({ cx: Math.random() * W, cy: Math.random() * H, tx, ty, _x: tx, _y: ty, ph: Math.random() * Math.PI * 2, sp: 0.4 + Math.random() * 0.8 });
+        const i = r * cols + c;
+        chaos[i * 3] = Math.random() * W; chaos[i * 3 + 1] = Math.random() * H;
+        target[i * 3] = bx + (c / (cols - 1)) * bw; target[i * 3 + 1] = by + (r / (rows - 1)) * bh;
+        rand[i] = Math.random();
       }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(N * 3), 3));
+      g.setAttribute('aChaos', new THREE.BufferAttribute(chaos, 3));
+      g.setAttribute('aTarget', new THREE.BufferAttribute(target, 3));
+      g.setAttribute('aRand', new THREE.BufferAttribute(rand, 1));
+      points = new THREE.Points(g, new THREE.ShaderMaterial({ uniforms, vertexShader: VERT, fragmentShader: FRAG, transparent: true, depthTest: false }));
+      scene.add(points);
+      // edges: right + bottom neighbours
+      const segs: number[] = [];
+      const idx = (c: number, r: number) => r * cols + c;
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+        if (c < cols - 1) segs.push(idx(c, r), idx(c + 1, r));
+        if (r < rows - 1) segs.push(idx(c, r), idx(c, r + 1));
+      }
+      edgePos = new Float32Array(segs.length * 3);
+      (points.geometry as THREE.BufferGeometry).userData.segs = segs;
+      const lg = new THREE.BufferGeometry();
+      lg.setAttribute('position', new THREE.BufferAttribute(edgePos, 3));
+      lines = new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ color: new THREE.Color(...hex('#6FAA9A') as [number, number, number]), transparent: true, opacity: 0 }));
+      scene.add(lines);
+      (lines.geometry as THREE.BufferGeometry).userData.segs = segs;
     }
-    const at = (c: number, r: number) => particles[r * cols + c];
 
-    function draw() {
+    let progress = reduce ? 1 : 0, tPhase = 0, raf = 0;
+    function render() {
       const e = easeInOut(progress);
-      stage.style.background = mix(INK, VERD, e);
-      ctx.clearRect(0, 0, W, H); tPhase += 0.016;
-      if (e > 0.42) {
-        const a = Math.min(1, (e - 0.42) / 0.5);
-        ctx.lineWidth = 1; ctx.strokeStyle = `rgba(159,195,183,${0.32 * a})`; ctx.beginPath();
-        for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
-          const p = at(c, r);
-          if (c < cols - 1) { const q = at(c + 1, r); ctx.moveTo(p._x, p._y); ctx.lineTo(q._x, q._y); }
-          if (r < rows - 1) { const q = at(c, r + 1); ctx.moveTo(p._x, p._y); ctx.lineTo(q._x, q._y); }
-        }
-        ctx.stroke();
-      }
-      for (const p of particles) {
-        let x = p.cx + (p.tx - p.cx) * e, y = p.cy + (p.ty - p.cy) * e;
-        if (e < 0.98) { const d = (1 - e) * 22; x += Math.cos(tPhase * p.sp + p.ph) * d; y += Math.sin(tPhase * p.sp + p.ph) * d; }
-        p._x = x; p._y = y;
-        ctx.fillStyle = mix(CORAL, NODE, e); ctx.globalAlpha = 0.35 + e * 0.55;
-        ctx.beginPath(); ctx.arc(x, y, 1.6 + e * 1.4, 0, 7); ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-      if (beforeRef.current) { beforeRef.current.style.opacity = String(Math.max(0, 1 - progress / 0.5)); }
-      if (afterRef.current) { afterRef.current.style.opacity = String(Math.max(0, (progress - 0.5) / 0.5)); }
+      uniforms.uProg.value = e; uniforms.uTime.value = tPhase; tPhase += 0.016;
+      stage.style.background = mixRgb(INK255, VERD255, e);
+
+      // update edge positions on CPU from same morph (cheap)
+      const segs: number[] = (lines.geometry as THREE.BufferGeometry).userData.segs;
+      const drift = (1 - e) * 22;
+      const posAt = (i: number, out: [number, number]) => {
+        const x = chaos[i * 3] + (target[i * 3] - chaos[i * 3]) * e + Math.cos(tPhase * (0.4) ) * 0; // base
+        const y = chaos[i * 3 + 1] + (target[i * 3 + 1] - chaos[i * 3 + 1]) * e;
+        out[0] = x + Math.cos(tPhase * 0.6 + i) * drift; out[1] = y + Math.sin(tPhase * 0.6 + i) * drift;
+      };
+      const p2: [number, number] = [0, 0];
+      for (let s = 0; s < segs.length; s++) { posAt(segs[s], p2); edgePos[s * 3] = p2[0]; edgePos[s * 3 + 1] = p2[1]; edgePos[s * 3 + 2] = 0; }
+      (lines.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
+      (lines.material as THREE.LineBasicMaterial).opacity = Math.max(0, (e - 0.42) / 0.5) * 0.34;
+
+      renderer.render(scene, cam);
+      // перекрывающийся кросс-фейд (без «пустого» кадра на середине)
+      if (beforeRef.current) beforeRef.current.style.opacity = String(Math.min(1, Math.max(0, 1 - progress / 0.55)));
+      if (afterRef.current) afterRef.current.style.opacity = String(Math.min(1, Math.max(0, (progress - 0.45) / 0.55)));
+      raf = requestAnimationFrame(render);
     }
 
     function onScroll() {
@@ -70,13 +142,14 @@ export function Transform() {
       const total = act.offsetHeight - stage.offsetHeight;
       progress = total > 0 ? Math.min(1, Math.max(0, -r.top / total)) : 0;
     }
-    const loop = () => { draw(); raf = requestAnimationFrame(loop); };
-    const onResize = () => layout();
-
-    layout(); onScroll();
+    const onResize = () => build();
+    build(); onScroll();
     addEventListener('resize', onResize); addEventListener('scroll', onScroll, { passive: true });
-    if (reduce) draw(); else loop();
-    return () => { cancelAnimationFrame(raf); removeEventListener('resize', onResize); removeEventListener('scroll', onScroll); };
+    render();
+    return () => {
+      cancelAnimationFrame(raf); removeEventListener('resize', onResize); removeEventListener('scroll', onScroll);
+      renderer.dispose(); points?.geometry.dispose(); lines?.geometry.dispose();
+    };
   }, []);
 
   return (
