@@ -20,3 +20,6 @@
 .hud-state b { color:var(--mark-600); font-weight:500; }
 
 @media (max-width:560px){ .hud{ padding:10px 12px; } .hud-val{ font-size:26px; } }
+
+.hud { transition:opacity .4s ease, transform .4s ease; }
+.hud.is-away { opacity:0; transform:translateY(12px); pointer-events:none; }

@@ -10,7 +10,7 @@ const NAV = [
 
 export function Footer() {
   return (
-    <footer className="ft">
+    <footer className="ft" id="site-footer">
       <div className="wrap ft-grid">
         <div className="ft-brand">
           <button className="ft-logo" type="button" onClick={() => goTo('top')}>WEEXP</button>

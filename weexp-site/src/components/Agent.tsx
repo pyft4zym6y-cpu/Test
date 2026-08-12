@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { IDLE } from '@/lib/bus';
+import { useNearFooter } from '@/lib/useNearFooter';
 import './agent.css';
 
 /**
@@ -13,6 +14,7 @@ import './agent.css';
 export function Agent() {
   const [muted, setMuted] = useState(false);
   const [shown, setShown] = useState('');
+  const nearFooter = useNearFooter();
   const targetRef = useRef(IDLE);
   const pupilRef = useRef<HTMLSpanElement>(null);
   const markerRef = useRef<HTMLDivElement>(null);
@@ -80,7 +82,7 @@ export function Agent() {
   }, []);
 
   return (
-    <aside className={`agent${muted ? ' is-muted' : ''}`} aria-live="polite">
+    <aside className={`agent${muted ? ' is-muted' : ''}${nearFooter ? ' is-away' : ''}`} aria-live="polite" aria-hidden={nearFooter}>
       <div className="agent-marker" ref={markerRef} aria-hidden="true">
         <span className="agent-pupil" ref={pupilRef} />
       </div>

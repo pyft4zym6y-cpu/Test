@@ -15,12 +15,19 @@ npm run build    # → dist/
 npm run preview
 ```
 
-## Деплой
-Статика в `dist/`. Vercel (auto-detect Vite) або Netlify (`netlify.toml`).
-Заголовки безпеки та кеш ассетів — у `vercel.json` / `netlify.toml`.
+## Деплой на weexp.agency
+Мета/канонікал/OG/sitemap налаштовані на `https://weexp.agency`. Node 20 (`.nvmrc`).
 
-> Перед деплоєм замініть домен-плейсхолдер `weexp.com.ua` у `index.html`,
-> `public/robots.txt`, `public/sitemap.xml` на реальний.
+**Vercel (рекомендовано):**
+1. Import repo → Root Directory `weexp-site` (Vite визначається автоматично).
+2. Build `npm run build`, Output `dist`.
+3. Settings → Domains → додати `weexp.agency` (+ `www` з редіректом).
+4. DNS: `A @ 76.76.21.21`, `CNAME www cname.vercel-dns.com` (точні значення покаже Vercel).
+
+**Netlify:** `netlify.toml` готовий (build `npm run build`, publish `dist`) → Add custom domain.
+
+Security-заголовки, immutable-кеш, `404.html` — у `vercel.json`/`netlify.toml`/`public/`.
+CI-гейт якості — `.lighthouserc.json`.
 
 ## Форма
 Ліди йдуть на `pashasidorenko18@gmail.com` (mailto). Для серверного прийому —
