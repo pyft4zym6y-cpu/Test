@@ -4,7 +4,10 @@ import { Hero } from '@/components/Hero';
 import { Transform } from '@/components/Transform';
 import { Proof } from '@/components/Proof';
 import { Engine } from '@/components/Engine';
+import { Flywheel } from '@/components/Flywheel';
 import { Cases } from '@/components/Cases';
+import { DemoOS } from '@/components/DemoOS';
+import { Calculator } from '@/components/Calculator';
 import { Alternatives } from '@/components/Alternatives';
 import { Close } from '@/components/Close';
 import { ScoreHUD } from '@/components/ScoreHUD';
@@ -19,7 +22,10 @@ export default function App() {
       <Transform />
       <Proof />
       <Engine />
+      <Flywheel />
       <Cases />
+      <DemoOS />
+      <Calculator />
       <Alternatives />
       <Close />
       <ScoreHUD />
