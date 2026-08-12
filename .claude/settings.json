@@ -13,6 +13,8 @@
   },
   "enabledPlugins": {
     "agents-observe@agents-observe": true,
-    "claude-mem@thedotmack": true
+    "claude-mem@thedotmack": true,
+    "chrome-devtools-mcp@claude-plugins-official": true,
+    "firecrawl@claude-plugins-official": true
   }
 }
