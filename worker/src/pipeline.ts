@@ -57,7 +57,7 @@ import { exportMaturityDocx, exportScopeDocx, exportCausalDocx, exportPriceChann
 import { buildWorkbook } from './workbook.js';
 import { makeXlsx } from './xlsx.js';
 import { narrateSynthesis, renderSynthesisMd } from './synthesis.js';
-import { buildKp, renderKpMd } from './kp.js';
+import { buildKp, renderKpMd, renderKpPdf } from './kp.js';
 import { exportKpDocx } from './export/methodDocs.js';
 import { knowledgeCount } from './knowledge.js';
 import { hasKey, apiErrorHint } from './anthropic.js';
@@ -466,7 +466,8 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
           const kp = await buildKp(ds, { analysis: analysisResult, money, engine, scope });
           if (kp) {
             await exportKpDocx(ds, kp, money, scope, join(dir, 'Коммерческое-предложение.docx'));
-            log('✓ КП собрано');
+            await renderPdf(renderKpPdf(ds, kp, money, scope), join(dir, 'Коммерческое-предложение.pdf'), browser);
+            log('✓ КП собрано (PDF + DOCX)');
           }
         }
       }

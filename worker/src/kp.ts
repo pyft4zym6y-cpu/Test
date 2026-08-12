@@ -11,6 +11,7 @@ import type { EngineResult } from './portalEngine.js';
 import type { ScopeReport } from './routing.js';
 import { ask, extractJson, hasKey } from './anthropic.js';
 import { knowledgeFor } from './knowledge.js';
+import { doc, esc, conclusionSection } from './export/reportShell.js';
 
 export type Kp = {
   forClient: string;
@@ -86,4 +87,46 @@ export function renderKpMd(ds: AuditDataset, kp: Kp, money: MoneyResult | null, 
   if (kp.nextSteps.length) { o.push('\n## Следующие шаги'); kp.nextSteps.forEach((s, i) => o.push(`${i + 1}. ${s}`)); }
   o.push('\n---\n_Итог кратно превышает бюджет при полной реализации; рядом — консервативный сценарий по нижней границе рычагов._');
   return o.join('\n');
+}
+
+/** КП в PDF (надёжная вёрстка — таблица «Программа по волнам» не «плывёт», как в Word). */
+export function renderKpPdf(ds: AuditDataset, kp: Kp, money: MoneyResult | null, scope: ScopeReport | null): string {
+  const client = (() => { try { return new URL(ds.client.finalUrl || ds.client.rootUrl).hostname.replace(/^www\./, ''); } catch { return ds.client.finalUrl || ds.client.rootUrl; } })();
+  const date = new Date(ds.takenAt).toLocaleDateString('ru-RU');
+  const p = (s: string) => `<p style="font-size:10.5px;line-height:1.55;margin:0 0 6px">${esc(s)}</p>`;
+
+  const cover = `<section class="cover"><div class="cov-bar"></div><div class="cov-body">
+    <div class="kicker">Commerce OS · Коммерческое предложение</div>
+    <h1>Программа роста для ${esc(client)}</h1>
+    <div class="cov-meta">
+      <div><span class="lbl">Клиент</span><span class="val">${esc(client)}</span></div>
+      <div><span class="lbl">Дата</span><span class="val">${esc(date)}</span></div>
+      ${money ? `<div><span class="lbl">Цена бездействия</span><span class="val">${rub(money.potentialYear)}/год</span></div>` : ''}
+    </div>
+    <div class="coverage">${esc(kp.forClient)}</div>
+  </div></section>`;
+
+  const method = `<section class="block"><h2>Методика</h2>${p(kp.method)}</section>`;
+  const pains = kp.pains.length ? `<section class="block"><h2>Боли — по корневой причине</h2><ul>${kp.pains.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>` : '';
+  const cost = `<section class="block"><h2>Цена бездействия</h2>${money
+    ? p(`Недополученный оборот ≈ ${rub(money.potentialYear)}/год (консервативно ${rub(money.consMinYear)}–${rub(money.consMaxYear)}). Каждый месяц промедления — упущенный оборот.`)
+    : p('Считается по данным (трафик, конверсия, чек). Во внешнем аудите — качественно: разрывы против эталона уже видны.')}</section>`;
+  const pointB = `<section class="block"><h2>Точка Б</h2>${p(kp.pointB)}</section>`;
+
+  const waves = scope?.waves?.length ? `<section class="block"><h2>Программа по волнам</h2>
+    <table><thead><tr><th style="width:70px">Волна</th><th style="width:90px">Срок</th><th>Что делаем</th></tr></thead><tbody>
+    ${scope.waves.map((w) => `<tr><td><b>Волна ${w.n}</b></td><td>${esc(WAVE_WEEKS[w.n] ?? '')}</td><td>${w.items.map((i) => `${esc(i.playbook)} ${esc(i.name)}`).join('; ')}</td></tr>`).join('')}
+    </tbody></table></section>` : '';
+
+  const measure = `<section class="block"><h2>Как измеряем результат</h2>${p(kp.howMeasure)}</section>`;
+  const budget = `<section class="block"><h2>Бюджет</h2>${p('Собирается из cost_base (капитальные разовые + операционные ретейнеры): стоимость запуска и месячная нагрузка. Заполняется по подтверждённым ставкам при согласовании scope.')}</section>`;
+  const scenarios = kp.scenarios.length ? `<section class="block"><h2>Сценарии сотрудничества</h2><table><tbody>${kp.scenarios.map((s) => `<tr><td style="width:180px"><b>${esc(s.name)}</b></td><td>${esc(s.desc)}</td></tr>`).join('')}</tbody></table></section>` : '';
+  const steps = kp.nextSteps.length ? `<section class="block"><h2>Следующие шаги</h2><ol>${kp.nextSteps.map((s) => `<li style="margin:3px 0">${esc(s)}</li>`).join('')}</ol></section>` : '';
+
+  const concl = conclusionSection([
+    'Итог программы кратно превышает бюджет при полной реализации; рядом — консервативный сценарий по нижней границе рычагов. Мы платим за результат этапами (Definition of Done по каждой волне), поэтому бюджет защищён.',
+  ], 'Согласовать состав волны 1 и формат сотрудничества — после этого бюджет и сроки фиксируются сметой.');
+
+  const extra = `ol{padding-left:18px} ul{padding-left:16px}`;
+  return doc(`Коммерческое предложение · ${client}`, cover + method + pains + cost + pointB + waves + measure + scenarios + budget + steps + concl, extra);
 }
