@@ -75,6 +75,7 @@ export type SiteCrawl = {
   links: string[]; // внутренние URL, найденные обходом (для SEO-дерева)
   pageTypes?: PageTypeCoverage[]; // карта уникальных типов страниц (100% + переменные)
   soft404?: boolean | null;       // несуществующий URL отдаёт 200 («мягкая 404») — дефект индексации
+  cartPrimed?: boolean;           // в корзину положен товар до аудита корзины/чекаута (иначе пустой чекаут)
   ai?: { llmsTxt: boolean; blockedBots: string[] }; // GEO/AEO: llms.txt и доступ AI-краулеров
   secHeaders?: { csp: boolean; hsts: boolean; xfo: boolean }; // заголовки безопасности главной
   error?: string;
@@ -124,7 +125,15 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
   // UX / коммерция
   add('viewport', 'UX', 'Viewport (мобильная версия)', Boolean($('meta[name="viewport"]')));
   add('favicon', 'UX', 'Favicon', Boolean($('link[rel*="icon"]')));
-  const hasSearch = Boolean($('input[type="search"]') || $('[class*="search" i] input') || $('form[action*="search" i]'));
+  // Поиск часто «свёрнут» в иконку-лупу: input появляется только по клику. Ищем и
+  // сам input, и триггер (иконка/ссылка/кнопка/aria), иначе даём ложное «поиска нет».
+  const hasSearch = Boolean(
+    $('input[type="search"]') || $('[class*="search" i] input:not([type="hidden"])') || $('form[action*="search" i]')
+    || $('input[name="search" i], input[name="q"], input[placeholder*="пошук" i], input[placeholder*="поиск" i], input[placeholder*="search" i]')
+    || $('a[href*="search" i], a[href*="route=product/search" i]')
+    || $('[class*="search-toggle" i], [class*="search-icon" i], [class*="icon-search" i], [class*="search-btn" i], [class*="search" i] button')
+    || $('[aria-label*="пошук" i], [aria-label*="поиск" i], [aria-label*="search" i], [data-toggle*="search" i], [data-target*="search" i]'),
+  );
   add('search', 'UX', 'Поиск по сайту', hasSearch);
   add('phone', 'UX', 'Телефон кликабелен (tel:)', Boolean($('a[href^="tel:"]')));
   const hasCart = Boolean($('[href*="cart" i]') || $('[class*="cart" i]') || $('[href*="korzina" i]') || $('[href*="basket" i]'));
@@ -260,7 +269,7 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
     breadcrumbs,
     hero: hasSel('[class*="hero" i], [class*="banner" i], [class*="slider" i], [class*="slideshow" i], [class*="carousel" i]'),
     usp_bar: hasSel('[class*="usp" i], [class*="advantage" i], [class*="benefit" i]') || inLow(/чому ми|почему мы|наші переваги|наши преимущества|why us/),
-    search: hasSel('input[type="search"], [class*="search" i] input, form[action*="search" i], input[name="search" i], input[name="q"], input[placeholder*="пошук" i], input[placeholder*="поиск" i], input[placeholder*="search" i], [class*="search" i] button'),
+    search: hasSel('input[type="search"], [class*="search" i] input, form[action*="search" i], input[name="search" i], input[name="q"], input[placeholder*="пошук" i], input[placeholder*="поиск" i], input[placeholder*="search" i], [class*="search" i] button, a[href*="search" i], a[href*="route=product/search" i], [class*="search-toggle" i], [class*="search-icon" i], [class*="icon-search" i], [aria-label*="пошук" i], [aria-label*="поиск" i], [aria-label*="search" i], [data-toggle*="search" i]'),
     nav: Boolean(navEl && navEl.querySelectorAll('a').length >= 3),
     product_grid: productCards >= 8,
     trust: trustBadges || paymentIcons,
@@ -541,11 +550,11 @@ export const PAGE_TYPE_REGISTRY: PageTypeDef[] = [
   // ── Переменные: есть при соответствующей модели/зрелости ──
   { id: 'faq', label: 'FAQ', mandatory: false, match: /\/(faq|help|pytannya|voprosy)(\/|$)/i, probes: ['/faq/', '/faq'], kind: 'faq' },
   { id: 'blog', label: 'Блог / статьи', mandatory: false, match: /\/(blog|news|articles?|statti)(\/|$)/i, probes: ['/blog/', '/news/'] },
-  { id: 'sale', label: 'Акции / распродажа', mandatory: false, match: /sale|akci|promo|discount|znyzhk|rasprodazha/i, probes: ['/sale/', '/akcii/'] },
+  { id: 'sale', label: 'Акции / распродажа', mandatory: false, match: /sale|akci|akts|promo|discount|znyzhk|znizhk|rozprodazh|rasprodazh|vyprodazh/i, probes: ['/katalog/rozprodazh', '/rozprodazh/', '/sale/', '/akciyi/', '/akcii/', '/znyzhky/', '/katalog/sale'] },
   { id: 'new', label: 'Новинки', mandatory: false, match: /novynky|novinki|\/new(\/|$)/i, probes: [] },
   { id: 'reviews-page', label: 'Отзывы о магазине', mandatory: false, match: /\/(vidhuky|otzyvy|reviews|testimonials)(\/|$)/i, probes: ['/reviews/', '/vidhuky/'] },
-  { id: 'b2b', label: 'B2B / опт', mandatory: false, match: /b2b|\/opt(\/|$)|wholesale|dealer/i, probes: ['/b2b/', '/opt/'] },
-  { id: 'corporate', label: 'Корпоративные / HoReCa', mandatory: false, match: /korp|corporate|horeca/i, probes: [] },
+  { id: 'b2b', label: 'B2B / опт', mandatory: false, match: /b2b|\/opt(\/|$)|wholesale|dealer|optom/i, probes: ['/b2b/', '/opt/', '/wholesale/', '/optom/'] },
+  { id: 'corporate', label: 'Корпоративные / HoReCa', mandatory: false, match: /korp|corporate|horeca|ho-re-ca/i, probes: ['/horeca/', '/korp-podarunky/', '/korporatyvni-podarunky/', '/corporate/', '/b2b-podarunky/'] },
   { id: 'loyalty', label: 'Программа лояльности / бонусы', mandatory: false, match: /loyal|bonus|cashback/i, probes: ['/loyalty/', '/bonus/'] },
   { id: 'account', label: 'Личный кабинет / вход', mandatory: false, match: /account|login|signin|cabinet|profil/i, probes: ['/account/', '/login/', '/index.php?route=account/login'] },
   { id: 'wishlist', label: 'Избранное / wishlist', mandatory: false, match: /wishlist|izbrannoe|obrane/i, probes: [] },
@@ -645,6 +654,28 @@ export async function crawlSite(
       ? PAGE_TYPE_REGISTRY.filter((t) => t.id !== 'home').map((t) => typeHit(t)).filter((u): u is string => Boolean(u))
       : [];
     const candidates = Array.from(new Set([...reps, ...kw])).filter((u) => u !== out.finalUrl).slice(0, Math.max(maxPages - 1, kind === 'client' ? 30 : 0));
+
+    // Наполняем корзину ДО аудита корзины/чекаута в той же сессии (cookies сохраняются).
+    // Пустой чекаут в OpenCart редиректит на «кошик порожній» — форма оформления не
+    // видна, и раньше чекаут ошибочно оценивался как сломанный. Кладём один товар.
+    if (kind === 'client') {
+      try {
+        const pdpUrl = candidates.find((u) => /product|tovar|\/p\/|\/pr\/|item|route=product|goods/i.test(lpath(u)))
+          ?? candidates.find((u) => { const m = lpath(u).match(/^\/([a-z0-9-]{10,})\/?$/i); return Boolean(m && m[1].includes('-')); });
+        if (pdpUrl) {
+          await page.goto(pdpUrl, { waitUntil: 'domcontentloaded', timeout: 20000 }).catch(() => {});
+          await page.waitForTimeout(1000);
+          const added = await page.evaluate(() => {
+            const el = document.querySelector('#button-cart, [id*="button-cart" i], [class*="add-to-cart" i], [data-add-to-cart], button[name*="add" i]')
+              ?? Array.from(document.querySelectorAll('button, a')).find((b) => /(в кошик|додати|купити|в корзину|добавить|buy now|add to cart)/i.test(b.textContent ?? ''));
+            if (el) { (el as HTMLElement).click(); return true; }
+            return false;
+          }).catch(() => false);
+          if (added) { out.cartPrimed = true; await page.waitForTimeout(2500); }
+        }
+      } catch { /* приминг корзины best-effort: не критичен для остального обхода */ }
+    }
+
     for (const url of candidates) {
       const res = await auditPage(page, url, false);
       out.pages.push(res.audit);

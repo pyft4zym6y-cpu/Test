@@ -317,7 +317,18 @@ export function buildSiteAudit(ds: AuditDataset, opts: { journey?: JourneyLink[]
       tree.push({ title: `${ref.title} (доп.)`, url: p.finalUrl || p.url, kind: p.kind, score: 0, max: 0, pct: p.score ?? 0 });
     }
   }
-  if (opts.journey?.length) applyJourney(pages, opts.journey);
+  if (opts.journey?.length) {
+    applyJourney(pages, opts.journey);
+    // applyJourney меняет page.score ПОСЛЕ того, как строки дерева уже собраны со
+    // старым баллом (строка выше). Без пересинхронизации дерево показывает балл ДО
+    // journey (23/27), а детальная карточка — ПОСЛЕ (22/27) — источник расхождения
+    // цифр в отчёте. Пересобираем строки дерева из фактического состояния страниц.
+    for (const row of tree) {
+      if (row.max <= 0) continue; // «(доп.)»-строки живут по compliance %, а не по блок-баллу
+      const pg = pages.find((p) => p.kind === row.kind && p.url === row.url) ?? pages.find((p) => p.kind === row.kind);
+      if (pg) { row.score = pg.score; row.max = pg.max; row.pct = pg.max ? Math.round((pg.score / pg.max) * 100) : 0; }
+    }
+  }
   const totalScore = pages.reduce((s, p) => s + p.score, 0);
   const totalMax = pages.reduce((s, p) => s + p.max, 0);
   const totalPct = totalMax ? Math.round((totalScore / totalMax) * 100) : 0;
