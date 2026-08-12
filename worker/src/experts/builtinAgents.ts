@@ -63,7 +63,7 @@ export const geoAeoWeb: Expert = {
     provider: 'http', status: 'available',
     strengthens: ['Внешний инфофон', 'SEO Architecture'],
   },
-  isAvailable: () => hasKey(),
+  isAvailable: (env) => Boolean(env.ANTHROPIC_API_KEY),
   async run(ctx): Promise<ExpertResult> {
     const base = { expertId: 'geo-aeo', name: 'GEO / AI-видимость (веб-поиск)', domain: 'geo' as const, findings: [] as FindingInput[], verifications: [] };
     if (!hasKey()) return { ...base, ran: false, skippedReason: 'нужен ключ Claude (ANTHROPIC_API_KEY) для веб-поиска', summary: 'пропущен' };

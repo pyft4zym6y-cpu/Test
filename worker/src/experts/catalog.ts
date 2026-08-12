@@ -10,6 +10,7 @@
 import type { Expert, ExpertCard, ExpertResult, Verification } from './types.js';
 import { geoReadiness, securitySignals, geoAeoWeb } from './builtinAgents.js';
 import { performanceCwv, accessibilityAxe } from './waveOneAgents.js';
+import { marketplacePrice, backlinks, trafficIntel } from './waveTwoAgents.js';
 
 /** Встроенный агент второго мнения: перепроверяет базовые находки детерминированно. */
 const qaCrossVerify: Expert = {
@@ -75,6 +76,9 @@ export const EXPERT_CATALOG: Expert[] = [
   geoAeoWeb,
   performanceCwv,
   accessibilityAxe,
+  marketplacePrice,
+  backlinks,
+  trafficIntel,
   externalExpert({
     id: 'seo-search-console', name: 'Google Search Console — SEO факты', domain: 'seo',
     what: 'Реальные позиции, запросы, индексация, Core Web Vitals и schema-валидация вместо внешних наблюдений',
@@ -113,24 +117,6 @@ export const EXPERT_CATALOG: Expert[] = [
     what: 'Креативы, форматы и активность конкурентов в Meta Ad Library и Google Ads Transparency — публичные данные, без кабинетов',
     provider: 'http', status: 'planned',
     strengthens: ['Аудит каналов', 'Конкурентный анализ'],
-  }, ''),
-  externalExpert({
-    id: 'backlinks', name: 'Ссылочный профиль / авторитет', domain: 'seo',
-    what: 'Referring domains, авторитет, анкоры, токсичность ссылок (Ahrefs/Semrush/Serpstat)',
-    provider: 'http', credEnv: 'AHREFS_KEY', status: 'planned',
-    strengthens: ['SEO Architecture'],
-  }, ''),
-  externalExpert({
-    id: 'traffic-intelligence', name: 'Оценка трафика и каналов', domain: 'competitors',
-    what: 'Внешняя оценка объёма трафика и микса каналов (SimilarWeb) — картина спроса без доступа к GA4',
-    provider: 'http', credEnv: 'SIMILARWEB_KEY', status: 'planned',
-    strengthens: ['Аудит каналов', 'Конкурентный анализ', 'Деньги'],
-  }, ''),
-  externalExpert({
-    id: 'marketplace-price', name: 'Цена в канале / маркетплейсы', domain: 'competitors',
-    what: 'Цена у реселлеров и на маркетплейсах (прайс-агрегаторы, Rozetka/Prom/Amazon) — закрывает пустой отчёт «Цена в канале»',
-    provider: 'http', credEnv: 'PRICE_API_KEY', status: 'planned',
-    strengthens: ['Цена в канале', 'Конкурентный анализ'],
   }, ''),
   externalExpert({
     id: 'social-listening', name: 'Соцпрослушка (share of voice)', domain: 'reputation',
