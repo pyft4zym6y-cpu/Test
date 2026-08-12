@@ -1,6 +1,6 @@
 /**
  * CLI-обёртка над конвейером аудита (pipeline.ts).
- *   npm run audit -- --tier 1 --site https://shop.example [--agentic] \
+ *   npm run audit -- --tier 1 --site https://shop.example [--agentic] [--premium] \
  *     [--competitor <url> ×N] [--request "…"] [--answers a.json] [--baseline b.json] \
  *     [--prelaunch --brief "…"] [--out results]
  */
@@ -8,10 +8,10 @@ import { readFile } from 'node:fs/promises';
 import { runAudit } from './pipeline.js';
 import type { Tier } from './tiers.js';
 
-type Args = { tier: Tier; site: string; competitors: string[]; request: string; out: string; agentic: boolean; answers: string; baseline: string; prelaunch: boolean; brief: string };
+type Args = { tier: Tier; site: string; competitors: string[]; request: string; out: string; agentic: boolean; premium: boolean; answers: string; baseline: string; prelaunch: boolean; brief: string };
 
 function parseArgs(argv: string[]): Args {
-  const a: Args = { tier: 1, site: '', competitors: [], request: '', out: 'results', agentic: false, answers: '', baseline: '', prelaunch: false, brief: '' };
+  const a: Args = { tier: 1, site: '', competitors: [], request: '', out: 'results', agentic: false, premium: false, answers: '', baseline: '', prelaunch: false, brief: '' };
   for (let i = 0; i < argv.length; i++) {
     const k = argv[i];
     const v = argv[i + 1];
@@ -25,6 +25,7 @@ function parseArgs(argv: string[]): Args {
     else if (k === '--brief') { a.brief = v ?? ''; i++; }
     else if (k === '--prelaunch') { a.prelaunch = true; }
     else if (k === '--agentic') { a.agentic = true; }
+    else if (k === '--premium') { a.premium = true; }
   }
   return a;
 }
@@ -40,7 +41,7 @@ async function main() {
 
   const r = await runAudit({
     tier: args.tier, site: args.site, competitors: args.competitors, request: args.request,
-    agentic: args.agentic, prelaunch: args.prelaunch, brief: args.brief,
+    agentic: args.agentic, premium: args.premium, prelaunch: args.prelaunch, brief: args.brief,
     answers, baseline, out: args.out,
   });
   console.log(`✓ Готово: ${r.summary}`);
