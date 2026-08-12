@@ -12,7 +12,7 @@ const MARK: Record<MechStatus, string> = { 'есть': '✓', 'нет': '✕', '
 export function renderMechanicsHtml(r: MechanicsReport): string {
   const date = new Date(r.takenAt).toLocaleDateString('ru-RU');
   const cover = `<section class="cover"><div class="cov-bar"></div><div class="cov-body">
-    <div class="kicker">Commerce OS · Маркетинговые механики · слой A0</div>
+    <div class="kicker">Commerce OS · Маркетинговые механики · внешний аудит витрины</div>
     <h1>${esc(r.verdict)}</h1>
     <div class="cov-meta">
       <div><span class="lbl">Клиент</span><span class="val">${esc(r.client)}</span></div>
@@ -27,7 +27,7 @@ export function renderMechanicsHtml(r: MechanicsReport): string {
     goal: 'Определить, какими коммерческими механиками магазин уже играет, какие простаивают — и какие внедрять первыми, чтобы зарабатывать больше с того же трафика.',
     sources: ['Внешний обход: блоки страниц, текстовые сигналы, виджеты', 'Дерево сайта и карта типов страниц (разделы лояльности, сертификатов и т.п.)', 'Технологические сигналы (чаты, трекинг)'],
     scope: `${r.rows.length} механик в ${r.byGroup.length} контурах; каждая — статус, внешний сигнал, эффект, приоритет внедрения.`,
-    limits: 'Внешний срез видит витрину, но не email/CRM-контуры: такие механики помечены «не видно снаружи» и подтверждаются на A1. Эффекты указаны как отраслевые ориентиры — фактический вклад меряется после внедрения.',
+    limits: 'Внешний срез видит витрину, но не email/CRM-контуры: такие механики помечены «не видно снаружи» и подтверждаются после передачи доступов (следующий этап). Эффекты указаны как отраслевые ориентиры — фактический вклад меряется после внедрения.',
   });
 
   const groupBar = `<section class="block"><h2>Насыщенность контуров</h2>
@@ -49,12 +49,12 @@ export function renderMechanicsHtml(r: MechanicsReport): string {
       <table><thead><tr><th>Механика</th><th>Статус</th><th>Внешний сигнал</th><th>Эффект</th><th>Приор.</th></tr></thead><tbody>${rows}</tbody></table></section>`;
   }).join('');
 
-  const concl = conclusionSection(r.conclusion, 'A1: подтвердить «невидимые» контуры (email, CRM, кампании) доступами; внедрение отсутствующих механик — по волнам P0 → P1 → P2 с замером вклада каждой.');
-  const foot = `<section class="block"><div class="footer">Commerce OS · Маркетинговые механики A0 · ${esc(r.client)} · ${esc(date)}. Слой A0: внешние сигналы витрины. Отсутствие данных не выдаётся за факт и не скрывается.</div></section>`;
+  const concl = conclusionSection(r.conclusion, 'Следующий этап: подтвердить «невидимые» контуры (email, CRM, кампании) доступами; внедрение отсутствующих механик — по волнам P0 → P1 → P2 с замером вклада каждой.');
+  const foot = `<section class="block"><div class="footer">Commerce OS · Маркетинговые механики · ${esc(r.client)} · ${esc(date)}. Внешний аудит витрины: внешние сигналы витрины. Отсутствие данных не выдаётся за факт и не скрывается.</div></section>`;
 
   const extra = `.m-name{font-weight:700;font-size:10px;} .m-name .m-what{display:block;font-weight:400;font-size:8.5px;color:var(--muted);}
     .m-st{font-weight:700;white-space:nowrap;font-size:9px;} .m-st.ok{color:var(--ok);} .m-st.gap{color:var(--gap);} .m-st.check{color:var(--check);} .m-st.na{color:var(--muted);}
     .m-sig{font-size:9px;color:#333;} .m-eff{font-size:9px;color:#333;}
     .gb{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;} .gb-t{font-size:9px;font-weight:700;margin-bottom:4px;} .gb-n{font-size:9px;color:var(--muted);margin-top:3px;font-weight:700;}`;
-  return doc(`Маркетинговые механики A0 · ${r.client}`, cover + meth + groupBar + tables + swSection(r.strengths, r.weaknesses) + recsSection(r.recommendations) + concl + foot, extra);
+  return doc(`Маркетинговые механики · ${r.client}`, cover + meth + groupBar + tables + swSection(r.strengths, r.weaknesses) + recsSection(r.recommendations) + concl + foot, extra);
 }

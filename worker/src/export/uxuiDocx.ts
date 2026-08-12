@@ -46,8 +46,8 @@ export async function exportUxUiDocx(ds: AuditDataset, r: UxUiReport, outPath: s
   const site = ds.client.finalUrl || ds.client.rootUrl;
 
   kids.push(new Paragraph({ text: `UX/UI-разбор страниц против эталона`, heading: HeadingLevel.TITLE }));
-  kids.push(P(`${site} · Commerce OS · слой L0 (внешний обход без доступов) · ${new Date(ds.takenAt).toLocaleDateString('ru-RU')}`, { italics: true }));
-  kids.push(P('Сверка с AQC (Atomic Quality Criteria), пара к PB-15 (UX/CRO) и PB-52 (Design System). Каждый критерий — атомарный стандарт с severity и условием Pass. ✓ выполнено · ≈ частично · ✕ провал · — неприменимо. Оценки — наблюдение L0, не факт по данным клиента; «не обнаружено» ≠ «отсутствует».', { italics: true }));
+  kids.push(P(`${site} · Commerce OS · внешний обход витрины без доступов · ${new Date(ds.takenAt).toLocaleDateString('ru-RU')}`, { italics: true }));
+  kids.push(P('Сверка с эталоном композиции Commerce OS. Каждый критерий — атомарный стандарт с severity и условием Pass. ✓ выполнено · ≈ частично · ✕ провал · — неприменимо. Оценки — наблюдение внешнего обхода, не факт по данным клиента; «не обнаружено» ≠ «отсутствует».', { italics: true }));
 
   if (!r.pages.length) {
     kids.push(P('Страницы не удалось разобрать (сайт недоступен или бот-защита). Разбор появится после успешного обхода или с доступами.'));
@@ -93,7 +93,7 @@ export async function exportUxUiDocx(ds: AuditDataset, r: UxUiReport, outPath: s
   }
 
   kids.push(P('', {}));
-  kids.push(P('Метод: UX-разбор ведётся кодами AQC, а не оценочными суждениями. Раскрывается с доступами (session replay, heatmap, эксперименты PB-38) — коды и структура сохраняются, уточняется уверенность.', { italics: true }));
+  kids.push(P('Метод: UX-разбор ведётся по эталону композиции Commerce OS, а не оценочными суждениями. Раскрывается с доступами (session replay, heatmap, эксперименты) — структура сохраняется, уточняется уверенность.', { italics: true }));
 
   const doc = new Document({ sections: [{ children: kids }] });
   await writeFile(outPath, await Packer.toBuffer(doc));

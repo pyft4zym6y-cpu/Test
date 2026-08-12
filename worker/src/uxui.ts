@@ -359,9 +359,9 @@ const MARK: Record<Verdict, string> = { pass: '✓', warn: '≈', fail: '✕', n
 export function renderUxUiMd(ds: AuditDataset, r: UxUiReport): string {
   const out: string[] = [];
   out.push(`# UX/UI-разбор страниц против эталона — ${ds.client.finalUrl || ds.client.rootUrl}`);
-  out.push(`_Commerce OS · слой L0 (внешний обход без доступов) · сверка с AQC (Atomic Quality Criteria), пара к PB-15/PB-52 · ${new Date(ds.takenAt).toLocaleDateString('ru-RU')}_`);
+  out.push(`_Commerce OS · внешний обход витрины без доступов · сверка с эталоном композиции Commerce OS · ${new Date(ds.takenAt).toLocaleDateString('ru-RU')}_`);
   out.push('');
-  out.push('Каждый критерий — атомарный стандарт качества с severity и условием Pass. Обозначения: ✓ выполнено · ≈ частично · ✕ провал · — неприменимо. Все оценки — наблюдение L0, не факт по данным клиента; «не обнаружено» ≠ «отсутствует».');
+  out.push('Каждый критерий — атомарный стандарт качества с severity и условием Pass. Обозначения: ✓ выполнено · ≈ частично · ✕ провал · — неприменимо. Все оценки — наблюдение внешнего обхода, не факт по данным клиента; «не обнаружено» ≠ «отсутствует».');
   out.push('');
 
   if (!r.pages.length) {

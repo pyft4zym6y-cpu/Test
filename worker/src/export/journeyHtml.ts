@@ -12,7 +12,7 @@ const MARK: Record<StepStatus, string> = { 'пройден': '✓', 'споты�
 export function renderJourneyHtml(r: JourneyReport): string {
   const date = new Date(r.takenAt).toLocaleDateString('ru-RU');
   const cover = `<section class="cover"><div class="cov-bar"></div><div class="cov-body">
-    <div class="kicker">Commerce OS · Карта пути клиента · слой A0</div>
+    <div class="kicker">Commerce OS · Карта пути клиента · внешний аудит витрины</div>
     <h1>${esc(r.verdict)}</h1>
     <div class="cov-meta">
       <div><span class="lbl">Клиент</span><span class="val">${esc(r.client)}</span></div>
@@ -26,7 +26,7 @@ export function renderJourneyHtml(r: JourneyReport): string {
     goal: 'Проверить фактическую проходимость пути покупателя: где путь чистый, где трение, где обрыв — до того, как это покажут потерянные заказы.',
     sources: ['Автоматизированный walk-through реальным браузером (десктоп 1366×900)', 'Эталонные ожидания по шагам пути (Baymard: чекаут 12–14 элементов формы, гостевой заказ; NN/g: предотвращение ошибок)', 'Тупиковые сценарии: пустая выдача, несуществующая страница'],
     scope: `${r.steps.length} шагов основного сценария покупки + стресс-сценарии. Статусы: пройден / спотыкание / тупик / механика не найдена.`,
-    limits: 'Один целевой сценарий на десктопе, заказ не оформляется и не оплачивается. Мобильный проход, оплата, авторизованные сценарии и сверка с фактической воронкой GA4 — на A1.',
+    limits: 'Один целевой сценарий на десктопе, заказ не оформляется и не оплачивается. Мобильный проход, оплата, авторизованные сценарии и сверка с фактической воронкой GA4 — после передачи доступов (следующий этап).',
   });
 
   const rows = r.steps.map((s: JourneyStep) => `<tr class="jr-${CLS[s.status]}">
@@ -46,8 +46,8 @@ export function renderJourneyHtml(r: JourneyReport): string {
     <div class="jflow">${r.steps.filter((s) => s.status !== 'не проверялся').map((s) => `<div class="jf ${CLS[s.status]}"><b>${MARK[s.status]}</b><span>${esc(s.stage)}</span></div>`).join('<i class="jf-a">→</i>')}</div>
     <p class="lead">Каждый шаг оплачен трафиком предыдущих: обрыв в конце пути стоит дороже обрыва в начале.</p></section>`;
 
-  const concl = conclusionSection(r.conclusion, 'A1: мобильный проход + тест оплаты + сверка каждого шага с фактической воронкой GA4 (где по данным теряется больше всего).');
-  const foot = `<section class="block"><div class="footer">Commerce OS · Карта пути клиента A0 · ${esc(r.client)} · ${esc(date)}. Протокол автоматизированного прохождения на дату аудита; заказ не оформлялся. Отсутствие данных не выдаётся за факт и не скрывается.</div></section>`;
+  const concl = conclusionSection(r.conclusion, 'Следующий этап: мобильный проход + тест оплаты + сверка каждого шага с фактической воронкой GA4 (где по данным теряется больше всего).');
+  const foot = `<section class="block"><div class="footer">Commerce OS · Карта пути клиента · ${esc(r.client)} · ${esc(date)}. Протокол автоматизированного прохождения на дату аудита; заказ не оформлялся. Отсутствие данных не выдаётся за факт и не скрывается.</div></section>`;
 
   const extra = `.j-n{color:var(--muted);width:16px;} .j-stage{font-weight:800;white-space:nowrap;}
     .j-act,.j-exp,.j-res{font-size:9px;color:#333;} .j-exp{color:var(--muted);}
@@ -58,5 +58,5 @@ export function renderJourneyHtml(r: JourneyReport): string {
     .jf.ok{border-color:var(--ok);} .jf.ok b{color:var(--ok);} .jf.check{border-color:var(--check);background:#fffaf2;} .jf.check b{color:var(--check);}
     .jf.gap{border-color:var(--gap);background:#fff5f5;color:var(--gap);} .jf.gap b{color:var(--gap);}
     .jf-a{color:var(--muted);font-style:normal;font-weight:700;}`;
-  return doc(`Карта пути клиента A0 · ${r.client}`, cover + meth + flow + table + swSection(r.strengths, r.weaknesses) + recsSection(r.recommendations) + concl + foot, extra);
+  return doc(`Карта пути клиента · ${r.client}`, cover + meth + flow + table + swSection(r.strengths, r.weaknesses) + recsSection(r.recommendations) + concl + foot, extra);
 }

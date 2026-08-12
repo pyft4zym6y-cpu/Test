@@ -15,7 +15,7 @@ export function renderIntelligenceHtml(r: CIReport): string {
   const lvlCls = r.maturity.level >= 4 ? 'ok' : r.maturity.level >= 3 ? 'check' : 'gap';
 
   const cover = `<section class="cover"><div class="cov-bar"></div><div class="cov-body">
-    <div class="kicker">Commerce OS · Commerce Intelligence Audit · слой A0</div>
+    <div class="kicker">Commerce OS · Commerce Intelligence Audit · внешний аудит витрины</div>
     <h1>${esc(r.verdict)}</h1>
     <div class="cov-meta">
       <div><span class="lbl">Клиент</span><span class="val">${esc(r.client)}</span></div>
@@ -23,7 +23,7 @@ export function renderIntelligenceHtml(r: CIReport): string {
       <div><span class="lbl">Платформа</span><span class="val">${esc(r.config.platform)}</span></div>
     </div>
     <div class="cov-score"><div class="big ${lvlCls}">${r.maturity.level}<span>/5</span></div><div class="big-cap">уровень зрелости · «${esc(r.maturity.name)}»</div></div>
-    <div class="coverage"><b>Что это.</b> Сайт — источник данных для реконструкции бизнеса: модель → клиент → продукт → коммерция → маркетинг → технологии → операции → расширение → рост. Каждый слой — цепочка «наблюдаем → дедуцируем → проверить данными → решение». Дедукция ≠ факт: помечена и закрывается данными на A1–A2. Отсутствие данных не выдаётся за факт.</div>
+    <div class="coverage"><b>Что это.</b> Сайт — источник данных для реконструкции бизнеса: модель → клиент → продукт → коммерция → маркетинг → технологии → операции → расширение → рост. Каждый слой — цепочка «наблюдаем → дедуцируем → проверить данными → решение». Дедукция ≠ факт: помечена и закрывается данными после передачи доступов и подключения аналитики. Отсутствие данных не выдаётся за факт.</div>
   </div></section>`;
 
   const cfg = `<section class="block"><h2>Реконструкция бизнес-модели</h2>
@@ -46,7 +46,7 @@ export function renderIntelligenceHtml(r: CIReport): string {
       <td class="ci-dec">${esc(l.decision)}</td>
     </tr>`).join('');
     return `<section class="block"><h2>${esc(g)}</h2>
-      <table><thead><tr><th>Слой</th><th>Наблюдаем</th><th>Дедукция</th><th>Проверить (A1–A2)</th><th>Решение</th></tr></thead><tbody>${rows}</tbody></table></section>`;
+      <table><thead><tr><th>Слой</th><th>Наблюдаем</th><th>Дедукция</th><th>Проверить (следующий этап)</th><th>Решение</th></tr></thead><tbody>${rows}</tbody></table></section>`;
   }).join('');
 
   const chains = `<section class="block page"><h2>Цепочки дедукции: от наблюдения к действию</h2>
@@ -77,7 +77,7 @@ export function renderIntelligenceHtml(r: CIReport): string {
     goal: 'Реконструировать, как устроен e-commerce клиента как бизнес — по одному только сайту: модель, клиент, продукт, коммерция, каналы, технологии, операции, расширение.',
     sources: [`Дерево сайта: ${r.config.treeSize} URL, ~${r.config.products} товаров, ${r.config.categories} категорий`, 'Состав блоков разобранных страниц (обход)', 'Технологические сигналы (платформа, трекинг)'],
     scope: `${r.layers.length} информационных слоёв в 9 группах; каждый слой — цепочка «наблюдаем → дедуцируем → проверить данными → решение».`,
-    limits: `Дедукция ≠ факт: на A0 потолок доказательности E3. ${needsData.length} слоёв невозможно оценить снаружи — они помечены «нужны данные» и не участвуют в выводах. Важно: уровень зрелости здесь — ступень развития БИЗНЕС-МОДЕЛИ (лестница 1–5); в «Матрице зрелости» — управляемость отдельных доменов. Это разные шкалы, их числа и не должны совпадать.`,
+    limits: `Дедукция ≠ факт: во внешнем аудите потолок доказательности — высокая уверенность. ${needsData.length} слоёв невозможно оценить снаружи — они помечены «нужны данные» и не участвуют в выводах. Важно: уровень зрелости здесь — ступень развития БИЗНЕС-МОДЕЛИ (лестница 1–5); в «Матрице зрелости» — управляемость отдельных доменов. Это разные шкалы, их числа и не должны совпадать.`,
   });
   const posLayers = observed.filter((l) => !/не |нет |не обнаружен/i.test(l.observed)).slice(0, 4);
   const strengths = [
@@ -93,9 +93,9 @@ export function renderIntelligenceHtml(r: CIReport): string {
     `По внешним признакам бизнес — ${r.config.businessType}. Текущая ступень зрелости — ${r.maturity.level}/5 «${r.maturity.name}»: ${r.maturity.level <= 2 ? 'работает механика первой покупки, но системные слои (данные, удержание, масштабирование) не построены — рост сейчас покупается, а не накапливается' : r.maturity.level === 3 ? 'системные механики частично собраны; бизнес готов расти за счёт данных и каналов, но машинный слой (разметка, автоматизация) ещё не опора' : 'платформа зрелая — фокус смещается на эффективность и расширение'}.`,
     `Из ${r.layers.length} слоёв ${observed.length} подтверждены наблюдением, ${r.layers.filter((l) => l.status === 'deduced').length} — обоснованные дедукции, ${needsData.length} требуют данных. Цепочек «наблюдение → проблема → действие» собрано ${r.chains.length}; каждая содержит способ проверки, то есть программа следующего шага уже размечена по данным, которые её подтвердят или снимут.`,
     `Переход на ступень ${nextLevel} («${r.maturity.ladder.find((l) => l.level === nextLevel)?.name ?? ''}») — это и есть стратегическая рамка программы: точки роста выше отобраны как кратчайший путь к ней, а не как список всего хорошего.`,
-  ], 'A1: интервью с собственником + доступы (аналитика, заказы) — дедукции превращаются в подтверждённые факты, и карта бизнеса становится основой коммерческого предложения.');
+  ], 'Следующий этап: интервью с собственником + доступы (аналитика, заказы) — дедукции превращаются в подтверждённые факты, и карта бизнеса становится основой коммерческого предложения.');
 
-  const foot = `<section class="block"><div class="footer">Commerce OS · Commerce Intelligence Audit A0 · ${esc(r.client)} · ${esc(date)}. Слой A0: внешний срез; дедукции — гипотезы с указанным способом проверки. Отсутствие данных не выдаётся за факт и не скрывается.</div></section>`;
+  const foot = `<section class="block"><div class="footer">Commerce OS · Commerce Intelligence Audit · ${esc(r.client)} · ${esc(date)}. Внешний аудит витрины: внешний срез; дедукции — гипотезы с указанным способом проверки. Отсутствие данных не выдаётся за факт и не скрывается.</div></section>`;
 
   const extra = `
     .ci-name{font-weight:700;white-space:nowrap;font-size:10px;} .ci-name .ci-st{display:block;font-weight:600;font-size:7.5px;text-transform:uppercase;letter-spacing:.3px;}
@@ -111,5 +111,5 @@ export function renderIntelligenceHtml(r: CIReport): string {
     .rung b{display:block;font-size:16px;} .rung span{font-size:8.5px;line-height:1.2;display:block;}
     .rung.has{border-color:var(--ok);color:var(--ink);} .rung.cur{background:var(--ink);color:#fff;border-color:var(--ink);}
     ol{margin:4px 0;padding-left:18px;} ol li{margin:3px 0;}`;
-  return doc(`Commerce Intelligence Audit A0 · ${r.client}`, cover + meth + cfg + layerSections + chains + ladder + opps + swSection(strengths, weaknesses) + recsSection(recs) + concl + foot, extra);
+  return doc(`Commerce Intelligence Audit · ${r.client}`, cover + meth + cfg + layerSections + chains + ladder + opps + swSection(strengths, weaknesses) + recsSection(recs) + concl + foot, extra);
 }

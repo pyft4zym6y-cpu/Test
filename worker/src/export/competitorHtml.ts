@@ -22,7 +22,7 @@ export function renderCompetitorHtml(b: BenchmarkReport, client: string, takenAt
       : `Место ${b.clientRank} из ${b.totalSites} ${small ? 'в выборке' : 'по внешнему индексу'} (${b.clientIndex}/100) — впереди по ${b.clientBehind.length} параметрам другие сайты.`);
 
   const cover = `<section class="cover"><div class="cov-bar"></div><div class="cov-body">
-    <div class="kicker">Commerce OS · Конкурентный анализ · слой A0</div>
+    <div class="kicker">Commerce OS · Конкурентный анализ · внешний аудит витрины</div>
     <h1>${esc(verdict)}</h1>
     <div class="cov-meta">
       <div><span class="lbl">Клиент</span><span class="val">${esc(client)}</span></div>
@@ -30,7 +30,7 @@ export function renderCompetitorHtml(b: BenchmarkReport, client: string, takenAt
       <div><span class="lbl">Место</span><span class="val">${b.clientRank}/${b.totalSites}</span></div>
     </div>
     <div class="cov-score"><div class="big ${scoreColor(b.clientIndex)}">${b.clientIndex}<span>/100</span></div><div class="big-cap">взвешенный внешний индекс</div></div>
-    <div class="coverage"><b>Что видно на A0:</b> сравнение по публичным внешним признакам (обход клиента и конкурентов). Внутренняя экономика, цены и performance конкурентов недоступны — только то, что видно снаружи. Отсутствие данных не выдаётся за факт.</div>
+    <div class="coverage"><b>Что видно во внешнем аудите:</b> сравнение по публичным внешним признакам (обход клиента и конкурентов). Внутренняя экономика, цены и performance конкурентов недоступны — только то, что видно снаружи. Отсутствие данных не выдаётся за факт.</div>
   </div></section>`;
 
   const rankRows = b.ranking.map((s, i) => `<tr class="${s.isClient ? 'me' : ''}">
@@ -81,16 +81,16 @@ export function renderCompetitorHtml(b: BenchmarkReport, client: string, takenAt
       ? `Свободная ниша: ${b.whiteSpace.join('; ')}. Это параметры, слабые у всех участников выборки — вложение здесь даёт отличие, которое конкуренты не смогут быстро скопировать, потому что им придётся начинать с нуля.`
       : 'Свободных ниш в выборке не обнаружено: рынок плотный, выигрывать придётся исполнением, а не пустыми клетками.',
     'Сравнение статично (срез на дату) и внешне. Повторный замер после внедрения рекомендаций покажет динамику позиции; экономика конкурентов остаётся вне досягаемости и не имитируется.',
-  ], 'T2+: регулярный бенчмарк (раз в квартал) + анализ трафика конкурентов внешними сервисами — позиция превращается из фото в кино.');
+  ], 'Расширенный аудит с конкурентами: регулярный бенчмарк (раз в квартал) + анализ трафика конкурентов внешними сервисами — позиция превращается из фото в кино.');
 
   const foot = `<section class="block"><h2>Итог</h2>
     <div class="concl-grid" style="font-size:10.5px">
       <span class="k ok">Ведём</span><span class="v">${b.clientLeads.length ? esc(b.clientLeads.join(', ')) : '—'}</span>
       <span class="k gap">Отстаём</span><span class="v">${b.clientBehind.length ? esc(b.clientBehind.join(', ')) : '—'}</span>
     </div>
-    <div class="footer">Commerce OS · Конкурентный анализ A0 · ${esc(client)} · ${esc(date)}. Слой A0: только публичные внешние признаки. Отсутствие данных не выдаётся за факт и не скрывается; performance и экономика конкурентов — вне A0.</div></section>`;
+    <div class="footer">Commerce OS · Конкурентный анализ · ${esc(client)} · ${esc(date)}. Внешний аудит витрины: только публичные внешние признаки. Отсутствие данных не выдаётся за факт и не скрывается; performance и экономика конкурентов — вне внешнего аудита.</div></section>`;
 
   const extra = `.r-pos{color:var(--muted);width:20px;} .r-name{font-weight:700;} .r-idx{font-weight:800;text-align:right;} tr.me{background:var(--soft);}
     .pm-name{font-weight:600;} .pm-c,.pm-m,.pm-e{font-weight:800;text-align:center;width:52px;} .pm-m,.pm-e{color:var(--muted);} .pm-pos{font-weight:700;white-space:nowrap;}`;
-  return doc(`Конкурентный анализ A0 · ${client}`, cover + meth + ranking + params + ws + swSection(strengths, weaknesses) + recsSection(recs) + concl + foot, extra);
+  return doc(`Конкурентный анализ · ${client}`, cover + meth + ranking + params + ws + swSection(strengths, weaknesses) + recsSection(recs) + concl + foot, extra);
 }

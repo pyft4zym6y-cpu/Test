@@ -12,14 +12,14 @@ export function renderSeoArchHtml(r: SeoArchReport): string {
   const paramShare = r.totals.links ? Math.round((r.totals.paramUrls / r.totals.links) * 100) : 0;
 
   const cover = `<section class="cover"><div class="cov-bar"></div><div class="cov-body">
-    <div class="kicker">Commerce OS · SEO Architecture · слой A0</div>
+    <div class="kicker">Commerce OS · SEO Architecture · внешний аудит витрины</div>
     <h1>${esc(r.verdict)}</h1>
     <div class="cov-meta">
       <div><span class="lbl">Клиент</span><span class="val">${esc(r.client)}</span></div>
       <div><span class="lbl">Дата</span><span class="val">${esc(date)}</span></div>
       <div><span class="lbl">Ссылок в дереве</span><span class="val">${r.totals.links}</span></div>
     </div>
-    <div class="coverage"><b>Что видно на A0:</b> дерево строится из внутренних ссылок обхода — структурные дефекты (параметрические дубли, глубина, назначение узлов) видны из URL. On-page SEO проверено на ${r.totals.crawled} представительных страницах (выборка L0). Полное дерево и лог-анализ — на A1. robots: ${r.indexability.robots ? 'есть' : 'нет'} · sitemap.xml: ${r.indexability.sitemap ? 'есть' : '<span class="gap">нет</span>'} · разделов L1: ${r.totals.l1} · глубина: ${r.totals.maxDepth} · URL с параметрами: ${paramShare}%.</div>
+    <div class="coverage"><b>Что видно во внешнем аудите:</b> дерево строится из внутренних ссылок обхода — структурные дефекты (параметрические дубли, глубина, назначение узлов) видны из URL. On-page SEO проверено на ${r.totals.crawled} представительных страницах (выборочный внешний обход). Полное дерево и лог-анализ — после передачи доступов (следующий этап). robots: ${r.indexability.robots ? 'есть' : 'нет'} · sitemap.xml: ${r.indexability.sitemap ? 'есть' : '<span class="gap">нет</span>'} · разделов L1: ${r.totals.l1} · глубина: ${r.totals.maxDepth} · URL с параметрами: ${paramShare}%.</div>
   </div></section>`;
 
   const maxCount = Math.max(1, ...r.tree.map((t) => t.count));
@@ -66,7 +66,7 @@ export function renderSeoArchHtml(r: SeoArchReport): string {
     goal: 'Оценить, помогает ли архитектура сайта собирать поисковый спрос — или распыляет вес по дублям и пустым веткам.',
     sources: [`Внутренние ссылки обхода + sitemap.xml (${r.totals.links} URL в дереве)`, `On-page проверка ${r.totals.crawled} представительных страниц`, 'robots.txt / sitemap.xml с корня'],
     scope: `Дерево L1 (${r.totals.l1} разделов, глубина до ${r.totals.maxDepth}), проблемные узлы, индексируемость, доля параметрических URL (${paramShare}%).`,
-    limits: 'A0 строит дерево по видимым ссылкам — полное дерево, реальные дубли в индексе и позиции проверяются на A1 (Search Console, полный crawl).',
+    limits: 'Внешний аудит строит дерево по видимым ссылкам — полное дерево, реальные дубли в индексе и позиции проверяются после передачи доступов (следующий этап; Search Console, полный crawl).',
   });
 
   const okNodes = r.tree.filter((t) => t.severity === 'ok');
@@ -91,10 +91,10 @@ export function renderSeoArchHtml(r: SeoArchReport): string {
     r.issues.length
       ? `Архитектурные проблемы каталога — это не «технические мелочи»: каждая ветка с дублями или без назначения конкурирует за позиции сама с собой. Приоритет — узлы верхних уровней (L1–L2): они раздают вес всем страницам ниже.`
       : 'Явных структурных конфликтов не выявлено; резерв роста лежит в расширении семантики (новые посадочные под спрос), а не в починке существующего.',
-    'Вывод сделан по видимой архитектуре (слой A0). Фактические позиции, каннибализация запросов и полнота индекса проверяются на A1 через Search Console — там же подтверждается или снимается каждый из перечисленных рисков.',
-  ], 'A1: Search Console (запросы, позиции, покрытие индекса) + полный crawl — превращает карту рисков в план восстановления трафика с цифрами.');
+    'Вывод сделан по видимой архитектуре (внешний аудит витрины). Фактические позиции, каннибализация запросов и полнота индекса проверяются после передачи доступов (следующий этап) через Search Console — там же подтверждается или снимается каждый из перечисленных рисков.',
+  ], 'Следующий этап: Search Console (запросы, позиции, покрытие индекса) + полный crawl — превращает карту рисков в план восстановления трафика с цифрами.');
 
-  const foot = `<section class="block"><div class="footer">Commerce OS · SEO Architecture A0 · ${esc(r.client)} · ${esc(date)}. Слой A0: дерево по видимым ссылкам, on-page — выборка. Отсутствие данных не выдаётся за факт; полное дерево, дубли и техническая SEO уточняются на A1.</div></section>`;
+  const foot = `<section class="block"><div class="footer">Commerce OS · SEO Architecture · ${esc(r.client)} · ${esc(date)}. Внешний аудит витрины: дерево по видимым ссылкам, on-page — выборка. Отсутствие данных не выдаётся за факт; полное дерево, дубли и техническая SEO уточняются после передачи доступов (следующий этап).</div></section>`;
 
   const extra = `
     .t-node{white-space:nowrap;} .t-purpose{color:#333;font-size:10px;} .t-count{font-weight:800;text-align:right;} .t-note{font-size:9.5px;}
@@ -103,5 +103,5 @@ export function renderSeoArchHtml(r: SeoArchReport): string {
     .op-c.ok{color:var(--ok);} .op-c.gap{color:var(--gap);} .op-c.na{color:var(--muted);}
     .st{font-size:11px;} .st.ok{color:var(--ok);} .st.check{color:var(--check);} .st.gap{color:var(--gap);}
     .i-node{white-space:nowrap;} .i-lvl{display:inline-block;margin-left:5px;font-size:7.5px;color:var(--muted);} .i-act{color:#333;}`;
-  return doc(`SEO Architecture A0 · ${r.client}`, cover + meth + tree + onpage + issues + rec + swSection(strengths, weaknesses) + recsSection(recsList) + concl + foot, extra);
+  return doc(`SEO Architecture · ${r.client}`, cover + meth + tree + onpage + issues + rec + swSection(strengths, weaknesses) + recsSection(recsList) + concl + foot, extra);
 }

@@ -22,7 +22,7 @@ export type ExecInputs = {
 };
 
 const rub = (n: number) => `${Math.round(n).toLocaleString('ru-RU')} ₴`;
-const eLevel = (conf: number) => (conf >= 0.8 ? 'E3' : conf >= 0.6 ? 'E2' : 'E1'); // L0 внешний — потолок E3
+const eLevel = (conf: number) => (conf >= 0.8 ? 'высокая уверенность' : conf >= 0.6 ? 'подтверждено проверкой' : 'наблюдение'); // L0 внешний — потолок E3
 const clientName = (ds: AuditDataset) => { try { return new URL(ds.client.finalUrl).hostname.replace(/^www\./, ''); } catch { return ds.client.finalUrl; } };
 
 /** Карточка «главный вывод». «Влияние» показываем только если отличается от «Разрыва». */
@@ -48,22 +48,23 @@ function keyFindings(inp: ExecInputs): string {
     cards.push(conclCard({
       title: `${f.area}: ${f.fact}`.slice(0, 110),
       sev: f.confidence >= 0.75 ? 'crit' : 'warn',
-      see: f.fact, proof: 'Внешний обход L0 (наблюдение)', ref: 'Эталон композиции / голд-стандарт',
+      see: f.fact, proof: 'Внешний обход витрины без доступов (наблюдение)', ref: 'Эталон композиции / голд-стандарт',
       gap: f.why, impact: f.why, conf: `${eLevel(f.confidence)} · ${Math.round(f.confidence * 100)}%`,
-      unknown: 'Фактическое влияние на конверсию — после аналитики (A2)', next: 'Проверить на данных GA4/CRM (A1–A2)',
+      unknown: 'Фактическое влияние на конверсию — после подключения аналитики и рекламных кабинетов', next: 'Проверить на данных GA4/CRM после передачи доступов и подключения аналитики',
     }));
   }
   // добор из системных дефектов UX/UI, если находок мало
   if (cards.length < 3 && inp.siteAudit) {
     for (const s of inp.siteAudit.systemic.slice(0, 3)) {
-      cards.push(conclCard({ title: s.title, sev: 'warn', see: s.title, proof: 'Проявляется на всех разобранных страницах', ref: 'Голд-стандарт', gap: s.detail, impact: s.detail, conf: 'E2 · системный', unknown: 'Точный масштаб — на полном crawl (A1)', next: 'Правка в шаблоне/настройках' }));
+      cards.push(conclCard({ title: s.title, sev: 'warn', see: s.title, proof: 'Проявляется на всех разобранных страницах', ref: 'Голд-стандарт', gap: s.detail, impact: s.detail, conf: 'подтверждено · системный', unknown: 'Точный масштаб — на полном crawl после передачи доступов (следующий этап)', next: 'Правка в шаблоне/настройках' }));
     }
   }
   return cards.length ? cards.join('') : '<p class="lead">Главные выводы появятся после анализа (нужен ANTHROPIC_API_KEY и данные обхода).</p>';
 }
 
 function section(title: string, conclusion: string, body: string, status?: 'DONE' | 'PARTIAL' | 'BLOCKED'): string {
-  const chip = status ? `<span class="chip ${status === 'DONE' ? 'done' : status === 'PARTIAL' ? 'partial' : 'blocked'}">${status}</span>` : '';
+  const statusWord = status === 'DONE' ? 'Готово' : status === 'PARTIAL' ? 'Частично' : 'Нужны доступы';
+  const chip = status ? `<span class="chip ${status === 'DONE' ? 'done' : status === 'PARTIAL' ? 'partial' : 'blocked'}">${statusWord}</span>` : '';
   return `<section class="block"><h2>${esc(title)} ${chip}</h2><p class="lead">${esc(conclusion)}</p>${body}</section>`;
 }
 
@@ -71,7 +72,7 @@ export function renderExecDiagnostic(ds: AuditDataset, inp: ExecInputs): string 
   const name = clientName(ds);
   const date = new Date(ds.takenAt).toLocaleDateString('ru-RU');
   const ux = inp.siteAudit;
-  const verdict = inp.analysis?.summary || ux?.verdict || 'Внешняя диагностика витрины по слою A0.';
+  const verdict = inp.analysis?.summary || ux?.verdict || 'Внешняя диагностика витрины во внешнем аудите.';
   const posture = ux ? ux.totalPct : null;
 
   // Cover: заголовок = первое предложение вердикта, но обложка не резиновая —
@@ -79,24 +80,24 @@ export function renderExecDiagnostic(ds: AuditDataset, inp: ExecInputs): string 
   const h1raw = verdict.split('. ')[0];
   const h1txt = (h1raw.length > 160 ? h1raw.slice(0, 157) + '…' : h1raw) + '.';
   const cover = `<section class="cover"><div class="cov-bar"></div><div class="cov-body">
-    <div class="kicker">Commerce OS · Executive Diagnostic · слой A0</div>
+    <div class="kicker">Commerce OS · Executive Diagnostic · внешний аудит витрины</div>
     <h1${h1txt.length > 90 ? ' style="font-size:22px"' : ''}>${esc(h1txt)}</h1>
     <div class="cov-meta">
       <div><span class="lbl">Клиент</span><span class="val">${esc(name)}</span></div>
       <div><span class="lbl">Дата</span><span class="val">${esc(date)}</span></div>
-      <div><span class="lbl">Тир</span><span class="val">T${ds.tier}</span></div>
+      <div><span class="lbl">Объём</span><span class="val">внешний аудит витрины</span></div>
     </div>
     ${posture != null ? `<div class="cov-score"><div class="big ${scoreColor(posture)}">${posture}<span>%</span></div><div class="big-cap">внешнее соответствие эталону (UX/UI)</div></div>` : ''}
     ${inp.money ? '' : `<div class="coverage" style="border-left-color:var(--gap);margin-bottom:8px"><b>Экономика не посчитана — и это первое решение, которое нужно принять.</b> Для денежной оценки каждого разрыва достаточно трёх цифр от владельца: месячный трафик, конверсия в заказ, средний чек. После их передачи бэклог и причинная карта получают денежные вилки вместо ориентиров. Аудит сознательно не выдумывает цифры (принцип честных данных).</div>`}
-    <div class="coverage"><b>Coverage Map:</b> A0 — внешний срез без доступов. Разделы со статусом:
-      <span class="chip done">DONE</span> внешне доказано · <span class="chip partial">PARTIAL</span> частично ·
-      <span class="chip blocked">BLOCKED</span> нужен доступ/данные. Отсутствие данных не выдаётся за факт и не скрывается.</div>
+    <div class="coverage"><b>Coverage Map:</b> внешний срез витрины без доступов. Разделы со статусом:
+      <span class="chip done">Готово</span> внешне доказано · <span class="chip partial">Частично</span> частично ·
+      <span class="chip blocked">Нужны доступы</span> нужен доступ/данные. Отсутствие данных не выдаётся за факт и не скрывается.</div>
   </div></section>`;
 
   // Разделы A0 §13
   const s: string[] = [];
   s.push(section('1. Что это за бизнес (предварительная Commerce DNA)',
-    'Профиль по внешним признакам — уточняется данными на A1.',
+    'Профиль по внешним признакам — уточняется данными после передачи доступов (следующий этап).',
     `<table><tbody>
       <tr><th>Платформа</th><td>${esc(ds.client.tech.platform ?? 'не определена')}</td></tr>
       <tr><th>Аналитика</th><td>${esc(ds.client.tech.analytics.join(', ') || 'не обнаружена')}</td></tr>
@@ -104,7 +105,7 @@ export function renderExecDiagnostic(ds: AuditDataset, inp: ExecInputs): string 
       <tr><th>robots / sitemap</th><td>${ds.client.robotsTxt ? 'robots есть' : 'robots нет'} · ${ds.client.sitemapXml ? 'sitemap есть' : 'sitemap нет'}</td></tr>
     </tbody></table>`, 'PARTIAL'));
 
-  s.push(section('2. Главные выводы', '5–10 управленческих выводов по слою A0 (каждый — с доказательством и уровнем уверенности).', keyFindings(inp), inp.analysis ? 'DONE' : 'BLOCKED'));
+  s.push(section('2. Главные выводы', '5–10 управленческих выводов во внешнем аудите (каждый — с доказательством и уровнем уверенности).', keyFindings(inp), inp.analysis ? 'DONE' : 'BLOCKED'));
 
   // Карта разрывов
   const gapRows: string[] = [];
@@ -123,7 +124,7 @@ export function renderExecDiagnostic(ds: AuditDataset, inp: ExecInputs): string 
         <tr><th>При целевой воронке</th><td>${rub(inp.money.targetMonth)}/мес</td></tr>
         <tr><th>Недополучено</th><td class="gap"><b>${rub(inp.money.potentialYear)}/год</b></td></tr>
       </tbody></table>`, 'DONE')
-    : section('4. Экономика разрыва', 'Денежная оценка требует baseline (трафик, конверсия, чек) — заводится на A1.', '<p class="lead">Нет baseline — экономика разрыва не считается на A0, чтобы не выдавать оценку за факт.</p>', 'BLOCKED'));
+    : section('4. Экономика разрыва', 'Денежная оценка требует baseline (трафик, конверсия, чек) — после передачи доступов (следующий этап).', '<p class="lead">Нет baseline — экономика разрыва не считается во внешнем аудите, чтобы не выдавать оценку за факт.</p>', 'BLOCKED'));
 
   // UX/UI карта
   s.push(section('5. Карта UX/UI', ux ? ux.verdict : 'UX/UI-срез по типам страниц.',
@@ -139,21 +140,21 @@ export function renderExecDiagnostic(ds: AuditDataset, inp: ExecInputs): string 
       }
       const rows = shown.map((t) => `<tr><td>${esc(t.title)}</td><td><span class="bar"><i class="fill ${scoreColor(t.pct)}" style="width:${t.pct}%"></i></span></td><td class="${scoreColor(t.pct)}">${t.pct}%</td></tr>`).join('')
         + Array.from(extra.entries()).map(([base, e]) => { const avg = Math.round(e.sum / e.n); return `<tr><td>${esc(base)} — ещё ${e.n} страниц</td><td><span class="bar"><i class="fill ${scoreColor(avg)}" style="width:${avg}%"></i></span></td><td class="${scoreColor(avg)}">~${avg}%</td></tr>`; }).join('');
-      return `<table><thead><tr><th>Тип страницы</th><th>Соответствие</th><th>%</th></tr></thead><tbody>${rows}</tbody></table><p class="lead">Детально — в отдельном документе «UX/UI Audit A0».</p>`;
+      return `<table><thead><tr><th>Тип страницы</th><th>Соответствие</th><th>%</th></tr></thead><tbody>${rows}</tbody></table><p class="lead">Детально — в отдельном документе «UX/UI Audit».</p>`;
     })() : '<p class="lead">Страницы не разобраны.</p>', ux ? 'DONE' : 'BLOCKED'));
 
   // SEO карта
   const seoFails = countGroupFails(ds, 'SEO');
-  s.push(section('6. Карта SEO-архитектуры', ds.client.sitemapXml ? 'Базовая индексируемость есть; дерево уточняется на A1.' : 'Нет sitemap.xml — риск индексации всего каталога.',
-    `<p class="lead">Провалов SEO-проверок на разобранных страницах: <b>${seoFails}</b>. sitemap.xml: ${ds.client.sitemapXml ? 'есть' : '<span class="gap">нет</span>'}. Полное дерево и техническая SEO — отдельный документ «SEO Architecture A0».</p>`, 'PARTIAL'));
+  s.push(section('6. Карта SEO-архитектуры', ds.client.sitemapXml ? 'Базовая индексируемость есть; дерево уточняется после передачи доступов (следующий этап).' : 'Нет sitemap.xml — риск индексации всего каталога.',
+    `<p class="lead">Провалов SEO-проверок на разобранных страницах: <b>${seoFails}</b>. sitemap.xml: ${ds.client.sitemapXml ? 'есть' : '<span class="gap">нет</span>'}. Полное дерево и техническая SEO — отдельный документ «SEO Architecture».</p>`, 'PARTIAL'));
 
-  s.push(section('7. Карта контентных разрывов', 'Способность контента снимать неопределённость и вести к решению.', '<p class="lead">Контент-аудит (полнота/полезность/убедительность/интент) — отдельный документ «Content Audit A0».</p>', 'PARTIAL'));
+  s.push(section('7. Карта контентных разрывов', 'Способность контента снимать неопределённость и вести к решению.', '<p class="lead">Контент-аудит (полнота/полезность/убедительность/интент) — отдельный документ «Content Audit».</p>', 'PARTIAL'));
 
-  s.push(section('8. Карта каналов', ds.client.tech.analytics.length ? 'Трекинг установлен — фактическая эффективность каналов на A2.' : 'Аналитика не обнаружена — измерить каналы нельзя.',
-    `<p class="lead">Аналитика: ${esc(ds.client.tech.analytics.join(', ') || 'не обнаружена')}. Фактическая эффективность каналов требует доступа к кабинетам (A2).</p>`, ds.client.tech.analytics.length ? 'PARTIAL' : 'BLOCKED'));
+  s.push(section('8. Карта каналов', ds.client.tech.analytics.length ? 'Трекинг установлен — фактическая эффективность каналов после подключения аналитики и рекламных кабинетов.' : 'Аналитика не обнаружена — измерить каналы нельзя.',
+    `<p class="lead">Аналитика: ${esc(ds.client.tech.analytics.join(', ') || 'не обнаружена')}. Фактическая эффективность каналов требует доступа к рекламным кабинетам (следующий этап).</p>`, ds.client.tech.analytics.length ? 'PARTIAL' : 'BLOCKED'));
 
   s.push(section('9. Конкурентная позиция', inp.bench ? `Индекс клиента ${inp.bench.clientIndex}/100, место ${inp.bench.clientRank} из ${inp.bench.totalSites}.` : 'Конкуренты не заданы для внешнего сравнения.',
-    inp.bench ? `<p class="lead">Детальный разбор — документ «Конкурентный анализ A0».</p>` : '<p class="lead">Добавьте конкурентов для бенчмарка (T2+).</p>', inp.bench ? 'DONE' : 'PARTIAL'));
+    inp.bench ? `<p class="lead">Детальный разбор — документ «Конкурентный анализ».</p>` : '<p class="lead">Добавьте конкурентов для бенчмарка (расширенный аудит с конкурентами).</p>', inp.bench ? 'DONE' : 'PARTIAL'));
 
   s.push(section('10. Коммерческое предложение и доверие', 'Сигналы доверия витрины (гарантии, отзывы, реквизиты).', trustBody(inp.siteAudit), 'PARTIAL'));
 
@@ -163,10 +164,10 @@ export function renderExecDiagnostic(ds: AuditDataset, inp: ExecInputs): string 
   const conf = inp.coverage?.confidence;
   s.push(section('12. Что доказано / гипотеза / неизвестно', conf ? `Confidence Score ${conf.score}/${conf.base} — «${esc(conf.band)}».` : 'Разделение фактов, гипотез и незнания.',
     `<p class="lead">${
-      inp.analysis?.missingFacts?.length ? `Недостающие факты: ${esc(inp.analysis.missingFacts.slice(0, 6).join('; '))}.` : 'На A0 большинство выводов — наблюдения/гипотезы уровня L0.'
+      inp.analysis?.missingFacts?.length ? `Недостающие факты: ${esc(inp.analysis.missingFacts.slice(0, 6).join('; '))}.` : 'Во внешнем аудите большинство выводов — наблюдения/гипотезы уровня внешнего обхода витрины.'
     }</p>`, 'DONE'));
 
-  s.push(section('13. Какие данные нужны (Data Request)', 'Что открыть, чтобы перевести гипотезы в факт на A1–A2.',
+  s.push(section('13. Какие данные нужны (Data Request)', 'Что открыть, чтобы перевести гипотезы в факт после передачи доступов и подключения аналитики.',
     `<ul>${(inp.analysis?.openQuestions?.length ? inp.analysis.openQuestions : ['Доступ к GA4', 'Выгрузка заказов за 6–12 мес', 'Доступ к CRM и рекламным кабинетам']).slice(0, 8).map((q) => `<li>${esc(q)}</li>`).join('')}</ul>`, 'DONE'));
 
   // 14. Итоговый вывод — законченная мысль зонтичного отчёта, а не обрыв на списке.
@@ -182,10 +183,10 @@ export function renderExecDiagnostic(ds: AuditDataset, inp: ExecInputs): string 
       ? `Экономика разрыва оценена: недополучено ≈ ${rub(inp.money.potentialYear)}/год при доведении воронки до целевой — это верхняя рамка для бюджета программы изменений.`
       : 'Экономика разрыва на этом слое сознательно не считалась (нет baseline): любая цифра была бы выдумкой. Она появляется первой после передачи данных — и превращает приоритеты этого отчёта в бюджетные решения.',
     `Порядок действий зафиксирован в связанных документах: причинно-следственная карта → scope по волнам → реестр гипотез. Управленческое решение, которое требуется сейчас, — не «какие правки внести», а открыть данные (раздел 13) и согласовать волну 1.`,
-  ], `A1: передать доступы из Data Request (раздел 13) — за ним следуют подтверждение гипотез, экономика и старт волны 1.`, '14. Итоговый вывод')}
-    <section class="block"><div class="footer">Commerce OS · Executive Diagnostic A0 · ${esc(name)} · ${esc(date)}. Слой A0: внешний обход без доступов. Оценки — наблюдение, не факт по данным клиента; отсутствие данных не выдаётся за факт и не скрывается. Заблокированные разделы отмечены статусом BLOCKED и закрываются на следующем уровне.</div></section>`);
+  ], `Следующий этап: передать доступы из Data Request (раздел 13) — за ним следуют подтверждение гипотез, экономика и старт волны 1.`, '14. Итоговый вывод')}
+    <section class="block"><div class="footer">Commerce OS · Executive Diagnostic · ${esc(name)} · ${esc(date)}. Внешний обход витрины без доступов. Оценки — наблюдение, не факт по данным клиента; отсутствие данных не выдаётся за факт и не скрывается. Заблокированные разделы отмечены статусом «Нужны доступы» и закрываются на следующем уровне.</div></section>`);
 
-  return doc(`Executive Diagnostic A0 · ${name}`, cover + s.join(''));
+  return doc(`Executive Diagnostic · ${name}`, cover + s.join(''));
 }
 
 function countGroupFails(ds: AuditDataset, group: string): number {

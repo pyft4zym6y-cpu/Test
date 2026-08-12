@@ -17,7 +17,7 @@ export function renderContentAuditHtml(r: ContentReport): string {
   const overall = ((r.avg.completeness + r.avg.usefulness + r.avg.persuasiveness + r.avg.intent) / 4);
 
   const cover = `<section class="cover"><div class="cov-bar"></div><div class="cov-body">
-    <div class="kicker">Commerce OS · Content Audit · слой A0</div>
+    <div class="kicker">Commerce OS · Content Audit · внешний аудит витрины</div>
     <h1>${esc(r.verdict)}</h1>
     <div class="cov-meta">
       <div><span class="lbl">Клиент</span><span class="val">${esc(r.client)}</span></div>
@@ -25,14 +25,14 @@ export function renderContentAuditHtml(r: ContentReport): string {
       <div><span class="lbl">Страниц разобрано</span><span class="val">${r.rows.length}</span></div>
     </div>
     <div class="cov-score"><div class="big ${rateCls(overall)}">${overall.toFixed(1)}<span>/5</span></div><div class="big-cap">средняя способность контента вести к решению</div></div>
-    <div class="coverage"><b>Что оцениваем:</b> не «качество текста», а способность контента снижать неопределённость и помогать коммерческому решению. На A0 — по наличию решающих блоков (описание, характеристики, доверие, ответы); реальная убедительность текста уточняется с доступом к контенту на A1. Отсутствие данных не выдаётся за факт.</div>
+    <div class="coverage"><b>Что оцениваем:</b> не «качество текста», а способность контента снижать неопределённость и помогать коммерческому решению. Во внешнем аудите — по наличию решающих блоков (описание, характеристики, доверие, ответы); реальная убедительность текста уточняется с доступом к контенту после передачи доступов (следующий этап). Отсутствие данных не выдаётся за факт.</div>
   </div></section>`;
 
   const meth = methodologySection({
     goal: 'Оценить, ведёт ли контент каждой разобранной страницы покупателя к решению — и где он теряет покупателя.',
     sources: [`Внешний обход: ${r.rows.length} страниц, отрендеренный DOM`, 'Каталог решающих блоков Commerce OS (описание, характеристики, доверие, ответы)', 'Эталонные требования к контенту по типам страниц'],
     scope: `Все разобранные страницы всех типов (${r.rows.length} шт.), четыре измерения × шкала 1–5.`,
-    limits: 'Слой A0 оценивает наличие и состав решающих блоков. Качество формулировок, уникальность и соответствие поисковому спросу проверяются на A1 (доступ к CMS, Search Console).',
+    limits: 'Внешний аудит оценивает наличие и состав решающих блоков. Качество формулировок, уникальность и соответствие поисковому спросу проверяются после передачи доступов (следующий этап; доступ к CMS, Search Console).',
   });
 
   // Методика: что именно значит каждое измерение и каждая оценка — чтобы шкала
@@ -44,7 +44,7 @@ export function renderContentAuditHtml(r: ContentReport): string {
       <tr><td class="lg-n">Убедительность</td><td>Даёт ли страница причины поверить?</td><td>ни отзывов, ни гарантий, ни доказательств</td><td>часть доказательств есть, не в точке решения</td><td>доверие встроено там, где принимается решение</td></tr>
       <tr><td class="lg-n">Интент</td><td>Совпадает ли контент с целью визита?</td><td>страница не отвечает на запрос, с которым пришли</td><td>отвечает, но заставляет искать по странице</td><td>цель визита закрывается сразу и без трения</td></tr>
     </tbody></table>
-    <p class="lead">Оценка на этом слое ставится по наличию и составу решающих блоков (наблюдение внешнего обхода); качество формулировок текста уточняется на A1.</p></section>`;
+    <p class="lead">Оценка на этом слое ставится по наличию и составу решающих блоков (наблюдение внешнего обхода); качество формулировок текста уточняется после передачи доступов (следующий этап).</p></section>`;
 
   const rows = r.rows.map((row: ContentRow) => `<tr>
     <td class="p-type">${esc(row.pageType)}<span class="p-url">${esc(row.url)}</span></td>
@@ -68,15 +68,15 @@ export function renderContentAuditHtml(r: ContentReport): string {
 
   const sw = swSection(r.strengths, r.weaknesses);
   const recs = recsSection(r.recommendations);
-  const concl = conclusionSection(r.conclusion, 'A1: аудит текста на живом сайте (уникальность, тональность, спрос) + связка контента с конверсией по данным аналитики.');
+  const concl = conclusionSection(r.conclusion, 'Следующий этап: аудит текста на живом сайте (уникальность, тональность, спрос) + связка контента с конверсией по данным аналитики.');
 
-  const foot = `<section class="block"><div class="footer">Commerce OS · Content Audit A0 · ${esc(r.client)} · ${esc(date)}. Слой A0: оценка по наличию решающих блоков, наблюдение. Отсутствие данных не выдаётся за факт и не скрывается.</div></section>`;
+  const foot = `<section class="block"><div class="footer">Commerce OS · Content Audit · ${esc(r.client)} · ${esc(date)}. Внешний аудит витрины: оценка по наличию решающих блоков, наблюдение. Отсутствие данных не выдаётся за факт и не скрывается.</div></section>`;
 
   const extra = `.rate{font-weight:800;font-size:12px;} .rate i{font-weight:400;font-size:8px;color:var(--muted);font-style:normal;}
     .rate.ok{color:var(--ok);} .rate.check{color:var(--check);} .rate.gap{color:var(--gap);}
     .p-type{font-weight:700;white-space:nowrap;} .p-type .p-url{display:block;font-weight:400;font-size:8px;color:var(--muted);max-width:110px;overflow:hidden;text-overflow:ellipsis;}
     .p-obj{color:#333;} .p-crit{font-weight:700;white-space:nowrap;} .p-note{color:#333;font-size:10px;}
     tfoot td{border-top:2px solid var(--ink);font-weight:800;padding-top:8px;}`;
-  return doc(`Content Audit A0 · ${r.client}`, cover + meth + legend + table + unparsed + sw + recs + concl + foot, `${extra}
+  return doc(`Content Audit · ${r.client}`, cover + meth + legend + table + unparsed + sw + recs + concl + foot, `${extra}
     .lg td{font-size:9px;color:#333;} .lg-n{font-weight:800;white-space:nowrap;}`);
 }

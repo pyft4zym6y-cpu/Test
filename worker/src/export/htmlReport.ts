@@ -144,7 +144,7 @@ function consultSections(r: SiteAuditReport): { meth: string; sw: string; recs: 
     goal: 'Постранично сверить витрину с эталонной композицией Commerce OS: какие решающие блоки есть, какие потеряны и что это значит для пути клиента.',
     sources: [`Внешний обход: ${cov} страниц, скриншоты первого экрана, отрендеренный DOM`, 'Эталонные прототипы по типам страниц (референсы Commerce OS)', 'Карта уникальных страниц: sitemap + обход + активная проба адресов'],
     scope: `Каждая разобранная страница блок за блоком (ядро/важно/опционально) + сквозные требования + системные дефекты шаблонов.`,
-    limits: '«Не обнаружено» ≠ «отсутствует» (скрытые табы/JS помечены «проверить»). Влияние на конверсию в деньгах утверждается только по данным аналитики (A2).',
+    limits: '«Не обнаружено» ≠ «отсутствует» (скрытые табы/JS помечены «проверить»). Влияние на конверсию в деньгах утверждается только после подключения аналитики и рекламных кабинетов.',
   });
 
   const goodPages = r.pages.filter((p) => p.max && (p.score / p.max) >= 0.7);
@@ -179,8 +179,8 @@ function consultSections(r: SiteAuditReport): { meth: string; sw: string; recs: 
     worst
       ? `Самое слабое звено — ${worst.title} (${Math.round((worst.score / worst.max) * 100)}%)${gapsOfWorst.length ? `: отсутствуют ядровые блоки ${gapsOfWorst.join(', ')}` : ''}. ${r.systemic.length ? `Плюс ${r.systemic.length} системных дефектов уровня шаблона — они правятся один раз и дают эффект на всём сайте, поэтому стоят первыми в очереди.` : 'Системных дефектов уровня шаблона нет — работа предстоит постраничная.'}`
       : 'Страницы для сравнения не разобраны — вывод по композиции невозможен.',
-    `${r.warning ? `Ограничение покрытия: ${r.warning} ` : ''}Оценки этого слоя — наблюдение по внешнему обходу; блоки со статусом «проверить» могут существовать в скрытых состояниях. Подтверждение влияния на выручку — задача A2 (аналитика, записи сессий).`,
-  ], 'A1–A2: записи сессий и воронка GA4 по слабым страницам → подтверждённые точки потерь → дизайн-спринт по приоритетам из этого отчёта.');
+    `${r.warning ? `Ограничение покрытия: ${r.warning} ` : ''}Оценки этого слоя — наблюдение по внешнему обходу; блоки со статусом «проверить» могут существовать в скрытых состояниях. Подтверждение влияния на выручку — после подключения аналитики и рекламных кабинетов (аналитика, записи сессий).`,
+  ], 'Следующий этап: записи сессий и воронка GA4 по слабым страницам → подтверждённые точки потерь → дизайн-спринт по приоритетам из этого отчёта.');
 
   return { meth, sw: swSection(strengths, weaknesses), recs: recsSection(recsList), concl };
 }
@@ -192,12 +192,12 @@ export function renderAuditHtml(r: SiteAuditReport): string {
   const cover = `<section class="cover">
     <div class="cov-bar"></div>
     <div class="cov-body">
-      <div class="kicker">Commerce OS · UX/UI Аудит · слой A0 (внешний срез)</div>
+      <div class="kicker">Commerce OS · UX/UI Аудит · внешний аудит витрины</div>
       <h1>${esc(r.verdict)}</h1>
       <div class="cov-meta">
         <div><span class="lbl">Клиент</span><span class="val">${esc(r.client)}</span></div>
         <div><span class="lbl">Дата</span><span class="val">${esc(date)}</span></div>
-        <div><span class="lbl">Тир</span><span class="val">T${r.tier}</span></div>
+        <div><span class="lbl">Объём</span><span class="val">внешний аудит витрины</span></div>
       </div>
       <div class="cov-score">
         <div class="big ${scoreColor(r.totalPct)}">${r.totalPct}<span>%</span></div>
@@ -205,9 +205,9 @@ export function renderAuditHtml(r: SiteAuditReport): string {
       </div>
       ${r.warning ? `<div class="coverage" style="border-left-color:var(--gap);margin-bottom:8px"><b>⚠ Пробел покрытия.</b> ${esc(r.warning)}</div>` : ''}
       <div class="coverage">
-        <b>Coverage Map (A0):</b> разобрано типов страниц — ${cov}. Слой A0 — внешний обход без доступов:
+        <b>Coverage Map:</b> разобрано типов страниц — ${cov}. Внешний обход витрины без доступов:
         оценки «наблюдение», не факт по данным клиента. «Не обнаружено» ≠ «отсутствует» (возможны скрытые блоки/JS/табы) — такие помечены «проверить».
-        Фактическое влияние на конверсию/выручку не утверждается без аналитики (A2).
+        Фактическое влияние на конверсию/выручку не утверждается без подключения аналитики и рекламных кабинетов.
       </div>
     </div>
   </section>`;
@@ -314,7 +314,7 @@ export function renderAuditHtml(r: SiteAuditReport): string {
   ${cs.recs}
   ${cs.concl}
   <section class="block">
-    <div class="footer">Commerce OS · UX/UI Аудит A0 · ${esc(r.client)} · ${esc(date)}. Слой A0: внешний обход без доступов. Оценки — наблюдение, не факт по данным клиента; отсутствие данных не выдаётся за факт и не скрывается.</div>
+    <div class="footer">Commerce OS · UX/UI Аудит · ${esc(r.client)} · ${esc(date)}. Внешний обход витрины без доступов. Оценки — наблюдение, не факт по данным клиента; отсутствие данных не выдаётся за факт и не скрывается.</div>
   </section>
   </body></html>`;
 }

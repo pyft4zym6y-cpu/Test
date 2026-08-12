@@ -27,15 +27,15 @@ export function renderSocialHtml(r: SocialReport): string {
     goal: 'Определить, какие соцплатформы реально работают на витрину: привязаны ли профили, живы ли они, и не потерян ли уже накопленный актив аудитории.',
     sources: ['Обход витрины: внешние ссылки на соцпрофили со всех разобранных страниц', r.searched ? 'Внешний поиск профилей и базовой активности (web search)' : 'Внешний поиск: заблокирован в этом прогоне (нужен ключ API)'],
     scope: `${r.profiles.length} платформ × два слоя (привязка + внешний поиск); оценка активности — базовая.`,
-    limits: 'Базовый уровень: наличие, привязка, порядок активности. Вовлечённость, контент и реклама — SMM-аудит на A1.',
+    limits: 'Базовый уровень: наличие, привязка, порядок активности. Вовлечённость, контент и реклама — SMM-аудит после передачи доступов (следующий этап).',
   });
   const table = `<section class="block"><h2>Платформы: привязка и активность</h2>
     <p class="lead">«Поиском» — профиль существует, но с витрины на него нет ссылки: актив есть, на сайт не работает.</p>
     <table><thead><tr><th>Платформа</th><th>Статус</th><th>Профиль</th><th>Активность (базово)</th><th>Вывод</th></tr></thead><tbody>${rows}</tbody></table></section>`;
-  return doc(`Аудит соцсетей A0 · ${r.client}`,
-    cover('Commerce OS · Аудит соцсетей (базово) · слой A0', r.verdict, r.client, r.takenAt, [['Привязано', `${r.linked}/${r.profiles.length}`]],
+  return doc(`Аудит соцсетей · ${r.client}`,
+    cover('Commerce OS · Аудит соцсетей (базово) · внешний аудит витрины', r.verdict, r.client, r.takenAt, [['Привязано', `${r.linked}/${r.profiles.length}`]],
       '<b>Что это.</b> Базовый аудит соц-контура: какие платформы привязаны к витрине, какие профили существуют, но не привязаны, и жив ли каждый профиль. Соцсети для e-commerce — доверие нового покупателя, ретаргетинг и повторные касания.')
-    + meth + table + swSection(r.strengths, r.weaknesses) + recsSection(r.recommendations) + conclusionSection(r.conclusion, 'A1: SMM-аудит (вовлечённость, контент, реклама) + UTM-разметка для измеримости соц-трафика.') + footer('Аудит соцсетей A0', r.client, r.takenAt),
+    + meth + table + swSection(r.strengths, r.weaknesses) + recsSection(r.recommendations) + conclusionSection(r.conclusion, 'Следующий этап: SMM-аудит (вовлечённость, контент, реклама) + UTM-разметка для измеримости соц-трафика.') + footer('Аудит соцсетей', r.client, r.takenAt),
     `.x-p{font-weight:800;white-space:nowrap;} .x-st{font-weight:700;white-space:nowrap;font-size:9px;} .x-st.ok{color:var(--ok);} .x-st.check{color:var(--check);} .x-st.gap{color:var(--gap);}
      .x-u{font-size:8.5px;color:var(--muted);word-break:break-all;} .x-a{font-size:9px;color:#333;} .x-n{font-size:9px;color:#333;}`);
 }
@@ -56,10 +56,10 @@ export function renderMentionsHtml(r: MentionsReport): string {
   });
   const table = `<section class="block"><h2>Свод упоминаний</h2>
     ${r.mentions.length ? `<table><thead><tr><th>Площадка</th><th>Тип</th><th>Тон</th><th>Что пишут</th></tr></thead><tbody>${rows}</tbody></table>` : `<p class="lead">${r.searched ? 'Упоминаний за пределами сайта не найдено — инфофон пуст.' : 'Внешний слой заблокирован — свод собирается при доступном ключе API.'}</p>`}</section>`;
-  return doc(`Внешний инфофон A0 · ${r.client}`,
-    cover('Commerce OS · Внешний инфофон бренда · слой A0', r.verdict, r.client, r.takenAt, [['Упоминаний', String(r.mentions.length)]],
+  return doc(`Внешний инфофон · ${r.client}`,
+    cover('Commerce OS · Внешний инфофон бренда · внешний аудит витрины', r.verdict, r.client, r.takenAt, [['Упоминаний', String(r.mentions.length)]],
       '<b>Что это.</b> Что пишут о бренде в интернете и где: свод упоминаний с тональностью. Инфофон — это и репутация перед покупкой, и E-E-A-T сигнал для поисковых и AI-систем.')
-    + meth + table + swSection(r.strengths, r.weaknesses) + recsSection(r.recommendations) + conclusionSection(r.conclusion, 'A1: регулярный мониторинг упоминаний (квартальный повтор свода) + программа внешнего присутствия.') + footer('Внешний инфофон бренда A0', r.client, r.takenAt),
+    + meth + table + swSection(r.strengths, r.weaknesses) + recsSection(r.recommendations) + conclusionSection(r.conclusion, 'Следующий этап: регулярный мониторинг упоминаний (квартальный повтор свода) + программа внешнего присутствия.') + footer('Внешний инфофон бренда', r.client, r.takenAt),
     `.x-p{font-weight:800;} .x-k{font-size:9px;color:var(--muted);white-space:nowrap;} .x-st{font-weight:700;white-space:nowrap;font-size:9px;} .x-st.ok{color:var(--ok);} .x-st.check{color:var(--check);} .x-st.gap{color:var(--gap);} .x-n{font-size:9.5px;color:#333;}`);
 }
 
@@ -75,15 +75,15 @@ export function renderReviewsHtml(r: ReviewsReport): string {
     goal: 'Показать полную картину отзывов: что покупатель видит на сайте и что находит о магазине снаружи — и контролирует ли бренд эту картину.',
     sources: ['Обход витрины: блоки отзывов на разобранных страницах, разметка рейтингов, страница отзывов', r.searched ? 'Web-поиск внешних отзывов (карты, маркетплейсы, отзовики)' : 'Web-поиск: заблокирован (нужен ключ API)'],
     scope: `${r.sources.length} источников в двух слоях (сайт + внешние площадки).`,
-    limits: 'Внешние рейтинги — срез на дату; подлинность отзывов не верифицируется. Управление репутацией — процесс A1.',
+    limits: 'Внешние рейтинги — срез на дату; подлинность отзывов не верифицируется. Управление репутацией — процесс следующего этапа (после передачи доступов).',
   });
   const table = `<section class="block"><h2>Источники отзывов: сайт и внешние площадки</h2>
     <p class="lead">Покупатель всегда находит отзывы — вопрос в том, какие и где. Задача бренда: собрать их на своём домене и управлять внешними.</p>
     <table><thead><tr><th>Источник</th><th>Статус</th><th>Рейтинг</th><th>Кол-во</th><th>Вывод</th></tr></thead><tbody>${rows}</tbody></table></section>`;
-  return doc(`Аудит отзывов A0 · ${r.client}`,
-    cover('Commerce OS · Аудит отзывов · слой A0', r.verdict, r.client, r.takenAt, [['Источников', String(r.sources.length)]],
+  return doc(`Аудит отзывов · ${r.client}`,
+    cover('Commerce OS · Аудит отзывов · внешний аудит витрины', r.verdict, r.client, r.takenAt, [['Источников', String(r.sources.length)]],
       '<b>Что это.</b> Отзывы в два слоя: на сайте (карточки, страница отзывов, разметка) и на внешних площадках (карты, маркетплейсы, отзовики). Социальное доказательство — самый дешёвый усилитель конверсии из существующих.')
-    + meth + table + swSection(r.strengths, r.weaknesses) + recsSection(r.recommendations) + conclusionSection(r.conclusion, 'A1: контур сбора отзывов (пост-покупочные триггеры) + SLA ответов на внешних площадках.') + footer('Аудит отзывов A0', r.client, r.takenAt),
+    + meth + table + swSection(r.strengths, r.weaknesses) + recsSection(r.recommendations) + conclusionSection(r.conclusion, 'Следующий этап: контур сбора отзывов (пост-покупочные триггеры) + SLA ответов на внешних площадках.') + footer('Аудит отзывов', r.client, r.takenAt),
     `.x-p{font-weight:800;} .x-p .x-kind{display:block;font-weight:400;font-size:7.5px;color:var(--muted);text-transform:uppercase;} .x-st{font-weight:700;font-size:9px;white-space:nowrap;} .x-st.ok{color:var(--ok);} .x-st.gap{color:var(--gap);}
      .x-r{font-weight:800;white-space:nowrap;} .x-c{color:var(--muted);white-space:nowrap;} .x-n{font-size:9px;color:#333;}`);
 }
