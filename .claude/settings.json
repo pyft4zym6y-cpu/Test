@@ -9,12 +9,16 @@
     },
     "thedotmack": {
       "source": { "source": "github", "repo": "thedotmack/claude-mem" }
+    },
+    "ui-ux-pro-max-skill": {
+      "source": { "source": "github", "repo": "nextlevelbuilder/ui-ux-pro-max-skill" }
     }
   },
   "enabledPlugins": {
     "agents-observe@agents-observe": true,
     "claude-mem@thedotmack": true,
     "chrome-devtools-mcp@claude-plugins-official": true,
-    "firecrawl@claude-plugins-official": true
+    "firecrawl@claude-plugins-official": true,
+    "ui-ux-pro-max@ui-ux-pro-max-skill": true
   }
 }
