@@ -40,6 +40,13 @@ body {
   transition:background .15s linear;
 }
 .mono { font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:.04em; }
+
+/* Плівкове зерно на весь сайт — тактильна база «дорогого» відчуття (ледь помітне) */
+.site-grain {
+  position:fixed; inset:0; z-index:60; pointer-events:none; opacity:.035; mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+@media (prefers-reduced-motion:reduce){ .site-grain{ display:none; } }
 .mk { color:var(--mark); }
 .eyebrow {
   font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase;
