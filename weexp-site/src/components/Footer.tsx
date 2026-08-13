@@ -13,6 +13,7 @@ const MAP: { h: string; links: { to: string; label: string; ext?: boolean }[] }[
     { to: '/how-it-works', label: 'WEEXP Method' },
     { to: '/how-it-works/business-health', label: 'Business Health' },
     { to: '/how-it-works/independence-score', label: 'Independence Score' },
+    { to: '/how-it-works/benchmark', label: 'Benchmark' },
   ]},
   { h: 'Proof', links: [
     { to: '/cases', label: 'Cases' },
@@ -21,6 +22,7 @@ const MAP: { h: string; links: { to: string; label: string; ext?: boolean }[] }[
   { h: 'People', links: [
     { to: '/about', label: 'WEEXP' },
     { to: '/about/founder', label: 'Founder' },
+    { to: '/about/standard', label: 'WEEXP Standard' },
   ]},
   { h: 'Legal', links: [
     { to: '/oferta.html', label: 'Публічна оферта', ext: true },

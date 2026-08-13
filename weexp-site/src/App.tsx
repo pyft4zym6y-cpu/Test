@@ -2,9 +2,12 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from '@/Layout';
 import { Home } from '@/pages/Home';
 import { WhatWeBuild } from '@/pages/WhatWeBuild';
+import { EuExpansion } from '@/pages/EuExpansion';
 import { HowItWorks } from '@/pages/HowItWorks';
 import { BusinessHealthPage } from '@/pages/BusinessHealthPage';
 import { IndependenceScorePage } from '@/pages/IndependenceScorePage';
+import { Benchmark } from '@/pages/Benchmark';
+import { StandardPage } from '@/pages/StandardPage';
 import { CasesPage } from '@/pages/CasesPage';
 import { CaseDetail } from '@/pages/CaseDetail';
 import { Intelligence } from '@/pages/Intelligence';
@@ -22,9 +25,12 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/what-we-build" element={<WhatWeBuild />} />
+          <Route path="/what-we-build/eu-expansion" element={<EuExpansion />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/how-it-works/business-health" element={<BusinessHealthPage />} />
           <Route path="/how-it-works/independence-score" element={<IndependenceScorePage />} />
+          <Route path="/how-it-works/benchmark" element={<Benchmark />} />
+          <Route path="/about/standard" element={<StandardPage />} />
           <Route path="/cases" element={<CasesPage />} />
           <Route path="/cases/:slug" element={<CaseDetail />} />
           <Route path="/intelligence" element={<Intelligence />} />

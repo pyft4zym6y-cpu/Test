@@ -11,17 +11,20 @@ const MENU: Group[] = [
     { to: '/what-we-build#build', label: 'Build' },
     { to: '/what-we-build#scale', label: 'Scale' },
     { to: '/what-we-build#independence', label: 'Independence' },
+    { to: '/what-we-build/eu-expansion', label: 'EU Expansion' },
   ]},
   { to: '/how-it-works', label: 'How it works', sub: [
     { to: '/how-it-works', label: 'WEEXP Method' },
     { to: '/how-it-works/business-health', label: 'Business Health' },
     { to: '/how-it-works/independence-score', label: 'Independence Score' },
+    { to: '/how-it-works/benchmark', label: 'Benchmark' },
   ]},
   { to: '/cases', label: 'Cases' },
   { to: '/intelligence', label: 'Intelligence' },
   { to: '/about', label: 'About', sub: [
     { to: '/about', label: 'WEEXP' },
     { to: '/about/founder', label: 'Founder' },
+    { to: '/about/standard', label: 'WEEXP Standard' },
   ]},
 ];
 
