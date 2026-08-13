@@ -4,6 +4,7 @@ import { QUESTIONS, QUESTIONS_FULL, scoreXray, opportunityLabel, diagnosisSummar
 import { HealthRadar } from '@/components/HealthRadar';
 import { CountUp } from '@/lib/primitives';
 import { say } from '@/lib/bus';
+import { track } from '@/lib/analytics';
 import './xray.css';
 
 const OPTS = ['Ні', 'Радше ні', 'Радше так', 'Так'];
@@ -25,10 +26,11 @@ export function BusinessXray({ questions = QUESTIONS, storageKey, full = false }
   const [answers, setAnswers] = useState<Answers>(saved ?? {});
 
   const result = useMemo(() => (phase === 'result' ? scoreXray(answers, questions) : null), [phase, answers, questions]);
-  // Зберігаємо читабельний підсумок, щоб контактна форма могла вкласти його в лід.
+  // Зберігаємо читабельний підсумок + фіксуємо завершення діагностики в аналітику.
   useEffect(() => {
     if (phase === 'result' && result) {
       try { localStorage.setItem(DIAG_SUMMARY_KEY, diagnosisSummary(result, full)); } catch { /* ignore */ }
+      track('xray_complete', { mode: full ? 'full' : 'quick', independence: result.independence, level: result.level.title });
     }
   }, [phase, result, full]);
   const q = questions[step];
@@ -55,7 +57,7 @@ export function BusinessXray({ questions = QUESTIONS, storageKey, full = false }
         <h2 className="xray-title">{full ? <>Повна діагностика<br />системи онлайн-продажів</> : <>Знайдіть головний<br />bottleneck вашого бізнесу</>}</h2>
         <p className="xray-lead">{questions.length} тверджень · {full ? '5 хвилин' : '2 хвилини'}. Отримаєте Business Health по 7 системах,
           Independence Score і вузьке місце, що тримає прибуток{full ? '. Результат зберігається у браузері.' : ' — без реєстрації.'}</p>
-        <button className="btn-primary mono" onClick={() => { setPhase('quiz'); setStep(0); }}>
+        <button className="btn-primary mono" onClick={() => { setPhase('quiz'); setStep(0); track('xray_start', { mode: full ? 'full' : 'quick' }); }}>
           {full ? 'Почати повну діагностику →' : 'Почати X-Ray →'}
         </button>
         <div className="xray-levels mono">

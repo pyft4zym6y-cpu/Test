@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { track } from '@/lib/analytics';
 
 /**
  * Per-route SEO без зовнішніх залежностей. Оновлює <title>, description,
@@ -92,6 +93,7 @@ export function RouteSeo() {
   useEffect(() => {
     const m = META[pathname];
     if (m) applySeo(m[0], m[1], pathname);
+    track('page_view', { path: pathname }); // SPA-навігація не шле page_view сама
   }, [pathname]);
   return null;
 }
