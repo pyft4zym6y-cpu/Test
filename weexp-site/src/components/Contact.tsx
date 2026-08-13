@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Eyebrow, FadeIn } from '@/lib/primitives';
 import { say } from '@/lib/bus';
 import { sendLead } from '@/lib/leads';
+import { track } from '@/lib/analytics';
 import { DIAG_SUMMARY_KEY } from '@/data/xray';
 import './contact.css';
 
@@ -40,6 +41,7 @@ export function Contact() {
     };
     setStatus('sending');
     const res = await sendLead(payload);
+    track('lead_submit', { source: payload.source, result: res, has_diag: Boolean(diag) });
     if (res === 'ok') {
       setStatus('ok');
       say('Дякую! Заявку отримано — повернемося з планом діагностики у грошах.');
