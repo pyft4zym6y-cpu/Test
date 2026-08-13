@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { CountUp } from '@/lib/primitives';
+import { VideoBlock } from '@/components/VideoBlock';
 import './founder-page.css';
 
 const TRACK = [
@@ -41,6 +42,11 @@ export function FounderPage() {
             e-commerce на систему. WEEXP доводить — Павло пояснює.</p>
         </div>
       </header>
+
+      <section className="wrap home-video">
+        <VideoBlock title="Павло Сидоренко — засновник WEEXP" sub="Промо · автор системи, а не єдине джерело цінності"
+          src="/promo/founder.mp4" poster="/promo/founder-poster.jpg" />
+      </section>
 
       <section className="wrap fp-track">
         {TRACK.map((t) => (
