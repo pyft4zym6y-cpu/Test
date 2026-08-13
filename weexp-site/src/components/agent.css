@@ -26,8 +26,8 @@
 .agent-mute:hover { color:var(--paper); border-color:var(--steel-600); }
 @keyframes blink { 50%{ opacity:0; } }
 @media (prefers-reduced-motion:reduce){ .agent-caret{ animation:none; } }
-/* на мобиле ужимаем, чтобы не сталкиваться со Score HUD справа */
-@media (max-width:640px){ .agent{ max-width:52vw; padding:9px 10px; gap:9px; } .agent-line{ max-width:34vw; } .agent-mute{ display:none; } }
+/* на мобиле фикс-нарратор перекрывает контент — прячем полностью */
+@media (max-width:820px){ .agent{ display:none !important; } }
 
 .agent { transition:opacity .4s ease, transform .4s ease; }
 .agent.is-away { opacity:0; transform:translateY(12px); pointer-events:none; }

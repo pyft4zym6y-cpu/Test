@@ -3,28 +3,28 @@ import './footer.css';
 
 /** Інженерна карта системи замість звичайного футера. */
 const MAP: { h: string; links: { to: string; label: string; ext?: boolean }[] }[] = [
-  { h: 'Build', links: [
-    { to: '/what-we-build#diagnose', label: 'Diagnose' },
-    { to: '/what-we-build#build', label: 'Build' },
-    { to: '/what-we-build#scale', label: 'Scale' },
-    { to: '/what-we-build#independence', label: 'Independence' },
+  { h: 'Будуємо', links: [
+    { to: '/what-we-build#diagnose', label: 'Діагностика' },
+    { to: '/what-we-build#build', label: 'Побудова' },
+    { to: '/what-we-build#scale', label: 'Масштабування' },
+    { to: '/what-we-build#independence', label: 'Незалежність' },
   ]},
-  { h: 'System', links: [
-    { to: '/how-it-works', label: 'WEEXP Method' },
-    { to: '/how-it-works/business-health', label: 'Business Health' },
-    { to: '/how-it-works/independence-score', label: 'Independence Score' },
-    { to: '/how-it-works/benchmark', label: 'Benchmark' },
+  { h: 'Система', links: [
+    { to: '/how-it-works', label: 'Метод WEEXP' },
+    { to: '/how-it-works/business-health', label: 'Здоров’я бізнесу' },
+    { to: '/how-it-works/independence-score', label: 'Індекс незалежності' },
+    { to: '/how-it-works/benchmark', label: 'Бенчмарк' },
   ]},
-  { h: 'Proof', links: [
-    { to: '/cases', label: 'Cases' },
-    { to: '/intelligence', label: 'Intelligence' },
+  { h: 'Докази', links: [
+    { to: '/cases', label: 'Кейси' },
+    { to: '/intelligence', label: 'Аналітика' },
   ]},
-  { h: 'People', links: [
-    { to: '/about', label: 'WEEXP' },
-    { to: '/about/founder', label: 'Founder' },
-    { to: '/about/standard', label: 'WEEXP Standard' },
+  { h: 'Люди', links: [
+    { to: '/about', label: 'Про WEEXP' },
+    { to: '/about/founder', label: 'Засновник' },
+    { to: '/about/standard', label: 'Стандарт WEEXP' },
   ]},
-  { h: 'Legal', links: [
+  { h: 'Правове', links: [
     { to: '/oferta.html', label: 'Публічна оферта', ext: true },
     { to: '/privacy.html', label: 'Політика приватності', ext: true },
   ]},
@@ -38,7 +38,7 @@ export function Footer() {
           <Link className="ft-logo" to="/">WEEXP</Link>
           <p className="ft-tag">Операційний партнер з e-commerce.</p>
           <a className="ft-mail mono" href="mailto:pashasidorenko18@gmail.com">pashasidorenko18@gmail.com</a>
-          <Link to="/diagnose" className="ft-diagnose mono">Diagnose your business →</Link>
+          <Link to="/diagnose" className="ft-diagnose mono">Діагностувати бізнес →</Link>
         </div>
         {MAP.map((col) => (
           <nav key={col.h} className="ft-col">
