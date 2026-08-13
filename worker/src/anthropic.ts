@@ -8,18 +8,34 @@ import { maybeCompress } from './headroom.js';
 
 export const MODEL = process.env.AUDIT_MODEL || 'claude-opus-5';
 
+// Таймаут одного запроса к Claude и число повторов. Без явного таймаута SDK ждёт
+// до 10 хв на спробу × повтори — і зависла мережа блокує весь прогін (баг:
+// «Commerce Intelligence: дедукции» висіла 30+ хв). Тепер фейл швидкий, а
+// детермінований звіт формується без аналітичного шару.
+const CALL_TIMEOUT_MS = Number(process.env.CLAUDE_TIMEOUT_MS) || 120000;
+const MAX_RETRIES = Number(process.env.CLAUDE_MAX_RETRIES ?? 1);
+
 let client: Anthropic | null = null;
 function get(): Anthropic {
   if (!process.env.ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY не задан — аналитический слой недоступен');
-  if (!client) client = new Anthropic();
+  if (!client) client = new Anthropic({ timeout: CALL_TIMEOUT_MS, maxRetries: MAX_RETRIES });
   return client;
 }
 
 export const hasKey = () => Boolean(process.env.ANTHROPIC_API_KEY);
 
+/** Жорсткий таймаут поверх будь-якого проміса — щоб зависла мережа не блокувала
+ *  прогін навіть якщо SDK-таймаут не спрацював. Кидає помилку, яку ловить крок. */
+function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`Таймаут ${Math.round(ms / 1000)}с: ${label}`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 /** Низкоуровневый вызов для агентного цикла (tool-use). params — как в API. */
 export async function createMessage(params: any): Promise<any> {
-  return get().messages.create({ model: MODEL, ...params });
+  return withTimeout(get().messages.create({ model: MODEL, ...params }), CALL_TIMEOUT_MS + 5000, 'createMessage');
 }
 
 export async function ask(system: string, user: string, maxTokens = 8000): Promise<string> {
@@ -34,7 +50,7 @@ export async function ask(system: string, user: string, maxTokens = 8000): Promi
     output_config: { effort: 'medium' },
     messages: [{ role: 'user', content: userMsg }],
   };
-  const resp = await get().messages.create(params);
+  const resp = await withTimeout(get().messages.create(params), CALL_TIMEOUT_MS + 5000, 'ask');
   return resp.content
     .filter((b: any) => b.type === 'text')
     .map((b: any) => b.text)
