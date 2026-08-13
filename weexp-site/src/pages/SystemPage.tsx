@@ -1,5 +1,6 @@
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { systemBySlug, SYSTEMS } from '@/data/xray';
+import { VideoBlock } from '@/components/VideoBlock';
 import './challenges.css';
 
 /** /challenges/:slug — сторінка системи: біль → великий сенс → ланцюг → симптоми → що будуємо. */
@@ -30,6 +31,10 @@ export function SystemPage() {
             <span key={f} className="sys-flow-step mono">{f}{i < s.flow.length - 1 && <i>→</i>}</span>
           ))}
         </div>
+      </section>
+
+      <section className="wrap sys-video">
+        <VideoBlock title={`${s.title} — як ми це будуємо`} sub={`Система ${s.num} · ${s.en}`} />
       </section>
 
       <section className="wrap sys-cols">

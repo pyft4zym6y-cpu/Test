@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { PageHead } from '@/components/PageHead';
 import { CASES, STAGES, type Stage } from '@/data/cases';
 import { SYSTEMS, systemByKey, type SystemKey } from '@/data/xray';
+import { VideoBlock } from '@/components/VideoBlock';
 import { say, sayIdle } from '@/lib/bus';
 import './cases-page.css';
 
@@ -23,6 +24,9 @@ export function CasesPage() {
           Build → After → Independence → Learning</b>, зведений з CRM, ERP і GA4.</>}
       />
 
+      <section className="wrap home-video">
+        <VideoBlock title="Трансформації бізнесу — showreel" sub="Промо · результати в цифрах" />
+      </section>
       <section className="wrap case-filters">
         <div className="cf-group">
           <span className="cf-lab mono">Система</span>

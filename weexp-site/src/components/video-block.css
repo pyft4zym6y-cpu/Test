@@ -1,0 +1,28 @@
+.vb { position: relative; aspect-ratio: 16 / 9; border: 1px solid var(--hair); overflow: hidden; background: var(--ink-800); }
+.vb-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.vb-poster {
+  position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; border: none; padding: 0;
+  background: color-mix(in srgb, var(--ink-900) 88%, var(--verd-900)); text-align: left; overflow: hidden; display: block;
+}
+.vb-grid {
+  position: absolute; inset: 0; opacity: .5;
+  background-image: linear-gradient(var(--hair) 1px, transparent 1px), linear-gradient(90deg, var(--hair) 1px, transparent 1px);
+  background-size: 46px 46px; animation: vb-drift 14s linear infinite;
+}
+.vb-scan { position: absolute; left: 0; right: 0; top: 0; height: 2px; background: color-mix(in srgb, var(--mark) 60%, transparent); animation: vb-scan 4.5s linear infinite; }
+@keyframes vb-drift { to { background-position: 46px 46px; } }
+@keyframes vb-scan { 0% { transform: translateY(-4px); } 100% { transform: translateY(100%); } }
+@media (prefers-reduced-motion: reduce) { .vb-grid, .vb-scan { animation: none; } }
+
+.vb-tag { position: absolute; top: 16px; left: 16px; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--mark-600); border: 1px solid var(--hair); padding: 5px 9px; background: color-mix(in srgb, var(--ink-900) 60%, transparent); }
+.vb-play {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: clamp(54px, 8vw, 78px); height: clamp(54px, 8vw, 78px); border: 1.5px solid var(--paper);
+  display: flex; align-items: center; justify-content: center; transition: background .2s, border-color .2s;
+}
+.vb-poster:hover .vb-play { background: var(--mark); border-color: var(--mark); }
+.vb-play i { width: 0; height: 0; border-style: solid; border-width: 10px 0 10px 17px; border-color: transparent transparent transparent var(--paper); margin-left: 4px; }
+.vb-meta { position: absolute; left: 16px; bottom: 16px; right: 16px; display: grid; gap: 5px; }
+.vb-title { font-family: var(--display); font-weight: 700; font-size: clamp(17px, 2.4vw, 26px); color: var(--paper); }
+.vb-sub { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--steel-600); }
+.vb-soon { position: absolute; top: 16px; right: 16px; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--steel-600); }

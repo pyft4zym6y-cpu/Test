@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { PageHead } from '@/components/PageHead';
+import { VideoBlock } from '@/components/VideoBlock';
 import './wwb.css';
 
 const DIAGNOSE = {
@@ -46,6 +47,10 @@ export function WhatWeBuild() {
         lead={<>Ви обираєте не «SEO / PPC / CRM», а <b>яку частину бізнесу</b> побудувати —
           і до якого стану довести: побачити → побудувати → масштабувати → зробити незалежним.</>}
       />
+
+      <section className="wrap home-video">
+        <VideoBlock title="Diagnose → Build → Scale → Independence" sub="Промо · що саме будує WEEXP" />
+      </section>
 
       {/* DIAGNOSE */}
       <section id="diagnose" className="wwb-sec">

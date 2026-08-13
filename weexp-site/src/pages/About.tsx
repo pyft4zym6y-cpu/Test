@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { PageHead } from '@/components/PageHead';
 import { Team } from '@/components/Team';
+import { GlobalReach } from '@/components/GlobalReach';
+import { TechStack } from '@/components/TechStack';
 import './about.css';
 
 const EXISTS = [
@@ -83,7 +85,9 @@ export function About() {
         </div>
       </section>
 
+      <GlobalReach />
       <Team />
+      <TechStack />
 
       <section className="home-cta wrap">
         <div className="home-cta-in">
