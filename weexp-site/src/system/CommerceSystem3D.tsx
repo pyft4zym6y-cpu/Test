@@ -11,7 +11,14 @@ import * as THREE from 'three';
  */
 const NODE_TINT = [0xffffff, 0xd9dde1, 0xffffff, 0xd9dde1, 0xffffff, 0xd9dde1, 0xffffff];
 
-export function CommerceSystem3D({ progress }: { progress: MutableRefObject<number> }) {
+/**
+ * progress — скрол-керований прогрес (для фільму головної). fixedProgress —
+ * зафіксований стан (для калькулятора: об'єкт вже зібраний і «дихає»). alerts —
+ * індекси систем, що світяться червоним (bottleneck / GAP-подія).
+ */
+export function CommerceSystem3D({ progress, fixedProgress, alerts }: {
+  progress?: MutableRefObject<number>; fixedProgress?: number; alerts?: MutableRefObject<number[]>;
+}) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -111,16 +118,22 @@ export function CommerceSystem3D({ progress }: { progress: MutableRefObject<numb
 
     let raf = 0, t0 = 0, aCur = 0;
     const tmp = new THREE.Vector3();
+    const ALERT = new THREE.Color(0xd6362b), BLUE = new THREE.Color(0x7e9dff);
     const render = (t: number) => {
       if (!t0) t0 = t; const time = (t - t0) / 1000;
-      const p = reduce ? 1 : progress.current;
+      const p = reduce ? 1 : (fixedProgress ?? progress?.current ?? 0);
+      const al = alerts?.current ?? [];
 
       // FORM: вузли злітаються (0.10→0.45). CONNECT: лінії (0.34→0.62). ACTIVATION: імпульси (0.56→0.86).
       const aTarget = reduce ? 1 : easeInOut(band(p, 0.10, 0.45));
       aCur += (aTarget - aCur) * 0.09;
+      const pulseAlert = 0.55 + Math.sin(time * 4) * 0.35;
       for (let i = 0; i < N; i++) {
         nodeMeshes[i].position.lerpVectors(scatter[i], target[i], aCur);
-        const s = 0.5 + aCur * 0.5; nodeMeshes[i].scale.setScalar(s);
+        const isAlert = al.includes(i);
+        const s = (0.5 + aCur * 0.5) * (isAlert ? 1.12 : 1); nodeMeshes[i].scale.setScalar(s);
+        const m = nodeMeshes[i].material as THREE.MeshStandardMaterial;
+        m.emissive.copy(ALERT); m.emissiveIntensity = isAlert ? pulseAlert : 0;
         // лінк
         linkPos[i * 6] = 0; linkPos[i * 6 + 1] = 0; linkPos[i * 6 + 2] = 0;
         linkPos[i * 6 + 3] = nodeMeshes[i].position.x; linkPos[i * 6 + 4] = nodeMeshes[i].position.y; linkPos[i * 6 + 5] = nodeMeshes[i].position.z;
@@ -162,7 +175,7 @@ export function CommerceSystem3D({ progress }: { progress: MutableRefObject<numb
       scene.traverse((o) => { const m = o as THREE.Mesh; if (m.geometry) m.geometry.dispose(); });
       nodeGeo.dispose(); pulseGeo.dispose(); envTex.dispose(); pmrem.dispose(); renderer.dispose();
     };
-  }, [progress]);
+  }, [progress, fixedProgress]);
 
   return <canvas ref={ref} className="sysx-object3d" aria-hidden="true" />;
 }

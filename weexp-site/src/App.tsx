@@ -21,6 +21,7 @@ const ContactPage = lazy(() => import('@/pages/ContactPage').then((m) => ({ defa
 const NotFound = lazy(() => import('@/pages/NotFound').then((m) => ({ default: m.NotFound })));
 // Прев'ю нового напряму «The System in Motion» — поза темним Layout, повноекранне.
 const SystemInMotion = lazy(() => import('@/system/SystemInMotion').then((m) => ({ default: m.SystemInMotion })));
+const LossCalculator = lazy(() => import('@/system/LossCalculator').then((m) => ({ default: m.LossCalculator })));
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
         <Routes>
           {/* Прев'ю нового cinematic-напряму (живий сайт не чіпаємо) */}
           <Route path="/system" element={<SystemInMotion />} />
+          <Route path="/loss" element={<LossCalculator />} />
           <Route element={<Layout />}>
             <Route path="/" element={<Home />} />
             <Route path="/challenges" element={<Challenges />} />

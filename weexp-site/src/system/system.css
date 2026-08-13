@@ -132,3 +132,70 @@
   .sysx-scene { position: static; inset: auto; opacity: 1 !important; transform: none !important; margin: 80px 0; }
   .sysx-object { position: static; height: 60vh; margin: 0 auto; }
 }
+
+/* ── LOSS CALCULATOR ── */
+.sysx-calc { position: relative; min-height: 100vh; display: grid; grid-template-columns: 1.05fr .95fr; }
+.sysx-calc-bg { position: sticky; top: 0; height: 100vh; z-index: 0; }
+.sysx-calc-panel { position: relative; z-index: 2; padding: clamp(28px, 6vh, 72px) clamp(24px, 5vw, 68px); display: grid; align-content: start; gap: clamp(18px, 3vh, 30px); }
+.sysx-calc-head { display: grid; gap: 12px; }
+.sysx-calc-h1 { font-size: clamp(38px, 5vw, 72px); }
+.sysx-steps { display: flex; gap: 8px; align-items: center; font-size: 11px; letter-spacing: .14em; color: var(--graphite); }
+.sysx-steps .on { color: var(--deep); }
+.sysx-steps i { color: var(--silver); font-style: normal; }
+
+.sysx-card { background: color-mix(in srgb, var(--pure-white) 78%, transparent); backdrop-filter: blur(8px); border: 1px solid var(--silver); border-radius: 16px; padding: clamp(18px, 3vw, 28px); display: grid; gap: 18px; box-shadow: 0 30px 60px -40px rgba(21,23,26,.35); }
+.sysx-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
+.sysx-inp { display: grid; gap: 6px; }
+.sysx-inp-l { font-size: 12px; color: var(--charcoal); font-weight: 500; }
+.sysx-inp-l i { color: var(--graphite); font-style: normal; font-size: 11px; }
+.sysx-inp-row { display: flex; align-items: center; gap: 8px; border: 1px solid var(--silver); border-radius: 10px; padding: 0 12px; background: var(--pure-white); transition: border-color var(--dur-fast); }
+.sysx-inp-row:focus-within { border-color: var(--data); }
+.sysx-inp-row input { flex: 1; border: 0; outline: 0; background: transparent; font-family: var(--display); font-size: 20px; font-weight: 700; color: var(--deep); padding: 12px 0; width: 100%; -moz-appearance: textfield; }
+.sysx-inp-row input::-webkit-outer-spin-button, .sysx-inp-row input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.sysx-inp-u { font-size: 11px; color: var(--graphite); white-space: nowrap; }
+
+.sysx-sym { display: grid; grid-template-columns: 1fr; gap: 8px; }
+.sysx-sym-b { text-align: left; display: grid; gap: 2px; border: 1px solid var(--silver); border-radius: 12px; padding: 12px 14px; background: var(--pure-white); cursor: pointer; transition: border-color var(--dur-fast), transform var(--dur-fast); }
+.sysx-sym-b:hover { transform: translateX(2px); }
+.sysx-sym-b b { font-size: 13px; color: var(--deep); }
+.sysx-sym-b span { font-size: 12px; color: var(--graphite); }
+.sysx-sym-b.on { border-color: var(--deep); box-shadow: inset 3px 0 0 var(--data); }
+
+.sysx-calc-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.sysx-cta[disabled] { opacity: .4; pointer-events: none; }
+.sysx-note { font-size: 10.5px; color: var(--graphite); letter-spacing: .02em; }
+
+/* Result */
+.sysx-result { display: grid; gap: 20px; }
+.sysx-total { display: grid; gap: 4px; }
+.sysx-total-big { font-size: clamp(44px, 6vw, 84px); color: var(--deep); font-weight: 800; letter-spacing: -.03em; }
+.sysx-total-big span { font-size: .32em; color: var(--graphite); margin-left: 8px; font-weight: 700; }
+.sysx-total-cap { font-size: 11px; color: var(--graphite); letter-spacing: .04em; }
+.sysx-leaks { display: grid; gap: 8px; }
+.sysx-leak { display: grid; grid-template-columns: 130px 1fr auto; align-items: center; gap: 12px; }
+.sysx-leak-l { font-size: 12px; color: var(--charcoal); }
+.sysx-leak-bar { height: 8px; background: var(--mist); border-radius: 6px; overflow: hidden; }
+.sysx-leak-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--charcoal), var(--deep)); border-radius: 6px; }
+.sysx-leak-v { font-size: 12px; color: var(--deep); font-weight: 500; white-space: nowrap; }
+.sysx-bottleneck { display: grid; gap: 4px; border-left: 3px solid var(--alert); padding: 8px 0 8px 14px; }
+.sysx-bottleneck b { font-size: clamp(20px, 2.4vw, 30px); color: var(--deep); }
+.sysx-bottleneck .mono { font-size: 11px; color: var(--graphite); }
+.sysx-health { display: grid; gap: 10px; }
+.sysx-health-head { display: flex; align-items: baseline; justify-content: space-between; }
+.sysx-health-head b { font-size: 28px; color: var(--deep); font-weight: 800; }
+.sysx-health-head b i { font-size: .5em; color: var(--graphite); font-style: normal; }
+.sysx-health-grid { display: grid; gap: 6px; }
+.sysx-hbar { display: grid; grid-template-columns: 78px 1fr 28px; align-items: center; gap: 10px; }
+.sysx-hbar-l { font-size: 10px; color: var(--graphite); text-transform: uppercase; letter-spacing: .04em; }
+.sysx-hbar-t { height: 6px; background: var(--mist); border-radius: 5px; overflow: hidden; }
+.sysx-hbar-t i { display: block; height: 100%; border-radius: 5px; }
+.sysx-hbar-t.ok i { background: #3a7d5c; } .sysx-hbar-t.warn i { background: #c08a2e; } .sysx-hbar-t.bad i { background: var(--alert); }
+.sysx-hbar-v { font-size: 11px; color: var(--charcoal); text-align: right; font-weight: 500; }
+.sysx-actions ol { margin: 8px 0 0; padding-left: 18px; display: grid; gap: 6px; }
+.sysx-actions li { font-size: 13px; color: var(--charcoal); line-height: 1.5; }
+
+@media (max-width: 900px) {
+  .sysx-calc { grid-template-columns: 1fr; }
+  .sysx-calc-bg { position: fixed; inset: 0; height: 100vh; opacity: .5; }
+  .sysx-grid { grid-template-columns: 1fr; }
+}
