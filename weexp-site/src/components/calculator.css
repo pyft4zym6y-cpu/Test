@@ -1,6 +1,10 @@
 .calc { padding:clamp(60px,12vh,140px) 0; }
 .calc-h { font-size:clamp(28px,4.6vw,60px); margin:16px 0 40px; max-width:16ch; }
-.cl-panel { border:1px solid var(--hair); background:color-mix(in srgb, var(--ink-900) 55%, transparent); }
+.cl-panel {
+  border:1px solid rgba(199,210,214,.16); border-radius:10px; overflow:hidden;
+  background:linear-gradient(155deg, color-mix(in srgb, var(--ink-700) 62%, transparent), color-mix(in srgb, var(--ink-950) 62%, transparent));
+  box-shadow:0 40px 80px -44px rgba(0,0,0,.72), inset 0 1px 0 rgba(255,255,255,.05);
+}
 .cl-pills { display:flex; flex-wrap:wrap; gap:1px; background:var(--hair); border-bottom:1px solid var(--hair); }
 .cl-pill { flex:1 1 auto; min-width:96px; background:var(--ink-900); color:var(--steel-600); border:none; cursor:pointer;
   font-size:10px; letter-spacing:.08em; text-transform:uppercase; padding:12px 10px; text-align:left; transition:color .2s, background .2s; }
@@ -9,10 +13,11 @@
 .cl-pill:hover { color:var(--paper); }
 .cl-body { padding:clamp(22px,4vw,44px); min-height:230px; display:flex; align-items:center; }
 .cl-niches { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; width:100%; }
-.cl-niche { text-align:left; background:none; border:1px solid var(--hair); padding:14px 16px; cursor:pointer; color:var(--vel);
-  display:grid; gap:6px; transition:border-color .2s, background .2s; }
-.cl-niche:hover { border-color:var(--steel-600); }
-.cl-niche.is-on { border-color:var(--mark); background:rgba(214,54,43,.07); }
+.cl-niche { text-align:left; border:1px solid rgba(199,210,214,.14); border-radius:8px; padding:14px 16px; cursor:pointer; color:var(--vel);
+  display:grid; gap:6px; transition:border-color .25s, background .25s, transform .25s cubic-bezier(.2,1,.3,1), box-shadow .25s;
+  background:linear-gradient(150deg, color-mix(in srgb, var(--ink-700) 50%, transparent), color-mix(in srgb, var(--ink-950) 55%, transparent)); }
+.cl-niche:hover { border-color:var(--steel-600); transform:translateY(-2px); box-shadow:0 18px 34px -22px rgba(0,0,0,.6); }
+.cl-niche.is-on { border-color:var(--mark); background:linear-gradient(150deg, color-mix(in srgb, var(--mark) 16%, var(--ink-700)), color-mix(in srgb, var(--ink-950) 55%, transparent)); box-shadow:0 22px 40px -24px color-mix(in srgb, var(--mark) 40%, transparent); }
 .cl-niche-name { font-size:15px; color:var(--paper); }
 .cl-niche-bm { font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--steel-600); }
 
