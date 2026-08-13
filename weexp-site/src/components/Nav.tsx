@@ -15,13 +15,11 @@ const MENU: Group[] = [
     { to: '/what-we-build#independence', label: 'Незалежність' },
     { to: '/what-we-build/eu-expansion', label: 'Вихід у ЄС' },
   ]},
-  { to: '/how-it-works', label: 'Як працюємо' },
   { to: '/cases', label: 'Кейси' },
   { to: '/about', label: 'Агенція', sub: [
     { to: '/about', label: 'Про WEEXP' },
     { to: '/about/founder', label: 'Засновник' },
-    { to: '/about/team', label: 'Команда' },
-    { to: '/about/standard', label: 'Стандарт WEEXP' },
+    { to: '/about#team', label: 'Команда' },
   ]},
 ];
 

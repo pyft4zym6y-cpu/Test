@@ -95,7 +95,7 @@ export function FounderPage() {
         <p className="fp-contact-lead">Павло — автор системи, а не сама система. Цінність WEEXP — у команді й методі.</p>
         <div className="home-cta-row">
           <a href="https://www.linkedin.com/in/pvsidorenko" target="_blank" rel="noopener noreferrer" className="btn-ghost mono">LinkedIn →</a>
-          <Link to="/about/team" className="btn-ghost mono">Команда →</Link>
+          <Link to="/about#team" className="btn-ghost mono">Команда →</Link>
           <Link to="/diagnose" className="btn-primary mono">Діагностувати бізнес →</Link>
         </div>
       </section>

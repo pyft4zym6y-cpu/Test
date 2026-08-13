@@ -9,19 +9,15 @@ const MAP: { h: string; links: { to: string; label: string; ext?: boolean }[] }[
     { to: '/what-we-build#scale', label: 'Масштабування' },
     { to: '/what-we-build#independence', label: 'Незалежність' },
   ]},
-  { h: 'Система', links: [
-    { to: '/how-it-works', label: 'Метод WEEXP' },
+  { h: 'Діагностика', links: [
     { to: '/diagnose', label: 'Business X-Ray' },
     { to: '/diagnose/full', label: 'Повна діагностика' },
-  ]},
-  { h: 'Докази', links: [
     { to: '/cases', label: 'Кейси' },
   ]},
-  { h: 'Люди', links: [
+  { h: 'Агенція', links: [
     { to: '/about', label: 'Про WEEXP' },
     { to: '/about/founder', label: 'Засновник' },
-    { to: '/about/team', label: 'Команда' },
-    { to: '/about/standard', label: 'Стандарт WEEXP' },
+    { to: '/about#team', label: 'Команда' },
   ]},
   { h: 'Правове', links: [
     { to: '/oferta.html', label: 'Публічна оферта', ext: true },

@@ -86,7 +86,7 @@ export function About() {
       </section>
 
       <GlobalReach />
-      <Team />
+      <div id="team"><Team /></div>
       <TechStack />
 
       <section className="home-cta wrap">
