@@ -8,8 +8,11 @@
 @import '@fontsource/ibm-plex-mono/400.css';
 @import '@fontsource/ibm-plex-mono/500.css';
 @import '@fontsource/ibm-plex-serif/400-italic.css';
+/* Premium-grade дисплейний шрифт (variable) — характерніший за Unbounded */
+@import '@fontsource-variable/bricolage-grotesque';
 
 :root {
+  --ink-950:#070d12;
   --ink-900:#0A1218; --ink-800:#0F1A21; --ink-700:#16242C; --ink-600:#1E3038;
   --verd-900:#143A31; --verd-800:#1F5648; --verd-700:#2A6D5C; --verd-600:#3A8873; --verd-500:#6FAA9A;
   --mark:#D6362B; --mark-600:#F08379;
@@ -17,7 +20,7 @@
   --vel:#E7EAE7; --paper:#fff;
   --hair:rgba(199,210,214,.18);
 
-  --display:'Unbounded','Arial Black',system-ui,sans-serif;
+  --display:'Bricolage Grotesque Variable','Unbounded',system-ui,sans-serif;
   --sans:'IBM Plex Sans',system-ui,Arial,sans-serif;
   --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
   --serif:'IBM Plex Serif',Georgia,serif;
