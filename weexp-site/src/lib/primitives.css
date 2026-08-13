@@ -1,0 +1,14 @@
+.eb-mark { width:9px; height:9px; background:var(--mark); display:inline-block; }
+.eyebrow { gap:12px; }
+
+.tnum { font-variant-numeric:tabular-nums; }
+
+.stat { border-top:1px solid var(--hair); padding-top:14px; }
+.stat-v { font-family:var(--display); font-weight:800; font-size:clamp(34px,4.6vw,60px); line-height:.9; letter-spacing:-.04em; color:var(--paper); }
+.stat-l { font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--steel-600); margin-top:8px; max-width:22ch; }
+
+.bar-row { margin:14px 0; }
+.bar-head { display:flex; justify-content:space-between; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--steel-400); margin-bottom:7px; }
+.bar-val { color:var(--paper); }
+.bar-track { height:6px; background:rgba(199,210,214,.14); overflow:hidden; }
+.bar-fill { display:block; height:100%; background:var(--mark); }

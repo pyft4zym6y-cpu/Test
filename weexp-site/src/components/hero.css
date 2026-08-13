@@ -1,0 +1,20 @@
+.hero {
+  min-height:100vh; display:grid; grid-template-rows:1fr auto;
+  padding:88px 0 24px; position:relative;
+}
+.hero-chrome, .hero-foot {
+  display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap;
+  font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--steel-600);
+}
+.hero-chrome { border-bottom:1px solid var(--hair); padding-bottom:14px; }
+.hero-foot { border-top:1px solid var(--hair); padding-top:14px; }
+.hero-logo { color:var(--paper); font-weight:600; letter-spacing:-.01em; }
+.hero-mid { align-self:center; }
+.hero-h {
+  font-size:clamp(46px,11vw,168px); line-height:.94; margin:22px 0 0; max-width:14ch;
+}
+.hero-h .line { display:block; overflow:hidden; padding-bottom:.04em; }
+.hero-h .word { display:block; will-change:transform; }
+.hero-lead { margin-top:26px; max-width:48ch; color:var(--steel-400); font-size:clamp(15px,1.6vw,20px); }
+/* на мобиле прячем нижнюю строку — она конфликтует с фикс-оверлеями (Agent/Score) */
+@media (max-width:760px){ .hero-foot{ display:none; } .hero{ padding-top:80px; } }

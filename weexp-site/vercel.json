@@ -1,9 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "cd weexp-site && npm install",
-  "buildCommand": "cd weexp-site && npm run build",
-  "outputDirectory": "weexp-site/dist",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
   "headers": [
     {
       "source": "/assets/(.*)",
