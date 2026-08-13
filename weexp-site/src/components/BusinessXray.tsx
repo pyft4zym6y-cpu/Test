@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { QUESTIONS, QUESTIONS_FULL, scoreXray, opportunityLabel, LEVELS, systemByKey, SHORT, type Answers, type Question } from '@/data/xray';
+import { QUESTIONS, QUESTIONS_FULL, scoreXray, opportunityLabel, diagnosisSummary, DIAG_SUMMARY_KEY, LEVELS, systemByKey, SHORT, type Answers, type Question } from '@/data/xray';
 import { HealthRadar } from '@/components/HealthRadar';
 import { CountUp } from '@/lib/primitives';
 import { say } from '@/lib/bus';
@@ -25,6 +25,12 @@ export function BusinessXray({ questions = QUESTIONS, storageKey, full = false }
   const [answers, setAnswers] = useState<Answers>(saved ?? {});
 
   const result = useMemo(() => (phase === 'result' ? scoreXray(answers, questions) : null), [phase, answers, questions]);
+  // Зберігаємо читабельний підсумок, щоб контактна форма могла вкласти його в лід.
+  useEffect(() => {
+    if (phase === 'result' && result) {
+      try { localStorage.setItem(DIAG_SUMMARY_KEY, diagnosisSummary(result, full)); } catch { /* ignore */ }
+    }
+  }, [phase, result, full]);
   const q = questions[step];
   const progress = Math.round((step / questions.length) * 100);
 
