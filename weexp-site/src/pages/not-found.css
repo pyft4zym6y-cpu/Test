@@ -1,0 +1,8 @@
+.nf { min-height: 72vh; display: flex; align-items: center; padding: 120px 0; }
+.nf .wrap { display: grid; gap: 20px; justify-items: start; }
+.nf-code {
+  font-family: var(--display); font-weight: 800; font-size: clamp(88px, 22vw, 240px);
+  line-height: .8; letter-spacing: -.06em; color: var(--paper);
+}
+.nf-lead { font-size: clamp(16px, 2.4vw, 22px); color: var(--vel); max-width: 40ch; }
+.nf-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }

@@ -1,0 +1,11 @@
+.st-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--hair); border: 1px solid var(--hair); margin-bottom: clamp(24px, 5vh, 60px); }
+.st-col { background: var(--ink-900); padding: clamp(24px, 3vw, 40px); display: grid; gap: 18px; align-content: start; }
+.st-list { display: grid; gap: 14px; }
+.st-item { display: grid; gap: 5px; border-top: 1px solid var(--hair); padding-top: 14px; }
+.st-item-t { font-family: var(--display); font-weight: 700; font-size: 18px; color: var(--paper); }
+.st-item-d { font-size: 14px; color: var(--vel); }
+.st-future { list-style: none; display: grid; gap: 12px; }
+.st-future li { position: relative; padding-left: 20px; font-size: 15px; line-height: 1.5; color: var(--vel); }
+.st-future li::before { content: ''; position: absolute; left: 0; top: 9px; width: 8px; height: 8px; border: 1px solid var(--steel-600); }
+.st-note { font-size: 11px; letter-spacing: .06em; color: var(--steel-600); border-top: 1px solid var(--hair); padding-top: 14px; }
+@media (max-width: 760px) { .st-cols { grid-template-columns: 1fr; } }
