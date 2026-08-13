@@ -27,6 +27,8 @@
 
 @media (max-width:760px){
   .hero-foot{ display:none; }
-  .hero{ padding-top:84px; grid-template-rows:auto; align-content:center; }
-  .hero-mid{ align-self:start; margin-top:8vh; }
+  .hero{ min-height:88vh; padding-top:76px; grid-template-rows:auto; align-content:center; }
+  .hero-mid{ align-self:center; margin-top:0; }
+  .hero-h{ font-size:clamp(44px,14vw,96px); }
+  .hero-lead{ margin-top:18px; }
 }

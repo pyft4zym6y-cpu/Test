@@ -11,7 +11,7 @@
 .nav-item > a.is-here::after { content:''; position:absolute; left:0; right:0; bottom:16px; height:2px; background:var(--mark); }
 
 .nav-drop {
-  position:absolute; top:100%; left:-16px; min-width:230px; display:grid;
+  position:absolute; top:100%; left:-16px; min-width:max-content; display:grid;
   background:var(--ink-800); border:1px solid var(--hair); padding:6px;
   opacity:0; visibility:hidden; transform:translateY(6px); transition:opacity .18s, transform .18s, visibility .18s;
   z-index:5;
@@ -19,7 +19,7 @@
 /* невидимий місток, щоб курсор не «губив» :hover між пунктом і випадайкою */
 .nav-drop::before { content:''; position:absolute; left:0; right:0; top:-14px; height:14px; }
 .nav-item:hover .nav-drop, .nav-item:focus-within .nav-drop { opacity:1; visibility:visible; transform:none; }
-.nav-drop a { color:var(--vel); font-size:11px; letter-spacing:.08em; text-transform:uppercase; text-decoration:none; padding:11px 12px; transition:background .15s, color .15s; }
+.nav-drop a { color:var(--vel); font-size:11px; letter-spacing:.08em; text-transform:uppercase; text-decoration:none; padding:11px 14px; white-space:nowrap; transition:background .15s, color .15s; }
 .nav-drop a:hover { background:color-mix(in srgb, var(--verd-900) 40%, transparent); color:var(--paper); }
 
 .nav-cta { background:var(--mark); color:var(--paper); font-size:11px; letter-spacing:.1em; text-transform:uppercase; padding:10px 16px; text-decoration:none; }

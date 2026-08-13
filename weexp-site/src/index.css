@@ -51,10 +51,18 @@ h1,h2 { font-family:var(--display); font-weight:800; letter-spacing:-.035em; lin
 
 @media (prefers-reduced-motion:reduce){ body{ transition:none; } }
 
-/* Мобільний: прибираємо завеликі vh-відступи між блоками (не зʼїдаємо бічні відступи .wrap) */
+/* Мобільний: щільніший вертикальний ритм + приборкані розміри дисплейних
+   заголовків, щоб не було переносів по одному слову й порожнеч між блоками. */
 @media (max-width:760px){
-  .proof,.usp,.cases,.fw,.alt,.st,.ct,.mf,.tm,.calc,.demo,.fnd,.close,.ts,.gr,.engine,.about-sec{ padding-block:40px; }
-  .wwb-sec,.sys-idea,.sys-next,.dg-get,.dg-how,.sp-levels,.ab-fit,.ab-dont,.ab-exists,.ab-why,.fp-track,.fp-bio,.fp-principles,.fp-layers{ padding-block:32px !important; margin-bottom:0 !important; }
-  .home-cta{ padding-block:40px; }
-  .page-head{ padding-block:88px 24px !important; }
+  .proof,.usp,.cases,.fw,.alt,.st,.ct,.mf,.tm,.calc,.demo,.fnd,.close,.ts,.gr,.engine,.about-sec{ padding-block:34px; }
+  .wwb-sec,.sys-idea,.sys-next,.dg-get,.dg-how,.sp-levels,.ab-fit,.ab-dont,.ab-exists,.ab-why,.fp-track,.fp-bio,.fp-principles,.fp-layers{ padding-block:28px !important; margin-bottom:0 !important; }
+  .home-cta{ padding-block:34px; }
+  .home-video{ padding-block:20px !important; }
+  .page-head{ padding-block:72px 20px !important; }
+  /* дисплейні заголовки під мобільну ширину — без «сиріт» */
+  .page-h1{ font-size:clamp(26px,7.4vw,40px); max-width:20ch; }
+  .sys-idea-text{ font-size:clamp(24px,7vw,40px) !important; }
+  .cd-money-text,.cd-learning-text,.dg-calc-h{ font-size:clamp(23px,6.6vw,38px) !important; }
+  .ct-h,.xray-title{ font-size:clamp(24px,7vw,40px) !important; }
+  h1,h2,h3{ text-wrap:balance; }
 }
