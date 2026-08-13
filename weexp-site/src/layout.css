@@ -24,9 +24,9 @@
 .page-kick::before { content: ''; width: 9px; height: 9px; background: var(--mark); display: inline-block; }
 .page-h1 {
   font-family: var(--display); font-weight: 800;
-  font-size: clamp(30px, 7.4vw, 104px); line-height: .92; letter-spacing: -.03em;
-  color: var(--paper); max-width: 16ch; text-wrap: balance;
-  overflow-wrap: break-word; hyphens: auto;
+  font-size: clamp(27px, 6.6vw, 104px); line-height: .94; letter-spacing: -.03em;
+  color: var(--paper); max-width: 18ch; text-wrap: balance;
+  overflow-wrap: break-word;
 }
 .page-lead {
   font-family: var(--sans); font-size: clamp(15px, 2vw, 20px); line-height: 1.5;
