@@ -86,6 +86,41 @@ export type SiteCrawl = {
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36 weexp-audit';
 
+/**
+ * Доступ к закрытой витрине (сайт «в разработке» за bypass-кодом / preview-токеном).
+ * Пример: сайт отдаёт всем заглушку, а реальный магазин открыт по
+ * https://site/?bypass_code=XXXX. Без этого обход аудирует заглушку, а не магазин
+ * (единый 9-символьный title, 0% on-page на всех URL — классический признак).
+ *
+ * query — параметры, которые нужно нести на КАЖДЫЙ запрос (навигацию, sitemap,
+ * robots, пробы). cookies/headers — на случай токена в куке/заголовке. Обычно
+ * достаточно query: оператор просто подаёт ссылку-обход как URL сайта.
+ */
+export type SiteAccess = { query?: Record<string, string>; cookies?: { name: string; value: string }[]; headers?: Record<string, string> };
+
+/** Вытащить access-параметры из самого URL (оператор подал ссылку-обход целиком). */
+export function accessFromUrl(rootUrl: string): SiteAccess | undefined {
+  try {
+    const u = new URL(rootUrl);
+    if (![...u.searchParams.keys()].length) return undefined;
+    const query: Record<string, string> = {};
+    u.searchParams.forEach((v, k) => { query[k] = v; });
+    return { query };
+  } catch { return undefined; }
+}
+
+/** Добавить access-query к URL для фактического запроса (навигация/fetch). */
+function applyAccess(url: string, access?: SiteAccess): string {
+  if (!access?.query) return url;
+  try { const u = new URL(url); for (const [k, v] of Object.entries(access.query)) u.searchParams.set(k, v); return u.toString(); } catch { return url; }
+}
+
+/** Убрать access-query из URL для хранения/показа (в отчёте — чистые адреса). */
+function stripAccess(url: string, access?: SiteAccess): string {
+  if (!access?.query) return url;
+  try { const u = new URL(url); for (const k of Object.keys(access.query)) u.searchParams.delete(k); return u.toString(); } catch { return url; }
+}
+
 export async function launchBrowser(): Promise<Browser> {
   const proxy = process.env.HTTPS_PROXY || process.env.https_proxy;
   const executablePath = process.env.CHROME_PATH || undefined; // escape hatch для окружений с предустановленным Chromium
@@ -386,13 +421,14 @@ function classify(url: string, sig: Record<string, boolean>, isRoot: boolean): P
   return 'content';
 }
 
-async function auditPage(page: Page, url: string, isRoot: boolean): Promise<{ audit: PageAudit; tech: string[]; links: string[]; headers?: Record<string, string> }> {
+async function auditPage(page: Page, url: string, isRoot: boolean, access?: SiteAccess): Promise<{ audit: PageAudit; tech: string[]; links: string[]; headers?: Record<string, string> }> {
   let status: number | null = null;
   let headers: Record<string, string> = {};
-  const fail = (msg: string, fUrl = url, ttl = ''): { audit: PageAudit; tech: string[]; links: string[] } =>
-    ({ audit: { url, finalUrl: fUrl, kind: 'other', status, title: ttl, checks: [], score: null, error: msg }, tech: [], links: [] });
+  const cleanUrl = stripAccess(url, access); // в отчёте храним адрес без bypass-параметра
+  const fail = (msg: string, fUrl = cleanUrl, ttl = ''): { audit: PageAudit; tech: string[]; links: string[] } =>
+    ({ audit: { url: cleanUrl, finalUrl: fUrl, kind: 'other', status, title: ttl, checks: [], score: null, error: msg }, tech: [], links: [] });
   try {
-    const resp = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 25000 });
+    const resp = await page.goto(applyAccess(url, access), { waitUntil: 'domcontentloaded', timeout: 25000 });
     status = resp?.status() ?? null;
     headers = resp?.headers() ?? {};
     await page.waitForTimeout(1200); // дать JS дорисоваться
@@ -407,10 +443,10 @@ async function auditPage(page: Page, url: string, isRoot: boolean): Promise<{ au
       ? `доступ заблокирован: HTTP ${status} (WAF/бот-защита) — нужен headful/stealth-режим или доступ от клиента`
       : `сайт вернул HTTP ${status}`, page.url());
   }
-  const finalUrl = page.url();
+  const finalUrl = stripAccess(page.url(), access);
   const title = await page.title().catch(() => '');
   if (/just a moment|attention required|verify you are human|checking your browser|cloudflare|доступ (ограничен|обмежено)|captcha/i.test(title)) {
-    return { audit: { url, finalUrl, kind: 'other', status, title, checks: [], score: null, error: 'бот-защита: challenge-страница (Cloudflare/CAPTCHA) — нужен headful/stealth или доступ' }, tech: [], links: [] };
+    return { audit: { url: cleanUrl, finalUrl, kind: 'other', status, title, checks: [], score: null, error: 'бот-защита: challenge-страница (Cloudflare/CAPTCHA) — нужен headful/stealth или доступ' }, tech: [], links: [] };
   }
   const { checks, kindSignals, tech, ux } = await page.evaluate(inPageChecks);
   const links = await page
@@ -425,7 +461,7 @@ async function auditPage(page: Page, url: string, isRoot: boolean): Promise<{ au
     const buf = await page.screenshot({ type: 'jpeg', quality: 55, clip: { x: 0, y: 0, width: 1366, height: 900 } }).catch(() => null);
     if (buf) screenshot = buf.toString('base64');
   }
-  return { audit: { url, finalUrl, kind, status, title, checks, score, ux, screenshot }, tech, links, headers };
+  return { audit: { url: cleanUrl, finalUrl, kind, status, title, checks, score, ux, screenshot }, tech, links, headers };
 }
 
 /** Определение CMS/платформы по заголовкам ответа и cookies (надёжнее HTML). */
@@ -448,7 +484,7 @@ function platformFromHeaders(headers: Record<string, string>): string | null {
 }
 
 /** Контекст браузера с закалкой против бот-защиты (UA, заголовки, timezone, anti-webdriver). */
-async function hardenedContext(browser: Browser) {
+async function hardenedContext(browser: Browser, access?: SiteAccess) {
   const ctx = await browser.newContext({
     userAgent: UA,
     viewport: { width: 1366, height: 900 },
@@ -462,6 +498,7 @@ async function hardenedContext(browser: Browser) {
       'sec-ch-ua': '"Chromium";v="126", "Not.A/Brand";v="24"',
       'sec-ch-ua-mobile': '?0',
       'sec-ch-ua-platform': '"Windows"',
+      ...(access?.headers ?? {}), // токен доступа в заголовке (если задан)
     },
   });
   // tsx/esbuild (keepNames) оборачивает именованные функции хелпером __name(fn,"n").
@@ -478,11 +515,12 @@ async function hardenedContext(browser: Browser) {
 }
 
 /** Точечный обход одной страницы (для агентного добора фактов). */
-export async function auditSingle(browser: Browser, url: string): Promise<PageAudit & { tech: string[] }> {
-  const ctx = await hardenedContext(browser);
+export async function auditSingle(browser: Browser, url: string, access?: SiteAccess): Promise<PageAudit & { tech: string[] }> {
+  const acc = access ?? accessFromUrl(url);
+  const ctx = await hardenedContext(browser, acc);
   try {
     const page = await ctx.newPage();
-    const { audit, tech } = await auditPage(page, url, false);
+    const { audit, tech } = await auditPage(page, url, false, acc);
     return { ...audit, tech };
   } finally {
     await ctx.close().catch(() => {});
@@ -490,19 +528,19 @@ export async function auditSingle(browser: Browser, url: string): Promise<PageAu
 }
 
 /** Парсит sitemap.xml (+ sitemap-index и Sitemap: из robots) → полный список URL сайта. */
-async function fetchSitemapUrls(ctx: BrowserContext, origin: string): Promise<string[]> {
+async function fetchSitemapUrls(ctx: BrowserContext, origin: string, access?: SiteAccess): Promise<string[]> {
   const urls = new Set<string>();
   const seen = new Set<string>();
   const queue: string[] = [`${origin}/sitemap.xml`, `${origin}/sitemap_index.xml`, `${origin}/sitemap-index.xml`];
   try {
-    const rob = await ctx.request.get(`${origin}/robots.txt`, { timeout: 8000 }).catch(() => null);
+    const rob = await ctx.request.get(applyAccess(`${origin}/robots.txt`, access), { timeout: 8000 }).catch(() => null);
     if (rob && rob.ok()) { const t = await rob.text().catch(() => ''); for (const m of t.matchAll(/^\s*sitemap:\s*(\S+)/gim)) queue.push(m[1].trim()); }
   } catch { /* noop */ }
   let docs = 0;
   while (queue.length && docs < 12 && urls.size < 3000) {
     const sm = queue.shift(); if (!sm || seen.has(sm)) continue; seen.add(sm);
     try {
-      const r = await ctx.request.get(sm, { timeout: 10000 }).catch(() => null);
+      const r = await ctx.request.get(applyAccess(sm, access), { timeout: 10000 }).catch(() => null);
       if (!r || !r.ok()) continue;
       docs++;
       const xml = (await r.text().catch(() => '')).slice(0, 3_000_000);
@@ -594,18 +632,26 @@ export async function crawlSite(
   browser: Browser,
   rootUrl: string,
   kind: 'client' | 'competitor',
-  opts: { maxPages?: number } = {},
+  opts: { maxPages?: number; access?: SiteAccess } = {},
 ): Promise<SiteCrawl> {
   // Клиент разбирается глубоко (все типы страниц + представители), конкурент — выборочно.
   const maxPages = opts.maxPages ?? 24;
-  const ctx = await hardenedContext(browser);
+  // Доступ к закрытой витрине: явный access или вытащенный из самого URL
+  // (оператор подал ссылку-обход вида https://site/?bypass_code=XXXX). Несём
+  // параметры на КАЖДЫЙ запрос; в отчёте храним чистые адреса.
+  const access = opts.access ?? accessFromUrl(rootUrl);
+  const cleanRoot = stripAccess(rootUrl, access);
+  const ctx = await hardenedContext(browser, access);
+  if (access?.cookies?.length) {
+    try { const host = new URL(rootUrl).hostname; await ctx.addCookies(access.cookies.map((c) => ({ ...c, domain: host, path: '/' }))); } catch { /* noop */ }
+  }
   const page = await ctx.newPage();
   const out: SiteCrawl = {
-    rootUrl, finalUrl: rootUrl, kind, reachable: false, robotsTxt: false, sitemapXml: false,
+    rootUrl: cleanRoot, finalUrl: cleanRoot, kind, reachable: false, robotsTxt: false, sitemapXml: false,
     tech: { platform: null, analytics: [], signals: [] }, pages: [], discoveredLinks: 0, links: [],
   };
   try {
-    const home = await auditPage(page, rootUrl, true);
+    const home = await auditPage(page, rootUrl, true, access);
     // Достижим = нет ошибки И статус в успешном диапазоне (2xx/3xx). HTTP-ошибку
     // (403/404/5xx) и сетевой сбой auditPage уже пометил как error выше.
     out.reachable = !home.audit.error && (home.audit.status === null || (home.audit.status >= 200 && home.audit.status < 400));
@@ -622,7 +668,7 @@ export async function crawlSite(
 
     // robots.txt + ПОЛНОЕ дерево из sitemap.xml (все URL сайта, а не только с обхода).
     try {
-      const r = await ctx.request.get(`${origin}/robots.txt`, { timeout: 8000 }).catch(() => null);
+      const r = await ctx.request.get(applyAccess(`${origin}/robots.txt`, access), { timeout: 8000 }).catch(() => null);
       out.robotsTxt = Boolean(r && r.ok());
       // GEO/AEO-слой: не заблокированы ли AI-краулеры и есть ли llms.txt.
       if (kind === 'client') {
@@ -630,15 +676,15 @@ export async function crawlSite(
           const robotsBody = out.robotsTxt && r ? await r.text() : '';
           const BOTS = ['GPTBot', 'OAI-SearchBot', 'ClaudeBot', 'Claude-SearchBot', 'PerplexityBot', 'Google-Extended'];
           const blockedBots = BOTS.filter((b) => new RegExp(`user-agent:\\s*${b}[\\s\\S]{0,200}?disallow:\\s*/\\s*$`, 'im').test(robotsBody));
-          const llms = await ctx.request.get(`${origin}/llms.txt`, { timeout: 6000 }).catch(() => null);
+          const llms = await ctx.request.get(applyAccess(`${origin}/llms.txt`, access), { timeout: 6000 }).catch(() => null);
           const llmsTxt = Boolean(llms && llms.ok() && (await llms.text().catch(() => '')).trim().length > 20);
           out.ai = { llmsTxt, blockedBots };
-          const hd = await ctx.request.get(origin, { timeout: 8000, maxRedirects: 3 }).catch(() => null);
+          const hd = await ctx.request.get(applyAccess(origin, access), { timeout: 8000, maxRedirects: 3 }).catch(() => null);
           const H = (n: string) => Boolean(hd?.headers()?.[n]);
           out.secHeaders = { csp: H('content-security-policy'), hsts: H('strict-transport-security'), xfo: H('x-frame-options') || H('content-security-policy') };
         } catch { /* noop */ }
       }
-      const smUrls = await fetchSitemapUrls(ctx, origin);
+      const smUrls = await fetchSitemapUrls(ctx, origin, access);
       out.sitemapXml = smUrls.length > 0;
       addLinks(smUrls);
     } catch { /* noop */ }
@@ -652,14 +698,14 @@ export async function crawlSite(
         if (!t.probes.length || typeHit(t)) continue;
         for (const pr of t.probes) {
           try {
-            const r = await ctx.request.get(origin + pr, { timeout: 6000, maxRedirects: 3 }).catch(() => null);
+            const r = await ctx.request.get(applyAccess(origin + pr, access), { timeout: 6000, maxRedirects: 3 }).catch(() => null);
             if (r && r.status() < 400) { linkSet.add(origin + pr); break; }
           } catch { /* noop */ }
         }
       }
       // «Мягкая 404»: несуществующий URL обязан отдавать 404, иначе мусор индексируется.
       try {
-        const r404 = await ctx.request.get(`${origin}/weexp-404-probe-${Math.random().toString(36).slice(2)}`, { timeout: 6000 }).catch(() => null);
+        const r404 = await ctx.request.get(applyAccess(`${origin}/weexp-404-probe-${Math.random().toString(36).slice(2)}`, access), { timeout: 6000 }).catch(() => null);
         out.soft404 = r404 ? r404.status() < 400 : null;
       } catch { out.soft404 = null; }
     }
@@ -686,7 +732,7 @@ export async function crawlSite(
         const pdpUrl = candidates.find((u) => /product|tovar|\/p\/|\/pr\/|item|route=product|goods/i.test(lpath(u)))
           ?? candidates.find((u) => { const m = lpath(u).match(/^\/([a-z0-9-]{10,})\/?$/i); return Boolean(m && m[1].includes('-')); });
         if (pdpUrl) {
-          await page.goto(pdpUrl, { waitUntil: 'domcontentloaded', timeout: 20000 }).catch(() => {});
+          await page.goto(applyAccess(pdpUrl, access), { waitUntil: 'domcontentloaded', timeout: 20000 }).catch(() => {});
           await page.waitForTimeout(1000);
           const added = await page.evaluate(() => {
             const el = document.querySelector('#button-cart, [id*="button-cart" i], [class*="add-to-cart" i], [data-add-to-cart], button[name*="add" i]')
@@ -700,7 +746,7 @@ export async function crawlSite(
     }
 
     for (const url of candidates) {
-      const res = await auditPage(page, url, false);
+      const res = await auditPage(page, url, false, access);
       out.pages.push(res.audit);
       res.tech.forEach((t) => techSet.add(t));
       addLinks(res.links);
