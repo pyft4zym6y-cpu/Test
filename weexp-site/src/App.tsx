@@ -19,6 +19,8 @@ const Diagnose = lazy(() => import('@/pages/Diagnose').then((m) => ({ default: m
 const FullDiagnosis = lazy(() => import('@/pages/FullDiagnosis').then((m) => ({ default: m.FullDiagnosis })));
 const ContactPage = lazy(() => import('@/pages/ContactPage').then((m) => ({ default: m.ContactPage })));
 const NotFound = lazy(() => import('@/pages/NotFound').then((m) => ({ default: m.NotFound })));
+// Прев'ю нового напряму «The System in Motion» — поза темним Layout, повноекранне.
+const SystemInMotion = lazy(() => import('@/system/SystemInMotion').then((m) => ({ default: m.SystemInMotion })));
 
 export default function App() {
   return (
@@ -26,6 +28,8 @@ export default function App() {
       <RouteSeo />
       <Suspense fallback={null}>
         <Routes>
+          {/* Прев'ю нового cinematic-напряму (живий сайт не чіпаємо) */}
+          <Route path="/system" element={<SystemInMotion />} />
           <Route element={<Layout />}>
             <Route path="/" element={<Home />} />
             <Route path="/challenges" element={<Challenges />} />
