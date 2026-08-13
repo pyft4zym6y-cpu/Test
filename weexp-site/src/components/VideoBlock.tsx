@@ -7,7 +7,7 @@ import './video-block.css';
  * Постер — реальний кадр рилу; на браузерах без webm лишається постер (graceful).
  * Можна передати власний `src`/`poster` під конкретну категорію.
  */
-export function VideoBlock({ title, sub, src = '/promo/reel.webm', poster = '/promo/reel-poster.png' }:
+export function VideoBlock({ title, sub, src = '/promo/reel.mp4', poster = '/promo/reel-poster.jpg' }:
   { title: string; sub?: string; src?: string; poster?: string }) {
   const vref = useRef<HTMLVideoElement>(null);
 
