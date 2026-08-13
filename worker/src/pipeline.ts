@@ -189,6 +189,10 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
     // Единый реестр находок (строится до причинной карты/охвата/exec — единая точка правды).
     let registry: import('./registry.js').Finding[] | null = null;
     let registryRaw: RawRec[] = [];
+    // Захоплення HTML кожної лінзи для групування в тематичні документи (композер
+    // збирає з них 5 розділів + висновок). cap() зберігає й повертає html далі в рендер.
+    const lensHtml: Record<string, string> = {};
+    const cap = (k: string, html: string): string => { lensHtml[k] = html; return html; };
     if (!prelaunch) {
       log('· UX/UI-разбор страниц против эталона (AQC)…');
       uxui = buildUxUiReport(ds);
@@ -221,14 +225,14 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         journeySteps = await runJourney(browser, site, log);
         journeyReport = buildJourneyReport(journeySteps, ds.client.finalUrl, ds.takenAt);
         await writeFile(join(dir, 'journey.json'), JSON.stringify(journeyReport, null, 2), 'utf8');
-        await renderPdf(renderJourneyHtml(journeyReport), join(dir, 'Карта-пути-клиента-A0.pdf'), browser);
+        await renderPdf(cap('journey', renderJourneyHtml(journeyReport)), join(dir, 'Карта-пути-клиента-A0.pdf'), browser);
         log(`✓ Карта пути клиента A0 (PDF): пройдено ${journeyReport.passed}/${journeyReport.steps.length}, тупиков ${journeyReport.deadends}`);
       } catch (e) { log(`⚠️ Карта пути клиента не собралась (${String(e).slice(0, 120)})`); }
 
       try {
         siteAudit = buildSiteAudit(ds, { journey: journeySteps });
         await writeFile(join(dir, 'pagereport.json'), JSON.stringify(siteAudit, null, 2), 'utf8');
-        await renderPdf(renderAuditHtml(siteAudit), join(dir, 'UX-UI-аудит-A0.pdf'), browser);
+        await renderPdf(cap('uxui', renderAuditHtml(siteAudit)), join(dir, 'UX-UI-аудит-A0.pdf'), browser);
         log(`✓ UX/UI Audit A0 (PDF): соответствие эталону ${siteAudit.totalPct}%, системных дефектов ${siteAudit.systemic.length}`);
       } catch (e) { log(`⚠️ PDF UX/UI Audit A0 не собрался (${String(e).slice(0, 120)}) — остальные материалы не затронуты`); }
 
@@ -236,7 +240,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       try {
         const seo = buildSeoArch(ds); seoReport = seo;
         await writeFile(join(dir, 'seoarch.json'), JSON.stringify(seo, null, 2), 'utf8');
-        await renderPdf(renderSeoArchHtml(seo), join(dir, 'SEO-Architecture-A0.pdf'), browser);
+        await renderPdf(cap('seo', renderSeoArchHtml(seo)), join(dir, 'SEO-Architecture-A0.pdf'), browser);
         log(`✓ SEO Architecture A0 (PDF): ссылок ${seo.totals.links}, проблемных узлов ${seo.issues.length}`);
       } catch (e) { log(`⚠️ PDF SEO Architecture A0 не собрался (${String(e).slice(0, 120)})`); }
 
@@ -244,7 +248,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       try {
         const tech = buildTechAudit(ds); techReport = tech;
         await writeFile(join(dir, 'techaudit.json'), JSON.stringify(tech, null, 2), 'utf8');
-        await renderPdf(renderTechAuditHtml(tech), join(dir, 'Технический-аудит-A0.pdf'), browser);
+        await renderPdf(cap('tech', renderTechAuditHtml(tech)), join(dir, 'Технический-аудит-A0.pdf'), browser);
         log(`✓ Технический аудит A0 (PDF): пройдено ${tech.score.pct}%, blocked ${tech.blocked.length}`);
       } catch (e) { log(`⚠️ PDF Технический аудит A0 не собрался (${String(e).slice(0, 120)})`); }
 
@@ -252,7 +256,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       try {
         const content = buildContentAudit(ds); contentReport = content;
         await writeFile(join(dir, 'contentaudit.json'), JSON.stringify(content, null, 2), 'utf8');
-        await renderPdf(renderContentAuditHtml(content), join(dir, 'Content-Audit-A0.pdf'), browser);
+        await renderPdf(cap('content', renderContentAuditHtml(content)), join(dir, 'Content-Audit-A0.pdf'), browser);
         log(`✓ Content Audit A0 (PDF): типов страниц ${content.rows.length}`);
       } catch (e) { log(`⚠️ PDF Content Audit A0 не собрался (${String(e).slice(0, 120)})`); }
 
@@ -263,7 +267,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         ciReport = ci;
         if (hasKey()) { log('· Commerce Intelligence: дедукции (Claude)…'); await narrateIntelligence(ds, ci, log); }
         await writeFile(join(dir, 'intelligence.json'), JSON.stringify(ci, null, 2), 'utf8');
-        await renderPdf(renderIntelligenceHtml(ci), join(dir, 'Commerce-Intelligence-Audit-A0.pdf'), browser);
+        await renderPdf(cap('intelligence', renderIntelligenceHtml(ci)), join(dir, 'Commerce-Intelligence-Audit-A0.pdf'), browser);
         log(`✓ Commerce Intelligence A0 (PDF): зрелость ${ci.maturity.level}/5 «${ci.maturity.name}», слоёв ${ci.layers.length}, цепочек ${ci.chains.length}`);
       } catch (e) { log(`⚠️ Commerce Intelligence не собрался (${String(e).slice(0, 120)})`); }
 
@@ -271,7 +275,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       try {
         const mech = buildMechanics(ds); mechReport = mech;
         await writeFile(join(dir, 'mechanics.json'), JSON.stringify(mech, null, 2), 'utf8');
-        await renderPdf(renderMechanicsHtml(mech), join(dir, 'Маркетинговые-механики-A0.pdf'), browser);
+        await renderPdf(cap('mechanics', renderMechanicsHtml(mech)), join(dir, 'Маркетинговые-механики-A0.pdf'), browser);
         log(`✓ Маркетинговые механики A0 (PDF): активно ${mech.score.have}/${mech.score.measurable} (${mech.score.pct}%)`);
       } catch (e) { log(`⚠️ PDF Маркетинговые механики не собрался (${String(e).slice(0, 120)})`); }
 
@@ -280,19 +284,19 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       try {
         const social = await buildSocialAudit(ds, log);
         await writeFile(join(dir, 'social.json'), JSON.stringify(social, null, 2), 'utf8');
-        await renderPdf(renderSocialHtml(social), join(dir, 'Аудит-соцсетей-A0.pdf'), browser);
+        await renderPdf(cap('social', renderSocialHtml(social)), join(dir, 'Аудит-соцсетей-A0.pdf'), browser);
         log(`✓ Аудит соцсетей A0 (PDF): привязано ${social.linked}/${social.profiles.length}${social.searched ? ', внешний поиск выполнен' : ''}`);
       } catch (e) { log(`⚠️ Аудит соцсетей не собрался (${String(e).slice(0, 120)})`); }
       try {
         const mentions = await buildMentionsAudit(ds, log);
         await writeFile(join(dir, 'mentions.json'), JSON.stringify(mentions, null, 2), 'utf8');
-        await renderPdf(renderMentionsHtml(mentions), join(dir, 'Внешний-инфофон-A0.pdf'), browser);
+        await renderPdf(cap('mentions', renderMentionsHtml(mentions)), join(dir, 'Внешний-инфофон-A0.pdf'), browser);
         log(`✓ Внешний инфофон A0 (PDF): упоминаний ${mentions.mentions.length}${mentions.searched ? '' : ' (поиск заблокирован)'}`);
       } catch (e) { log(`⚠️ Внешний инфофон не собрался (${String(e).slice(0, 120)})`); }
       try {
         const reviews = await buildReviewsAudit(ds, log);
         await writeFile(join(dir, 'reviews.json'), JSON.stringify(reviews, null, 2), 'utf8');
-        await renderPdf(renderReviewsHtml(reviews), join(dir, 'Аудит-отзывов-A0.pdf'), browser);
+        await renderPdf(cap('reviews', renderReviewsHtml(reviews)), join(dir, 'Аудит-отзывов-A0.pdf'), browser);
         log(`✓ Аудит отзывов A0 (PDF): источников ${reviews.sources.length}`);
       } catch (e) { log(`⚠️ Аудит отзывов не собрался (${String(e).slice(0, 120)})`); }
 
@@ -300,7 +304,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       try {
         const channels = buildChannels(ds);
         await writeFile(join(dir, 'channels.json'), JSON.stringify(channels, null, 2), 'utf8');
-        await renderPdf(renderChannelsHtml(channels), join(dir, 'Аудит-каналов-A0.pdf'), browser);
+        await renderPdf(cap('channels', renderChannelsHtml(channels)), join(dir, 'Аудит-каналов-A0.pdf'), browser);
         log(`✓ Аудит каналов A0 (PDF): зашито ${channels.wired}/${channels.rows.length}, blocked ${channels.blocked}`);
       } catch (e) { log(`⚠️ PDF Аудит каналов A0 не собрался (${String(e).slice(0, 120)})`); }
 
@@ -314,7 +318,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
           catch (e) { log(`⚠️ нарратив бенчмарка не отработал (${String(e).slice(0, 100)})`); }
         }
         await writeFile(join(dir, 'benchmark.json'), JSON.stringify(bench, null, 2), 'utf8');
-        try { await renderPdf(renderCompetitorHtml(bench, clientName(ds), ds.takenAt), join(dir, 'Конкурентный-анализ-A0.pdf'), browser); }
+        try { await renderPdf(cap('competitor', renderCompetitorHtml(bench, clientName(ds), ds.takenAt)), join(dir, 'Конкурентный-анализ-A0.pdf'), browser); }
         catch (e) { log(`⚠️ PDF Конкурентный анализ A0 не собрался (${String(e).slice(0, 120)})`); }
         log(`✓ бенчмарк: индекс клиента ${bench.clientIndex}/100, место ${bench.clientRank}/${bench.totalSites}`);
       }
@@ -372,7 +376,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       // Матрица зрелости (AD-16) → PDF-дашборд.
       const mat = buildMaturity(ds); maturityReport = mat;
       await writeFile(join(dir, 'maturity.json'), JSON.stringify(mat, null, 2), 'utf8');
-      await pdf(renderMaturityPdf(mat, cn, D), 'Матрица-зрелости-A0.pdf');
+      await pdf(cap('maturity', renderMaturityPdf(mat, cn, D)), 'Матрица-зрелости-A0.pdf');
 
       // Scope программы по волнам → PDF.
       const scope = buildScope(ds, { engine, analysis: analysisResult, hasMoney: Boolean(money) });
@@ -382,7 +386,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       // Цена в канале и роль в цепочке → PDF.
       const pc = buildPriceChannel(ds);
       await writeFile(join(dir, 'pricechannel.json'), JSON.stringify(pc, null, 2), 'utf8');
-      await pdf(renderPriceChannelPdf(pc, cn, D), 'Цена-в-канале-A0.pdf');
+      await pdf(cap('pricechannel', renderPriceChannelPdf(pc, cn, D)), 'Цена-в-канале-A0.pdf');
 
       // ── ЕДИНЫЙ РЕЕСТР НАХОДОК — строится ДО причинной карты/охвата/exec, чтобы они
       //    читали из него (единая точка правды: одни ID, одна уверенность, одни деньги).
@@ -412,13 +416,13 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
             const expertInputs = expertResults.flatMap((r) => r.findings);
             if (expertInputs.length) registry = buildRegistry([...feedFromReports(registryRaw, journeyReport), ...expertInputs], { money });
             const nAdj = applyVerifications(registry, expertResults.flatMap((r) => r.verifications));
-            await renderPdf(renderPremiumHtml(cn, ds.takenAt, expertResults), join(dir, 'Премиум-экспертиза.pdf'), browser);
+            await renderPdf(cap('premium', renderPremiumHtml(cn, ds.takenAt, expertResults)), join(dir, 'Премиум-экспертиза.pdf'), browser);
             log(`✓ Премиум-экспертиза: агентов ${expertResults.filter((r) => r.ran).length}/${expertResults.length}, находок +${expertInputs.length}, перепроверок применено ${nAdj}`);
           } catch (e) { log(`⚠️ премиум-экспертиза не отработала (${String(e).slice(0, 100)})`); }
         }
         const rs = registrySummary(registry);
         await writeFile(join(dir, 'registry.json'), JSON.stringify(registry, null, 2), 'utf8');
-        await renderPdf(renderRegistryHtml(cn, ds.takenAt, registry), join(dir, 'Реестр-находок.pdf'), browser);
+        await renderPdf(cap('registry', renderRegistryHtml(cn, ds.takenAt, registry)), join(dir, 'Реестр-находок.pdf'), browser);
         log(`✓ Реестр находок (PDF)${opts.premium ? ' + премиум' : ''}: ${rs.total} находок (P0 ${rs.p0} / P1 ${rs.p1} / P2 ${rs.p2}), exposure ≈ ${rs.exposureYear.toLocaleString('ru-RU')} ₴/год`);
       } catch (e) { log(`⚠️ реестр находок не собран (${String(e).slice(0, 100)})`); }
 
@@ -427,7 +431,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         try {
           const { buildEngagement, renderEngagementHtml } = await import('./engagement.js');
           const eng = buildEngagement(cn, ds.takenAt, registry);
-          await renderPdf(renderEngagementHtml(eng), join(dir, 'Итоговое-резюме.pdf'), browser);
+          await renderPdf(cap('engagement', renderEngagementHtml(eng)), join(dir, 'Итоговое-резюме.pdf'), browser);
           log(`✓ Итоговое резюме (PDF): ${eng.tactical.count} тактических / ${eng.strategic.count} стратегических, команда ${eng.team.length} ролей`);
         } catch (e) { log(`⚠️ итоговое резюме не собрано (${String(e).slice(0, 80)})`); }
       }
@@ -441,7 +445,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         findings: registry ?? [],
       });
       await writeFile(join(dir, 'causal.json'), JSON.stringify(causal, null, 2), 'utf8');
-      await pdf(renderCausalPdf(causal, cn, D), 'Причинно-следственная-карта-A0.pdf');
+      await pdf(cap('causal', renderCausalPdf(causal, cn, D)), 'Причинно-следственная-карта-A0.pdf');
       log(`✓ метод-документы (PDF): зрелость (набл. ${mat.observedAvg ?? '—'}/5), scope (${scope.waves.reduce((n, w) => n + w.items.length, 0)} активаций), цена в канале`);
 
       const cov = buildCoverage(ds, { hasEngine: Boolean(engine), hasMoney: Boolean(money), findings: registry ?? [] });
@@ -452,7 +456,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
 
       // Executive Diagnostic A0 — зонтичный клиентский PDF, сводит все аудиты (A0 §13).
       try {
-        const execHtml = renderExecDiagnostic(ds, { siteAudit, analysis: analysisResult, engine, money, bench, coverage: cov, registry: registry ?? [] });
+        const execHtml = cap('exec', renderExecDiagnostic(ds, { siteAudit, analysis: analysisResult, engine, money, bench, coverage: cov, registry: registry ?? [] }));
         await renderPdf(execHtml, join(dir, 'Executive-Diagnostic-A0.pdf'), browser);
         log('✓ Executive Diagnostic A0 (PDF): зонтичный отчёт собран');
       } catch (e) { log(`⚠️ Executive Diagnostic не собрался (${String(e).slice(0, 120)}) — остальные материалы не затронуты`); }
@@ -465,7 +469,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         const synth = await narrateSynthesis(ds, { uxui, proto, bench, maturity: mat, scope, causal, money, engine, coverage: cov });
         if (synth) {
           await writeFile(join(dir, 'synthesis.json'), JSON.stringify(synth, null, 2), 'utf8');
-          await pdf(renderSynthesisPdf(synth, cn, D), 'Синтез-аудита-A0.pdf');
+          await pdf(cap('synthesis', renderSynthesisPdf(synth, cn, D)), 'Синтез-аудита-A0.pdf');
           log('✓ синтез собран');
         } else { log('· синтез не собран (нет ключа/данных)'); }
 
@@ -497,7 +501,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         const cn2 = clientName(ds);
         const backlog = registry ? buildBacklogFromRegistry(cn2, ds.takenAt, registry, registryRaw.length) : buildBacklog(cn2, ds.takenAt, registryRaw);
         await writeFile(join(dir, 'backlog.json'), JSON.stringify(backlog, null, 2), 'utf8');
-        await renderPdf(renderBacklogHtml(backlog), join(dir, 'Сводный-бэклог.pdf'), browser);
+        await renderPdf(cap('backlog', renderBacklogHtml(backlog)), join(dir, 'Сводный-бэклог.pdf'), browser);
         log(`✓ Сводный бэклог (PDF)${registry ? ' из реестра' : ''}: ${backlog.rawCount} рекомендаций → ${backlog.items.length} работ`);
 
         // ── Протокол синергии и QA: пакет проверяет сам себя, нестыковки → резолюции. ──
@@ -510,6 +514,24 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await renderPdf(renderQaHtml(qa), join(dir, 'Протокол-синергии-QA-A0.pdf'), browser);
         log(`✓ Протокол синергии/QA (PDF): проверок ${qa.checksRun}, находок ${qa.findings.length}`);
       } catch (e) { log(`⚠️ активационный гейт не отработал (${String(e).slice(0, 100)})`); }
+    }
+
+    // ── ГРУПУВАННЯ: 5 тематичних розділів + головний висновок з усіх лінз. ──
+    // Клієнт отримує цілісні документи, а не 26 розрізнених. Окремі лінзи лишаються
+    // на диску (внутрішній архів). Порожні теми композер відсіює сам.
+    if (!prelaunch) {
+      try {
+        const { buildClientDocuments } = await import('./export/documents.js');
+        const clientDocs = buildClientDocuments(lensHtml, { verdicts: {
+          experience: siteAudit?.verdict,
+          traffic: techReport?.verdict,
+        } });
+        for (const d of clientDocs) {
+          try { await renderPdf(d.html, join(dir, d.file), browser); }
+          catch (e) { log(`⚠️ ${d.file}: ${String(e).slice(0, 80)}`); }
+        }
+        log(`✓ клієнтський пакет: ${clientDocs.length} тематичних документів (розділи + висновок)`);
+      } catch (e) { log(`⚠️ групування документів не зібралось (${String(e).slice(0, 120)})`); }
     }
 
     const files = (await readdir(dir)).sort();

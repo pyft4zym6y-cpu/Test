@@ -66,12 +66,13 @@ function categorize(name: string): string {
 //  • внутренний полный  (pack-internal.zip) — всё, включая рабочие документы и JSON.
 // Документ-артефакт = Word/Excel/PDF/PowerPoint.
 const isDoc = (name: string) => /\.(pdf|docx|xlsx|pptx)$/i.test(name);
-// Внутренние-только документы: наша кухня, клиент их не видит (домыслы/самопроверка/
-// мета об уверенности/сырое планирование). Совпадение по устойчивому корню имени.
-const isInternalOnly = (name: string) =>
-  /(протокол.?синерг|qa[-_]|реестр.?гипотез|реєстр.?гіпотез|охват.?и.?увер|scope.?по.?волн|scope-a0|активацион|activation)/i.test(name);
-// В клиентский пакет и в веб-список попадают документы, кроме внутренних-только.
-const isClientDoc = (name: string) => isDoc(name) && !isInternalOnly(name);
+// Клиентский чистовой пакет = сгруппированные тематические документы (5 разделов +
+// головний висновок, имена «1-…»…«5-…») + коммерческое предложение. Отдельные линзы
+// (UX-UI-A0, SEO-…, Технический-… и т.д.) — это ВНУТРЕННИЙ разбор: они уходят только
+// в наш полный архив, а клиент видит цельные разделы, а не 26 файлов.
+const isThemeDoc = (name: string) => /^[1-5]-.+\.(pdf|docx)$/i.test(name);
+const isProposal = (name: string) => /(коммерческое.?предложение|комерційна.?пропозиц|kp)\.(pdf|docx)$/i.test(name);
+const isClientDoc = (name: string) => isDoc(name) && (isThemeDoc(name) || isProposal(name));
 
 const persistView = (j: Job) => ({ id: j.id, client: j.client, tier: j.tier, status: j.status, startedAt: j.startedAt, finishedAt: j.finishedAt, summary: j.summary, metrics: j.metrics, resultId: j.resultId, files: j.files });
 
