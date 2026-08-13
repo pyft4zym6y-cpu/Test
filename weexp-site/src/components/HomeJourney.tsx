@@ -1,6 +1,7 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { SYSTEMS, SHORT, type SystemKey } from '@/data/xray';
+import { clamp, band, seg, setLayer as set, useScrollScene } from '@/lib/scene';
 import './anatomy.css'; // скляні плити / світло / флажки шарів (.anat-*) живуть тут
 import './home-journey.css';
 
@@ -22,13 +23,6 @@ const LAYERS: Layer[] = [
   ...SYSTEMS.map((s) => ({ num: s.num, title: s.title, short: SHORT[s.key], feel: s.feel, parts: PARTS[s.key] })),
 ];
 
-const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
-const band = (p: number, s: number, e: number) => clamp((p - s) / (e - s), 0, 1);
-// Сегмент акту: тане всередину a→b, тримається b→c, тане назовні c→d.
-// Сусідні акти стикуються (out одного = in наступного), тож у кадрі домінує один.
-const seg = (p: number, a: number, b: number, c: number, d: number) =>
-  p < a || p > d ? 0 : p < b ? (p - a) / (b - a) : p > c ? (d - p) / (d - c) : 1;
-
 /**
  * Головна як безперервний скрол-джорней: один закріплений екран, крізь який
  * рухаєшся сценами (не блоки стопкою). Хаос → система збирається → відділ
@@ -43,21 +37,11 @@ export function HomeJourney() {
   const actC = useRef<HTMLDivElement>(null);
   const actD = useRef<HTMLDivElement>(null);
   const actE = useRef<HTMLDivElement>(null);
-  const [layer, setLayer] = useState(0);
+  const [layer, setActiveLayer] = useState(0);
+  const lastLayer = useRef(-1);
+  const N = LAYERS.length, mid = (N - 1) / 2;
 
-  useEffect(() => {
-    const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
-    const N = LAYERS.length; const mid = (N - 1) / 2;
-    let raf = 0, ticking = false, lastLayer = -1;
-    const set = (el: HTMLElement | null, o: number, tf?: string) => { if (!el) return; el.style.opacity = String(o); if (tf !== undefined) el.style.transform = tf; };
-
-    const frame = () => {
-      ticking = false;
-      const el = sec.current; if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const total = el.offsetHeight - innerHeight;
-      const p = total > 0 ? clamp(-rect.top / total, 0, 1) : 0;
-
+  useScrollScene(sec, (p, reduce) => {
       // Акт A — герой: повний угорі, піднімається й тане.
       const aOut = band(p, 0.08, 0.16);
       set(actA.current, seg(p, -1, 0, 0.08, 0.16), `translateY(${(-aOut * 9).toFixed(1)}vh) scale(${(1 - aOut * 0.05).toFixed(3)})`);
@@ -88,7 +72,7 @@ export function HomeJourney() {
         const rot = reduce ? 0 : (cp - 0.5) * 16;
         stackRef.current.style.transform = `rotateX(58deg) rotateZ(${(45 + rot).toFixed(2)}deg)`;
       }
-      if (act !== lastLayer) { lastLayer = act; setLayer(act); }
+      if (act !== lastLayer.current) { lastLayer.current = act; setActiveLayer(act); }
 
       // Акт D — шлях до незалежності.
       const dIn = band(p, 0.80, 0.86);
@@ -96,13 +80,7 @@ export function HomeJourney() {
       // Акт E — CTA (тримається до кінця).
       set(actE.current, reduce ? 1 : seg(p, 0.94, 0.98, 1.1, 1.2));
       set(document.querySelector('.jrny-scroll'), p < 0.06 ? 1 : 0);
-    };
-    const onScroll = () => { if (!ticking) { ticking = true; raf = requestAnimationFrame(frame); } };
-    addEventListener('scroll', onScroll, { passive: true });
-    addEventListener('resize', onScroll, { passive: true });
-    frame();
-    return () => { cancelAnimationFrame(raf); removeEventListener('scroll', onScroll); removeEventListener('resize', onScroll); };
-  }, []);
+  });
 
   const L = LAYERS[layer];
 
