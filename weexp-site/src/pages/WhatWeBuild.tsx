@@ -32,7 +32,7 @@ const SCALE = [
 ];
 
 const INDEPENDENCE = [
-  { t: 'Independence Score', d: 'KPI передачі: наскільки бізнес працює без героя.', to: '/how-it-works/independence-score' },
+  { t: 'Independence Score', d: 'KPI передачі: наскільки бізнес працює без героя.', to: '/diagnose' },
   { t: 'Handoff', d: 'Передача операційного керування вашій команді під SOP.' },
   { t: 'Recalibration', d: 'Повертаємось, коли зʼявляється новий розрив або рівень.' },
 ];

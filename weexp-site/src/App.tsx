@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from '@/Layout';
 import { RouteSeo } from '@/lib/seo';
 import '@/lib/primitives.css';
@@ -12,13 +12,9 @@ const SystemPage = lazy(() => import('@/pages/SystemPage').then((m) => ({ defaul
 const WhatWeBuild = lazy(() => import('@/pages/WhatWeBuild').then((m) => ({ default: m.WhatWeBuild })));
 const EuExpansion = lazy(() => import('@/pages/EuExpansion').then((m) => ({ default: m.EuExpansion })));
 const HowItWorks = lazy(() => import('@/pages/HowItWorks').then((m) => ({ default: m.HowItWorks })));
-const BusinessHealthPage = lazy(() => import('@/pages/BusinessHealthPage').then((m) => ({ default: m.BusinessHealthPage })));
-const IndependenceScorePage = lazy(() => import('@/pages/IndependenceScorePage').then((m) => ({ default: m.IndependenceScorePage })));
-const Benchmark = lazy(() => import('@/pages/Benchmark').then((m) => ({ default: m.Benchmark })));
 const StandardPage = lazy(() => import('@/pages/StandardPage').then((m) => ({ default: m.StandardPage })));
 const CasesPage = lazy(() => import('@/pages/CasesPage').then((m) => ({ default: m.CasesPage })));
 const CaseDetail = lazy(() => import('@/pages/CaseDetail').then((m) => ({ default: m.CaseDetail })));
-const Intelligence = lazy(() => import('@/pages/Intelligence').then((m) => ({ default: m.Intelligence })));
 const About = lazy(() => import('@/pages/About').then((m) => ({ default: m.About })));
 const FounderPage = lazy(() => import('@/pages/FounderPage').then((m) => ({ default: m.FounderPage })));
 const TeamPage = lazy(() => import('@/pages/TeamPage').then((m) => ({ default: m.TeamPage })));
@@ -40,13 +36,15 @@ export default function App() {
             <Route path="/what-we-build" element={<WhatWeBuild />} />
             <Route path="/what-we-build/eu-expansion" element={<EuExpansion />} />
             <Route path="/how-it-works" element={<HowItWorks />} />
-            <Route path="/how-it-works/business-health" element={<BusinessHealthPage />} />
-            <Route path="/how-it-works/independence-score" element={<IndependenceScorePage />} />
-            <Route path="/how-it-works/benchmark" element={<Benchmark />} />
+            {/* Метрики живуть у самому інструменті X-Ray — сторінки-глоссарії згорнуто */}
+            <Route path="/how-it-works/business-health" element={<Navigate to="/diagnose" replace />} />
+            <Route path="/how-it-works/independence-score" element={<Navigate to="/diagnose" replace />} />
+            <Route path="/how-it-works/benchmark" element={<Navigate to="/diagnose" replace />} />
             <Route path="/about/standard" element={<StandardPage />} />
             <Route path="/cases" element={<CasesPage />} />
             <Route path="/cases/:slug" element={<CaseDetail />} />
-            <Route path="/intelligence" element={<Intelligence />} />
+            {/* Аналітику згорнуто в докази (Кейси) */}
+            <Route path="/intelligence" element={<Navigate to="/cases" replace />} />
             <Route path="/about" element={<About />} />
             <Route path="/about/founder" element={<FounderPage />} />
             <Route path="/about/team" element={<TeamPage />} />

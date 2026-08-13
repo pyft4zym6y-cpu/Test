@@ -49,7 +49,7 @@ export function StandardPage() {
           <p className="home-cta-lead">Почніть із власного Independence Score.</p>
           <div className="home-cta-row">
             <Link to="/diagnose" className="btn-primary mono">Пройти X-Ray →</Link>
-            <Link to="/how-it-works/independence-score" className="btn-ghost mono">Як рахується →</Link>
+            <Link to="/diagnose" className="btn-ghost mono">Як рахується →</Link>
           </div>
         </div>
       </section>

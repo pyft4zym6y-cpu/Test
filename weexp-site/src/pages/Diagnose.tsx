@@ -65,7 +65,7 @@ export function Diagnose() {
         <div className="home-cta-row">
           <Link to="/contact" className="btn-primary mono">Подати заявку на Diagnosis →</Link>
           <Link to="/diagnose/full" className="btn-ghost mono">Повна діагностика (28 питань) →</Link>
-          <Link to="/how-it-works/benchmark" className="btn-ghost mono">Бенчмарк проти ринку →</Link>
+          <Link to="/cases" className="btn-ghost mono">Порівняти з ринком →</Link>
         </div>
       </section>
     </>

@@ -35,11 +35,11 @@ export function HowItWorks() {
       <section className="wrap how-assets">
         <span className="page-kick">Інструменти методу</span>
         <div className="how-assets-row">
-          <Link to="/how-it-works/business-health" className="how-asset">
+          <Link to="/diagnose" className="how-asset">
             <span className="how-asset-t">Business Health</span>
             <span className="how-asset-d">18 доменів здоров’я бізнесу</span>
           </Link>
-          <Link to="/how-it-works/independence-score" className="how-asset">
+          <Link to="/diagnose" className="how-asset">
             <span className="how-asset-t">Independence Score</span>
             <span className="how-asset-d">Рівень зрілості 0–100</span>
           </Link>

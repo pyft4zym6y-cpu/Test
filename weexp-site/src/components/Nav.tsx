@@ -15,14 +15,8 @@ const MENU: Group[] = [
     { to: '/what-we-build#independence', label: 'Незалежність' },
     { to: '/what-we-build/eu-expansion', label: 'Вихід у ЄС' },
   ]},
-  { to: '/how-it-works', label: 'Як працюємо', sub: [
-    { to: '/how-it-works', label: 'Метод WEEXP' },
-    { to: '/how-it-works/business-health', label: 'Здоров’я бізнесу' },
-    { to: '/how-it-works/independence-score', label: 'Індекс незалежності' },
-    { to: '/how-it-works/benchmark', label: 'Бенчмарк' },
-  ]},
+  { to: '/how-it-works', label: 'Як працюємо' },
   { to: '/cases', label: 'Кейси' },
-  { to: '/intelligence', label: 'Аналітика' },
   { to: '/about', label: 'Агенція', sub: [
     { to: '/about', label: 'Про WEEXP' },
     { to: '/about/founder', label: 'Засновник' },
