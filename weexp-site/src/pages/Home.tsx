@@ -18,8 +18,8 @@ export function Home() {
         <div className="home-cta-in">
           <p className="home-cta-lead">Подивіться, як влаштована система — або одразу порахуйте свій розрив у грошах.</p>
           <div className="home-cta-row">
-            <Link to="/os" className="btn-primary mono">Відкрити Commerce OS →</Link>
-            <Link to="/diagnostics" className="btn-ghost mono">Порахувати розрив →</Link>
+            <Link to="/diagnose" className="btn-primary mono">Діагностувати бізнес →</Link>
+            <Link to="/what-we-build" className="btn-ghost mono">Подивитися, що ми будуємо →</Link>
           </div>
         </div>
       </section>

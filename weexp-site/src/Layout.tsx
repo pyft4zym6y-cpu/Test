@@ -17,18 +17,24 @@ import './layout.css';
  */
 export function Layout() {
   useLenis();
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
   const mainRef = useRef<HTMLDivElement>(null);
 
-  // Смена экрана: наверх без анимации + пересчёт триггеров под новый контент.
+  // Смена экрана: к якорю (если есть hash) или наверх + пересчёт триггеров под новый контент.
   useEffect(() => {
     const lenis = (window as unknown as { __lenis?: Lenis }).__lenis;
-    if (lenis) lenis.scrollTo(0, { immediate: true });
-    else window.scrollTo(0, 0);
-    document.documentElement.style.setProperty('--p', '0');
+    const toTop = () => { if (lenis) lenis.scrollTo(0, { immediate: true }); else window.scrollTo(0, 0); };
+    if (hash) {
+      const el = document.querySelector(hash);
+      if (el) { requestAnimationFrame(() => { if (lenis) lenis.scrollTo(el as HTMLElement, { offset: -70 }); else (el as HTMLElement).scrollIntoView(); }); }
+      else toTop();
+    } else {
+      toTop();
+      document.documentElement.style.setProperty('--p', '0');
+    }
     const t = setTimeout(() => ScrollTrigger.refresh(), 60);
     return () => clearTimeout(t);
-  }, [pathname]);
+  }, [pathname, hash]);
 
   return (
     <ScoreProvider>
