@@ -4,16 +4,14 @@ import { caseBySlug, CASES } from '@/data/cases';
 import './case-detail.css';
 
 /**
- * /cases/:slug — діагноз → система → результат.
- * Wow-механіка: перемикач «до / після» морфить усі метрики одночасно
- * (крос-фейд значень + шкала-бенчмарк), демонструючи розрив, який закриває система.
+ * /cases/:slug — фірмова дуга: BEFORE → DIAGNOSIS → MONEY → BUILD → AFTER → INDEPENDENCE → LEARNING.
+ * Wow: перемикач «до/після» морфить усі метрики разом; LEARNING фіксує внесок кейсу в капітал WEEXP.
  */
 export function CaseDetail() {
   const { slug } = useParams();
   const study = slug ? caseBySlug(slug) : undefined;
   const [after, setAfter] = useState(false);
 
-  // авто-перемикання «до→після» при вході, далі — керує користувач
   useEffect(() => {
     setAfter(false);
     const t = setTimeout(() => setAfter(true), 700);
@@ -37,13 +35,33 @@ export function CaseDetail() {
             <span className="cd-hero-num">{study.hero}</span>
             <span className="cd-hero-lab mono">{study.heroLabel} · {study.window}</span>
           </div>
+          <div className="cd-tags mono">
+            {study.challenges.map((c) => <span key={c}>{c}</span>)}
+            <span className="cd-tag-stage">{study.stage}</span>
+          </div>
         </div>
       </header>
+
+      <section className="wrap cd-arc">
+        <div className="cd-arc-block">
+          <span className="cd-arc-k mono">Before</span>
+          <p className="cd-arc-text">{study.before}</p>
+        </div>
+        <div className="cd-arc-block">
+          <span className="cd-arc-k mono">Diagnosis</span>
+          <ul className="cd-list">{study.diagnosis.map((d, i) => <li key={i}>{d}</li>)}</ul>
+        </div>
+      </section>
+
+      <section className="wrap cd-money" data-say={study.money}>
+        <span className="cd-arc-k mono">Money · скільки це коштувало бізнесу</span>
+        <p className="cd-money-text">{study.money}</p>
+      </section>
 
       {/* Морф до/після */}
       <section className="wrap cd-morph" data-say={`${study.name}: розрив між «до» і «після» — це і є гроші системи.`}>
         <div className="cd-morph-head">
-          <h2 className="cd-h2">Розрив у цифрах</h2>
+          <h2 className="cd-h2">After · розрив у цифрах</h2>
           <div className="cd-toggle mono" role="tablist" aria-label="До / Після">
             <button role="tab" aria-selected={!after} className={!after ? 'is-on' : ''} onClick={() => setAfter(false)}>До</button>
             <button role="tab" aria-selected={after} className={after ? 'is-on' : ''} onClick={() => setAfter(true)}>Після</button>
@@ -64,21 +82,26 @@ export function CaseDetail() {
       </section>
 
       <section className="wrap cd-cols">
-        <div className="cd-col">
-          <h3 className="cd-col-h mono">Діагноз у грошах</h3>
-          <ul className="cd-list">{study.diagnosis.map((d, i) => <li key={i}>{d}</li>)}</ul>
-        </div>
         <div className="cd-col cd-col--sys">
-          <h3 className="cd-col-h mono">Що побудували</h3>
+          <h3 className="cd-col-h mono">Build · що побудували</h3>
           <ul className="cd-list">{study.system.map((s, i) => <li key={i}>{s}</li>)}</ul>
+        </div>
+        <div className="cd-col cd-col--ind">
+          <h3 className="cd-col-h mono">Independence · що клієнт може без нас</h3>
+          <p className="cd-col-p">{study.independence}</p>
+          <p className="cd-after-line">{study.after}</p>
         </div>
       </section>
 
-      <section className="wrap cd-result" data-say={study.result}>
-        <span className="page-kick">Результат</span>
-        <p className="cd-result-text">{study.result}</p>
+      <section className="wrap cd-learning" data-say={`Learning: ${study.learning}`}>
+        <span className="cd-arc-k mono">Learning · чого кейс навчив систему WEEXP</span>
+        <p className="cd-learning-text">{study.learning}</p>
+        <span className="cd-learning-note mono">Кожен клієнт робить систему WEEXP розумнішою — knowledge flywheel.</span>
+      </section>
+
+      <section className="wrap cd-result">
         <div className="cd-nav">
-          <Link to="/contact" className="btn-primary mono">Хочу так само →</Link>
+          <Link to="/diagnose" className="btn-primary mono">Хочу так само →</Link>
           <Link to={`/cases/${next.slug}`} className="btn-ghost mono">Наступний кейс: {next.name} →</Link>
         </div>
       </section>

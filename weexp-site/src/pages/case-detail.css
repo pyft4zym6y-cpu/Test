@@ -7,6 +7,25 @@
   line-height: .8; letter-spacing: -.05em; color: var(--mark-600); font-variant-numeric: tabular-nums;
 }
 .cd-hero-lab { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--steel-600); max-width: 22ch; }
+.cd-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+.cd-tags span { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--steel-600); border: 1px solid var(--hair); padding: 6px 10px; }
+.cd-tags .cd-tag-stage { color: var(--mark-600); border-color: var(--mark); }
+
+/* Фірмова дуга */
+.cd-arc-k { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--mark-600); }
+.cd-arc { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--hair); border: 1px solid var(--hair); margin: clamp(32px,6vh,64px) 0 0; }
+.cd-arc-block { background: var(--ink-900); padding: clamp(24px,4vw,40px); display: grid; gap: 14px; align-content: start; }
+.cd-arc-text { font-size: 16px; line-height: 1.6; color: var(--vel); }
+.cd-money { padding: clamp(40px,7vh,84px) 0; display: grid; gap: 14px; }
+.cd-money-text { font-family: var(--display); font-weight: 800; font-size: clamp(24px,4.5vw,48px); line-height: 1.05; letter-spacing: -.03em; color: var(--mark-600); max-width: 22ch; }
+.cd-col--ind { background: color-mix(in srgb, var(--verd-900) 30%, var(--ink-900)); }
+.cd-col--ind .cd-col-h { color: var(--verd-500); }
+.cd-col-p { font-size: 16px; line-height: 1.55; color: var(--paper); }
+.cd-after-line { font-size: 14px; line-height: 1.5; color: var(--vel); border-top: 1px solid var(--hair); padding-top: 14px; }
+.cd-learning { padding: clamp(40px,7vh,84px) 0; display: grid; gap: 12px; border-top: 1px solid var(--hair); }
+.cd-learning-text { font-family: var(--display); font-weight: 700; font-size: clamp(20px,3.4vw,36px); line-height: 1.12; letter-spacing: -.02em; color: var(--paper); max-width: 26ch; }
+.cd-learning-note { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--steel-600); }
+@media (max-width: 720px) { .cd-arc { grid-template-columns: 1fr; } }
 
 /* Морф до/після */
 .cd-morph { padding: clamp(40px, 7vh, 84px) 0; }
