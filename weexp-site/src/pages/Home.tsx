@@ -1,8 +1,6 @@
-import { lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { Hero } from '@/components/Hero';
-// Transform теж використовує three.js — ліниво, щоб three вантажився лише на головній.
-const Transform = lazy(() => import('@/components/Transform').then((m) => ({ default: m.Transform })));
+import { DepartmentAnatomy } from '@/components/DepartmentAnatomy';
 import { Proof } from '@/components/Proof';
 import { Engine } from '@/components/Engine';
 import { Usp } from '@/components/Usp';
@@ -15,7 +13,7 @@ export function Home() {
   return (
     <>
       <Hero />
-      <Suspense fallback={null}><Transform /></Suspense>
+      <DepartmentAnatomy />
       <section className="wrap home-video">
         <VideoBlock title="WEEXP — система замість героїзму" sub="Хто ми і як будуємо e-commerce як функцію бізнесу" />
       </section>
