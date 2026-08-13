@@ -1,0 +1,107 @@
+/**
+ * Головна як безперервний скрол-джорней. Один закріплений екран (.jrny-stage),
+ * крізь який рухаєшся сценами-актами. Ніяких блоків стопкою: висока секція
+ * .jrny лише дає «дорогу» для скролу, а весь контент живе в одному sticky-кадрі
+ * й керується прогресом. Акти — абсолютні шари, що з'являються/тануть по черзі.
+ */
+
+.jrny { position: relative; height: 620vh; background: var(--ink-950); }
+
+/* Один кадр на весь екран — сюди проєктуються всі акти */
+.jrny-stage {
+  position: sticky; top: 0; height: 100vh; overflow: hidden;
+  display: grid; place-items: center;
+  padding: 0 clamp(20px, 5vw, 68px);
+  isolation: isolate;
+}
+
+/* Спільна база акту: абсолютний шар по центру кадру, керований opacity/transform */
+.jrny-act {
+  position: absolute; inset: 0;
+  display: grid; align-content: center; justify-items: center;
+  text-align: center; gap: clamp(14px, 2vw, 26px);
+  padding: 0 clamp(20px, 6vw, 90px);
+  will-change: opacity, transform;
+  pointer-events: none;
+}
+.jrny-act a, .jrny-act button { pointer-events: auto; }
+
+/* Спільна типографіка */
+.jrny-kick, .jrny-kick2 {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .24em;
+  text-transform: uppercase; color: var(--steel-600);
+}
+.jrny-h1 {
+  font-family: var(--display); font-weight: 800; letter-spacing: -.035em;
+  line-height: .9; font-size: clamp(52px, 11vw, 168px); color: var(--paper);
+  text-wrap: balance;
+}
+.jrny-h2 {
+  font-family: var(--display); font-weight: 800; letter-spacing: -.03em;
+  line-height: .98; font-size: clamp(34px, 6vw, 88px); color: var(--paper);
+  text-wrap: balance;
+}
+.jrny .mk { color: var(--mark-600); font-style: italic; }
+.jrny-lead {
+  max-width: 44ch; font-size: clamp(16px, 1.7vw, 21px); line-height: 1.5;
+  color: var(--steel-400);
+}
+.jrny-sub { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--steel-600); }
+
+/* --- Акт C: розбирання відділу — 3D-стек ліворуч, панель праворуч --- */
+.jrny-dept {
+  grid-template-columns: 1.05fr .95fr;
+  align-items: center; justify-items: stretch; text-align: left;
+  gap: clamp(20px, 4vw, 60px);
+}
+.jrny-scene { position: relative; perspective: 1500px; display: grid; place-items: center; height: 100%; }
+.jrny-scene .anat-stack { width: min(46vh, 400px); height: min(46vh, 400px); }
+
+.jrny-panel { display: grid; gap: 16px; align-content: center; max-width: 42ch; }
+.jrny-panel-kick { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--steel-600); }
+.jrny-panel-h {
+  font-family: var(--display); font-weight: 800; letter-spacing: -.03em; line-height: 1;
+  font-size: clamp(30px, 4.4vw, 60px); color: var(--paper); text-wrap: balance;
+  animation: jrnyFade .5s cubic-bezier(.2,1,.3,1) both;
+}
+.jrny-panel-feel { font-family: var(--display); font-weight: 500; font-style: italic; font-size: clamp(16px, 1.7vw, 21px); color: var(--vel); line-height: 1.3; }
+.jrny-panel-parts { display: flex; flex-wrap: wrap; gap: 8px; }
+.jrny-panel-parts span { font-size: 11px; letter-spacing: .04em; color: var(--vel); border: 1px solid var(--hair); padding: 7px 11px; }
+@keyframes jrnyFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* --- Акт D: шлях до незалежності --- */
+.jrny-path-row { display: flex; flex-wrap: wrap; gap: clamp(10px, 2vw, 22px); align-items: center; justify-content: center; }
+.jrny-path-step {
+  font-family: var(--mono); font-size: clamp(13px, 1.5vw, 17px); letter-spacing: .08em;
+  color: var(--paper); display: inline-flex; align-items: center; gap: clamp(10px, 2vw, 22px);
+}
+.jrny-path-step i { color: var(--mark-600); font-style: normal; }
+
+/* --- Акт E: CTA --- */
+.jrny-cta-row { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
+
+/* Підказка «гортайте» — тане на першому русі */
+.jrny-scroll {
+  position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%);
+  font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--steel-600);
+  transition: opacity .5s; animation: jrnyBob 2.4s ease-in-out infinite;
+}
+@keyframes jrnyBob { 0%,100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, 6px); } }
+
+/* Мобільний: стек над панеллю, коротший 3D */
+@media (max-width: 860px) {
+  .jrny { height: 720vh; }
+  .jrny-dept { grid-template-columns: 1fr; grid-template-rows: 40vh 1fr; gap: 8px; align-content: center; text-align: left; }
+  .jrny-scene { height: 40vh; }
+  .jrny-scene .anat-stack { width: min(30vh, 240px); height: min(30vh, 240px); }
+  .jrny-panel { align-content: start; max-width: none; }
+  .jrny-h1 { font-size: clamp(44px, 15vw, 96px); }
+}
+
+/* Reduced motion: без липкої сцени — акти йдуть звичайним потоком */
+@media (prefers-reduced-motion: reduce) {
+  .jrny { height: auto; background: var(--ink-950); }
+  .jrny-stage { position: static; height: auto; display: block; padding-block: clamp(60px, 12vh, 140px); }
+  .jrny-act { position: static; inset: auto; opacity: 1 !important; transform: none !important; margin-block: clamp(60px, 12vh, 140px); }
+  .jrny-scroll { display: none; }
+}
