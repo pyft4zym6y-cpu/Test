@@ -1,8 +1,11 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { usePageSeo } from '@/lib/seo';
 import './not-found.css';
 
-/** 404 — сторінки немає, але система на місці. */
+/** 404 — сторінки немає, але система на місці. noindex, щоб soft-404 не потрапляв в індекс. */
 export function NotFound() {
+  const { pathname } = useLocation();
+  usePageSeo('Сторінку не знайдено · WEEXP', 'Такої сторінки немає.', pathname, true);
   return (
     <section className="nf">
       <div className="wrap">
