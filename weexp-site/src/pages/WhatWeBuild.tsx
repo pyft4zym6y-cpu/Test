@@ -78,7 +78,7 @@ export function WhatWeBuild() {
           </div>
           <div className="wwb-pillars">
             {BUILD.map((p) => (
-              <article key={p.t} className="wwb-pillar">
+              <article key={p.t} className="wwb-pillar" data-tilt="6">
                 <h3 className="wwb-pillar-t">{p.t}</h3>
                 <p className="wwb-pillar-d">{p.d}</p>
                 <ul className="wwb-pillar-list">{p.items.map((i) => <li key={i}>{i}</li>)}</ul>
@@ -106,8 +106,8 @@ export function WhatWeBuild() {
                 </>
               );
               return s.to
-                ? <Link key={s.t} to={s.to} className="wwb-card wwb-card--link">{inner}</Link>
-                : <div key={s.t} className="wwb-card">{inner}</div>;
+                ? <Link key={s.t} to={s.to} className="wwb-card wwb-card--link" data-tilt="7">{inner}</Link>
+                : <div key={s.t} className="wwb-card" data-tilt="7">{inner}</div>;
             })}
           </div>
         </div>
@@ -131,8 +131,8 @@ export function WhatWeBuild() {
                 </>
               );
               return s.to
-                ? <Link key={s.t} to={s.to} className="wwb-card wwb-card--link">{inner}</Link>
-                : <div key={s.t} className="wwb-card">{inner}</div>;
+                ? <Link key={s.t} to={s.to} className="wwb-card wwb-card--link" data-tilt="7">{inner}</Link>
+                : <div key={s.t} className="wwb-card" data-tilt="7">{inner}</div>;
             })}
           </div>
         </div>
