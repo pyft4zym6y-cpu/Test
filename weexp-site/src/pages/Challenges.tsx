@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { PageHead } from '@/components/PageHead';
-import { SYSTEMS } from '@/data/xray';
+import { SystemExplorer } from '@/components/SystemExplorer';
 import { VideoBlock } from '@/components/VideoBlock';
 import './challenges.css';
 
@@ -17,20 +17,7 @@ export function Challenges() {
       <section className="wrap home-video">
         <VideoBlock title="7 систем, у яких бізнес втрачає гроші" sub="Огляд · як WEEXP діагностує систему цілком" />
       </section>
-      <section className="wrap ch-list">
-        {SYSTEMS.map((s) => (
-          <Link key={s.key} to={`/challenges/${s.slug}`} className="ch-row">
-            <span className="ch-num mono">{s.num}</span>
-            <span className="ch-body">
-              <span className="ch-title">{s.title}</span>
-              <span className="ch-en mono">{s.en}</span>
-              <span className="ch-feel">«{s.feel}»</span>
-            </span>
-            <span className="ch-idea">{s.bigIdea}</span>
-            <span className="ch-go mono">→</span>
-          </Link>
-        ))}
-      </section>
+      <SystemExplorer />
       <section className="home-cta wrap">
         <div className="home-cta-in">
           <p className="home-cta-lead">Не вгадуйте систему — знайдіть головний bottleneck за 2 хвилини.</p>
