@@ -1,7 +1,41 @@
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
+import Lenis from 'lenis';
 import { PageHead } from '@/components/PageHead';
 import { VideoBlock } from '@/components/VideoBlock';
 import './wwb.css';
+
+const STAGES: [string, string][] = [['diagnose', 'Diagnose'], ['build', 'Build'], ['scale', 'Scale'], ['independence', 'Independence']];
+
+/** Наскрізний індикатор 4 етапів: підсвічує активний за скролом, клік — перехід. */
+function WwbStages() {
+  const [active, setActive] = useState('diagnose');
+  useEffect(() => {
+    const io = new IntersectionObserver((ents) => {
+      for (const e of ents) if (e.isIntersecting) setActive((e.target as HTMLElement).id);
+    }, { rootMargin: '-45% 0px -45% 0px' });
+    STAGES.forEach(([id]) => { const el = document.getElementById(id); if (el) io.observe(el); });
+    return () => io.disconnect();
+  }, []);
+  const go = (id: string) => {
+    const el = document.getElementById(id); if (!el) return;
+    const lenis = (window as unknown as { __lenis?: Lenis }).__lenis;
+    if (lenis) lenis.scrollTo(el, { offset: -100 }); else el.scrollIntoView({ behavior: 'smooth' });
+  };
+  // Портал у body: інакше transform на .screen ламає fixed-позиціонування рейки.
+  return createPortal(
+    <nav className="wwb-stages" aria-label="Етапи побудови">
+      {STAGES.map(([id, label], i) => (
+        <button key={id} className={`wwb-stage${active === id ? ' is-on' : ''}`} onClick={() => go(id)}>
+          <span className="wwb-stage-lab mono">{String(i + 1).padStart(2, '0')} · {label}</span>
+          <span className="wwb-stage-dot" aria-hidden="true" />
+        </button>
+      ))}
+    </nav>,
+    document.body,
+  );
+}
 
 const DIAGNOSE = {
   flow: ['Fact', 'Benchmark', 'Gap', '€ Impact', 'Action'],
@@ -41,6 +75,7 @@ const INDEPENDENCE = [
 export function WhatWeBuild() {
   return (
     <>
+      <WwbStages />
       <PageHead
         kicker="Розділ · Що будуємо"
         title={<>Ми не радимо бізнеси.<br />Ми їх будуємо.</>}
