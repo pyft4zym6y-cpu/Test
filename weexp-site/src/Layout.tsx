@@ -42,6 +42,7 @@ export function Layout() {
 
   return (
     <ScoreProvider>
+      <div className="site-grain" aria-hidden="true" />
       <CustomCursor />
       <PageCurtain />
       <Nav />
