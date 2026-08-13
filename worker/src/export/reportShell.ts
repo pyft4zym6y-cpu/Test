@@ -10,56 +10,72 @@ export const esc = (s: unknown) => String(s ?? '').replace(/&/g, '&amp;').replac
 export const dimBadges = (dims: Dim[]) => dims.map((d) => `<span class="dim" title="${esc(DIMS[d])}">${d}</span>`).join('');
 export const scoreColor = (pct: number) => (pct >= 70 ? 'ok' : pct >= 45 ? 'check' : 'gap');
 
+/* ── Профиль сборки: клиентский чистовой vs наш внутренний ──
+ * client — без внутренних меток, домыслов, служебной телеметрии;
+ * internal — полный, с рабочими пометками. Рендереры и композер читают
+ * isInternal(), чтобы одна и та же модель дала два разных документа. */
+let PROFILE: 'client' | 'internal' = 'client';
+export const setDocProfile = (p: 'client' | 'internal') => { PROFILE = p; };
+export const isInternal = () => PROFILE === 'internal';
+
 export const SHARED_CSS = `
   :root{--ink:#12161C;--muted:#5A6472;--line:#E4E7EC;--lime:#65A30D;--ok:#16a34a;--check:#d97706;--gap:#dc2626;--bg:#fff;--soft:#F7F8FA;}
-  *{box-sizing:border-box;} html,body{margin:0;padding:0;color:var(--ink);background:var(--bg);font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;line-height:1.45;}
-  @page{size:A4;margin:14mm 12mm;}
-  h1{font-size:30px;line-height:1.15;margin:0 0 18px;font-weight:800;letter-spacing:-.5px;}
-  h2{font-size:17px;margin:0 0 6px;font-weight:800;letter-spacing:-.2px;}
-  h3{font-size:12px;margin:10px 0 4px;font-weight:700;}
-  .lead{color:var(--muted);margin:0 0 6px;font-size:10.5px;}
+  *{box-sizing:border-box;} html,body{margin:0;padding:0;color:var(--ink);background:var(--bg);font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5px;line-height:1.4;}
+  @page{size:A4;margin:12mm 11mm;}
+  /* h1 — это НАЗВАНИЕ документа (короткое), НЕ вывод. Вывод живёт в .verdict. */
+  h1{font-size:21px;line-height:1.1;margin:0 0 4px;font-weight:800;letter-spacing:-.4px;}
+  h2{font-size:15px;margin:0 0 5px;font-weight:800;letter-spacing:-.2px;}
+  h3{font-size:11.5px;margin:8px 0 3px;font-weight:700;}
+  .lead{color:var(--muted);margin:0 0 5px;font-size:10px;}
   .ok{color:var(--ok);} .check{color:var(--check);} .gap{color:var(--gap);}
-  /* Секции текут естественно (без orphan-пустот от avoid); неразрывны только мелкие блоки */
-  .block{padding:10px 0 4px;border-top:1px solid var(--line);}
+  /* Секции текут естественно; принудительных разрывов нет (борьба с белыми пробелами) */
+  .block{padding:8px 0 3px;border-top:1px solid var(--line);}
+  .block:first-of-type{border-top:0;}
   .block h2{page-break-after:avoid;}
   table{page-break-inside:auto;} tr,thead{page-break-inside:avoid;}
   .page{page-break-before:always;}
-  /* cover — компактная шапка: без пустой титульной страницы (прод-жалоба на «белые пробелы») */
-  .cover{position:relative;padding:0;margin-bottom:14px;}
-  .cov-bar{position:absolute;left:0;top:0;width:8px;height:100%;background:var(--lime);}
-  .cov-body{padding:12px 6px 10px 20px;}
-  .kicker,.page-kicker{color:var(--lime);font-weight:700;text-transform:uppercase;letter-spacing:.6px;font-size:10px;margin-bottom:14px;}
-  .cov-meta{display:flex;gap:34px;margin:14px 0 16px;}
-  .cov-meta .lbl{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.5px;}
-  .cov-meta .val{display:block;font-size:15px;font-weight:700;}
-  .cov-score{display:flex;align-items:baseline;gap:16px;margin:6px 0 14px;}
-  .cov-score .big{font-size:52px;font-weight:800;line-height:1;letter-spacing:-2px;}
-  .cov-score .big span{font-size:22px;}
-  .big-cap{color:var(--muted);font-size:12px;}
-  .coverage{background:var(--soft);border-left:3px solid var(--lime);padding:12px 14px;border-radius:0 6px 6px 0;font-size:10px;color:#333;max-width:150mm;}
+  /* cover — плотная шапка: НАЗВАНИЕ → вывод одной строкой → метрики (без даты/бренда) */
+  .cover{position:relative;padding:0;margin-bottom:10px;}
+  .cov-bar{position:absolute;left:0;top:0;width:6px;height:100%;background:var(--lime);}
+  .cov-body{padding:2px 4px 8px 16px;}
+  .kicker,.page-kicker{color:var(--lime);font-weight:700;text-transform:uppercase;letter-spacing:.5px;font-size:9px;margin-bottom:8px;}
+  /* .verdict — вывод аудита ОДНОЙ ФРАЗОЙ (подзаголовок, не гигантский h1) */
+  .verdict{font-size:14px;line-height:1.35;font-weight:600;color:var(--ink);margin:0 0 10px;max-width:165mm;}
+  .cov-meta{display:flex;gap:22px;margin:8px 0 10px;flex-wrap:wrap;}
+  .cov-meta .lbl{display:block;color:var(--muted);font-size:8px;text-transform:uppercase;letter-spacing:.5px;}
+  .cov-meta .val{display:block;font-size:13px;font-weight:700;}
+  .cov-score{display:flex;align-items:baseline;gap:12px;margin:4px 0 10px;}
+  .cov-score .big{font-size:42px;font-weight:800;line-height:1;letter-spacing:-1.5px;}
+  .cov-score .big span{font-size:18px;}
+  .big-cap{color:var(--muted);font-size:11px;}
+  .coverage{background:var(--soft);border-left:3px solid var(--lime);padding:9px 12px;border-radius:0 5px 5px 0;font-size:9.5px;color:#333;max-width:165mm;}
   table{width:100%;border-collapse:collapse;}
-  th{font-size:8.5px;text-transform:uppercase;color:var(--muted);text-align:left;padding:5px 6px;border-bottom:1px solid var(--line);letter-spacing:.3px;}
-  td{padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:top;}
+  th{font-size:8px;text-transform:uppercase;color:var(--muted);text-align:left;padding:4px 6px;border-bottom:1px solid var(--line);letter-spacing:.3px;}
+  td{padding:4px 6px;border-bottom:1px solid var(--line);vertical-align:top;}
   .dim{display:inline-block;font-size:7px;font-weight:700;letter-spacing:.3px;color:#475467;background:#EEF1F4;border-radius:3px;padding:1px 3px;margin:1px 2px 1px 0;}
-  .bar{display:block;width:100%;height:8px;background:var(--line);border-radius:5px;overflow:hidden;min-width:110px;}
+  .bar{display:block;width:100%;height:7px;background:var(--line);border-radius:5px;overflow:hidden;min-width:100px;}
   .fill{display:block;height:100%;border-radius:5px;} .fill.ok{background:var(--ok);} .fill.check{background:var(--check);} .fill.gap{background:var(--gap);}
-  .footer{margin-top:16px;padding-top:8px;border-top:1px solid var(--line);color:var(--muted);font-size:8.5px;}
+  .footer{margin-top:12px;padding-top:6px;border-top:1px solid var(--line);color:var(--muted);font-size:8px;}
+  /* Разделитель главы внутри сгруппированного документа */
+  .chap{padding:12px 0 4px;border-top:2px solid var(--ink);margin-top:6px;}
+  .chap-h{font-size:16px;font-weight:800;letter-spacing:-.2px;margin:0;}
+  .chap-k{color:var(--lime);font-weight:700;text-transform:uppercase;letter-spacing:.5px;font-size:8.5px;margin-bottom:3px;}
   /* conclusion card */
-  .concl{border:1px solid var(--line);border-left:4px solid var(--lime);border-radius:0 6px 6px 0;padding:10px 12px;margin:8px 0;page-break-inside:avoid;}
+  .concl{border:1px solid var(--line);border-left:4px solid var(--lime);border-radius:0 6px 6px 0;padding:9px 11px;margin:6px 0;page-break-inside:avoid;}
   .concl.crit{border-left-color:var(--gap);} .concl.warn{border-left-color:var(--check);}
-  .concl h3{margin:0 0 6px;font-size:13px;}
-  .concl-grid{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:10px;}
+  .concl h3{margin:0 0 5px;font-size:12.5px;}
+  .concl-grid{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:9.5px;}
   .concl-grid .k{color:var(--muted);white-space:nowrap;} .concl-grid .v{color:#222;}
   /* status chips */
-  .chip{display:inline-block;font-size:8.5px;font-weight:700;padding:2px 7px;border-radius:20px;border:1px solid var(--line);background:var(--soft);margin:1px 3px 1px 0;}
+  .chip{display:inline-block;font-size:8px;font-weight:700;padding:2px 7px;border-radius:20px;border:1px solid var(--line);background:var(--soft);margin:1px 3px 1px 0;}
   .chip.ok{color:var(--ok);} .chip.check{color:var(--check);} .chip.gap{color:var(--gap);}
   .chip.done{color:var(--ok);border-color:var(--ok);} .chip.partial{color:var(--check);border-color:var(--check);} .chip.blocked{color:var(--gap);border-color:var(--gap);}
   /* charts + footnotes */
-  .chart-wrap{margin:8px 0 10px;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--soft);page-break-inside:avoid;}
-  .chart-wrap.row{display:flex;gap:18px;align-items:center;flex-wrap:wrap;}
-  .chart-cap{color:var(--muted);font-size:9px;margin:6px 0 0;line-height:1.4;}
+  .chart-wrap{margin:6px 0 8px;padding:9px 11px;border:1px solid var(--line);border-radius:6px;background:var(--soft);page-break-inside:avoid;}
+  .chart-wrap.row{display:flex;gap:16px;align-items:center;flex-wrap:wrap;}
+  .chart-cap{color:var(--muted);font-size:8.5px;margin:5px 0 0;line-height:1.35;}
   sup.fn{color:var(--lime);font-weight:700;font-size:7px;}
-  .fn-note{margin:8px 0 0;padding-top:6px;border-top:1px dotted var(--line);color:var(--muted);font-size:8.5px;line-height:1.4;}
+  .fn-note{margin:6px 0 0;padding-top:5px;border-top:1px dotted var(--line);color:var(--muted);font-size:8px;line-height:1.35;}
   .fn-note sup{color:var(--lime);font-weight:700;}
 `;
 
@@ -129,6 +145,40 @@ export function conclusionSection(paragraphs: string[], next?: string, title = '
   return `<section class="block"><h2>${esc(title)}</h2>
     <div class="final">${paragraphs.map((p) => `<p>${esc(p)}</p>`).join('')}
     ${next ? `<div class="nx"><b>Следующий шаг:</b> ${esc(next)}</div>` : ''}</div></section>`;
+}
+
+/**
+ * Обложка документа: НАЗВАНИЕ (короткое) → вывод одной фразой (.verdict) →
+ * метрики → рамка охвата. Без бренда, даты, версии, «тира» и служебных меток —
+ * это и есть требование «заголовок ≠ вывод» и «убрать внутренние обозначения».
+ * kicker — короткое имя раздела (не «Commerce OS · …»); title — существительное
+ * (напр. «Технічний фундамент»), verdict — та самая фраза-вывод.
+ */
+export type CoverMetric = { label: string; value: string };
+export function cover(o: { kicker?: string; title: string; verdict?: string; metrics?: CoverMetric[]; score?: { pct: number; cap: string }; note?: string }): string {
+  const meta = (o.metrics ?? []).map((m) => `<div><span class="lbl">${esc(m.label)}</span><span class="val">${esc(m.value)}</span></div>`).join('');
+  const score = o.score ? `<div class="cov-score"><div class="big ${scoreColor(o.score.pct)}">${o.score.pct}<span>%</span></div><div class="big-cap">${esc(o.score.cap)}</div></div>` : '';
+  return `<section class="cover"><div class="cov-bar"></div><div class="cov-body">
+    ${o.kicker ? `<div class="kicker">${esc(o.kicker)}</div>` : ''}
+    <h1>${esc(o.title)}</h1>
+    ${o.verdict ? `<p class="verdict">${esc(o.verdict)}</p>` : ''}
+    ${meta ? `<div class="cov-meta">${meta}</div>` : ''}
+    ${score}
+    ${o.note ? `<div class="coverage">${o.note}</div>` : ''}
+  </div></section>`;
+}
+
+/** Подвал: только смысловая приписка (честность данных). Без бренда/даты/версии.
+ *  Во внутреннем профиле можно дописать служебную метку. */
+export function pageFooter(note?: string, internalNote?: string): string {
+  const body = [note, isInternal() && internalNote ? internalNote : ''].filter(Boolean).join(' ');
+  if (!body) return '';
+  return `<section class="block"><div class="footer">${body}</div></section>`;
+}
+
+/** Разделитель главы внутри сгруппированного документа (несколько аудитов → один документ). */
+export function chapter(title: string, kicker?: string): string {
+  return `<section class="block chap">${kicker ? `<div class="chap-k">${esc(kicker)}</div>` : ''}<h2 class="chap-h">${esc(title)}</h2></section>`;
 }
 
 export function doc(title: string, bodyHtml: string, extraCss = ''): string {

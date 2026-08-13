@@ -61,10 +61,17 @@ function categorize(name: string): string {
   return 'Прочее';
 }
 
-// Клиенту показываем и упаковываем только рабочие документы (Word/Excel/PDF/PowerPoint).
-// Служебные .json (registry/backlog/coverage/qa/activation/job…) остаются на диске для
-// внутренних потребителей и портала, но в веб-интерфейс и в архив не попадают.
-const isClientDoc = (name: string) => /\.(pdf|docx|xlsx|pptx)$/i.test(name);
+// Два архива на прогон:
+//  • клиентский чистовой (pack.zip)      — только клиентские документы, без нашей кухни;
+//  • внутренний полный  (pack-internal.zip) — всё, включая рабочие документы и JSON.
+// Документ-артефакт = Word/Excel/PDF/PowerPoint.
+const isDoc = (name: string) => /\.(pdf|docx|xlsx|pptx)$/i.test(name);
+// Внутренние-только документы: наша кухня, клиент их не видит (домыслы/самопроверка/
+// мета об уверенности/сырое планирование). Совпадение по устойчивому корню имени.
+const isInternalOnly = (name: string) =>
+  /(протокол.?синерг|qa[-_]|реестр.?гипотез|реєстр.?гіпотез|охват.?и.?увер|scope.?по.?волн|scope-a0|активацион|activation)/i.test(name);
+// В клиентский пакет и в веб-список попадают документы, кроме внутренних-только.
+const isClientDoc = (name: string) => isDoc(name) && !isInternalOnly(name);
 
 const persistView = (j: Job) => ({ id: j.id, client: j.client, tier: j.tier, status: j.status, startedAt: j.startedAt, finishedAt: j.finishedAt, summary: j.summary, metrics: j.metrics, resultId: j.resultId, files: j.files });
 
@@ -186,19 +193,22 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  // Единый zip-пакет прогона
-  const zm = path.match(/^\/job\/([^/]+)\/pack\.zip$/);
+  // Zip-пакеты прогона: pack.zip — клиентский чистовой; pack-internal.zip — наш полный.
+  const zm = path.match(/^\/job\/([^/]+)\/pack(-internal)?\.zip$/);
   if (req.method === 'GET' && zm) {
+    const internal = Boolean(zm[2]);
     const j = jobs.get(zm[1]);
     if (!j || !j.resultId) { json(res, 404, { ok: false, error: 'пакет недоступен' }); return; }
     try {
       const dir = join(OUT, basename(j.resultId));
-      const names = (await readdir(dir)).filter((n) => isClientDoc(n) && !n.startsWith('.'));
+      // Клиентский: только клиентские документы. Внутренний: все документы + JSON-данные.
+      const keep = (n: string) => !n.startsWith('.') && (internal ? (isDoc(n) || /\.json$/i.test(n)) : isClientDoc(n));
+      const names = (await readdir(dir)).filter(keep);
       const entries = [];
       for (const n of names) { const st = await stat(join(dir, n)).catch(() => null); if (st && st.isFile()) entries.push({ name: n, data: await readFile(join(dir, n)) }); }
       const zip = makeZip(entries);
       cors(res);
-      res.writeHead(200, { 'content-type': 'application/zip', 'content-disposition': `attachment; filename="audit-${basename(j.resultId)}.zip"` });
+      res.writeHead(200, { 'content-type': 'application/zip', 'content-disposition': `attachment; filename="audit-${basename(j.resultId)}${internal ? '-internal' : ''}.zip"` });
       res.end(zip);
     } catch (e) { json(res, 500, { ok: false, error: String(e).slice(0, 300) }); }
     return;

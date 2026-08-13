@@ -3,7 +3,7 @@
  * Категории со статусом, таблица проверок, честная пометка BLOCKED (нужен
  * инструмент/доступ на A1).
  */
-import { esc, dimBadges, scoreColor, doc, methodologySection, swSection, recsSection, conclusionSection, type SectionRec } from './reportShell.js';
+import { esc, dimBadges, doc, cover, pageFooter, methodologySection, swSection, recsSection, conclusionSection, type SectionRec } from './reportShell.js';
 import { svgDonut } from './charts.js';
 import type { TechReport, TStatus } from '../techaudit.js';
 
@@ -12,20 +12,14 @@ const CLS: Record<TStatus, string> = { ok: 'ok', check: 'check', gap: 'gap', blo
 const WORD: Record<TStatus, string> = { ok: 'ок', check: 'проверить', gap: 'нет', blocked: 'нужен доступ' };
 
 export function renderTechAuditHtml(r: TechReport): string {
-  const date = new Date(r.takenAt).toLocaleDateString('ru-RU');
-
-  const cover = `<section class="cover"><div class="cov-bar"></div><div class="cov-body">
-    <div class="kicker">Commerce OS · Технический внешний аудит · внешний аудит витрины</div>
-    <h1>${esc(r.verdict)}</h1>
-    <div class="cov-meta">
-      <div><span class="lbl">Клиент</span><span class="val">${esc(r.client)}</span></div>
-      <div><span class="lbl">Дата</span><span class="val">${esc(date)}</span></div>
-      <div><span class="lbl">Объём</span><span class="val">внешний аудит витрины</span></div>
-    </div>
-    <div class="cov-score"><div class="big ${scoreColor(r.score.pct)}">${r.score.pct}<span>%</span></div><div class="big-cap">технических проверок пройдено · ${r.score.passed}/${r.score.total}</div></div>
-    <div class="coverage"><b>Что видно во внешнем аудите:</b> проверки выполняются по отрендеренному DOM разобранных страниц (внешний обход).
-    ${r.blocked.length ? `Не измеримо внешними средствами и вынесено на следующий этап (после передачи доступов): ${esc(r.blocked.join(', '))}.` : ''} Отсутствие данных не выдаётся за факт.</div>
-  </div></section>`;
+  const coverHtml = cover({
+    kicker: 'Технічний фундамент',
+    title: 'Технічний фундамент вітрини',
+    verdict: r.verdict, // вывод — отдельной строкой, а не гигантским заголовком
+    metrics: [{ label: 'Клієнт', value: r.client }],
+    score: { pct: r.score.pct, cap: `технічних перевірок пройдено · ${r.score.passed}/${r.score.total}` },
+    note: `<b>Що видно у зовнішньому аудиті:</b> перевірки виконуються за відрендереним DOM розібраних сторінок.${r.blocked.length ? ` Не вимірне зовнішніми засобами й винесене на наступний етап (після передачі доступів): ${esc(r.blocked.join(', '))}.` : ''} Відсутність даних не видається за факт.`,
+  });
 
   const cats = r.categories.map((c) => {
     const rows = c.checks.map((ch) => `<tr>
@@ -91,9 +85,9 @@ export function renderTechAuditHtml(r: TechReport): string {
     `${r.blocked.length} проверок (${r.blocked.join(', ') || '—'}) невозможно провести без инструментов и доступов — они не «хорошие» и не «плохие», а неизвестные. По принципу честных данных они не засчитываются ни в плюс, ни в минус до измерения после передачи доступов (следующий этап).`,
   ], 'Следующий этап: PageSpeed/CrUX (Core Web Vitals), проверка заголовков сервера, полный crawl (Screaming Frog) и связка с Search Console.');
 
-  const footer = `<section class="block"><div class="footer">Commerce OS · Технический внешний аудит · ${esc(r.client)} · ${esc(date)}. Внешний аудит витрины: внешний обход. Отсутствие данных не выдаётся за факт и не скрывается; проверки со статусом «Нужны доступы» закрываются после передачи доступов инструментом/доступом.</div></section>`;
+  const footer = pageFooter('Зовнішній обхід відрендереного DOM. Відсутність даних не видається за факт і не приховується; перевірки зі статусом «потрібні доступи» закриваються після передачі доступів.');
 
   const extra = `.c-name{font-weight:600;white-space:nowrap;} .c-st{white-space:nowrap;font-size:9.5px;} .c-note{color:var(--muted);font-size:10px;white-space:nowrap;} .c-rec{color:#333;}
     .st{font-size:12px;} .st.ok{color:var(--ok);} .st.check{color:var(--check);} .st.gap{color:var(--gap);} .cat-dims{font-weight:400;}`;
-  return doc(`Технический аудит · ${r.client}`, cover + meth + cats + statusDonut + swSection(strengths, weaknesses) + recsSection(recs) + concl + footer, extra);
+  return doc(`Технічний аудит · ${r.client}`, coverHtml + meth + cats + statusDonut + swSection(strengths, weaknesses) + recsSection(recs) + concl + footer, extra);
 }
