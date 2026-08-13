@@ -142,7 +142,7 @@ export function BusinessXray({ questions = QUESTIONS, storageKey, full = false }
           ) : (
             <Link to="/diagnose/full" className="btn-primary mono">Повна діагностика ({QUESTIONS_FULL.length} питань) →</Link>
           )}
-          <Link to="/how-it-works/benchmark" className="btn-ghost mono">Порівняти з ринком →</Link>
+          <Link to="/cases" className="btn-ghost mono">Порівняти з ринком →</Link>
           <button className="btn-ghost mono" onClick={reset}>Пройти ще раз</button>
         </div>
       </div>

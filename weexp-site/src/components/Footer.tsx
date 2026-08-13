@@ -11,13 +11,11 @@ const MAP: { h: string; links: { to: string; label: string; ext?: boolean }[] }[
   ]},
   { h: 'Система', links: [
     { to: '/how-it-works', label: 'Метод WEEXP' },
-    { to: '/how-it-works/business-health', label: 'Здоров’я бізнесу' },
-    { to: '/how-it-works/independence-score', label: 'Індекс незалежності' },
-    { to: '/how-it-works/benchmark', label: 'Бенчмарк' },
+    { to: '/diagnose', label: 'Business X-Ray' },
+    { to: '/diagnose/full', label: 'Повна діагностика' },
   ]},
   { h: 'Докази', links: [
     { to: '/cases', label: 'Кейси' },
-    { to: '/intelligence', label: 'Аналітика' },
   ]},
   { h: 'Люди', links: [
     { to: '/about', label: 'Про WEEXP' },

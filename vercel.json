@@ -13,8 +13,12 @@
     { "source": "/expertise", "destination": "/intelligence", "permanent": true },
     { "source": "/calculator", "destination": "/diagnose", "permanent": true },
     { "source": "/estimate", "destination": "/diagnose", "permanent": true },
-    { "source": "/blog", "destination": "/intelligence", "permanent": true },
-    { "source": "/blog/:path*", "destination": "/intelligence", "permanent": true }
+    { "source": "/blog", "destination": "/cases", "permanent": true },
+    { "source": "/blog/:path*", "destination": "/cases", "permanent": true },
+    { "source": "/how-it-works/business-health", "destination": "/diagnose", "permanent": true },
+    { "source": "/how-it-works/independence-score", "destination": "/diagnose", "permanent": true },
+    { "source": "/how-it-works/benchmark", "destination": "/diagnose", "permanent": true },
+    { "source": "/intelligence", "destination": "/cases", "permanent": true }
   ],
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
   "headers": [

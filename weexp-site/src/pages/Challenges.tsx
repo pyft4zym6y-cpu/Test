@@ -36,7 +36,7 @@ export function Challenges() {
           <p className="home-cta-lead">Не вгадуйте систему — знайдіть головний bottleneck за 2 хвилини.</p>
           <div className="home-cta-row">
             <Link to="/diagnose" className="btn-primary mono">Знайти bottleneck →</Link>
-            <Link to="/how-it-works/business-health" className="btn-ghost mono">Business Health →</Link>
+            <Link to="/diagnose" className="btn-ghost mono">Business X-Ray →</Link>
           </div>
         </div>
       </section>
