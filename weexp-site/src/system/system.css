@@ -87,7 +87,9 @@
   position: sticky; top: 0; height: 100vh; overflow: hidden;
   display: grid; place-items: center; isolation: isolate;
 }
-/* Commerce System — світлий об'єкт по центру кадру */
+/* Commerce System — WebGL-об'єкт на весь кадр (світле alpha-полотно) */
+.sysx-object3d { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; display: block; }
+/* (SVG-проксі більше не використовується — залишено класи для reduced-motion fallback) */
 .sysx-object { position: absolute; inset: 0; margin: auto; width: min(92vw, 1100px); height: 100%; z-index: 1; }
 .sysx-link { stroke: var(--node); stroke-width: 1; fill: none; }
 .sysx-pulse { fill: var(--data); filter: drop-shadow(0 0 5px rgba(126,157,255,.7)); }
