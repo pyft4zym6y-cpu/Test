@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://weexp.agency/</loc><priority>1.0</priority></url>
+  <url><loc>https://weexp.agency/challenges</loc><priority>0.9</priority></url>
+  <url><loc>https://weexp.agency/challenges/strategy-management</loc><priority>0.7</priority></url>
+  <url><loc>https://weexp.agency/challenges/commercial-performance</loc><priority>0.7</priority></url>
+  <url><loc>https://weexp.agency/challenges/demand-customer</loc><priority>0.7</priority></url>
+  <url><loc>https://weexp.agency/challenges/experience-conversion</loc><priority>0.7</priority></url>
+  <url><loc>https://weexp.agency/challenges/operations-fulfillment</loc><priority>0.7</priority></url>
+  <url><loc>https://weexp.agency/challenges/data-technology</loc><priority>0.7</priority></url>
+  <url><loc>https://weexp.agency/challenges/organization-operating-model</loc><priority>0.7</priority></url>
   <url><loc>https://weexp.agency/what-we-build</loc><priority>0.9</priority></url>
   <url><loc>https://weexp.agency/what-we-build/eu-expansion</loc><priority>0.6</priority></url>
   <url><loc>https://weexp.agency/how-it-works</loc><priority>0.8</priority></url>

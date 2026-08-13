@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
+import { SYSTEMS } from '@/data/xray';
 import './nav.css';
 
 type Sub = { to: string; label: string };
 type Group = { to: string; label: string; sub?: Sub[] };
 
 const MENU: Group[] = [
+  { to: '/challenges', label: 'Виклики', sub: SYSTEMS.map((s) => ({ to: `/challenges/${s.slug}`, label: `${s.num} · ${s.title}` })) },
   { to: '/what-we-build', label: 'Що будуємо', sub: [
     { to: '/what-we-build#diagnose', label: 'Діагностика' },
     { to: '/what-we-build#build', label: 'Побудова' },
@@ -56,7 +58,7 @@ export function Nav() {
             </div>
           ))}
         </div>
-        <Link className="nav-cta mono" to="/diagnose">Діагностика →</Link>
+        <Link className="nav-cta mono" to="/diagnose">Знайти bottleneck →</Link>
         <button className={`nav-burger${open ? ' is-x' : ''}`} type="button" aria-label="Меню"
           aria-expanded={open} onClick={() => setOpen((o) => !o)}><span /><span /></button>
       </div>

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { QUESTIONS, scoreXray, opportunityLabel, LEVELS, type Answers } from '@/data/xray';
+import { QUESTIONS, scoreXray, opportunityLabel, LEVELS, systemByKey, type Answers } from '@/data/xray';
 import { HealthRadar } from '@/components/HealthRadar';
 import { CountUp } from '@/lib/primitives';
 import { say } from '@/lib/bus';
@@ -33,9 +33,9 @@ export function BusinessXray() {
     return (
       <div className="xray xray--intro">
         <div className="xray-badge mono">Безкоштовний інструмент</div>
-        <h2 className="xray-title">Порахуйте, наскільки ваш<br />e-commerce незалежний</h2>
-        <p className="xray-lead">16 тверджень · 2 хвилини. Отримаєте Business Health по 18 доменах,
-          свій Independence Score і три головні розриви — без реєстрації.</p>
+        <h2 className="xray-title">Знайдіть головний<br />bottleneck вашого бізнесу</h2>
+        <p className="xray-lead">{QUESTIONS.length} тверджень · 2 хвилини. Отримаєте Business Health по 7 системах,
+          Independence Score і вузьке місце, що тримає прибуток — без реєстрації.</p>
         <button className="btn-primary mono" onClick={() => { setPhase('quiz'); setStep(0); }}>
           Почати X-Ray →
         </button>
@@ -50,7 +50,7 @@ export function BusinessXray() {
     return (
       <div className="xray xray--quiz">
         <div className="xray-bar"><span style={{ width: `${progress}%` }} /></div>
-        <div className="xray-step mono">Питання {step + 1} / {QUESTIONS.length}</div>
+        <div className="xray-step mono">Питання {step + 1} / {QUESTIONS.length} · Система {systemByKey(q.system).num} — {systemByKey(q.system).title}</div>
         <p className="xray-q">{q.text}</p>
         <div className="xray-opts">
           {OPTS.map((o, i) => (
@@ -86,14 +86,25 @@ export function BusinessXray() {
         </div>
       </div>
 
+      <div className="xray-bottleneck">
+        <span className="xray-score-lab mono">Головний bottleneck</span>
+        <Link to={`/challenges/${systemByKey(r.bottleneck.key).slug}`} className="xray-bottleneck-card">
+          <span className="xray-bottleneck-num mono">Система {systemByKey(r.bottleneck.key).num}</span>
+          <span className="xray-bottleneck-title">{r.bottleneck.title}</span>
+          <span className="xray-bottleneck-score mono">{r.bottleneck.score}<small>/100</small></span>
+          <span className="xray-bottleneck-line">{systemByKey(r.bottleneck.key).feel}</span>
+          <span className="xray-bottleneck-go mono">Що тут ламається →</span>
+        </Link>
+      </div>
+
       <div className="xray-gaps">
-        <span className="xray-score-lab mono">Три головні розриви</span>
+        <span className="xray-score-lab mono">Три найслабші системи</span>
         <div className="xray-gaps-row">
           {r.gaps.map((g) => (
-            <div key={g.key} className="xray-gap">
+            <Link key={g.key} to={`/challenges/${systemByKey(g.key).slug}`} className="xray-gap">
               <span className="xray-gap-score mono">{g.score}<small>/100</small></span>
-              <span className="xray-gap-name">{g.label}</span>
-            </div>
+              <span className="xray-gap-name">{g.title}</span>
+            </Link>
           ))}
         </div>
       </div>

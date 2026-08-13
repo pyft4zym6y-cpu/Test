@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from '@/Layout';
 import { Home } from '@/pages/Home';
+import { Challenges } from '@/pages/Challenges';
+import { SystemPage } from '@/pages/SystemPage';
 import { WhatWeBuild } from '@/pages/WhatWeBuild';
 import { EuExpansion } from '@/pages/EuExpansion';
 import { HowItWorks } from '@/pages/HowItWorks';
@@ -24,6 +26,8 @@ export default function App() {
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/challenges" element={<Challenges />} />
+          <Route path="/challenges/:slug" element={<SystemPage />} />
           <Route path="/what-we-build" element={<WhatWeBuild />} />
           <Route path="/what-we-build/eu-expansion" element={<EuExpansion />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
