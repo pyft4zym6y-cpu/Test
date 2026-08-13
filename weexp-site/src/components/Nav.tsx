@@ -6,25 +6,25 @@ type Sub = { to: string; label: string };
 type Group = { to: string; label: string; sub?: Sub[] };
 
 const MENU: Group[] = [
-  { to: '/what-we-build', label: 'What we build', sub: [
-    { to: '/what-we-build#diagnose', label: 'Diagnose' },
-    { to: '/what-we-build#build', label: 'Build' },
-    { to: '/what-we-build#scale', label: 'Scale' },
-    { to: '/what-we-build#independence', label: 'Independence' },
-    { to: '/what-we-build/eu-expansion', label: 'EU Expansion' },
+  { to: '/what-we-build', label: 'Що будуємо', sub: [
+    { to: '/what-we-build#diagnose', label: 'Діагностика' },
+    { to: '/what-we-build#build', label: 'Побудова' },
+    { to: '/what-we-build#scale', label: 'Масштабування' },
+    { to: '/what-we-build#independence', label: 'Незалежність' },
+    { to: '/what-we-build/eu-expansion', label: 'Вихід у ЄС' },
   ]},
-  { to: '/how-it-works', label: 'How it works', sub: [
-    { to: '/how-it-works', label: 'WEEXP Method' },
-    { to: '/how-it-works/business-health', label: 'Business Health' },
-    { to: '/how-it-works/independence-score', label: 'Independence Score' },
-    { to: '/how-it-works/benchmark', label: 'Benchmark' },
+  { to: '/how-it-works', label: 'Як працюємо', sub: [
+    { to: '/how-it-works', label: 'Метод WEEXP' },
+    { to: '/how-it-works/business-health', label: 'Здоров’я бізнесу' },
+    { to: '/how-it-works/independence-score', label: 'Індекс незалежності' },
+    { to: '/how-it-works/benchmark', label: 'Бенчмарк' },
   ]},
-  { to: '/cases', label: 'Cases' },
-  { to: '/intelligence', label: 'Intelligence' },
-  { to: '/about', label: 'About', sub: [
-    { to: '/about', label: 'WEEXP' },
-    { to: '/about/founder', label: 'Founder' },
-    { to: '/about/standard', label: 'WEEXP Standard' },
+  { to: '/cases', label: 'Кейси' },
+  { to: '/intelligence', label: 'Аналітика' },
+  { to: '/about', label: 'Агенція', sub: [
+    { to: '/about', label: 'Про WEEXP' },
+    { to: '/about/founder', label: 'Засновник' },
+    { to: '/about/standard', label: 'Стандарт WEEXP' },
   ]},
 ];
 
@@ -56,7 +56,7 @@ export function Nav() {
             </div>
           ))}
         </div>
-        <Link className="nav-cta mono" to="/diagnose">Diagnose →</Link>
+        <Link className="nav-cta mono" to="/diagnose">Діагностика →</Link>
         <button className={`nav-burger${open ? ' is-x' : ''}`} type="button" aria-label="Меню"
           aria-expanded={open} onClick={() => setOpen((o) => !o)}><span /><span /></button>
       </div>

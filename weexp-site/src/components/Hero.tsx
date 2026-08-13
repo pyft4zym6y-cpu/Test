@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { Scene3D } from '@/components/Scene3D';
 import './hero.css';
 
 const ease = [0.22, 1, 0.36, 1] as const;
@@ -6,6 +7,7 @@ const ease = [0.22, 1, 0.36, 1] as const;
 export function Hero() {
   return (
     <header className="hero" data-say="Система замість героїзму. Ми — операційний партнер, а не консультант збоку.">
+      <Scene3D />
       <div className="wrap hero-mid">
         <motion.div className="eyebrow" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1, duration: 0.6 }}>
           Brandbook · ревізія 1.1
