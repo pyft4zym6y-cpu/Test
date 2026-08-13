@@ -21,16 +21,18 @@ export function VideoBlock({ title, sub, src = '/promo/reel.mp4', poster = '/pro
     return () => io.disconnect();
   }, []);
 
+  // Заголовок винесено ПІД відео (у самому ролику вже є текст — оверлей зливався).
   return (
-    <div className="vb" data-say={`${title} — дивіться промо.`}>
-      <video ref={vref} className="vb-video" src={src} poster={poster}
-        muted loop playsInline preload="metadata" aria-label={title} />
-      <span className="vb-scrim" aria-hidden="true" />
-      <span className="vb-tag mono">Промо · WEEXP</span>
-      <span className="vb-meta">
-        <span className="vb-title">{title}</span>
-        {sub && <span className="vb-sub mono">{sub}</span>}
-      </span>
-    </div>
+    <figure className="vb-fig">
+      <div className="vb" data-say={`${title} — дивіться промо.`}>
+        <video ref={vref} className="vb-video" src={src} poster={poster}
+          muted loop playsInline preload="metadata" aria-label={title} />
+        <span className="vb-tag mono">Промо · WEEXP</span>
+      </div>
+      <figcaption className="vb-cap">
+        <span className="vb-cap-t">{title}</span>
+        {sub && <span className="vb-cap-s mono">{sub}</span>}
+      </figcaption>
+    </figure>
   );
 }

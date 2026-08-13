@@ -24,8 +24,9 @@
 .page-kick::before { content: ''; width: 9px; height: 9px; background: var(--mark); display: inline-block; }
 .page-h1 {
   font-family: var(--display); font-weight: 800;
-  font-size: clamp(38px, 8vw, 104px); line-height: .92; letter-spacing: -.03em;
+  font-size: clamp(30px, 7.4vw, 104px); line-height: .92; letter-spacing: -.03em;
   color: var(--paper); max-width: 16ch; text-wrap: balance;
+  overflow-wrap: break-word; hyphens: auto;
 }
 .page-lead {
   font-family: var(--sans); font-size: clamp(15px, 2vw, 20px); line-height: 1.5;
@@ -44,8 +45,8 @@
 .btn-ghost { background: transparent; color: var(--vel); border-color: var(--hair); }
 .btn-ghost:hover { color: var(--paper); border-color: var(--steel-600); }
 
-/* Загальний CTA-блок наприкінці сторінок */
-.home-cta { padding: clamp(56px, 10vh, 120px) 0; }
+/* Загальний CTA-блок наприкінці сторінок (padding-block, щоб не зʼїдати бічні відступи .wrap) */
+.home-cta { padding-block: clamp(48px, 8vh, 104px); }
 .home-cta-in { display: grid; gap: 22px; border-top: 1px solid var(--hair); padding-top: clamp(28px, 5vh, 56px); }
 .home-cta-lead {
   font-family: var(--display); font-weight: 700; letter-spacing: -.02em;
@@ -54,4 +55,4 @@
 .home-cta-row { display: flex; flex-wrap: wrap; gap: 12px; }
 
 /* Обгортка промо-відео в потоці */
-.home-video { padding: clamp(32px, 6vh, 72px) 0; }
+.home-video { padding-block: clamp(28px, 5vh, 64px); }
