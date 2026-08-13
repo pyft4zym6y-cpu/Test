@@ -1,12 +1,19 @@
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { systemBySlug, SYSTEMS } from '@/data/xray';
 import { VideoBlock } from '@/components/VideoBlock';
+import { usePageSeo } from '@/lib/seo';
 import './challenges.css';
 
 /** /challenges/:slug — сторінка системи: біль → великий сенс → ланцюг → симптоми → що будуємо. */
 export function SystemPage() {
   const { slug } = useParams();
   const s = slug ? systemBySlug(slug) : undefined;
+  usePageSeo(
+    s ? `Система ${s.num}: ${s.title} · WEEXP` : 'Виклики бізнесу · WEEXP',
+    s ? `${s.feel} Що ламається в системі «${s.title}» і що ми будуємо натомість.` : '',
+    s ? `/challenges/${s.slug}` : '/challenges',
+    !s,
+  );
   if (!s) return <Navigate to="/challenges" replace />;
 
   const idx = SYSTEMS.findIndex((x) => x.key === s.key);

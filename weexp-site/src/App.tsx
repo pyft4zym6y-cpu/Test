@@ -20,11 +20,13 @@ import { Diagnose } from '@/pages/Diagnose';
 import { FullDiagnosis } from '@/pages/FullDiagnosis';
 import { ContactPage } from '@/pages/ContactPage';
 import { NotFound } from '@/pages/NotFound';
+import { RouteSeo } from '@/lib/seo';
 import '@/lib/primitives.css';
 
 export default function App() {
   return (
     <BrowserRouter>
+      <RouteSeo />
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />

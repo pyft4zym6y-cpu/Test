@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { caseBySlug, CASES } from '@/data/cases';
 import { systemByKey } from '@/data/xray';
+import { usePageSeo } from '@/lib/seo';
 import './case-detail.css';
 
 /**
@@ -11,6 +12,12 @@ import './case-detail.css';
 export function CaseDetail() {
   const { slug } = useParams();
   const study = slug ? caseBySlug(slug) : undefined;
+  usePageSeo(
+    study ? `Кейс: ${study.name} · WEEXP` : 'Кейси · WEEXP',
+    study ? study.lead : '',
+    study ? `/cases/${study.slug}` : '/cases',
+    !study,
+  );
   const [after, setAfter] = useState(false);
 
   useEffect(() => {
