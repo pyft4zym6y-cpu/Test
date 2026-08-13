@@ -1,14 +1,21 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "cd weexp-site && npm install",
+  "buildCommand": "cd weexp-site && npm run build",
+  "outputDirectory": "weexp-site/dist",
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
   "headers": [
     {
       "source": "/assets/(.*)",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+      ]
     }
-  ],
-  "git": {
-    "deploymentEnabled": {
-      "claude/ai-assistant-comerc-oc-qufqcc": false
-    }
-  }
+  ]
 }
