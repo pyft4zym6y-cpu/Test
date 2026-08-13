@@ -15,6 +15,7 @@ import { CaseDetail } from '@/pages/CaseDetail';
 import { Intelligence } from '@/pages/Intelligence';
 import { About } from '@/pages/About';
 import { FounderPage } from '@/pages/FounderPage';
+import { TeamPage } from '@/pages/TeamPage';
 import { Diagnose } from '@/pages/Diagnose';
 import { FullDiagnosis } from '@/pages/FullDiagnosis';
 import { ContactPage } from '@/pages/ContactPage';
@@ -41,6 +42,7 @@ export default function App() {
           <Route path="/intelligence" element={<Intelligence />} />
           <Route path="/about" element={<About />} />
           <Route path="/about/founder" element={<FounderPage />} />
+          <Route path="/about/team" element={<TeamPage />} />
           <Route path="/diagnose" element={<Diagnose />} />
           <Route path="/diagnose/full" element={<FullDiagnosis />} />
           <Route path="/contact" element={<ContactPage />} />

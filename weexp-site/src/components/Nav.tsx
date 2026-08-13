@@ -26,6 +26,7 @@ const MENU: Group[] = [
   { to: '/about', label: 'Агенція', sub: [
     { to: '/about', label: 'Про WEEXP' },
     { to: '/about/founder', label: 'Засновник' },
+    { to: '/about/team', label: 'Команда' },
     { to: '/about/standard', label: 'Стандарт WEEXP' },
   ]},
 ];

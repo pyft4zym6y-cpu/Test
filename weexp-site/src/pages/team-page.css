@@ -1,0 +1,14 @@
+.team-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--hair); border: 1px solid var(--hair); margin-bottom: clamp(24px, 4vh, 48px); }
+.team-card { background: var(--ink-900); padding: clamp(24px, 3vw, 36px); display: grid; gap: 14px; align-content: start; }
+.team-card-head { display: grid; gap: 10px; }
+.team-role { font-family: var(--display); font-weight: 700; font-size: clamp(18px, 2.4vw, 26px); letter-spacing: -.01em; color: var(--paper); }
+.team-owns { display: flex; flex-wrap: wrap; gap: 6px; }
+.team-own { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--verd-500); border: 1px solid var(--hair); padding: 5px 9px; text-decoration: none; transition: border-color .2s, color .2s; }
+.team-own:hover { border-color: var(--verd-600); color: var(--paper); }
+.team-focus { font-size: 15px; line-height: 1.5; color: var(--vel); }
+.team-exp { list-style: none; display: grid; gap: 9px; }
+.team-exp li { position: relative; padding-left: 18px; font-size: 13.5px; line-height: 1.45; color: var(--vel); }
+.team-exp li::before { content: ''; position: absolute; left: 0; top: 8px; width: 7px; height: 7px; background: var(--mark); }
+.team-fact { font-size: 11px; letter-spacing: .04em; color: var(--steel-600); border-top: 1px solid var(--hair); padding-top: 12px; }
+
+@media (max-width: 760px) { .team-grid { grid-template-columns: 1fr; } }

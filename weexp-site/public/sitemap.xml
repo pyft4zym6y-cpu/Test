@@ -15,16 +15,31 @@
   <url><loc>https://weexp.agency/how-it-works/business-health</loc><priority>0.7</priority></url>
   <url><loc>https://weexp.agency/how-it-works/independence-score</loc><priority>0.8</priority></url>
   <url><loc>https://weexp.agency/how-it-works/benchmark</loc><priority>0.7</priority></url>
-  <url><loc>https://weexp.agency/about/standard</loc><priority>0.5</priority></url>
   <url><loc>https://weexp.agency/cases</loc><priority>0.8</priority></url>
   <url><loc>https://weexp.agency/cases/premium-textile</loc><priority>0.6</priority></url>
   <url><loc>https://weexp.agency/cases/consumer-dtc</loc><priority>0.6</priority></url>
   <url><loc>https://weexp.agency/cases/fashion-apparel</loc><priority>0.6</priority></url>
   <url><loc>https://weexp.agency/cases/fmcg-distribution</loc><priority>0.6</priority></url>
+  <url><loc>https://weexp.agency/cases/cosmetics-holding</loc><priority>0.6</priority></url>
+  <url><loc>https://weexp.agency/cases/electronics-marketplace</loc><priority>0.6</priority></url>
+  <url><loc>https://weexp.agency/cases/kids-goods</loc><priority>0.6</priority></url>
+  <url><loc>https://weexp.agency/cases/supplements-health</loc><priority>0.6</priority></url>
+  <url><loc>https://weexp.agency/cases/pharmacy-omnichannel</loc><priority>0.6</priority></url>
+  <url><loc>https://weexp.agency/cases/grocery-qcommerce</loc><priority>0.6</priority></url>
+  <url><loc>https://weexp.agency/cases/auto-parts</loc><priority>0.6</priority></url>
+  <url><loc>https://weexp.agency/cases/jewelry-brand</loc><priority>0.6</priority></url>
+  <url><loc>https://weexp.agency/cases/sportswear-brand</loc><priority>0.6</priority></url>
+  <url><loc>https://weexp.agency/cases/b2b-industrial</loc><priority>0.6</priority></url>
+  <url><loc>https://weexp.agency/cases/pet-supplies</loc><priority>0.6</priority></url>
+  <url><loc>https://weexp.agency/cases/furniture-eu</loc><priority>0.6</priority></url>
+  <url><loc>https://weexp.agency/cases/marketplace-fashion</loc><priority>0.6</priority></url>
   <url><loc>https://weexp.agency/intelligence</loc><priority>0.7</priority></url>
   <url><loc>https://weexp.agency/about</loc><priority>0.7</priority></url>
   <url><loc>https://weexp.agency/about/founder</loc><priority>0.6</priority></url>
+  <url><loc>https://weexp.agency/about/team</loc><priority>0.6</priority></url>
+  <url><loc>https://weexp.agency/about/standard</loc><priority>0.5</priority></url>
   <url><loc>https://weexp.agency/diagnose</loc><priority>0.9</priority></url>
+  <url><loc>https://weexp.agency/diagnose/full</loc><priority>0.7</priority></url>
   <url><loc>https://weexp.agency/contact</loc><priority>0.6</priority></url>
   <url><loc>https://weexp.agency/oferta.html</loc><priority>0.3</priority></url>
   <url><loc>https://weexp.agency/privacy.html</loc><priority>0.3</priority></url>

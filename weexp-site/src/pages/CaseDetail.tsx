@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { caseBySlug, CASES } from '@/data/cases';
+import { systemByKey } from '@/data/xray';
 import './case-detail.css';
 
 /**
@@ -36,7 +37,9 @@ export function CaseDetail() {
             <span className="cd-hero-lab mono">{study.heroLabel} · {study.window}</span>
           </div>
           <div className="cd-tags mono">
-            {study.challenges.map((c) => <span key={c}>{c}</span>)}
+            {study.systems.map((k) => (
+              <Link key={k} to={`/challenges/${systemByKey(k).slug}`} className="cd-tag-sys">{systemByKey(k).title}</Link>
+            ))}
             <span className="cd-tag-stage">{study.stage}</span>
           </div>
         </div>

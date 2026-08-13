@@ -1,0 +1,41 @@
+.ic { border: 1px solid var(--hair); background: color-mix(in srgb, var(--ink-800) 55%, transparent); padding: clamp(22px, 3vw, 36px); display: grid; gap: 20px; }
+.ic-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+.ic-title { font-family: var(--display); font-weight: 700; font-size: clamp(18px, 2.6vw, 28px); letter-spacing: -.01em; color: var(--paper); }
+.ic-toggle { display: flex; flex-wrap: wrap; gap: 6px; }
+.ic-toggle button { background: none; border: 1px solid var(--hair); color: var(--steel-600); font-size: 11px; letter-spacing: .06em; padding: 7px 11px; cursor: pointer; transition: color .18s, border-color .18s, background .18s; }
+.ic-toggle button:hover { color: var(--paper); }
+.ic-toggle button.is-on { color: var(--paper); border-color: var(--mark); background: color-mix(in srgb, var(--mark) 12%, transparent); }
+
+.ic-rows { display: grid; gap: 14px; }
+.ic-row { display: grid; grid-template-columns: 160px 1fr 60px; gap: 14px; align-items: center; }
+.ic-row-lab { font-size: 12px; color: var(--vel); }
+.ic-row-val { font-size: 12px; color: var(--verd-500); text-align: right; }
+.ic-track { position: relative; height: 12px; background: rgba(199,210,214,.1); border: 1px solid var(--hair); }
+.ic-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--steel-600); opacity: .5; transition: width .8s cubic-bezier(.16,1,.3,1); }
+.ic-gap { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--mark) 45%, transparent); transition: left .8s, width .8s; }
+.ic-tick { position: absolute; top: -3px; bottom: -3px; width: 2px; }
+.ic-tick-norm { background: var(--verd-500); }
+.ic-tick-gold { background: var(--paper); }
+
+.ic-legend, .ic-note { font-size: 10px; letter-spacing: .04em; color: var(--steel-600); }
+.ic-legend { display: flex; flex-wrap: wrap; gap: 14px; }
+.ic-legend i { display: inline-block; width: 12px; height: 8px; margin-right: 7px; vertical-align: middle; }
+.ic-i-gap { background: color-mix(in srgb, var(--mark) 45%, transparent); }
+.ic-i-norm { background: var(--verd-500); }
+.ic-i-gold { background: var(--paper); }
+
+/* Funnel */
+.ic-funnel { display: grid; gap: 12px; }
+.ic-fn-row { display: grid; grid-template-columns: 130px 1fr 48px; gap: 14px; align-items: center; }
+.ic-fn-lab { font-size: 12px; color: var(--vel); }
+.ic-fn-bar { position: relative; height: 26px; background: rgba(199,210,214,.08); }
+.ic-fn-fill { position: absolute; left: 0; top: 0; bottom: 0; background: color-mix(in srgb, var(--verd-600) 40%, transparent); border-right: 2px solid var(--verd-500); display: flex; align-items: center; justify-content: flex-end; transition: width .9s cubic-bezier(.16,1,.3,1); }
+.ic-fn-val { font-size: 11px; color: var(--paper); padding-right: 8px; }
+.ic-fn-norm { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--mark); }
+.ic-fn-gap { font-size: 12px; color: var(--steel-600); text-align: right; }
+.ic-fn-gap.is-red { color: var(--mark-600); }
+
+@media (max-width: 680px) {
+  .ic-row { grid-template-columns: 100px 1fr 44px; gap: 8px; }
+  .ic-fn-row { grid-template-columns: 90px 1fr 40px; gap: 8px; }
+}

@@ -28,6 +28,7 @@
 .caselist-body { display: grid; gap: 6px; min-width: 0; }
 .caselist-name { font-family: var(--display); font-weight: 700; font-size: clamp(18px, 2.4vw, 26px); color: var(--paper); }
 .caselist-lead { font-size: 14px; line-height: 1.45; color: var(--vel); max-width: 62ch; }
+.caselist-sys { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--verd-500); margin-top: 2px; }
 .caselist-go { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--steel-600); white-space: nowrap; }
 .caselist-row:hover .caselist-go { color: var(--mark-600); }
 

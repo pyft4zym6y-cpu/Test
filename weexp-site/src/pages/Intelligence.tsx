@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { PageHead } from '@/components/PageHead';
+import { BenchmarkChart, FunnelChart } from '@/components/IntelCharts';
 import './intelligence.css';
 
 const STREAMS = [
@@ -27,6 +28,10 @@ export function Intelligence() {
         lead={<>Кожен клієнт робить систему WEEXP розумнішою. Тут ми повертаємо це ринку —
           <b> дані, позиція, бенчмарки</b>. Це не блог, це knowledge flywheel.</>}
       />
+      <section className="wrap intel-charts">
+        <BenchmarkChart />
+        <FunnelChart />
+      </section>
       <section className="wrap intel-streams">
         {STREAMS.map((s) => (
           <div key={s.k} className="intel-stream">
