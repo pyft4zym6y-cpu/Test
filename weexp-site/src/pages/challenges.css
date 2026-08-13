@@ -26,6 +26,7 @@
 .sys-flow-step { font-size: 12px; letter-spacing: .06em; color: var(--vel); border: 1px solid var(--hair); padding: 8px 12px; display: inline-flex; align-items: center; gap: 8px; }
 .sys-flow-step i { color: var(--mark-600); font-style: normal; }
 
+.sys-video { padding-bottom: clamp(28px, 5vh, 56px); }
 .sys-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--hair); border: 1px solid var(--hair); }
 .sys-col { background: var(--ink-900); padding: clamp(24px, 4vw, 40px); display: grid; gap: 16px; align-content: start; }
 .sys-col--sell { background: color-mix(in srgb, var(--verd-900) 30%, var(--ink-900)); }

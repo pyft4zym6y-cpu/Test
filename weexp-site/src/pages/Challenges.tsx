@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { PageHead } from '@/components/PageHead';
 import { SYSTEMS } from '@/data/xray';
+import { VideoBlock } from '@/components/VideoBlock';
 import './challenges.css';
 
 /** /challenges — не «послуги», а 7 систем бізнесу. Вхід через бізнес-біль. */
@@ -13,6 +14,9 @@ export function Challenges() {
         lead={<>Ми діагностуємо не сайт і не канал, а всю <b>систему онлайн-продажів</b> —
           7 систем від стратегії до організації. Один симптом — сім можливих причин.</>}
       />
+      <section className="wrap home-video">
+        <VideoBlock title="7 систем, у яких бізнес втрачає гроші" sub="Огляд · як WEEXP діагностує систему цілком" />
+      </section>
       <section className="wrap ch-list">
         {SYSTEMS.map((s) => (
           <Link key={s.key} to={`/challenges/${s.slug}`} className="ch-row">
