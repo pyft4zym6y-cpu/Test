@@ -92,9 +92,14 @@ const UA =
  * https://site/?bypass_code=XXXX. Без этого обход аудирует заглушку, а не магазин
  * (единый 9-символьный title, 0% on-page на всех URL — классический признак).
  *
- * query — параметры, которые нужно нести на КАЖДЫЙ запрос (навигацию, sitemap,
- * robots, пробы). cookies/headers — на случай токена в куке/заголовке. Обычно
- * достаточно query: оператор просто подаёт ссылку-обход как URL сайта.
+ * Модель «прогрев + кука»: bypass-параметр несём ТОЛЬКО на корневую навигацию
+ * (isRoot / прогрев в auditSingle). Плагин «coming soon» на этом заходе ставит
+ * куку разблокировки в контекст браузера — и дальше sitemap/robots/пробы/внутренние
+ * страницы тянутся ЧИСТЫМИ URL и едут на куке. Это важно: если тащить ?bypass_code
+ * на каждый запрос, плагин перехватывает их как «вход по коду» и ломает выдачу
+ * sitemap (симптом прошлого прогона: 59 URL, 1 страница вместо полного магазина).
+ * Fallback: если чистый sitemap пуст, повторяем с query (сайты без куки-модели).
+ * cookies/headers — на случай токена в куке/заголовке, задаётся оператором явно.
  */
 export type SiteAccess = { query?: Record<string, string>; cookies?: { name: string; value: string }[]; headers?: Record<string, string> };
 
@@ -428,7 +433,10 @@ async function auditPage(page: Page, url: string, isRoot: boolean, access?: Site
   const fail = (msg: string, fUrl = cleanUrl, ttl = ''): { audit: PageAudit; tech: string[]; links: string[] } =>
     ({ audit: { url: cleanUrl, finalUrl: fUrl, kind: 'other', status, title: ttl, checks: [], score: null, error: msg }, tech: [], links: [] });
   try {
-    const resp = await page.goto(applyAccess(url, access), { waitUntil: 'domcontentloaded', timeout: 25000 });
+    // Тільки корінь (прогрів) несе bypass-параметр — він ставить куку розблокування
+    // плагіна «сайт в розробці». Далі всі навігації йдуть чистими URL і їдуть на цій
+    // куці; так параметр не ламає sitemap/robots/внутрішні сторінки.
+    const resp = await page.goto(isRoot ? applyAccess(url, access) : cleanUrl, { waitUntil: 'domcontentloaded', timeout: 25000 });
     status = resp?.status() ?? null;
     headers = resp?.headers() ?? {};
     await page.waitForTimeout(1200); // дать JS дорисоваться
@@ -520,6 +528,13 @@ export async function auditSingle(browser: Browser, url: string, access?: SiteAc
   const ctx = await hardenedContext(browser, acc);
   try {
     const page = await ctx.newPage();
+    // Прогрев: единожды заходим на цель с bypass-параметром, чтобы плагин
+    // «coming soon» поставил куку разблокировки в контекст. Дальше auditPage
+    // тянет чистый URL и едет на куке. У auditSingle нет корневого прогрева,
+    // поэтому делаем его здесь явно.
+    if (acc?.query) {
+      try { await page.goto(applyAccess(url, acc), { waitUntil: 'domcontentloaded', timeout: 20000 }); } catch { /* прогрев не критичен */ }
+    }
     const { audit, tech } = await auditPage(page, url, false, acc);
     return { ...audit, tech };
   } finally {
@@ -668,7 +683,8 @@ export async function crawlSite(
 
     // robots.txt + ПОЛНОЕ дерево из sitemap.xml (все URL сайта, а не только с обхода).
     try {
-      const r = await ctx.request.get(applyAccess(`${origin}/robots.txt`, access), { timeout: 8000 }).catch(() => null);
+      // Чисті URL: кука розблокування вже стоїть після аудиту кореня.
+      const r = await ctx.request.get(`${origin}/robots.txt`, { timeout: 8000 }).catch(() => null);
       out.robotsTxt = Boolean(r && r.ok());
       // GEO/AEO-слой: не заблокированы ли AI-краулеры и есть ли llms.txt.
       if (kind === 'client') {
@@ -676,15 +692,18 @@ export async function crawlSite(
           const robotsBody = out.robotsTxt && r ? await r.text() : '';
           const BOTS = ['GPTBot', 'OAI-SearchBot', 'ClaudeBot', 'Claude-SearchBot', 'PerplexityBot', 'Google-Extended'];
           const blockedBots = BOTS.filter((b) => new RegExp(`user-agent:\\s*${b}[\\s\\S]{0,200}?disallow:\\s*/\\s*$`, 'im').test(robotsBody));
-          const llms = await ctx.request.get(applyAccess(`${origin}/llms.txt`, access), { timeout: 6000 }).catch(() => null);
+          const llms = await ctx.request.get(`${origin}/llms.txt`, { timeout: 6000 }).catch(() => null);
           const llmsTxt = Boolean(llms && llms.ok() && (await llms.text().catch(() => '')).trim().length > 20);
           out.ai = { llmsTxt, blockedBots };
-          const hd = await ctx.request.get(applyAccess(origin, access), { timeout: 8000, maxRedirects: 3 }).catch(() => null);
+          const hd = await ctx.request.get(origin, { timeout: 8000, maxRedirects: 3 }).catch(() => null);
           const H = (n: string) => Boolean(hd?.headers()?.[n]);
           out.secHeaders = { csp: H('content-security-policy'), hsts: H('strict-transport-security'), xfo: H('x-frame-options') || H('content-security-policy') };
         } catch { /* noop */ }
       }
-      const smUrls = await fetchSitemapUrls(ctx, origin, access);
+      // Спершу чисто (кука). Якщо sitemap порожній, а доступ заданий — плагін може
+      // бути stateless (лише за параметром): пробуємо ще раз із параметром.
+      let smUrls = await fetchSitemapUrls(ctx, origin);
+      if (!smUrls.length && access?.query) smUrls = await fetchSitemapUrls(ctx, origin, access);
       out.sitemapXml = smUrls.length > 0;
       addLinks(smUrls);
     } catch { /* noop */ }
@@ -698,14 +717,14 @@ export async function crawlSite(
         if (!t.probes.length || typeHit(t)) continue;
         for (const pr of t.probes) {
           try {
-            const r = await ctx.request.get(applyAccess(origin + pr, access), { timeout: 6000, maxRedirects: 3 }).catch(() => null);
+            const r = await ctx.request.get(origin + pr, { timeout: 6000, maxRedirects: 3 }).catch(() => null);
             if (r && r.status() < 400) { linkSet.add(origin + pr); break; }
           } catch { /* noop */ }
         }
       }
       // «Мягкая 404»: несуществующий URL обязан отдавать 404, иначе мусор индексируется.
       try {
-        const r404 = await ctx.request.get(applyAccess(`${origin}/weexp-404-probe-${Math.random().toString(36).slice(2)}`, access), { timeout: 6000 }).catch(() => null);
+        const r404 = await ctx.request.get(`${origin}/weexp-404-probe-${Math.random().toString(36).slice(2)}`, { timeout: 6000 }).catch(() => null);
         out.soft404 = r404 ? r404.status() < 400 : null;
       } catch { out.soft404 = null; }
     }
@@ -732,7 +751,7 @@ export async function crawlSite(
         const pdpUrl = candidates.find((u) => /product|tovar|\/p\/|\/pr\/|item|route=product|goods/i.test(lpath(u)))
           ?? candidates.find((u) => { const m = lpath(u).match(/^\/([a-z0-9-]{10,})\/?$/i); return Boolean(m && m[1].includes('-')); });
         if (pdpUrl) {
-          await page.goto(applyAccess(pdpUrl, access), { waitUntil: 'domcontentloaded', timeout: 20000 }).catch(() => {});
+          await page.goto(pdpUrl, { waitUntil: 'domcontentloaded', timeout: 20000 }).catch(() => {});
           await page.waitForTimeout(1000);
           const added = await page.evaluate(() => {
             const el = document.querySelector('#button-cart, [id*="button-cart" i], [class*="add-to-cart" i], [data-add-to-cart], button[name*="add" i]')
