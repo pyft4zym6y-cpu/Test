@@ -75,8 +75,11 @@ export function normConfidence(c: unknown): number {
   return Math.max(0, Math.min(1, n));
 }
 
+/** Явна вимога до LLM: усі текстові поля відповіді — природною українською. */
+const UK_INSTRUCTION = '\n\nВАЖЛИВО: усі текстові поля у відповіді (summary, healthNote, findings, pains, competitors, missingFacts, scope, openQuestions тощо) пиши природною УКРАЇНСЬКОЮ мовою, а не російською.';
+
 export async function analyze(ds: AuditDataset, engineFactsStr?: string): Promise<Analysis> {
-  const text = await ask(systemFor(ds) + (await knowledgeFor('analyze')), datasetToPrompt(ds, engineFactsStr), 8000);
+  const text = await ask(systemFor(ds) + (await knowledgeFor('analyze')) + UK_INSTRUCTION, datasetToPrompt(ds, engineFactsStr), 8000);
   const a = extractJson<Partial<Analysis>>(text);
   return {
     summary: a.summary ?? '',

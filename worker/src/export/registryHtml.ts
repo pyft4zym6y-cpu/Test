@@ -3,14 +3,14 @@
  * пакета: общий ID, детерминированная уверенность, Impact×Confidence, revenue exposure,
  * приоритет и «где встречается». Делает единую машину видимой в рабочем документе.
  */
-import { doc, esc, methodologySection, conclusionSection } from './reportShell.js';
+import { doc, esc, cover, methodologySection, conclusionSection } from './reportShell.js';
 import { svgBars, svgDonut } from './charts.js';
 import type { Finding } from '../registry.js';
 import { registrySummary } from '../registry.js';
 
 const fmt = (n: number) => (n ? `${Math.round(n).toLocaleString('ru-RU')} ₴` : '—');
 
-export function renderRegistryHtml(client: string, takenAt: string, findings: Finding[]): string {
+export function renderRegistryHtml(client: string, _takenAt: string, findings: Finding[]): string {
   const s = registrySummary(findings);
   const rows = findings.map((f) => `<tr>
     <td class="fid">${esc(f.id)}</td>
@@ -21,28 +21,27 @@ export function renderRegistryHtml(client: string, takenAt: string, findings: Fi
     <td class="num">${fmt(f.revenueExposure)}</td>
   </tr>`).join('');
 
-  const cover = `<section class="cover"><div class="cov-bar"></div><div class="cov-body">
-    <div class="kicker">Commerce OS · Реестр находок</div>
-    <h1>Единый реестр находок</h1>
-    <div class="cov-meta">
-      <div><span class="lbl">Клиент</span><span class="val">${esc(client)}</span></div>
-      <div><span class="lbl">Дата</span><span class="val">${esc(new Date(takenAt).toLocaleDateString('ru-RU'))}</span></div>
-      <div><span class="lbl">Находок</span><span class="val">${s.total}</span></div>
-      <div><span class="lbl">P0 / P1 / P2</span><span class="val">${s.p0} / ${s.p1} / ${s.p2}</span></div>
-      <div><span class="lbl">Revenue exposure</span><span class="val">${fmt(s.exposureYear)}/год</span></div>
-    </div>
-    <div class="coverage">Единая база диагностики: каждая находка из всех отчётов пакета сведена сюда с общим ID, детерминированной уверенностью, влиянием, деньгами и приоритетом. Одна проблема, встречающаяся в нескольких отчётах, — одна строка; колонка «где» показывает, где она фигурирует.</div>
-  </div></section>`;
+  const coverHtml = cover({
+    kicker: 'Єдиний реєстр',
+    title: 'Реєстр знахідок',
+    metrics: [
+      { label: 'Клієнт', value: client },
+      { label: 'Знахідок', value: String(s.total) },
+      { label: 'P0 / P1 / P2', value: `${s.p0} / ${s.p1} / ${s.p2}` },
+      { label: 'Revenue exposure', value: `${fmt(s.exposureYear)}/рік` },
+    ],
+    note: 'Єдина база діагностики: кожна знахідка з усіх звітів пакета зведена сюди зі спільним ID, детермінованою впевненістю, впливом, грошима та пріоритетом. Одна проблема, що трапляється в кількох звітах, — один рядок; колонка «де» показує, де вона фігурує.',
+  });
 
   const method = methodologySection({
-    goal: 'Свести находки всех отчётов пакета в одну приоритизированную базу с общими ID, уверенностью, деньгами и приоритетом — чтобы решения принимались по одной таблице, а не по десятку документов.',
-    sources: ['UX/UI, Контент, Механики, Путь клиента, Технический, SEO, причинно-следственный анализ', 'Денежная модель — revenue exposure по рычагу воронки'],
-    scope: `${s.total} находок из всех отчётов прогона`,
-    limits: 'Уверенность и деньги считаются детерминированно из зафиксированных фактов; находки со стороны теста/сети помечены и понижены в уверенности, а не выданы за дефект сайта.',
+    goal: 'Звести знахідки всіх звітів пакета в одну пріоритизовану базу зі спільними ID, впевненістю, грошима та пріоритетом — щоб рішення ухвалювалися за однією таблицею, а не за десятком документів.',
+    sources: ['UX/UI, Контент, Механіки, Шлях клієнта, Технічний, SEO, причинно-наслідковий аналіз', 'Грошова модель — revenue exposure за важелем воронки'],
+    scope: `${s.total} знахідок з усіх звітів прогону`,
+    limits: 'Впевненість і гроші рахуються детерміновано із зафіксованих фактів; знахідки з боку тесту/мережі позначені та знижені у впевненості, а не видані за дефект сайту.',
     standards: [
-      'Уверенность = Evidence × Reproducibility × Source × Coverage (произведение измеримых факторов, не экспертная оценка)',
-      'Приоритет = Impact × Confidence × Revenue / Cost',
-      'Дедуп: одна проблема = один ID независимо от числа отчётов, где она встречается',
+      'Впевненість = Evidence × Reproducibility × Source × Coverage (добуток вимірних факторів, не експертна оцінка)',
+      'Пріоритет = Impact × Confidence × Revenue / Cost',
+      'Дедуп: одна проблема = один ID незалежно від кількості звітів, де вона трапляється',
     ],
   });
 
@@ -50,31 +49,31 @@ export function renderRegistryHtml(client: string, takenAt: string, findings: Fi
   const prTone = (p: string) => (p === 'P0' ? 'gap' : p === 'P1' ? 'check' : undefined);
   const topByMoney = [...findings].filter((f) => f.revenueExposure > 0).sort((a, b) => b.revenueExposure - a.revenueExposure).slice(0, 10);
   const moneyBars = topByMoney.length
-    ? `<div class="chart-wrap">${svgBars(topByMoney.map((f) => ({ label: `${f.id} · ${f.title}`, value: Math.round(f.revenueExposure / 1000), tone: prTone(f.priority) })), { title: 'Топ находок по revenue exposure (тыс. ₴/год)', unit: 'k' })}
-        <p class="chart-cap">Столбцы — годовой оборот, которого касается находка; цвет — приоритет (красный P0, оранжевый P1). Деньги не задваиваются: сумма по рычагу делится между находками пропорционально их вкладу.<sup class="fn">1</sup></p></div>`
+    ? `<div class="chart-wrap">${svgBars(topByMoney.map((f) => ({ label: `${f.id} · ${f.title}`, value: Math.round(f.revenueExposure / 1000), tone: prTone(f.priority) })), { title: 'Топ знахідок за revenue exposure (тис. ₴/рік)', unit: 'k' })}
+        <p class="chart-cap">Стовпці — річний оборот, якого стосується знахідка; колір — пріоритет (червоний P0, помаранчевий P1). Гроші не подвоюються: сума за важелем ділиться між знахідками пропорційно їхньому внеску.<sup class="fn">1</sup></p></div>`
     : '';
   const prDonut = (s.p0 + s.p1 + s.p2) > 0
     ? `<div class="chart-wrap">${svgDonut([
         { label: 'P0 — критично', value: s.p0, color: '#dc2626' },
-        { label: 'P1 — важно', value: s.p1, color: '#d97706' },
-        { label: 'P2 — стратегия', value: s.p2, color: '#64748b' },
-      ].filter((x) => x.value > 0), { title: 'Находки по приоритету', centerLabel: String(s.total) })}</div>`
+        { label: 'P1 — важливо', value: s.p1, color: '#d97706' },
+        { label: 'P2 — стратегія', value: s.p2, color: '#64748b' },
+      ].filter((x) => x.value > 0), { title: 'Знахідки за пріоритетом', centerLabel: String(s.total) })}</div>`
     : '';
-  const table = `<section class="block"><h2>Находки — по приоритету</h2>
-    <p class="lead">Сортировка: полоса приоритета → Impact × Confidence × Revenue / Cost. «Уверенность» — детерминированная (Evidence × Reproducibility × Source × Coverage), не экспертная.</p>
+  const table = `<section class="block"><h2>Знахідки — за пріоритетом</h2>
+    <p class="lead">Сортування: смуга пріоритету → Impact × Confidence × Revenue / Cost. «Впевненість» — детермінована (Evidence × Reproducibility × Source × Coverage), не експертна.</p>
     ${prDonut}${moneyBars}
-    <table><thead><tr><th>ID</th><th>Приор.</th><th>Находка · где встречается</th><th>Уверен.</th><th>Impact×Conf</th><th>Revenue/год</th></tr></thead><tbody>${rows || '<tr><td colspan="6">Находок не зафиксировано.</td></tr>'}</tbody></table>
-    <p class="fn-note"><sup>1</sup> Revenue exposure — верхняя граница годового оборота, на который влияет находка, атрибутированная по рычагу денежной модели; это «сколько на кону», а не гарантированный прирост от исправления.</p></section>`;
+    <table><thead><tr><th>ID</th><th>Пріор.</th><th>Знахідка · де трапляється</th><th>Впевн.</th><th>Impact×Conf</th><th>Revenue/рік</th></tr></thead><tbody>${rows || '<tr><td colspan="6">Знахідок не зафіксовано.</td></tr>'}</tbody></table>
+    <p class="fn-note"><sup>1</sup> Revenue exposure — верхня межа річного обороту, на який впливає знахідка, атрибутована за важелем грошової моделі; це «скільки на кону», а не гарантований приріст від виправлення.</p></section>`;
 
   const concl = conclusionSection([
-    `В реестре ${s.total} находок: ${s.p0} критичных (P0), ${s.p1} важных (P1), ${s.p2} стратегических (P2). Суммарный revenue exposure ≈ ${fmt(s.exposureYear)}/год — деньги, которых касаются находки (без задваивания между шагами воронки одного рычага).`,
-    'Реестр — единая точка правды пакета: сводный беклог, причинно-следственная карта и дорожная карта строятся из него, поэтому приоритеты, деньги и формулировки во всех документах согласованы между собой.',
-  ], 'Работать по P0 сверху вниз: каждая строка несёт влияние, уверенность и деньги — этого достаточно, чтобы решить, что делать первым.');
+    `У реєстрі ${s.total} знахідок: ${s.p0} критичних (P0), ${s.p1} важливих (P1), ${s.p2} стратегічних (P2). Сумарний revenue exposure ≈ ${fmt(s.exposureYear)}/рік — гроші, яких стосуються знахідки (без подвоєння між кроками воронки одного важеля).`,
+    'Реєстр — єдина точка правди пакета: зведений беклог, причинно-наслідкова карта та дорожня карта будуються з нього, тому пріоритети, гроші й формулювання в усіх документах узгоджені між собою.',
+  ], 'Працювати за P0 згори донизу: кожен рядок несе вплив, впевненість і гроші — цього достатньо, щоб вирішити, що робити першим.');
 
   const extraCss = `.fid{font-weight:800;white-space:nowrap;font-size:10px;}
     .ftitle .fgap{color:var(--muted);font-size:9px;margin-top:2px;}
     .frefs{margin-top:3px;}
     .num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;}`;
 
-  return doc(`Реестр находок · ${client}`, cover + method + table + concl, extraCss);
+  return doc(`Реєстр знахідок · ${client}`, coverHtml + method + table + concl, extraCss);
 }

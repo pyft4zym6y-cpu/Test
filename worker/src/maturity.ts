@@ -8,10 +8,10 @@
 import type { AuditDataset } from './report.js';
 import type { SiteCrawl } from './crawl.js';
 
-export type DomainRow = { domain: string; assesses: string; level: number | null; basis: string; source: 'L0' | 'нужны данные' };
+export type DomainRow = { domain: string; assesses: string; level: number | null; basis: string; source: 'L0' | 'потрібні дані' };
 export type MaturityReport = { rows: DomainRow[]; observedAvg: number | null };
 
-const LEVELS = ['—', 'L1 Хаос', 'L2 Повторяемо', 'L3 Определено', 'L4 Управляемо', 'L5 Оптимизировано'];
+const LEVELS = ['—', 'L1 Хаос', 'L2 Повторюване', 'L3 Визначено', 'L4 Кероване', 'L5 Оптимізовано'];
 
 const ratioToLevel = (r: number): number => (r >= 0.85 ? 5 : r >= 0.7 ? 4 : r >= 0.5 ? 3 : r >= 0.3 ? 2 : 1);
 
@@ -38,34 +38,34 @@ export function buildMaturity(ds: AuditDataset): MaturityReport {
   const platLevel = ratioToLevel(platR);
 
   // Продукт — качество товарных данных на карточке.
-  let productLevel: number | null = null; let productBasis = 'нет карточки в выборке';
+  let productLevel: number | null = null; let productBasis = 'немає картки у вибірці';
   if (pdp) {
     const bl = pdp.ux?.blocks ?? {};
     const items = ['gallery', 'description', 'specifications', 'variants', 'reviews', 'delivery'];
     const have = items.filter((k) => bl[k]).length + (pdp.checks.some((c) => c.id === 'schema-product' && c.pass) ? 1 : 0);
     productLevel = ratioToLevel(have / (items.length + 1));
-    productBasis = `по карточке: заполнено ${have}/${items.length + 1} товарных блоков`;
+    productBasis = `за карткою: заповнено ${have}/${items.length + 1} товарних блоків`;
   }
 
   // Аналитика — только факт установки (данные — с доступом), потолок L3.
   const analyticsInstalled = s.tech.analytics.length > 0;
   const analyticsLevel = analyticsInstalled ? 3 : 1;
-  const analyticsBasis = analyticsInstalled ? `установлено: ${s.tech.analytics.join(', ')} (качество данных — с доступом)` : 'счётчиков не обнаружено';
+  const analyticsBasis = analyticsInstalled ? `встановлено: ${s.tech.analytics.join(', ')} (якість даних — з доступом)` : 'лічильників не виявлено';
 
   // Маркетинг — сигналы каналов на витрине.
   const mkt = (anyBlock(s, 'newsletter') ? 1 : 0) + (s.pages.some((p) => p.checks.some((c) => c.id === 'social' && c.pass)) ? 1 : 0) + (analyticsInstalled ? 1 : 0);
   const marketingLevel = mkt >= 3 ? 3 : mkt >= 2 ? 2 : 1;
 
   const observed: DomainRow[] = [
-    { domain: 'SEO', assesses: 'Органическая видимость, техсостояние, разметка', level: seoLevel, basis: `SEO-проверки, sitemap/robots (${Math.round(seoR * 100)}%)`, source: 'L0' },
-    { domain: 'Platform', assesses: 'Технобаза, скорость, гигиена вёрстки', level: platLevel, basis: `техпроверки (${Math.round(platR * 100)}%)`, source: 'L0' },
-    { domain: 'Product', assesses: 'Качество товарных данных (карточка)', level: productLevel, basis: productBasis, source: productLevel ? 'L0' : 'нужны данные' },
-    { domain: 'Analytics', assesses: 'Достоверность данных, атрибуция', level: analyticsLevel, basis: analyticsBasis, source: 'L0' },
-    { domain: 'Marketing', assesses: 'Каналы привлечения и удержания на витрине', level: marketingLevel, basis: `сигналы каналов: ${mkt}/3`, source: 'L0' },
+    { domain: 'SEO', assesses: 'Органічна видимість, техстан, розмітка', level: seoLevel, basis: `SEO-перевірки, sitemap/robots (${Math.round(seoR * 100)}%)`, source: 'L0' },
+    { domain: 'Platform', assesses: 'Технобаза, швидкість, гігієна верстки', level: platLevel, basis: `техперевірки (${Math.round(platR * 100)}%)`, source: 'L0' },
+    { domain: 'Product', assesses: 'Якість товарних даних (картка)', level: productLevel, basis: productBasis, source: productLevel ? 'L0' : 'потрібні дані' },
+    { domain: 'Analytics', assesses: 'Достовірність даних, атрибуція', level: analyticsLevel, basis: analyticsBasis, source: 'L0' },
+    { domain: 'Marketing', assesses: 'Канали залучення й утримання на вітрині', level: marketingLevel, basis: `сигнали каналів: ${mkt}/3`, source: 'L0' },
   ];
 
   const needData = ['Strategy', 'Customer', 'Brand', 'Sales', 'CRM', 'Pricing', 'Operations', 'Marketplace', 'International', 'Finance', 'People', 'AI', 'Governance']
-    .map((d): DomainRow => ({ domain: d, assesses: 'заполняется ответами опросника / доступами', level: null, basis: '—', source: 'нужны данные' }));
+    .map((d): DomainRow => ({ domain: d, assesses: 'заповнюється відповідями опитувальника / доступами', level: null, basis: '—', source: 'потрібні дані' }));
 
   const rows = [...observed, ...needData];
   const lv = observed.map((r) => r.level).filter((x): x is number => x !== null);
@@ -73,20 +73,20 @@ export function buildMaturity(ds: AuditDataset): MaturityReport {
   return { rows, observedAvg };
 }
 
-export function levelLabel(n: number | null): string { return n === null ? 'нужны данные' : LEVELS[n]; }
+export function levelLabel(n: number | null): string { return n === null ? 'потрібні дані' : LEVELS[n]; }
 
 export function renderMaturityMd(ds: AuditDataset, r: MaturityReport): string {
   const out: string[] = [];
-  out.push(`# Матрица зрелости (AD-16) — ${ds.client.finalUrl || ds.client.rootUrl}`);
-  out.push(`_Commerce OS · 18 доменов · L1 Хаос → L5 Оптимизировано · слой L0 · ${new Date(ds.takenAt).toLocaleDateString('ru-RU')}_`);
+  out.push(`# Матриця зрілості — ${ds.client.finalUrl || ds.client.rootUrl}`);
+  out.push(`_18 доменів · L1 Хаос → L5 Оптимізовано · зовнішній аудит вітрини_`);
   out.push('');
-  out.push(`На L0 оцениваются домены, наблюдаемые из обхода. Средний уровень по наблюдаемым: **${r.observedAvg ?? '—'}/5**. Полная матрица 18 доменов заполняется ответами опросника и доступами; Health Score считается отдельно движком.`);
+  out.push(`Ззовні оцінюються домени, спостережувані з обходу. Середній рівень за спостережуваними: **${r.observedAvg ?? '—'}/5**. Повна матриця 18 доменів заповнюється відповідями опитувальника й доступами; Health Score рахується окремо рушієм.`);
   out.push('');
-  out.push('| Домен | Что оценивается | Уровень | Основание |');
+  out.push('| Домен | Що оцінюється | Рівень | Підстава |');
   out.push('| --- | --- | --- | --- |');
   for (const d of r.rows) out.push(`| ${d.domain} | ${d.assesses} | ${levelLabel(d.level)} | ${d.basis} |`);
   out.push('');
   out.push('---');
-  out.push('_L1 Хаос → L2 Повторяемо → L3 Определено → L4 Управляемо → L5 Оптимизировано. Домены «нужны данные» раскрываются на T2–T4._');
+  out.push('_L1 Хаос → L2 Повторюване → L3 Визначено → L4 Кероване → L5 Оптимізовано. Домени «потрібні дані» розкриваються на наступних етапах._');
   return out.join('\n');
 }

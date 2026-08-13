@@ -4,7 +4,7 @@
  * вывод→факты (§14). Тянет то, что воркер уже считает (UX/UI, деньги, конкуренты,
  * зрелость, coverage, гипотезы); недостающее помечает PARTIAL/BLOCKED (§15).
  */
-import { esc, dimBadges, scoreColor, doc, conclusionSection } from './reportShell.js';
+import { esc, dimBadges, scoreColor, doc, cover, pageFooter, conclusionSection } from './reportShell.js';
 import { svgDonut, svgGauge } from './charts.js';
 import type { AuditDataset } from '../report.js';
 import type { SiteAuditReport } from '../pagereport.js';
@@ -24,22 +24,22 @@ export type ExecInputs = {
 };
 
 const rub = (n: number) => `${Math.round(n).toLocaleString('ru-RU')} ₴`;
-const eLevel = (conf: number) => (conf >= 0.8 ? 'высокая уверенность' : conf >= 0.6 ? 'подтверждено проверкой' : 'наблюдение'); // L0 внешний — потолок E3
+const eLevel = (conf: number) => (conf >= 0.8 ? 'висока впевненість' : conf >= 0.6 ? 'підтверджено перевіркою' : 'спостереження'); // зовнішній аудит — стеля E3
 const clientName = (ds: AuditDataset) => { try { return new URL(ds.client.finalUrl).hostname.replace(/^www\./, ''); } catch { return ds.client.finalUrl; } };
 
 /** Карточка «главный вывод». «Влияние» показываем только если отличается от «Разрыва». */
 function conclCard(c: { title: string; sev?: 'crit' | 'warn'; see: string; proof: string; ref: string; gap: string; impact: string; conf: string; unknown: string; next: string }): string {
-  const impactRow = c.impact && c.impact !== c.gap ? `<span class="k">Влияние</span><span class="v">${esc(c.impact)}</span>` : '';
+  const impactRow = c.impact && c.impact !== c.gap ? `<span class="k">Вплив</span><span class="v">${esc(c.impact)}</span>` : '';
   const title = c.title.length > 120 ? c.title.slice(0, 117) + '…' : c.title;
   return `<div class="concl ${c.sev ?? ''}"><h3>${esc(title)}</h3><div class="concl-grid">
-    <span class="k">Что видим</span><span class="v">${esc(c.see)}</span>
-    <span class="k">Доказательство</span><span class="v">${esc(c.proof)}</span>
-    <span class="k">Сравнение</span><span class="v">${esc(c.ref)}</span>
-    <span class="k">Разрыв</span><span class="v">${esc(c.gap)}</span>
+    <span class="k">Що бачимо</span><span class="v">${esc(c.see)}</span>
+    <span class="k">Доказ</span><span class="v">${esc(c.proof)}</span>
+    <span class="k">Порівняння</span><span class="v">${esc(c.ref)}</span>
+    <span class="k">Розрив</span><span class="v">${esc(c.gap)}</span>
     ${impactRow}
-    <span class="k">Уверенность</span><span class="v">${esc(c.conf)}</span>
-    <span class="k">Что неизвестно</span><span class="v">${esc(c.unknown)}</span>
-    <span class="k">Следующий шаг</span><span class="v">${esc(c.next)}</span>
+    <span class="k">Впевненість</span><span class="v">${esc(c.conf)}</span>
+    <span class="k">Що невідомо</span><span class="v">${esc(c.unknown)}</span>
+    <span class="k">Наступний крок</span><span class="v">${esc(c.next)}</span>
   </div></div>`;
 }
 
@@ -50,64 +50,57 @@ function keyFindings(inp: ExecInputs): string {
     cards.push(conclCard({
       title: `${f.area}: ${f.fact}`.slice(0, 110),
       sev: f.confidence >= 0.75 ? 'crit' : 'warn',
-      see: f.fact, proof: 'Внешний обход витрины без доступов (наблюдение)', ref: 'Эталон композиции / голд-стандарт',
+      see: f.fact, proof: 'Зовнішній обхід вітрини без доступів (спостереження)', ref: 'Еталон композиції / голд-стандарт',
       gap: f.why, impact: f.why, conf: `${eLevel(f.confidence)} · ${Math.round(f.confidence * 100)}%`,
-      unknown: 'Фактическое влияние на конверсию — после подключения аналитики и рекламных кабинетов', next: 'Проверить на данных GA4/CRM после передачи доступов и подключения аналитики',
+      unknown: 'Фактичний вплив на конверсію — після підключення аналітики та рекламних кабінетів', next: 'Перевірити на даних GA4/CRM після передачі доступів і підключення аналітики',
     }));
   }
   // добор из системных дефектов UX/UI, если находок мало
   if (cards.length < 3 && inp.siteAudit) {
     for (const s of inp.siteAudit.systemic.slice(0, 3)) {
-      cards.push(conclCard({ title: s.title, sev: 'warn', see: s.title, proof: 'Проявляется на всех разобранных страницах', ref: 'Голд-стандарт', gap: s.detail, impact: s.detail, conf: 'подтверждено · системный', unknown: 'Точный масштаб — на полном crawl после передачи доступов (следующий этап)', next: 'Правка в шаблоне/настройках' }));
+      cards.push(conclCard({ title: s.title, sev: 'warn', see: s.title, proof: 'Проявляється на всіх розібраних сторінках', ref: 'Голд-стандарт', gap: s.detail, impact: s.detail, conf: 'підтверджено · системний', unknown: 'Точний масштаб — на повному crawl після передачі доступів (наступний етап)', next: 'Правка в шаблоні/налаштуваннях' }));
     }
   }
-  return cards.length ? cards.join('') : '<p class="lead">Главные выводы появятся после анализа (нужен ANTHROPIC_API_KEY и данные обхода).</p>';
+  return cards.length ? cards.join('') : '<p class="lead">Головні висновки з\'являться після аналізу (потрібен ANTHROPIC_API_KEY і дані обходу).</p>';
 }
 
 function section(title: string, conclusion: string, body: string, status?: 'DONE' | 'PARTIAL' | 'BLOCKED'): string {
-  const statusWord = status === 'DONE' ? 'Готово' : status === 'PARTIAL' ? 'Частично' : 'Нужны доступы';
+  const statusWord = status === 'DONE' ? 'Готово' : status === 'PARTIAL' ? 'Частково' : 'Потрібні доступи';
   const chip = status ? `<span class="chip ${status === 'DONE' ? 'done' : status === 'PARTIAL' ? 'partial' : 'blocked'}">${statusWord}</span>` : '';
   return `<section class="block"><h2>${esc(title)} ${chip}</h2><p class="lead">${esc(conclusion)}</p>${body}</section>`;
 }
 
 export function renderExecDiagnostic(ds: AuditDataset, inp: ExecInputs): string {
   const name = clientName(ds);
-  const date = new Date(ds.takenAt).toLocaleDateString('ru-RU');
   const ux = inp.siteAudit;
-  const verdict = inp.analysis?.summary || ux?.verdict || 'Внешняя диагностика витрины во внешнем аудите.';
+  const verdict = inp.analysis?.summary || ux?.verdict || 'Зовнішня діагностика вітрини.';
   const posture = ux ? ux.totalPct : null;
 
-  // Cover: заголовок = первое предложение вердикта, но обложка не резиновая —
-  // длинный вывод усечь и уменьшить кегль (реальный прогон дал заголовок на 9 строк).
+  // Cover: вивід — окремим рядком (.verdict), заголовок = коротка назва документа.
   const h1raw = verdict.split('. ')[0];
   const h1txt = (h1raw.length > 160 ? h1raw.slice(0, 157) + '…' : h1raw) + '.';
-  const cover = `<section class="cover"><div class="cov-bar"></div><div class="cov-body">
-    <div class="kicker">Commerce OS · Executive Diagnostic · внешний аудит витрины</div>
-    <h1${h1txt.length > 90 ? ' style="font-size:22px"' : ''}>${esc(h1txt)}</h1>
-    <div class="cov-meta">
-      <div><span class="lbl">Клиент</span><span class="val">${esc(name)}</span></div>
-      <div><span class="lbl">Дата</span><span class="val">${esc(date)}</span></div>
-      <div><span class="lbl">Объём</span><span class="val">внешний аудит витрины</span></div>
-    </div>
-    ${posture != null ? `<div class="cov-score"><div class="big ${scoreColor(posture)}">${posture}<span>%</span></div><div class="big-cap">внешнее соответствие эталону (UX/UI)</div></div>` : ''}
-    ${inp.money ? '' : `<div class="coverage" style="border-left-color:var(--gap);margin-bottom:8px"><b>Экономика не посчитана — и это первое решение, которое нужно принять.</b> Для денежной оценки каждого разрыва достаточно трёх цифр от владельца: месячный трафик, конверсия в заказ, средний чек. После их передачи бэклог и причинная карта получают денежные вилки вместо ориентиров. Аудит сознательно не выдумывает цифры (принцип честных данных).</div>`}
-    <div class="coverage"><b>Coverage Map:</b> внешний срез витрины без доступов. Разделы со статусом:
-      <span class="chip done">Готово</span> внешне доказано · <span class="chip partial">Частично</span> частично ·
-      <span class="chip blocked">Нужны доступы</span> нужен доступ/данные. Отсутствие данных не выдаётся за факт и не скрывается.</div>
-  </div></section>`;
+  const moneyWarn = inp.money ? '' : '<div style="color:var(--gap);margin-bottom:6px"><b>Економіку не пораховано — і це перше рішення, яке потрібно ухвалити.</b> Для грошової оцінки кожного розриву достатньо трьох цифр від власника: місячний трафік, конверсія в замовлення, середній чек. Після їх передачі беклог і причинна карта отримують грошові вилки замість орієнтирів. Аудит свідомо не вигадує цифри (принцип чесних даних).</div>';
+  const coverHtml = cover({
+    kicker: 'Виконавча діагностика',
+    title: 'Виконавча діагностика',
+    verdict: h1txt,
+    metrics: [{ label: 'Клієнт', value: name }],
+    score: posture != null ? { pct: posture, cap: 'зовнішня відповідність еталону (UX/UI)' } : undefined,
+    note: `${moneyWarn}<b>Coverage Map:</b> зовнішній зріз вітрини без доступів. Розділи зі статусом: <span class="chip done">Готово</span> зовні доведено · <span class="chip partial">Частково</span> частково · <span class="chip blocked">Потрібні доступи</span> потрібен доступ/дані. Відсутність даних не видається за факт і не приховується.`,
+  });
 
   // Разделы A0 §13
   const s: string[] = [];
-  s.push(section('1. Что это за бизнес (предварительная Commerce DNA)',
-    'Профиль по внешним признакам — уточняется данными после передачи доступов (следующий этап).',
+  s.push(section('1. Що це за бізнес (попередня Commerce DNA)',
+    'Профіль за зовнішніми ознаками — уточнюється даними після передачі доступів (наступний етап).',
     `<table><tbody>
-      <tr><th>Платформа</th><td>${esc(ds.client.tech.platform ?? 'не определена')}</td></tr>
-      <tr><th>Аналитика</th><td>${esc(ds.client.tech.analytics.join(', ') || 'не обнаружена')}</td></tr>
-      <tr><th>Запрос клиента</th><td>${esc(ds.request || '— (инициативный аудит)')}</td></tr>
-      <tr><th>robots / sitemap</th><td>${ds.client.robotsTxt ? 'robots есть' : 'robots нет'} · ${ds.client.sitemapXml ? 'sitemap есть' : 'sitemap нет'}</td></tr>
+      <tr><th>Платформа</th><td>${esc(ds.client.tech.platform ?? 'не визначена')}</td></tr>
+      <tr><th>Аналітика</th><td>${esc(ds.client.tech.analytics.join(', ') || 'не виявлена')}</td></tr>
+      <tr><th>Запит клієнта</th><td>${esc(ds.request || '— (ініціативний аудит)')}</td></tr>
+      <tr><th>robots / sitemap</th><td>${ds.client.robotsTxt ? 'robots є' : 'robots немає'} · ${ds.client.sitemapXml ? 'sitemap є' : 'sitemap немає'}</td></tr>
     </tbody></table>`, 'PARTIAL'));
 
-  s.push(section('2. Главные выводы', '5–10 управленческих выводов во внешнем аудите (каждый — с доказательством и уровнем уверенности).', keyFindings(inp), inp.analysis ? 'DONE' : 'BLOCKED'));
+  s.push(section('2. Головні висновки', '5–10 управлінських висновків (кожен — з доказом і рівнем упевненості).', keyFindings(inp), inp.analysis ? 'DONE' : 'BLOCKED'));
 
   // Топ единого реестра находок — все аудиты сведены в одну приоритизированную таблицу.
   if (inp.registry?.length) {
@@ -117,10 +110,10 @@ export function renderExecDiagnostic(ds: AuditDataset, inp: ExecInputs): string 
     const p2 = inp.registry.filter((f) => f.priority === 'P2').length;
     const prDonut = `<div class="chart-wrap">${svgDonut([
       { label: 'P0 — критично', value: p0, color: '#dc2626' },
-      { label: 'P1 — важно', value: p1, color: '#d97706' },
-      { label: 'P2 — стратегия', value: p2, color: '#64748b' },
-    ].filter((x) => x.value > 0), { title: 'Находки по приоритету', centerLabel: String(inp.registry.length) })}
-      <p class="chart-cap">Единый реестр всех аудитов; полоса приоритета = Impact × Confidence × Revenue / Cost. С красного сектора начинается работа.</p></div>`;
+      { label: 'P1 — важливо', value: p1, color: '#d97706' },
+      { label: 'P2 — стратегія', value: p2, color: '#64748b' },
+    ].filter((x) => x.value > 0), { title: 'Знахідки за пріоритетом', centerLabel: String(inp.registry.length) })}
+      <p class="chart-cap">Єдиний реєстр усіх аудитів; смуга пріоритету = Impact × Confidence × Revenue / Cost. З червоного сектора починається робота.</p></div>`;
     const rows = top.map((f) => `<tr>
       <td style="font-weight:800;white-space:nowrap">${esc(f.id)}</td>
       <td><span class="pr ${f.priority}">${f.priority}</span></td>
@@ -128,36 +121,36 @@ export function renderExecDiagnostic(ds: AuditDataset, inp: ExecInputs): string 
       <td style="text-align:right">${Math.round(f.confidence * 100)}%</td>
       <td style="text-align:right;white-space:nowrap">${f.revenueExposure ? `${Math.round(f.revenueExposure).toLocaleString('ru-RU')} ₴` : '—'}</td>
     </tr>`).join('');
-    s.push(section('2а. Топ находок — единый реестр',
-      `Все аудиты сведены в один реестр: ${inp.registry.length} находок, критичных P0 — ${p0}. Приоритет = Impact × Confidence × Revenue / Cost; одна проблема = один ID через все отчёты.`,
-      `${prDonut}<table><thead><tr><th>ID</th><th>Приор.</th><th>Находка · где встречается</th><th>Уверен.</th><th>Revenue/год</th></tr></thead><tbody>${rows}</tbody></table>`, 'DONE'));
+    s.push(section('2а. Топ знахідок — єдиний реєстр',
+      `Усі аудити зведені в один реєстр: ${inp.registry.length} знахідок, критичних P0 — ${p0}. Пріоритет = Impact × Confidence × Revenue / Cost; одна проблема = один ID через усі звіти.`,
+      `${prDonut}<table><thead><tr><th>ID</th><th>Пріор.</th><th>Знахідка · де трапляється</th><th>Впевн.</th><th>Revenue/рік</th></tr></thead><tbody>${rows}</tbody></table>`, 'DONE'));
   }
 
   // Карта разрывов
   const gapRows: string[] = [];
-  if (ux) gapRows.push(`<tr><td>UX/UI композиция</td><td class="${scoreColor(ux.totalPct)}">${ux.totalPct}% соответствия</td><td>${ux.systemic.length} системных дефектов</td></tr>`);
-  if (inp.engine?.score != null) gapRows.push(`<tr><td>Health Score</td><td>${inp.engine.score}/100 «${esc(inp.engine.band)}»</td><td>${inp.engine.gaps.length} критических разрывов</td></tr>`);
-  if (inp.bench) gapRows.push(`<tr><td>Конкурентный индекс</td><td>${inp.bench.clientIndex}/100</td><td>место ${inp.bench.clientRank}/${inp.bench.totalSites}</td></tr>`);
+  if (ux) gapRows.push(`<tr><td>UX/UI композиція</td><td class="${scoreColor(ux.totalPct)}">${ux.totalPct}% відповідності</td><td>${ux.systemic.length} системних дефектів</td></tr>`);
+  if (inp.engine?.score != null) gapRows.push(`<tr><td>Health Score</td><td>${inp.engine.score}/100 «${esc(inp.engine.band)}»</td><td>${inp.engine.gaps.length} критичних розривів</td></tr>`);
+  if (inp.bench) gapRows.push(`<tr><td>Конкурентний індекс</td><td>${inp.bench.clientIndex}/100</td><td>місце ${inp.bench.clientRank}/${inp.bench.totalSites}</td></tr>`);
   const healthGauge = inp.engine?.score != null
     ? `<div class="chart-wrap row"><div style="text-align:center">${svgGauge(inp.engine.score, { max: 100, label: `Health Score · «${inp.engine.band}»` })}</div>
-        <p class="chart-cap" style="flex:1;min-width:180px">Сводный индекс здоровья витрины по внешним признакам (0–100). Это оценка состояния БИЗНЕСА, в отличие от Confidence Score — достоверности нашего разбора.</p></div>`
+        <p class="chart-cap" style="flex:1;min-width:180px">Зведений індекс здоров'я вітрини за зовнішніми ознаками (0–100). Це оцінка стану БІЗНЕСУ, на відміну від Confidence Score — достовірності нашого розбору.</p></div>`
     : '';
-  s.push(section('3. Карта основных разрывов', 'Где витрина дальше всего от эталона и рынка.',
-    (gapRows.length ? `${healthGauge}<table><thead><tr><th>Домен</th><th>Оценка</th><th>Разрыв</th></tr></thead><tbody>${gapRows.join('')}</tbody></table>` : '<p class="lead">Карта разрывов собирается из UX/UI, движка и бенчмарка.</p>'),
+  s.push(section('3. Карта основних розривів', 'Де вітрина найдалі від еталона й ринку.',
+    (gapRows.length ? `${healthGauge}<table><thead><tr><th>Домен</th><th>Оцінка</th><th>Розрив</th></tr></thead><tbody>${gapRows.join('')}</tbody></table>` : '<p class="lead">Карта розривів збирається з UX/UI, рушія та бенчмарка.</p>'),
     gapRows.length ? 'DONE' : 'PARTIAL'));
 
   // Экономика разрыва
   s.push(inp.money
-    ? section('4. Экономика разрыва', 'Недополученный оборот при доведении воронки до целевой.',
+    ? section('4. Економіка розриву', 'Недоотриманий оборот при доведенні воронки до цільової.',
       `<table><tbody>
-        <tr><th>Выручка сейчас</th><td>${rub(inp.money.currentMonth)}/мес</td></tr>
-        <tr><th>При целевой воронке</th><td>${rub(inp.money.targetMonth)}/мес</td></tr>
-        <tr><th>Недополучено</th><td class="gap"><b>${rub(inp.money.potentialYear)}/год</b></td></tr>
+        <tr><th>Виручка зараз</th><td>${rub(inp.money.currentMonth)}/міс</td></tr>
+        <tr><th>За цільової воронки</th><td>${rub(inp.money.targetMonth)}/міс</td></tr>
+        <tr><th>Недоотримано</th><td class="gap"><b>${rub(inp.money.potentialYear)}/рік</b></td></tr>
       </tbody></table>`, 'DONE')
-    : section('4. Экономика разрыва', 'Денежная оценка требует baseline (трафик, конверсия, чек) — после передачи доступов (следующий этап).', '<p class="lead">Нет baseline — экономика разрыва не считается во внешнем аудите, чтобы не выдавать оценку за факт.</p>', 'BLOCKED'));
+    : section('4. Економіка розриву', 'Грошова оцінка потребує базових показників (трафік, конверсія, чек) — після передачі доступів (наступний етап).', '<p class="lead">Немає базових показників — економіка розриву не рахується, щоб не видавати оцінку за факт.</p>', 'BLOCKED'));
 
   // UX/UI карта
-  s.push(section('5. Карта UX/UI', ux ? ux.verdict : 'UX/UI-срез по типам страниц.',
+  s.push(section('5. Карта UX/UI', ux ? ux.verdict : 'UX/UI-зріз за типами сторінок.',
     ux ? (() => {
       // Свернуть дубли типа «(доп.)»: показываем первые 2 на тип + агрегат остальных.
       const shown: typeof ux.tree = []; const extra = new Map<string, { n: number; sum: number }>();
@@ -169,54 +162,54 @@ export function renderExecDiagnostic(ds: AuditDataset, inp: ExecInputs): string 
         else { const e = extra.get(base) ?? { n: 0, sum: 0 }; e.n++; e.sum += t.pct; extra.set(base, e); }
       }
       const rows = shown.map((t) => `<tr><td>${esc(t.title)}</td><td><span class="bar"><i class="fill ${scoreColor(t.pct)}" style="width:${t.pct}%"></i></span></td><td class="${scoreColor(t.pct)}">${t.pct}%</td></tr>`).join('')
-        + Array.from(extra.entries()).map(([base, e]) => { const avg = Math.round(e.sum / e.n); return `<tr><td>${esc(base)} — ещё ${e.n} страниц</td><td><span class="bar"><i class="fill ${scoreColor(avg)}" style="width:${avg}%"></i></span></td><td class="${scoreColor(avg)}">~${avg}%</td></tr>`; }).join('');
-      return `<table><thead><tr><th>Тип страницы</th><th>Соответствие</th><th>%</th></tr></thead><tbody>${rows}</tbody></table><p class="lead">Детально — в отдельном документе «UX/UI Audit».</p>`;
-    })() : '<p class="lead">Страницы не разобраны.</p>', ux ? 'DONE' : 'BLOCKED'));
+        + Array.from(extra.entries()).map(([base, e]) => { const avg = Math.round(e.sum / e.n); return `<tr><td>${esc(base)} — ще ${e.n} сторінок</td><td><span class="bar"><i class="fill ${scoreColor(avg)}" style="width:${avg}%"></i></span></td><td class="${scoreColor(avg)}">~${avg}%</td></tr>`; }).join('');
+      return `<table><thead><tr><th>Тип сторінки</th><th>Відповідність</th><th>%</th></tr></thead><tbody>${rows}</tbody></table><p class="lead">Детально — в окремому документі «UX/UI Audit».</p>`;
+    })() : '<p class="lead">Сторінки не розібрані.</p>', ux ? 'DONE' : 'BLOCKED'));
 
   // SEO карта
   const seoFails = countGroupFails(ds, 'SEO');
-  s.push(section('6. Карта SEO-архитектуры', ds.client.sitemapXml ? 'Базовая индексируемость есть; дерево уточняется после передачи доступов (следующий этап).' : 'Нет sitemap.xml — риск индексации всего каталога.',
-    `<p class="lead">Провалов SEO-проверок на разобранных страницах: <b>${seoFails}</b>. sitemap.xml: ${ds.client.sitemapXml ? 'есть' : '<span class="gap">нет</span>'}. Полное дерево и техническая SEO — отдельный документ «SEO Architecture».</p>`, 'PARTIAL'));
+  s.push(section('6. Карта SEO-архітектури', ds.client.sitemapXml ? 'Базова індексованість є; дерево уточнюється після передачі доступів (наступний етап).' : 'Немає sitemap.xml — ризик індексації всього каталогу.',
+    `<p class="lead">Провалів SEO-перевірок на розібраних сторінках: <b>${seoFails}</b>. sitemap.xml: ${ds.client.sitemapXml ? 'є' : '<span class="gap">немає</span>'}. Повне дерево та технічна SEO — окремий документ «SEO Architecture».</p>`, 'PARTIAL'));
 
-  s.push(section('7. Карта контентных разрывов', 'Способность контента снимать неопределённость и вести к решению.', '<p class="lead">Контент-аудит (полнота/полезность/убедительность/интент) — отдельный документ «Content Audit».</p>', 'PARTIAL'));
+  s.push(section('7. Карта контентних розривів', 'Здатність контенту знімати невизначеність і вести до рішення.', '<p class="lead">Контент-аудит (повнота/корисність/переконливість/інтент) — окремий документ «Content Audit».</p>', 'PARTIAL'));
 
-  s.push(section('8. Карта каналов', ds.client.tech.analytics.length ? 'Трекинг установлен — фактическая эффективность каналов после подключения аналитики и рекламных кабинетов.' : 'Аналитика не обнаружена — измерить каналы нельзя.',
-    `<p class="lead">Аналитика: ${esc(ds.client.tech.analytics.join(', ') || 'не обнаружена')}. Фактическая эффективность каналов требует доступа к рекламным кабинетам (следующий этап).</p>`, ds.client.tech.analytics.length ? 'PARTIAL' : 'BLOCKED'));
+  s.push(section('8. Карта каналів', ds.client.tech.analytics.length ? 'Трекінг встановлено — фактична ефективність каналів після підключення аналітики та рекламних кабінетів.' : 'Аналітика не виявлена — виміряти канали неможливо.',
+    `<p class="lead">Аналітика: ${esc(ds.client.tech.analytics.join(', ') || 'не виявлена')}. Фактична ефективність каналів потребує доступу до рекламних кабінетів (наступний етап).</p>`, ds.client.tech.analytics.length ? 'PARTIAL' : 'BLOCKED'));
 
-  s.push(section('9. Конкурентная позиция', inp.bench ? `Индекс клиента ${inp.bench.clientIndex}/100, место ${inp.bench.clientRank} из ${inp.bench.totalSites}.` : 'Конкуренты не заданы для внешнего сравнения.',
-    inp.bench ? `<p class="lead">Детальный разбор — документ «Конкурентный анализ».</p>` : '<p class="lead">Добавьте конкурентов для бенчмарка (расширенный аудит с конкурентами).</p>', inp.bench ? 'DONE' : 'PARTIAL'));
+  s.push(section('9. Конкурентна позиція', inp.bench ? `Індекс клієнта ${inp.bench.clientIndex}/100, місце ${inp.bench.clientRank} з ${inp.bench.totalSites}.` : 'Конкуренти не задані для зовнішнього порівняння.',
+    inp.bench ? `<p class="lead">Детальний розбір — документ «Конкурентний аналіз».</p>` : '<p class="lead">Додайте конкурентів для бенчмарка (розширений аудит з конкурентами).</p>', inp.bench ? 'DONE' : 'PARTIAL'));
 
-  s.push(section('10. Коммерческое предложение и доверие', 'Сигналы доверия витрины (гарантии, отзывы, реквизиты).', trustBody(inp.siteAudit), 'PARTIAL'));
+  s.push(section('10. Комерційна пропозиція та довіра', 'Сигнали довіри вітрини (гарантії, відгуки, реквізити).', trustBody(inp.siteAudit), 'PARTIAL'));
 
   // Риски / возможности / доказательность
-  s.push(section('11. Критические риски и возможности', 'Что грозит и где ближайший рост.', riskOppBody(inp), 'PARTIAL'));
+  s.push(section('11. Критичні ризики та можливості', 'Що загрожує і де найближче зростання.', riskOppBody(inp), 'PARTIAL'));
 
   const conf = inp.coverage?.confidence;
-  s.push(section('12. Что доказано / гипотеза / неизвестно', conf ? `Confidence Score ${conf.score}/${conf.base} — «${esc(conf.band)}».` : 'Разделение фактов, гипотез и незнания.',
+  s.push(section('12. Що доведено / гіпотеза / невідомо', conf ? `Confidence Score ${conf.score}/${conf.base} — «${esc(conf.band)}».` : 'Розподіл фактів, гіпотез і незнання.',
     `<p class="lead">${
-      inp.analysis?.missingFacts?.length ? `Недостающие факты: ${esc(inp.analysis.missingFacts.slice(0, 6).join('; '))}.` : 'Во внешнем аудите большинство выводов — наблюдения/гипотезы уровня внешнего обхода витрины.'
+      inp.analysis?.missingFacts?.length ? `Відсутні факти: ${esc(inp.analysis.missingFacts.slice(0, 6).join('; '))}.` : 'Більшість висновків — спостереження/гіпотези рівня зовнішнього обходу вітрини.'
     }</p>`, 'DONE'));
 
-  s.push(section('13. Какие данные нужны (Data Request)', 'Что открыть, чтобы перевести гипотезы в факт после передачи доступов и подключения аналитики.',
-    `<ul>${(inp.analysis?.openQuestions?.length ? inp.analysis.openQuestions : ['Доступ к GA4', 'Выгрузка заказов за 6–12 мес', 'Доступ к CRM и рекламным кабинетам']).slice(0, 8).map((q) => `<li>${esc(q)}</li>`).join('')}</ul>`, 'DONE'));
+  s.push(section('13. Які дані потрібні (Data Request)', 'Що відкрити, щоб перевести гіпотези у факт після передачі доступів і підключення аналітики.',
+    `<ul>${(inp.analysis?.openQuestions?.length ? inp.analysis.openQuestions : ['Доступ до GA4', 'Вивантаження замовлень за 6–12 міс', 'Доступ до CRM і рекламних кабінетів']).slice(0, 8).map((q) => `<li>${esc(q)}</li>`).join('')}</ul>`, 'DONE'));
 
   // 14. Итоговый вывод — законченная мысль зонтичного отчёта, а не обрыв на списке.
   const statuses = { done: 0, partial: 0, blocked: 0 };
   for (const html of s) { statuses.done += (html.match(/chip done/g) ?? []).length; statuses.partial += (html.match(/chip partial/g) ?? []).length; statuses.blocked += (html.match(/chip blocked/g) ?? []).length; }
   const worstUx = ux ? [...ux.pages].filter((p) => p.max).sort((a, b) => a.score / a.max - b.score / b.max)[0] : null;
   s.push(`${conclusionSection([
-    `${verdict.split('. ').slice(0, 2).join('. ')}${/\.$/.test(verdict) ? '' : '.'} Диагностика охватила ${s.length} управленческих разделов: ${statuses.done} доказаны внешне, ${statuses.partial} закрыты частично, ${statuses.blocked} ждут доступов — статусы выставлены честно, чтобы решение принималось на реальной, а не нарисованной полноте данных.`,
+    `${verdict.split('. ').slice(0, 2).join('. ')}${/\.$/.test(verdict) ? '' : '.'} Діагностика охопила ${s.length} управлінських розділів: ${statuses.done} доведені зовні, ${statuses.partial} закриті частково, ${statuses.blocked} чекають доступів — статуси виставлені чесно, щоб рішення ухвалювалося на реальній, а не намальованій повноті даних.`,
     ux
-      ? `Состояние витрины: ${ux.totalPct}% соответствия эталону; ${ux.systemic.length ? `${ux.systemic.length} системных дефектов уровня шаблона — самая дешёвая точка приложения усилий (правятся один раз, работают на всём сайте)` : 'системных дефектов шаблонов нет'}${worstUx ? `; слабейшая страница пути — ${worstUx.title} (${Math.round((worstUx.score / worstUx.max) * 100)}%)` : ''}. ${inp.bench ? `Рыночная позиция — ${inp.bench.clientRank}/${inp.bench.totalSites} (индекс ${inp.bench.clientIndex}/100).` : ''}`
-      : 'Витрина не разобрана — состояние UX/UI не оценивалось.',
+      ? `Стан вітрини: ${ux.totalPct}% відповідності еталону; ${ux.systemic.length ? `${ux.systemic.length} системних дефектів рівня шаблону — найдешевша точка докладання зусиль (правляться один раз, працюють на всьому сайті)` : 'системних дефектів шаблонів немає'}${worstUx ? `; найслабша сторінка шляху — ${worstUx.title} (${Math.round((worstUx.score / worstUx.max) * 100)}%)` : ''}. ${inp.bench ? `Ринкова позиція — ${inp.bench.clientRank}/${inp.bench.totalSites} (індекс ${inp.bench.clientIndex}/100).` : ''}`
+      : 'Вітрина не розібрана — стан UX/UI не оцінювався.',
     inp.money
-      ? `Экономика разрыва оценена: недополучено ≈ ${rub(inp.money.potentialYear)}/год при доведении воронки до целевой — это верхняя рамка для бюджета программы изменений.`
-      : 'Экономика разрыва на этом слое сознательно не считалась (нет baseline): любая цифра была бы выдумкой. Она появляется первой после передачи данных — и превращает приоритеты этого отчёта в бюджетные решения.',
-    `Порядок действий зафиксирован в связанных документах: причинно-следственная карта → scope по волнам → реестр гипотез. Управленческое решение, которое требуется сейчас, — не «какие правки внести», а открыть данные (раздел 13) и согласовать волну 1.`,
-  ], `Следующий этап: передать доступы из Data Request (раздел 13) — за ним следуют подтверждение гипотез, экономика и старт волны 1.`, '14. Итоговый вывод')}
-    <section class="block"><div class="footer">Commerce OS · Executive Diagnostic · ${esc(name)} · ${esc(date)}. Внешний обход витрины без доступов. Оценки — наблюдение, не факт по данным клиента; отсутствие данных не выдаётся за факт и не скрывается. Заблокированные разделы отмечены статусом «Нужны доступы» и закрываются на следующем уровне.</div></section>`);
+      ? `Економіку розриву оцінено: недоотримано ≈ ${rub(inp.money.potentialYear)}/рік при доведенні воронки до цільової — це верхня рамка для бюджету програми змін.`
+      : 'Економіку розриву на цьому шарі свідомо не рахували (немає базових показників): будь-яка цифра була б вигадкою. Вона з\'являється першою після передачі даних — і перетворює пріоритети цього звіту на бюджетні рішення.',
+    `Порядок дій зафіксований у пов'язаних документах: причинно-наслідкова карта → scope за хвилями → реєстр гіпотез. Управлінське рішення, яке потрібне зараз, — не «які правки внести», а відкрити дані (розділ 13) і погодити хвилю 1.`,
+  ], `Наступний етап: передати доступи з Data Request (розділ 13) — за ним ідуть підтвердження гіпотез, економіка та старт хвилі 1.`, '14. Підсумковий висновок')}
+    ${pageFooter('Зовнішній обхід вітрини без доступів. Оцінки — спостереження, не факт за даними клієнта; відсутність даних не видається за факт і не приховується. Заблоковані розділи позначені статусом «Потрібні доступи» і закриваються на наступному рівні.')}`);
 
-  return doc(`Executive Diagnostic · ${name}`, cover + s.join(''));
+  return doc(`Виконавча діагностика · ${name}`, coverHtml + s.join(''));
 }
 
 function countGroupFails(ds: AuditDataset, group: string): number {
@@ -225,9 +218,9 @@ function countGroupFails(ds: AuditDataset, group: string): number {
   return n;
 }
 function trustBody(ux: SiteAuditReport | null): string {
-  if (!ux) return '<p class="lead">Данных по доверию нет.</p>';
-  const missTrust = ux.pages.filter((p) => p.rows.some((r) => /довери|отзыв/i.test(r.name) && r.state === 'gap')).map((p) => p.title);
-  return `<p class="lead">${missTrust.length ? `Блок доверия/отзывов отсутствует на: ${esc(missTrust.join(', '))}. Это прямо роняет оплату заявок.` : 'Сигналы доверия в целом присутствуют — детально в UX/UI Audit A0.'}</p>`;
+  if (!ux) return '<p class="lead">Даних щодо довіри немає.</p>';
+  const missTrust = ux.pages.filter((p) => p.rows.some((r) => /довери|довір|отзыв|відгук/i.test(r.name) && r.state === 'gap')).map((p) => p.title);
+  return `<p class="lead">${missTrust.length ? `Блок довіри/відгуків відсутній на: ${esc(missTrust.join(', '))}. Це прямо знижує оплату замовлень.` : 'Сигнали довіри загалом присутні — детально в UX/UI Audit.'}</p>`;
 }
 function riskOppBody(inp: ExecInputs): string {
   const risks: string[] = [];
@@ -236,7 +229,7 @@ function riskOppBody(inp: ExecInputs): string {
   const opps: string[] = [];
   if (inp.analysis?.scope?.length) for (const sc of inp.analysis.scope.slice(0, 4)) opps.push(`${esc(sc.playbook)} — ${esc(sc.reason)}`);
   return `<div class="concl-grid" style="font-size:10.5px">
-    <span class="k gap">Риски</span><span class="v">${risks.length ? risks.join('; ') : 'см. карту разрывов'}</span>
-    <span class="k ok">Возможности</span><span class="v">${opps.length ? opps.join('; ') : 'приоритетные активации — в scope-документе'}</span>
+    <span class="k gap">Ризики</span><span class="v">${risks.length ? risks.join('; ') : 'див. карту розривів'}</span>
+    <span class="k ok">Можливості</span><span class="v">${opps.length ? opps.join('; ') : 'пріоритетні активації — у scope-документі'}</span>
   </div>`;
 }

@@ -3,10 +3,10 @@
  * какие запущены, какие пропущены (и почему), сколько находок добавили и сколько
  * базовых находок перепроверили. Показывает ценность премиум-слоя прозрачно.
  */
-import { doc, esc, methodologySection, conclusionSection } from './reportShell.js';
+import { doc, esc, cover, methodologySection, conclusionSection } from './reportShell.js';
 import type { ExpertResult } from '../experts/types.js';
 
-export function renderPremiumHtml(client: string, takenAt: string, results: ExpertResult[]): string {
+export function renderPremiumHtml(client: string, _takenAt: string, results: ExpertResult[]): string {
   const ran = results.filter((r) => r.ran);
   const skipped = results.filter((r) => !r.ran);
   const newFindings = results.reduce((s, r) => s + r.findings.length, 0);
@@ -14,47 +14,46 @@ export function renderPremiumHtml(client: string, takenAt: string, results: Expe
 
   const rows = results.map((r) => `<tr>
     <td class="e-name"><b>${esc(r.name)}</b><div class="e-dom">${esc(r.domain)}</div></td>
-    <td>${r.ran ? '<span class="chip done">запущен</span>' : '<span class="chip blocked">пропущен</span>'}</td>
+    <td>${r.ran ? '<span class="chip done">запущений</span>' : '<span class="chip blocked">пропущений</span>'}</td>
     <td class="e-sum">${esc(r.summary)}${r.skippedReason ? `<div class="e-skip">${esc(r.skippedReason)}</div>` : ''}</td>
     <td class="num">${r.findings.length || '—'}</td>
     <td class="num">${r.verifications.length || '—'}</td>
   </tr>`).join('');
 
-  const cover = `<section class="cover"><div class="cov-bar"></div><div class="cov-body">
-    <div class="kicker">Commerce OS · Премиум-экспертиза</div>
-    <h1>Углублённая экспертиза внешними агентами</h1>
-    <div class="cov-meta">
-      <div><span class="lbl">Клиент</span><span class="val">${esc(client)}</span></div>
-      <div><span class="lbl">Дата</span><span class="val">${esc(new Date(takenAt).toLocaleDateString('ru-RU'))}</span></div>
-      <div><span class="lbl">Агентов запущено</span><span class="val">${ran.length}/${results.length}</span></div>
-      <div><span class="lbl">Находок добавлено</span><span class="val">+${newFindings}</span></div>
-      <div><span class="lbl">Перепроверок</span><span class="val">${verifs}</span></div>
-    </div>
-    <div class="coverage">Премиум-экспертиза — отдельный слой поверх базового аудита: внешние профильные агенты перепроверяют, дополняют и углубляют находки. Всё вливается в единый реестр с общим ID, уверенностью, деньгами и приоритетом — это не параллельный отчёт, а усиление той же машины.</div>
-  </div></section>`;
-
-  const method = methodologySection({
-    goal: 'Усилить базовый аудит внешней профильной экспертизой: перепроверить находки, добавить глубину там, где внешнего обхода недостаточно, и повысить детализацию.',
-    sources: ['Внешние специализированные агенты (SEO-факты, GEO/AI-видимость, конкуренты, реклама, глубокий технический краул, репутация)', 'Встроенная кросс-верификация находок'],
-    scope: `${results.length} агентов в каталоге; запущены доступные в этом прогоне.`,
-    limits: 'Агент без подключённого доступа честно пропускается с причиной (нужен коннектор/ключ) — прогон не падает, базовый аудит не затронут. Подключение доступов активирует агента без изменения кода.',
-    standards: ['Находки агентов вливаются в единый реестр (общий ID, дедуп, деньги, приоритет)', 'Перепроверки корректируют уверенность существующих находок, а не создают дубли', 'Прозрачность: показано, кто запущен, кто пропущен и почему'],
+  const coverHtml = cover({
+    kicker: 'Преміум-експертиза',
+    title: 'Поглиблена експертиза зовнішніми агентами',
+    metrics: [
+      { label: 'Клієнт', value: client },
+      { label: 'Агентів запущено', value: `${ran.length}/${results.length}` },
+      { label: 'Знахідок додано', value: `+${newFindings}` },
+      { label: 'Перевірок', value: String(verifs) },
+    ],
+    note: 'Преміум-експертиза — окремий шар поверх базового аудиту: зовнішні профільні агенти перевіряють, доповнюють і поглиблюють знахідки. Усе вливається в єдиний реєстр зі спільним ID, впевненістю, грошима та пріоритетом — це не паралельний звіт, а посилення тієї самої машини.',
   });
 
-  const table = `<section class="block"><h2>Что сделали агенты</h2>
-    <table><thead><tr><th>Агент · зона</th><th>Статус</th><th>Результат</th><th>Находок</th><th>Перепроверок</th></tr></thead><tbody>${rows}</tbody></table></section>`;
+  const method = methodologySection({
+    goal: 'Посилити базовий аудит зовнішньою профільною експертизою: перевірити знахідки, додати глибину там, де зовнішнього обходу недостатньо, та підвищити деталізацію.',
+    sources: ['Зовнішні спеціалізовані агенти (SEO-факти, GEO/AI-видимість, конкуренти, реклама, глибокий технічний краул, репутація)', 'Вбудована крос-верифікація знахідок'],
+    scope: `${results.length} агентів у каталозі; запущені доступні в цьому прогоні.`,
+    limits: 'Агент без підключеного доступу чесно пропускається з причиною (потрібен конектор/ключ) — прогін не падає, базовий аудит не зачеплений. Підключення доступів активує агента без зміни коду.',
+    standards: ['Знахідки агентів вливаються в єдиний реєстр (спільний ID, дедуп, гроші, пріоритет)', 'Перевірки коригують впевненість наявних знахідок, а не створюють дублі', 'Прозорість: показано, хто запущений, хто пропущений і чому'],
+  });
 
-  const nextAgents = skipped.filter((r) => /нужен доступ|коннектор/.test(r.skippedReason ?? ''));
+  const table = `<section class="block"><h2>Що зробили агенти</h2>
+    <table><thead><tr><th>Агент · зона</th><th>Статус</th><th>Результат</th><th>Знахідок</th><th>Перевірок</th></tr></thead><tbody>${rows}</tbody></table></section>`;
+
+  const nextAgents = skipped.filter((r) => /нужен доступ|потрібен доступ|коннектор|конектор/.test(r.skippedReason ?? ''));
   const concl = conclusionSection([
-    `Запущено ${ran.length} из ${results.length} агентов: добавлено ${newFindings} находок и выполнено ${verifs} перепроверок базовых находок. Все результаты уже учтены в реестре находок и сводном беклоге — приоритеты и деньги пересчитаны с их учётом.`,
+    `Запущено ${ran.length} із ${results.length} агентів: додано ${newFindings} знахідок і виконано ${verifs} перевірок базових знахідок. Усі результати вже враховані в реєстрі знахідок і зведеному беклозі — пріоритети та гроші перераховані з їх урахуванням.`,
     skipped.length
-      ? `Пропущено ${skipped.length} агентов${nextAgents.length ? `, из них ${nextAgents.length} готовы к работе сразу после подключения доступа (${nextAgents.slice(0, 3).map((r) => r.name.toLowerCase()).join('; ')})` : ''}. Подключение расширяет глубину без изменения кода.`
-      : 'Все агенты каталога отработали.',
-  ], nextAgents.length ? `Подключить доступы к агентам (${nextAgents.map((r) => r.name.toLowerCase()).join('; ')}) — и повторить премиум-прогон для максимальной глубины.` : undefined);
+      ? `Пропущено ${skipped.length} агентів${nextAgents.length ? `, з них ${nextAgents.length} готові до роботи одразу після підключення доступу (${nextAgents.slice(0, 3).map((r) => r.name.toLowerCase()).join('; ')})` : ''}. Підключення розширює глибину без зміни коду.`
+      : 'Усі агенти каталогу відпрацювали.',
+  ], nextAgents.length ? `Підключити доступи до агентів (${nextAgents.map((r) => r.name.toLowerCase()).join('; ')}) — і повторити преміум-прогін для максимальної глибини.` : undefined);
 
   const extraCss = `.e-name .e-dom{color:var(--muted);font-size:8px;text-transform:uppercase;letter-spacing:.4px;margin-top:1px;}
     .e-sum{font-size:9.5px;} .e-sum .e-skip{color:var(--muted);font-size:8.5px;margin-top:2px;}
     .num{text-align:center;font-variant-numeric:tabular-nums;}`;
 
-  return doc(`Премиум-экспертиза · ${client}`, cover + method + table + concl, extraCss);
+  return doc(`Преміум-експертиза · ${client}`, coverHtml + method + table + concl, extraCss);
 }

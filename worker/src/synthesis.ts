@@ -64,25 +64,26 @@ export function synthFacts(p: SynthParts): string {
   return L.join('\n');
 }
 
-const SYSTEM = `Ты — главный аналитик Commerce OS, слой СИНТЕЗА. Тебе дан набор выводов из разных линз аудита одного магазина (UX, композиция, конкуренты, зрелость, деньги, причины, scope). Твоя задача — НЕ пересказать их, а СВЯЗАТЬ:
+const SYSTEM = `Ты — главный аналитик, слой СИНТЕЗА. Тебе дан набор выводов из разных линз аудита одного магазина (UX, композиция, конкуренты, зрелость, деньги, причины, scope). Твоя задача — НЕ пересказать их, а СВЯЗАТЬ:
 - найди взаимосвязи между линзами (где две проблемы усиливают друг друга — компаундный эффект: напр. слабый UX карточки × дорогой/слабый трафик = двойная потеря);
 - сведи находки к единым КОРНЕВЫМ причинам (по причине, а не симптому), указывая, из каких линз собрана каждая;
 - дай сквозные приоритеты, вытекающие из связей, а не из одной линзы.
-Только по переданным фактам, ничего не выдумывай. Это слой L0 — формулируй как обоснованные выводы/гипотезы. Язык русский.
+Только по переданным фактам, ничего не выдумывай. Формулируй как обоснованные выводы/гипотезы.
+ВАЖНО: ВСЕ текстовые значения в JSON (headline, effect, cause, impact, title, why, oneLine и т.д.) пиши природною УКРАЇНСЬКОЮ мовою, а не російською.
 Верни СТРОГО JSON:
 {
- "headline":"1–2 предложения: главный системный вывод об этом бизнесе",
- "crossLinks":[{"a":"линза/находка","b":"линза/находка","effect":"как усиливают друг друга и к чему ведёт"}],
- "rootCauses":[{"cause":"корневая причина","from":["линзы, откуда собрана"],"impact":"эффект в деньгах/доверии/росте"}],
- "priorities":[{"title":"сквозной приоритет","why":"почему именно он — из связей"}],
- "oneLine":"одна фраза для собственника: где деньги и с чего начать"
+ "headline":"1–2 речення: головний системний висновок про цей бізнес (українською)",
+ "crossLinks":[{"a":"лінза/знахідка","b":"лінза/знахідка","effect":"як підсилюють одна одну і до чого веде (українською)"}],
+ "rootCauses":[{"cause":"корінна причина (українською)","from":["лінзи, звідки зібрана"],"impact":"ефект у грошах/довірі/зростанні (українською)"}],
+ "priorities":[{"title":"наскрізний пріоритет (українською)","why":"чому саме він — зі зв'язків (українською)"}],
+ "oneLine":"одна фраза для власника: де гроші і з чого почати (українською)"
 }`;
 
 export async function narrateSynthesis(ds: AuditDataset, p: SynthParts): Promise<Synthesis | null> {
   if (!hasKey()) return null;
   const facts = synthFacts(p);
   if (!facts.trim()) return null;
-  const user = `Клиент: ${ds.client.finalUrl || ds.client.rootUrl}. Тир T${ds.tier}.\n\nВЫВОДЫ ЛИНЗ:\n${facts}\n\nСобери синтез по инструкции (JSON). crossLinks: 3–6, rootCauses: 3–5, priorities: 3–5.`;
+  const user = `Клиент: ${ds.client.finalUrl || ds.client.rootUrl}.\n\nВЫВОДЫ ЛИНЗ:\n${facts}\n\nСобери синтез по инструкции (JSON), все текстовые значения — украинским языком. crossLinks: 3–6, rootCauses: 3–5, priorities: 3–5.`;
   try {
     const text = await ask(SYSTEM + (await knowledgeFor('analyze')), user, 6000);
     const s = extractJson<Synthesis>(text);
@@ -96,29 +97,29 @@ export async function narrateSynthesis(ds: AuditDataset, p: SynthParts): Promise
 
 export function renderSynthesisMd(ds: AuditDataset, s: Synthesis): string {
   const out: string[] = [];
-  out.push(`# Синтез аудита — ${ds.client.finalUrl || ds.client.rootUrl}`);
-  out.push(`_Commerce OS · слой синтеза (взаимосвязи всех линз) · L0 · ${new Date(ds.takenAt).toLocaleDateString('ru-RU')}_`);
+  out.push(`# Синтез аудиту — ${ds.client.finalUrl || ds.client.rootUrl}`);
+  out.push(`_Взаємозв'язки всіх лінз аудиту_`);
   out.push('');
   out.push(`**${s.headline}**`);
   out.push('');
   if (s.crossLinks.length) {
-    out.push('## Взаимосвязи (компаундные эффекты)');
+    out.push('## Взаємозв\'язки (компаундні ефекти)');
     for (const c of s.crossLinks) out.push(`- **${c.a} × ${c.b}** → ${c.effect}`);
     out.push('');
   }
   if (s.rootCauses.length) {
-    out.push('## Единые корневые причины');
-    for (const r of s.rootCauses) out.push(`- **${r.cause}** _(из: ${r.from.join(', ')})_ — ${r.impact}`);
+    out.push('## Єдині корінні причини');
+    for (const r of s.rootCauses) out.push(`- **${r.cause}** _(з: ${r.from.join(', ')})_ — ${r.impact}`);
     out.push('');
   }
   if (s.priorities.length) {
-    out.push('## Сквозные приоритеты');
+    out.push('## Наскрізні пріоритети');
     s.priorities.forEach((p, i) => out.push(`${i + 1}. **${p.title}** — ${p.why}`));
     out.push('');
   }
   out.push(`> ${s.oneLine}`);
   out.push('');
   out.push('---');
-  out.push('_Синтез связывает выводы всех линз в один всесторонний, а не набор односторонних. Уточняется с доступами._');
+  out.push('_Синтез пов\'язує висновки всіх лінз в один всебічний, а не набір односторонніх. Уточнюється після передачі доступів._');
   return out.join('\n');
 }

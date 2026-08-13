@@ -34,7 +34,7 @@ function purposeOf(path: string): Purpose {
   if (/(account|login|signin|register|search|poisk|wp-|admin|tag|cdn|feed|cart\b)/i.test(path)) return 'system';
   return 'informational';
 }
-const PURPOSE_LABEL: Record<Purpose, string> = { commercial: 'коммерческий', informational: 'информационный', system: 'системный' };
+const PURPOSE_LABEL: Record<Purpose, string> = { commercial: 'комерційний', informational: 'інформаційний', system: 'системний' };
 
 function segsOf(url: string): { path: string; segs: string[]; hasParams: boolean } {
   try { const u = new URL(url); const segs = u.pathname.split('/').filter(Boolean); return { path: u.pathname, segs, hasParams: u.search.length > 1 }; }
@@ -76,10 +76,10 @@ export function buildSeoArch(ds: AuditDataset): SeoArchReport {
   }
   const tree: TreeNode[] = Array.from(groups.entries()).sort((a, b) => b[1].count - a[1].count).slice(0, 12).map(([label, g]) => {
     const severity: TreeNode['severity'] = g.params >= 8 ? 'gap' : g.params >= 3 ? 'check' : 'ok';
-    const note = g.params >= 3 ? `${g.params} URL с параметрами — риск дублей` : `${g.children.size} подраздел.`;
-    return { label: label === '/' ? '(корень)' : `/${label}/`, path: '/' + label, count: g.count, purpose: purposeFor('/' + label, g.params), params: g.params, severity, note };
+    const note = g.params >= 3 ? `${g.params} URL з параметрами — ризик дублів` : `${g.children.size} підрозд.`;
+    return { label: label === '/' ? '(корінь)' : `/${label}/`, path: '/' + label, count: g.count, purpose: purposeFor('/' + label, g.params), params: g.params, severity, note };
   });
-  if (rootSlugCount >= 20) tree.unshift({ label: '(слаги в корне — вероятно товары)', path: '/', count: rootSlugCount, purpose: 'commercial', params: 0, severity: 'check', note: `${rootSlugCount} одиночных URL в корне — карточки с SEO-адресами; подтвердить разбором PDP` });
+  if (rootSlugCount >= 20) tree.unshift({ label: '(слаги в корені — ймовірно товари)', path: '/', count: rootSlugCount, purpose: 'commercial', params: 0, severity: 'check', note: `${rootSlugCount} поодиноких URL у корені — картки з SEO-адресами; підтвердити розбором PDP` });
 
   // Проблемные узлы (§10): on-page с разобранных страниц + структурные.
   const issues: SeoIssue[] = [];
@@ -98,40 +98,40 @@ export function buildSeoArch(ds: AuditDataset): SeoArchReport {
       return true;
     }).map((c) => SEO_LABEL[c.id] ?? c.label);
     if (!fails.length) continue;
-    issues.push({ node: path || '/', level: Math.max(1, segs.length), purpose, problem: `Вне нормы: ${fails.join(', ')}`, dupes: '—', index: ds.client.sitemapXml ? 'в sitemap' : 'нет sitemap', action: 'Заполнить мета/разметку на шаблоне типа страницы', dims: ['SEO', 'TECH'] });
+    issues.push({ node: path || '/', level: Math.max(1, segs.length), purpose, problem: `Поза нормою: ${fails.join(', ')}`, dupes: '—', index: ds.client.sitemapXml ? 'у sitemap' : 'немає sitemap', action: 'Заповнити мета/розмітку на шаблоні типу сторінки', dims: ['SEO', 'TECH'] });
   }
   // Структурные дефекты из дерева.
   const paramNode = tree.find((t) => t.severity === 'gap');
-  if (paramNode) issues.push({ node: paramNode.path, level: 1, purpose: paramNode.purpose, problem: `Параметрические дубли: ${paramNode.params} URL с параметрами в одном разделе`, dupes: 'да', index: 'риск раздувания индекса', action: 'Canonical на базовую страницу, фасеты закрыть от индексации/через robots', dims: ['SEO', 'TECH'] });
-  if (maxDepth >= 4) issues.push({ node: `глубина ${maxDepth}`, level: maxDepth, purpose: 'commercial', problem: 'Глубокая вложенность каталога — важные страницы далеко от корня', dupes: '—', index: 'хуже сканируется', action: 'Уплостить дерево, добавить хабы/перелинковку', dims: ['SEO', 'LINK'] });
-  if (!ds.client.sitemapXml) issues.push({ node: '/sitemap.xml', level: 1, purpose: 'system', problem: 'Нет sitemap.xml', dupes: '—', index: 'нет карты для поисковика', action: 'Сгенерировать и отправить sitemap.xml в Search Console', dims: ['SEO', 'TECH'] });
+  if (paramNode) issues.push({ node: paramNode.path, level: 1, purpose: paramNode.purpose, problem: `Параметричні дублі: ${paramNode.params} URL з параметрами в одному розділі`, dupes: 'так', index: 'ризик роздування індексу', action: 'Canonical на базову сторінку, фасети закрити від індексації/через robots', dims: ['SEO', 'TECH'] });
+  if (maxDepth >= 4) issues.push({ node: `глибина ${maxDepth}`, level: maxDepth, purpose: 'commercial', problem: 'Глибока вкладеність каталогу — важливі сторінки далеко від кореня', dupes: '—', index: 'гірше сканується', action: 'Сплостити дерево, додати хаби/перелінковку', dims: ['SEO', 'LINK'] });
+  if (!ds.client.sitemapXml) issues.push({ node: '/sitemap.xml', level: 1, purpose: 'system', problem: 'Немає sitemap.xml', dupes: '—', index: 'немає карти для пошуковика', action: 'Згенерувати й надіслати sitemap.xml у Search Console', dims: ['SEO', 'TECH'] });
 
   // Постраничный on-page: фактические значения из проверок (detail).
-  const KIND_RU: Record<string, string> = { home: 'Главная', plp: 'Каталог', pdp: 'Карточка', cart: 'Корзина', checkout: 'Чекаут', content: 'Контент', faq: 'FAQ', other: 'Прочее' };
+  const KIND_RU: Record<string, string> = { home: 'Головна', plp: 'Каталог', pdp: 'Картка', cart: 'Кошик', checkout: 'Оформлення', content: 'Контент', faq: 'FAQ', other: 'Інше' };
   const onpage: OnPageRow[] = ds.client.pages.filter((p) => !p.error && p.checks.length).map((p) => {
     const { path } = segsOf(p.finalUrl || p.url);
     const cells: Record<string, OnPageCell> = {};
     for (const id of ONPAGE_COLS) {
       const c = p.checks.find((x) => x.id === id);
       if (!c) { cells[id] = { ok: false, note: '—' }; continue; }
-      // Schema Product требуем только там, где он уместен — на остальных «н/п».
-      if (id === 'schema-product' && !['pdp', 'plp'].includes(p.kind)) { cells[id] = { ok: true, note: 'н/п' }; continue; }
-      cells[id] = { ok: c.pass, note: c.detail ?? (c.pass ? 'есть' : 'нет') };
+      // Schema Product требуем только там, где он уместен — на остальных «н/з».
+      if (id === 'schema-product' && !['pdp', 'plp'].includes(p.kind)) { cells[id] = { ok: true, note: 'н/з' }; continue; }
+      cells[id] = { ok: c.pass, note: c.detail ?? (c.pass ? 'є' : 'немає') };
     }
     return { url: path || '/', kind: KIND_RU[p.kind] ?? p.kind, cells };
   });
 
   const recommended: string[] = [
-    'Одна модель = одна карточка (canonical), варианты — параметром; убрать дубли «цвет как страница»',
-    'Категории с уникальным H1 + SEO-описанием как посадочные под тематические запросы',
-    ds.client.sitemapXml ? 'Держать sitemap.xml в актуальном состоянии' : 'Добавить sitemap.xml и robots-директивы для фасетов',
-    'Хлебные крошки с разметкой на всех уровнях + перелинковка длинного хвоста',
+    'Одна модель = одна картка (canonical), варіанти — параметром; прибрати дублі «колір як сторінка»',
+    'Категорії з унікальним H1 + SEO-описом як посадкові під тематичні запити',
+    ds.client.sitemapXml ? 'Тримати sitemap.xml в актуальному стані' : 'Додати sitemap.xml і robots-директиви для фасетів',
+    'Хлібні крихти з розміткою на всіх рівнях + перелінковка довгого хвоста',
   ];
   const paramShare = links.length ? Math.round((paramUrls / links.length) * 100) : 0;
-  const verdict = !links.length ? 'Дерево не собрано — сайт недоступен/тонкий обход.'
-    : paramShare >= 25 ? `Дерево засорено параметрами (${paramShare}% URL) — приоритет: канонизация и контроль фасетов.`
-    : issues.length ? 'Каркас дерева читаемый, но есть узлы с SEO-пробелами и структурными рисками.'
-    : 'Структура дерева в целом здоровая по внешним признакам.';
+  const verdict = !links.length ? 'Дерево не зібрано — сайт недоступний/тонкий обхід.'
+    : paramShare >= 25 ? `Дерево засмічене параметрами (${paramShare}% URL) — пріоритет: канонізація і контроль фасетів.`
+    : issues.length ? 'Каркас дерева читабельний, але є вузли з SEO-прогалинами й структурними ризиками.'
+    : 'Структура дерева загалом здорова за зовнішніми ознаками.';
 
   return { client, takenAt: ds.takenAt, totals: { links: links.length, l1: groups.size, paramUrls, maxDepth, crawled: ds.client.pages.filter((p) => !p.error).length }, indexability: { robots: ds.client.robotsTxt, sitemap: ds.client.sitemapXml }, tree, issues, onpage, recommended, verdict };
 }

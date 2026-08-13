@@ -44,62 +44,62 @@ export function buildTechAudit(ds: AuditDataset): TechReport {
   const check = (id: string, label: string, rec: string): TechCheck => {
     const { passed, total } = agg(ds, id);
     const st = statusOf(passed, total);
-    return { label, passed, total, status: st, note: total ? `${passed}/${total} стр.` : 'нет данных', rec: st === 'ok' ? '—' : rec };
+    return { label, passed, total, status: st, note: total ? `${passed}/${total} стор.` : 'немає даних', rec: st === 'ok' ? '—' : rec };
   };
-  const site = (ok: boolean, label: string, rec: string): TechCheck => ({ label, passed: ok ? 1 : 0, total: 1, status: ok ? 'ok' : 'gap', note: ok ? 'есть' : 'нет', rec: ok ? '—' : rec });
-  const blockedCheck = (label: string, why: string): TechCheck => ({ label, passed: 0, total: 0, status: 'blocked', note: 'нужен инструмент/доступ', rec: why });
+  const site = (ok: boolean, label: string, rec: string): TechCheck => ({ label, passed: ok ? 1 : 0, total: 1, status: ok ? 'ok' : 'gap', note: ok ? 'є' : 'немає', rec: ok ? '—' : rec });
+  const blockedCheck = (label: string, why: string): TechCheck => ({ label, passed: 0, total: 0, status: 'blocked', note: 'потрібен інструмент/доступ', rec: why });
 
   // Мобильность из ux-замеров.
   const avgSmall = pages.length ? Math.round(pages.reduce((s, p) => s + (p.ux?.smallTapTargets ?? 0), 0) / pages.length) : 0;
   const minFont = pages.reduce((m, p) => Math.min(m, p.ux?.baseFontPx ?? 16), 16);
 
   const cats: TechCategory[] = [
-    { title: 'Индексируемость', dims: ['SEO', 'TECH'], status: 'ok', checks: [
-      site(ds.client.robotsTxt, 'robots.txt', 'Добавить robots.txt с директивами для фасетов'),
-      site(ds.client.sitemapXml, 'sitemap.xml', 'Сгенерировать sitemap.xml и отправить в Search Console'),
-      check('canonical', 'Canonical', 'Задать canonical на каждом шаблоне; для вариантов — на базовую версию'),
-      check('noindex', 'Нет случайного noindex', 'Убрать noindex с коммерческих страниц'),
-      check('hreflang', 'hreflang (мультиязычность)', 'Настроить hreflang, если есть языковые версии'),
+    { title: 'Індексованість', dims: ['SEO', 'TECH'], status: 'ok', checks: [
+      site(ds.client.robotsTxt, 'robots.txt', 'Додати robots.txt з директивами для фасетів'),
+      site(ds.client.sitemapXml, 'sitemap.xml', 'Згенерувати sitemap.xml і надіслати в Search Console'),
+      check('canonical', 'Canonical', 'Задати canonical на кожному шаблоні; для варіантів — на базову версію'),
+      check('noindex', 'Немає випадкового noindex', 'Прибрати noindex з комерційних сторінок'),
+      check('hreflang', 'hreflang (багатомовність)', 'Налаштувати hreflang, якщо є мовні версії'),
     ] },
-    { title: 'Разметка Schema.org', dims: ['TECH', 'SEO', 'AEO'], status: 'ok', checks: [
-      check('schema-org', 'Organization / WebSite', 'Добавить Schema Organization + WebSite на главной'),
-      check('schema-product', 'Product / Offer', 'Добавить Product+Offer+AggregateRating на карточках'),
-      check('schema-crumbs', 'BreadcrumbList', 'Разметить хлебные крошки BreadcrumbList'),
+    { title: 'Розмітка Schema.org', dims: ['TECH', 'SEO', 'AEO'], status: 'ok', checks: [
+      check('schema-org', 'Organization / WebSite', 'Додати Schema Organization + WebSite на головній'),
+      check('schema-product', 'Product / Offer', 'Додати Product+Offer+AggregateRating на картках'),
+      check('schema-crumbs', 'BreadcrumbList', 'Розмітити хлібні крихти BreadcrumbList'),
     ] },
-    { title: 'Скорость', dims: ['PERF'], status: 'ok', checks: [
-      check('preconnect', 'Preconnect / preload', 'Добавить preconnect к CDN/шрифтам, preload для LCP-ресурса'),
-      check('lazy', 'Lazy-load изображений', 'Включить lazy-load для изображений ниже первого экрана'),
-      blockedCheck('Core Web Vitals (LCP/CLS/INP)', 'Нужен PageSpeed/CrUX — измеряется на A1 (внешний инструмент)'),
+    { title: 'Швидкість', dims: ['PERF'], status: 'ok', checks: [
+      check('preconnect', 'Preconnect / preload', 'Додати preconnect до CDN/шрифтів, preload для LCP-ресурсу'),
+      check('lazy', 'Lazy-load зображень', 'Увімкнути lazy-load для зображень нижче першого екрана'),
+      blockedCheck('Core Web Vitals (LCP/CLS/INP)', 'Потрібен PageSpeed/CrUX — вимірюється після передачі доступів (зовнішній інструмент)'),
     ] },
-    { title: 'Безопасность', dims: ['SEC'], status: 'ok', checks: [
-      check('https', 'HTTPS', 'Перевести весь сайт на HTTPS, настроить редиректы'),
-      check('cookies', 'Cookie / consent (ЕС)', 'Добавить cookie-consent для рынков ЕС'),
+    { title: 'Безпека', dims: ['SEC'], status: 'ok', checks: [
+      check('https', 'HTTPS', 'Перевести весь сайт на HTTPS, налаштувати редиректи'),
+      check('cookies', 'Cookie / consent (ЄС)', 'Додати cookie-consent для ринків ЄС'),
       ...(ds.client.secHeaders ? [
-        site(ds.client.secHeaders.hsts, 'HSTS (strict-transport-security)', 'Включить HSTS на сервере — защита от downgrade-атак'),
-        site(ds.client.secHeaders.csp, 'Content-Security-Policy', 'Задать CSP — защита от XSS и внедрений'),
-        site(ds.client.secHeaders.xfo, 'Защита от clickjacking (XFO/CSP)', 'Добавить X-Frame-Options или frame-ancestors'),
-      ] : [blockedCheck('Заголовки безопасности (CSP/HSTS)', 'Ответ сервера не получен — проверяется на A1')]),
+        site(ds.client.secHeaders.hsts, 'HSTS (strict-transport-security)', 'Увімкнути HSTS на сервері — захист від downgrade-атак'),
+        site(ds.client.secHeaders.csp, 'Content-Security-Policy', 'Задати CSP — захист від XSS та ін’єкцій'),
+        site(ds.client.secHeaders.xfo, 'Захист від clickjacking (XFO/CSP)', 'Додати X-Frame-Options або frame-ancestors'),
+      ] : [blockedCheck('Заголовки безпеки (CSP/HSTS)', 'Відповідь сервера не отримано — перевіряється після передачі доступів')]),
     ] },
     // GEO/AEO: видимость в AI-выдаче (эталон 2025–2026: доступ AI-краулеров + llms.txt + разметка).
-    { title: 'AI-видимость (GEO/AEO)', dims: ['GEO', 'AEO', 'SEO'], status: 'ok', checks: [
+    { title: 'AI-видимість (GEO/AEO)', dims: ['GEO', 'AEO', 'SEO'], status: 'ok', checks: [
       ...(ds.client.ai ? [
-        site(ds.client.ai.blockedBots.length === 0, 'AI-краулеры не заблокированы', `Открыть в robots.txt: ${ds.client.ai.blockedBots.join(', ') || '—'} — иначе бренд невидим в AI-ответах`),
-        site(ds.client.ai.llmsTxt, 'llms.txt (навигация для LLM)', 'Добавить llms.txt в корень — структурированный указатель ключевого контента для AI-систем'),
-      ] : [blockedCheck('Доступ AI-краулеров / llms.txt', 'robots.txt не прочитан — проверяется на A1')]),
-      check('schema-product', 'Разметка для извлечения фактов', 'JSON-LD Product/Offer — точность извлечения фактов LLM растёт с ~16% до ~54% (ориентир)'),
-      check('schema-crumbs', 'Структура для цитирования', 'BreadcrumbList + чёткая иерархия заголовков — выше цитируемость пассажей'),
+        site(ds.client.ai.blockedBots.length === 0, 'AI-краулери не заблоковані', `Відкрити в robots.txt: ${ds.client.ai.blockedBots.join(', ') || '—'} — інакше бренд невидимий в AI-відповідях`),
+        site(ds.client.ai.llmsTxt, 'llms.txt (навігація для LLM)', 'Додати llms.txt у корінь — структурований покажчик ключового контенту для AI-систем'),
+      ] : [blockedCheck('Доступ AI-краулерів / llms.txt', 'robots.txt не прочитано — перевіряється після передачі доступів')]),
+      check('schema-product', 'Розмітка для вилучення фактів', 'JSON-LD Product/Offer — точність вилучення фактів LLM зростає з ~16% до ~54% (орієнтир)'),
+      check('schema-crumbs', 'Структура для цитування', 'BreadcrumbList + чітка ієрархія заголовків — вища цитованість пасажів'),
     ] },
-    { title: 'Мобильность', dims: ['MOB', 'A11Y'], status: 'ok', checks: [
-      check('viewport', 'Viewport', 'Добавить meta viewport для корректного мобильного рендера'),
-      { label: 'Тап-цели ≥ 40px', passed: avgSmall <= 3 ? 1 : 0, total: 1, status: avgSmall <= 3 ? 'ok' : 'check', note: `~${avgSmall} мелких/стр.`, rec: avgSmall <= 3 ? '—' : 'Увеличить кликабельные элементы до 40px (Thumb Zone)' },
-      { label: 'Базовый кегль ≥ 14px', passed: minFont >= 14 ? 1 : 0, total: 1, status: minFont >= 14 ? 'ok' : 'check', note: `мин ${minFont}px`, rec: minFont >= 14 ? '—' : 'Поднять базовый шрифт до ≥14px для читаемости на мобильном' },
+    { title: 'Мобільність', dims: ['MOB', 'A11Y'], status: 'ok', checks: [
+      check('viewport', 'Viewport', 'Додати meta viewport для коректного мобільного рендеру'),
+      { label: 'Тап-цілі ≥ 40px', passed: avgSmall <= 3 ? 1 : 0, total: 1, status: avgSmall <= 3 ? 'ok' : 'check', note: `~${avgSmall} дрібних/стор.`, rec: avgSmall <= 3 ? '—' : 'Збільшити клікабельні елементи до 40px (Thumb Zone)' },
+      { label: 'Базовий кегль ≥ 14px', passed: minFont >= 14 ? 1 : 0, total: 1, status: minFont >= 14 ? 'ok' : 'check', note: `мін ${minFont}px`, rec: minFont >= 14 ? '—' : 'Підняти базовий шрифт до ≥14px для читабельності на мобільному' },
     ] },
-    { title: 'Доступность и гигиена', dims: ['A11Y', 'TECH'], status: 'ok', checks: [
-      check('alt', 'ALT у изображений', 'Проставить ALT ≥70% изображений'),
-      check('lang', 'Атрибут lang', 'Задать lang у <html>'),
-      check('charset', 'Charset', 'Указать meta charset'),
-      check('errors-soft', 'Нет текста ошибок в вёрстке', 'Убрать видимые PHP/JS-ошибки со страниц'),
-      check('analytics', 'Аналитика (GA4/GTM/Pixel)', 'Установить GA4/GTM — без событий воронку не измерить'),
+    { title: 'Доступність і гігієна', dims: ['A11Y', 'TECH'], status: 'ok', checks: [
+      check('alt', 'ALT у зображень', 'Проставити ALT ≥70% зображень'),
+      check('lang', 'Атрибут lang', 'Задати lang у <html>'),
+      check('charset', 'Charset', 'Вказати meta charset'),
+      check('errors-soft', 'Немає тексту помилок у верстці', 'Прибрати видимі PHP/JS-помилки зі сторінок'),
+      check('analytics', 'Аналітика (GA4/GTM/Pixel)', 'Встановити GA4/GTM — без подій воронку не виміряти'),
     ] },
   ];
 
@@ -112,10 +112,10 @@ export function buildTechAudit(ds: AuditDataset): TechReport {
   const pct = total ? Math.round((passed / total) * 100) : 0;
   const blocked = cats.flatMap((c) => c.checks.filter((ch) => ch.status === 'blocked').map((ch) => ch.label));
   const gaps = cats.flatMap((c) => c.checks.filter((ch) => ch.status === 'gap').map((ch) => ch.label));
-  const verdict = !pages.length ? 'Технические проверки недоступны — сайт не разобран.'
-    : gaps.length >= 4 ? 'Технический фундамент с серьёзными пробелами: индексируемость и разметка требуют работы.'
-    : gaps.length ? 'Основа рабочая, но есть технические пробелы, снижающие видимость.'
-    : 'Технически витрина в целом здоровая по внешним признакам.';
+  const verdict = !pages.length ? 'Технічні перевірки недоступні — сайт не розібрано.'
+    : gaps.length >= 4 ? 'Технічний фундамент із серйозними прогалинами: індексованість і розмітка потребують роботи.'
+    : gaps.length ? 'Основа робоча, але є технічні прогалини, що знижують видимість.'
+    : 'Технічно вітрина загалом здорова за зовнішніми ознаками.';
 
   return { client, takenAt: ds.takenAt, categories: cats, score: { passed, total, pct }, blocked, verdict };
 }

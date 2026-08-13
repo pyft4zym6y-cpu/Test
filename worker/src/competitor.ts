@@ -47,19 +47,19 @@ function aggregate(site: SiteCrawl): SiteAgg {
 
 const b = (v: boolean) => (v ? 1 : 0);
 const PARAMS: Param[] = [
-  { key: 'score', name: 'Соответствие голд-стандарту', weight: 3, value: (a) => a.score / 100 },
-  { key: 'trust', name: 'Доверие и оплата', weight: 2, value: (a) => b(a.trust) },
-  { key: 'reviews', name: 'Отзывы / соц. доказательство', weight: 1.5, value: (a) => b(a.reviews) },
-  { key: 'filters', name: 'Фильтры на каталоге', weight: 1.5, value: (a) => b(a.filters) },
-  { key: 'gallery', name: 'Галерея товара', weight: 1.5, value: (a) => b(a.gallery) },
-  { key: 'mobile', name: 'Мобильная версия', weight: 1.5, value: (a) => b(a.mobile) },
-  { key: 'search', name: 'Поиск по сайту', weight: 1, value: (a) => b(a.search) },
-  { key: 'breadcrumbs', name: 'Хлебные крошки', weight: 1, value: (a) => b(a.breadcrumbs) },
-  { key: 'variants', name: 'Выбор варианта', weight: 1, value: (a) => b(a.variants) },
-  { key: 'related', name: 'Cross-sell / похожие', weight: 1, value: (a) => b(a.related) },
-  { key: 'analytics', name: 'Аналитика установлена', weight: 1, value: (a) => b(a.analytics) },
-  { key: 'schemaProduct', name: 'Schema.org товара', weight: 1, value: (a) => b(a.schemaProduct) },
-  { key: 'delivery', name: 'Доставка/оплата на карточке', weight: 1, value: (a) => b(a.delivery) },
+  { key: 'score', name: 'Відповідність золотому стандарту', weight: 3, value: (a) => a.score / 100 },
+  { key: 'trust', name: 'Довіра й оплата', weight: 2, value: (a) => b(a.trust) },
+  { key: 'reviews', name: 'Відгуки / соц. доказ', weight: 1.5, value: (a) => b(a.reviews) },
+  { key: 'filters', name: 'Фільтри в каталозі', weight: 1.5, value: (a) => b(a.filters) },
+  { key: 'gallery', name: 'Галерея товару', weight: 1.5, value: (a) => b(a.gallery) },
+  { key: 'mobile', name: 'Мобільна версія', weight: 1.5, value: (a) => b(a.mobile) },
+  { key: 'search', name: 'Пошук по сайту', weight: 1, value: (a) => b(a.search) },
+  { key: 'breadcrumbs', name: 'Хлібні крихти', weight: 1, value: (a) => b(a.breadcrumbs) },
+  { key: 'variants', name: 'Вибір варіанта', weight: 1, value: (a) => b(a.variants) },
+  { key: 'related', name: 'Cross-sell / схожі', weight: 1, value: (a) => b(a.related) },
+  { key: 'analytics', name: 'Аналітика встановлена', weight: 1, value: (a) => b(a.analytics) },
+  { key: 'schemaProduct', name: 'Schema.org товару', weight: 1, value: (a) => b(a.schemaProduct) },
+  { key: 'delivery', name: 'Доставка/оплата на картці', weight: 1, value: (a) => b(a.delivery) },
   { key: 'sitemap', name: 'Sitemap.xml', weight: 0.5, value: (a) => b(a.sitemap) },
 ];
 
@@ -103,16 +103,16 @@ export function buildBenchmark(ds: AuditDataset): BenchmarkReport | null {
   return { ranking, clientIndex, clientRank, totalSites: all.length, params, whiteSpace, clientLeads, clientBehind };
 }
 
-const SYSTEM = `Ты — стратег Commerce OS. По детерминированному конкурентному бенчмарку витрин (взвешенный индекс, позиции по параметрам, white space) собери короткий разбор рынка. Только по фактам, это слой L0 (внешний обход) — формулируй как наблюдение. Язык русский.
-Верни СТРОГО JSON: {"summary":"2–3 предложения: позиция клиента на рынке","positioning":"где клиент ведёт и где отстаёт от рынка, с эффектом","whiteSpace":"свободная ниша: чего не делает никто и как этим воспользоваться"}`;
+const SYSTEM = `Ти — стратег з e-commerce. За детермінованим конкурентним бенчмарком вітрин (зважений індекс, позиції за параметрами, white space) збери короткий розбір ринку. Тільки за фактами, це зовнішній обхід — формулюй як спостереження. Відповідай природною УКРАЇНСЬКОЮ мовою.
+Поверни СТРОГО JSON: {"summary":"2–3 речення: позиція клієнта на ринку","positioning":"де клієнт веде і де відстає від ринку, з ефектом","whiteSpace":"вільна ніша: чого не робить ніхто і як цим скористатися"}`;
 
 export async function narrateBenchmark(ds: AuditDataset, r: BenchmarkReport): Promise<BenchmarkReport['narrative'] | null> {
   if (!hasKey()) return null;
   const facts = [
-    `Клиент: индекс ${r.clientIndex}/100, место ${r.clientRank} из ${r.totalSites}.`,
+    `Клієнт: індекс ${r.clientIndex}/100, місце ${r.clientRank} з ${r.totalSites}.`,
     `Рейтинг: ${r.ranking.map((s) => `${s.isClient ? '★' : ''}${s.name} ${s.index}`).join(' · ')}`,
-    `Клиент ведёт: ${r.clientLeads.join(', ') || '—'}. Отстаёт: ${r.clientBehind.join(', ') || '—'}.`,
-    `White space (слабо у всех): ${r.whiteSpace.join(', ') || '—'}.`,
+    `Клієнт веде: ${r.clientLeads.join(', ') || '—'}. Відстає: ${r.clientBehind.join(', ') || '—'}.`,
+    `White space (слабко в усіх): ${r.whiteSpace.join(', ') || '—'}.`,
   ].join('\n');
   try {
     const text = await ask(SYSTEM + (await knowledgeFor('analyze')), facts, 3000);
@@ -121,33 +121,33 @@ export async function narrateBenchmark(ds: AuditDataset, r: BenchmarkReport): Pr
   } catch { return null; }
 }
 
-const POS: Record<ParamRow['position'], string> = { lead: '▲ ведём', par: '≈ наравне', behind: '▼ отстаём' };
+const POS: Record<ParamRow['position'], string> = { lead: '▲ ведемо', par: '≈ нарівні', behind: '▼ відстаємо' };
 
 export function renderBenchmarkMd(ds: AuditDataset, r: BenchmarkReport): string {
   const out: string[] = [];
-  out.push(`# Конкурентный бенчмарк — ${ds.client.finalUrl || ds.client.rootUrl}`);
-  out.push(`_Commerce OS · AD-11 · слой L0 · клиент против ${r.totalSites - 1} конкурент(ов) · ${new Date(ds.takenAt).toLocaleDateString('ru-RU')}_`);
+  out.push(`# Конкурентний бенчмарк — ${ds.client.finalUrl || ds.client.rootUrl}`);
+  out.push(`_Клієнт проти ${r.totalSites - 1} конкурент(ів) · зовнішній аудит вітрини_`);
   out.push('');
   if (r.narrative?.summary) { out.push(r.narrative.summary); out.push(''); }
-  out.push(`**Индекс клиента: ${r.clientIndex}/100 — место ${r.clientRank} из ${r.totalSites}.**`);
+  out.push(`**Індекс клієнта: ${r.clientIndex}/100 — місце ${r.clientRank} з ${r.totalSites}.**`);
   out.push('');
-  out.push('## Рейтинг витрин (взвешенный индекс)');
-  out.push('| # | Сайт | Индекс |');
+  out.push('## Рейтинг вітрин (зважений індекс)');
+  out.push('| # | Сайт | Індекс |');
   out.push('| --- | --- | --- |');
   r.ranking.forEach((s, i) => out.push(`| ${i + 1} | ${s.isClient ? '★ ' : ''}${s.name} | ${s.index} |`));
   out.push('');
-  out.push('## Позиции по параметрам (клиент против рынка)');
-  out.push('| Параметр | Клиент | Лучший у рынка | Позиция |');
+  out.push('## Позиції за параметрами (клієнт проти ринку)');
+  out.push('| Параметр | Клієнт | Найкращий на ринку | Позиція |');
   out.push('| --- | --- | --- | --- |');
   for (const p of r.params) out.push(`| ${p.name} | ${p.client} | ${p.marketMax} | ${POS[p.position]} |`);
   out.push('');
-  if (r.narrative?.positioning) { out.push('### Разбор позиционирования'); out.push(r.narrative.positioning); out.push(''); }
-  out.push('## White space — свободная ниша');
-  if (r.whiteSpace.length) { out.push('Параметры, слабые у всех на рынке (возможность вырваться вперёд):'); for (const w of r.whiteSpace) out.push(`- ${w}`); }
-  else out.push('Явной свободной ниши по разобранным параметрам не видно — рынок плотный, выигрыш в исполнении.');
+  if (r.narrative?.positioning) { out.push('### Розбір позиціонування'); out.push(r.narrative.positioning); out.push(''); }
+  out.push('## White space — вільна ніша');
+  if (r.whiteSpace.length) { out.push('Параметри, слабкі в усіх на ринку (можливість вирватися вперед):'); for (const w of r.whiteSpace) out.push(`- ${w}`); }
+  else out.push('Явної вільної ніші за розібраними параметрами не видно — ринок щільний, виграш у виконанні.');
   if (r.narrative?.whiteSpace) { out.push(''); out.push(r.narrative.whiteSpace); }
   out.push('');
   out.push('---');
-  out.push('_Индекс — взвешенная сумма параметров витрины по обходу L0. Уточняется с доступами; параметры и веса сохраняются._');
+  out.push('_Індекс — зважена сума параметрів вітрини за зовнішнім обходом. Уточнюється з доступами; параметри й ваги зберігаються._');
   return out.join('\n');
 }

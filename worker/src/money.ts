@@ -13,14 +13,14 @@ export type LeverRow = { fact: number; target: number; source?: string };
 export type Levers = Record<LeverKey, LeverRow>;
 
 const LEVER_ORDER: { key: LeverKey; label: string }[] = [
-  { key: 'traffic', label: 'Трафик / органика' },
-  { key: 'cr', label: 'Конверсия сайта' },
-  { key: 'aov', label: 'Средний чек' },
-  { key: 'pay', label: 'Оплата заявок' },
-  { key: 'redeem', label: 'Выкуп (отказы+возвраты)' },
-  { key: 'base', label: 'Рост базы' },
-  { key: 'repeat', label: 'Доля повторных' },
-  { key: 'opr', label: 'Частота повторных' },
+  { key: 'traffic', label: 'Трафік / органіка' },
+  { key: 'cr', label: 'Конверсія сайту' },
+  { key: 'aov', label: 'Середній чек' },
+  { key: 'pay', label: 'Оплата замовлень' },
+  { key: 'redeem', label: 'Викуп (відмови+повернення)' },
+  { key: 'base', label: 'Зростання бази' },
+  { key: 'repeat', label: 'Частка повторних' },
+  { key: 'opr', label: 'Частота повторних' },
 ];
 
 type State = Record<LeverKey, number>;
@@ -90,12 +90,12 @@ const fmt = (n: number) => `${Math.round(n).toLocaleString('ru-RU')} ₴`;
 /** Сводка денег для промпта анализа и материалов. */
 export function moneyFacts(m: MoneyResult): string {
   const L: string[] = [];
-  L.push('# ДЕНЬГИ (цепная атрибуция — не пересчитывай и не складывай вклады рычагов заново)');
-  L.push(`Выручка сейчас: ${fmt(m.currentMonth)}/мес. При целевой воронке: ${fmt(m.targetMonth)}/мес.`);
-  L.push(`Недополученный оборот (существующая воронка): ${fmt(m.potentialMonth)}/мес ≈ ${fmt(m.potentialYear)}/год.`);
-  if (m.extraYear) L.push(`Новые потоки (МП/ЕС): +${fmt(m.extraYear)}/год.`);
-  L.push(`Консервативно: ${fmt(m.consMinYear)}–${fmt(m.consMaxYear)}/год. Прогноз 12 мес: ${fmt(m.forecast.current)} → ${fmt(m.forecast.withProgram)} (+${m.forecast.upliftPct}%).`);
-  L.push('Вклад рычагов (₴/год): ' + m.waterfall.map((w) => `${w.label} ${fmt(w.contribYear)}`).join('; '));
-  if (!m.invariantOk) L.push('⚠️ Инвариант Σ вкладов = потенциал нарушен — проверь baseline.');
+  L.push('# ГРОШІ (ланцюгова атрибуція — не перераховуй і не додавай внески важелів заново)');
+  L.push(`Виручка зараз: ${fmt(m.currentMonth)}/міс. За цільової воронки: ${fmt(m.targetMonth)}/міс.`);
+  L.push(`Недоотриманий оборот (наявна воронка): ${fmt(m.potentialMonth)}/міс ≈ ${fmt(m.potentialYear)}/рік.`);
+  if (m.extraYear) L.push(`Нові потоки (МП/ЄС): +${fmt(m.extraYear)}/рік.`);
+  L.push(`Консервативно: ${fmt(m.consMinYear)}–${fmt(m.consMaxYear)}/рік. Прогноз 12 міс: ${fmt(m.forecast.current)} → ${fmt(m.forecast.withProgram)} (+${m.forecast.upliftPct}%).`);
+  L.push('Внесок важелів (₴/рік): ' + m.waterfall.map((w) => `${w.label} ${fmt(w.contribYear)}`).join('; '));
+  if (!m.invariantOk) L.push('⚠️ Інваріант Σ внесків = потенціал порушено — перевір базові показники.');
   return L.join('\n');
 }

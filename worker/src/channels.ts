@@ -26,24 +26,24 @@ export function buildChannels(ds: AuditDataset): ChannelsReport {
 
   const st = (ok: boolean): ChStatus => (ok ? 'ok' : 'gap');
   const rows: ChannelRow[] = [
-    { channel: 'Веб-аналитика (GA4/GTM)', signal: has(/GA4|GTM/) ? 'установлена' : 'не обнаружена', status: st(has(/GA4|GTM/)), next: has(/GA4|GTM/) ? 'После доступов: воронка, источники, e-commerce события' : 'Установить GA4/GTM — без неё каналы не измерить', dims: ['ANL'] },
-    { channel: 'Ретаргетинг / Pixel', signal: has(/Pixel/) ? 'Meta Pixel установлен (наличие ≠ работающий канал)' : 'не обнаружен', status: has(/Pixel/) ? 'check' : 'check', next: 'Проверить по данным: качество событий покупки, собранные аудитории, реально ли идёт ретаргетинг', dims: ['ANL', 'MKT'] },
-    { channel: 'Поведенческая аналитика', signal: has(/Hotjar|Clarity/) ? [has(/Hotjar/) && 'Hotjar', has(/Clarity/) && 'MS Clarity'].filter(Boolean).join(' + ') : 'не обнаружена', status: has(/Hotjar|Clarity/) ? 'ok' : 'check', next: 'Карты кликов, записи, воронки (после доступов)' + (has(/Hotjar/) && has(/Clarity/) ? '; два инструмента сразу — проверить, не дублируют ли задачи (кто пользуется, какие данные); при дублировании оставить один' : ''), dims: ['ANL', 'UX'] },
-    { channel: 'Соцсети', signal: anyCheck('social') ? 'привязаны на сайте' : 'ссылок на сайте не найдено', status: st(anyCheck('social')), next: 'Какие профили привязаны, а какие найдены поиском, активные ссылки и метрики — в отчёте «Соцсети»', dims: ['MKT'] },
+    { channel: 'Веб-аналітика (GA4/GTM)', signal: has(/GA4|GTM/) ? 'встановлена' : 'не виявлено', status: st(has(/GA4|GTM/)), next: has(/GA4|GTM/) ? 'Після доступів: воронка, джерела, e-commerce події' : 'Встановити GA4/GTM — без неї канали не виміряти', dims: ['ANL'] },
+    { channel: 'Ретаргетинг / Pixel', signal: has(/Pixel/) ? 'Meta Pixel встановлено (наявність ≠ робочий канал)' : 'не виявлено', status: has(/Pixel/) ? 'check' : 'check', next: 'Перевірити за даними: якість подій покупки, зібрані аудиторії, чи реально йде ретаргетинг', dims: ['ANL', 'MKT'] },
+    { channel: 'Поведінкова аналітика', signal: has(/Hotjar|Clarity/) ? [has(/Hotjar/) && 'Hotjar', has(/Clarity/) && 'MS Clarity'].filter(Boolean).join(' + ') : 'не виявлено', status: has(/Hotjar|Clarity/) ? 'ok' : 'check', next: 'Карти кліків, записи, воронки (після доступів)' + (has(/Hotjar/) && has(/Clarity/) ? '; два інструменти одразу — перевірити, чи не дублюють задачі (хто користується, які дані); за дублювання лишити один' : ''), dims: ['ANL', 'UX'] },
+    { channel: 'Соцмережі', signal: anyCheck('social') ? 'прив’язані на сайті' : 'посилань на сайті не знайдено', status: st(anyCheck('social')), next: 'Які профілі прив’язані, а які знайдені пошуком, активні посилання й метрики — у звіті «Соцмережі»', dims: ['MKT'] },
     // Email/SMS — самый дешёвый повторный контакт; снаружи виден только сбор
     // (форма подписки). Реальные рассылки и их выручка — по данным (следующий этап).
-    { channel: 'Email / SMS (retention)', signal: anyBlock('newsletter') ? 'форма подписки на сайте есть' : 'форма подписки не обнаружена', status: anyBlock('newsletter') ? 'check' : 'gap', next: anyBlock('newsletter') ? 'Проверить по данным: идут ли рассылки, open/CTR, сегментация, доля выручки от email' : 'Добавить сбор email/подписку — дешёвый повторный контакт с покупателем', dims: ['MKT', 'ANL'] },
-    { channel: 'Органический поиск', signal: `${ds.client.sitemapXml ? 'sitemap есть' : 'нет sitemap'}, robots ${ds.client.robotsTxt ? 'есть' : 'нет'}`, status: ds.client.sitemapXml ? 'ok' : 'check', next: 'Детали — в отчёте «SEO Architecture»; позиции — по данным Search Console', dims: ['SEO'] },
-    { channel: 'Платная реклама (Google/Meta Ads)', signal: 'снаружи не измеряется', status: 'blocked', next: 'После доступа к кабинетам: структура, расходы, ROAS', dims: ['MKT', 'ANL'] },
-    { channel: 'Маркетплейсы', signal: 'публичные карточки — вне обхода сайта', status: 'blocked', next: 'Проверить присутствие; эффективность — по данным маркетплейсов', dims: ['MKT', 'COMP'] },
+    { channel: 'Email / SMS (retention)', signal: anyBlock('newsletter') ? 'форма підписки на сайті є' : 'форма підписки не виявлена', status: anyBlock('newsletter') ? 'check' : 'gap', next: anyBlock('newsletter') ? 'Перевірити за даними: чи йдуть розсилки, open/CTR, сегментація, частка виручки від email' : 'Додати збір email/підписку — дешевий повторний контакт із покупцем', dims: ['MKT', 'ANL'] },
+    { channel: 'Органічний пошук', signal: `${ds.client.sitemapXml ? 'sitemap є' : 'немає sitemap'}, robots ${ds.client.robotsTxt ? 'є' : 'немає'}`, status: ds.client.sitemapXml ? 'ok' : 'check', next: 'Деталі — у звіті «SEO-архітектура»; позиції — за даними Search Console', dims: ['SEO'] },
+    { channel: 'Платна реклама (Google/Meta Ads)', signal: 'ззовні не вимірюється', status: 'blocked', next: 'Після доступу до кабінетів: структура, витрати, ROAS', dims: ['MKT', 'ANL'] },
+    { channel: 'Маркетплейси', signal: 'публічні картки — поза обходом сайту', status: 'blocked', next: 'Перевірити присутність; ефективність — за даними маркетплейсів', dims: ['MKT', 'COMP'] },
   ];
 
   const wired = rows.filter((r) => r.status === 'ok').length;
   const blocked = rows.filter((r) => r.status === 'blocked').length;
-  const verdict = !ds.client.pages.some((p) => !p.error) ? 'Каналы не оценены — сайт не разобран.'
-    : !has(/GA4|GTM/) ? 'Каналы не измеримы: аналитика не установлена — это первый блокер для всей воронки.'
-    : wired >= 4 ? 'Инфраструктура каналов присутствует (трекинг, соцсети, retention-сигналы) — но присутствие ещё не значит зрелость. Фактическая эффективность каждого канала (CAC, ROAS, доля выручки, качество событий) проверяется только по данным кабинетов и аналитики.'
-    : 'Базовый трекинг есть, но часть каналов привлечения и удержания не задействована.';
+  const verdict = !ds.client.pages.some((p) => !p.error) ? 'Канали не оцінені — сайт не розібрано.'
+    : !has(/GA4|GTM/) ? 'Канали не вимірні: аналітика не встановлена — це перший блокер для всієї воронки.'
+    : wired >= 4 ? 'Інфраструктура каналів присутня (трекінг, соцмережі, retention-сигнали) — але присутність ще не означає зрілість. Фактична ефективність кожного каналу (CAC, ROAS, частка виручки, якість подій) перевіряється лише за даними кабінетів і аналітики.'
+    : 'Базовий трекінг є, але частина каналів залучення й утримання не задіяна.';
 
   return { client, takenAt: ds.takenAt, rows, wired, blocked, verdict };
 }

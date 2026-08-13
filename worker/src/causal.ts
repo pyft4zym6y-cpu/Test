@@ -25,8 +25,8 @@ export type DetSources = {
 
 export function buildCausal(a: Analysis | null, money: MoneyResult | null, det?: DetSources): CausalMap {
   const moneyNote = money
-    ? `Общий недополученный оборот ≈ ${rub(money.potentialYear)}/год (цепная атрибуция). Деньги распределяются по узлам через рычаги воронки — не складывать разрывы напрямую.`
-    : 'Деньги считаются на слое L1 (нужны трафик, конверсия, чек). На L0 — качественная связь причины с эффектом.';
+    ? `Загальний недоотриманий оборот ≈ ${rub(money.potentialYear)}/рік (ланцюгова атрибуція). Гроші розподіляються по вузлах через важелі воронки — не додавати розриви напряму.`
+    : 'Гроші рахуються за наявності базових показників (трафік, конверсія, середній чек). Без них — якісний зв\'язок причини з наслідком.';
 
   const topLever = money ? [...money.waterfall].sort((x, y) => y.contribYear - x.contribYear)[0] : null;
 
@@ -34,14 +34,14 @@ export function buildCausal(a: Analysis | null, money: MoneyResult | null, det?:
     rootCause: p.cause,
     symptoms: p.symptoms ?? [],
     evidence: p.evidence ?? [],
-    moneyLink: money && topLever ? `связано с воронкой (крупнейший рычаг: ${topLever.label} ≈ ${rub(topLever.contribYear)}/год)` : 'эффект в обороте — оценивается на L1',
+    moneyLink: money && topLever ? `пов'язано з воронкою (найбільший важіль: ${topLever.label} ≈ ${rub(topLever.contribYear)}/рік)` : 'ефект в обороті — оцінюється за наявності базових даних',
   }));
 
   // Если болей нет, но есть находки-гипотезы — свернуть их в причины по видам.
   if (!nodes.length && a?.findings.length) {
     const byArea = new Map<string, string[]>();
     for (const f of a.findings) { const arr = byArea.get(f.area) ?? []; arr.push(f.fact); byArea.set(f.area, arr); }
-    for (const [area, facts] of byArea) nodes.push({ rootCause: `Системная слабина: ${area}`, symptoms: facts, evidence: [], moneyLink: 'эффект в обороте — оценивается на L1' });
+    for (const [area, facts] of byArea) nodes.push({ rootCause: `Системна слабина: ${area}`, symptoms: facts, evidence: [], moneyLink: 'ефект в обороті — оцінюється за наявності базових даних' });
   }
 
   // Детерминированное достраивание: карта пополняется из системных дефектов и
@@ -50,16 +50,16 @@ export function buildCausal(a: Analysis | null, money: MoneyResult | null, det?:
   const push = (x: CausalNode) => { if (!have.has(x.rootCause.toLowerCase()) && nodes.length < 7) { nodes.push(x); have.add(x.rootCause.toLowerCase()); } };
   const sys = det?.systemic ?? [];
   if (sys.length >= 2) push({
-    rootCause: 'Шаблоны витрины не доведены до эталона (дефекты уровня шаблона)',
+    rootCause: 'Шаблони вітрини не доведені до еталона (дефекти рівня шаблону)',
     symptoms: sys.map((s) => s.title),
-    evidence: ['проявляются на всех разобранных страницах — значит, живут в шаблоне, а не на странице'],
-    moneyLink: money ? 'входит в общий недополученный оборот (см. экономику)' : 'эффект в обороте — оценивается на L1',
+    evidence: ['проявляються на всіх розібраних сторінках — отже, живуть у шаблоні, а не на сторінці'],
+    moneyLink: money ? 'входить у загальний недоотриманий оборот (див. економіку)' : 'ефект в обороті — оцінюється за наявності базових даних',
   });
   for (const c of det?.chains ?? []) push({
     rootCause: c.implies,
     symptoms: [c.observed],
-    evidence: ['наблюдение внешнего обхода'],
-    moneyLink: 'эффект в обороте — оценивается на L1',
+    evidence: ['спостереження зовнішнього обходу'],
+    moneyLink: 'ефект в обороті — оцінюється за наявності базових даних',
   });
 
   // Связь с единым реестром находок: каждому узлу — ID находок по текстовому
@@ -76,7 +76,7 @@ export function buildCausal(a: Analysis | null, money: MoneyResult | null, det?:
       if (!linked.length) continue;
       node.findingIds = linked.map((f) => f.id).slice(0, 8);
       const rev = linked.reduce((s, f) => s + f.revenueExposure, 0);
-      if (rev > 0) node.moneyLink = `≈ ${rub(rev)}/год по связанным находкам (${node.findingIds.slice(0, 4).join(', ')}${node.findingIds.length > 4 ? '…' : ''})`;
+      if (rev > 0) node.moneyLink = `≈ ${rub(rev)}/рік за пов'язаними знахідками (${node.findingIds.slice(0, 4).join(', ')}${node.findingIds.length > 4 ? '…' : ''})`;
     }
   }
 
@@ -85,23 +85,23 @@ export function buildCausal(a: Analysis | null, money: MoneyResult | null, det?:
 
 export function renderCausalMd(ds: AuditDataset, r: CausalMap): string {
   const out: string[] = [];
-  out.push(`# Причинно-следственная карта — ${ds.client.finalUrl || ds.client.rootUrl}`);
-  out.push(`_Commerce OS · симптом → корневая причина → деньги · слой L0 · ${new Date(ds.takenAt).toLocaleDateString('ru-RU')}_`);
+  out.push(`# Причинно-наслідкова карта — ${ds.client.finalUrl || ds.client.rootUrl}`);
+  out.push(`_Симптом → корінна причина → гроші_`);
   out.push('');
   out.push(r.moneyNote);
   out.push('');
-  if (!r.nodes.length) { out.push('> Причинных узлов не выделено на текущих данных.'); return out.join('\n'); }
-  out.push('Работаем с корневой причиной, а не с симптомом. Деньги — один раз на узел.');
+  if (!r.nodes.length) { out.push('> Причинних вузлів не виділено на поточних даних.'); return out.join('\n'); }
+  out.push('Працюємо з корінною причиною, а не з симптомом. Гроші — один раз на вузол.');
   out.push('');
   r.nodes.forEach((n, i) => {
-    out.push(`## Узел ${i + 1}. Корневая причина: ${n.rootCause}`);
-    if (n.symptoms.length) out.push(`**Симптомы:** ${n.symptoms.join('; ')}`);
-    if (n.evidence.length) out.push(`**Доказательство (обход):** ${n.evidence.join('; ')}`);
-    if (n.findingIds?.length) out.push(`**Находки реестра:** ${n.findingIds.join(', ')}`);
-    out.push(`**Деньги:** ${n.moneyLink}`);
+    out.push(`## Вузол ${i + 1}. Корінна причина: ${n.rootCause}`);
+    if (n.symptoms.length) out.push(`**Симптоми:** ${n.symptoms.join('; ')}`);
+    if (n.evidence.length) out.push(`**Доказ (обхід):** ${n.evidence.join('; ')}`);
+    if (n.findingIds?.length) out.push(`**Знахідки реєстру:** ${n.findingIds.join(', ')}`);
+    out.push(`**Гроші:** ${n.moneyLink}`);
     out.push('');
   });
   out.push('---');
-  out.push('_Плейбук адресует корневую причину. Симптом без причины в roadmap не попадает._');
+  out.push('_Плейбук адресує корінну причину. Симптом без причини в дорожню карту не потрапляє._');
   return out.join('\n');
 }

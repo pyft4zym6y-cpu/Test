@@ -2,26 +2,22 @@
  * SEO Architecture A0 — клиентский PDF: видимое дерево → проблемные узлы
  * → рекомендуемое дерево. Единый визуальный стандарт (reportShell).
  */
-import { esc, dimBadges, doc, methodologySection, swSection, recsSection, conclusionSection, type SectionRec } from './reportShell.js';
+import { esc, dimBadges, doc, cover, pageFooter, methodologySection, swSection, recsSection, conclusionSection, type SectionRec } from './reportShell.js';
 import { svgBars, svgDonut } from './charts.js';
 import { ONPAGE_COLS, ONPAGE_LABEL, type SeoArchReport, type Purpose } from '../seoarch.js';
 
-const PURPOSE_RU: Record<Purpose, string> = { commercial: 'коммерческий', informational: 'информационный', system: 'системный' };
+const PURPOSE_RU: Record<Purpose, string> = { commercial: 'комерційний', informational: 'інформаційний', system: 'системний' };
 
 export function renderSeoArchHtml(r: SeoArchReport): string {
-  const date = new Date(r.takenAt).toLocaleDateString('ru-RU');
   const paramShare = r.totals.links ? Math.round((r.totals.paramUrls / r.totals.links) * 100) : 0;
 
-  const cover = `<section class="cover"><div class="cov-bar"></div><div class="cov-body">
-    <div class="kicker">Commerce OS · SEO Architecture · внешний аудит витрины</div>
-    <h1>${esc(r.verdict)}</h1>
-    <div class="cov-meta">
-      <div><span class="lbl">Клиент</span><span class="val">${esc(r.client)}</span></div>
-      <div><span class="lbl">Дата</span><span class="val">${esc(date)}</span></div>
-      <div><span class="lbl">Ссылок в дереве</span><span class="val">${r.totals.links}</span></div>
-    </div>
-    <div class="coverage"><b>Что видно во внешнем аудите:</b> дерево строится из внутренних ссылок обхода — структурные дефекты (параметрические дубли, глубина, назначение узлов) видны из URL. On-page SEO проверено на ${r.totals.crawled} представительных страницах (выборочный внешний обход). Полное дерево и лог-анализ — после передачи доступов (следующий этап). robots: ${r.indexability.robots ? 'есть' : 'нет'} · sitemap.xml: ${r.indexability.sitemap ? 'есть' : '<span class="gap">нет</span>'} · разделов L1: ${r.totals.l1} · глубина: ${r.totals.maxDepth} · URL с параметрами: ${paramShare}%.</div>
-  </div></section>`;
+  const coverHtml = cover({
+    kicker: 'Архітектура сайту',
+    title: 'SEO-архітектура',
+    verdict: r.verdict,
+    metrics: [{ label: 'Клієнт', value: r.client }, { label: 'Посилань у дереві', value: String(r.totals.links) }],
+    note: `<b>Що видно в зовнішньому аудиті:</b> дерево будується з внутрішніх посилань обходу — структурні дефекти (параметричні дублі, глибина, призначення вузлів) видно з URL. On-page SEO перевірено на ${r.totals.crawled} представницьких сторінках (вибірковий зовнішній обхід). Повне дерево й лог-аналіз — після передачі доступів (наступний етап). robots: ${r.indexability.robots ? 'є' : 'немає'} · sitemap.xml: ${r.indexability.sitemap ? 'є' : '<span class="gap">немає</span>'} · розділів L1: ${r.totals.l1} · глибина: ${r.totals.maxDepth} · URL з параметрами: ${paramShare}%.`,
+  });
 
   const maxCount = Math.max(1, ...r.tree.map((t) => t.count));
   const treeRows = r.tree.map((t) => `<tr>
@@ -36,15 +32,15 @@ export function renderSeoArchHtml(r: SeoArchReport): string {
   const sevGap = r.tree.filter((t) => t.severity === 'gap').length;
   const treeDonut = r.tree.length ? `<div class="chart-wrap">${svgDonut([
     { label: 'Норма', value: sevOk, tone: 'ok' },
-    { label: 'Внимание', value: sevCheck, tone: 'check' },
-    { label: 'Риск дублей', value: sevGap, tone: 'gap' },
-  ].filter((s) => s.value > 0), { title: 'Разделы L1 по сигналу', centerLabel: String(r.tree.length) })}
-    <p class="chart-cap">Доля красных секторов показывает, насколько дерево засоряется параметрическими дублями: чем их больше, тем сильнее вес размывается по копиям фильтров.<sup class="fn">1</sup></p></div>` : '';
-  const tree = `<section class="block"><h2>Видимое дерево сайта</h2>
-    <p class="lead">Разделы первого уровня по числу найденных URL. Колонка «Сигнал» — короткая диагностика раздела: либо риск дублей (много URL с GET-параметрами — их надо закрывать canonical/robots, иначе поиск индексирует копии), либо объём вложенности (сколько подразделов внутри). Цвет: зелёный — норма, жёлтый — внимание, красный — риск дублей.</p>
+    { label: 'Увага', value: sevCheck, tone: 'check' },
+    { label: 'Ризик дублів', value: sevGap, tone: 'gap' },
+  ].filter((s) => s.value > 0), { title: 'Розділи L1 за сигналом', centerLabel: String(r.tree.length) })}
+    <p class="chart-cap">Частка червоних секторів показує, наскільки дерево засмічується параметричними дублями: чим їх більше, тим сильніше вага розмивається по копіях фільтрів.<sup class="fn">1</sup></p></div>` : '';
+  const tree = `<section class="block"><h2>Видиме дерево сайту</h2>
+    <p class="lead">Розділи першого рівня за числом знайдених URL. Колонка «Сигнал» — коротка діагностика розділу: або ризик дублів (багато URL із GET-параметрами — їх треба закривати canonical/robots, інакше пошук індексує копії), або обсяг вкладеності (скільки підрозділів усередині). Колір: зелений — норма, жовтий — увага, червоний — ризик дублів.</p>
     ${treeDonut}
-    <table><thead><tr><th>Раздел (L1)</th><th>Назначение</th><th>Объём URL</th><th>Кол-во</th><th>Сигнал</th></tr></thead><tbody>${treeRows}</tbody></table>
-    <p class="fn-note"><sup>1</sup> Сигнал раздела определён по доле URL с GET-параметрами в видимых ссылках обхода (≥8 — риск, ≥3 — внимание). Реальные дубли в индексе подтверждаются после передачи доступов (следующий этап; Search Console, полный crawl).</p></section>`;
+    <table><thead><tr><th>Розділ (L1)</th><th>Призначення</th><th>Обсяг URL</th><th>К-сть</th><th>Сигнал</th></tr></thead><tbody>${treeRows}</tbody></table>
+    <p class="fn-note"><sup>1</sup> Сигнал розділу визначено за часткою URL із GET-параметрами у видимих посиланнях обходу (≥8 — ризик, ≥3 — увага). Реальні дублі в індексі підтверджуються після передачі доступів (наступний етап; Search Console, повний crawl).</p></section>`;
 
   const issueRows = r.issues.map((i) => `<tr>
     <td class="i-node"><b>${esc(i.node)}</b><span class="i-lvl">L${i.level}</span></td>
@@ -55,68 +51,68 @@ export function renderSeoArchHtml(r: SeoArchReport): string {
     <td class="i-act">${esc(i.action)}</td>
     <td>${dimBadges(i.dims)}</td>
   </tr>`).join('');
-  const issues = `<section class="block"><h2>Проблемные узлы</h2>
-    <p class="lead">Узлы дерева с SEO-пробелами и структурными рисками.</p>
-    ${r.issues.length ? `<table><thead><tr><th>Узел</th><th>Назначение</th><th>Проблема</th><th>Дубли</th><th>Индексируемость</th><th>Рекомендуемое действие</th><th>Изм.</th></tr></thead><tbody>${issueRows}</tbody></table>` : '<p class="lead">Критичных SEO-узлов на выборке L0 не зафиксировано.</p>'}</section>`;
+  const issues = `<section class="block"><h2>Проблемні вузли</h2>
+    <p class="lead">Вузли дерева з SEO-прогалинами й структурними ризиками.</p>
+    ${r.issues.length ? `<table><thead><tr><th>Вузол</th><th>Призначення</th><th>Проблема</th><th>Дублі</th><th>Індексованість</th><th>Рекомендована дія</th><th>Вим.</th></tr></thead><tbody>${issueRows}</tbody></table>` : '<p class="lead">Критичних SEO-вузлів на перевіреній вибірці не зафіксовано.</p>'}</section>`;
 
   // Постраничный on-page срез: фактические значения, а не только статусы.
   const opHead = ONPAGE_COLS.map((c) => `<th>${esc(ONPAGE_LABEL[c])}</th>`).join('');
   const opRows = r.onpage.map((row) => `<tr>
     <td class="op-url"><b>${esc(row.kind)}</b><span>${esc(row.url)}</span></td>
-    ${ONPAGE_COLS.map((c) => { const cell = row.cells[c]; const na = cell?.note === 'н/п'; return `<td class="op-c ${na ? 'na' : cell?.ok ? 'ok' : 'gap'}">${na ? '·' : cell?.ok ? '✓' : '✕'} <i>${esc(cell?.note ?? '—')}</i></td>`; }).join('')}
+    ${ONPAGE_COLS.map((c) => { const cell = row.cells[c]; const na = cell?.note === 'н/з'; return `<td class="op-c ${na ? 'na' : cell?.ok ? 'ok' : 'gap'}">${na ? '·' : cell?.ok ? '✓' : '✕'} <i>${esc(cell?.note ?? '—')}</i></td>`; }).join('')}
   </tr>`).join('');
   const opScores = r.onpage.map((row) => {
-    const applic = ONPAGE_COLS.filter((c) => row.cells[c] && row.cells[c].note !== 'н/п');
+    const applic = ONPAGE_COLS.filter((c) => row.cells[c] && row.cells[c].note !== 'н/з');
     const passed = applic.filter((c) => row.cells[c].ok).length;
     const pct = applic.length ? Math.round((passed / applic.length) * 100) : 0;
     return { label: row.kind, value: pct };
   });
-  const opBars = r.onpage.length ? `<div class="chart-wrap">${svgBars(opScores.map((p) => ({ label: p.label, value: p.value, max: 100, tone: p.value >= 70 ? 'ok' : p.value >= 45 ? 'check' : 'gap' })), { title: 'On-page балл по страницам', unit: '%' })}
-    <p class="chart-cap">Балл — доля пройденных on-page проверок из применимых к типу страницы. Чем короче столбец, тем больше незакрытых элементов на шаблоне этой страницы.<sup class="fn">1</sup></p></div>` : '';
-  const onpage = r.onpage.length ? `<section class="block"><h2>On-page постранично: фактические значения</h2>
-    <p class="lead">Норма: Title 15–70 символов, Description 50–170, ровно один H1, canonical на каждом шаблоне, Product-разметка на карточках и листингах. «н/п» — проверка неприменима к типу страницы.</p>
+  const opBars = r.onpage.length ? `<div class="chart-wrap">${svgBars(opScores.map((p) => ({ label: p.label, value: p.value, max: 100, tone: p.value >= 70 ? 'ok' : p.value >= 45 ? 'check' : 'gap' })), { title: 'On-page бал за сторінками', unit: '%' })}
+    <p class="chart-cap">Бал — частка пройдених on-page перевірок із застосовних до типу сторінки. Що коротший стовпчик, то більше незакритих елементів на шаблоні цієї сторінки.<sup class="fn">1</sup></p></div>` : '';
+  const onpage = r.onpage.length ? `<section class="block"><h2>On-page посторінково: фактичні значення</h2>
+    <p class="lead">Норма: Title 15–70 символів, Description 50–170, рівно один H1, canonical на кожному шаблоні, Product-розмітка на картках і лістингах. «н/з» — перевірка незастосовна до типу сторінки.</p>
     ${opBars}
-    <table><thead><tr><th>Страница</th>${opHead}</tr></thead><tbody>${opRows}</tbody></table>
-    <p class="fn-note"><sup>1</sup> Балл считается по применимым к типу страницы проверкам (Title, Description, H1, canonical, разметка, Open Graph); «н/п» из знаменателя исключены. Оценка по выборке ${r.totals.crawled} представительных страниц внешнего обхода — не по всему сайту.</p></section>` : '';
+    <table><thead><tr><th>Сторінка</th>${opHead}</tr></thead><tbody>${opRows}</tbody></table>
+    <p class="fn-note"><sup>1</sup> Бал рахується за застосовними до типу сторінки перевірками (Title, Description, H1, canonical, розмітка, Open Graph); «н/з» зі знаменника виключені. Оцінка за вибіркою ${r.totals.crawled} представницьких сторінок зовнішнього обходу — не за всім сайтом.</p></section>` : '';
 
-  const rec = `<section class="block"><h2>Рекомендуемое дерево</h2>
-    <p class="lead">Как должна выглядеть архитектура, чтобы не плодить дубли и раздавать вес правильно.</p>
+  const rec = `<section class="block"><h2>Рекомендована архітектура</h2>
+    <p class="lead">Як має виглядати архітектура, щоб не плодити дублі й роздавати вагу правильно.</p>
     <ul>${r.recommended.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>`;
 
   // ── Консалтинговый каркас ──
   const meth = methodologySection({
-    goal: 'Оценить, помогает ли архитектура сайта собирать поисковый спрос — или распыляет вес по дублям и пустым веткам.',
-    sources: [`Внутренние ссылки обхода + sitemap.xml (${r.totals.links} URL в дереве)`, `On-page проверка ${r.totals.crawled} представительных страниц`, 'robots.txt / sitemap.xml с корня'],
-    scope: `Дерево L1 (${r.totals.l1} разделов, глубина до ${r.totals.maxDepth}), проблемные узлы, индексируемость, доля параметрических URL (${paramShare}%).`,
-    limits: 'Внешний аудит строит дерево по видимым ссылкам — полное дерево, реальные дубли в индексе и позиции проверяются после передачи доступов (следующий этап; Search Console, полный crawl).',
+    goal: 'Оцінити, чи допомагає архітектура сайту збирати пошуковий попит — чи розпорошує вагу по дублях і порожніх гілках.',
+    sources: [`Внутрішні посилання обходу + sitemap.xml (${r.totals.links} URL у дереві)`, `On-page перевірка ${r.totals.crawled} представницьких сторінок`, 'robots.txt / sitemap.xml з кореня'],
+    scope: `Дерево L1 (${r.totals.l1} розділів, глибина до ${r.totals.maxDepth}), проблемні вузли, індексованість, частка параметричних URL (${paramShare}%).`,
+    limits: 'Зовнішній аудит будує дерево за видимими посиланнями — повне дерево, реальні дублі в індексі й позиції перевіряються після передачі доступів (наступний етап; Search Console, повний crawl).',
   });
 
   const okNodes = r.tree.filter((t) => t.severity === 'ok');
   const badNodes = r.tree.filter((t) => t.severity === 'gap');
   const strengths = [
-    ...(r.indexability.robots && r.indexability.sitemap ? ['Индексируемость управляется: robots.txt и sitemap.xml на месте — поисковик получает карту сайта, а не собирает её сам'] : []),
-    ...(paramShare <= 10 ? [`Низкая доля параметрических URL (${paramShare}%) — дерево не разъедается фильтрационными дублями`] : []),
-    ...(okNodes.length ? [`Здоровые разделы: ${okNodes.slice(0, 4).map((t) => t.label).join(', ')} — структура этих веток отвечает назначению`] : []),
+    ...(r.indexability.robots && r.indexability.sitemap ? ['Індексованість керована: robots.txt і sitemap.xml на місці — пошуковик отримує карту сайту, а не збирає її сам'] : []),
+    ...(paramShare <= 10 ? [`Низька частка параметричних URL (${paramShare}%) — дерево не роз’їдається фільтраційними дублями`] : []),
+    ...(okNodes.length ? [`Здорові розділи: ${okNodes.slice(0, 4).map((t) => t.label).join(', ')} — структура цих гілок відповідає призначенню`] : []),
   ];
   const weaknesses = [
-    ...(!r.indexability.sitemap ? ['Нет sitemap.xml — индексация отдана на волю обходчика, новые страницы попадают в индекс с задержкой'] : []),
-    ...(!r.indexability.robots ? ['Нет robots.txt — фасеты и служебные URL индексируются бесконтрольно'] : []),
-    ...(paramShare > 10 ? [`Параметрические URL — ${paramShare}% дерева: вес размывается по дублям фильтров`] : []),
+    ...(!r.indexability.sitemap ? ['Немає sitemap.xml — індексація віддана на волю обхідника, нові сторінки потрапляють в індекс із затримкою'] : []),
+    ...(!r.indexability.robots ? ['Немає robots.txt — фасети й службові URL індексуються безконтрольно'] : []),
+    ...(paramShare > 10 ? [`Параметричні URL — ${paramShare}% дерева: вага розмивається по дублях фільтрів`] : []),
     ...r.issues.slice(0, 5).map((i) => `${i.node} (L${i.level}): ${i.problem}`),
   ];
   const recsList: SectionRec[] = [
-    ...r.issues.slice(0, 5).map((i): SectionRec => ({ pr: i.level <= 1 ? 'P0' : 'P1', action: `${i.node}: ${i.action}`, effect: `Закрывает «${i.problem}»` })),
-    ...r.recommended.slice(0, 3).map((x): SectionRec => ({ pr: 'P2', action: x, effect: 'Архитектура раздаёт вес целевым страницам' })),
+    ...r.issues.slice(0, 5).map((i): SectionRec => ({ pr: i.level <= 1 ? 'P0' : 'P1', action: `${i.node}: ${i.action}`, effect: `Закриває «${i.problem}»` })),
+    ...r.recommended.slice(0, 3).map((x): SectionRec => ({ pr: 'P2', action: x, effect: 'Архітектура роздає вагу цільовим сторінкам' })),
   ];
   const concl = conclusionSection([
-    `Дерево из ${r.totals.links} URL (${r.totals.l1} разделов первого уровня, глубина до ${r.totals.maxDepth}) ${badNodes.length ? `содержит ${badNodes.length} проблемных узлов и ${r.issues.length} зафиксированных SEO-разрывов` : 'структурно здорово по видимым признакам'}. ${paramShare > 10 ? `Доля URL с параметрами (${paramShare}%) означает, что заметная часть ссылочного веса уходит в неиндексируемые или дублирующие адреса.` : 'Паразитных параметрических веток в значимом объёме не видно.'}`,
+    `Дерево з ${r.totals.links} URL (${r.totals.l1} розділів першого рівня, глибина до ${r.totals.maxDepth}) ${badNodes.length ? `містить ${badNodes.length} проблемних вузлів і ${r.issues.length} зафіксованих SEO-розривів` : 'структурно здорове за видимими ознаками'}. ${paramShare > 10 ? `Частка URL із параметрами (${paramShare}%) означає, що помітна частина посилальної ваги йде в неіндексовані або дублюючі адреси.` : 'Паразитних параметричних гілок у значущому обсязі не видно.'}`,
     r.issues.length
-      ? `Архитектурные проблемы каталога — это не «технические мелочи»: каждая ветка с дублями или без назначения конкурирует за позиции сама с собой. Приоритет — узлы верхних уровней (L1–L2): они раздают вес всем страницам ниже.`
-      : 'Явных структурных конфликтов не выявлено; резерв роста лежит в расширении семантики (новые посадочные под спрос), а не в починке существующего.',
-    'Вывод сделан по видимой архитектуре (внешний аудит витрины). Фактические позиции, каннибализация запросов и полнота индекса проверяются после передачи доступов (следующий этап) через Search Console — там же подтверждается или снимается каждый из перечисленных рисков.',
-  ], 'Следующий этап: Search Console (запросы, позиции, покрытие индекса) + полный crawl — превращает карту рисков в план восстановления трафика с цифрами.');
+      ? `Архітектурні проблеми каталогу — це не «технічні дрібниці»: кожна гілка з дублями чи без призначення конкурує за позиції сама із собою. Пріоритет — вузли верхніх рівнів (L1–L2): вони роздають вагу всім сторінкам нижче.`
+      : 'Явних структурних конфліктів не виявлено; резерв зростання лежить у розширенні семантики (нові посадкові під попит), а не в ремонті наявного.',
+    'Висновок зроблено за видимою архітектурою (зовнішній аудит). Фактичні позиції, канібалізація запитів і повнота індексу перевіряються після передачі доступів (наступний етап) через Search Console — там же підтверджується або знімається кожен із перелічених ризиків.',
+  ], 'Наступний етап: Search Console (запити, позиції, покриття індексу) + повний crawl — перетворює карту ризиків на план відновлення трафіку з цифрами.');
 
-  const foot = `<section class="block"><div class="footer">Commerce OS · SEO Architecture · ${esc(r.client)} · ${esc(date)}. Внешний аудит витрины: дерево по видимым ссылкам, on-page — выборка. Отсутствие данных не выдаётся за факт; полное дерево, дубли и техническая SEO уточняются после передачи доступов (следующий этап).</div></section>`;
+  const foot = pageFooter('Дерево за видимими посиланнями обходу, on-page — вибірка. Відсутність даних не видається за факт; повне дерево, дублі й технічна SEO уточнюються після передачі доступів (наступний етап).');
 
   const extra = `
     .t-node{white-space:nowrap;} .t-purpose{color:#333;font-size:10px;} .t-count{font-weight:800;text-align:right;} .t-note{font-size:9.5px;}
@@ -125,5 +121,5 @@ export function renderSeoArchHtml(r: SeoArchReport): string {
     .op-c.ok{color:var(--ok);} .op-c.gap{color:var(--gap);} .op-c.na{color:var(--muted);}
     .st{font-size:11px;} .st.ok{color:var(--ok);} .st.check{color:var(--check);} .st.gap{color:var(--gap);}
     .i-node{white-space:nowrap;} .i-lvl{display:inline-block;margin-left:5px;font-size:7.5px;color:var(--muted);} .i-act{color:#333;}`;
-  return doc(`SEO Architecture · ${r.client}`, cover + meth + tree + onpage + issues + rec + swSection(strengths, weaknesses) + recsSection(recsList) + concl + foot, extra);
+  return doc(`SEO-архітектура · ${r.client}`, coverHtml + meth + tree + onpage + issues + rec + swSection(strengths, weaknesses) + recsSection(recsList) + concl + foot, extra);
 }
