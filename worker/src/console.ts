@@ -208,15 +208,18 @@ function run(){
   });
 }
 
-function watch(id){ if(poll)clearInterval(poll);
+function watch(id){ if(poll)clearInterval(poll); var miss=0;
+  var stop=function(msg){ clearInterval(poll); poll=null; var b=$('runBadge'); b.className='badge error'; b.textContent='ошибка'; $('runSub').textContent=msg; $('go').disabled=false; loadHistory(); };
   var tick=function(){ fetch('/job/'+id,{headers:hdr()}).then(function(r){return r.json()}).then(function(d){
-      if(!d||!d.ok)return; var j=d.job;
+      // Джоб не найден (напр. воркер перезапустился) — не долбим 404 бесконечно.
+      if(!d||!d.ok){ if(++miss>=4){ stop('Прогон не найден (воркер мог перезапуститься) — запустите заново.'); } return; }
+      miss=0; var j=d.job;
       $('log').textContent=(j.log||[]).join('\\n'); $('log').scrollTop=$('log').scrollHeight;
       var b=$('runBadge');
       if(j.status==='done'){clearInterval(poll); poll=null; b.className='badge done'; b.textContent='готово'; $('go').disabled=false; showResult(j); loadHistory();}
       else if(j.status==='error'){clearInterval(poll); poll=null; b.className='badge error'; b.textContent='ошибка'; $('runSub').textContent='Ошибка: '+(j.error||''); $('go').disabled=false; loadHistory();}
       else {b.className='badge running'; b.textContent=(j.status==='queued'?'в очереди':'идёт');}
-  }).catch(function(){}); };
+  }).catch(function(){ if(++miss>=6){ stop('Связь с воркером потеряна — проверьте сервер и запустите заново.'); } }); };
   tick(); poll=setInterval(tick,1600);
 }
 

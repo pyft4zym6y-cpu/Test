@@ -13,7 +13,7 @@ export const MODEL = process.env.AUDIT_MODEL || 'claude-opus-5';
 // до 10 хв на спробу × повтори — і зависла мережа блокує весь прогін (баг:
 // «Commerce Intelligence: дедукции» висіла 30+ хв). Тепер фейл швидкий, а
 // детермінований звіт формується без аналітичного шару.
-const CALL_TIMEOUT_MS = Number(process.env.CLAUDE_TIMEOUT_MS) || 120000;
+const CALL_TIMEOUT_MS = Number(process.env.CLAUDE_TIMEOUT_MS) || 180000;
 const MAX_RETRIES = Number(process.env.CLAUDE_MAX_RETRIES ?? 1);
 
 let client: Anthropic | null = null;

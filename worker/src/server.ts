@@ -14,7 +14,7 @@
  *   GET  /result/:id/:file?t=…   — скачать один файл.
  */
 import { createServer, type ServerResponse, type IncomingMessage } from 'node:http';
-import { readFile, readdir, writeFile, stat } from 'node:fs/promises';
+import { readFile, readdir, writeFile, stat, mkdir } from 'node:fs/promises';
 import { join, basename, extname } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { runAudit, type AuditMetrics } from './pipeline.js';
@@ -47,6 +47,16 @@ type Job = {
 const jobs = new Map<string, Job>();
 const queue: string[] = [];
 let running = false;
+
+// Стан джобів на диску — щоб рестарт воркера (редеплой) не губив прогін і не
+// давав шторм 404. Пишемо в results/_jobs/<id>.json на кожному переході статусу
+// + троттлінгом під час прогону; на старті відновлюємо.
+const JOBS_DIR = join(OUT, '_jobs');
+const lastPersist = new Map<string, number>();
+async function persistJob(j: Job, throttleMs = 0): Promise<void> {
+  if (throttleMs) { const now = Date.now(); if (now - (lastPersist.get(j.id) ?? 0) < throttleMs) return; lastPersist.set(j.id, now); }
+  try { await mkdir(JOBS_DIR, { recursive: true }); await writeFile(join(JOBS_DIR, j.id + '.json'), JSON.stringify(persistView(j)), 'utf8'); } catch { /* best-effort */ }
+}
 
 function categorize(name: string): string {
   if (/-A0\.pdf$/i.test(name) || /Executive-Diagnostic|SEO-Architecture|Технический-аудит/i.test(name)) return 'Аудиты A0 (PDF)';
@@ -85,17 +95,20 @@ async function processQueue(): Promise<void> {
   running = true;
   try {
     job.status = 'running';
-    const r = await runAudit({ ...(job.opts as any), out: OUT, log: (m: string) => { job.log.push(m); if (job.log.length > 800) job.log.shift(); } });
+    void persistJob(job);
+    const r = await runAudit({ ...(job.opts as any), out: OUT, log: (m: string) => { job.log.push(m); if (job.log.length > 800) job.log.shift(); void persistJob(job, 4000); } });
     job.resultId = r.id; job.summary = r.summary; job.metrics = r.metrics;
     job.files = r.files.filter(isClientDoc).map((n) => ({ name: n, url: `/result/${r.id}/${encodeURIComponent(n)}`, category: categorize(n) }));
     job.status = 'done'; job.finishedAt = Date.now();
     await writeFile(join(OUT, r.id, 'job.json'), JSON.stringify(persistView(job)), 'utf8').catch(() => {});
+    void persistJob(job);
     if (job.clientId && storeEnabled()) {
       const ok = await saveRun(job.clientId, { runId: r.id, summary: r.summary, metrics: r.metrics, files: job.files.map((f) => ({ name: f.name, url: f.url })) });
       job.log.push(ok ? '· результат записан в карточку клиента (Supabase)' : '⚠️ не удалось записать результат в Supabase');
     }
   } catch (e) {
     job.status = 'error'; job.error = String(e).slice(0, 600); job.finishedAt = Date.now();
+    void persistJob(job);
   } finally {
     job.opts = undefined; // не держим ответы/baseline в памяти дольше нужного
     running = false;
@@ -103,15 +116,33 @@ async function processQueue(): Promise<void> {
   }
 }
 
-/** Восстановить историю из results/<id>/job.json (best-effort, после рестарта). */
+/** Восстановить джобы после рестарта (best-effort). Прерванный прогон помечаем
+ *  ошибкой, а не оставляем в памяти отсутствующим — иначе портал ловит 404-шторм. */
 async function loadHistory(): Promise<void> {
+  // 1) Состояние джобов (_jobs): running/queued после рестарта → error (процесс мёртв).
+  try {
+    const files = await readdir(JOBS_DIR).catch(() => [] as string[]);
+    for (const f of files) {
+      if (!f.endsWith('.json')) continue;
+      try {
+        const v = JSON.parse(await readFile(join(JOBS_DIR, f), 'utf8')) as Job;
+        if (!v?.id) continue;
+        if (v.status === 'running' || v.status === 'queued') {
+          v.status = 'error'; v.error = 'Прогон прерван перезапуском воркера (редеплой) — запустите заново.'; v.finishedAt = Date.now();
+          void persistJob(v);
+        }
+        jobs.set(v.id, { ...v, log: [] });
+      } catch { /* битый файл — пропускаем */ }
+    }
+  } catch { /* noop */ }
+  // 2) История завершённых из results/<id>/job.json — дополняет и вытесняет error, если прогон реально дошёл.
   try {
     const dirs = await readdir(OUT).catch(() => [] as string[]);
     for (const d of dirs) {
+      if (d === '_jobs') continue;
       try {
-        const raw = await readFile(join(OUT, d, 'job.json'), 'utf8');
-        const v = JSON.parse(raw) as Job;
-        if (v && v.id && !jobs.has(v.id)) jobs.set(v.id, { ...v, log: [], resultId: v.resultId || d });
+        const v = JSON.parse(await readFile(join(OUT, d, 'job.json'), 'utf8')) as Job;
+        if (v?.id && (!jobs.has(v.id) || jobs.get(v.id)!.status === 'error')) jobs.set(v.id, { ...v, log: [], resultId: v.resultId || d });
       } catch { /* нет job.json — пропускаем */ }
     }
   } catch { /* noop */ }
@@ -164,6 +195,7 @@ const server = createServer(async (req, res) => {
       const client = (() => { try { return opts.prelaunch ? 'предзапуск' : new URL(opts.site).hostname.replace(/^www\./, ''); } catch { return bundleName || opts.site || clientId || '—'; } })();
       const job: Job = { id, client, tier: Number(opts.tier ?? 1), status: 'queued', startedAt: Date.now(), log: [], opts, clientId: clientId || undefined };
       jobs.set(id, job);
+      void persistJob(job);
       queue.push(id);
       setImmediate(processQueue);
       json(res, 200, { ok: true, id });
