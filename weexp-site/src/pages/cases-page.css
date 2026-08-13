@@ -11,15 +11,22 @@
 .cf-chips button.is-on { color: var(--paper); border-color: var(--mark); background: color-mix(in srgb, var(--mark) 12%, transparent); }
 .caselist-empty { color: var(--steel-600); padding: 24px 0; }
 
-.caselist { padding-block: 0 clamp(60px, 10vh, 120px); display: grid; }
+.caselist { padding-block: 0 clamp(60px, 10vh, 120px); display: grid; gap: 14px; }
 @media (max-width: 560px) { .cf-group { grid-template-columns: 1fr; gap: 8px; } }
 .caselist-row {
   display: grid; grid-template-columns: 200px 130px 1fr auto; gap: 28px; align-items: center;
-  padding: 30px 0; border-top: 1px solid var(--hair); text-decoration: none; color: inherit;
-  transition: background .25s, padding-left .25s;
+  padding: clamp(22px, 3vw, 32px) clamp(22px, 3vw, 34px); text-decoration: none; color: inherit;
+  border-radius: 10px; border: 1px solid rgba(199, 210, 214, .14);
+  background: linear-gradient(150deg, color-mix(in srgb, var(--ink-700) 60%, transparent), color-mix(in srgb, var(--ink-950) 58%, transparent));
+  box-shadow: 0 30px 60px -44px rgba(0, 0, 0, .7), inset 0 1px 0 rgba(255, 255, 255, .04);
+  transition: transform .35s cubic-bezier(.2,1,.3,1), border-color .35s, box-shadow .35s, background .35s;
 }
-.caselist-row:last-child { border-bottom: 1px solid var(--hair); }
-.caselist-row:hover { background: color-mix(in srgb, var(--verd-900) 22%, transparent); padding-left: 16px; }
+.caselist-row:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--mark) 42%, transparent);
+  background: linear-gradient(150deg, color-mix(in srgb, var(--mark) 12%, var(--ink-700)), color-mix(in srgb, var(--ink-950) 60%, transparent));
+  box-shadow: 0 44px 80px -34px rgba(0, 0, 0, .8), inset 0 1px 0 rgba(255, 255, 255, .07);
+}
 .caselist-cat { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--steel-600); }
 .caselist-hero {
   font-family: var(--display); font-weight: 800; font-size: clamp(30px, 5vw, 52px);
