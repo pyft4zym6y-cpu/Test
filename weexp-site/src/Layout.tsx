@@ -6,7 +6,10 @@ import { ScrollTrigger } from '@/lib/gsap';
 import { Nav } from '@/components/Nav';
 import { Footer } from '@/components/Footer';
 import { ScoreHUD } from '@/components/ScoreHUD';
+import { CustomCursor } from '@/components/CustomCursor';
+import { PageCurtain } from '@/components/PageCurtain';
 import { useLenis } from '@/lib/useLenis';
+import { useParallax, useTilt } from '@/lib/interactions';
 import './layout.css';
 
 /**
@@ -16,6 +19,8 @@ import './layout.css';
  */
 export function Layout() {
   useLenis();
+  useParallax();
+  useTilt();
   const { pathname, hash } = useLocation();
   const mainRef = useRef<HTMLDivElement>(null);
 
@@ -37,6 +42,8 @@ export function Layout() {
 
   return (
     <ScoreProvider>
+      <CustomCursor />
+      <PageCurtain />
       <Nav />
       <span id="top" />
       <main ref={mainRef} key={pathname} className="screen">

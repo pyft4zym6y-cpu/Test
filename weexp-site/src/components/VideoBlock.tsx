@@ -24,7 +24,7 @@ export function VideoBlock({ title, sub, src = '/promo/reel.mp4', poster = '/pro
   // Заголовок винесено ПІД відео (у самому ролику вже є текст — оверлей зливався).
   return (
     <figure className="vb-fig">
-      <div className="vb" data-say={`${title} — дивіться промо.`}>
+      <div className="vb" data-parallax="0.05" data-say={`${title} — дивіться промо.`}>
         <video ref={vref} className="vb-video" src={src} poster={poster}
           muted loop playsInline preload="metadata" aria-label={title} />
         <span className="vb-tag mono">Промо · WEEXP</span>

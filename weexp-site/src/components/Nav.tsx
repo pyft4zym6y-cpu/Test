@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
 import { SYSTEMS } from '@/data/xray';
+import { Magnetic } from '@/lib/interactions';
 import './nav.css';
 
 type Sub = { to: string; label: string };
@@ -51,7 +52,7 @@ export function Nav() {
             </div>
           ))}
         </div>
-        <Link className="nav-cta mono" to="/diagnose">Калькулятор →</Link>
+        <Magnetic strength={0.5} className="nav-cta-mag"><Link className="nav-cta mono" to="/diagnose">Калькулятор →</Link></Magnetic>
         <button className={`nav-burger${open ? ' is-x' : ''}`} type="button" aria-label="Меню"
           aria-expanded={open} onClick={() => setOpen((o) => !o)}><span /><span /></button>
       </div>

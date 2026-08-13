@@ -111,7 +111,7 @@ export function BusinessXray({ questions = QUESTIONS, storageKey, full = false }
 
       <div className="xray-bottleneck">
         <span className="xray-score-lab mono">Головний bottleneck</span>
-        <Link to={`/challenges/${systemByKey(r.bottleneck.key).slug}`} className="xray-bottleneck-card">
+        <Link to={`/challenges/${systemByKey(r.bottleneck.key).slug}`} className="xray-bottleneck-card" data-tilt="5">
           <span className="xray-bottleneck-num mono">Система {systemByKey(r.bottleneck.key).num}</span>
           <span className="xray-bottleneck-title">{r.bottleneck.title}</span>
           <span className="xray-bottleneck-score mono">{r.bottleneck.score}<small>/100</small></span>
@@ -124,7 +124,7 @@ export function BusinessXray({ questions = QUESTIONS, storageKey, full = false }
         <span className="xray-score-lab mono">Три найслабші системи</span>
         <div className="xray-gaps-row">
           {r.gaps.map((g) => (
-            <Link key={g.key} to={`/challenges/${systemByKey(g.key).slug}`} className="xray-gap">
+            <Link key={g.key} to={`/challenges/${systemByKey(g.key).slug}`} className="xray-gap" data-tilt="9">
               <span className="xray-gap-score mono">{g.score}<small>/100</small></span>
               <span className="xray-gap-name">{g.title}</span>
             </Link>
