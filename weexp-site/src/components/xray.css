@@ -77,6 +77,8 @@
 .xray-next { display: grid; gap: 16px; border-top: 1px solid var(--hair); padding-top: 22px; }
 .xray-next-lead { font-size: clamp(15px, 2vw, 20px); color: var(--vel); max-width: 48ch; }
 .xray-next-lead b { color: var(--mark-600); }
+.xray-price { font-size: 12px; letter-spacing: .04em; color: var(--steel-600); }
+.xray-price b { color: var(--paper); }
 
 @media (max-width: 760px) {
   .xray-result-grid { grid-template-columns: 1fr; }
