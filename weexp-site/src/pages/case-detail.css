@@ -8,7 +8,8 @@
 }
 .cd-hero-lab { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--steel-600); max-width: 22ch; }
 .cd-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
-.cd-tags span { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--steel-600); border: 1px solid var(--hair); padding: 6px 10px; }
+.cd-tags span, .cd-tags a { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--steel-600); border: 1px solid var(--hair); padding: 6px 10px; text-decoration: none; }
+.cd-tags .cd-tag-sys:hover { color: var(--paper); border-color: var(--verd-600); }
 .cd-tags .cd-tag-stage { color: var(--mark-600); border-color: var(--mark); }
 
 /* Фірмова дуга */

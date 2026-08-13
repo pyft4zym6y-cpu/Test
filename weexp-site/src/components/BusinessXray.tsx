@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { QUESTIONS, scoreXray, opportunityLabel, LEVELS, type Answers } from '@/data/xray';
+import { QUESTIONS, QUESTIONS_FULL, scoreXray, opportunityLabel, LEVELS, systemByKey, SHORT, type Answers, type Question } from '@/data/xray';
 import { HealthRadar } from '@/components/HealthRadar';
 import { CountUp } from '@/lib/primitives';
 import { say } from '@/lib/bus';
@@ -9,35 +9,48 @@ import './xray.css';
 const OPTS = ['Ні', 'Радше ні', 'Радше так', 'Так'];
 
 /**
- * Business X-Ray — інтерактивний самодіагноз. 16 тверджень → Business Health (радар
- * по 5 системах) + Independence Score (0–100, рівень зрілості) + топ-3 розриви + € можливість.
- * Перетворює сайт із «місця, де нас вивчають» на інструмент, яким бізнес діагностує себе.
+ * Business X-Ray — інтерактивний самодіагноз системи онлайн-продажів.
+ * Питання → Business Health (радар по 7 системах) + Independence Score + головний bottleneck.
+ * `questions` — набір (швидкий 14 або повний 28); `storageKey` вмикає збереження результату.
  */
-export function BusinessXray() {
-  const [phase, setPhase] = useState<'intro' | 'quiz' | 'result'>('intro');
-  const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<Answers>({});
+export function BusinessXray({ questions = QUESTIONS, storageKey, full = false }:
+  { questions?: Question[]; storageKey?: string; full?: boolean } = {}) {
+  const saved = (() => {
+    if (!storageKey) return null;
+    try { const raw = localStorage.getItem(storageKey); return raw ? JSON.parse(raw) as Answers : null; } catch { return null; }
+  })();
 
-  const result = useMemo(() => (phase === 'result' ? scoreXray(answers) : null), [phase, answers]);
-  const q = QUESTIONS[step];
-  const progress = Math.round((step / QUESTIONS.length) * 100);
+  const [phase, setPhase] = useState<'intro' | 'quiz' | 'result'>(saved ? 'result' : 'intro');
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState<Answers>(saved ?? {});
+
+  const result = useMemo(() => (phase === 'result' ? scoreXray(answers, questions) : null), [phase, answers, questions]);
+  const q = questions[step];
+  const progress = Math.round((step / questions.length) * 100);
 
   const answer = (v: number) => {
     const next = { ...answers, [q.id]: v };
     setAnswers(next);
-    if (step + 1 < QUESTIONS.length) setStep(step + 1);
-    else { setPhase('result'); say('Ось ваш зріз. Далі — повний діагноз у грошах.'); }
+    if (step + 1 < questions.length) setStep(step + 1);
+    else {
+      setPhase('result'); say('Ось ваш зріз. Далі — повний діагноз у грошах.');
+      if (storageKey) { try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch { /* ignore */ } }
+    }
+  };
+  const reset = () => {
+    setPhase('intro'); setAnswers({}); setStep(0);
+    if (storageKey) { try { localStorage.removeItem(storageKey); } catch { /* ignore */ } }
   };
 
   if (phase === 'intro') {
     return (
       <div className="xray xray--intro">
-        <div className="xray-badge mono">Безкоштовний інструмент</div>
-        <h2 className="xray-title">Порахуйте, наскільки ваш<br />e-commerce незалежний</h2>
-        <p className="xray-lead">16 тверджень · 2 хвилини. Отримаєте Business Health по 18 доменах,
-          свій Independence Score і три головні розриви — без реєстрації.</p>
+        <div className="xray-badge mono">{full ? 'Повна діагностика · результат зберігається' : 'Безкоштовний інструмент'}</div>
+        <h2 className="xray-title">{full ? <>Повна діагностика<br />системи онлайн-продажів</> : <>Знайдіть головний<br />bottleneck вашого бізнесу</>}</h2>
+        <p className="xray-lead">{questions.length} тверджень · {full ? '5 хвилин' : '2 хвилини'}. Отримаєте Business Health по 7 системах,
+          Independence Score і вузьке місце, що тримає прибуток{full ? '. Результат зберігається у браузері.' : ' — без реєстрації.'}</p>
         <button className="btn-primary mono" onClick={() => { setPhase('quiz'); setStep(0); }}>
-          Почати X-Ray →
+          {full ? 'Почати повну діагностику →' : 'Почати X-Ray →'}
         </button>
         <div className="xray-levels mono">
           {LEVELS.map((l) => <span key={l.code}><b>{l.code}</b> {l.title}</span>)}
@@ -50,7 +63,7 @@ export function BusinessXray() {
     return (
       <div className="xray xray--quiz">
         <div className="xray-bar"><span style={{ width: `${progress}%` }} /></div>
-        <div className="xray-step mono">Питання {step + 1} / {QUESTIONS.length}</div>
+        <div className="xray-step mono">Питання {step + 1} / {questions.length} · Система {systemByKey(q.system).num} — {systemByKey(q.system).title}</div>
         <p className="xray-q">{q.text}</p>
         <div className="xray-opts">
           {OPTS.map((o, i) => (
@@ -82,28 +95,44 @@ export function BusinessXray() {
         </div>
         <div className="xray-radar">
           <span className="xray-score-lab mono">Business Health · {r.health}/100</span>
-          <HealthRadar systems={r.systemScores} />
+          <HealthRadar systems={r.systemScores.map((s) => ({ ...s, title: SHORT[s.key] }))} />
         </div>
       </div>
 
+      <div className="xray-bottleneck">
+        <span className="xray-score-lab mono">Головний bottleneck</span>
+        <Link to={`/challenges/${systemByKey(r.bottleneck.key).slug}`} className="xray-bottleneck-card">
+          <span className="xray-bottleneck-num mono">Система {systemByKey(r.bottleneck.key).num}</span>
+          <span className="xray-bottleneck-title">{r.bottleneck.title}</span>
+          <span className="xray-bottleneck-score mono">{r.bottleneck.score}<small>/100</small></span>
+          <span className="xray-bottleneck-line">{systemByKey(r.bottleneck.key).feel}</span>
+          <span className="xray-bottleneck-go mono">Що тут ламається →</span>
+        </Link>
+      </div>
+
       <div className="xray-gaps">
-        <span className="xray-score-lab mono">Три головні розриви</span>
+        <span className="xray-score-lab mono">Три найслабші системи</span>
         <div className="xray-gaps-row">
           {r.gaps.map((g) => (
-            <div key={g.key} className="xray-gap">
+            <Link key={g.key} to={`/challenges/${systemByKey(g.key).slug}`} className="xray-gap">
               <span className="xray-gap-score mono">{g.score}<small>/100</small></span>
-              <span className="xray-gap-name">{g.label}</span>
-            </div>
+              <span className="xray-gap-name">{g.title}</span>
+            </Link>
           ))}
         </div>
       </div>
 
       <div className="xray-next">
         <p className="xray-next-lead">Оцінена можливість: <b>{opportunityLabel(r.independence)}</b>.
-          Наступний крок — повний діагноз у грошах.</p>
+          {full ? ' Це самодіагноз — точний розрив у грошах рахуємо в повному Diagnosis по CRM/ERP/GA4.' : ' Наступний крок — глибша діагностика або розмова.'}</p>
         <div className="home-cta-row">
-          <Link to="/diagnose" className="btn-primary mono">Повний WEEXP Diagnosis →</Link>
-          <button className="btn-ghost mono" onClick={() => { setPhase('intro'); setAnswers({}); setStep(0); }}>Пройти ще раз</button>
+          {full ? (
+            <Link to="/contact" className="btn-primary mono">Подати заявку на Diagnosis →</Link>
+          ) : (
+            <Link to="/diagnose/full" className="btn-primary mono">Повна діагностика ({QUESTIONS_FULL.length} питань) →</Link>
+          )}
+          <Link to="/how-it-works/benchmark" className="btn-ghost mono">Порівняти з ринком →</Link>
+          <button className="btn-ghost mono" onClick={reset}>Пройти ще раз</button>
         </div>
       </div>
     </div>

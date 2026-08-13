@@ -5,17 +5,20 @@
 
 .nav-links { display:flex; gap:22px; }
 .nav-item { position:relative; }
-.nav-item > a { color:var(--steel-600); font-size:11px; letter-spacing:.1em; text-transform:uppercase; text-decoration:none; transition:color .2s; padding:20px 0; display:inline-block; }
+.nav-item > a { color:var(--steel-600); font-size:11px; letter-spacing:.1em; text-transform:uppercase; text-decoration:none; transition:color .2s; padding:22px 0; display:inline-block; }
 .nav-item > a:hover, .nav-item > a.is-here { color:var(--paper); }
 .nav-item > a.is-here { position:relative; }
-.nav-item > a.is-here::after { content:''; position:absolute; left:0; right:0; bottom:14px; height:2px; background:var(--mark); }
+.nav-item > a.is-here::after { content:''; position:absolute; left:0; right:0; bottom:16px; height:2px; background:var(--mark); }
 
 .nav-drop {
-  position:absolute; top:100%; left:-16px; min-width:210px; display:grid;
+  position:absolute; top:100%; left:-16px; min-width:230px; display:grid;
   background:var(--ink-800); border:1px solid var(--hair); padding:6px;
   opacity:0; visibility:hidden; transform:translateY(6px); transition:opacity .18s, transform .18s, visibility .18s;
+  z-index:5;
 }
-.nav-item:hover .nav-drop { opacity:1; visibility:visible; transform:none; }
+/* невидимий місток, щоб курсор не «губив» :hover між пунктом і випадайкою */
+.nav-drop::before { content:''; position:absolute; left:0; right:0; top:-14px; height:14px; }
+.nav-item:hover .nav-drop, .nav-item:focus-within .nav-drop { opacity:1; visibility:visible; transform:none; }
 .nav-drop a { color:var(--vel); font-size:11px; letter-spacing:.08em; text-transform:uppercase; text-decoration:none; padding:11px 12px; transition:background .15s, color .15s; }
 .nav-drop a:hover { background:color-mix(in srgb, var(--verd-900) 40%, transparent); color:var(--paper); }
 

@@ -1,34 +1,37 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PageHead } from '@/components/PageHead';
-import { CASES, CHALLENGES, STAGES, type Challenge, type Stage } from '@/data/cases';
+import { CASES, STAGES, type Stage } from '@/data/cases';
+import { SYSTEMS, systemByKey, type SystemKey } from '@/data/xray';
 import { say, sayIdle } from '@/lib/bus';
 import './cases-page.css';
 
-/** /cases — портфель як BUSINESS TRANSFORMATION. Фільтри за проблемою і стадією. */
+/** /cases — портфель як трансформація. Фільтри за системою бізнесу і стадією. */
 export function CasesPage() {
-  const [ch, setCh] = useState<Challenge | null>(null);
+  const [sys, setSys] = useState<SystemKey | null>(null);
   const [st, setSt] = useState<Stage | null>(null);
 
   const list = useMemo(() => CASES.filter((c) =>
-    (!ch || c.challenges.includes(ch)) && (!st || c.stage === st)), [ch, st]);
+    (!sys || c.systems.includes(sys)) && (!st || c.stage === st)), [sys, st]);
 
   return (
     <>
       <PageHead
-        kicker="Розділ · Cases"
+        kicker="Розділ · Кейси"
         title={<>Не портфоліо.<br />Трансформація бізнесу</>}
-        lead={<>Кожен кейс — це не «клієнт → логотип», а шлях <b>Before → Diagnosis → Money → Build →
-          After → Independence → Learning</b>. Зведено з CRM, ERP і GA4.</>}
+        lead={<>{CASES.length} історій за 7 системами бізнесу. Кожна — шлях <b>Before → Diagnosis → Money →
+          Build → After → Independence → Learning</b>, зведений з CRM, ERP і GA4.</>}
       />
 
       <section className="wrap case-filters">
         <div className="cf-group">
-          <span className="cf-lab mono">Проблема</span>
+          <span className="cf-lab mono">Система</span>
           <div className="cf-chips mono">
-            <button className={!ch ? 'is-on' : ''} onClick={() => setCh(null)}>Усі</button>
-            {CHALLENGES.map((c) => (
-              <button key={c} className={ch === c ? 'is-on' : ''} onClick={() => setCh(ch === c ? null : c)}>{c}</button>
+            <button className={!sys ? 'is-on' : ''} onClick={() => setSys(null)}>Усі</button>
+            {SYSTEMS.map((s) => (
+              <button key={s.key} className={sys === s.key ? 'is-on' : ''} onClick={() => setSys(sys === s.key ? null : s.key)}>
+                {s.num}·{s.title}
+              </button>
             ))}
           </div>
         </div>
@@ -53,6 +56,7 @@ export function CasesPage() {
             <span className="caselist-body">
               <span className="caselist-name">{c.name}</span>
               <span className="caselist-lead">{c.lead}</span>
+              <span className="caselist-sys mono">{c.systems.map((k) => systemByKey(k).title).join(' · ')}</span>
             </span>
             <span className="caselist-go mono">Дивитись →</span>
           </Link>

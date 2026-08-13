@@ -13,7 +13,7 @@ export function HealthRadar({ systems }: { systems: Sys[] }) {
   }, []);
 
   const N = systems.length;
-  const C = 150, R = 118;
+  const C = 150, R = 108;
   const angle = (i: number) => (i / N) * Math.PI * 2 - Math.PI / 2;
   const pt = (i: number, rad: number) => [C + rad * Math.cos(angle(i)), C + rad * Math.sin(angle(i))];
 
@@ -22,7 +22,7 @@ export function HealthRadar({ systems }: { systems: Sys[] }) {
   const dataPath = systems.map((s, i) => { const [x, y] = pt(i, R * (on ? s.score / 100 : 0)); return `${i ? 'L' : 'M'}${x.toFixed(1)},${y.toFixed(1)}`; }).join(' ') + ' Z';
 
   return (
-    <svg ref={ref} viewBox="0 0 300 300" className="radar" role="img" aria-label="Business Health радар">
+    <svg ref={ref} viewBox="-34 -22 368 344" className="radar" role="img" aria-label="Business Health радар">
       {rings.map((f) => <path key={f} d={gridPath(f)} className="radar-ring" />)}
       {systems.map((_, i) => { const [x, y] = pt(i, R); return <line key={i} x1={C} y1={C} x2={x} y2={y} className="radar-axis" />; })}
       <path d={dataPath} className="radar-area" style={{ transition: 'd .9s cubic-bezier(.16,1,.3,1)' }} />

@@ -22,6 +22,7 @@ const MAP: { h: string; links: { to: string; label: string; ext?: boolean }[] }[
   { h: 'Люди', links: [
     { to: '/about', label: 'Про WEEXP' },
     { to: '/about/founder', label: 'Засновник' },
+    { to: '/about/team', label: 'Команда' },
     { to: '/about/standard', label: 'Стандарт WEEXP' },
   ]},
   { h: 'Правове', links: [

@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from '@/Layout';
 import { Home } from '@/pages/Home';
+import { Challenges } from '@/pages/Challenges';
+import { SystemPage } from '@/pages/SystemPage';
 import { WhatWeBuild } from '@/pages/WhatWeBuild';
 import { EuExpansion } from '@/pages/EuExpansion';
 import { HowItWorks } from '@/pages/HowItWorks';
@@ -13,7 +15,9 @@ import { CaseDetail } from '@/pages/CaseDetail';
 import { Intelligence } from '@/pages/Intelligence';
 import { About } from '@/pages/About';
 import { FounderPage } from '@/pages/FounderPage';
+import { TeamPage } from '@/pages/TeamPage';
 import { Diagnose } from '@/pages/Diagnose';
+import { FullDiagnosis } from '@/pages/FullDiagnosis';
 import { ContactPage } from '@/pages/ContactPage';
 import { NotFound } from '@/pages/NotFound';
 import '@/lib/primitives.css';
@@ -24,6 +28,8 @@ export default function App() {
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/challenges" element={<Challenges />} />
+          <Route path="/challenges/:slug" element={<SystemPage />} />
           <Route path="/what-we-build" element={<WhatWeBuild />} />
           <Route path="/what-we-build/eu-expansion" element={<EuExpansion />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
@@ -36,7 +42,9 @@ export default function App() {
           <Route path="/intelligence" element={<Intelligence />} />
           <Route path="/about" element={<About />} />
           <Route path="/about/founder" element={<FounderPage />} />
+          <Route path="/about/team" element={<TeamPage />} />
           <Route path="/diagnose" element={<Diagnose />} />
+          <Route path="/diagnose/full" element={<FullDiagnosis />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="*" element={<NotFound />} />
         </Route>
