@@ -250,3 +250,20 @@ export function opportunityLabel(independence: number): string {
   if (independence >= 20) return '40–70% до обороту';
   return '×1,5–2 до обороту';
 }
+
+/** Ключ у localStorage, під яким лежить читабельний підсумок останньої діагностики. */
+export const DIAG_SUMMARY_KEY = 'weexp:diag-summary';
+
+/** Текстовий підсумок результату — вкладається в лід власнику. */
+export function diagnosisSummary(r: XrayResult, full: boolean): string {
+  const line = (s: SystemScore) => `${systemByKey(s.key).num}·${s.title} — ${s.score}/100`;
+  return [
+    `Тип: ${full ? 'Повна діагностика (28 питань)' : 'Швидкий X-Ray (14 питань)'}`,
+    `Independence Score: ${r.independence}/100 — ${r.level.title}`,
+    `Business Health: ${r.health}/100`,
+    `Головний bottleneck: ${line(r.bottleneck)}`,
+    `Три найслабші системи: ${r.gaps.map(line).join('; ')}`,
+    `Оцінена можливість: ${opportunityLabel(r.independence)}`,
+    `Профіль 7 систем: ${r.systemScores.map((s) => `${systemByKey(s.key).num}:${s.score}`).join(' · ')}`,
+  ].join('\n');
+}

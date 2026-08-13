@@ -1,5 +1,5 @@
 // Vercel serverless (сайт weexp.agency): приём лидов — контактная форма и
-// захват email после результата калькулятора. Письмо уходит консультанту
+// результат Business X-Ray / повної діагностики. Письмо уходит консультанту
 // через Resend; reply-to = адрес лида, чтобы отвечать в один клик.
 // Env: RESEND_API_KEY (обязателен); NOTIFY_EMAIL / NOTIFY_FROM — опционально.
 const DEFAULT_NOTIFY_EMAIL = 'pashasidorenko18@gmail.com';
@@ -12,6 +12,7 @@ export default async function handler(req, res) {
   const { RESEND_API_KEY, NOTIFY_FROM } = process.env;
   const NOTIFY_EMAIL = process.env.NOTIFY_EMAIL || DEFAULT_NOTIFY_EMAIL;
   if (!RESEND_API_KEY) {
+    // Бэкенд не сконфигурирован — сообщаем явно, фронт покажет запасной путь.
     res.status(200).json({ error: 'not_configured' });
     return;
   }
@@ -35,10 +36,11 @@ export default async function handler(req, res) {
     email && `Email: ${email}`,
     phone && `Телефон: ${phone}`,
     b.name && `Імʼя: ${String(b.name).slice(0, 120)}`,
-    b.store && `Магазин: ${String(b.store).slice(0, 200)}`,
-    b.turnover && `Оборот: ${String(b.turnover).slice(0, 60)}`,
+    b.store && `Магазин / сайт: ${String(b.store).slice(0, 200)}`,
+    b.turnover && `Оборот / міс: ${String(b.turnover).slice(0, 60)}`,
     b.comment && `Коментар: ${String(b.comment).slice(0, 1000)}`,
-    b.calc && `— Розрахунок калькулятора —\n${String(b.calc).slice(0, 1500)}`,
+    b.diag && `\n— Результат діагностики (Business X-Ray) —\n${String(b.diag).slice(0, 2000)}`,
+    b.calc && `\n— Розрахунок калькулятора —\n${String(b.calc).slice(0, 1500)}`,
   ].filter(Boolean);
 
   try {

@@ -10,7 +10,7 @@ export function Hero() {
       <Scene3D />
       <div className="wrap hero-mid">
         <motion.div className="eyebrow" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1, duration: 0.6 }}>
-          Brandbook · ревізія 1.1
+          WEEXP · операційний партнер e-commerce
         </motion.div>
         <h1 className="hero-h">
           {['Система', 'замість', 'героїзму'].map((w, i) => (
