@@ -4,8 +4,8 @@ import { BusinessXray } from '@/components/BusinessXray';
 import './diagnose.css';
 
 const GET = [
-  { k: 'Business Health', v: 'Оцінка 18 доменів бізнесу у 5 системах' },
-  { k: 'Independence Score', v: 'Рівень зрілості 0–100 і що означає ваш' },
+  { k: 'Business Health', v: 'Оцінка 7 систем і 15 доменів бізнесу' },
+  { k: 'Головний bottleneck', v: 'Вузьке місце, що тримає прибуток' },
   { k: 'Причинна карта', v: 'Де саме втрачаються гроші й чому' },
   { k: 'Розрив у грошах', v: 'Скільки коштує бездіяльність — щороку' },
   { k: 'Пріоритети', v: 'Що робити першим за впливом × зусиллям' },
@@ -55,7 +55,8 @@ export function Diagnose() {
         </div>
         <div className="home-cta-row">
           <Link to="/contact" className="btn-primary mono">Подати заявку на Diagnosis →</Link>
-          <Link to="/cases" className="btn-ghost mono">Спершу подивитись кейси →</Link>
+          <Link to="/diagnose/full" className="btn-ghost mono">Повна діагностика (28 питань) →</Link>
+          <Link to="/how-it-works/benchmark" className="btn-ghost mono">Бенчмарк проти ринку →</Link>
         </div>
       </section>
     </>

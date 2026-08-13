@@ -6,7 +6,6 @@ import { ScrollTrigger } from '@/lib/gsap';
 import { Nav } from '@/components/Nav';
 import { Footer } from '@/components/Footer';
 import { ScoreHUD } from '@/components/ScoreHUD';
-import { Agent } from '@/components/Agent';
 import { useLenis } from '@/lib/useLenis';
 import './layout.css';
 
@@ -44,8 +43,7 @@ export function Layout() {
         <Outlet />
       </main>
       <Footer />
-      <ScoreHUD />
-      <Agent />
+      {pathname === '/' && <ScoreHUD />}
     </ScoreProvider>
   );
 }

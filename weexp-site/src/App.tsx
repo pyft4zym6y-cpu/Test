@@ -16,6 +16,7 @@ import { Intelligence } from '@/pages/Intelligence';
 import { About } from '@/pages/About';
 import { FounderPage } from '@/pages/FounderPage';
 import { Diagnose } from '@/pages/Diagnose';
+import { FullDiagnosis } from '@/pages/FullDiagnosis';
 import { ContactPage } from '@/pages/ContactPage';
 import { NotFound } from '@/pages/NotFound';
 import '@/lib/primitives.css';
@@ -41,6 +42,7 @@ export default function App() {
           <Route path="/about" element={<About />} />
           <Route path="/about/founder" element={<FounderPage />} />
           <Route path="/diagnose" element={<Diagnose />} />
+          <Route path="/diagnose/full" element={<FullDiagnosis />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="*" element={<NotFound />} />
         </Route>

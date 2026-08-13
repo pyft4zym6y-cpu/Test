@@ -158,6 +158,12 @@ export const SYSTEMS: System[] = [
 export const systemBySlug = (slug: string) => SYSTEMS.find((s) => s.slug === slug);
 export const systemByKey = (k: SystemKey) => SYSTEMS.find((s) => s.key === k)!;
 
+/** Короткі підписи для радара (повні заголовки не влазять на осі). */
+export const SHORT: Record<SystemKey, string> = {
+  strategy: 'Стратегія', commercial: 'Комерція', customer: 'Клієнт',
+  experience: 'Досвід', operations: 'Операції', data: 'Дані', org: 'Організація',
+};
+
 /** Питання X-Ray — по 2 на систему. answer 0..3 (Ні / Радше ні / Радше так / Так). */
 export type Question = { id: string; text: string; system: SystemKey };
 export const QUESTIONS: Question[] = [
@@ -176,6 +182,26 @@ export const QUESTIONS: Question[] = [
   { id: 'g1', text: 'Ролі, RACI і KPI зрозумілі; за підсумковий прибуток хтось відповідає.', system: 'org' },
   { id: 'g2', text: 'Бізнес може працювати 2 тижні без щоденної участі власника (SOP, база знань).', system: 'org' },
 ];
+
+/** Розширений набір для повної діагностики (/diagnose/full) — глибше по кожній системі. */
+export const QUESTIONS_EXTRA: Question[] = [
+  { id: 's3', text: 'План продажів декомпозований на канали, категорії та місяці.', system: 'strategy' },
+  { id: 's4', text: 'Є сценарії дій при недовиконанні плану.', system: 'strategy' },
+  { id: 'c3', text: 'Є ABC/XYZ-аналіз і керування SKU за оборотністю.', system: 'commercial' },
+  { id: 'c4', text: 'Промо плануються з урахуванням впливу на маржу, а не лише на оборот.', system: 'commercial' },
+  { id: 'd3', text: 'Є єдиний профіль клієнта (customer ID), замовлення з різних каналів об’єднані.', system: 'customer' },
+  { id: 'd4', text: 'Скарги й відгуки класифікуються і повертаються в продукт та маркетинг.', system: 'customer' },
+  { id: 'e3', text: 'Мобільна версія зручна; помилки інтерфейсу відпрацьовані.', system: 'experience' },
+  { id: 'e4', text: 'Картка товару має достатньо контенту і social proof для рішення про покупку.', system: 'experience' },
+  { id: 'o3', text: 'Товар резервується під замовлення; немає продажу того, чого немає на складі.', system: 'operations' },
+  { id: 'o4', text: 'Є система роботи з недоставленими замовленнями і контроль вартості fulfillment.', system: 'operations' },
+  { id: 't3', text: 'Є моніторинг інтеграцій; помилки API помічаються й усуваються.', system: 'data' },
+  { id: 't4', text: 'Є регулярні дашборди й автоматичні алерти по ключових метриках.', system: 'data' },
+  { id: 'g3', text: 'Є roadmap і пріоритизація за impact/effort замість «усе терміново».', system: 'org' },
+  { id: 'g4', text: 'Після великих змін проводиться post-mortem; підхід hypothesis-driven.', system: 'org' },
+];
+
+export const QUESTIONS_FULL: Question[] = [...QUESTIONS, ...QUESTIONS_EXTRA];
 
 export type Answers = Record<string, number>;
 
@@ -200,11 +226,11 @@ export type XrayResult = {
   gaps: SystemScore[];
 };
 
-export function scoreXray(answers: Answers): XrayResult {
+export function scoreXray(answers: Answers, questions: Question[] = QUESTIONS): XrayResult {
   const systemScores: SystemScore[] = SYSTEMS.map((s) => {
-    const qs = QUESTIONS.filter((q) => q.system === s.key);
+    const qs = questions.filter((q) => q.system === s.key);
     const sum = qs.reduce((a, q) => a + Math.max(0, Math.min(3, answers[q.id] ?? 0)) / 3 * 100, 0);
-    return { key: s.key, title: s.title, score: Math.round(sum / qs.length) };
+    return { key: s.key, title: s.title, score: qs.length ? Math.round(sum / qs.length) : 0 };
   });
   const health = Math.round(systemScores.reduce((a, s) => a + s.score, 0) / systemScores.length);
 
