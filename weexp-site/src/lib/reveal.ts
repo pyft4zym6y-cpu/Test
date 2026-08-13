@@ -15,6 +15,7 @@ const SELECTOR = [
   '.ch-row', '.caselist-row', '.sys-idea-text', '.sys-cols',
   '.cd-arc-block', '.cd-metrics', '.cd-cols',
   '.dg-get-item', '.dg-how-step',
+  '.ab-exists-row', '.ab-why-item', '.ab-fit-col', '.ab-dont-item',
 ].join(',');
 
 export function useReveal() {
