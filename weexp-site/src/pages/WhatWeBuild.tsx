@@ -143,7 +143,7 @@ export function WhatWeBuild() {
           <p className="home-cta-lead">Почніть із того, що видно в грошах — з діагнозу.</p>
           <div className="home-cta-row">
             <Link to="/diagnose" className="btn-primary mono">Діагностувати бізнес →</Link>
-            <Link to="/how-it-works" className="btn-ghost mono">Як ми будуємо →</Link>
+            <Link to="/cases" className="btn-ghost mono">Дивитись кейси →</Link>
           </div>
         </div>
       </section>

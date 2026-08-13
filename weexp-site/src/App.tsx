@@ -11,13 +11,10 @@ const Challenges = lazy(() => import('@/pages/Challenges').then((m) => ({ defaul
 const SystemPage = lazy(() => import('@/pages/SystemPage').then((m) => ({ default: m.SystemPage })));
 const WhatWeBuild = lazy(() => import('@/pages/WhatWeBuild').then((m) => ({ default: m.WhatWeBuild })));
 const EuExpansion = lazy(() => import('@/pages/EuExpansion').then((m) => ({ default: m.EuExpansion })));
-const HowItWorks = lazy(() => import('@/pages/HowItWorks').then((m) => ({ default: m.HowItWorks })));
-const StandardPage = lazy(() => import('@/pages/StandardPage').then((m) => ({ default: m.StandardPage })));
 const CasesPage = lazy(() => import('@/pages/CasesPage').then((m) => ({ default: m.CasesPage })));
 const CaseDetail = lazy(() => import('@/pages/CaseDetail').then((m) => ({ default: m.CaseDetail })));
 const About = lazy(() => import('@/pages/About').then((m) => ({ default: m.About })));
 const FounderPage = lazy(() => import('@/pages/FounderPage').then((m) => ({ default: m.FounderPage })));
-const TeamPage = lazy(() => import('@/pages/TeamPage').then((m) => ({ default: m.TeamPage })));
 const Diagnose = lazy(() => import('@/pages/Diagnose').then((m) => ({ default: m.Diagnose })));
 const FullDiagnosis = lazy(() => import('@/pages/FullDiagnosis').then((m) => ({ default: m.FullDiagnosis })));
 const ContactPage = lazy(() => import('@/pages/ContactPage').then((m) => ({ default: m.ContactPage })));
@@ -35,19 +32,21 @@ export default function App() {
             <Route path="/challenges/:slug" element={<SystemPage />} />
             <Route path="/what-we-build" element={<WhatWeBuild />} />
             <Route path="/what-we-build/eu-expansion" element={<EuExpansion />} />
-            <Route path="/how-it-works" element={<HowItWorks />} />
+            {/* Метод — це той самий Diagnose→Build→Scale→Independence; згорнуто в «Що будуємо» */}
+            <Route path="/how-it-works" element={<Navigate to="/what-we-build" replace />} />
             {/* Метрики живуть у самому інструменті X-Ray — сторінки-глоссарії згорнуто */}
             <Route path="/how-it-works/business-health" element={<Navigate to="/diagnose" replace />} />
             <Route path="/how-it-works/independence-score" element={<Navigate to="/diagnose" replace />} />
             <Route path="/how-it-works/benchmark" element={<Navigate to="/diagnose" replace />} />
-            <Route path="/about/standard" element={<StandardPage />} />
             <Route path="/cases" element={<CasesPage />} />
             <Route path="/cases/:slug" element={<CaseDetail />} />
             {/* Аналітику згорнуто в докази (Кейси) */}
             <Route path="/intelligence" element={<Navigate to="/cases" replace />} />
             <Route path="/about" element={<About />} />
             <Route path="/about/founder" element={<FounderPage />} />
-            <Route path="/about/team" element={<TeamPage />} />
+            {/* Команда вже на /about; окремий «Стандарт» згорнуто в /about */}
+            <Route path="/about/team" element={<Navigate to="/about" replace />} />
+            <Route path="/about/standard" element={<Navigate to="/about" replace />} />
             <Route path="/diagnose" element={<Diagnose />} />
             <Route path="/diagnose/full" element={<FullDiagnosis />} />
             <Route path="/contact" element={<ContactPage />} />
