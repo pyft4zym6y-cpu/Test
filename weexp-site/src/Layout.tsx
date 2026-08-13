@@ -10,6 +10,8 @@ import { CustomCursor } from '@/components/CustomCursor';
 import { PageCurtain } from '@/components/PageCurtain';
 import { useLenis } from '@/lib/useLenis';
 import { useParallax, useTilt } from '@/lib/interactions';
+import { useReveal } from '@/lib/reveal';
+import '@/lib/premium.css';
 import './layout.css';
 
 /**
@@ -21,6 +23,7 @@ export function Layout() {
   useLenis();
   useParallax();
   useTilt();
+  useReveal();
   const { pathname, hash } = useLocation();
   const mainRef = useRef<HTMLDivElement>(null);
 
