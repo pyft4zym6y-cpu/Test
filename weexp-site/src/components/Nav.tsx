@@ -59,18 +59,16 @@ export function Nav() {
             </div>
           ))}
         </div>
-        <Link className="nav-cta mono" to="/diagnose">Знайти bottleneck →</Link>
+        <Link className="nav-cta mono" to="/diagnose">Калькулятор →</Link>
         <button className={`nav-burger${open ? ' is-x' : ''}`} type="button" aria-label="Меню"
           aria-expanded={open} onClick={() => setOpen((o) => !o)}><span /><span /></button>
       </div>
       <div className="nav-drawer">
+        <Link to="/diagnose" className="nav-drawer-cta mono">Знайти bottleneck · калькулятор →</Link>
         {MENU.map((g) => (
-          <div key={g.to} className="nav-drawer-group">
-            <NavLink to={g.to} className="mono nav-drawer-top">{g.label}</NavLink>
-            {g.sub && <div className="nav-drawer-sub mono">{g.sub.map((s) => <Link key={s.label} to={s.to}>{s.label}</Link>)}</div>}
-          </div>
+          <NavLink key={g.to} to={g.to} className="mono nav-drawer-top">{g.label}</NavLink>
         ))}
-        <Link to="/diagnose" className="nav-drawer-cta mono">Діагностувати бізнес →</Link>
+        <a href="/oferta.html" className="mono nav-drawer-legal">Оферта · Приватність</a>
       </div>
     </nav>
   );

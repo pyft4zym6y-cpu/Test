@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { PageHead } from '@/components/PageHead';
 import { BusinessXray } from '@/components/BusinessXray';
+import { Calculator } from '@/components/Calculator';
 import './diagnose.css';
 
 const GET = [
@@ -29,6 +30,14 @@ export function Diagnose() {
           свій Independence Score та три найбільші розриви ще до розмови з нами.</>}
       />
       <section className="wrap"><BusinessXray /></section>
+
+      <section id="calc" className="dg-calc">
+        <div className="wrap">
+          <span className="page-kick">Калькулятор · розрив у грошах</span>
+          <h2 className="dg-calc-h">Порахуйте, скільки ви лишаєте<br />на столі щороку</h2>
+        </div>
+        <Calculator />
+      </section>
 
       <section className="wrap dg-get">
         <span className="page-kick">Що ви отримуєте у повному Diagnosis</span>

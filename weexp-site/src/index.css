@@ -50,3 +50,11 @@ h1,h2 { font-family:var(--display); font-weight:800; letter-spacing:-.035em; lin
 :focus-visible { outline:2px solid var(--mark); outline-offset:3px; }
 
 @media (prefers-reduced-motion:reduce){ body{ transition:none; } }
+
+/* Мобільний: прибираємо завеликі vh-відступи між блоками (не зʼїдаємо бічні відступи .wrap) */
+@media (max-width:760px){
+  .proof,.usp,.cases,.fw,.alt,.st,.ct,.mf,.tm,.calc,.demo,.fnd,.close,.ts,.gr,.engine,.about-sec{ padding-block:40px; }
+  .wwb-sec,.sys-idea,.sys-next,.dg-get,.dg-how,.sp-levels,.ab-fit,.ab-dont,.ab-exists,.ab-why,.fp-track,.fp-bio,.fp-principles,.fp-layers{ padding-block:32px !important; margin-bottom:0 !important; }
+  .home-cta{ padding-block:40px; }
+  .page-head{ padding-block:88px 24px !important; }
+}

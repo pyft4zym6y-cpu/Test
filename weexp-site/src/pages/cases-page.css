@@ -11,7 +11,7 @@
 .cf-chips button.is-on { color: var(--paper); border-color: var(--mark); background: color-mix(in srgb, var(--mark) 12%, transparent); }
 .caselist-empty { color: var(--steel-600); padding: 24px 0; }
 
-.caselist { padding: 0 0 clamp(60px, 10vh, 120px); display: grid; }
+.caselist { padding-block: 0 clamp(60px, 10vh, 120px); display: grid; }
 @media (max-width: 560px) { .cf-group { grid-template-columns: 1fr; gap: 8px; } }
 .caselist-row {
   display: grid; grid-template-columns: 200px 130px 1fr auto; gap: 28px; align-items: center;

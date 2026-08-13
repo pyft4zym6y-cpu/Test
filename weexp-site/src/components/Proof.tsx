@@ -1,19 +1,32 @@
-import { motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
 import { Eyebrow, FadeIn, Stat } from '@/lib/primitives';
 import './proof.css';
 
-/** «Спочатку — що це дає»: доказ у грошах + s-крива €48K→€900K, рисуется по скроллу. */
+/** «Спочатку — що це дає»: доказ у грошах + s-крива €48K→€900K. Малюється по появі,
+ *  але гарантовано видима (IntersectionObserver + таймаут-фолбек — надійно на мобільному). */
 function GrowthChart() {
-  // s-curve: from low-left to high-right (€48K -> €900K, ×18)
   const d = 'M 20 250 C 150 245, 250 235, 360 200 S 560 70, 760 34';
+  const pathRef = useRef<SVGPathElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [on, setOn] = useState(false);
+
+  useEffect(() => {
+    const el = svgRef.current;
+    const draw = () => setOn(true);
+    if (!el) { draw(); return; }
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { draw(); io.disconnect(); } }, { threshold: 0.15 });
+    io.observe(el);
+    const t = setTimeout(draw, 1400); // фолбек: якщо IO не спрацював — все одно показуємо
+    return () => { io.disconnect(); clearTimeout(t); };
+  }, []);
+
+  const len = pathRef.current?.getTotalLength?.() ?? 1000;
   return (
-    <svg className="growth" viewBox="0 0 800 280" role="img" aria-label="Крива зростання обороту €48K → €900K за 18 місяців">
+    <svg ref={svgRef} className="growth" viewBox="0 0 800 280" role="img" aria-label="Крива зростання обороту €48K → €900K за 18 місяців">
       {[70, 130, 190, 250].map((y) => <line key={y} x1="20" x2="780" y1={y} y2={y} stroke="var(--hair)" strokeWidth="1" />)}
-      <motion.path d={d} fill="none" stroke="var(--mark)" strokeWidth="2.5" strokeLinecap="round"
-        initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }}
-        viewport={{ once: true, margin: '-60px' }} transition={{ duration: 1.8, ease: [0.4, 0, 0.2, 1] }} />
-      <motion.circle cx="760" cy="34" r="5" fill="var(--mark)"
-        initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ delay: 1.7, duration: 0.4 }} />
+      <path ref={pathRef} d={d} fill="none" stroke="var(--mark)" strokeWidth="2.5" strokeLinecap="round"
+        style={{ strokeDasharray: len, strokeDashoffset: on ? 0 : len, transition: 'stroke-dashoffset 1.7s cubic-bezier(.4,0,.2,1)' }} />
+      <circle cx="760" cy="34" r="5" fill="var(--mark)" style={{ opacity: on ? 1 : 0, transition: 'opacity .4s ease 1.5s' }} />
       <text x="20" y="270" className="gc-lab">€48K · старт</text>
       <text x="700" y="22" className="gc-lab gc-lab-end">€900K · 18 міс</text>
     </svg>
