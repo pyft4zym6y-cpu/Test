@@ -8,6 +8,8 @@ import { track } from '@/lib/analytics';
 import './xray.css';
 
 const OPTS = ['Ні', 'Радше ні', 'Радше так', 'Так'];
+// Ціновий якір для самокваліфікації за бюджетом. Заміни на актуальне число.
+const DIAGNOSIS_PRICE_FROM = 'від $2 900';
 
 /**
  * Business X-Ray — інтерактивний самодіагноз системи онлайн-продажів.
@@ -133,6 +135,7 @@ export function BusinessXray({ questions = QUESTIONS, storageKey, full = false }
       <div className="xray-next">
         <p className="xray-next-lead">Оцінена можливість: <b>{opportunityLabel(r.independence)}</b>.
           {full ? ' Це самодіагноз — точний розрив у грошах рахуємо в повному Diagnosis по CRM/ERP/GA4.' : ' Наступний крок — глибша діагностика або розмова.'}</p>
+        <p className="xray-price mono">Business X-Ray — безкоштовно · Повний Diagnosis — <b>{DIAGNOSIS_PRICE_FROM}</b></p>
         <div className="home-cta-row">
           {full ? (
             <Link to="/contact" className="btn-primary mono">Подати заявку на Diagnosis →</Link>
