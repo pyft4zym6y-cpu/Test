@@ -61,6 +61,7 @@ import { buildKp, renderKpMd, renderKpPdf } from './kp.js';
 import { exportKpDocx } from './export/methodDocs.js';
 import { knowledgeCount } from './knowledge.js';
 import { hasKey, apiErrorHint } from './anthropic.js';
+import { makeDeadline } from './util/timeout.js';
 import type { Analysis } from './analyze.js';
 import type { UxUiReport } from './uxui.js';
 import type { PrototypeReport } from './prototype.js';
@@ -119,6 +120,10 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
   if (!site && !prelaunch) throw new Error('Нужен site (или prelaunch для проекта без сайта)');
 
   const spec = TIERS[tier];
+  // Вотчдог прогону: важкі необов'язкові Claude-блоки (преміум-експерти, синтез,
+  // КП) пропускаються, якщо прогін перевищив ліміт — краще завершити з готовим,
+  // ніж молотити годину. Пер-крокові таймаути й так не дають зависнути.
+  const deadline = makeDeadline(Number(process.env.AUDIT_MAX_MINUTES) || 30);
   log(`▶ ${prelaunch ? 'Предзапуск T0' : `Аудит T${tier}`} «${spec.title}» · ${site || '(сайт в разработке)'}`);
   const kpCount = await knowledgeCount();
   if (kpCount) log(`· пакетов знаний подключено: ${kpCount}`);
@@ -396,12 +401,14 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         const { buildRegistry, registrySummary } = await import('./registry.js');
         const { renderRegistryHtml } = await import('./export/registryHtml.js');
         registry = buildRegistry(feedFromReports(registryRaw, journeyReport), { money });
-        if (opts.premium) {
+        if (opts.premium && deadline.exceeded()) {
+          log('⚠️ премиум-экспертиза пропущена: превышен лимит времени прогона (AUDIT_MAX_MINUTES)');
+        } else if (opts.premium) {
           try {
             const { runExperts } = await import('./experts/runner.js');
             const { applyVerifications } = await import('./registry.js');
             const { renderPremiumHtml } = await import('./export/premiumHtml.js');
-            const expertResults = await runExperts({ dataset: ds, baseFindings: registry, log, browser });
+            const expertResults = await runExperts({ dataset: ds, baseFindings: registry, log, browser }, { deadline: deadline.exceeded });
             const expertInputs = expertResults.flatMap((r) => r.findings);
             if (expertInputs.length) registry = buildRegistry([...feedFromReports(registryRaw, journeyReport), ...expertInputs], { money });
             const nAdj = applyVerifications(registry, expertResults.flatMap((r) => r.verifications));
@@ -451,7 +458,9 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       } catch (e) { log(`⚠️ Executive Diagnostic не собрался (${String(e).slice(0, 120)}) — остальные материалы не затронуты`); }
 
       // Слой синтеза — взаимосвязи всех линз в один вывод (нужен ключ).
-      if (hasKey()) {
+      if (hasKey() && deadline.exceeded()) {
+        log('⚠️ синтез и КП пропущены: превышен лимит времени прогона (AUDIT_MAX_MINUTES)');
+      } else if (hasKey()) {
         log('· синтез всех линз…');
         const synth = await narrateSynthesis(ds, { uxui, proto, bench, maturity: mat, scope, causal, money, engine, coverage: cov });
         if (synth) {

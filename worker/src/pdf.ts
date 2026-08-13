@@ -7,6 +7,9 @@
  */
 import { writeFile } from 'node:fs/promises';
 import { chromium, type Browser } from 'playwright';
+import { withTimeout } from './util/timeout.js';
+
+const PDF_TIMEOUT_MS = Number(process.env.PDF_TIMEOUT_MS) || 60000;
 
 let pdfBrowser: Browser | null = null;
 
@@ -30,14 +33,18 @@ export async function closePdfBrowser(): Promise<void> {
 /** Рендер HTML в PDF. Третий аргумент оставлен для совместимости и игнорируется —
  *  рендер всегда идёт в собственном headless-браузере. */
 export async function renderPdf(html: string, outPath: string, _crawlBrowser?: Browser): Promise<void> {
-  const b = await getPdfBrowser();
-  const ctx = await b.newContext();
-  try {
-    const page = await ctx.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle', timeout: 30000 });
-    const buf = await page.pdf({ format: 'A4', printBackground: true, preferCSSPageSize: true });
-    await writeFile(outPath, buf);
-  } finally {
-    await ctx.close().catch(() => {});
-  }
+  // Весь рендер під жорстким таймаутом: завислий page.pdf()/newContext (зависла
+  // headless-вкладка) інакше блокує прогін. Крок-виклик уже в try/catch → пропуск.
+  await withTimeout((async () => {
+    const b = await getPdfBrowser();
+    const ctx = await b.newContext();
+    try {
+      const page = await ctx.newPage();
+      await page.setContent(html, { waitUntil: 'networkidle', timeout: 30000 });
+      const buf = await page.pdf({ format: 'A4', printBackground: true, preferCSSPageSize: true });
+      await writeFile(outPath, buf);
+    } finally {
+      await ctx.close().catch(() => {});
+    }
+  })(), PDF_TIMEOUT_MS, `PDF ${outPath.split('/').pop()}`);
 }

@@ -5,6 +5,7 @@
  */
 import Anthropic from '@anthropic-ai/sdk';
 import { maybeCompress } from './headroom.js';
+import { withTimeout } from './util/timeout.js';
 
 export const MODEL = process.env.AUDIT_MODEL || 'claude-opus-5';
 
@@ -23,15 +24,6 @@ function get(): Anthropic {
 }
 
 export const hasKey = () => Boolean(process.env.ANTHROPIC_API_KEY);
-
-/** Жорсткий таймаут поверх будь-якого проміса — щоб зависла мережа не блокувала
- *  прогін навіть якщо SDK-таймаут не спрацював. Кидає помилку, яку ловить крок. */
-function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    const t = setTimeout(() => reject(new Error(`Таймаут ${Math.round(ms / 1000)}с: ${label}`)), ms);
-    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
-  });
-}
 
 /** Низкоуровневый вызов для агентного цикла (tool-use). params — как в API. */
 export async function createMessage(params: any): Promise<any> {
