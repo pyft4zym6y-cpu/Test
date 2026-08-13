@@ -1,13 +1,16 @@
+import { lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
-import { Scene3D } from '@/components/Scene3D';
 import './hero.css';
+
+// three.js важкий (~465KB) — вантажимо його лише тут, на головній, після монтування.
+const Scene3D = lazy(() => import('@/components/Scene3D').then((m) => ({ default: m.Scene3D })));
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
 export function Hero() {
   return (
     <header className="hero" data-say="Система замість героїзму. Ми — операційний партнер, а не консультант збоку.">
-      <Scene3D />
+      <Suspense fallback={null}><Scene3D /></Suspense>
       <div className="wrap hero-mid">
         <motion.div className="eyebrow" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1, duration: 0.6 }}>
           WEEXP · операційний партнер e-commerce
