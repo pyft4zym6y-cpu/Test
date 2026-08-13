@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { SYSTEMS } from '@/data/xray';
+import { SYSTEMS, SHORT } from '@/data/xray';
 import './anatomy.css';
 
 /**
@@ -66,12 +66,15 @@ export function DepartmentAnatomy() {
     <section ref={sec} className="anat" aria-label="Анатомія відділу e-commerce">
       <div className="anat-stage">
         <div className="anat-scene">
+          <span className="anat-glow" aria-hidden="true" />
           <div ref={stack} className="anat-stack">
             {SYSTEMS.map((sys, i) => (
               <div key={sys.key} ref={(el) => { slabs.current[i] = el; }} className="anat-slab">
+                <span className="anat-slab-edge" aria-hidden="true" />
+                <span className="anat-slab-sheen" aria-hidden="true" />
                 <span className="anat-slab-num mono">{sys.num}</span>
-                <span className="anat-slab-title">{sys.title}</span>
                 <span className="anat-slab-face" />
+                <span className="anat-slab-tag"><b>{sys.num}</b> {SHORT[sys.key]}</span>
               </div>
             ))}
           </div>
