@@ -102,33 +102,33 @@ export const CONSULT_CSS = `
   .final .nx{border-top:1px solid var(--line);margin-top:8px;padding-top:8px;font-size:10px;color:#333;}
 `;
 
-/** «Контекст, цель и методология» — паспорт документа, читается за 20 секунд. */
+/** «Контекст, ціль і методологія» — паспорт документа, читається за 20 секунд. */
 export function methodologySection(o: { goal: string; sources: string[]; scope: string; limits: string; standards?: string[] }): string {
-  const std = o.standards ?? ['Принципы аудита ISO 19011: вывод только из доказательства', 'MECE: разделы не пересекаются и покрывают предмет целиком', 'Пирамида Минто: управленческий вывод впереди, доказательства ниже', 'Честные данные: предположение не выдаётся за факт, заблокированное не скрывается'];
-  return `<section class="block"><h2>Контекст, цель и методология</h2>
+  const std = o.standards ?? ['Принципи аудиту ISO 19011: висновок лише з доказу', 'MECE: розділи не перетинаються й покривають предмет цілком', 'Піраміда Мінто: керівний висновок попереду, докази нижче', 'Чесні дані: припущення не видається за факт, заблоковане не приховується'];
+  return `<section class="block"><h2>Контекст, ціль і методологія</h2>
     <div class="meth">
-      <div class="mi"><b>Цель документа</b><div>${esc(o.goal)}</div></div>
-      <div class="mi"><b>Охват</b><div>${esc(o.scope)}</div></div>
-      <div class="mi"><b>Источники данных</b><div><ul>${o.sources.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div></div>
-      <div class="mi"><b>Стандарты методологии</b><div><ul>${std.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div></div>
-      <div class="mi" style="grid-column:1/-1"><b>Границы применимости</b><div>${esc(o.limits)}</div></div>
+      <div class="mi"><b>Ціль документа</b><div>${esc(o.goal)}</div></div>
+      <div class="mi"><b>Охоплення</b><div>${esc(o.scope)}</div></div>
+      <div class="mi"><b>Джерела даних</b><div><ul>${o.sources.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div></div>
+      <div class="mi"><b>Стандарти методології</b><div><ul>${std.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div></div>
+      <div class="mi" style="grid-column:1/-1"><b>Межі застосовності</b><div>${esc(o.limits)}</div></div>
     </div></section>`;
 }
 
-/** «Сильные стороны / Зоны риска» — оценка, а не список задач. */
+/** «Сильні сторони / Зони ризику» — оцінка, а не список задач. */
 export function swSection(strengths: string[], weaknesses: string[]): string {
   const li = (xs: string[], empty: string) => (xs.length ? xs.map((x) => `<li>${esc(x)}</li>`).join('') : `<li>${esc(empty)}</li>`);
-  return `<section class="block"><h2>Сильные стороны и зоны риска</h2>
+  return `<section class="block"><h2>Сильні сторони та зони ризику</h2>
     <div class="sw">
-      <div class="col plus"><h3 class="ok">Сильные стороны</h3><ul>${li(strengths, 'Явных сильных сторон на этом слое не зафиксировано — см. зоны риска.')}</ul></div>
-      <div class="col minus"><h3 class="gap">Зоны риска</h3><ul>${li(weaknesses, 'Критичных зон риска на этом слое не выявлено.')}</ul></div>
+      <div class="col plus"><h3 class="ok">Сильні сторони</h3><ul>${li(strengths, 'Явних сильних сторін на цьому шарі не зафіксовано — див. зони ризику.')}</ul></div>
+      <div class="col minus"><h3 class="gap">Зони ризику</h3><ul>${li(weaknesses, 'Критичних зон ризику на цьому шарі не виявлено.')}</ul></div>
     </div></section>`;
 }
 
 export type SectionRec = { pr: 'P0' | 'P1' | 'P2'; action: string; effect: string };
 
-/** Приоритизированные рекомендации: P0 — сейчас, P1 — квартал, P2 — стратегия. */
-export function recsSection(recs: SectionRec[], lead = 'Рекомендации следуют из зафиксированных разрывов; приоритет — по близости к деньгам и стоимости внедрения.'): string {
+/** Пріоритизовані рекомендації: P0 — зараз, P1 — квартал, P2 — стратегія. */
+export function recsSection(recs: SectionRec[], lead = 'Рекомендації випливають із зафіксованих розривів; пріоритет — за близькістю до грошей і вартістю впровадження.'): string {
   if (!recs.length) return '';
   const order: Record<string, number> = { P0: 0, P1: 1, P2: 2 };
   const rows = [...recs].sort((a, b) => order[a.pr] - order[b.pr]).map((r) => `<tr>
@@ -136,15 +136,15 @@ export function recsSection(recs: SectionRec[], lead = 'Рекомендации
     <td class="rc-act">${esc(r.action)}</td>
     <td class="rc-eff">${esc(r.effect)}</td>
   </tr>`).join('');
-  return `<section class="block"><h2>Рекомендации</h2><p class="lead">${esc(lead)}</p>
-    <table><thead><tr><th>Приоритет</th><th>Действие</th><th>Ожидаемый эффект</th></tr></thead><tbody>${rows}</tbody></table></section>`;
+  return `<section class="block"><h2>Рекомендації</h2><p class="lead">${esc(lead)}</p>
+    <table><thead><tr><th>Пріоритет</th><th>Дія</th><th>Очікуваний ефект</th></tr></thead><tbody>${rows}</tbody></table></section>`;
 }
 
-/** «Итоговый вывод» — законченная мысль документа + связка со следующим шагом. */
-export function conclusionSection(paragraphs: string[], next?: string, title = 'Итоговый вывод'): string {
+/** «Підсумковий висновок» — закінчена думка документа + зв'язка з наступним кроком. */
+export function conclusionSection(paragraphs: string[], next?: string, title = 'Підсумковий висновок'): string {
   return `<section class="block"><h2>${esc(title)}</h2>
     <div class="final">${paragraphs.map((p) => `<p>${esc(p)}</p>`).join('')}
-    ${next ? `<div class="nx"><b>Следующий шаг:</b> ${esc(next)}</div>` : ''}</div></section>`;
+    ${next ? `<div class="nx"><b>Наступний крок:</b> ${esc(next)}</div>` : ''}</div></section>`;
 }
 
 /**
