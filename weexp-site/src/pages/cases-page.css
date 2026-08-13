@@ -1,0 +1,27 @@
+.caselist { padding: 0 0 clamp(60px, 10vh, 120px); display: grid; }
+.caselist-row {
+  display: grid; grid-template-columns: 200px 130px 1fr auto; gap: 28px; align-items: center;
+  padding: 30px 0; border-top: 1px solid var(--hair); text-decoration: none; color: inherit;
+  transition: background .25s, padding-left .25s;
+}
+.caselist-row:last-child { border-bottom: 1px solid var(--hair); }
+.caselist-row:hover { background: color-mix(in srgb, var(--verd-900) 22%, transparent); padding-left: 16px; }
+.caselist-cat { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--steel-600); }
+.caselist-hero {
+  font-family: var(--display); font-weight: 800; font-size: clamp(30px, 5vw, 52px);
+  line-height: .85; letter-spacing: -.04em; color: var(--mark-600); font-variant-numeric: tabular-nums;
+}
+.caselist-body { display: grid; gap: 6px; min-width: 0; }
+.caselist-name { font-family: var(--display); font-weight: 700; font-size: clamp(18px, 2.4vw, 26px); color: var(--paper); }
+.caselist-lead { font-size: 14px; line-height: 1.45; color: var(--vel); max-width: 62ch; }
+.caselist-go { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--steel-600); white-space: nowrap; }
+.caselist-row:hover .caselist-go { color: var(--mark-600); }
+
+@media (max-width: 820px) {
+  .caselist-row { grid-template-columns: 1fr auto; grid-template-areas: 'cat cat' 'hero go' 'body body'; gap: 12px; padding: 24px 0; }
+  .caselist-cat { grid-area: cat; }
+  .caselist-hero { grid-area: hero; }
+  .caselist-go { grid-area: go; align-self: center; }
+  .caselist-body { grid-area: body; }
+  .caselist-row:hover { padding-left: 0; }
+}

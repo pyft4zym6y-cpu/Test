@@ -1,38 +1,52 @@
 import { useEffect, useState } from 'react';
-import { goTo } from '@/lib/scroll';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import './nav.css';
 
 const LINKS = [
-  { id: 'system', label: 'Система' },
-  { id: 'cases', label: 'Кейси' },
-  { id: 'calc', label: 'Розрив' },
-  { id: 'contact', label: 'Контакт' },
+  { to: '/os', label: 'Commerce OS' },
+  { to: '/services', label: 'Співпраця' },
+  { to: '/cases', label: 'Кейси' },
+  { to: '/about', label: 'Агенція' },
+  { to: '/diagnostics', label: 'Діагностика' },
 ];
 
 export function Nav() {
   const [solid, setSolid] = useState(false);
   const [open, setOpen] = useState(false);
+  const { pathname } = useLocation();
+
   useEffect(() => {
-    const onScroll = () => setSolid(window.scrollY > window.innerHeight * 0.6);
-    onScroll(); addEventListener('scroll', onScroll, { passive: true });
+    const onScroll = () => setSolid(window.scrollY > window.innerHeight * 0.5);
+    onScroll();
+    addEventListener('scroll', onScroll, { passive: true });
     return () => removeEventListener('scroll', onScroll);
   }, []);
-  const nav = (id: string) => { setOpen(false); goTo(id); };
+
+  // закрыть drawer при смене маршрута
+  useEffect(() => { setOpen(false); }, [pathname]);
+
+  const cls = ({ isActive }: { isActive: boolean }) => (isActive ? 'is-here' : undefined);
+
   return (
     <nav className={`nav${solid ? ' is-solid' : ''}${open ? ' is-open' : ''}`}>
       <div className="wrap nav-inner">
-        <button className="nav-logo" type="button" onClick={() => goTo('top')}>WEEXP</button>
+        <Link className="nav-logo" to="/" aria-label="WEEXP — головна">WEEXP</Link>
         <div className="nav-links mono">
-          {LINKS.map((l) => <button key={l.id} type="button" onClick={() => nav(l.id)}>{l.label}</button>)}
+          {LINKS.map((l) => (
+            <NavLink key={l.to} to={l.to} className={cls}>{l.label}</NavLink>
+          ))}
         </div>
-        <button className="nav-cta mono" type="button" onClick={() => nav('contact')}>Діагноз →</button>
-        <button className={`nav-burger${open ? ' is-x' : ''}`} type="button" aria-label="Меню" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+        <Link className="nav-cta mono" to="/contact">Діагноз →</Link>
+        <button className={`nav-burger${open ? ' is-x' : ''}`} type="button" aria-label="Меню"
+          aria-expanded={open} onClick={() => setOpen((o) => !o)}>
           <span /><span />
         </button>
       </div>
       <div className="nav-drawer">
-        {LINKS.map((l) => <button key={l.id} type="button" className="mono" onClick={() => nav(l.id)}>{l.label}</button>)}
-        <button type="button" className="nav-drawer-cta mono" onClick={() => nav('contact')}>Поставити діагноз →</button>
+        {LINKS.map((l) => (
+          <NavLink key={l.to} to={l.to} className={`mono ${cls({ isActive: pathname === l.to }) || ''}`}>{l.label}</NavLink>
+        ))}
+        <Link to="/contact" className="nav-drawer-cta mono">Поставити діагноз →</Link>
       </div>
     </nav>
   );
