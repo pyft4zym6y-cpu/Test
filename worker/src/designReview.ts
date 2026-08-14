@@ -29,6 +29,20 @@ export type DesignReview = {
 
 const AXES = ['Візуальна ієрархія', 'Типографіка', 'Колір і контраст', 'Сітка й ритм', 'Робота із зображеннями', 'Консистентність'];
 
+/** Бренд-система одним рядком: палітра, гарнітури, радіус — для вердикту й промпта. */
+export function brandLine(s?: StackFingerprint | null): string {
+  const b = s?.brand;
+  if (!b) return '';
+  const bits: string[] = [];
+  if (b.palette.length) bits.push(`палітра ${b.palette.join(' ')}`);
+  if (b.headingFont) bits.push(`заголовки «${b.headingFont}»`);
+  if (b.bodyFont && b.bodyFont !== b.headingFont) bits.push(`текст «${b.bodyFont}»`);
+  if (b.fontFamilies) bits.push(`гарнітур у сэмплі: ${b.fontFamilies}`);
+  if (b.buttonRadius !== null) bits.push(`радіус кнопок ${b.buttonRadius}px`);
+  bits.push(b.logo ? 'логотип є' : 'логотип не розпізнано');
+  return bits.join(' · ');
+}
+
 /** Одна лінія «на чём собрано» з відбитка стека — для шапки вердикту. */
 export function stackLine(s?: StackFingerprint | null): string {
   if (!s) return 'Стек не розпізнано з розмітки.';
@@ -47,6 +61,13 @@ function deterministic(client: string, site: SiteCrawl): DesignReview {
   const home = site.pages.find((p) => p.kind === 'home' && !p.error) ?? site.pages.find((p) => !p.error);
   const ux = home?.ux;
   const tells: string[] = [...(s?.signals ?? [])];
+  const b = s?.brand;
+  if (b) {
+    if (b.fontFamilies > 3) tells.push(`${b.fontFamilies} різних гарнітур на екрані — немає типографічної системи (розфокус)`);
+    if (b.buttonRadius !== null && b.buttonRadius >= 20) tells.push(`сильно скруглені кнопки (${b.buttonRadius}px) — датований «шаблонний» стиль`);
+    if (b.palette.length > 5) tells.push(`строката палітра (${b.palette.length}+ кольорів) — немає дисципліни бренду`);
+    if (!b.logo) tells.push('логотип не розпізнано в шапці — слабка ідентичність бренду');
+  }
   if (ux) {
     if (ux.distinctButtonColors > 4) tells.push(`${ux.distinctButtonColors} кольорів кнопок у першому екрані — немає дисципліни акценту (ознака зборки «як лягло з теми»)`);
     if (ux.headingLevels <= 2) tells.push('пласка типографічна ієрархія (≤2 рівні заголовків) — усе одного «ваги»');
@@ -101,7 +122,7 @@ export async function reviewDesign(site: SiteCrawl, log?: (m: string) => void): 
   try {
     const content: any[] = [{
       type: 'text',
-      text: `Клієнт: ${client}. Стек із розмітки: ${stackLine(site.stack)}.${site.stack?.signals?.length ? ` Технічні улики: ${site.stack.signals.join('; ')}.` : ''}\n\nНижче — скріншоти перших екранів (${shots.length}). Подивись на них як дизайн-директор і збери JSON. perPage — по одному обʼєкту на кожен наданий скріншот у тому ж порядку.`,
+      text: `Клієнт: ${client}. Стек із розмітки: ${stackLine(site.stack)}.${brandLine(site.stack) ? ` Бренд-система (знято з CSS): ${brandLine(site.stack)}.` : ''}${site.stack?.signals?.length ? ` Технічні улики: ${site.stack.signals.join('; ')}.` : ''}\n\nНижче — скріншоти перших екранів (${shots.length}). Подивись на них як дизайн-директор і збери JSON. Врахуй бренд-систему (палітра/гарнітури/радіуси) у висновку про «дорого чи дешево». perPage — по одному обʼєкту на кожен наданий скріншот у тому ж порядку.`,
     }];
     for (const p of shots) {
       content.push({ type: 'text', text: `\n[${p.title || p.kind}] ${p.finalUrl || p.url}` });

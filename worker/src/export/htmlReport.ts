@@ -193,9 +193,19 @@ function designSection(r: SiteAuditReport): string {
   }).join('');
   const tells = (d.templateTells ?? []).map((x) => `<li>${esc(x)}</li>`).join('');
   const refs = (d.references ?? []).map((x) => `<li>${esc(x)}</li>`).join('');
+  // Бренд-система (openbrand-класс): реальные свотчи палитры + гарнитуры.
+  const b = r.stack?.brand;
+  const brandStrip = b && (b.palette.length || b.headingFont) ? `<div class="brand-strip">
+    <span class="bs-label">Бренд-система вітрини:</span>
+    ${b.palette.map((c) => `<span class="sw" style="background:${esc(c)}" title="${esc(c)}"></span>`).join('')}
+    ${b.headingFont ? `<span class="bs-font">Aa <i>${esc(b.headingFont)}</i>${b.bodyFont && b.bodyFont !== b.headingFont ? ` / ${esc(b.bodyFont)}` : ''}</span>` : ''}
+    ${b.fontFamilies > 3 ? `<span class="bs-warn">${b.fontFamilies} гарнітур</span>` : ''}
+    ${!b.logo ? '<span class="bs-warn">лого не знайдено</span>' : ''}
+  </div>` : '';
   return `<section class="block">
     <h2>Дизайн-вердикт: дорого чи дешево</h2>
     <p class="lead">Оцінка ${d.source === 'зір' ? 'зі зором (дизайн-директор подивився на перші екрани)' : 'детермінована (без зору — з відбитка стека й замірів обходу)'}. Стек: ${esc(d.stackLine)}.</p>
+    ${brandStrip}
     <div class="dz-head">
       <div class="dz-score ${scoreCls}"><b>${d.overallScore}</b><span>/10</span></div>
       <div class="dz-verdict"><div class="dz-tier">${esc(d.tier)}</div><p>${esc(d.verdict)}</p></div>
@@ -348,6 +358,12 @@ const EXTRA_CSS = `
   .dz-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;margin-top:6px;}
   .dz-grid h3{font-size:10px;text-transform:uppercase;letter-spacing:.4px;margin:0 0 4px;} .dz-grid h3.gap{color:var(--gap);}
   .dz-list{margin:0;padding-left:16px;} .dz-list li{margin:4px 0;font-size:10px;line-height:1.4;color:#333;}
+  /* бренд-стрип: свотчи палитры + гарнитуры */
+  .brand-strip{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:2px 0 10px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--soft);}
+  .bs-label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
+  .sw{width:20px;height:20px;border-radius:4px;border:1px solid rgba(0,0,0,.12);display:inline-block;}
+  .bs-font{font-size:11px;color:#222;} .bs-font i{font-style:normal;color:var(--muted);}
+  .bs-warn{font-size:8.5px;font-weight:700;color:var(--weak);border:1px solid var(--weak);border-radius:10px;padding:1px 6px;}
 `;
 
 export function renderAuditHtml(r: SiteAuditReport): string {

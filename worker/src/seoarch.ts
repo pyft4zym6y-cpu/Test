@@ -21,6 +21,7 @@ export type SeoArchReport = {
   onpage: OnPageRow[];
   recommended: string[];
   verdict: string;
+  linkHealth?: import('./crawl.js').LinkHealth; // SF-класс: свип статусов ссылок
 };
 
 /** Постраничный on-page срез с фактическими значениями (длина title/description,
@@ -133,5 +134,5 @@ export function buildSeoArch(ds: AuditDataset): SeoArchReport {
     : issues.length ? 'Каркас дерева читабельний, але є вузли з SEO-прогалинами й структурними ризиками.'
     : 'Структура дерева загалом здорова за зовнішніми ознаками.';
 
-  return { client, takenAt: ds.takenAt, totals: { links: links.length, l1: groups.size, paramUrls, maxDepth, crawled: ds.client.pages.filter((p) => !p.error).length }, indexability: { robots: ds.client.robotsTxt, sitemap: ds.client.sitemapXml }, tree, issues, onpage, recommended, verdict };
+  return { client, takenAt: ds.takenAt, totals: { links: links.length, l1: groups.size, paramUrls, maxDepth, crawled: ds.client.pages.filter((p) => !p.error).length }, indexability: { robots: ds.client.robotsTxt, sitemap: ds.client.sitemapXml }, tree, issues, onpage, recommended, verdict, linkHealth: ds.client.linkHealth };
 }

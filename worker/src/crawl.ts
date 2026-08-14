@@ -46,12 +46,28 @@ export type UxProbe = {
 export type Annotation = { label: string; x: number; y: number; w: number; h: number; tone: 'good' | 'warn' };
 
 /**
+ * Бренд-система витрины (как делает openbrand): реальная палитра, гарнитуры,
+ * логотип, радиусы. Кормит дизайн-вердикт: когерентен ли бренд, «дорого» ли
+ * читается палитра/типографика, или это дефолт темы.
+ */
+export type BrandProbe = {
+  palette: string[];        // доминирующие цвета (hex): фон/шапка/акцент/текст
+  accent: string | null;    // основной акцент (кнопка/ссылка)
+  headingFont: string | null;
+  bodyFont: string | null;
+  fontFamilies: number;     // сколько разных гарнитур в сэмпле (>3 — расфокус)
+  logo: boolean;
+  buttonRadius: number | null; // border-radius кнопок (стиль/датированность)
+};
+
+/**
  * Отпечаток стека: на чём реально собран сайт. Отвечает на вопрос, который живой
  * дизайнер задаёт за 10 секунд — это шаблонный WordPress на купленной теме и
  * билдере, или собственное решение. Снимается с HTML/скриптов/классов главной.
  */
 export type StackFingerprint = {
   cms: string | null;             // WordPress / WooCommerce / Shopify / OpenCart …
+  brand?: BrandProbe;             // бренд-система витрины (палитра/шрифты/лого) — как openbrand
   cmsVersion: string | null;      // «6.2» из generator/?ver
   theme: string | null;          // слаг темы (wp-content/themes/<slug>)
   themeVersion: string | null;
@@ -99,7 +115,18 @@ export type SiteCrawl = {
   ai?: { llmsTxt: boolean; blockedBots: string[] }; // GEO/AEO: llms.txt и доступ AI-краулеров
   secHeaders?: { csp: boolean; hsts: boolean; xfo: boolean }; // заголовки безопасности главной
   stack?: StackFingerprint; // отпечаток стека (на чём собран сайт) — с главной
+  linkHealth?: LinkHealth;  // сайт-вайд свип статусов ссылок (SF-класс)
   error?: string;
+};
+
+/** Технический свип уровня Screaming Frog: здоровье ссылок по дереву сайта. */
+export type LinkHealth = {
+  sampledFrom: number;                        // сколько внутренних URL в дереве всего
+  checked: number;                            // сколько реально проверено (сэмпл)
+  broken: { url: string; status: number }[];  // 4xx/5xx — битые
+  redirects: number;                          // 3xx — цепочки редиректов
+  dupTitles: { title: string; count: number }[]; // дубли title среди разобранных страниц
+  missingMeta: number;                        // страниц без title или description
 };
 
 const UA =
@@ -470,8 +497,37 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
   else if (theme) sig.push(`тема «${theme}» — типова готова тема, не кастомна дизайн-система`);
   if (builder && /Elementor|WPBakery|Divi|Avada/.test(builder)) sig.push(`верстка на візуальному білдері ${builder} — «шаблонна» збірка: надлишковий DOM і CSS, вантаж на швидкість, блоки-костилі замість дизайн-системи`);
   if (plugins.length >= 10) sig.push(`плагінів у стеку: ${plugins.length} — кожен розширює вагу й поверхню атаки`);
+  // ── Бренд-фингерпринт (как openbrand): палитра, гарнитуры, лого, радиусы ──
+  const brand: BrandProbe = (() => {
+    const norm = (c: string): string | null => {
+      const m = c.match(/rgba?\(([^)]+)\)/i);
+      if (!m) return null;
+      const [r, g, b, a] = m[1].split(',').map((x) => parseFloat(x));
+      if (a !== undefined && a < 0.1) return null; // прозрачное не считаем
+      const hex = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0');
+      return `#${hex(r)}${hex(g)}${hex(b)}`.toLowerCase();
+    };
+    const famOf = (el: Element | null) => { try { return el ? (getComputedStyle(el).fontFamily || '').split(',')[0].replace(/["']/g, '').trim() : null; } catch { return null; } };
+    const bodyFont = famOf(document.body);
+    const headingFont = famOf($('h1') ?? $('h2'));
+    const fams = new Set<string>();
+    ($$('h1, h2, h3, p, a, button, span').slice(0, 60)).forEach((el) => { const f = famOf(el); if (f) fams.add(f.toLowerCase()); });
+    const btnEl = btns.filter(inFold).sort((a, b) => { try { const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect(); return rb.width * rb.height - ra.width * ra.height; } catch { return 0; } })[0] ?? $('button, .btn, [class*="button" i]');
+    let accent: string | null = null, buttonRadius: number | null = null;
+    try { if (btnEl) { const cs = getComputedStyle(btnEl); accent = norm(cs.backgroundColor); buttonRadius = parseFloat(cs.borderRadius) || 0; } } catch { /* noop */ }
+    if (!accent) { try { const a = $('a'); if (a) accent = norm(getComputedStyle(a).color); } catch { /* noop */ } }
+    const pal = new Set<string>();
+    const pushColor = (el: Element | null, prop: 'backgroundColor' | 'color') => { try { if (el) { const c = norm(getComputedStyle(el)[prop]); if (c && c !== '#ffffff' && c !== '#000000') pal.add(c); } } catch { /* noop */ } };
+    pushColor(document.body, 'backgroundColor'); pushColor($('header, [class*="header" i]'), 'backgroundColor');
+    pushColor($('footer'), 'backgroundColor'); if (accent) pal.add(accent);
+    ($$('[class*="btn" i], button, [class*="badge" i]').slice(0, 12)).forEach((el) => pushColor(el, 'backgroundColor'));
+    const logo = Boolean($('[class*="logo" i] img, img[class*="logo" i], img[alt*="logo" i], header img, [class*="header" i] img, a[href="/"] img, a[href$="//"] img'));
+    return { palette: Array.from(pal).slice(0, 8), accent, headingFont, bodyFont, fontFamilies: fams.size, logo, buttonRadius };
+  })();
+
   const stack: StackFingerprint = {
     cms: /woocommerce|wc-|wc_/.test(low) ? 'WooCommerce' : (/wp-content|wp-includes/.test(low) ? 'WordPress' : null),
+    brand,
     cmsVersion, theme, themeVersion, builder, plugins, commercialTemplate, templateName, signals: sig,
   };
 
@@ -843,6 +899,44 @@ export async function crawlSite(
     out.discoveredLinks = out.links.length;
     out.tech.signals = Array.from(techSet);
     if (!out.tech.platform) out.tech.platform = out.tech.signals.find((t) => !ANALYTICS.test(t)) ?? null;
+
+    // ── Технический свип (SF-класс): здоровье ссылок по дереву сайта ──
+    // Ограниченный по стоимости: сэмпл до 120 внутренних URL, HEAD-проверка статусов
+    // пулом по 12. Даёт битые ссылки (4xx/5xx) и цепочки редиректов по всему сайту,
+    // а не только по разобранным страницам. Плюс дубли title среди разобранных.
+    if (kind === 'client' && out.links.length) {
+      try {
+        const all = out.links.filter((u) => { try { return new URL(u).origin === origin; } catch { return false; } });
+        // равномерный сэмпл по дереву (шаг), чтобы покрыть разные разделы, а не первые N
+        const CAP = 120;
+        const step = Math.max(1, Math.floor(all.length / CAP));
+        const sample = all.filter((_, i) => i % step === 0).slice(0, CAP);
+        const broken: { url: string; status: number }[] = [];
+        let redirects = 0;
+        const one = async (u: string) => {
+          try {
+            const r = await ctx.request.get(applyAccess(u, access), { timeout: 8000, maxRedirects: 0 }).catch(() => null);
+            if (!r) return;
+            const st = r.status();
+            if (st >= 300 && st < 400) redirects++;
+            else if (st >= 400) broken.push({ url: stripAccess(u, access), status: st });
+          } catch { /* noop */ }
+        };
+        for (let i = 0; i < sample.length; i += 12) await Promise.all(sample.slice(i, i + 12).map(one));
+        // Дубли title и пустые meta среди разобранных страниц.
+        const titleMap = new Map<string, number>();
+        let missingMeta = 0;
+        for (const p of out.pages) {
+          if (p.error) continue;
+          const t = (p.title || '').trim();
+          if (!t) { missingMeta++; continue; }
+          titleMap.set(t, (titleMap.get(t) ?? 0) + 1);
+          if (!p.checks.find((c) => c.id === 'desc')?.pass) missingMeta++;
+        }
+        const dupTitles = Array.from(titleMap.entries()).filter(([, n]) => n > 1).map(([title, count]) => ({ title, count })).sort((a, b) => b.count - a.count).slice(0, 8);
+        out.linkHealth = { sampledFrom: all.length, checked: sample.length, broken: broken.slice(0, 30), redirects, dupTitles, missingMeta };
+      } catch { /* свип best-effort */ }
+    }
 
     // Карта уникальных типов страниц: разобрана / найдена / не найдена.
     if (kind === 'client') {

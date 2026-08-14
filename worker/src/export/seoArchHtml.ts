@@ -79,6 +79,20 @@ export function renderSeoArchHtml(r: SeoArchReport): string {
     <p class="lead">Як має виглядати архітектура, щоб не плодити дублі й роздавати вагу правильно.</p>
     <ul>${r.recommended.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>`;
 
+  // Технічний свип (SF-класу): здоров'я посилань по всьому дереву.
+  const lh = r.linkHealth;
+  const sweep = lh ? `<section class="block"><h2>Технічний свип: здоров'я посилань по сайту</h2>
+    <p class="lead">Статуси перевірено рівномірною вибіркою ${lh.checked} із ${lh.sampledFrom} внутрішніх URL дерева (не лише розібрані сторінки). Так знаходяться биті посилання й ланцюги редиректів по всьому магазину.</p>
+    <div class="sweep-row">
+      <div class="sw-tile ${lh.broken.length ? 'gap' : 'ok'}"><b>${lh.broken.length}</b><span>биті (4xx/5xx)</span></div>
+      <div class="sw-tile ${lh.redirects > 5 ? 'check' : ''}"><b>${lh.redirects}</b><span>редиректи (3xx)</span></div>
+      <div class="sw-tile ${lh.dupTitles.length ? 'check' : ''}"><b>${lh.dupTitles.reduce((s, d) => s + d.count, 0)}</b><span>сторінок з дубль-Title</span></div>
+      <div class="sw-tile ${lh.missingMeta ? 'check' : ''}"><b>${lh.missingMeta}</b><span>без Title/Description</span></div>
+    </div>
+    ${lh.broken.length ? `<h3 class="gap">Биті посилання (перші ${Math.min(lh.broken.length, 12)})</h3><table><thead><tr><th>URL</th><th>Статус</th></tr></thead><tbody>${lh.broken.slice(0, 12).map((b) => `<tr><td class="op-url"><span>${esc(b.url.replace(/^https?:\/\//, ''))}</span></td><td class="gap"><b>${b.status}</b></td></tr>`).join('')}</tbody></table>` : `<p class="lead">Битих посилань у вибірці не знайдено — базова гігієна дерева в нормі.</p>`}
+    ${lh.dupTitles.length ? `<h3>Дублі Title (тиражуються шаблоном)</h3><table><thead><tr><th>Title</th><th>Сторінок</th></tr></thead><tbody>${lh.dupTitles.map((d) => `<tr><td>${esc(d.title)}</td><td class="check"><b>${d.count}</b></td></tr>`).join('')}</tbody></table>` : ''}
+  </section>` : '';
+
   // ── Консалтинговый каркас ──
   const meth = methodologySection({
     goal: 'Оцінити, чи допомагає архітектура сайту збирати пошуковий попит — чи розпорошує вагу по дублях і порожніх гілках.',
@@ -120,6 +134,12 @@ export function renderSeoArchHtml(r: SeoArchReport): string {
     .op-c{font-size:8.5px;font-weight:700;white-space:nowrap;} .op-c i{font-style:normal;font-weight:400;color:var(--muted);display:block;font-size:7.5px;}
     .op-c.ok{color:var(--ok);} .op-c.gap{color:var(--gap);} .op-c.na{color:var(--muted);}
     .st{font-size:11px;} .st.ok{color:var(--ok);} .st.check{color:var(--check);} .st.gap{color:var(--gap);}
-    .i-node{white-space:nowrap;} .i-lvl{display:inline-block;margin-left:5px;font-size:7.5px;color:var(--muted);} .i-act{color:#333;}`;
-  return doc(`SEO-архітектура · ${r.client}`, coverHtml + meth + tree + onpage + issues + rec + swSection(strengths, weaknesses) + recsSection(recsList) + concl + foot, extra);
+    .i-node{white-space:nowrap;} .i-lvl{display:inline-block;margin-left:5px;font-size:7.5px;color:var(--muted);} .i-act{color:#333;}
+    .sweep-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:8px 0;}
+    .sw-tile{border:1px solid var(--line);border-top-width:3px;border-radius:6px;padding:8px 10px;text-align:center;}
+    .sw-tile b{display:block;font-size:24px;font-weight:800;line-height:1;} .sw-tile span{font-size:8.5px;color:var(--muted);}
+    .sw-tile.ok{border-top-color:var(--ok);} .sw-tile.ok b{color:var(--ok);}
+    .sw-tile.check{border-top-color:var(--check);} .sw-tile.check b{color:var(--check);}
+    .sw-tile.gap{border-top-color:var(--gap);} .sw-tile.gap b{color:var(--gap);}`;
+  return doc(`SEO-архітектура · ${r.client}`, coverHtml + meth + tree + onpage + sweep + issues + rec + swSection(strengths, weaknesses) + recsSection(recsList) + concl + foot, extra);
 }
