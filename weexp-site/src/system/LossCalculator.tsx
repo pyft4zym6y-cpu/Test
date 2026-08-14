@@ -5,23 +5,27 @@ import './system.css';
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
 
-/** Loss Calculator — окремий конверсійний продукт у світлому напрямі. Заповнюючи
- *  профіль і симптоми, користувач спостерігає, як його бізнес складається в
- *  Commerce System; на результаті вузол-bottleneck пульсує червоним. Не аудит. */
+/**
+ * Калькулятор витрат — перший крок воронки діагностики (крок 1 з 2). Дає ЧИСЛО:
+ * скільки грошей витікає з вітрини щороку (оцінка за даними + бенчмарками). Далі
+ * природно веде до кроку 2 — повної діагностики, що перетворює число на КАРТУ:
+ * де саме, чому і як повернути. Заповнюючи профіль, користувач бачить, як його
+ * бізнес складається в Commerce System; на результаті вузол-bottleneck пульсує.
+ */
 const FIELDS: { k: keyof Omit<LossInput, 'symptoms'>; label: string; unit: string; hint?: string }[] = [
-  { k: 'monthlyRevenue', label: 'Online revenue', unit: '€ / month' },
-  { k: 'aov', label: 'Average order value', unit: '€' },
-  { k: 'conversion', label: 'Conversion rate', unit: '%' },
-  { k: 'repeatRate', label: 'Repeat-purchase rate', unit: '%' },
-  { k: 'returnsRate', label: 'Returns + cancellations', unit: '%' },
-  { k: 'grossMargin', label: 'Gross margin', unit: '%' },
-  { k: 'cac', label: 'Customer acquisition cost', unit: '€', hint: 'optional' },
+  { k: 'monthlyRevenue', label: 'Онлайн-виторг', unit: '€ / міс' },
+  { k: 'aov', label: 'Середній чек', unit: '€' },
+  { k: 'conversion', label: 'Конверсія', unit: '%' },
+  { k: 'repeatRate', label: 'Частка повторних', unit: '%' },
+  { k: 'returnsRate', label: 'Повернення + скасування', unit: '%' },
+  { k: 'grossMargin', label: 'Валова маржа', unit: '%' },
+  { k: 'cac', label: 'Вартість залучення (CAC)', unit: '€', hint: 'необовʼязково' },
 ];
 const PAIN: Record<SysKey, string> = {
-  strategy: 'We don’t know where to grow', commercial: 'Revenue is there, profit isn’t',
-  customer: 'Customers are expensive / don’t return', experience: 'People visit but don’t buy',
-  operations: 'Too much manual work', data: 'Different numbers in different systems',
-  org: 'Everything depends on the owner',
+  strategy: 'Не розуміємо, куди рости', commercial: 'Виторг є, а прибутку — ні',
+  customer: 'Клієнт дорогий і не повертається', experience: 'Люди заходять, але не купують',
+  operations: 'Забагато ручної роботи', data: 'У кожного свої цифри',
+  org: 'Усе тримається на власнику',
 };
 const HW = (s: number) => (s >= 65 ? 'ok' : s >= 40 ? 'warn' : 'bad');
 
@@ -46,9 +50,10 @@ export function LossCalculator() {
       <div className="sysx-calc-panel">
         {step !== 3 && (
           <header className="sysx-calc-head">
-            <div className="sysx-kick">Loss Calculator · 5-minute diagnostic</div>
-            <h1 className="sysx-display sysx-calc-h1">Find the money<br />you’re <span className="sysx-em">losing</span></h1>
-            <div className="sysx-steps mono"><span className={step === 1 ? 'on' : ''}>01 Profile</span><i>→</i><span className={step === 2 ? 'on' : ''}>02 Symptoms</span><i>→</i><span>03 Your leak</span></div>
+            <div className="sysx-kick">Крок 1 з 2 · Калькулятор витрат · 5 хвилин</div>
+            <h1 className="sysx-display sysx-calc-h1">Порахуйте, скільки<br />ви <span className="sysx-em">втрачаєте</span></h1>
+            <p className="sysx-lead">Спершу — число: скільки грошей витікає з вітрини щороку. Потім, у повній діагностиці, перетворимо його на карту: де саме й як повернути.</p>
+            <div className="sysx-steps mono"><span className={step === 1 ? 'on' : ''}>01 Профіль</span><i>→</i><span className={step === 2 ? 'on' : ''}>02 Симптоми</span><i>→</i><span>03 Ваш витік</span></div>
           </header>
         )}
 
@@ -66,35 +71,35 @@ export function LossCalculator() {
               ))}
             </div>
             <div className="sysx-calc-actions">
-              <button className="sysx-cta is-primary" onClick={() => setStep(2)} disabled={!inp.monthlyRevenue}>Next → symptoms</button>
-              <span className="sysx-note mono">Estimate based on the information provided. Not a financial audit.</span>
+              <button className="sysx-cta is-primary" onClick={() => setStep(2)} disabled={!inp.monthlyRevenue}>Далі → симптоми</button>
+              <span className="sysx-note mono">Оцінка за наданими даними. Не фінансовий аудит.</span>
             </div>
           </div>
         )}
 
         {step === 2 && (
           <div className="sysx-card">
-            <p className="sysx-lead">Where does it feel wrong? Pick everything that resonates — each one reshapes your system.</p>
+            <p className="sysx-lead">Де відчуваєте проблему? Позначте все, що відгукується — кожен симптом перебудовує вашу систему.</p>
             <div className="sysx-sym">
               {SYS.map((s) => (
                 <button key={s.key} className={`sysx-sym-b${inp.symptoms.includes(s.key) ? ' on' : ''}`} onClick={() => toggle(s.key)}>
-                  <b>{s.label}</b><span>“{PAIN[s.key]}”</span>
+                  <b>{s.label}</b><span>«{PAIN[s.key]}»</span>
                 </button>
               ))}
             </div>
             <div className="sysx-calc-actions">
-              <button className="sysx-cta" onClick={() => setStep(1)}>← Back</button>
-              <button className="sysx-cta is-primary" onClick={compute}>See your leak →</button>
+              <button className="sysx-cta" onClick={() => setStep(1)}>← Назад</button>
+              <button className="sysx-cta is-primary" onClick={compute}>Показати витік →</button>
             </div>
           </div>
         )}
 
         {step === 3 && res && (
           <div className="sysx-result">
-            <div className="sysx-kick">Your e-commerce leak</div>
+            <div className="sysx-kick">Ваш витік в e-commerce · оцінка</div>
             <div className="sysx-total">
-              <span className="sysx-total-big sysx-display">{eur(res.total)}<span>/ year</span></span>
-              <span className="sysx-total-cap mono">estimated opportunity · range {eur(res.range[0])}–{eur(res.range[1])}</span>
+              <span className="sysx-total-big sysx-display">{eur(res.total)}<span>/ рік</span></span>
+              <span className="sysx-total-cap mono">оцінена можливість · діапазон {eur(res.range[0])}–{eur(res.range[1])}</span>
             </div>
 
             <div className="sysx-leaks">
@@ -111,9 +116,9 @@ export function LossCalculator() {
             </div>
 
             <div className="sysx-bottleneck">
-              <span className="sysx-kick">Primary bottleneck</span>
+              <span className="sysx-kick">Головний bottleneck</span>
               <b className="sysx-display">{primaryLabel(res.primary)}</b>
-              <span className="mono">secondary — {primaryLabel(res.secondary)}</span>
+              <span className="mono">вторинний — {primaryLabel(res.secondary)}</span>
             </div>
 
             <div className="sysx-health">
@@ -121,7 +126,7 @@ export function LossCalculator() {
               <div className="sysx-health-grid">
                 {res.health.map((h) => (
                   <div key={h.key} className="sysx-hbar">
-                    <span className="sysx-hbar-l mono">{h.label.split(' & ')[0].split(' ')[0]}</span>
+                    <span className="sysx-hbar-l mono">{h.label.split(' ')[0]}</span>
                     <span className={`sysx-hbar-t ${HW(h.score)}`}><i style={{ width: `${h.score}%` }} /></span>
                     <span className="sysx-hbar-v mono">{h.score}</span>
                   </div>
@@ -130,15 +135,28 @@ export function LossCalculator() {
             </div>
 
             <div className="sysx-actions">
-              <span className="sysx-kick">Top 3 actions</span>
+              <span className="sysx-kick">Три перші дії</span>
               <ol>{res.actions.map((a) => <li key={a.key}>{a.text}</li>)}</ol>
             </div>
 
-            <div className="sysx-calc-actions">
-              <Link to="/diagnose" className="sysx-cta is-primary">Get the full diagnosis →</Link>
-              <button className="sysx-cta" onClick={restart}>Recalculate</button>
+            {/* Крок 2 — місток до повної діагностики: число → карта → план */}
+            <div className="sysx-next2">
+              <span className="sysx-kick">Крок 2 з 2 · Повна діагностика</span>
+              <p className="sysx-next2-lead">Це <b>оцінка за 5 хвилин</b>. Повна діагностика підтвердить цифру вашими даними (CRM/ERP/GA4) і покаже, <b>де саме</b> витікає виторг і <b>як його повернути</b> — план під Definition of Done.</p>
+              <div className="sysx-next2-ladder mono">
+                <span><b>Зараз</b><i>Число: скільки втрачаєте</i></span>
+                <em>→</em>
+                <span><b>Крок 2</b><i>Карта: де саме й чому</i></span>
+                <em>→</em>
+                <span><b>Побудова</b><i>План повернення виторгу</i></span>
+              </div>
             </div>
-            <span className="sysx-note mono">Estimate based on the information provided. Not a financial audit. Full diagnosis confirms the numbers with your data.</span>
+
+            <div className="sysx-calc-actions">
+              <Link to="/diagnose" className="sysx-cta is-primary">Крок 2 — повна діагностика →</Link>
+              <button className="sysx-cta" onClick={restart}>Перерахувати</button>
+            </div>
+            <span className="sysx-note mono">Оцінка за наданими даними. Не фінансовий аудит. Повна діагностика підтверджує цифри вашими даними.</span>
           </div>
         )}
       </div>

@@ -484,6 +484,16 @@
 .sysx-actions ol { margin: 8px 0 0; padding-left: 18px; display: grid; gap: 6px; }
 .sysx-actions li { font-size: 13px; color: var(--charcoal); line-height: 1.5; }
 
+/* Крок 2 — місток до повної діагностики */
+.sysx-next2 { display: grid; gap: 12px; border: 1px solid var(--silver); border-radius: 16px; padding: clamp(16px, 2.4vw, 24px); background: color-mix(in srgb, var(--pure-white) 70%, transparent); box-shadow: inset 3px 0 0 var(--data); }
+.sysx-next2-lead { font-size: 13.5px; line-height: 1.55; color: var(--charcoal); }
+.sysx-next2-lead b { color: var(--deep); }
+.sysx-next2-ladder { display: flex; align-items: stretch; gap: 8px; flex-wrap: wrap; }
+.sysx-next2-ladder > span { flex: 1 1 120px; display: grid; gap: 3px; padding: 10px 12px; border-radius: 10px; background: var(--pure-white); border: 1px solid var(--line); }
+.sysx-next2-ladder b { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--deep); }
+.sysx-next2-ladder i { font-style: normal; font-size: 11.5px; color: var(--charcoal); }
+.sysx-next2-ladder em { align-self: center; color: var(--silver); font-style: normal; }
+
 @media (max-width: 900px) {
   .sysx-calc { grid-template-columns: 1fr; }
   .sysx-calc-bg { position: fixed; inset: 0; height: 100vh; opacity: .5; }

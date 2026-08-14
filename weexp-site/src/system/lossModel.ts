@@ -7,13 +7,13 @@
 export type SysKey = 'strategy' | 'commercial' | 'customer' | 'experience' | 'operations' | 'data' | 'org';
 
 export const SYS: { key: SysKey; label: string; node: number }[] = [
-  { key: 'strategy', label: 'Strategy & Management', node: 0 },
-  { key: 'commercial', label: 'Commercial Performance', node: 1 },
-  { key: 'customer', label: 'Demand & Customer', node: 2 },
-  { key: 'experience', label: 'Experience & Conversion', node: 3 },
-  { key: 'operations', label: 'Operations & Fulfillment', node: 4 },
-  { key: 'data', label: 'Data & Technology', node: 5 },
-  { key: 'org', label: 'Organization', node: 6 },
+  { key: 'strategy', label: 'Стратегія та управління', node: 0 },
+  { key: 'commercial', label: 'Комерційна ефективність', node: 1 },
+  { key: 'customer', label: 'Попит і клієнт', node: 2 },
+  { key: 'experience', label: 'Досвід і конверсія', node: 3 },
+  { key: 'operations', label: 'Операції та fulfillment', node: 4 },
+  { key: 'data', label: 'Дані та технології', node: 5 },
+  { key: 'org', label: 'Організація', node: 6 },
 ];
 
 export type LossInput = {
@@ -84,11 +84,11 @@ export function computeLoss(inp: LossInput): LossResult {
   );
 
   const rawAll: Leak[] = [
-    { key: 'commercial', label: 'Commercial leak', amount: Math.round(commercial) },
-    { key: 'customer', label: 'Marketing leak', amount: Math.round(marketing) },
-    { key: 'operations', label: 'Operational leak', amount: Math.round(operational) },
-    { key: 'customer', label: 'Retention leak', amount: Math.round(retention) },
-    { key: 'experience', label: 'Conversion leak', amount: Math.round(experience) },
+    { key: 'commercial', label: 'Витік у комерції', amount: Math.round(commercial) },
+    { key: 'customer', label: 'Витік у залученні', amount: Math.round(marketing) },
+    { key: 'operations', label: 'Витік в операціях', amount: Math.round(operational) },
+    { key: 'customer', label: 'Витік в утриманні', amount: Math.round(retention) },
+    { key: 'experience', label: 'Витік на конверсії', amount: Math.round(experience) },
   ];
   const raw: Leak[] = rawAll.filter((l) => l.amount > 0).sort((a, b) => b.amount - a.amount);
 
