@@ -125,6 +125,7 @@ export type SiteAuditReport = {
   soft404: boolean | null;
   stack?: StackFingerprint;  // на чём собран сайт (шаблон/CMS/билдер) — вердикт платформы
   design?: DesignReview;     // дизайн-ревью со зрением (senior design director)
+  perf?: import('./crawl.js').PagePerf; // B3: швидкість/CWV головної (лабораторно)
 };
 
 const MAX_BY_WEIGHT: Record<Weight, number> = { core: 4, important: 3, nice: 2 };
@@ -406,7 +407,7 @@ export function buildSiteAudit(ds: AuditDataset, opts: { journey?: JourneyLink[]
     warning = 'Картка товару (PDP) не потрапила у вибірку обходу — головний конвертувальний тип сторінки не розібрано. Бал відповідності стосується лише розібраних типів; висновок по вітрині — із застереженням до розбору PDP.';
     verdict = `За розібраними типами — ${totalPct}%, але PDP не розібрано: висновок про вітрину неповний (пробіл покриття, а не «все добре»).`;
   }
-  return { client, takenAt: ds.takenAt, tier: ds.tier, pages, tree, totalScore, totalMax, totalPct, systemic: systemicDefects(ds), verdict, warning, pageTypes: ds.client.pageTypes ?? [], soft404: ds.client.soft404 ?? null, stack: ds.client.stack };
+  return { client, takenAt: ds.takenAt, tier: ds.tier, pages, tree, totalScore, totalMax, totalPct, systemic: systemicDefects(ds), verdict, warning, pageTypes: ds.client.pageTypes ?? [], soft404: ds.client.soft404 ?? null, stack: ds.client.stack, perf: ds.client.perf };
 }
 
 export { KIND_LABEL };

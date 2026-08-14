@@ -78,6 +78,17 @@ export type StackFingerprint = {
   signals: string[];             // человекочитаемые «улики»: шаблонность, билдер, устаревшесть
 };
 
+/** B3 — швидкість / Core Web Vitals, зняті лабораторно з уже відкритої сторінки. */
+export type PagePerf = {
+  ttfb: number;          // час до першого байта, ms
+  domReady: number;      // DOMContentLoaded, ms
+  lcp: number | null;    // Largest Contentful Paint, ms
+  cls: number | null;    // Cumulative Layout Shift
+  reqCount: number;      // кількість запитів
+  weightKb: number;      // сумарна вага, KB
+  jsKb: number; imgKb: number; cssKb: number; // розкладка ваги
+};
+
 export type PageAudit = {
   url: string;
   finalUrl: string;
@@ -88,6 +99,7 @@ export type PageAudit = {
   score: number | null; // % пройденных проверок против голд-стандарта
   ux?: UxProbe;         // дизайн-замеры для UX/UI-разбора
   stack?: StackFingerprint; // отпечаток стека (на чём собран сайт) — снимается с главной
+  perf?: PagePerf;      // B3: швидкість / CWV (лабораторно)
   screenshot?: string;  // первый экран страницы (base64 jpeg) — для документов; не пишется в dataset.json
   error?: string;
 };
@@ -116,6 +128,7 @@ export type SiteCrawl = {
   secHeaders?: { csp: boolean; hsts: boolean; xfo: boolean }; // заголовки безопасности главной
   stack?: StackFingerprint; // отпечаток стека (на чём собран сайт) — с главной
   linkHealth?: LinkHealth;  // сайт-вайд свип статусов ссылок (SF-класс)
+  perf?: PagePerf;          // B3: швидкість/CWV головної (лабораторно)
   error?: string;
 };
 
@@ -556,6 +569,36 @@ function classify(url: string, sig: Record<string, boolean>, isRoot: boolean): P
   return 'content';
 }
 
+/**
+ * B3 — знімає швидкість/CWV з уже відкритої (і промальованої) сторінки: Navigation
+ * і Resource Timing + LCP/CLS, зібрані PerformanceObserver-ом (див. addInitScript у
+ * hardenedContext). Виконується В КОНТЕКСТІ СТОРІНКИ через page.evaluate. Лабораторний
+ * замір одного заходу — орієнтир, не польові дані CrUX.
+ */
+function capturePerf(): PagePerf {
+  const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+  const res = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
+  const cwv = (window as unknown as { __cwv?: { lcp?: number; cls?: number } }).__cwv || {};
+  let js = 0, img = 0, css = 0, tot = 0;
+  for (const r of res) {
+    const b = r.encodedBodySize || r.transferSize || 0;
+    tot += b;
+    const n = r.name.toLowerCase();
+    if (r.initiatorType === 'script' || /\.js(\?|$)/.test(n)) js += b;
+    else if (r.initiatorType === 'css' || /\.css(\?|$)/.test(n)) css += b;
+    else if (r.initiatorType === 'img' || /\.(png|jpe?g|webp|gif|svg|avif)(\?|$)/.test(n)) img += b;
+  }
+  const kb = (x: number) => Math.round(x / 1024);
+  return {
+    ttfb: nav ? Math.round(nav.responseStart) : 0,
+    domReady: nav ? Math.round(nav.domContentLoadedEventEnd) : 0,
+    lcp: cwv.lcp ? Math.round(cwv.lcp) : null,
+    cls: typeof cwv.cls === 'number' ? Math.round(cwv.cls * 1000) / 1000 : null,
+    reqCount: res.length,
+    weightKb: kb(tot), jsKb: kb(js), imgKb: kb(img), cssKb: kb(css),
+  };
+}
+
 async function auditPage(page: Page, url: string, isRoot: boolean, access?: SiteAccess): Promise<{ audit: PageAudit; tech: string[]; links: string[]; headers?: Record<string, string> }> {
   let status: number | null = null;
   let headers: Record<string, string> = {};
@@ -590,6 +633,7 @@ async function auditPage(page: Page, url: string, isRoot: boolean, access?: Site
     return { audit: { url: cleanUrl, finalUrl, kind: 'other', status, title, checks: [], score: null, error: 'бот-защита: challenge-страница (Cloudflare/CAPTCHA) — нужен headful/stealth или доступ' }, tech: [], links: [] };
   }
   const { checks, kindSignals, tech, ux, stack } = await page.evaluate(inPageChecks);
+  const perf = await page.evaluate(capturePerf).catch(() => undefined); // B3: швидкість/CWV
   const links = await page
     .evaluate(() => Array.from(document.querySelectorAll('a[href]')).map((a) => (a as HTMLAnchorElement).href).slice(0, 400))
     .catch(() => [] as string[]);
@@ -602,7 +646,7 @@ async function auditPage(page: Page, url: string, isRoot: boolean, access?: Site
     const buf = await page.screenshot({ type: 'jpeg', quality: 55, clip: { x: 0, y: 0, width: 1366, height: 900 } }).catch(() => null);
     if (buf) screenshot = buf.toString('base64');
   }
-  return { audit: { url: cleanUrl, finalUrl, kind, status, title, checks, score, ux, stack, screenshot }, tech, links, headers };
+  return { audit: { url: cleanUrl, finalUrl, kind, status, title, checks, score, ux, stack, perf, screenshot }, tech, links, headers };
 }
 
 /** Определение CMS/платформы по заголовкам ответа и cookies (надёжнее HTML). */
@@ -651,6 +695,24 @@ async function hardenedContext(browser: Browser, access?: SiteAccess) {
     Object.defineProperty(navigator, 'webdriver', { get: () => false });
     Object.defineProperty(navigator, 'languages', { get: () => ['uk-UA', 'uk', 'ru', 'en'] });
     Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3] });
+  });
+  // B3: збираємо LCP і CLS з першого кадру навігації (буфер), щоб потім зчитати їх у capturePerf.
+  await ctx.addInitScript(() => {
+    const w = window as unknown as { __cwv: { lcp: number; cls: number } };
+    w.__cwv = { lcp: 0, cls: 0 };
+    try {
+      new PerformanceObserver((l) => {
+        const es = l.getEntries(); const last = es[es.length - 1] as PerformanceEntry & { renderTime?: number; startTime: number };
+        if (last) w.__cwv.lcp = last.renderTime || last.startTime || w.__cwv.lcp;
+      }).observe({ type: 'largest-contentful-paint', buffered: true });
+    } catch { /* not supported */ }
+    try {
+      new PerformanceObserver((l) => {
+        for (const e of l.getEntries() as (PerformanceEntry & { hadRecentInput?: boolean; value?: number })[]) {
+          if (!e.hadRecentInput) w.__cwv.cls += e.value || 0;
+        }
+      }).observe({ type: 'layout-shift', buffered: true });
+    } catch { /* not supported */ }
   });
   return ctx;
 }
@@ -800,6 +862,7 @@ export async function crawlSite(
     out.reachable = !home.audit.error && (home.audit.status === null || (home.audit.status >= 200 && home.audit.status < 400));
     out.finalUrl = home.audit.finalUrl;
     out.stack = home.audit.stack;
+    out.perf = home.audit.perf; // B3: швидкість/CWV головної
     out.pages.push(home.audit);
     if (home.audit.error && !out.pages.some((p) => !p.error)) out.error = home.audit.error;
     out.discoveredLinks = home.links.length;

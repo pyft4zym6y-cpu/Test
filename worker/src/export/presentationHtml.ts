@@ -102,6 +102,38 @@ function techSeoSection(seo: SeoArchReport | null | undefined, content: ContentR
 }
 const tile = (big: string, cap: string, cls: string) => `<div class="tile ${cls}"><b>${esc(big)}</b><span>${esc(cap)}</span></div>`;
 
+/** B3 — швидкість / Core Web Vitals головної. Лабораторний замір → вердикт у грошах. */
+function perfSection(r: SiteAuditReport): string {
+  const p = r.perf;
+  if (!p) return '';
+  const s = (ms: number) => (ms >= 1000 ? `${(ms / 1000).toFixed(1)} с` : `${ms} мс`);
+  // Пороги Google (лабораторний орієнтир): LCP 2.5/4 с · CLS 0.1/0.25 · TTFB 0.8 с.
+  const lcpCls = p.lcp == null ? '' : p.lcp <= 2500 ? 'ok' : p.lcp <= 4000 ? 'check' : 'gap';
+  const clsCls = p.cls == null ? '' : p.cls <= 0.1 ? 'ok' : p.cls <= 0.25 ? 'check' : 'gap';
+  const ttfbCls = p.ttfb <= 800 ? 'ok' : p.ttfb <= 1800 ? 'check' : 'gap';
+  const wKb = p.weightKb;
+  const weightCls = wKb <= 1500 ? 'ok' : wKb <= 3000 ? 'check' : 'gap';
+  const weight = wKb >= 1024 ? `${(wKb / 1024).toFixed(1)} МБ` : `${wKb} КБ`;
+  const tiles = [
+    tile(p.lcp == null ? '—' : s(p.lcp), 'LCP (перший екран)', lcpCls),
+    tile(p.cls == null ? '—' : p.cls.toFixed(2), 'CLS (стрибок верстки)', clsCls),
+    tile(s(p.ttfb), 'TTFB (відповідь сервера)', ttfbCls),
+    tile(weight, `вага · ${p.reqCount} запитів`, weightCls),
+    tile(`${p.jsKb} КБ`, 'JavaScript', p.jsKb > 800 ? 'check' : ''),
+    tile(`${p.imgKb} КБ`, 'зображення', p.imgKb > 1500 ? 'check' : ''),
+  ].join('');
+  const slow = (p.lcp != null && p.lcp > 4000) || wKb > 3000 || p.ttfb > 1800;
+  const verdict = slow
+    ? `Сторінка важить ${weight} і малюється повільно — з мобільного інтернету частина покупців іде ще до першого екрана. Кожна зайва секунда LCP на мобільному коштує конверсії (типово −3…−7% замовлень).`
+    : `Швидкість у робочих межах, але не еталон: до топ-1% сегмента доходять ті, у кого перший екран < 2,5 с і нульовий стрибок верстки.`;
+  return `<section class="block">
+    ${chapter('Швидкість — скільки коштує чекання', 'Core Web Vitals головної, лабораторно')}
+    <p class="verdict ${slow ? 'warn' : ''}">${verdict}</p>
+    <div class="tiles">${tiles}</div>
+    <p class="lead">Замір одного заходу без кешу (лабораторний, не польові дані CrUX): LCP — коли домальовується головний елемент; CLS — наскільки «плаває» верстка; TTFB — відповідь сервера; вага і кількість запитів — навантаження на мобільний канал. Пороги Google: LCP ≤ 2,5 с, CLS ≤ 0,1, TTFB ≤ 0,8 с.</p>
+  </section>`;
+}
+
 /** Целевое состояние по ресёрчу (блок Б). null — честная пометка, а не пустота. */
 function targetStateSection(rs: TargetStateResearch | null | undefined): string {
   if (!rs) return `<section class="block">
@@ -238,6 +270,7 @@ export function renderPresentation(r: SiteAuditReport, x: PresentationExtras = {
     + (x.journey ? journeySection(x.journey) : '')
     + treeBody
     + techSeoSection(x.seo, x.content)
+    + perfSection(r)
     + (x.mech ? mechanicsSection(x.mech) : '')
     + targetStateSection(x.research)
     + centralBranch(r, x)
