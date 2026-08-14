@@ -543,8 +543,11 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
           ...siteAudit.pages.flatMap((p) => p.rows.filter((b) => b.state === 'gap' && b.weight !== 'nice').map((b) => `${p.title}: ${b.name}`)).slice(0, 6),
           ...siteAudit.pageTypes.filter((t) => t.mandatory && t.status === 'не найдена').map((t) => `немає сторінки ${t.label}`).slice(0, 3),
         ];
+        // Ресёрч целевого состояния — конструктивная секция «як має бути». НЕ гейтим
+        // дедлайном (у web-поиска свой таймаут); иначе на tier-2 он вечно срезался
+        // последним. Если не соберётся — презентация покажет честную пометку.
         let research = null;
-        if (hasKey() && !deadline.exceeded()) {
+        if (hasKey()) {
           log('· ресёрч целевого состояния (тренды/конкуренты ниши)…');
           research = await researchTargetState(siteAudit.client, gaps, siteAudit.stack?.cms ?? null, log).catch(() => null);
         }

@@ -102,8 +102,12 @@ function techSeoSection(seo: SeoArchReport | null | undefined, content: ContentR
 }
 const tile = (big: string, cap: string, cls: string) => `<div class="tile ${cls}"><b>${esc(big)}</b><span>${esc(cap)}</span></div>`;
 
-/** Целевое состояние по ресёрчу (блок Б). */
-function targetStateSection(rs: TargetStateResearch): string {
+/** Целевое состояние по ресёрчу (блок Б). null — честная пометка, а не пустота. */
+function targetStateSection(rs: TargetStateResearch | null | undefined): string {
+  if (!rs) return `<section class="block">
+    ${chapter('Яким має бути — за ринком і трендами', 'Ресёрч цільового стану')}
+    <p class="lead">Ресёрч цільового стану (тренди й приклади сильних вітрин ніші через web-пошук) цього прогону не зібрано — web-пошук недоступний або перевищено час. Орієнтир «як треба» — еталонна композиція у розборі сторінок вище.</p>
+  </section>`;
   return `<section class="block">
     ${chapter('Яким має бути — за ринком і трендами', 'Ресёрч цільового стану')}
     <p class="verdict">Я подивився, як зроблені сильні вітрини вашої ніші й куди йде ecommerce. Ось приймі, які вам потрібні.</p>
@@ -187,6 +191,9 @@ function painsAndTeam(r: SiteAuditReport, x: PresentationExtras): string {
 }
 
 export function renderPresentation(r: SiteAuditReport, x: PresentationExtras = {}): string {
+  // Тип сайта: если не видно магазинных страниц — честно предупреждаем, что эталон
+  // e-commerce, и часть блоков (кошик/картка) может быть неприменима.
+  const isShop = r.pages.some((p) => ['plp', 'pdp', 'cart', 'checkout'].includes(p.kind)) || r.pageTypes.some((t) => ['plp', 'pdp', 'cart'].includes(t.id) && t.status !== 'не найдена');
   const commercial = KIND_ORDER.map((k) => r.pages.find((p) => p.kind === k)).filter((p): p is PageReport => Boolean(p));
   const secondary = r.pages.filter((p) => !KIND_ORDER.includes(p.kind));
   const missingMand = r.pageTypes.filter((t) => t.mandatory && t.status === 'не найдена');
@@ -215,7 +222,7 @@ export function renderPresentation(r: SiteAuditReport, x: PresentationExtras = {
     verdict: r.design?.verdict || r.verdict,
     metrics: [{ label: 'Клієнт', value: r.client }, ...(r.stack?.cms ? [{ label: 'Платформа', value: r.stack.cms + (r.stack.templateName ? ` · ${r.stack.templateName}` : '') }] : []), ...(x.maturity ? [{ label: 'Зрілість', value: `${x.maturity.level}/5` }] : [])],
     score: { pct: r.totalPct, cap: `відповідність еталону · ${r.totalScore}/${r.totalMax}` },
-    note: 'Це презентація розбору вашого сайту й рекомендації — по порядку: сторінки що є (комерційний шлях), яких немає, і що з цим робити. Ведемо до одного рішення.',
+    note: `Це презентація розбору вашого сайту й рекомендації — по порядку: сторінки що є (комерційний шлях), яких немає, і що з цим робити. Ведемо до одного рішення.${isShop ? '' : ' <b class="gap">Увага:</b> сайт не схожий на класичний інтернет-магазин — розбір іде за еталоном e-commerce вітрини, тож окремі блоки (кошик, картка товару, cross-sell) можуть бути незастосовними до вашої бізнес-моделі.'}`,
   });
 
   const intro = `<section class="block">
@@ -232,7 +239,7 @@ export function renderPresentation(r: SiteAuditReport, x: PresentationExtras = {
     + treeBody
     + techSeoSection(x.seo, x.content)
     + (x.mech ? mechanicsSection(x.mech) : '')
-    + (x.research ? targetStateSection(x.research) : '')
+    + targetStateSection(x.research)
     + centralBranch(r, x)
     + (x.geo ? geoSection(x.geo) : '')
     + painsAndTeam(r, x)
