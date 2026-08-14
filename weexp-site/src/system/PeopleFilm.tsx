@@ -16,18 +16,30 @@ const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m)
 const FOUNDER = TEAM[0];
 const ROSTER = TEAM.slice(1);
 
+// 3-й рівень: стандарт, за яким команда працює як система, а не як набір людей.
+// Це і є перехід від «хто володіє» до «як будуємо, щоб працювало без героя».
+const STANDARD: { n: string; t: string; d: string }[] = [
+  { n: '01', t: 'Хвилями під Definition of Done', d: 'Не «як вийде»: кожна хвиля має критерій готовності й вимірюваний результат.' },
+  { n: '02', t: 'RACI і несуперечливі KPI', d: 'У кожного контуру — власник. Цілі відділів не конфліктують між собою.' },
+  { n: '03', t: 'SOP і база знань', d: 'Процеси зафіксовані — система переживає людей і не тримається на пам’яті.' },
+  { n: '04', t: 'Hypothesis-driven + post-mortem', d: 'Рішення за даними; після великих змін — розбір, що спрацювало й чому.' },
+  { n: '05', t: 'Передача клієнту', d: 'Мета — Independence Score: щоб система працювала й зростала без нас.' },
+];
+
 export function PeopleFilm() {
   const sec = useRef<HTMLElement>(null);
   const intro = useRef<HTMLDivElement>(null);
   const founder = useRef<HTMLDivElement>(null);
   const roster = useRef<HTMLDivElement>(null);
+  const standard = useRef<HTMLDivElement>(null);
   const outro = useRef<HTMLDivElement>(null);
 
   useScrollScene(sec, (p, reduce) => {
-    set(intro.current, reduce ? 1 : seg(p, -1, 0, 0.09, 0.15), `translateY(${((1 - band(p, 0, 0.09)) * -3).toFixed(1)}vh)`);
-    set(founder.current, reduce ? 1 : seg(p, 0.17, 0.24, 0.40, 0.47), `translateY(${((1 - seg(p, 0.17, 0.26, 0.40, 0.47)) * 2).toFixed(1)}vh)`);
-    set(roster.current, reduce ? 1 : seg(p, 0.49, 0.56, 0.80, 0.87));
-    set(outro.current, reduce ? 1 : seg(p, 0.88, 0.94, 1.1, 1.2));
+    set(intro.current, reduce ? 1 : seg(p, -1, 0, 0.08, 0.13), `translateY(${((1 - band(p, 0, 0.08)) * -3).toFixed(1)}vh)`);
+    set(founder.current, reduce ? 1 : seg(p, 0.15, 0.21, 0.33, 0.39), `translateY(${((1 - seg(p, 0.15, 0.23, 0.33, 0.39)) * 2).toFixed(1)}vh)`);
+    set(roster.current, reduce ? 1 : seg(p, 0.41, 0.47, 0.58, 0.63));
+    set(standard.current, reduce ? 1 : seg(p, 0.65, 0.71, 0.82, 0.87));
+    set(outro.current, reduce ? 1 : seg(p, 0.89, 0.94, 1.1, 1.2));
   });
 
   return (
@@ -70,6 +82,24 @@ export function PeopleFilm() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* STANDARD — 3-й рівень: як команда працює як система */}
+        <div ref={standard} className="pf-standard" style={{ opacity: 0 }}>
+          <div className="pf-standard-head">
+            <span className="sysx-kick">Стандарт · 3-й рівень</span>
+            <h2 className="sysx-display pf-standard-h">Команда працює<br />як <span className="sysx-em">система</span>.</h2>
+            <p className="pf-standard-lead">Власники — це рівень «хто». Ось рівень «як»: правила, за якими сім систем тримаються разом і працюють без героя.</p>
+          </div>
+          <ol className="pf-std-grid">
+            {STANDARD.map((s) => (
+              <li key={s.n} className="pf-std">
+                <span className="pf-std-n mono">{s.n}</span>
+                <b className="pf-std-t">{s.t}</b>
+                <span className="pf-std-d">{s.d}</span>
+              </li>
+            ))}
+          </ol>
         </div>
 
         {/* OUTRO — CTA */}
