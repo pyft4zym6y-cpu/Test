@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { SYS } from './lossModel';
 import { BLOCKS, SECTIONS, scoreStage3, type Stage3Answers } from './stage3Model';
 import { levelFor } from './stage2Model';
+import { RadarChart, SystemBars } from './charts';
 import { CONFIGURED, authenticate, currentUser, isCloudUser, loadDiag, saveDiag, signOut, type DiagUser, type DiagRecord } from '@/lib/supa';
 import './system.css';
 
@@ -13,18 +13,8 @@ import './system.css';
  * числа. На виході — інтерактивний Tier-2 звіт (зрілість, конкурентне поле,
  * маркетинг/фінанси, позиціонування) з експортом у PDF.
  */
-const short = (k: string) => SYS.find((s) => s.key === k)!.label.split(/\s|\//)[0];
-const HW = (s: number) => (s >= 65 ? 'ok' : s >= 40 ? 'warn' : 'bad');
 const MAIL = 'hello@weexp.agency';
 const host = (u: string) => u.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
-
-const radar = (scores: number[], R: number, c: number) => scores.map((v, i) => {
-  const a = -Math.PI / 2 + (i / scores.length) * Math.PI * 2; const r = (v / 100) * R;
-  return [c + Math.cos(a) * r, c + Math.sin(a) * r];
-});
-const ring = (R: number, c: number, n: number) => Array.from({ length: n }, (_, i) => {
-  const a = -Math.PI / 2 + (i / n) * Math.PI * 2; return [c + Math.cos(a) * R, c + Math.sin(a) * R];
-});
 
 export function Stage3({ prior, onClose }: { prior?: DiagRecord; onClose: () => void }) {
   const [user, setUser] = useState<DiagUser | null>(null);
@@ -34,6 +24,7 @@ export function Stage3({ prior, onClose }: { prior?: DiagRecord; onClose: () => 
   const [ans, setAns] = useState<Stage3Answers>({});
   const [idx, setIdx] = useState(0);           // індекс блоку; BLOCKS.length = звіт
   const [saved, setSaved] = useState(false);   // пульс «збережено» після автозбереження
+  const [hover, setHover] = useState<number | null>(null);
   const saveT = useRef<number | undefined>(undefined);
 
   useEffect(() => { currentUser().then((u) => { setUser(u); setChecking(false); }); }, []);
@@ -114,24 +105,12 @@ export function Stage3({ prior, onClose }: { prior?: DiagRecord; onClose: () => 
           <div className="s2-grid">
             <div className="s2-panel s2-radar-wrap">
               <span className="sysx-kick">Профіль зрілості (Tier-2)</span>
-              <svg viewBox="0 0 260 260" className="s2-radar" role="img" aria-label="Радар зрілості">
-                {[0.25, 0.5, 0.75, 1].map((f) => <polygon key={f} className="s2-radar-grid" points={ring(100 * f, 130, 7).map((p) => p.join(',')).join(' ')} />)}
-                {ring(100, 130, 7).map((p, i) => <line key={i} className="s2-radar-axis" x1={130} y1={130} x2={p[0]} y2={p[1]} />)}
-                <polygon className="s2-radar-area" points={radar(res.systems.map((s) => s.score), 100, 130).map((p) => p.join(',')).join(' ')} />
-                {ring(118, 130, 7).map((p, i) => <text key={i} className="s2-radar-lab" x={p[0]} y={p[1]} textAnchor={p[0] < 125 ? 'end' : p[0] > 135 ? 'start' : 'middle'}>{short(res.systems[i].key)}</text>)}
-              </svg>
+              <RadarChart systems={res.systems} hover={hover} onHover={setHover} />
+              <span className="s2-hint mono">Наведіть на систему — підсвітиться скрізь</span>
             </div>
             <div className="s2-panel">
               <span className="sysx-kick">Оцінка по системах</span>
-              <div className="s2-bars">
-                {res.systems.map((h, i) => (
-                  <div key={h.key} className="s2-hbar" style={{ '--i': i } as React.CSSProperties}>
-                    <span className="s2-hbar-l">{short(h.key)}</span>
-                    <span className={`s2-hbar-t ${HW(h.score)}`}><i style={{ width: `${h.score}%` }} /></span>
-                    <span className="s2-hbar-v mono">{h.score}</span>
-                  </div>
-                ))}
-              </div>
+              <SystemBars systems={res.systems} hover={hover} onHover={setHover} />
             </div>
 
             <div className="s2-panel">
