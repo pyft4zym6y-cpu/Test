@@ -1,9 +1,9 @@
 import { lazy, Suspense, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { computeLoss, eur, SYS, type LossInput, type LossResult, type SysKey } from './lossModel';
 import './system.css';
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
+const Stage2 = lazy(() => import('@/system/Stage2').then((m) => ({ default: m.Stage2 })));
 
 /**
  * Калькулятор витрат — перший крок воронки діагностики (крок 1 з 2). Дає ЧИСЛО:
@@ -33,6 +33,7 @@ export function LossCalculator() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [inp, setInp] = useState<LossInput>({ monthlyRevenue: 0, aov: 0, conversion: 0, repeatRate: 0, returnsRate: 0, grossMargin: 0, cac: 0, symptoms: [] });
   const [res, setRes] = useState<LossResult | null>(null);
+  const [stage2, setStage2] = useState(false);
   const alerts = useRef<number[]>([]);
 
   const setNum = (k: keyof Omit<LossInput, 'symptoms'>) => (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -153,13 +154,15 @@ export function LossCalculator() {
             </div>
 
             <div className="sysx-calc-actions">
-              <Link to="/diagnose" className="sysx-cta is-primary">Крок 2 — повна діагностика →</Link>
+              <button className="sysx-cta is-primary" onClick={() => setStage2(true)}>Крок 2 — глибша діагностика →</button>
               <button className="sysx-cta" onClick={restart}>Перерахувати</button>
             </div>
-            <span className="sysx-note mono">Оцінка за наданими даними. Не фінансовий аудит. Повна діагностика підтверджує цифри вашими даними.</span>
+            <span className="sysx-note mono">Оцінка за наданими даними. Не фінансовий аудит. Етап 2 уточнює зріз за логікою Commerce OS.</span>
           </div>
         )}
       </div>
+
+      {stage2 && <Suspense fallback={null}><Stage2 stage1={inp} onClose={() => setStage2(false)} /></Suspense>}
     </section>
   );
 }
