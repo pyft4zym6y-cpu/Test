@@ -194,17 +194,32 @@ const server = createServer(async (req, res) => {
         if (b) { opts.answers = opts.answers || b.answers; bundleName = b.name; }
       }
       const id = randomUUID();
-      // Резервный контур: base64 PDF со скриншотами кладём в файл и в opts храним
-      // ПУТЬ, а не мегабайты — иначе job.json раздувается и persist на каждом логе тормозит.
-      if (typeof opts.backupPdf === 'string' && opts.backupPdf.length > 200) {
-        try {
-          const upDir = join(OUT, '_uploads'); await mkdir(upDir, { recursive: true });
-          const pdfPath = join(upDir, `${id}.pdf`);
-          const b64 = opts.backupPdf.replace(/^data:application\/pdf;base64,/, '');
-          await writeFile(pdfPath, Buffer.from(b64, 'base64'));
-          opts.backupPdf = pdfPath;
-        } catch (e) { delete opts.backupPdf; }
-      }
+      // Резервный контур: файлы-скриншоты (PDF/картинки) кладём на диск, а в opts
+      // храним ПУТИ — иначе job.json раздувается на мегабайты и persist тормозит.
+      const extOf = (mime: string) => /pdf/i.test(mime) ? 'pdf' : /png/i.test(mime) ? 'png' : 'jpg';
+      const b64of = (s: string) => s.replace(/^data:[^;]+;base64,/, '');
+      try {
+        const upDir = join(OUT, '_uploads', id); await mkdir(upDir, { recursive: true });
+        // Новый формат: массив backupFiles [{name,type,data(dataURL)}]
+        if (Array.isArray(opts.backupFiles) && opts.backupFiles.length) {
+          const specs: { path: string; type: string; name?: string }[] = [];
+          for (let i = 0; i < Math.min(opts.backupFiles.length, 50); i++) {
+            const f = opts.backupFiles[i];
+            if (!f || typeof f.data !== 'string' || f.data.length < 100) continue;
+            const type = typeof f.type === 'string' && f.type ? f.type : (/^data:([^;]+)/.exec(f.data)?.[1] ?? 'application/pdf');
+            const p = join(upDir, `p${String(i + 1).padStart(2, '0')}.${extOf(type)}`);
+            await writeFile(p, Buffer.from(b64of(f.data), 'base64'));
+            specs.push({ path: p, type, name: typeof f.name === 'string' ? f.name : `Сторінка ${i + 1}` });
+          }
+          opts.backupFiles = specs;
+        }
+        // Совместимость: одиночный backupPdf (base64) → тоже файл.
+        if (typeof opts.backupPdf === 'string' && opts.backupPdf.length > 200) {
+          const p = join(upDir, 'single.pdf');
+          await writeFile(p, Buffer.from(b64of(opts.backupPdf), 'base64'));
+          opts.backupPdf = p;
+        }
+      } catch (e) { delete opts.backupFiles; delete opts.backupPdf; }
       const client = (() => { try { return opts.prelaunch ? 'предзапуск' : new URL(opts.site).hostname.replace(/^www\./, ''); } catch { return bundleName || opts.site || clientId || '—'; } })();
       const job: Job = { id, client, tier: Number(opts.tier ?? 1), status: 'queued', startedAt: Date.now(), log: [], opts, clientId: clientId || undefined };
       jobs.set(id, job);

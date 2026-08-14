@@ -74,18 +74,26 @@ const asKind = (k: string): PageKind => (KINDS.includes(k as PageKind) ? (k as P
 const asState = (s: string): BlockState => (['ok', 'weak', 'check', 'gap'].includes(s) ? (s as BlockState) : 'check');
 
 export type VisionAuditResult = { report: SiteAuditReport; design: DesignReview | null };
+/** Файл для зрения: сырой base64 (без data:префикса) + MIME (pdf/png/jpeg). */
+export type VisionFile = { data: string; mediaType: string; name?: string };
 
 /**
- * Разбор PDF со скриншотами страниц зрением → UX/UI-отчёт (резервный контур).
- * pdfBase64 — сырой base64 PDF (без data: префикса). client — хост для шапки.
+ * Разбор набора файлов-скриншотов (отдельные PDF/картинки по странице, до 50 штук)
+ * зрением → UX/UI-отчёт (резервный контур). Каждый файл = страница (PDF может нести
+ * несколько). client — хост для шапки.
  */
-export async function auditFromScreenshots(pdfBase64: string, client: string, log?: (m: string) => void): Promise<VisionAuditResult | null> {
+export async function auditFromScreenshots(files: VisionFile[], client: string, log?: (m: string) => void): Promise<VisionAuditResult | null> {
   if (!hasKey()) { log?.('⚠️ резервний контур (скріншоти) недоступний: немає ANTHROPIC_API_KEY'); return null; }
+  if (!files?.length) { log?.('⚠️ резервний контур: файлів не передано'); return null; }
   try {
-    const content: any[] = [
-      { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: pdfBase64 } },
-      { type: 'text', text: `Клієнт: ${client}. Розбери кожну сторінку-скріншот у PDF за інструкцією й поверни JSON. pages — по одному об'єкту на кожну сторінку PDF у тому ж порядку.` },
-    ];
+    const content: any[] = [];
+    files.slice(0, 50).forEach((f, i) => {
+      const label = f.name || `Сторінка ${i + 1}`;
+      content.push({ type: 'text', text: `\n[${i + 1}] ${label}` });
+      if (/pdf/i.test(f.mediaType)) content.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: f.data } });
+      else content.push({ type: 'image', source: { type: 'base64', media_type: /png/i.test(f.mediaType) ? 'image/png' : 'image/jpeg', data: f.data } });
+    });
+    content.push({ type: 'text', text: `Клієнт: ${client}. Вище — ${Math.min(files.length, 50)} файлів-скріншотів (кожен — сторінка сайту; PDF може містити кілька сторінок). Розбери КОЖНУ сторінку за інструкцією й поверни JSON. pages — по одному об'єкту на кожну сторінку у тому ж порядку.` });
     const resp: any = await createMessage({ max_tokens: 8000, system: SYSTEM, messages: [{ role: 'user', content }] });
     const text = (resp.content ?? []).filter((b: any) => b.type === 'text').map((b: any) => b.text).join('');
     const raw = extractJson<VisionRaw>(text);

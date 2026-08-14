@@ -20,7 +20,7 @@ import { exportPrototypeDocx } from './export/prototypeDocx.js';
 import { buildPrototypeReport, narratePrototype, renderPrototypeMd } from './prototype.js';
 import { buildSiteAudit, type SiteAuditReport } from './pagereport.js';
 import { reviewDesign } from './designReview.js';
-import { auditFromScreenshots } from './visionAudit.js';
+import { auditFromScreenshots, type VisionFile } from './visionAudit.js';
 import { renderAuditHtml } from './export/htmlReport.js';
 import { renderExecDiagnostic } from './export/execDiagHtml.js';
 import { buildSeoArch } from './seoarch.js';
@@ -81,7 +81,8 @@ export type AuditOptions = {
   answers?: Record<string, unknown> | null;
   baseline?: { levers: Levers; extra?: { name: string; monthly: number }[] } | null;
   out?: string;
-  backupPdf?: string;           // резервный контур: base64 PDF со скриншотами страниц
+  backupPdf?: string;           // (устар.) один PDF — резервный контур
+  backupFiles?: { path: string; type: string; name?: string }[]; // набор файлов-скриншотов (пути + MIME)
   log?: (m: string) => void;
 };
 
@@ -261,11 +262,17 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         // скриншотами → строим UX/UI разбор ЗРЕНИЕМ по скриншотам вместо DOM.
         const stub = detectStub(ds.client);
         let fromScreens = false;
-        if (opts.backupPdf && (stub || !ds.client.reachable || !ds.client.pages.some((p) => p.score !== null))) {
-          log(`· резервный контур: живой доступ = ${stub ? 'заглушка' : 'недоступен'} → разбор PDF со скриншотами зрением…`);
-          // opts.backupPdf — путь к файлу (из server) или уже base64. Резолвим в base64.
-          const b64 = await readFile(opts.backupPdf, 'base64').catch(() => opts.backupPdf as string);
-          const vr = await auditFromScreenshots(b64, siteAudit.client, log).catch((e) => { log(`⚠️ резервный контур упал (${String(e).slice(0, 80)})`); return null; });
+        const hasBackup = (opts.backupFiles?.length ?? 0) > 0 || Boolean(opts.backupPdf);
+        if (hasBackup && (stub || !ds.client.reachable || !ds.client.pages.some((p) => p.score !== null))) {
+          log(`· резервный контур: живой доступ = ${stub ? 'заглушка' : 'недоступен'} → разбор скриншотов зрением…`);
+          // Резолвим набор файлов (пути → base64 + MIME). Совместимость: один backupPdf.
+          const specs = opts.backupFiles?.length ? opts.backupFiles : (opts.backupPdf ? [{ path: opts.backupPdf, type: 'application/pdf' }] : []);
+          const vfiles = (await Promise.all(specs.slice(0, 50).map(async (f): Promise<VisionFile | null> => {
+            const data = await readFile(f.path, 'base64').catch(() => (f.path.length > 200 ? f.path : ''));
+            return data ? { data, mediaType: f.type || 'application/pdf', name: f.name } : null;
+          }))).filter((x): x is VisionFile => x !== null);
+          log(`· резервный контур: файлов к разбору ${vfiles.length}`);
+          const vr = await auditFromScreenshots(vfiles, siteAudit.client, log).catch((e) => { log(`⚠️ резервный контур упал (${String(e).slice(0, 80)})`); return null; });
           if (vr?.report?.pages.length) { siteAudit = vr.report; fromScreens = true; log(`✓ UX/UI построен по скриншотам: страниц ${vr.report.pages.length}, соответствие ${vr.report.totalPct}%`); }
           else log('⚠️ резервный контур не дал страниц — остаёмся на разборе живого');
         }
