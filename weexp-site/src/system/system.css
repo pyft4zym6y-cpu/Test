@@ -351,7 +351,7 @@
 .dg-opp b { color: var(--deep); }
 
 /* ── THE PEOPLE (people-film, /people) ── */
-.sysx-people { height: 520vh; }
+.sysx-people { height: 660vh; }
 .pf-bg { position: absolute; inset: 0; z-index: 1; opacity: .5; }  /* об'єкт як спокійне тло */
 
 /* FOUNDER — спотлайт */
@@ -388,19 +388,36 @@
 .pf-card-role { font-size: 14px; color: var(--deep); font-weight: 700; line-height: 1.2; }
 .pf-card-focus { font-size: 12px; line-height: 1.45; color: var(--charcoal); }
 
-@media (max-width: 1040px) { .pf-grid { grid-template-columns: repeat(2, 1fr); } }
+/* STANDARD — 3-й рівень */
+.pf-standard { position: absolute; inset: 0; z-index: 3; display: grid; align-content: center;
+  gap: clamp(20px, 3vw, 32px); padding: 0 clamp(24px, 6vw, 90px); pointer-events: none; will-change: opacity; }
+.pf-standard .mono { font-family: var(--mono); }
+.pf-standard-head { display: grid; gap: 10px; justify-items: center; text-align: center; }
+.pf-standard-h { font-size: clamp(30px, 4.6vw, 62px); }
+.pf-standard-lead { font-size: clamp(14px, 1.5vw, 18px); color: var(--charcoal); max-width: 54ch; line-height: 1.55; }
+.pf-std-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.pf-std { display: grid; gap: 8px; align-content: start; padding: 16px; border-radius: 14px;
+  background: color-mix(in srgb, var(--pure-white) 72%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--silver); box-shadow: 0 20px 40px -34px rgba(21, 23, 26, .4); }
+.pf-std-n { font-size: 11px; letter-spacing: .1em; color: var(--data); }
+.pf-std-t { font-size: 13.5px; color: var(--deep); font-weight: 700; line-height: 1.25; }
+.pf-std-d { font-size: 12px; line-height: 1.45; color: var(--charcoal); }
+
+@media (max-width: 1040px) { .pf-grid { grid-template-columns: repeat(2, 1fr); } .pf-std-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 860px) {
   .sysx-people { height: auto; }
   .pf-bg { display: none; }
-  .pf-founder, .pf-roster { position: static; inset: auto; opacity: 1 !important; transform: none !important;
+  .pf-founder, .pf-roster, .pf-standard { position: static; inset: auto; opacity: 1 !important; transform: none !important;
     grid-template-columns: 1fr; padding: 48px 22px; margin: 40px 0; }
-  .pf-roster-h { text-align: left; }
+  .pf-roster-h, .pf-standard-head { text-align: left; }
+  .pf-standard-head { justify-items: start; }
+  .pf-std-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 480px) { .pf-grid { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) {
   .sysx-people { height: auto; }
   .pf-bg { display: none; }
-  .pf-founder, .pf-roster { position: static; inset: auto; opacity: 1 !important; transform: none !important; grid-template-columns: 1fr; margin: 40px auto; max-width: 1000px; }
+  .pf-founder, .pf-roster, .pf-standard { position: static; inset: auto; opacity: 1 !important; transform: none !important; grid-template-columns: 1fr; margin: 40px auto; max-width: 1000px; }
 }
 
 /* ── MOBILE 2.5D FALLBACK (усі превʼю-фільми) ──
