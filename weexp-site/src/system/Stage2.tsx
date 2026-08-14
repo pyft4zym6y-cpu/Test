@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { eur, SYS, type LossInput } from './lossModel';
 import { QUESTIONS, scoreStage2, type Stage2Answers } from './stage2Model';
 import './system.css';
+
+const Stage3 = lazy(() => import('@/system/Stage3').then((m) => ({ default: m.Stage3 })));
 
 /**
  * Калькулятор · Етап 2 — повноекранний глибший діагноз. Клієнт обирає варіанти
@@ -35,6 +36,7 @@ export function Stage2({ stage1, onClose }: { stage1: LossInput; onClose: () => 
   const [site, setSite] = useState('');
   const [step, setStep] = useState(0);
   const [ans, setAns] = useState<Stage2Answers>({});
+  const [stage3, setStage3] = useState(false);
   const res = useMemo(() => (phase === 'report' ? scoreStage2(ans, stage1) : null), [phase, ans, stage1]);
 
   const q = QUESTIONS[step];
@@ -172,11 +174,17 @@ export function Stage2({ stage1, onClose }: { stage1: LossInput; onClose: () => 
             </div>
             <div className="s2-foot-cta">
               <button className="sysx-cta" onClick={() => window.print()}>Завантажити PDF ↓</button>
-              <Link to="/contact" className="sysx-cta is-primary">Етап 3 — глибша діагностика в кабінеті →</Link>
+              <button className="sysx-cta is-primary" onClick={() => setStage3(true)}>Етап 3 — глибша діагностика в кабінеті →</button>
             </div>
           </div>
           <span className="s2-stage3-note mono">Етап 3 відкривається через реєстрацію: дані зберігаються, можна продовжити будь-коли — і ми доводимо аналіз до рівня Tier-2.</span>
         </div>
+      )}
+
+      {stage3 && (
+        <Suspense fallback={null}>
+          <Stage3 prior={{ site, stage1, stage2: ans, stage2Result: res ?? undefined }} onClose={() => setStage3(false)} />
+        </Suspense>
       )}
     </div>
   );

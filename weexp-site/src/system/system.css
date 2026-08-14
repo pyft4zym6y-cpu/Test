@@ -438,11 +438,52 @@
 @media (max-width: 820px) { .s2-grid { grid-template-columns: 1fr; } }
 @media print {
   .s2 { position: static; overflow: visible; }
-  .s2-x, .s2-foot-cta, .s2-quiz { display: none !important; }
+  .s2-x, .s2-foot-cta, .s2-quiz, .s3-quiz, .s3-auth { display: none !important; }
   .s2-report { padding: 0; max-width: none; }
   .s2-panel { box-shadow: none; break-inside: avoid; }
   .sysx-marquee, .sysh-nav { display: none !important; }
 }
+
+/* ── STAGE 3 (кабінет, Tier-2) ── */
+.s3-auth { min-height: 100vh; display: grid; align-content: center; justify-items: center; text-align: center; gap: 14px; padding: 80px 22px; }
+.s3-auth-h { font-size: clamp(28px, 3.6vw, 50px); color: var(--deep); }
+.s3-auth-lead { font-size: 15px; color: var(--charcoal); max-width: 46ch; line-height: 1.55; }
+.s3-auth-form { display: grid; gap: 12px; width: min(420px, 92vw); margin-top: 8px; text-align: left; }
+.s3-err { color: var(--alert); font-size: 12px; }
+
+.s3-quiz { min-height: 100vh; display: grid; align-content: start; justify-items: center; gap: 20px; padding: clamp(60px, 9vh, 88px) clamp(16px, 5vw, 40px) 60px; }
+.s3-quiz-head { width: min(760px, 94vw); display: grid; gap: 12px; }
+.s3-secnav { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--graphite); }
+.s3-secnav .on { color: var(--data); } .s3-secnav .done { color: var(--charcoal); }
+.s3-card { width: min(760px, 94vw); }
+.s3-sec-h { font-size: clamp(24px, 3vw, 38px); color: var(--deep); }
+.s3-sec-sub { font-size: 11px; color: var(--graphite); }
+.s3-blocks { display: grid; gap: 16px; }
+.s3-block { display: grid; gap: 8px; padding-bottom: 14px; border-bottom: 1px solid var(--line-soft); }
+.s3-block-l { font-size: 13.5px; color: var(--charcoal); font-weight: 500; } .s3-block-l i { color: var(--graphite); font-weight: 400; }
+.s3-in { border: 1px solid var(--silver); border-radius: 10px; padding: 11px 13px; font-size: 14px; color: var(--deep); outline: 0; width: 100%; }
+.s3-in:focus { border-color: var(--data); }
+.s3-num { display: flex; align-items: center; gap: 8px; } .s3-num .s3-in { flex: 1; } .s3-num i { color: var(--graphite); font-size: 12px; }
+.s3-choices { display: flex; flex-wrap: wrap; gap: 7px; }
+.s3-choice { font-size: 12.5px; color: var(--charcoal); background: var(--pure-white); border: 1px solid var(--silver); border-radius: 100px; padding: 8px 14px; cursor: pointer; transition: border-color .18s, background .18s, color .18s; }
+.s3-choice:hover { border-color: var(--graphite); }
+.s3-choice.on { border-color: var(--deep); background: var(--deep); color: #fff; }
+.s3-quiz-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-top: 4px; }
+
+/* Tier-2 звіт — додаткові панелі */
+.s3-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.s3-sub { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--graphite); display: block; margin-bottom: 6px; }
+.s3-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.s3-list li { font-family: var(--mono); font-size: 12px; color: var(--deep); }
+.s3-empty { color: var(--graphite); font-size: 12px; }
+.s3-likes { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; }
+.s3-like { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; padding: 3px 0; }
+.s3-like-w { color: var(--graphite); text-align: right; }
+.s3-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; }
+.s3-metric { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; color: var(--charcoal); border-bottom: 1px solid var(--line-soft); padding: 5px 0; }
+.s3-metric b { color: var(--deep); }
+.s3-verdict p { font-size: 14px; line-height: 1.55; color: var(--charcoal); } .s3-verdict b { color: var(--deep); }
+@media (max-width: 640px) { .s3-cols, .s3-metrics { grid-template-columns: 1fr; } }
 
 /* ── THE PEOPLE (people-film, /people) ── */
 .sysx-people { height: 660vh; }
