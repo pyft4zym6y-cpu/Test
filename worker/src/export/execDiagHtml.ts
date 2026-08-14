@@ -46,9 +46,11 @@ function conclCard(c: { title: string; sev?: 'crit' | 'warn'; see: string; proof
 function keyFindings(inp: ExecInputs): string {
   const cards: string[] = [];
   const findings: Finding[] = inp.analysis?.findings ?? [];
+  const firstClause = (t: string) => { const s = (t.split(/(?<=[.!?])\s/)[0] || t).split(/[,(]/)[0].trim(); return s.length > 58 ? s.slice(0, 55).trim() + '…' : s; };
   for (const f of findings.slice(0, 6)) {
     cards.push(conclCard({
-      title: `${f.area}: ${f.fact}`.slice(0, 110),
+      // Заголовок — короткий вывод (одна строка), не простыня: полный факт идёт в «Що бачимо».
+      title: `${f.area}: ${firstClause(f.fact)}`,
       sev: f.confidence >= 0.75 ? 'crit' : 'warn',
       see: f.fact, proof: 'Зовнішній обхід вітрини без доступів (спостереження)', ref: 'Еталон композиції / голд-стандарт',
       gap: f.why, impact: f.why, conf: `${eLevel(f.confidence)} · ${Math.round(f.confidence * 100)}%`,
