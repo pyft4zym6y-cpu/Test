@@ -7,7 +7,6 @@ import '@/lib/primitives.css';
 // Усі маршрути — ліниво, щоб кожна сторінка тягла лише свій код, а не весь
 // сайт наперед (three.js та важкі блоки головної не потрапляють на інші сторінки).
 const Home = lazy(() => import('@/pages/Home').then((m) => ({ default: m.Home })));
-const Challenges = lazy(() => import('@/pages/Challenges').then((m) => ({ default: m.Challenges })));
 const SystemPage = lazy(() => import('@/pages/SystemPage').then((m) => ({ default: m.SystemPage })));
 const WhatWeBuild = lazy(() => import('@/pages/WhatWeBuild').then((m) => ({ default: m.WhatWeBuild })));
 const EuExpansion = lazy(() => import('@/pages/EuExpansion').then((m) => ({ default: m.EuExpansion })));
@@ -16,7 +15,6 @@ const CaseDetail = lazy(() => import('@/pages/CaseDetail').then((m) => ({ defaul
 const About = lazy(() => import('@/pages/About').then((m) => ({ default: m.About })));
 const FounderPage = lazy(() => import('@/pages/FounderPage').then((m) => ({ default: m.FounderPage })));
 const FullDiagnosis = lazy(() => import('@/pages/FullDiagnosis').then((m) => ({ default: m.FullDiagnosis })));
-const ContactPage = lazy(() => import('@/pages/ContactPage').then((m) => ({ default: m.ContactPage })));
 const NotFound = lazy(() => import('@/pages/NotFound').then((m) => ({ default: m.NotFound })));
 // Прев'ю нового напряму «The System in Motion» — поза темним Layout, повноекранне.
 const SystemInMotion = lazy(() => import('@/system/SystemInMotion').then((m) => ({ default: m.SystemInMotion })));
@@ -24,6 +22,7 @@ const SystemsFilm = lazy(() => import('@/system/SystemsFilm').then((m) => ({ def
 const CasesFilm = lazy(() => import('@/system/CasesFilm').then((m) => ({ default: m.CasesFilm })));
 const PeopleFilm = lazy(() => import('@/system/PeopleFilm').then((m) => ({ default: m.PeopleFilm })));
 const DiagnoseFilm = lazy(() => import('@/system/DiagnoseFilm').then((m) => ({ default: m.DiagnoseFilm })));
+const ContactFilm = lazy(() => import('@/system/ContactFilm').then((m) => ({ default: m.ContactFilm })));
 const SystemShell = lazy(() => import('@/system/SystemShell').then((m) => ({ default: m.SystemShell })));
 const LossCalculator = lazy(() => import('@/system/LossCalculator').then((m) => ({ default: m.LossCalculator })));
 
@@ -42,12 +41,14 @@ export default function App() {
             <Route path="/proof" element={<CasesFilm />} />
             <Route path="/people" element={<PeopleFilm />} />
             <Route path="/diagnose" element={<DiagnoseFilm />} />
+            <Route path="/contact" element={<ContactFilm />} />
             <Route path="/loss" element={<LossCalculator />} />
           </Route>
           <Route element={<Layout />}>
             {/* Попередній (темний) головний — доступний для порівняння/відкату */}
             <Route path="/classic" element={<Home />} />
-            <Route path="/challenges" element={<Challenges />} />
+            {/* Індекс викликів → світлий фільм «7 систем»; глибокі сторінки систем лишаються */}
+            <Route path="/challenges" element={<Navigate to="/systems" replace />} />
             <Route path="/challenges/:slug" element={<SystemPage />} />
             <Route path="/what-we-build" element={<WhatWeBuild />} />
             <Route path="/what-we-build/eu-expansion" element={<EuExpansion />} />
@@ -57,7 +58,8 @@ export default function App() {
             <Route path="/how-it-works/business-health" element={<Navigate to="/diagnose" replace />} />
             <Route path="/how-it-works/independence-score" element={<Navigate to="/diagnose" replace />} />
             <Route path="/how-it-works/benchmark" element={<Navigate to="/diagnose" replace />} />
-            <Route path="/cases" element={<CasesPage />} />
+            {/* Індекс кейсів → світлий фільм «Докази»; детальні кейси лишаються */}
+            <Route path="/cases" element={<Navigate to="/proof" replace />} />
             <Route path="/cases/:slug" element={<CaseDetail />} />
             {/* Аналітику згорнуто в докази (Кейси) */}
             <Route path="/intelligence" element={<Navigate to="/cases" replace />} />
@@ -66,9 +68,8 @@ export default function App() {
             {/* Команда вже на /about; окремий «Стандарт» згорнуто в /about */}
             <Route path="/about/team" element={<Navigate to="/about" replace />} />
             <Route path="/about/standard" element={<Navigate to="/about" replace />} />
-            {/* /diagnose переїхав у світлий v2 (під SystemShell) */}
+            {/* /diagnose і /contact переїхали у світлий v2 (під SystemShell) */}
             <Route path="/diagnose/full" element={<FullDiagnosis />} />
-            <Route path="/contact" element={<ContactPage />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
