@@ -300,6 +300,59 @@
   .cf-row { opacity: 1; transform: none; }
 }
 
+/* ── THE PEOPLE (people-film, /people) ── */
+.sysx-people { height: 520vh; }
+.pf-bg { position: absolute; inset: 0; z-index: 1; opacity: .5; }  /* об'єкт як спокійне тло */
+
+/* FOUNDER — спотлайт */
+.pf-founder {
+  position: absolute; inset: 0; z-index: 3; display: grid;
+  grid-template-columns: 1.05fr .95fr; align-items: center; gap: clamp(24px, 5vw, 80px);
+  padding: 0 clamp(24px, 7vw, 120px); pointer-events: none; will-change: opacity, transform;
+}
+.pf-founder .mono, .pf-roster .mono { font-family: var(--mono); }
+.pf-founder-l { display: grid; justify-items: start; gap: 12px; }
+.pf-eyebrow { font-size: 11px; letter-spacing: .24em; text-transform: uppercase; color: var(--graphite); }
+.pf-role { font-size: clamp(34px, 5vw, 74px); color: var(--deep); line-height: .95; }
+.pf-owns { display: flex; flex-wrap: wrap; gap: 6px; }
+.pf-chip { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--charcoal); border: 1px solid var(--silver); border-radius: 100px; padding: 4px 10px; background: rgba(255, 255, 255, .6); }
+.pf-focus { font-size: clamp(15px, 1.7vw, 20px); line-height: 1.5; color: var(--charcoal); max-width: 34ch; }
+.pf-exp { font-size: 12px; letter-spacing: .04em; color: var(--data); border-left: 2px solid var(--data); padding-left: 12px; max-width: 40ch; line-height: 1.5; }
+.pf-exlist { list-style: none; margin: 0; padding: clamp(18px, 2.4vw, 26px); display: grid; gap: 14px; align-content: center;
+  background: color-mix(in srgb, var(--pure-white) 76%, transparent); backdrop-filter: blur(9px); -webkit-backdrop-filter: blur(9px);
+  border: 1px solid var(--silver); border-radius: 16px; box-shadow: 0 30px 60px -42px rgba(21, 23, 26, .4); }
+.pf-exlist li { display: grid; grid-template-columns: 16px 1fr; gap: 10px; align-items: start; font-size: 14px; line-height: 1.45; color: var(--charcoal); }
+.pf-exlist i { width: 7px; height: 7px; margin-top: 6px; border-radius: 50%; background: var(--deep); }
+
+/* ROSTER — 8 власників */
+.pf-roster {
+  position: absolute; inset: 0; z-index: 3; display: grid; align-content: center;
+  gap: clamp(20px, 3vw, 34px); padding: 0 clamp(24px, 6vw, 90px); pointer-events: none; will-change: opacity;
+}
+.pf-roster-h { font-size: clamp(30px, 4.6vw, 62px); text-align: center; }
+.pf-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.pf-card { display: grid; gap: 8px; align-content: start; padding: 16px; border-radius: 14px;
+  background: color-mix(in srgb, var(--pure-white) 72%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--silver); box-shadow: 0 20px 40px -34px rgba(21, 23, 26, .4); }
+.pf-card-owns { display: flex; flex-wrap: wrap; gap: 5px; }
+.pf-card-role { font-size: 14px; color: var(--deep); font-weight: 700; line-height: 1.2; }
+.pf-card-focus { font-size: 12px; line-height: 1.45; color: var(--charcoal); }
+
+@media (max-width: 1040px) { .pf-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 860px) {
+  .sysx-people { height: auto; }
+  .pf-bg { display: none; }
+  .pf-founder, .pf-roster { position: static; inset: auto; opacity: 1 !important; transform: none !important;
+    grid-template-columns: 1fr; padding: 48px 22px; margin: 40px 0; }
+  .pf-roster-h { text-align: left; }
+}
+@media (max-width: 480px) { .pf-grid { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) {
+  .sysx-people { height: auto; }
+  .pf-bg { display: none; }
+  .pf-founder, .pf-roster { position: static; inset: auto; opacity: 1 !important; transform: none !important; grid-template-columns: 1fr; margin: 40px auto; max-width: 1000px; }
+}
+
 /* ── MOBILE 2.5D FALLBACK (усі превʼю-фільми) ──
  * На вузьких екранах відмовляємось від липкого WebGL-кіно: об'єкт ховаємо,
  * сцени/плашки/акти розкладаємо у вертикальний стек елегантних карток. Число
