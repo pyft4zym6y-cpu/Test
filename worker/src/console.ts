@@ -211,6 +211,12 @@ function loadExperts(){
     }).join('');
   }).catch(function(){el.innerHTML='<span class="hint">каталог недоступен (нет связи)</span>';});
 }
+function uploadBackups(batch,s){ var files=BACKUP.slice(0,50);
+  return files.reduce(function(chain,f,i){ return chain.then(function(){
+    s.textContent='загрузка скринов '+(i+1)+'/'+files.length+'…'; s.className='status';
+    return fetch('/upload',{method:'POST',headers:hdr(),body:JSON.stringify({batch:batch,seq:i,name:f.name,type:f.type,data:f.data})}).then(function(r){ if(!r.ok) throw new Error('файл '+(i+1)+' → '+r.status); });
+  }); }, Promise.resolve()).then(function(){return true;});
+}
 function run(){
   var s=$('run'); if(!TOK()){s.textContent='введите токен'; s.className='status err'; return;}
   Promise.all([readJson($('answers')), readJson($('baseline'))]).then(function(a){
@@ -223,11 +229,15 @@ function run(){
       premium:$('premium').checked,
       prelaunch:$('pre').checked, brief:$('brief').value.trim(),
       clientId:$('clientId').value.trim(),
-      backupFiles:BACKUP.slice(0,50),
       answers:answers||null, baseline:baseline||null};
     if(!body.site&&!body.prelaunch){s.textContent='укажите сайт (или отметьте предзапуск)'; s.className='status err'; return;}
-    $('go').disabled=true; s.textContent='ставлю в очередь…'; s.className='status';
-    fetch('/audit',{method:'POST',headers:hdr(),body:JSON.stringify(body)}).then(function(r){return r.json()}).then(function(d){
+    $('go').disabled=true; s.className='status';
+    // Скриншоты грузим ОТДЕЛЬНЫМИ мелкими запросами (не одним огромным телом), потом ссылаемся batch-ом.
+    var batch='b'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+    var pre=BACKUP.length?uploadBackups(batch,s):Promise.resolve(false);
+    pre.then(function(did){ if(did)body.uploadBatch=batch; s.textContent='ставлю в очередь…';
+      return fetch('/audit',{method:'POST',headers:hdr(),body:JSON.stringify(body)});
+    }).then(function(r){return r.json()}).then(function(d){
       if(!d||!d.ok){$('go').disabled=false; s.textContent='ошибка: '+((d&&d.error)||'неизвестно'); s.className='status err'; return;}
       s.textContent='запущено'; s.className='status ok';
       $('resultCard').classList.add('hidden');

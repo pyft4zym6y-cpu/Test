@@ -182,6 +182,23 @@ const server = createServer(async (req, res) => {
   const token = (req.headers['x-audit-token'] as string) || url.searchParams.get('t') || '';
   if (TOKEN && token !== TOKEN) { json(res, 401, { ok: false, error: 'Неверный токен доступа' }); return; }
 
+  // Чанк-загрузка резервных скриншотов: по одному файлу на запрос (чтобы не слать
+  // 50 файлов одним огромным телом — прокси Railway рвёт большие запросы → «Failed to fetch»).
+  if (req.method === 'POST' && path === '/upload') {
+    try {
+      const b = JSON.parse((await readBody(req)) || '{}');
+      const batch = String(b.batch || '').replace(/[^a-z0-9-]/gi, '').slice(0, 60);
+      if (!batch || typeof b.data !== 'string' || b.data.length < 50) { json(res, 400, { ok: false, error: 'bad upload' }); return; }
+      const type = typeof b.type === 'string' && b.type ? b.type : (/^data:([^;]+)/.exec(b.data)?.[1] ?? 'application/pdf');
+      const ext = /pdf/i.test(type) ? 'pdf' : /png/i.test(type) ? 'png' : 'jpg';
+      const seq = String(Math.max(0, Math.min(99, Number(b.seq) || 0))).padStart(2, '0');
+      const dir = join(OUT, '_uploads', batch); await mkdir(dir, { recursive: true });
+      await writeFile(join(dir, `p${seq}.${ext}`), Buffer.from(b.data.replace(/^data:[^;]+;base64,/, ''), 'base64'));
+      json(res, 200, { ok: true });
+    } catch (e) { json(res, 400, { ok: false, error: String(e).slice(0, 200) }); }
+    return;
+  }
+
   // Поставить прогон в очередь
   if (req.method === 'POST' && path === '/audit') {
     try {
@@ -200,8 +217,14 @@ const server = createServer(async (req, res) => {
       const b64of = (s: string) => s.replace(/^data:[^;]+;base64,/, '');
       try {
         const upDir = join(OUT, '_uploads', id); await mkdir(upDir, { recursive: true });
-        // Новый формат: массив backupFiles [{name,type,data(dataURL)}]
-        if (Array.isArray(opts.backupFiles) && opts.backupFiles.length) {
+        // Чанк-загрузка: файлы уже лежат в _uploads/<batch>/ — просто перечисляем.
+        if (typeof opts.uploadBatch === 'string' && /^[a-z0-9-]{6,60}$/i.test(opts.uploadBatch)) {
+          const bdir = join(OUT, '_uploads', opts.uploadBatch);
+          const names = (await readdir(bdir).catch(() => [] as string[])).filter((n) => /\.(pdf|png|jpe?g)$/i.test(n)).sort();
+          opts.backupFiles = names.slice(0, 50).map((n, i) => ({ path: join(bdir, n), type: /pdf$/i.test(n) ? 'application/pdf' : /png$/i.test(n) ? 'image/png' : 'image/jpeg', name: `Сторінка ${i + 1}` }));
+        }
+        // Инлайновый массив backupFiles [{name,type,data(dataURL)}] (мелкие наборы)
+        else if (Array.isArray(opts.backupFiles) && opts.backupFiles.length) {
           const specs: { path: string; type: string; name?: string }[] = [];
           for (let i = 0; i < Math.min(opts.backupFiles.length, 50); i++) {
             const f = opts.backupFiles[i];
