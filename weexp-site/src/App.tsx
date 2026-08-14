@@ -1,8 +1,11 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Layout } from '@/Layout';
 import { RouteSeo } from '@/lib/seo';
 import '@/lib/primitives.css';
+
+// Класичний (темний) Layout тягне framer-motion/lenis/gsap — вантажимо ліниво,
+// щоб цей ваговий чанк не потрапляв у entry світлого v2 (де він не потрібен).
+const Layout = lazy(() => import('@/Layout').then((m) => ({ default: m.Layout })));
 
 // Усі маршрути — ліниво, щоб кожна сторінка тягла лише свій код, а не весь
 // сайт наперед (three.js та важкі блоки головної не потрапляють на інші сторінки).

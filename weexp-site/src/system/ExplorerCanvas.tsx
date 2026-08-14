@@ -107,14 +107,20 @@ export function ExplorerCanvas({ focusedRef, onPick, hoverRef, subLabels }: {
       hasPtr = true;
     };
     const onMove = (e: PointerEvent) => setPtr(e);
-    const onClick = (e: PointerEvent) => {
+    // Клік — лише тап (малий зсув), щоб на мобільному вертикальний свайп-скрол
+    // не фокусував вузол. Тач-скрол дозволено через touch-action: pan-y на канвасі.
+    let downX = 0, downY = 0;
+    const onDown = (e: PointerEvent) => { downX = e.clientX; downY = e.clientY; };
+    const onUp = (e: PointerEvent) => {
+      if (Math.hypot(e.clientX - downX, e.clientY - downY) > 12) return; // свайп, а не тап
       setPtr(e);
       ndc.set(px, py); ray.setFromCamera(ndc, camera);
       const hit = ray.intersectObjects(nodeMeshes, false)[0];
       onPick(hit ? nodeMeshes.indexOf(hit.object as THREE.Mesh) : null);
     };
     canvas.addEventListener('pointermove', onMove, { passive: true });
-    canvas.addEventListener('pointerdown', onClick);
+    canvas.addEventListener('pointerdown', onDown, { passive: true });
+    canvas.addEventListener('pointerup', onUp);
 
     const resize = () => {
       const w = canvas.clientWidth || innerWidth, h = canvas.clientHeight || innerHeight;
@@ -175,8 +181,12 @@ export function ExplorerCanvas({ focusedRef, onPick, hoverRef, subLabels }: {
       linkGeo.attributes.position.needsUpdate = true;
       linkMat.opacity += ((focused !== null ? 0.15 : 0.4) - linkMat.opacity) * 0.1;
 
-      // Камера: у фокусі під'їжджаємо ближче і дивимось на вузол
-      const targetZ = focused !== null ? 8.4 : 11;
+      // Камера: дистанція, за якої кільце вміщується за будь-якого aspect
+      // (портрет-мобайл: вужчий горизонтальний FOV → відсуваємось далі).
+      const halfV = (camera.fov * Math.PI) / 360;
+      const halfH = Math.atan(Math.tan(halfV) * camera.aspect);
+      const fitZ = Math.max(11, 4.3 / Math.tan(Math.min(halfV, halfH)));
+      const targetZ = focused !== null ? fitZ * 0.78 : fitZ;
       camZ.v += (targetZ - camZ.v) * 0.06;
       camera.position.z = camZ.v;
       if (focused !== null) {
@@ -234,15 +244,32 @@ export function ExplorerCanvas({ focusedRef, onPick, hoverRef, subLabels }: {
       subLineGeo.attributes.position.needsUpdate = true;
 
       renderer.render(scene, camera);
-      raf = requestAnimationFrame(render);
+      raf = running() ? requestAnimationFrame(render) : 0;
     };
+    // Пауза рендеру поза екраном / при схованій вкладці / reduced-motion.
+    let visible = true, active = !document.hidden;
+    const running = () => visible && active && !reduce;
+    const pump = () => { if (running() && !raf) raf = requestAnimationFrame(render); };
     raf = requestAnimationFrame(render);
+    const io = new IntersectionObserver((es) => { visible = es[0].isIntersecting; pump(); }, { threshold: 0 });
+    io.observe(canvas);
+    const onVis = () => { active = !document.hidden; pump(); };
+    document.addEventListener('visibilitychange', onVis);
+    const onLost = (e: Event) => { e.preventDefault(); if (raf) cancelAnimationFrame(raf); raf = 0; };
+    const onRestored = () => pump();
+    canvas.addEventListener('webglcontextlost', onLost);
+    canvas.addEventListener('webglcontextrestored', onRestored);
 
     return () => {
       cancelAnimationFrame(raf);
+      io.disconnect(); document.removeEventListener('visibilitychange', onVis);
+      canvas.removeEventListener('webglcontextlost', onLost); canvas.removeEventListener('webglcontextrestored', onRestored);
       removeEventListener('resize', resize);
-      canvas.removeEventListener('pointermove', onMove); canvas.removeEventListener('pointerdown', onClick);
-      scene.traverse((o) => { const m = o as THREE.Mesh; if (m.geometry) m.geometry.dispose(); });
+      canvas.removeEventListener('pointermove', onMove); canvas.removeEventListener('pointerdown', onDown); canvas.removeEventListener('pointerup', onUp);
+      scene.traverse((o) => {
+        const m = o as THREE.Mesh; if (m.geometry) m.geometry.dispose();
+        const mat = (m as THREE.Mesh).material; if (mat) (Array.isArray(mat) ? mat : [mat]).forEach((x) => x.dispose());
+      });
       nodeGeo.dispose(); subGeo.dispose(); envTex.dispose(); pmrem.dispose(); renderer.dispose();
     };
   }, [focusedRef, hoverRef, onPick, subLabels]);

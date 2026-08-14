@@ -13,7 +13,7 @@
   --pure-white: #FFFFFF;   /* світло */
   --mist: #EEF0F2;         /* поверхні */
   --silver: #D9DDE1;       /* структура */
-  --graphite: #A8ADB3;     /* вторинна інформація */
+  --graphite: #7C848B;     /* вторинна інформація (контраст ≈ AA для дрібних підписів) */
   --charcoal: #3A3D42;     /* типографіка */
   --deep: #15171A;         /* cinema / глибина */
   /* — Сигнали (тільки як подія, не тло) — */
@@ -474,12 +474,18 @@
 .sxp-label-t { font: 600 11px/1 ui-monospace, Menlo, monospace; letter-spacing: .04em; color: var(--charcoal); background: rgba(255, 255, 255, .78); backdrop-filter: blur(4px); padding: 4px 9px; border: 1px solid rgba(58, 61, 66, .14); border-radius: 20px; }
 
 /* інтро/підказка */
-.sxp-intro { position: absolute; left: clamp(24px, 6vw, 90px); top: 50%; transform: translateY(-50%); z-index: 3; max-width: 440px; display: grid; gap: 12px;
+.sxp-intro { position: absolute; left: clamp(24px, 6vw, 90px); top: 50%; transform: translateY(-50%); z-index: 3; max-width: 440px; display: grid; gap: 12px; pointer-events: none;
   transition: opacity .5s var(--ease-cine), transform .5s var(--ease-cine); }
 .sxp-intro.is-hidden { opacity: 0; transform: translateY(-50%) translateX(-12px); pointer-events: none; }
 .sxp-h { font-size: clamp(30px, 4vw, 58px); }
 .sxp-lead { font-size: clamp(14px, 1.5vw, 18px); color: var(--charcoal); line-height: 1.55; max-width: 40ch; }
 .sxp-hint { font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--graphite); }
+/* Доступний з клавіатури вибір систем (дублює клік по canvas) */
+.sxp-picker { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; pointer-events: auto; max-width: 430px; }
+.sxp-pick { font-size: 10.5px; letter-spacing: .03em; color: var(--charcoal); background: rgba(255, 255, 255, .72); border: 1px solid var(--silver); border-radius: 100px; padding: 5px 11px; cursor: pointer; transition: border-color .2s, transform .2s, color .2s; }
+.sxp-pick:hover { border-color: var(--data); color: var(--deep); transform: translateY(-1px); }
+.sxp-pick b { color: var(--data); font-weight: 700; margin-right: 3px; }
+.sxp-pick:focus-visible { outline: 2px solid var(--data); outline-offset: 2px; }
 
 /* панель сфокусованої системи */
 .sxp-panel { position: absolute; right: clamp(20px, 5vw, 64px); top: 50%; transform: translateY(-50%); z-index: 4; width: min(92vw, 400px);
@@ -500,16 +506,23 @@
 .sxp-panel-sell b { color: var(--deep); margin-right: 4px; }
 .sxp-cta { justify-self: start; margin-top: 4px; }
 
+/* Мобайл: той самий інтерактив і анімація — повноекранна сцена, тап-фокус,
+   лейбли підпроцесів увімкнені, панель — нижній шит. */
 @media (max-width: 860px) {
-  .sysx-explorer, .sxp-stage { min-height: auto; }
-  .sysx-explorer .sysx-object3d { position: relative; height: 62vh; }
-  .sxp-intro { position: static; transform: none; max-width: none; padding: 32px 22px 8px; }
-  .sxp-intro.is-hidden { display: none; }
-  .sxp-panel { position: static; transform: none; width: auto; margin: 0 22px 32px; animation: none; }
-  .sxp-labels { display: none; }
+  .sysx-explorer, .sxp-stage { min-height: 100vh; min-height: 100svh; }
+  .sysx-explorer .sysx-object3d { display: block; position: absolute; inset: 0; touch-action: pan-y; }
+  .sxp-intro { left: 0; right: 0; top: 0; max-width: none; transform: none; text-align: center; justify-items: center;
+    padding: calc(56px + env(safe-area-inset-top)) 22px 0; }
+  .sxp-intro.is-hidden { opacity: 0; transform: translateY(-8px); }
+  .sxp-h { font-size: clamp(28px, 8vw, 46px); }
+  .sxp-lead { max-width: 34ch; }
+  .sxp-panel { top: auto; bottom: 0; left: 0; right: 0; transform: none; width: auto; border-radius: 20px 20px 0 0;
+    max-height: 64svh; overflow-y: auto; animation: sxpUp .4s var(--ease-cine); padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+  .sxp-label-t { font-size: 9.5px; padding: 3px 7px; }
 }
+@keyframes sxpUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 @media (prefers-reduced-motion: reduce) {
-  .sysx-explorer .sysx-object3d { height: 50vh; position: relative; }
+  .sysx-explorer .sysx-object3d { height: 56vh; position: relative; }
   .sxp-labels { display: none; }
 }
 
@@ -627,5 +640,7 @@
 @media (max-width: 900px) {
   .sysx-calc { grid-template-columns: 1fr; }
   .sysx-calc-bg { position: fixed; inset: 0; height: 100vh; opacity: .5; }
+  /* мобайл: лишаємо живий об'єкт як тло (fixedProgress → зібраний і обертається) */
+  .sysx-calc-bg .sysx-object3d { display: block; }
   .sysx-grid { grid-template-columns: 1fr; }
 }
