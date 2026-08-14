@@ -91,6 +91,7 @@ const REQUIREMENTS: Partial<Record<PageKind, ReqRow[]>> = {
 // ✅ есть-и-по-эталону · ◑ есть-но-слабо (наличие ≠ правильно) · ⚪ проверить (скрыто/JS) · 🔴 нет
 export type BlockState = 'ok' | 'weak' | 'check' | 'gap';
 export type BlockRow = {
+  key: string; // ключ блока эталона (для вайрфрейм-скелета «як треба»)
   name: string; role: string; chapter: string; weight: Weight; dims: Dim[];
   state: BlockState; score: number; max: number; wordVerdict: string;
   now: string;    // что сейчас — фактическое наблюдение с измерениями обхода
@@ -262,7 +263,7 @@ function buildPage(p: PageAudit): PageReport | null {
     const score = state === 'ok' ? max : state === 'weak' ? Math.max(1, Math.round(max / 2)) : state === 'check' ? 1 : 0;
     const word = wordFor(state, b.weight);
     if (state === 'check' && /^Не виявлено/.test(now)) now += ' — можливо за табом/JS, перевірити';
-    return { name: b.name, role: b.role, chapter: b.chapter, weight: b.weight, dims: DIM_BY_BLOCK[b.key] ?? ['UX'], state, score, max, wordVerdict: word, now, should };
+    return { key: b.key, name: b.name, role: b.role, chapter: b.chapter, weight: b.weight, dims: DIM_BY_BLOCK[b.key] ?? ['UX'], state, score, max, wordVerdict: word, now, should };
   });
   const score = rows.reduce((s, r) => s + r.score, 0);
   const max = rows.reduce((s, r) => s + r.max, 0);

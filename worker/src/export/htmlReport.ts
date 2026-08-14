@@ -14,6 +14,7 @@ import {
   methodologySection, swSection, recsSection, conclusionSection, type SectionRec,
 } from './reportShell.js';
 import { svgDonut } from './charts.js';
+import { blockCard, WIREFRAME_CSS } from './wireframes.js';
 
 const STATE_MARK: Record<BlockState, string> = { ok: '✓', weak: '◑', check: '◐', gap: '✕' };
 const STATE_CLS: Record<BlockState, string> = { ok: 'ok', weak: 'weak', check: 'check', gap: 'gap' };
@@ -155,6 +156,11 @@ function pageSection(p: PageReport): string {
       <div class="page-et">${etalonStack(p)}</div>
     </div>
     <table class="block-table"><thead><tr><th>Блок еталона</th><th>Що на сайті зараз</th><th>Що має бути</th><th>Оцінка</th></tr></thead><tbody>${blockRows}</tbody></table>
+    <div class="wf-detail">
+      <h3 class="wf-h">Поблочно: яким блок має бути</h3>
+      <p class="wf-lead">Вище — чи є блок. Тут — <b>яким він має бути</b>, щоб бал сторінки був максимальним. Ліворуч (де показано) — що зараз, праворуч — еталон. Блок, якого немає, показано таким, яким мав би бути.</p>
+      ${p.rows.map((b, i) => blockCard(b, i)).join('')}
+    </div>
     ${fixes}
   </section>`;
 }
@@ -278,6 +284,8 @@ function consultSections(r: SiteAuditReport): { meth: string; sw: string; recs: 
 
 const EXTRA_CSS = `
   :root{--weak:#ea580c;} /* «є, але слабко»: наявність ≠ правильно — окремий колір, не як «приховано» */
+  ${WIREFRAME_CSS}
+  .wf-detail{margin-top:12px;} .wf-h{font-size:12px;margin:0 0 3px;} .wf-lead{font-size:9.5px;color:#444;margin:0 0 8px;line-height:1.4;}
   /* аркуш «Підсумок» */
   .sum{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap;margin:4px 0 10px;}
   .sum-big{font-size:34px;font-weight:800;line-height:1;letter-spacing:-1px;white-space:nowrap;}
