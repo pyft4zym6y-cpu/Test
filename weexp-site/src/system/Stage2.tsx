@@ -1,9 +1,12 @@
 import { lazy, Suspense, useMemo, useState } from 'react';
-import { eur, SYS, type LossInput, type LossResult } from './lossModel';
+import { eur, SYS, type LossInput, type LossResult, type SysKey } from './lossModel';
 import { QUESTIONS, scoreStage2, type Stage2Answers } from './stage2Model';
+import { RadarChart, SystemBars } from './charts';
 import './system.css';
 
 const Stage3 = lazy(() => import('@/system/Stage3').then((m) => ({ default: m.Stage3 })));
+
+const short = (k: SysKey) => SYS.find((s) => s.key === k)!.label.split(/\s|\//)[0];
 
 /**
  * Калькулятор · Етап 2 — повноекранний глибший діагноз. Клієнт обирає варіанти
@@ -11,25 +14,7 @@ const Stage3 = lazy(() => import('@/system/Stage3').then((m) => ({ default: m.St
  * на весь екран із радаром, барами й gauge, який можна завантажити в PDF (print)
  * із контактами й QR. Далі — місток на Етап 3 (через реєстрацію в кабінеті).
  */
-const short = (k: string) => SYS.find((s) => s.key === k)!.label.split(/\s|\//)[0];
-const HW = (s: number) => (s >= 65 ? 'ok' : s >= 40 ? 'warn' : 'bad');
 const MAIL = 'hello@weexp.agency';
-
-// Радар 7 систем → SVG-точки.
-function radarPoints(scores: number[], R: number, cx: number, cy: number) {
-  const n = scores.length;
-  return scores.map((v, i) => {
-    const a = -Math.PI / 2 + (i / n) * Math.PI * 2;
-    const r = (v / 100) * R;
-    return [cx + Math.cos(a) * r, cy + Math.sin(a) * r];
-  });
-}
-function ring(R: number, cx: number, cy: number, n: number) {
-  return Array.from({ length: n }, (_, i) => {
-    const a = -Math.PI / 2 + (i / n) * Math.PI * 2;
-    return [cx + Math.cos(a) * R, cy + Math.sin(a) * R];
-  });
-}
 
 export function Stage2({ stage1, stage1Result, onClose }: { stage1: LossInput; stage1Result?: LossResult; onClose: () => void }) {
   const [phase, setPhase] = useState<'url' | 'quiz' | 'report'>('url');
@@ -37,6 +22,7 @@ export function Stage2({ stage1, stage1Result, onClose }: { stage1: LossInput; s
   const [step, setStep] = useState(0);
   const [ans, setAns] = useState<Stage2Answers>({});
   const [stage3, setStage3] = useState(false);
+  const [hover, setHover] = useState<number | null>(null);
   const res = useMemo(() => (phase === 'report' ? scoreStage2(ans, stage1) : null), [phase, ans, stage1]);
 
   // Єдина цифра для Етапів 1 і 2: суму беремо з Етапу 1 (computeLoss), а Етап 2
@@ -122,34 +108,17 @@ export function Stage2({ stage1, stage1Result, onClose }: { stage1: LossInput; s
           </header>
 
           <div className="s2-grid">
-            {/* Радар 7 систем */}
+            {/* Радар 7 систем — інтерактивний, синхронізований із барами */}
             <div className="s2-panel s2-radar-wrap">
               <span className="sysx-kick">7 систем — профіль зрілості</span>
-              <svg viewBox="0 0 260 260" className="s2-radar" role="img" aria-label="Радар зрілості семи систем">
-                {[0.25, 0.5, 0.75, 1].map((f) => (
-                  <polygon key={f} className="s2-radar-grid" points={ring(100 * f, 130, 130, 7).map((p) => p.join(',')).join(' ')} />
-                ))}
-                {ring(100, 130, 130, 7).map((p, i) => <line key={i} className="s2-radar-axis" x1={130} y1={130} x2={p[0]} y2={p[1]} />)}
-                <polygon className="s2-radar-area" points={radarPoints(res.systems.map((s) => s.score), 100, 130, 130).map((p) => p.join(',')).join(' ')} />
-                {radarPoints(res.systems.map((s) => s.score), 100, 130, 130).map((p, i) => <circle key={i} className="s2-radar-dot" cx={p[0]} cy={p[1]} r={3} />)}
-                {ring(118, 130, 130, 7).map((p, i) => (
-                  <text key={i} className="s2-radar-lab" x={p[0]} y={p[1]} textAnchor={p[0] < 125 ? 'end' : p[0] > 135 ? 'start' : 'middle'}>{short(res.systems[i].key)}</text>
-                ))}
-              </svg>
+              <RadarChart systems={res.systems} hover={hover} onHover={setHover} />
+              <span className="s2-hint mono">Наведіть на систему — підсвітиться скрізь</span>
             </div>
 
             {/* Бари 7 систем */}
             <div className="s2-panel">
               <span className="sysx-kick">Оцінка по системах</span>
-              <div className="s2-bars">
-                {res.systems.map((h, i) => (
-                  <div key={h.key} className="s2-hbar" style={{ '--i': i } as React.CSSProperties}>
-                    <span className="s2-hbar-l">{short(h.key)}</span>
-                    <span className={`s2-hbar-t ${HW(h.score)}`}><i style={{ width: `${h.score}%` }} /></span>
-                    <span className="s2-hbar-v mono">{h.score}</span>
-                  </div>
-                ))}
-              </div>
+              <SystemBars systems={res.systems} hover={hover} onHover={setHover} />
             </div>
 
             {/* Можливість — та сама цифра, що й в Етапі 1 (одне число на обидва кроки) */}
