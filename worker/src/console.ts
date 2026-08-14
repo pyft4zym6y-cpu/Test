@@ -109,6 +109,10 @@ details>summary{cursor:pointer;color:var(--mut);font-size:13px;margin-top:4px}
       <label>Финансовые показатели <span class="hint">— файл .json (levers + extra)</span></label>
       <input id="baseline" type="file" accept=".json,application/json">
     </details>
+    <details><summary>Резервный контур: PDF со скриншотами <span class="hint">— если сайт за заглушкой / нет доступа</span></summary>
+      <label>PDF со скриншотами страниц <span class="hint">— полностраничные, по странице на лист. Если живого доступа к сайту нет (заглушка/бот-блок), система сама разберёт их зрением вместо обхода.</span></label>
+      <input id="backupPdf" type="file" accept="application/pdf,.pdf">
+    </details>
     <details><summary>Проект без сайта (предзапуск)</summary>
       <label class="chk"><input id="pre" type="checkbox"> Сайта ещё нет / в разработке</label>
       <label>Бриф <span class="hint">— ниша, рынок, чек</span></label>
@@ -161,6 +165,8 @@ function ping(){var s=$('ping'); s.textContent='проверяю…'; s.classNam
 
 function readJson(inp){return new Promise(function(res){var f=inp.files&&inp.files[0]; if(!f){res(null);return;} var r=new FileReader(); r.onload=function(){try{res(JSON.parse(r.result))}catch(e){res({__error:'файл '+f.name+' не JSON'})}}; r.onerror=function(){res(null)}; r.readAsText(f);});
 }
+function readDataUrl(inp){return new Promise(function(res){var f=inp&&inp.files&&inp.files[0]; if(!f){res(null);return;} if(f.size>28000000){res({__error:'PDF больше 28 МБ — уменьшите число страниц или сожмите'});return;} var r=new FileReader(); r.onload=function(){res(String(r.result||''))}; r.onerror=function(){res(null)}; r.readAsDataURL(f);});
+}
 
 var EXPERTS_LOADED=false;
 function togglePremium(){
@@ -185,16 +191,18 @@ function loadExperts(){
 }
 function run(){
   var s=$('run'); if(!TOK()){s.textContent='введите токен'; s.className='status err'; return;}
-  Promise.all([readJson($('answers')), readJson($('baseline'))]).then(function(a){
-    var answers=a[0], baseline=a[1];
+  Promise.all([readJson($('answers')), readJson($('baseline')), readDataUrl($('backupPdf'))]).then(function(a){
+    var answers=a[0], baseline=a[1], backupPdf=a[2];
     if(answers&&answers.__error){s.textContent=answers.__error; s.className='status err'; return;}
     if(baseline&&baseline.__error){s.textContent=baseline.__error; s.className='status err'; return;}
+    if(backupPdf&&backupPdf.__error){s.textContent=backupPdf.__error; s.className='status err'; return;}
     var body={tier:Number($('tier').value), site:$('site').value.trim(),
       competitors:$('comp').value.split('\\n').map(function(x){return x.trim()}).filter(Boolean),
       request:$('req').value.trim(), agentic:$('agentic').checked,
       premium:$('premium').checked,
       prelaunch:$('pre').checked, brief:$('brief').value.trim(),
       clientId:$('clientId').value.trim(),
+      backupPdf:(typeof backupPdf==='string')?backupPdf:null,
       answers:answers||null, baseline:baseline||null};
     if(!body.site&&!body.prelaunch){s.textContent='укажите сайт (или отметьте предзапуск)'; s.className='status err'; return;}
     $('go').disabled=true; s.textContent='ставлю в очередь…'; s.className='status';
