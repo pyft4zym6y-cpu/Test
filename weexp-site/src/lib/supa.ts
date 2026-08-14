@@ -34,36 +34,44 @@ export type DiagRecord = {
 const LS_SESSION = 'weexp:diag-user';
 const LS_DATA = (id: string) => `weexp:diag-data:${id}`;
 
+const isLocal = (u: DiagUser) => u.id.startsWith('local:') || u.id.startsWith('demo:');
+const lsUser = (): DiagUser | null => { try { const r = localStorage.getItem(LS_SESSION); return r ? JSON.parse(r) : null; } catch { return null; } };
+
 /* ─── Auth ─── */
 export async function currentUser(): Promise<DiagUser | null> {
-  if (!CONFIGURED) {
-    try { const raw = localStorage.getItem(LS_SESSION); return raw ? JSON.parse(raw) : null; } catch { return null; }
-  }
+  // Локальний fallback-користувач (демо або коли не було сесії) має пріоритет.
+  const local = lsUser(); if (local) return local;
+  if (!CONFIGURED) return null;
   const { data } = await supabase.auth.getSession();
   const s = data.session; return s?.user ? { id: s.user.id, email: s.user.email ?? '' } : null;
 }
 
-/** Реєстрація/вхід. У DEMO — просто зберігаємо особу локально. */
+/**
+ * Реєстрація/вхід. Ніколи не блокує потік: якщо Supabase не дав сесію (напр.
+ * увімкнено Confirm email) — падаємо на локальне збереження, щоб клієнт міг
+ * продовжити. Коли сесія є — працює справжній Supabase із синхронізацією.
+ */
 export async function authenticate(email: string, password: string): Promise<{ user?: DiagUser; error?: string }> {
-  if (!CONFIGURED) {
-    const user = { id: 'demo:' + email.toLowerCase(), email };
-    try { localStorage.setItem(LS_SESSION, JSON.stringify(user)); } catch { /* ignore */ }
-    return { user };
+  if (CONFIGURED) {
+    try {
+      let res = await supabase.auth.signInWithPassword({ email, password });
+      if (res.error) {
+        const up = await supabase.auth.signUp({ email, password });
+        if (up.data.session) res = up as typeof res;
+        else res = await supabase.auth.signInWithPassword({ email, password });
+      }
+      const u = res.data?.user, sess = res.data?.session;
+      if (u && sess) { try { localStorage.removeItem(LS_SESSION); } catch { /* ignore */ } return { user: { id: u.id, email: u.email ?? email } }; }
+    } catch { /* мережа/налаштування — падаємо на локальний режим */ }
   }
-  // Пробуємо увійти; якщо акаунта немає — реєструємо.
-  let res = await supabase.auth.signInWithPassword({ email, password });
-  if (res.error) {
-    const up = await supabase.auth.signUp({ email, password });
-    if (up.error) return { error: up.error.message };
-    res = await supabase.auth.signInWithPassword({ email, password });
-    if (res.error) return { error: 'Підтвердіть email і увійдіть знову.' };
-  }
-  const u = res.data.user; return u ? { user: { id: u.id, email: u.email ?? email } } : { error: 'Не вдалося увійти' };
+  const user = { id: 'local:' + email.toLowerCase(), email };
+  try { localStorage.setItem(LS_SESSION, JSON.stringify(user)); } catch { /* ignore */ }
+  return { user };
 }
 
 export async function signOut(): Promise<void> {
-  if (!CONFIGURED) { try { localStorage.removeItem(LS_SESSION); } catch { /* ignore */ } return; }
-  await supabase.auth.signOut();
+  try { localStorage.removeItem(LS_SESSION); } catch { /* ignore */ }
+  if (CONFIGURED) await supabase.auth.signOut();
 }
 
 export function onAuth(cb: (u: DiagUser | null) => void): () => void {
@@ -75,19 +83,21 @@ export function onAuth(cb: (u: DiagUser | null) => void): () => void {
 
 /* ─── Persistence (таблиця diagnostics, jsonb) ─── */
 export async function loadDiag(user: DiagUser): Promise<DiagRecord> {
-  if (!CONFIGURED) {
+  if (!CONFIGURED || isLocal(user)) {
     try { const raw = localStorage.getItem(LS_DATA(user.id)); return raw ? JSON.parse(raw) : {}; } catch { return {}; }
   }
-  const { data } = await supabase.from('diagnostics').select('data').eq('user_id', user.id).maybeSingle();
-  return (data?.data as DiagRecord) ?? {};
+  try {
+    const { data } = await supabase.from('diagnostics').select('data').eq('user_id', user.id).maybeSingle();
+    return (data?.data as DiagRecord) ?? {};
+  } catch { return {}; }
 }
 
 export async function saveDiag(user: DiagUser, patch: DiagRecord): Promise<void> {
   const prev = await loadDiag(user);
   const merged: DiagRecord = { ...prev, ...patch, updatedAt: new Date().toISOString() };
-  if (!CONFIGURED) {
+  if (!CONFIGURED || isLocal(user)) {
     try { localStorage.setItem(LS_DATA(user.id), JSON.stringify(merged)); } catch { /* ignore */ }
     return;
   }
-  await supabase.from('diagnostics').upsert({ user_id: user.id, email: user.email, data: merged }, { onConflict: 'user_id' });
+  try { await supabase.from('diagnostics').upsert({ user_id: user.id, email: user.email, data: merged }, { onConflict: 'user_id' }); } catch { /* ignore */ }
 }
