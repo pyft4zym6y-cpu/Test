@@ -14,7 +14,7 @@
  *   GET  /result/:id/:file?t=…   — скачать один файл.
  */
 import { createServer, type ServerResponse, type IncomingMessage } from 'node:http';
-import { readFile, readdir, writeFile, stat, mkdir } from 'node:fs/promises';
+import { readFile, readdir, writeFile, appendFile, stat, mkdir } from 'node:fs/promises';
 import { join, basename, extname } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { runAudit, type AuditMetrics } from './pipeline.js';
@@ -188,12 +188,17 @@ const server = createServer(async (req, res) => {
     try {
       const b = JSON.parse((await readBody(req)) || '{}');
       const batch = String(b.batch || '').replace(/[^a-z0-9-]/gi, '').slice(0, 60);
-      if (!batch || typeof b.data !== 'string' || b.data.length < 50) { json(res, 400, { ok: false, error: 'bad upload' }); return; }
-      const type = typeof b.type === 'string' && b.type ? b.type : (/^data:([^;]+)/.exec(b.data)?.[1] ?? 'application/pdf');
+      if (!batch || typeof b.data !== 'string' || !b.data.length) { json(res, 400, { ok: false, error: 'bad upload' }); return; }
+      const type = typeof b.type === 'string' && b.type ? b.type : 'application/pdf';
       const ext = /pdf/i.test(type) ? 'pdf' : /png/i.test(type) ? 'png' : 'jpg';
       const seq = String(Math.max(0, Math.min(99, Number(b.seq) || 0))).padStart(2, '0');
+      const part = Number(b.part) || 0; // индекс чанка файла (файл бьётся на куски)
       const dir = join(OUT, '_uploads', batch); await mkdir(dir, { recursive: true });
-      await writeFile(join(dir, `p${seq}.${ext}`), Buffer.from(b.data.replace(/^data:[^;]+;base64,/, ''), 'base64'));
+      const p = join(dir, `p${seq}.${ext}`);
+      const bytes = Buffer.from(b.data.replace(/^data:[^;]+;base64,/, ''), 'base64');
+      // part 0 — создаём/обнуляем файл, дальше дописываем куски. Так файл любого
+      // размера собирается из мелких запросов (большой запрос прокси рвёт).
+      if (part === 0) await writeFile(p, bytes); else await appendFile(p, bytes);
       json(res, 200, { ok: true });
     } catch (e) { json(res, 400, { ok: false, error: String(e).slice(0, 200) }); }
     return;

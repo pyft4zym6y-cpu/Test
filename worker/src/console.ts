@@ -211,11 +211,19 @@ function loadExperts(){
     }).join('');
   }).catch(function(){el.innerHTML='<span class="hint">каталог недоступен (нет связи)</span>';});
 }
+function putChunk(batch,seq,part,type,data){ return fetch('/upload',{method:'POST',headers:hdr(),body:JSON.stringify({batch:batch,seq:seq,part:part,type:type,data:data})}).then(function(r){ if(!r.ok) throw new Error('часть '+(part+1)+' файла '+(seq+1)+' → '+r.status); if(r.status===0) throw new Error('соединение оборвалось'); }); }
+function uploadOneFile(batch,f,i,s,total){
+  var b64=f.data.replace(/^data:[^;]+;base64,/,''); // чистый base64
+  var CH=1600000; // ~1.2 МБ на кусок (кратно 4 → валидный base64); мелкие запросы прокси не рвёт
+  var parts=Math.max(1,Math.ceil(b64.length/CH)); var chain=Promise.resolve();
+  for(var p=0;p<parts;p++){ (function(p){ chain=chain.then(function(){
+    s.textContent='загрузка '+(i+1)+'/'+total+' — часть '+(p+1)+'/'+parts+'…'; s.className='status';
+    return putChunk(batch,i,p,f.type,b64.substr(p*CH,CH));
+  }); })(p); }
+  return chain;
+}
 function uploadBackups(batch,s){ var files=BACKUP.slice(0,50);
-  return files.reduce(function(chain,f,i){ return chain.then(function(){
-    s.textContent='загрузка скринов '+(i+1)+'/'+files.length+'…'; s.className='status';
-    return fetch('/upload',{method:'POST',headers:hdr(),body:JSON.stringify({batch:batch,seq:i,name:f.name,type:f.type,data:f.data})}).then(function(r){ if(!r.ok) throw new Error('файл '+(i+1)+' → '+r.status); });
-  }); }, Promise.resolve()).then(function(){return true;});
+  return files.reduce(function(chain,f,i){ return chain.then(function(){ return uploadOneFile(batch,f,i,s,files.length); }); }, Promise.resolve()).then(function(){return true;});
 }
 function run(){
   var s=$('run'); if(!TOK()){s.textContent='введите токен'; s.className='status err'; return;}
