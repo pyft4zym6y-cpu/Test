@@ -18,6 +18,9 @@ import AdminClientPage from './pages/AdminClientPage';
 import KpPage from './pages/KpPage';
 import DecisionPage from './pages/DecisionPage';
 import PrivacyPage from './pages/PrivacyPage';
+import ConnectorsPage from './pages/ConnectorsPage';
+import AuditRunnerPage from './pages/AuditRunnerPage';
+import Assistant from './components/Assistant';
 
 type Ctx = { session: Session | null; member: Member; locked: boolean };
 const AppCtx = createContext<Ctx | null>(null);
@@ -31,6 +34,16 @@ function Topbar({ member }: { member: Member | null }) {
           WEEXP<b>·DISCOVERY</b>
         </Link>
         <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+          {member && (
+            <Link to="/connectors" className="tag">
+              Коннекторы
+            </Link>
+          )}
+          {member?.is_admin && (
+            <Link to="/audit" className="tag">
+              Запустить аудит
+            </Link>
+          )}
           {member?.is_admin && (
             <Link to="/admin" className="tag">
               Админ
@@ -152,6 +165,8 @@ export default function App() {
           <Route path="/links" element={<LinksPage />} />
           <Route path="/d/:sheet" element={<DomainPage />} />
           <Route path="/access" element={<AccessPage />} />
+          <Route path="/connectors" element={<ConnectorsPage />} />
+          <Route path="/audit" element={<AuditRunnerPage />} />
           <Route path="/decision" element={<DecisionPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/report" element={<ReportPage />} />
@@ -161,6 +176,7 @@ export default function App() {
           <Route path="/kp/:clientId" element={<KpPage />} />
           <Route path="*" element={<Dashboard />} />
         </Routes>
+        {(DEMO_MEMBER as Member).is_admin && <Assistant />}
       </AppCtx.Provider>
     );
 
@@ -216,6 +232,8 @@ export default function App() {
         <Route path="/links" element={<LinksPage />} />
         <Route path="/d/:sheet" element={<DomainPage />} />
         <Route path="/access" element={<AccessPage />} />
+        <Route path="/connectors" element={<ConnectorsPage />} />
+        <Route path="/audit" element={<AuditRunnerPage />} />
           <Route path="/decision" element={<DecisionPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/report" element={<ReportPage />} />
@@ -225,6 +243,7 @@ export default function App() {
         <Route path="/kp/:clientId" element={<KpPage />} />
         <Route path="*" element={<Dashboard />} />
       </Routes>
+      {member.is_admin && <Assistant />}
     </AppCtx.Provider>
   );
 }

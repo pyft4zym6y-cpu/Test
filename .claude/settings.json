@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "extraKnownMarketplaces": {
+    "claude-plugins-official": {
+      "source": { "source": "github", "repo": "anthropics/claude-plugins-official" }
+    },
+    "agents-observe": {
+      "source": { "source": "github", "repo": "simple10/agents-observe" }
+    },
+    "thedotmack": {
+      "source": { "source": "github", "repo": "thedotmack/claude-mem" }
+    },
+    "ui-ux-pro-max-skill": {
+      "source": { "source": "github", "repo": "nextlevelbuilder/ui-ux-pro-max-skill" }
+    },
+    "claude-design-skills": {
+      "source": { "source": "github", "repo": "freshtechbro/claudedesignskills" }
+    },
+    "web-animation-skills": {
+      "source": { "source": "github", "repo": "iart-ai/web-animation-skills" }
+    }
+  },
+  "enabledPlugins": {
+    "agents-observe@agents-observe": true,
+    "claude-mem@thedotmack": true,
+    "chrome-devtools-mcp@claude-plugins-official": true,
+    "firecrawl@claude-plugins-official": true,
+    "ui-ux-pro-max@ui-ux-pro-max-skill": true,
+    "frontend-design@claude-plugins-official": true,
+    "modern-web-guidance@claude-plugins-official": true
+  }
+}

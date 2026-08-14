@@ -1,0 +1,120 @@
+import { lazy, Suspense, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { band, seg, setLayer as set, useScrollScene } from '@/lib/scene';
+import './system.css';
+
+const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
+
+/**
+ * WEEXP — THE SYSTEM IN MOTION (home-film, /system). Повна драматургія головної на
+ * одному WebGL-об'єкті (Commerce System), керована скролом (scroll = камера):
+ *   SYMPTOM → камера входить → 7 систем збираються (лейбли) → коренева причина
+ *   (слабка ланка червоним) → CONNECT (частини як одне) → ACTIVATION (гроші течуть)
+ *   → INDEPENDENCE (CTA). Світле cinematic-полотно. Живий (темний) сайт не чіпаємо.
+ */
+const SYSTEMS = ['Трафік', 'Конверсія', 'Утримання', 'Операції', 'Дані', 'Бренд', 'Юніт-економіка'];
+const BOTTLENECK = 2; // «Утримання» — слабка ланка у сцені кореневої причини
+
+export function SystemInMotion() {
+  const sec = useRef<HTMLElement>(null);
+  const progress = useRef(0);                        // спільний прогрес для WebGL-об'єкта
+  const alerts = useRef<number[]>([]);               // системи, що світяться червоним
+  const labels = useRef(SYSTEMS.map(() => ({ x: 50, y: 50, vis: 0 }))); // спроєктовані позиції вузлів
+  const labelEls = useRef<(HTMLDivElement | null)[]>([]);
+  const sVoid = useRef<HTMLDivElement>(null);
+  const sForm = useRef<HTMLDivElement>(null);
+  const sRoot = useRef<HTMLDivElement>(null);
+  const sConnect = useRef<HTMLDivElement>(null);
+  const sActivate = useRef<HTMLDivElement>(null);
+  const sCta = useRef<HTMLDivElement>(null);
+
+  useScrollScene(sec, (p, reduce) => {
+    progress.current = p;
+    alerts.current = !reduce && p >= 0.30 && p <= 0.52 ? [BOTTLENECK] : [];
+    set(sVoid.current, reduce ? 1 : seg(p, -1, 0, 0.07, 0.13), `translateY(${((1 - band(p, 0, 0.07)) * -3).toFixed(1)}vh)`);
+    set(sForm.current, reduce ? 1 : seg(p, 0.13, 0.18, 0.26, 0.32));
+    set(sRoot.current, reduce ? 1 : seg(p, 0.34, 0.39, 0.46, 0.52));
+    set(sConnect.current, reduce ? 1 : seg(p, 0.54, 0.59, 0.64, 0.70));
+    set(sActivate.current, reduce ? 1 : seg(p, 0.72, 0.77, 0.83, 0.88));
+    set(sCta.current, reduce ? 1 : seg(p, 0.90, 0.95, 1.1, 1.2));
+  });
+
+  // rAF: вішаємо 7 лейблів систем на спроєктовані позиції вузлів. Видимі під час
+  // збірки й зв'язку (FORM..CONNECT), гаснуть в ACTIVATION, щоб не заважати імпульсам.
+  useEffect(() => {
+    let raf = 0;
+    const tick = () => {
+      const gate = band(progress.current, 0.16, 0.22) * (1 - band(progress.current, 0.68, 0.76));
+      const L = labels.current;
+      for (let i = 0; i < L.length; i++) {
+        const el = labelEls.current[i]; if (!el) continue;
+        el.style.left = L[i].x.toFixed(2) + '%';
+        el.style.top = L[i].y.toFixed(2) + '%';
+        el.style.opacity = String(Math.max(0, Math.min(1, L[i].vis * gate)));
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  return (
+    <section ref={sec} className="sysx sysx-film" aria-label="WEEXP — The System in Motion">
+      <div className="sysx-stage">
+        <span className="sysx-field" aria-hidden="true" />
+        <Suspense fallback={null}><CommerceSystem3D progress={progress} alerts={alerts} labels={labels} /></Suspense>
+
+        {/* 7 систем-лейблів (позиціонуються rAF-ом) */}
+        <div className="sysx-labels" aria-hidden="true">
+          {SYSTEMS.map((s, i) => (
+            <div key={s} ref={(el) => { labelEls.current[i] = el; }} className={'sysx-label' + (i === BOTTLENECK ? ' is-alert' : '')}>
+              <span className="sysx-label-dot" /><span className="sysx-label-t">{s}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* SYMPTOM / VOID */}
+        <div ref={sVoid} className="sysx-scene sysx-void">
+          <div className="sysx-kick">WEEXP — The System in Motion</div>
+          <h1 className="sysx-display sysx-h1">Система<br />замість <span className="sysx-em">героїзму</span></h1>
+          <p className="sysx-lead">Продажі тримаються на людях і ручному режимі, а не на системі. Подивіться, як має бути влаштовано.</p>
+          <span className="sysx-scrollhint mono">↓ scroll to enter</span>
+        </div>
+
+        {/* FORM — 7 систем збираються */}
+        <div ref={sForm} className="sysx-scene sysx-form" style={{ opacity: 0 }}>
+          <h2 className="sysx-display sysx-h2">E-commerce — це <span className="sysx-em">система</span><br />із семи частин.</h2>
+          <p className="sysx-lead">Трафік, конверсія, утримання, операції, дані, бренд, юніт-економіка — вони працюють лише разом.</p>
+        </div>
+
+        {/* ROOT CAUSE — слабка ланка */}
+        <div ref={sRoot} className="sysx-scene sysx-root" style={{ opacity: 0 }}>
+          <h2 className="sysx-display sysx-h2">Одна слабка ланка<br /><span className="sysx-em sysx-em-alert">коштує грошей</span>.</h2>
+          <p className="sysx-lead">Система сильна настільки, наскільки сильна її найслабша частина. Саме там витікає виторг.</p>
+        </div>
+
+        {/* CONNECT */}
+        <div ref={sConnect} className="sysx-scene sysx-connect" style={{ opacity: 0 }}>
+          <h2 className="sysx-display sysx-h2">Частини мають<br />працювати як <span className="sysx-em">одне</span>.</h2>
+          <p className="sysx-lead">Не сім інструментів окремо — одна зв'язана система, де кожна дія підсилює наступну.</p>
+        </div>
+
+        {/* ACTIVATION */}
+        <div ref={sActivate} className="sysx-scene sysx-activate" style={{ opacity: 0 }}>
+          <h2 className="sysx-display sysx-h2">Коли система працює —<br />гроші течуть <span className="sysx-em">самі</span>.</h2>
+          <p className="sysx-lead">Менша вартість клієнта, органіка, повторні продажі. Вітрина стає активом, а не статтею витрат.</p>
+        </div>
+
+        {/* CTA — INDEPENDENCE */}
+        <div ref={sCta} className="sysx-scene sysx-ctaScene" style={{ opacity: 0 }}>
+          <div className="sysx-kick">Independence Score</div>
+          <h2 className="sysx-display sysx-h2">Наскільки незалежний<br />ваш <span className="sysx-em">e-commerce</span>?</h2>
+          <div className="sysx-cta-row">
+            <Link to="/diagnose" className="sysx-cta is-primary">Знайти вузьке місце →</Link>
+            <Link to="/loss" className="sysx-cta">Порахувати втрати</Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

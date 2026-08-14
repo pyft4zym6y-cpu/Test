@@ -1,0 +1,122 @@
+/**
+ * /challenges — горизонтальний dolly крізь 7 систем. Той самий motion-система,
+ * інший об'єкт: filmstrip, що їде вбік від вертикального скролу; активна
+ * система в центрі й на передньому плані, сусідні глибше.
+ */
+.cjq { position: relative; height: 760vh; background: var(--ink-950); }
+.cjq-stage { position: sticky; top: 0; height: 100vh; overflow: hidden; isolation: isolate; }
+
+/* Світло глибини за центром сцени */
+.cjq-glow {
+  position: absolute; top: 50%; left: 50%; width: 90vh; height: 90vh; transform: translate(-50%, -50%);
+  border-radius: 50%; pointer-events: none; z-index: 0;
+  background: radial-gradient(circle, color-mix(in srgb, var(--verd-700) 20%, transparent) 0%, transparent 60%);
+  filter: blur(40px);
+}
+
+/* Спільні overlay-акти (інтро/аутро) */
+.cjq-intro, .cjq-outro {
+  position: absolute; inset: 0; z-index: 3; display: grid; align-content: center; justify-items: center;
+  text-align: center; gap: clamp(16px, 2.4vw, 28px); padding: 0 clamp(20px, 6vw, 90px);
+  will-change: opacity, transform; pointer-events: none;
+}
+.cjq-intro a, .cjq-outro a { pointer-events: auto; }
+.cjq-kick { color: var(--steel-600); }
+.cjq-h1 {
+  font-family: var(--display); font-weight: 800; letter-spacing: -.035em; line-height: .92;
+  font-size: clamp(44px, 8.5vw, 128px); color: var(--paper); text-wrap: balance;
+}
+.cjq .mk { color: var(--mark-600); font-style: italic; }
+.cjq-lead { max-width: 46ch; font-size: clamp(16px, 1.7vw, 21px); line-height: 1.5; color: var(--steel-400); }
+.cjq-scroll { margin-top: 10px; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--steel-600); animation: cjqBob 2.4s ease-in-out infinite; }
+@keyframes cjqBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
+.cjq-cta-row { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
+
+/* Стрічка */
+.cjq-track {
+  position: absolute; top: 0; left: 0; height: 100vh; z-index: 2;
+  display: flex; align-items: center; gap: clamp(24px, 4vw, 64px);
+  will-change: transform;
+}
+.cjq-panel {
+  position: relative; flex: 0 0 clamp(320px, 46vw, 640px); height: 74vh;
+  display: grid; align-content: center;
+  padding: clamp(24px, 3vw, 44px) clamp(24px, 3.4vw, 52px);
+  border-radius: 20px;
+  border: 1px solid rgba(199, 210, 214, .14);
+  background:
+    linear-gradient(152deg, color-mix(in srgb, var(--ink-700) 82%, transparent) 0%, color-mix(in srgb, var(--ink-950) 88%, transparent) 100%);
+  box-shadow: 0 50px 90px -40px rgba(0, 0, 0, .8), inset 0 1px 0 rgba(255, 255, 255, .05);
+  overflow: hidden; will-change: transform, opacity;
+  transition: border-color .5s, box-shadow .5s;
+}
+.cjq-panel.is-center {
+  border-color: color-mix(in srgb, var(--mark) 40%, transparent);
+  box-shadow: 0 60px 110px -34px color-mix(in srgb, var(--mark) 30%, transparent), inset 0 1px 0 rgba(255, 255, 255, .08);
+}
+.cjq-panel-ghost {
+  position: absolute; top: -6vh; right: -1vw; z-index: 0; pointer-events: none;
+  font-family: var(--display); font-weight: 800; font-size: clamp(180px, 26vw, 360px);
+  line-height: .8; color: rgba(199, 210, 214, .045); letter-spacing: -.04em;
+}
+.cjq-panel-in { position: relative; z-index: 1; display: grid; gap: clamp(12px, 1.4vw, 18px); }
+.cjq-panel-en { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--steel-600); }
+.cjq-panel-title {
+  font-family: var(--display); font-weight: 800; letter-spacing: -.03em; line-height: .98;
+  font-size: clamp(28px, 3.4vw, 52px); color: var(--paper); text-wrap: balance;
+}
+.cjq-panel-feel {
+  font-family: var(--display); font-weight: 500; font-style: italic; line-height: 1.28;
+  font-size: clamp(16px, 1.7vw, 22px); color: var(--vel);
+}
+
+/* Ланцюг цінності — «оживає» при виїзді в центр (--near: 0..1) */
+.cjq-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 4px; margin: 4px 0; }
+.cjq-node {
+  position: relative; display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--mono); font-size: clamp(10px, 1vw, 12px); letter-spacing: .04em;
+  color: color-mix(in srgb, var(--steel-400) calc(40% + var(--near, 0) * 60%), transparent);
+  padding: 6px 10px; border: 1px solid var(--hair); border-radius: 6px;
+  /* послідовне «завантаження» вузлів: кожен вмикається трохи пізніше */
+  opacity: calc(0.35 + clamp(0, var(--near, 0) * 5 - var(--k) * 0.7, 1) * 0.65);
+  transition: color .4s, border-color .4s;
+}
+.cjq-panel.is-center .cjq-node { color: var(--paper); border-color: color-mix(in srgb, var(--mark) 24%, var(--hair)); }
+.cjq-node-link { width: clamp(10px, 1.4vw, 22px); height: 1px; background: color-mix(in srgb, var(--mark) 60%, transparent); margin-left: 10px; }
+
+.cjq-panel-sell { font-size: clamp(13px, 1.35vw, 16px); line-height: 1.5; color: var(--steel-400); }
+.cjq-panel-sell b { color: var(--mark-600); margin-right: 4px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; font-size: .82em; }
+.cjq-domains { display: flex; flex-wrap: wrap; gap: 7px; }
+.cjq-domains span { font-size: 10px; letter-spacing: .04em; color: var(--vel); border: 1px solid var(--hair); padding: 6px 9px; border-radius: 5px; }
+.cjq-link {
+  justify-self: start; margin-top: 4px; font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--mark-600); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--mark) 50%, transparent); padding-bottom: 3px;
+}
+.cjq-link:hover { color: var(--paper); }
+
+/* Камера-рейка */
+.cjq-rail {
+  position: absolute; left: 50%; bottom: clamp(20px, 4vh, 40px); transform: translateX(-50%); z-index: 4;
+  display: flex; gap: 10px; pointer-events: none;
+}
+.cjq-tick { font-family: var(--mono); font-size: 10px; color: var(--steel-700); transition: color .3s; }
+.cjq-tick b { font-weight: 500; }
+.cjq-tick.is-on { color: var(--mark-600); }
+
+/* Мобільний: панелі майже на всю ширину, dolly лишається */
+@media (max-width: 860px) {
+  .cjq { height: 820vh; }
+  .cjq-panel { flex-basis: 84vw; height: 72vh; }
+  .cjq-panel-ghost { font-size: 40vw; }
+}
+
+/* Reduced motion: стрічка стає звичайним потоком, без dolly */
+@media (prefers-reduced-motion: reduce) {
+  .cjq { height: auto; }
+  .cjq-stage { position: static; height: auto; overflow: visible; }
+  .cjq-track { position: static; height: auto; flex-direction: column; transform: none !important; gap: 20px; padding: 40px clamp(20px, 5vw, 60px); }
+  .cjq-panel { flex-basis: auto; width: 100%; height: auto; opacity: 1 !important; transform: none !important; }
+  .cjq-node { opacity: 1 !important; }
+  .cjq-intro, .cjq-outro { position: static; inset: auto; opacity: 1 !important; transform: none !important; padding: 60px 20px; }
+  .cjq-rail, .cjq-scroll, .cjq-glow { display: none; }
+}
