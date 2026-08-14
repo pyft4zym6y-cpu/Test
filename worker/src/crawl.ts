@@ -45,6 +45,23 @@ export type UxProbe = {
 /** Маркер для аннотации скриншота: рамка+подпись на элементе первого экрана. */
 export type Annotation = { label: string; x: number; y: number; w: number; h: number; tone: 'good' | 'warn' };
 
+/**
+ * Отпечаток стека: на чём реально собран сайт. Отвечает на вопрос, который живой
+ * дизайнер задаёт за 10 секунд — это шаблонный WordPress на купленной теме и
+ * билдере, или собственное решение. Снимается с HTML/скриптов/классов главной.
+ */
+export type StackFingerprint = {
+  cms: string | null;             // WordPress / WooCommerce / Shopify / OpenCart …
+  cmsVersion: string | null;      // «6.2» из generator/?ver
+  theme: string | null;          // слаг темы (wp-content/themes/<slug>)
+  themeVersion: string | null;
+  builder: string | null;        // Elementor / WPBakery / Divi / Bricks / Avada Fusion
+  plugins: string[];             // слаги плагинов (wp-content/plugins/<slug>)
+  commercialTemplate: boolean;   // распознан известный коммерческий шаблон/маркетплейс-тема
+  templateName: string | null;   // человекочитаемое имя коммерческой темы, если узнан
+  signals: string[];             // человекочитаемые «улики»: шаблонность, билдер, устаревшесть
+};
+
 export type PageAudit = {
   url: string;
   finalUrl: string;
@@ -54,6 +71,7 @@ export type PageAudit = {
   checks: L0Check[];
   score: number | null; // % пройденных проверок против голд-стандарта
   ux?: UxProbe;         // дизайн-замеры для UX/UI-разбора
+  stack?: StackFingerprint; // отпечаток стека (на чём собран сайт) — снимается с главной
   screenshot?: string;  // первый экран страницы (base64 jpeg) — для документов; не пишется в dataset.json
   error?: string;
 };
@@ -80,6 +98,7 @@ export type SiteCrawl = {
   cartPrimed?: boolean;           // в корзину положен товар до аудита корзины/чекаута (иначе пустой чекаут)
   ai?: { llmsTxt: boolean; blockedBots: string[] }; // GEO/AEO: llms.txt и доступ AI-краулеров
   secHeaders?: { csp: boolean; hsts: boolean; xfo: boolean }; // заголовки безопасности главной
+  stack?: StackFingerprint; // отпечаток стека (на чём собран сайт) — с главной
   error?: string;
 };
 
@@ -141,7 +160,7 @@ export async function launchBrowser(): Promise<Browser> {
 }
 
 /* ── Проверки голд-стандарта, исполняются В СТРАНИЦЕ (реальный DOM) ── */
-function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolean>; tech: string[]; ux: UxProbe } {
+function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolean>; tech: string[]; ux: UxProbe; stack: StackFingerprint } {
   const out: L0Check[] = [];
   const add = (id: string, group: string, label: string, pass: boolean, detail?: string) =>
     out.push({ id, group, label, pass, detail });
@@ -407,7 +426,56 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
     trustBadges, paymentIcons, reviews, reviewCount, formFields, guestCheckoutHint, smallTapTargets, baseFontPx, bodyWords, contentLang, socialLinks, blocks, annotations,
   };
 
-  return { checks: out, kindSignals, tech, ux };
+  // ── Отпечаток стека: на чём реально собран сайт (шаблонный WP + тема + билдер) ──
+  const themeM = html.match(/wp-content\/themes\/([a-z0-9_.-]+)/i);
+  const theme = themeM ? themeM[1].toLowerCase().replace(/-(child|master)$/, '') : null;
+  const pluginSet = new Set<string>();
+  for (const m of html.matchAll(/wp-content\/plugins\/([a-z0-9_.-]+)/gi)) pluginSet.add(m[1].toLowerCase());
+  const plugins = Array.from(pluginSet).slice(0, 24);
+  const cmsVerM = generator.match(/wordpress\s+([0-9.]+)/i);
+  const cmsVersion = cmsVerM ? cmsVerM[1] : null;
+  const themeVerM = theme ? html.match(new RegExp('themes/' + theme.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[^"\'?]*\\?ver=([0-9.]+)', 'i')) : null;
+  const themeVersion = themeVerM ? themeVerM[1] : null;
+  let builder: string | null = null;
+  if (/elementor-|data-elementor|\/plugins\/elementor/i.test(html) || pluginSet.has('elementor') || pluginSet.has('elementor-pro')) builder = 'Elementor';
+  else if (/js_composer|wpbakery|vc_row|vc_column/i.test(low) || pluginSet.has('js_composer')) builder = 'WPBakery';
+  else if (/et_pb_|\/divi\/|theme-divi/i.test(low)) builder = 'Divi';
+  else if (/brxe-|\/bricks\//i.test(low)) builder = 'Bricks';
+  else if (/fusion-builder|avada|fusion-column/i.test(low)) builder = 'Avada Fusion';
+  else if (/wp-block-|has-global-padding|is-layout-flow/i.test(low)) builder = 'Gutenberg';
+  // Известные коммерческие/маркетплейс-темы (ThemeForest и пр.) и freemium-стартеры.
+  const PREMIUM: Record<string, string> = {
+    woodmart: 'WoodMart', flatsome: 'Flatsome', porto: 'Porto', shopkeeper: 'Shopkeeper', the7: 'The7',
+    betheme: 'BeTheme', avada: 'Avada', xstore: 'XStore', savoy: 'Savoy', basel: 'Basel', electro: 'Electro',
+    martfury: 'Martfury', kalium: 'Kalium', jupiter: 'Jupiter', jupiterx: 'JupiterX', bridge: 'Bridge',
+    ekommart: 'Ekommart', woodstock: 'Woodstock', konte: 'Konte', razzi: 'Razzi', phlox: 'Phlox',
+    rehub: 'REHub', kadence: 'Kadence Pro', enfold: 'Enfold', impreza: 'Impreza', uncode: 'Uncode',
+  };
+  const FREE_STARTER: Record<string, string> = {
+    astra: 'Astra', oceanwp: 'OceanWP', storefront: 'Storefront', blocksy: 'Blocksy', neve: 'Neve',
+    'hello-elementor': 'Hello Elementor', generatepress: 'GeneratePress', kadencewp: 'Kadence', twentytwentyfour: 'Twenty Twenty-Four',
+  };
+  const premiumHit = theme ? PREMIUM[theme] : null;
+  const starterHit = theme ? FREE_STARTER[theme] : null;
+  const commercialTemplate = Boolean(premiumHit) || /themeforest|envato|elements\.envato/i.test(low);
+  const templateName = premiumHit ?? (/(themeforest|envato)/i.test(low) ? 'ThemeForest/Envato' : null);
+  const sig: string[] = [];
+  if (cmsVersion) {
+    const [maj, min] = cmsVersion.split('.').map((n) => parseInt(n, 10));
+    sig.push(`WordPress ${cmsVersion} — версія відкрита в <generator> (зайвий сигнал для зловмисника)`);
+    if (maj < 6 || (maj === 6 && (min || 0) < 4)) sig.push(`гілка WordPress ${cmsVersion} застаріла — незакриті вразливості ядра, потрібне оновлення`);
+  }
+  if (premiumHit) sig.push(`тема «${premiumHit}» — готовий комерційний шаблон з маркетплейсу, не власна збірка (тисячі однакових вітрин)`);
+  else if (starterHit) sig.push(`тема «${starterHit}» — безкоштовний starter-шаблон, оформлення тримається на білдері поверх нього`);
+  else if (theme) sig.push(`тема «${theme}» — типова готова тема, не кастомна дизайн-система`);
+  if (builder && /Elementor|WPBakery|Divi|Avada/.test(builder)) sig.push(`верстка на візуальному білдері ${builder} — «шаблонна» збірка: надлишковий DOM і CSS, вантаж на швидкість, блоки-костилі замість дизайн-системи`);
+  if (plugins.length >= 10) sig.push(`плагінів у стеку: ${plugins.length} — кожен розширює вагу й поверхню атаки`);
+  const stack: StackFingerprint = {
+    cms: /woocommerce|wc-|wc_/.test(low) ? 'WooCommerce' : (/wp-content|wp-includes/.test(low) ? 'WordPress' : null),
+    cmsVersion, theme, themeVersion, builder, plugins, commercialTemplate, templateName, signals: sig,
+  };
+
+  return { checks: out, kindSignals, tech, ux, stack };
 }
 
 function classify(url: string, sig: Record<string, boolean>, isRoot: boolean): PageKind {
@@ -461,7 +529,7 @@ async function auditPage(page: Page, url: string, isRoot: boolean, access?: Site
   if (/just a moment|attention required|verify you are human|checking your browser|cloudflare|доступ (ограничен|обмежено)|captcha/i.test(title)) {
     return { audit: { url: cleanUrl, finalUrl, kind: 'other', status, title, checks: [], score: null, error: 'бот-защита: challenge-страница (Cloudflare/CAPTCHA) — нужен headful/stealth или доступ' }, tech: [], links: [] };
   }
-  const { checks, kindSignals, tech, ux } = await page.evaluate(inPageChecks);
+  const { checks, kindSignals, tech, ux, stack } = await page.evaluate(inPageChecks);
   const links = await page
     .evaluate(() => Array.from(document.querySelectorAll('a[href]')).map((a) => (a as HTMLAnchorElement).href).slice(0, 400))
     .catch(() => [] as string[]);
@@ -474,7 +542,7 @@ async function auditPage(page: Page, url: string, isRoot: boolean, access?: Site
     const buf = await page.screenshot({ type: 'jpeg', quality: 55, clip: { x: 0, y: 0, width: 1366, height: 900 } }).catch(() => null);
     if (buf) screenshot = buf.toString('base64');
   }
-  return { audit: { url: cleanUrl, finalUrl, kind, status, title, checks, score, ux, screenshot }, tech, links, headers };
+  return { audit: { url: cleanUrl, finalUrl, kind, status, title, checks, score, ux, stack, screenshot }, tech, links, headers };
 }
 
 /** Определение CMS/платформы по заголовкам ответа и cookies (надёжнее HTML). */
@@ -671,6 +739,7 @@ export async function crawlSite(
     // (403/404/5xx) и сетевой сбой auditPage уже пометил как error выше.
     out.reachable = !home.audit.error && (home.audit.status === null || (home.audit.status >= 200 && home.audit.status < 400));
     out.finalUrl = home.audit.finalUrl;
+    out.stack = home.audit.stack;
     out.pages.push(home.audit);
     if (home.audit.error && !out.pages.some((p) => !p.error)) out.error = home.audit.error;
     out.discoveredLinks = home.links.length;

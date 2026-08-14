@@ -10,7 +10,8 @@
  * «проверить», а не «нет».
  */
 import type { AuditDataset } from './report.js';
-import type { PageAudit, PageKind, Annotation } from './crawl.js';
+import type { PageAudit, PageKind, Annotation, StackFingerprint } from './crawl.js';
+import type { DesignReview } from './designReview.js';
 import { REFERENCE, type Weight } from './prototype.js';
 
 /** 18 измерений метода (та же таксономия, что в эталонах). */
@@ -87,7 +88,8 @@ const REQUIREMENTS: Partial<Record<PageKind, ReqRow[]>> = {
   ],
 };
 
-export type BlockState = 'ok' | 'check' | 'gap'; // ✅ есть · ⚪ проверить · 🔴 нет
+// ✅ есть-и-по-эталону · ◑ есть-но-слабо (наличие ≠ правильно) · ⚪ проверить (скрыто/JS) · 🔴 нет
+export type BlockState = 'ok' | 'weak' | 'check' | 'gap';
 export type BlockRow = {
   name: string; role: string; chapter: string; weight: Weight; dims: Dim[];
   state: BlockState; score: number; max: number; wordVerdict: string;
@@ -100,7 +102,7 @@ export type PageReport = {
   screenshot?: string;    // первый экран (base64 jpeg) — для скриншота слева (A0 §9)
   annotations: Annotation[]; // маркеры на скриншоте (A0 §9)
   score: number; max: number; complianceScore: number | null; // score голд-стандарта страницы (%)
-  counts: { ok: number; check: number; gap: number };
+  counts: { ok: number; weak: number; check: number; gap: number };
   rows: BlockRow[];
   requirements: ReqRow[]; // сквозные требования (TECH/PERF/SEO/ANL/A11Y/PRICE/LAW)
   strong: string[];       // что сделано сильно
@@ -120,6 +122,8 @@ export type SiteAuditReport = {
   warning?: string; // пробел покрытия (напр. PDP не разобрана) — вывод с оговоркой
   pageTypes: import('./crawl.js').PageTypeCoverage[]; // карта уникальных типов страниц
   soft404: boolean | null;
+  stack?: StackFingerprint;  // на чём собран сайт (шаблон/CMS/билдер) — вердикт платформы
+  design?: DesignReview;     // дизайн-ревью со зрением (senior design director)
 };
 
 const MAX_BY_WEIGHT: Record<Weight, number> = { core: 4, important: 3, nice: 2 };
@@ -150,15 +154,54 @@ function nowFor(key: string, p: PageAudit): string {
   }
 }
 
-/** Понижение балла за слабое качество присутствующего блока (есть ≠ хорошо). */
-function qualityPenalty(key: string, p: PageAudit): string | null {
+/**
+ * Критерії ЯКОСТІ присутнього блока: наявність ≠ зроблено правильно. Блок є в DOM,
+ * але провалює вимогу еталона → стан 'weak' (є, але слабко), а не 'ok'. Повертає
+ * конкретний дефект (те, що піде в «зараз») + як довести до еталона. Тільки за
+ * сигналами, які реально знімає обхід — без вигадок. Глибші структурні сигнали
+ * (анатомія блока довіри, тип якоря в ряду лого) додаються у пробу окремо.
+ */
+function blockQuality(key: string, p: PageAudit): { defect: string; fix: string } | null {
   const ux = p.ux;
   if (!ux) return null;
-  if (key === 'gallery' && ux.galleryImages > 0 && ux.galleryImages < 3) return 'галерея тонша за еталон';
-  if (key === 'add_to_cart' && ux.distinctButtonColors > 4) return 'пріоритет CTA розмито кольорами кнопок';
-  if (key === 'nav' && ux.navItems > 12) return 'меню перевантажене';
-  if (key === 'contact_form' && ux.formFields > 8) return 'форма довша за норму';
-  return null;
+  switch (key) {
+    case 'gallery':
+      if (ux.galleryImages > 0 && ux.galleryImages < 4)
+        return { defect: `галерея тонша за еталон: ${ux.galleryImages} фото проти 5 типів медіа`, fix: 'додати предметне, в інтер’єрі (масштаб), макро текстури, відео та фото покупців' };
+      return null;
+    case 'add_to_cart':
+      if (ux.distinctButtonColors > 4)
+        return { defect: `пріоритет CTA розмито: ${ux.distinctButtonColors} кольорів кнопок у першому екрані`, fix: 'один домінуючий колір головної дії, решта — вторинні' };
+      if (ux.foldButtons > 10)
+        return { defect: `над згином ${ux.foldButtons} клікабельних — головна дія тоне в конкуренції`, fix: 'звести перший екран до одного явного CTA' };
+      return null;
+    case 'nav':
+      if (ux.navItems > 14)
+        return { defect: `меню перевантажене: ${ux.navItems} пунктів (закон Гіка)`, fix: 'звести до ≤9 осей верхнього рівня, решта — у мега-меню' };
+      return null;
+    case 'contact_form':
+      if (ux.formFields > 8)
+        return { defect: `форма довга: ${ux.formFields} полів — кожне зайве знижує завершення`, fix: 'лишити мінімум (ім’я, телефон), решта — опційно/після оплати' };
+      return null;
+    case 'reviews':
+      if (ux.reviews && (ux.reviewCount ?? 0) === 0)
+        return { defect: 'рейтинг є, але 0 підтверджених відгуків — соц. доказ порожній', fix: 'живі відгуки з фото/іменами та «підтверджена покупка»' };
+      return null;
+    case 'trust':
+      if (ux.trustBadges && !ux.paymentIcons)
+        return { defect: 'сигнали довіри неповні: немає платіжних/контактних сигналів поруч', fix: 'додати способи оплати, повернення й реальні контакти в точці рішення' };
+      return null;
+    case 'product_grid':
+      if (p.kind === 'home' && ux.productCards > 0 && ux.productCards < 4)
+        return { defect: `добірка тонка: ${ux.productCards} карток на головній`, fix: 'керовані добірки (бестселери/новинки/сезон), а не 2–3 випадкові товари' };
+      return null;
+    case 'guest_checkout':
+      if (p.kind === 'checkout' && !ux.guestCheckoutHint)
+        return { defect: 'гостьового оформлення не видно — ймовірно, потрібна реєстрація (−19% кинутих)', fix: 'покупка без реєстрації; акаунт — однією кнопкою після оплати' };
+      return null;
+    default:
+      return null;
+  }
 }
 
 /** Блок «есть», если он в карте блоков ИЛИ виден соответствующим измерением UxProbe —
@@ -185,6 +228,7 @@ function uxHas(key: string, p: PageAudit): boolean {
 /** Слово-вердикт як у референсі: сильно / частково / перевірити / слабко / критично / немає. */
 function wordFor(state: BlockState, weight: Weight): string {
   if (state === 'ok') return 'сильно';
+  if (state === 'weak') return 'слабко';
   if (state === 'check') return 'перевірити';
   return weight === 'core' ? 'критично' : weight === 'important' ? 'слабко' : 'немає';
 }
@@ -203,22 +247,39 @@ function buildPage(p: PageAudit): PageReport | null {
   const present = p.ux?.blocks ?? {};
   const rows: BlockRow[] = ref.blocks.map((b) => {
     const has = Boolean(present[b.key]) || uxHas(b.key, p);
-    const state: BlockState = has ? 'ok' : (b.weight === 'nice' || L0_UNCERTAIN.has(b.key) ? 'check' : 'gap');
+    let state: BlockState = has ? 'ok' : (b.weight === 'nice' || L0_UNCERTAIN.has(b.key) ? 'check' : 'gap');
     const max = MAX_BY_WEIGHT[b.weight];
-    let score = state === 'ok' ? max : state === 'check' ? 1 : 0;
-    let word = wordFor(state, b.weight);
     let now = nowFor(b.key, p);
-    const penalty = state === 'ok' ? qualityPenalty(b.key, p) : null;
-    if (penalty) { score = Math.max(1, score - 1); word = 'частково'; }
+    let should = b.detail ?? b.role;
+    // Наявність ≠ правильно: присутній блок, що провалює критерій якості → 'weak'.
+    const q = state === 'ok' ? blockQuality(b.key, p) : null;
+    if (q) {
+      state = 'weak';
+      now = `${now}. Слабко: ${q.defect}`;
+      should = `${q.fix.charAt(0).toUpperCase()}${q.fix.slice(1)}. ${should}`;
+    }
+    // 'weak' = блок є, але не за еталоном: балл нижчий за повний, але вищий за 'нет'.
+    const score = state === 'ok' ? max : state === 'weak' ? Math.max(1, Math.round(max / 2)) : state === 'check' ? 1 : 0;
+    const word = wordFor(state, b.weight);
     if (state === 'check' && /^Не виявлено/.test(now)) now += ' — можливо за табом/JS, перевірити';
-    return { name: b.name, role: b.role, chapter: b.chapter, weight: b.weight, dims: DIM_BY_BLOCK[b.key] ?? ['UX'], state, score, max, wordVerdict: word, now, should: b.detail ?? b.role };
+    return { name: b.name, role: b.role, chapter: b.chapter, weight: b.weight, dims: DIM_BY_BLOCK[b.key] ?? ['UX'], state, score, max, wordVerdict: word, now, should };
   });
   const score = rows.reduce((s, r) => s + r.score, 0);
   const max = rows.reduce((s, r) => s + r.max, 0);
-  const counts = { ok: rows.filter((r) => r.state === 'ok').length, check: rows.filter((r) => r.state === 'check').length, gap: rows.filter((r) => r.state === 'gap').length };
+  const counts = {
+    ok: rows.filter((r) => r.state === 'ok').length,
+    weak: rows.filter((r) => r.state === 'weak').length,
+    check: rows.filter((r) => r.state === 'check').length,
+    gap: rows.filter((r) => r.state === 'gap').length,
+  };
   const strong = rows.filter((r) => r.state === 'ok' && r.weight !== 'nice').map((r) => r.name);
-  const fixes = rows.filter((r) => r.state === 'gap').sort((a, b) => b.max - a.max)
-    .map((r) => ({ what: `Додати: ${r.name}`, crit: CRIT_BY_WEIGHT[r.weight], why: r.role }));
+  const fixes = [
+    // Спершу відсутні ядрові/важливі, далі — присутні, але слабкі (є, але не за еталоном).
+    ...rows.filter((r) => r.state === 'gap').sort((a, b) => b.max - a.max)
+      .map((r) => ({ what: `Додати: ${r.name}`, crit: CRIT_BY_WEIGHT[r.weight], why: r.role })),
+    ...rows.filter((r) => r.state === 'weak')
+      .map((r) => ({ what: `Довести до еталона: ${r.name}`, crit: (r.weight === 'core' ? 'Высокая' : 'Средняя') as 'Высокая' | 'Средняя', why: r.now.replace(/^.*Слабко:\s*/, '') })),
+  ];
   const pct = max ? Math.round((score / max) * 100) : 0;
   const conclusion = pageConclusion(ref.title, rows, pct);
   return { kind: p.kind, title: ref.title, chapter: ref.chapter, principle: ref.principle, url: p.finalUrl || p.url, conclusion, screenshot: p.screenshot, annotations: p.ux?.annotations ?? [], score, max, complianceScore: p.score, counts, rows, requirements: REQUIREMENTS[p.kind] ?? [], strong, fixes };
@@ -297,7 +358,7 @@ function applyJourney(pages: PageReport[], journey: JourneyLink[]): void {
     row.state = step.status === 'тупик' ? 'gap' : 'check';
     row.wordVerdict = step.status === 'тупик' ? 'критично' : 'перевірити';
     row.now = `${row.now}. Journey: ${step.result}`;
-    page.counts = { ok: page.rows.filter((r) => r.state === 'ok').length, check: page.rows.filter((r) => r.state === 'check').length, gap: page.rows.filter((r) => r.state === 'gap').length };
+    page.counts = { ok: page.rows.filter((r) => r.state === 'ok').length, weak: page.rows.filter((r) => r.state === 'weak').length, check: page.rows.filter((r) => r.state === 'check').length, gap: page.rows.filter((r) => r.state === 'gap').length };
     page.fixes.unshift({ what: `Інтерактивний дефект (journey): ${step.stage.toLowerCase()}`, crit: step.status === 'тупик' ? 'Блокирующая' : 'Высокая', why: step.result });
   }
 }
@@ -344,7 +405,7 @@ export function buildSiteAudit(ds: AuditDataset, opts: { journey?: JourneyLink[]
     warning = 'Картка товару (PDP) не потрапила у вибірку обходу — головний конвертувальний тип сторінки не розібрано. Бал відповідності стосується лише розібраних типів; висновок по вітрині — із застереженням до розбору PDP.';
     verdict = `За розібраними типами — ${totalPct}%, але PDP не розібрано: висновок про вітрину неповний (пробіл покриття, а не «все добре»).`;
   }
-  return { client, takenAt: ds.takenAt, tier: ds.tier, pages, tree, totalScore, totalMax, totalPct, systemic: systemicDefects(ds), verdict, warning, pageTypes: ds.client.pageTypes ?? [], soft404: ds.client.soft404 ?? null };
+  return { client, takenAt: ds.takenAt, tier: ds.tier, pages, tree, totalScore, totalMax, totalPct, systemic: systemicDefects(ds), verdict, warning, pageTypes: ds.client.pageTypes ?? [], soft404: ds.client.soft404 ?? null, stack: ds.client.stack };
 }
 
 export { KIND_LABEL };

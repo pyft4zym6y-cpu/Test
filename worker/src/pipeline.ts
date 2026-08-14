@@ -19,6 +19,7 @@ import { buildUxUiReport, narrateUxUi, renderUxUiMd } from './uxui.js';
 import { exportPrototypeDocx } from './export/prototypeDocx.js';
 import { buildPrototypeReport, narratePrototype, renderPrototypeMd } from './prototype.js';
 import { buildSiteAudit, type SiteAuditReport } from './pagereport.js';
+import { reviewDesign } from './designReview.js';
 import { renderAuditHtml } from './export/htmlReport.js';
 import { renderExecDiagnostic } from './export/execDiagHtml.js';
 import { buildSeoArch } from './seoarch.js';
@@ -231,6 +232,14 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
 
       try {
         siteAudit = buildSiteAudit(ds, { journey: journeySteps });
+        // Дизайн-ревью со зрением: senior design director смотрит на скриншоты и
+        // выносит вкусовой вердикт (дорого/дёшево, шаблон/кастом). Не валит отчёт.
+        try {
+          log('· дизайн-ревью со зрением (design director смотрит на страницы)…');
+          siteAudit.design = await reviewDesign(ds.client, log) ?? undefined;
+          if (siteAudit.design) log(`✓ дизайн-вердикт: ${siteAudit.design.tier} · ${siteAudit.design.overallScore}/10 (${siteAudit.design.source})`);
+        } catch (e) { log(`⚠️ дизайн-ревью пропущено (${String(e).slice(0, 90)})`); }
+        if (siteAudit.stack?.signals?.length) log(`✓ платформа: ${siteAudit.stack.cms ?? '—'}${siteAudit.stack.templateName ? ` · ${siteAudit.stack.templateName}` : ''}${siteAudit.stack.builder ? ` · ${siteAudit.stack.builder}` : ''}`);
         await writeFile(join(dir, 'pagereport.json'), JSON.stringify(siteAudit, null, 2), 'utf8');
         await renderPdf(cap('uxui', renderAuditHtml(siteAudit)), join(dir, 'UX-UI-аудит-A0.pdf'), browser);
         log(`✓ UX/UI Audit A0 (PDF): соответствие эталону ${siteAudit.totalPct}%, системных дефектов ${siteAudit.systemic.length}`);

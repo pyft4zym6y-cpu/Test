@@ -15,8 +15,8 @@ import {
 } from './reportShell.js';
 import { svgDonut } from './charts.js';
 
-const STATE_MARK: Record<BlockState, string> = { ok: '✓', check: '◐', gap: '✕' };
-const STATE_CLS: Record<BlockState, string> = { ok: 'ok', check: 'check', gap: 'gap' };
+const STATE_MARK: Record<BlockState, string> = { ok: '✓', weak: '◑', check: '◐', gap: '✕' };
+const STATE_CLS: Record<BlockState, string> = { ok: 'ok', weak: 'weak', check: 'check', gap: 'gap' };
 const WEIGHT_LABEL: Record<BlockRow['weight'], string> = { core: 'ядро', important: 'важливо', nice: 'опц.' };
 
 /** Статус типу сторінки з обходу (модельні рядки — рос.) → україномовне відображення. */
@@ -28,10 +28,11 @@ const PT_STATUS: Record<string, { label: string; cls: string; mark: string }> = 
 const ptStatus = (s: string) => PT_STATUS[s] ?? { label: esc(s) || '—', cls: '', mark: '○' };
 
 /** Агрегати станів еталонних блоків по всій вітрині — база трьох лічильників «Підсумку». */
-function countStates(r: SiteAuditReport): { ok: number; check: number; gap: number } {
+function countStates(r: SiteAuditReport): { ok: number; weak: number; check: number; gap: number } {
   const all = r.pages.flatMap((p) => p.rows);
   return {
     ok: all.filter((b) => b.state === 'ok').length,
+    weak: all.filter((b) => b.state === 'weak').length,
     check: all.filter((b) => b.state === 'check').length,
     gap: all.filter((b) => b.state === 'gap').length,
   };
@@ -40,12 +41,13 @@ function countStates(r: SiteAuditReport): { ok: number; check: number; gap: numb
 /** Аркуш «Підсумок»: бал X / Y, вивід одним рядком і три лічильники станів блоків. */
 function summarySheet(r: SiteAuditReport): string {
   const c = countStates(r);
-  const donut = (c.ok + c.check + c.gap) ? `<div class="chart-wrap">${svgDonut([
-    { label: 'Закрито повністю', value: c.ok, color: '#16a34a' },
-    { label: 'Частково', value: c.check, color: '#d97706' },
+  const donut = (c.ok + c.weak + c.check + c.gap) ? `<div class="chart-wrap">${svgDonut([
+    { label: 'За еталоном', value: c.ok, color: '#16a34a' },
+    { label: 'Є, але слабко', value: c.weak, color: '#ea580c' },
+    { label: 'Приховано/перевірити', value: c.check, color: '#d97706' },
     { label: 'Відсутні', value: c.gap, color: '#dc2626' },
   ].filter((x) => x.value > 0), { title: 'Еталонні блоки по всій вітрині', centerLabel: `${r.totalPct}%` })}
-    <p class="chart-cap">Скільки блоків еталонної композиції присутні, працюють частково або відсутні — сумарно за всіма розібраними сторінками.</p></div>` : '';
+    <p class="chart-cap">Скільки блоків еталонної композиції зроблено за еталоном, присутні але слабко (наявність ≠ правильно), приховані або відсутні — сумарно за всіма розібраними сторінками.</p></div>` : '';
   return `<section class="block">
     <h2>Підсумок</h2>
     <div class="sum">
@@ -55,9 +57,10 @@ function summarySheet(r: SiteAuditReport): string {
       </div>
       <p class="sum-verdict">${esc(r.verdict)}</p>
     </div>
-    <div class="sum-tiles">
-      <div class="sum-tile ok"><b>${c.ok}</b><span class="sum-t">Закрито повністю</span><span class="sum-s">Блоків, що працюють як має бути</span></div>
-      <div class="sum-tile check"><b>${c.check}</b><span class="sum-t">Частково</span><span class="sum-s">Блок є, але не виконує функцію повністю</span></div>
+    <div class="sum-tiles four">
+      <div class="sum-tile ok"><b>${c.ok}</b><span class="sum-t">За еталоном</span><span class="sum-s">Блок є і зроблений як має бути</span></div>
+      <div class="sum-tile weak"><b>${c.weak}</b><span class="sum-t">Є, але слабко</span><span class="sum-s">Наявність ≠ правильно: блок є, але провалює еталон</span></div>
+      <div class="sum-tile check"><b>${c.check}</b><span class="sum-t">Приховано</span><span class="sum-s">Не підтверджено обходом (таб/JS) — перевірити</span></div>
       <div class="sum-tile gap"><b>${c.gap}</b><span class="sum-t">Відсутні</span><span class="sum-s">Блоки, яких немає взагалі</span></div>
     </div>
     ${donut}
@@ -111,7 +114,7 @@ function pageTypesSection(r: SiteAuditReport): string {
 function etalonStack(p: PageReport): string {
   const items = p.rows.map((b, i) => `<div class="et-b ${STATE_CLS[b.state]}"><i>${String(i + 1).padStart(2, '0')}</i>${esc(b.name)}<s>${STATE_MARK[b.state]}</s></div>`).join('');
   return `<div class="etalon"><div class="et-h">Еталонна композиція ↔ сайт</div>${items}
-    <div class="et-cap">Порядок блоків — еталонний. Червоне — блока немає, жовте — частково (може бути прихований).</div></div>`;
+    <div class="et-cap">Порядок блоків — еталонний. Зелене — за еталоном, помаранчеве — є, але слабко (наявність ≠ правильно), жовте — приховано/перевірити, червоне — блока немає.</div></div>`;
 }
 
 function pageSection(p: PageReport): string {
@@ -141,8 +144,9 @@ function pageSection(p: PageReport): string {
       <div class="page-left">${shot}</div>
       <div class="page-right">
         <div class="counts">
-          <span class="cnt ok"><b>${p.counts.ok}</b> закрито</span>
-          <span class="cnt check"><b>${p.counts.check}</b> частково</span>
+          <span class="cnt ok"><b>${p.counts.ok}</b> за еталоном</span>
+          <span class="cnt weak"><b>${p.counts.weak}</b> є, але слабко</span>
+          <span class="cnt check"><b>${p.counts.check}</b> приховано</span>
           <span class="cnt gap"><b>${p.counts.gap}</b> відсутні</span>
           <span class="cnt total"><b>${p.score}/${p.max}</b> · ${pct}%</span>
         </div>
@@ -152,6 +156,55 @@ function pageSection(p: PageReport): string {
     </div>
     <table class="block-table"><thead><tr><th>Блок еталона</th><th>Що на сайті зараз</th><th>Що має бути</th><th>Оцінка</th></tr></thead><tbody>${blockRows}</tbody></table>
     ${fixes}
+  </section>`;
+}
+
+/** «На чём это сделано»: вердикт платформы/шаблона — то, что живой дизайнер видит за 10 секунд. */
+function platformSection(r: SiteAuditReport): string {
+  const s = r.stack;
+  if (!s || (!s.cms && !s.theme && !s.builder)) return '';
+  const chip = (label: string, val: string | null, tone = '') => val ? `<div class="stk ${tone}"><span>${esc(label)}</span><b>${esc(val)}</b></div>` : '';
+  const tmpl = s.commercialTemplate ? 'готовий комерційний шаблон' : s.theme ? 'готова тема' : '—';
+  const sigs = (s.signals ?? []).map((x) => `<li>${esc(x)}</li>`).join('');
+  return `<section class="block">
+    <h2>На чому це зроблено: платформа і шаблон</h2>
+    <p class="lead">Перший вимір, який ставить дизайнер: це власна дизайн-система чи куплений шаблон на готовому движку. Знято з розмітки, скриптів і класів головної.</p>
+    <div class="stk-row">
+      ${chip('CMS / рушій', s.cms ? s.cms + (s.cmsVersion ? ` ${s.cmsVersion}` : '') : null, s.cmsVersion ? 'warn' : '')}
+      ${chip('Тема', s.templateName ?? s.theme, s.commercialTemplate ? 'warn' : '')}
+      ${chip('Тип', tmpl, s.commercialTemplate ? 'warn' : '')}
+      ${chip('Білдер', s.builder, s.builder && /Elementor|WPBakery|Divi|Avada/.test(s.builder) ? 'warn' : '')}
+      ${chip('Плагінів у стеку', s.plugins.length ? String(s.plugins.length) : null, s.plugins.length >= 10 ? 'warn' : '')}
+    </div>
+    ${sigs ? `<div class="stk-sig"><b>Що це означає:</b><ul>${sigs}</ul></div>` : ''}
+  </section>`;
+}
+
+/** Дизайн-вердикт со зрением: senior design director посмотрел на страницы. */
+function designSection(r: SiteAuditReport): string {
+  const d = r.design;
+  if (!d) return '';
+  const scoreCls = d.overallScore >= 7 ? 'ok' : d.overallScore >= 5 ? 'check' : 'gap';
+  const axes = (d.axes ?? []).map((a) => {
+    const cls = a.score >= 7 ? 'ok' : a.score >= 5 ? 'check' : 'gap';
+    return `<tr><td class="ax-n">${esc(a.name)}</td>
+      <td class="ax-bar"><span class="bar"><i class="fill ${cls}" style="width:${Math.round((a.score / 10) * 100)}%"></i></span></td>
+      <td class="ax-s ${cls}">${a.score}/10</td><td class="ax-note">${esc(a.note)}</td></tr>`;
+  }).join('');
+  const tells = (d.templateTells ?? []).map((x) => `<li>${esc(x)}</li>`).join('');
+  const refs = (d.references ?? []).map((x) => `<li>${esc(x)}</li>`).join('');
+  return `<section class="block">
+    <h2>Дизайн-вердикт: дорого чи дешево</h2>
+    <p class="lead">Оцінка ${d.source === 'зір' ? 'зі зором (дизайн-директор подивився на перші екрани)' : 'детермінована (без зору — з відбитка стека й замірів обходу)'}. Стек: ${esc(d.stackLine)}.</p>
+    <div class="dz-head">
+      <div class="dz-score ${scoreCls}"><b>${d.overallScore}</b><span>/10</span></div>
+      <div class="dz-verdict"><div class="dz-tier">${esc(d.tier)}</div><p>${esc(d.verdict)}</p></div>
+    </div>
+    ${axes ? `<table class="ax-table"><thead><tr><th>Вісь дизайну</th><th>Рівень</th><th>Бал</th><th>Що саме</th></tr></thead><tbody>${axes}</tbody></table>` : ''}
+    <div class="dz-grid">
+      ${tells ? `<div><h3 class="gap">Улики шаблонності / датованості</h3><ul class="dz-list">${tells}</ul></div>` : ''}
+      ${refs ? `<div><h3>Як має виглядати «дорого»</h3><ul class="dz-list">${refs}</ul></div>` : ''}
+    </div>
   </section>`;
 }
 
@@ -214,16 +267,18 @@ function consultSections(r: SiteAuditReport): { meth: string; sw: string; recs: 
 }
 
 const EXTRA_CSS = `
+  :root{--weak:#ea580c;} /* «є, але слабко»: наявність ≠ правильно — окремий колір, не як «приховано» */
   /* аркуш «Підсумок» */
   .sum{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap;margin:4px 0 10px;}
   .sum-big{font-size:34px;font-weight:800;line-height:1;letter-spacing:-1px;white-space:nowrap;}
   .sum-cap{color:var(--muted);font-size:10px;margin-top:4px;}
   .sum-verdict{font-size:12.5px;line-height:1.4;font-weight:600;color:var(--ink);margin:0;flex:1;min-width:60mm;max-width:130mm;}
   .sum-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:8px 0 4px;}
+  .sum-tiles.four{grid-template-columns:repeat(4,1fr);}
   .sum-tile{border:1px solid var(--line);border-top-width:3px;border-radius:6px;padding:9px 11px;}
-  .sum-tile.ok{border-top-color:var(--ok);} .sum-tile.check{border-top-color:var(--check);} .sum-tile.gap{border-top-color:var(--gap);}
-  .sum-tile b{display:block;font-size:26px;font-weight:800;line-height:1;}
-  .sum-tile.ok b{color:var(--ok);} .sum-tile.check b{color:var(--check);} .sum-tile.gap b{color:var(--gap);}
+  .sum-tile.ok{border-top-color:var(--ok);} .sum-tile.weak{border-top-color:var(--weak);} .sum-tile.check{border-top-color:var(--check);} .sum-tile.gap{border-top-color:var(--gap);}
+  .sum-tile b{display:block;font-size:24px;font-weight:800;line-height:1;}
+  .sum-tile.ok b{color:var(--ok);} .sum-tile.weak b{color:var(--weak);} .sum-tile.check b{color:var(--check);} .sum-tile.gap b{color:var(--gap);}
   .sum-t{display:block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;margin:5px 0 2px;}
   .sum-s{display:block;font-size:8.5px;color:var(--muted);line-height:1.3;}
   /* дерево + карта типів */
@@ -247,7 +302,7 @@ const EXTRA_CSS = `
   .noshot{border:1px dashed var(--line);border-radius:4px;padding:24px 10px;text-align:center;color:var(--muted);font-size:9px;}
   .counts{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px;}
   .cnt{font-size:9px;padding:3px 7px;border-radius:20px;background:var(--soft);border:1px solid var(--line);}
-  .cnt b{font-size:11px;} .cnt.ok b{color:var(--ok);} .cnt.check b{color:var(--check);} .cnt.gap b{color:var(--gap);} .cnt.total{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .cnt b{font-size:11px;} .cnt.ok b{color:var(--ok);} .cnt.weak b{color:var(--weak);} .cnt.check b{color:var(--check);} .cnt.gap b{color:var(--gap);} .cnt.total{background:var(--ink);color:#fff;border-color:var(--ink);}
   .strong{font-size:9.5px;color:#333;}
   /* лобове порівняння з еталоном */
   .etalon{border:1px solid var(--line);border-radius:6px;padding:8px 9px;background:var(--soft);}
@@ -256,6 +311,7 @@ const EXTRA_CSS = `
   .et-b i{font-style:normal;color:var(--muted);font-weight:700;margin-right:4px;font-size:7.5px;}
   .et-b s{position:absolute;right:5px;top:4px;text-decoration:none;font-size:9px;}
   .et-b.ok{border-left-color:var(--ok);} .et-b.ok s{color:var(--ok);}
+  .et-b.weak{border-left-color:var(--weak);background:#fff6f0;} .et-b.weak s{color:var(--weak);}
   .et-b.check{border-left-color:var(--check);background:#fffaf2;} .et-b.check s{color:var(--check);}
   .et-b.gap{border-left-color:var(--gap);background:#fff5f5;color:var(--gap);} .et-b.gap s{color:var(--gap);}
   .et-cap{font-size:7.5px;color:var(--muted);margin-top:5px;line-height:1.35;}
@@ -266,13 +322,32 @@ const EXTRA_CSS = `
   .b-weight.core{color:var(--ink);} .b-dims{display:block;margin-top:2px;}
   .b-now{font-size:9.5px;color:#222;width:132px;} .b-should{font-size:9px;color:#444;}
   .b-score{font-weight:800;white-space:nowrap;text-align:center;} .b-word{display:block;font-weight:600;font-size:8px;}
-  .st{font-size:11px;line-height:1;} .st.ok{color:var(--ok);} .st.check{color:var(--check);} .st.gap{color:var(--gap);}
+  .st{font-size:11px;line-height:1;} .st.ok{color:var(--ok);} .st.weak{color:var(--weak);} .st.check{color:var(--check);} .st.gap{color:var(--gap);}
+  .b-score.weak{color:var(--weak);}
+  .row-weak .b-name{color:var(--weak);} .row-weak .b-now{color:#9a3412;}
   .row-gap .b-name{color:var(--gap);} .row-gap .b-now{color:var(--gap);}
   /* пріоритет доробок */
   .fixes{margin-top:12px;} .fix-table td{padding:4px 6px;border-bottom:1px solid var(--line);font-size:10px;vertical-align:top;}
   .fx-n{color:var(--muted);width:16px;} .fx-what{font-weight:700;} .fx-crit{font-weight:700;white-space:nowrap;} .fx-why{color:#333;}
   /* системні дефекти */
   .sys-list{margin:6px 0 0;padding-left:18px;} .sys-list li{margin:5px 0;} .s-dims{margin-left:4px;}
+  /* платформа / шаблон */
+  .stk-row{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0;}
+  .stk{border:1px solid var(--line);border-radius:6px;padding:6px 10px;min-width:70px;}
+  .stk span{display:block;font-size:8px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);}
+  .stk b{font-size:12px;font-weight:800;} .stk.warn{border-color:var(--weak);border-left:3px solid var(--weak);} .stk.warn b{color:var(--weak);}
+  .stk-sig{font-size:10px;margin-top:6px;} .stk-sig ul{margin:4px 0 0;padding-left:18px;} .stk-sig li{margin:3px 0;color:#333;}
+  /* дизайн-вердикт */
+  .dz-head{display:flex;gap:14px;align-items:stretch;margin:8px 0 10px;}
+  .dz-score{border:1px solid var(--line);border-radius:8px;padding:10px 16px;text-align:center;display:flex;flex-direction:column;justify-content:center;min-width:64px;}
+  .dz-score b{font-size:34px;font-weight:800;line-height:1;} .dz-score span{font-size:10px;color:var(--muted);}
+  .dz-score.ok b{color:var(--ok);} .dz-score.ok{border-color:var(--ok);} .dz-score.check b{color:var(--check);} .dz-score.check{border-color:var(--check);} .dz-score.gap b{color:var(--gap);} .dz-score.gap{border-color:var(--gap);border-left-width:3px;}
+  .dz-tier{font-size:12px;font-weight:800;margin-bottom:3px;} .dz-verdict p{font-size:11px;line-height:1.45;margin:0;color:#222;}
+  .ax-table{margin:4px 0 8px;} .ax-n{font-weight:700;width:120px;font-size:10px;} .ax-bar{width:120px;}
+  .ax-s{font-weight:800;text-align:right;white-space:nowrap;} .ax-note{font-size:9.5px;color:#444;}
+  .dz-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;margin-top:6px;}
+  .dz-grid h3{font-size:10px;text-transform:uppercase;letter-spacing:.4px;margin:0 0 4px;} .dz-grid h3.gap{color:var(--gap);}
+  .dz-list{margin:0;padding-left:16px;} .dz-list li{margin:4px 0;font-size:10px;line-height:1.4;color:#333;}
 `;
 
 export function renderAuditHtml(r: SiteAuditReport): string {
@@ -291,6 +366,8 @@ export function renderAuditHtml(r: SiteAuditReport): string {
 
   const body = coverHtml
     + summarySheet(r)
+    + platformSection(r)
+    + designSection(r)
     + cs.meth
     + treeSection(r)
     + pageTypesSection(r)
