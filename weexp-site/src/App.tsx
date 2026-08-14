@@ -33,9 +33,11 @@ export default function App() {
       <RouteSeo />
       <Suspense fallback={null}>
         <Routes>
-          {/* Прев'ю нового cinematic-напряму (живий сайт не чіпаємо) — під спільною оболонкою */}
+          {/* Новий cinematic-напрям — тепер головний вхід сайту, під спільною оболонкою.
+              Попередній (темний) сайт лишається доступним на /classic для порівняння/відкату. */}
           <Route element={<SystemShell />}>
-            <Route path="/system" element={<SystemInMotion />} />
+            <Route path="/" element={<SystemInMotion />} />
+            <Route path="/system" element={<Navigate to="/" replace />} />
             <Route path="/systems" element={<SystemsFilm />} />
             <Route path="/proof" element={<CasesFilm />} />
             <Route path="/people" element={<PeopleFilm />} />
@@ -43,7 +45,8 @@ export default function App() {
             <Route path="/loss" element={<LossCalculator />} />
           </Route>
           <Route element={<Layout />}>
-            <Route path="/" element={<Home />} />
+            {/* Попередній (темний) головний — доступний для порівняння/відкату */}
+            <Route path="/classic" element={<Home />} />
             <Route path="/challenges" element={<Challenges />} />
             <Route path="/challenges/:slug" element={<SystemPage />} />
             <Route path="/what-we-build" element={<WhatWeBuild />} />

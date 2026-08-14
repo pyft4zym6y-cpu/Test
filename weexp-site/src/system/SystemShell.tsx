@@ -9,7 +9,7 @@ import './system.css';
  * (темний) сайт лишається під власним Layout — ця оболонка його не чіпає.
  */
 const LINKS = [
-  { to: '/system', label: 'Система' },
+  { to: '/', label: 'Система' },
   { to: '/systems', label: '7 систем' },
   { to: '/proof', label: 'Докази' },
   { to: '/people', label: 'Люди' },
@@ -27,10 +27,10 @@ export function SystemShell() {
   return (
     <div className="sysh">
       <header ref={nav} className="sysh-nav">
-        <Link to="/system" className="sysh-brand"><b>WEEXP</b><span className="mono">system</span></Link>
+        <Link to="/" className="sysh-brand"><b>WEEXP</b><span className="mono">system</span></Link>
         <nav className="sysh-links">
           {LINKS.map((l) => (
-            <NavLink key={l.to} to={l.to} className={({ isActive }) => 'sysh-link mono' + (isActive ? ' is-on' : '')}>{l.label}</NavLink>
+            <NavLink key={l.to} to={l.to} end={l.to === '/'} className={({ isActive }) => 'sysh-link mono' + (isActive ? ' is-on' : '')}>{l.label}</NavLink>
           ))}
         </nav>
         <Link to="/diagnose" className="sysh-cta mono">Діагностика →</Link>
