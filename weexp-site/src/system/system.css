@@ -206,6 +206,9 @@
 .sysf-pain i { width: 6px; height: 6px; margin-top: 6px; border-radius: 50%; background: var(--alert); box-shadow: 0 0 0 3px rgba(214, 54, 43, .14); }
 .sysf-sell { font-size: 12.5px; line-height: 1.5; color: var(--charcoal); border-top: 1px solid var(--line); padding-top: 11px; }
 .sysf-sell b { color: var(--deep); letter-spacing: .04em; margin-right: 4px; }
+.sysf-services { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 2px; }
+.sysf-services-lab { font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--data); margin-right: 2px; }
+.sysf-service { font-size: 10px; letter-spacing: .02em; color: var(--deep); background: rgba(126, 157, 255, .1); border: 1px solid var(--data-soft); border-radius: 100px; padding: 3px 9px; }
 
 /* Маркер, прив'язаний до активного 3D-вузла */
 .sysf-marker { position: absolute; z-index: 2; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 8px; opacity: 0; pointer-events: none; will-change: left, top, opacity; }

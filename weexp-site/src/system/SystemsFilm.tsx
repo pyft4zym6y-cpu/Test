@@ -1,8 +1,20 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { SYSTEMS } from '@/data/xray';
+import { SYSTEMS, type SystemKey } from '@/data/xray';
 import { band, seg, setLayer as set, useScrollScene } from '@/lib/scene';
 import './system.css';
+
+// Конкретні дисципліни, які WEEXP закриває в кожній системі — щоб «веб-розробка,
+// ERP-автоматизація, UX/UI, CRO — це все до нас» читалось прямо, а не малось на увазі.
+const SERVICES: Record<SystemKey, string[]> = {
+  strategy: ['Стратегія росту', 'Юніт-економіка', 'Управлінський цикл'],
+  commercial: ['Асортимент і промо', 'Ціноутворення', 'Merchandising'],
+  customer: ['SEO', 'Performance-трафік', 'Retention / CRM', 'Attribution'],
+  experience: ['UX/UI-дизайн', 'CRO та A/B', 'Веб-розробка', 'Mobile'],
+  operations: ['ERP-автоматизація', 'Fulfillment / SLA', 'Інтеграції'],
+  data: ['Аналітика / BI', 'Наскрізна аналітика', 'Master data', 'Інтеграції'],
+  org: ['Операційна модель', 'RACI та KPI', 'SOP і база знань'],
+};
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
 
@@ -103,7 +115,7 @@ export function SystemsFilm() {
         <div ref={intro} className="sysx-scene sysx-void">
           <div className="sysx-kick">WEEXP — The Seven Systems</div>
           <h1 className="sysx-display sysx-h1">Де ваш бізнес<br />втрачає <span className="sysx-em sysx-em-alert">гроші</span>?</h1>
-          <p className="sysx-lead">Не сайт і не канал — уся система онлайн-продажів. Сім частин: від стратегії до організації. Пройдемо крізь кожну.</p>
+          <p className="sysx-lead">Не сайт і не канал — уся система онлайн-продажів. Веб-розробка, ERP-автоматизація, UX/UI та CRO, аналітика — усі сім систем ми закриваємо самі, під одним дахом. Пройдемо крізь кожну.</p>
           <span className="sysx-scrollhint mono">↓ крізь 7 систем</span>
         </div>
 
@@ -121,6 +133,10 @@ export function SystemsFilm() {
                 ))}
               </div>
               <p className="sysf-sell"><b className="mono">Будуємо:</b> {s.sell}</p>
+              <div className="sysf-services">
+                <span className="sysf-services-lab mono">Робимо самі →</span>
+                {SERVICES[s.key].map((sv) => <span key={sv} className="sysf-service mono">{sv}</span>)}
+              </div>
             </div>
           </div>
         ))}
