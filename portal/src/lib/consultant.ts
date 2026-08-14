@@ -47,6 +47,7 @@ export type ReportMeta = {
   screen: ScreenRow[] | null;
   budget: Budget | null;
   hypotheses: unknown[] | null;
+  aqc: Record<string, Record<string, string>> | null;
 };
 
 const LS_META = 'weexp-demo-meta';
@@ -60,6 +61,7 @@ const emptyMeta = (clientId: string): ReportMeta => ({
   screen: null,
   budget: null,
   hypotheses: null,
+  aqc: null,
 });
 
 export function useReportMeta(clientId: string) {

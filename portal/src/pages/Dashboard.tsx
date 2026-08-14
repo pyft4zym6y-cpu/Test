@@ -2,10 +2,12 @@ import { Link } from 'react-router-dom';
 import { DOMAINS, QUESTIONS, ACCESSES } from '../lib/model';
 import { useAnswers, answerMap } from '../lib/useAnswers';
 import {
-  PAINS, PAINS_QID, PAINS_CUSTOM_QID, GOALS, GOALS_QID, GOALS_CUSTOM_QID,
-  PASSPORT_QID, LINKS_QID, trackFor, effectiveNiche, type Passport, type Links,
+  PAINS_QID, PAINS_CUSTOM_QID, GOALS_QID, GOALS_CUSTOM_QID,
+  PASSPORT_QID, LINKS_QID, trackFor, effectiveNiche, painById, goalById,
+  tacticalPainsOf, type Passport, type Links,
 } from '../data/pains';
 import { DECISION_QID, type Decision } from '../data/decision';
+import { checkMilestones, NOTIFY_QID } from '../lib/notify';
 import { useApp } from '../App';
 import { useEffect, useState } from 'react';
 import { supabase, DEMO } from '../lib/supabase';
@@ -40,15 +42,18 @@ function StepRow({ to, n, title, desc, state, right }: {
 
 export default function Dashboard() {
   const { member } = useApp();
-  const { rows, loaded } = useAnswers();
+  const { rows, loaded, save } = useAnswers();
   const answers = answerMap(rows);
   const [accessDone, setAccessDone] = useState(0);
+  const [keyAccess, setKeyAccess] = useState(false);
 
   useEffect(() => {
     if (DEMO) {
       try {
         const m = JSON.parse(localStorage.getItem('weexp-demo-access') ?? '{}');
-        setAccessDone(Object.values(m).filter((r: any) => r.status === 'Выдан').length);
+        const granted = Object.entries(m).filter(([, r]: any) => r.status === 'Выдан');
+        setAccessDone(granted.length);
+        setKeyAccess(granted.some(([id]) => id === 'AC-01' || id === 'AC-13'));
       } catch { /* noop */ }
       return;
     }
@@ -56,7 +61,11 @@ export default function Dashboard() {
       .from('access_status')
       .select('access_id,status')
       .eq('client_id', member.client_id!)
-      .then(({ data }) => setAccessDone((data ?? []).filter((r) => r.status === 'Выдан').length));
+      .then(({ data }) => {
+        const granted = (data ?? []).filter((r) => r.status === 'Выдан');
+        setAccessDone(granted.length);
+        setKeyAccess(granted.some((r) => r.access_id === 'AC-01' || r.access_id === 'AC-13'));
+      });
   }, [member.client_id]);
 
   let passport: Passport = {};
@@ -83,6 +92,24 @@ export default function Dashboard() {
   const nextIdx = doneFlags.findIndex((d) => !d);
   const state = (i: number): 'done' | 'next' | 'todo' =>
     doneFlags[i] ? 'done' : i === nextIdx ? 'next' : 'todo';
+
+  // Вехи → письмо консультанту (ровно один раз на веху; в демо не шлём)
+  useEffect(() => {
+    if (!loaded) return;
+    checkMilestones(
+      {
+        clientName: passport.name ?? 'Клиент',
+        companyDone, goalsDone, painsDone,
+        surveyPct: pct,
+        keyAccessGranted: keyAccess,
+        decisionDone,
+      },
+      rows,
+    ).then((sent) => {
+      if (sent) save(NOTIFY_QID, { answer: JSON.stringify(sent) });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loaded, companyDone, goalsDone, painsDone, pct, keyAccess, decisionDone]);
 
   const track = trackFor(painIds, goalIds);
   const orderedDomains = painsDone || goalsDone
@@ -111,10 +138,10 @@ export default function Dashboard() {
           <div style={{ marginTop: 22 }}>
             <StepRow to="/company" n="01" title="Компания" state={state(0)}
               desc={companyDone ? `${passport.name} · ${effectiveNiche(passport) ?? ''} · ${passport.channels?.length ?? 0} каналов` : 'Кто вы, что и где продаёте, какие каналы'} />
-            <StepRow to="/goals" n="02" title="Цели на 12 месяцев" state={state(1)}
-              desc={goalsDone ? goalIds.map((g) => GOALS.find((x) => x.id === g)?.title).filter(Boolean).join(' · ') || 'Свои цели описаны' : 'Верхнеуровнево: рост, Европа, прибыль…'} />
-            <StepRow to="/pains" n="03" title="Что болит" state={state(2)}
-              desc={painsDone ? painIds.map((p) => PAINS.find((x) => x.id === p)?.title).filter(Boolean).slice(0, 3).join(' · ') + (painIds.length > 3 ? '…' : '') : '16 типовых болей + свои словами'} />
+            <StepRow to="/goals" n="02" title="Цели: тактика 90 дней + стратегия 12 месяцев" state={state(1)}
+              desc={goalsDone ? goalIds.map((g) => goalById(g)?.title).filter(Boolean).join(' · ') || 'Свои цели описаны' : 'Что нужно быстро — и куда строим систему'} />
+            <StepRow to="/pains" n="03" title="Что болит: горит сейчас + системно" state={state(2)}
+              desc={painsDone ? painIds.map((p) => painById(p)?.title).filter(Boolean).slice(0, 3).join(' · ') + (painIds.length > 3 ? '…' : '') : 'Пожары на 24–48 часов и хронические боли'} />
             <StepRow to={orderedDomains[0] ? `/d/${orderedDomains[0].sheet}` : '/'} n="04" title="Опросник" state={state(3)}
               desc="Ваш персональный трек анкет — по целям и болям" right={`${answeredL1}/${totalL1} · ${pct}%`} />
             <StepRow to="/links" n="05" title="Конкуренты и референсы" state={state(4)}
@@ -124,6 +151,14 @@ export default function Dashboard() {
             <StepRow to="/decision" n="07" title="Решение и команда" state={state(6)}
               desc={decisionDone ? 'Бриф, участники решения и рамки заполнены' : 'Кто решает, бюджетные рамки, ваша команда — заполняет CEO'} />
           </div>
+
+          {tacticalPainsOf(painIds).length > 0 && (
+            <div className="note" style={{ marginTop: 20, borderColor: 'rgba(220,38,38,0.4)', background: '#FEF1F1' }}>
+              🔥 <b>Горит: {tacticalPainsOf(painIds).map((p) => p.title).join(' · ')}.</b>{' '}
+              Трек диагностики перестроен под пожар, план первой помощи — уже в отчёте, а
+              консультант увидит эти боли первым приоритетом. Начните с первых двух анкет ниже.
+            </div>
+          )}
 
           <Link to="/report" className="rowlink" style={{ marginTop: 20, borderColor: 'rgba(101,163,13,0.5)' }}>
             <div>
@@ -137,7 +172,7 @@ export default function Dashboard() {
 
           <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', marginTop: 14 }}>
         <Link to="/deliverables" className="mono no-print" style={{ fontSize: 12, color: 'var(--lime-dark)' }}>
-          Что вы получите по итогам аудита: 18 документов →
+          Что вы получите по итогам аудита: 19 документов →
         </Link>
         <Link to="/privacy" className="mono no-print" style={{ fontSize: 12, color: 'var(--muted)' }}>
           Как мы обращаемся с данными →

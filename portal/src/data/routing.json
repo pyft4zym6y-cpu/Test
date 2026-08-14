@@ -6,7 +6,12 @@
   "domains": "SEO, Marketing, Pricing, Analytics",
   "playbooks": "PB-02, PB-03, PB-04, PB-10",
   "deliverable": "Funnel Teardown + Traffic Recovery Plan",
-  "priority": "P0 Критично"
+  "priority": "P0",
+  "impact": 9,
+  "difficulty": 5,
+  "days": 30,
+  "blocking": false,
+  "effort_days": 8
  },
  {
   "id": "R02",
@@ -15,7 +20,12 @@
   "domains": "Platform, Operations, CRM, AI, International",
   "playbooks": "PB-14, PB-16, PB-18, PB-32",
   "deliverable": "Scalability Blueprint",
-  "priority": "P0 Критично"
+  "priority": "P0",
+  "impact": 9,
+  "difficulty": 5,
+  "days": 30,
+  "blocking": false,
+  "effort_days": 8
  },
  {
   "id": "R03",
@@ -24,7 +34,12 @@
   "domains": "Finance, Governance, Analytics, Strategy",
   "playbooks": "PB-11, PB-12, PB-34",
   "deliverable": "Growth Plan + BI Layer",
-  "priority": "P0 Критично"
+  "priority": "P0",
+  "impact": 9,
+  "difficulty": 5,
+  "days": 30,
+  "blocking": false,
+  "effort_days": 8
  },
  {
   "id": "R04",
@@ -33,7 +48,12 @@
   "domains": "International, Legal, Operations, Marketplace",
   "playbooks": "PB-24, PB-25, PB-26, PB-27",
   "deliverable": "Market Entry Roadmap",
-  "priority": "P1 Высокий"
+  "priority": "P1",
+  "impact": 8,
+  "difficulty": 5,
+  "days": 30,
+  "blocking": false,
+  "effort_days": 8
  },
  {
   "id": "R05",
@@ -42,7 +62,12 @@
   "domains": "Platform, SEO, Analytics, Operations",
   "playbooks": "PB-14, PB-05, PB-10, PB-16",
   "deliverable": "Replatforming Plan",
-  "priority": "P1 Высокий"
+  "priority": "P1",
+  "impact": 8,
+  "difficulty": 5,
+  "days": 30,
+  "blocking": false,
+  "effort_days": 8
  },
  {
   "id": "R06",
@@ -51,7 +76,12 @@
   "domains": "Finance, Pricing, Operations",
   "playbooks": "PB-12, PB-13, PB-36",
   "deliverable": "Unit Economics Model",
-  "priority": "P0 Критично"
+  "priority": "P0",
+  "impact": 10,
+  "difficulty": 4,
+  "days": 20,
+  "blocking": true,
+  "effort_days": 8
  },
  {
   "id": "R07",
@@ -60,7 +90,12 @@
   "domains": "CRM, CX, Product",
   "playbooks": "PB-08, PB-09, PB-35",
   "deliverable": "Retention Engine",
-  "priority": "P1 Высокий"
+  "priority": "P1",
+  "impact": 10,
+  "difficulty": 5,
+  "days": 35,
+  "blocking": false,
+  "effort_days": 14
  },
  {
   "id": "R08",
@@ -69,16 +104,26 @@
   "domains": "Analytics, Governance",
   "playbooks": "PB-10, PB-11",
   "deliverable": "Analytics Blueprint",
-  "priority": "P0 Критично"
+  "priority": "P0",
+  "impact": 10,
+  "difficulty": 4,
+  "days": 20,
+  "blocking": true,
+  "effort_days": 10
  },
  {
   "id": "R09",
   "area": "Ассортимент",
-  "trigger": ">5000 SKU без структуры",
+  "trigger": "'>5000 SKU без структуры'",
   "domains": "Product, SEO, Platform",
   "playbooks": "PB-28, PB-05, PB-17",
   "deliverable": "Assortment & Taxonomy Pack",
-  "priority": "P1 Высокий"
+  "priority": "P1",
+  "impact": 8,
+  "difficulty": 5,
+  "days": 25,
+  "blocking": false,
+  "effort_days": 10
  },
  {
   "id": "R10",
@@ -87,7 +132,12 @@
   "domains": "Operations, Finance, Governance",
   "playbooks": "PB-18, PB-16",
   "deliverable": "ERP Readiness Assessment",
-  "priority": "P1 Высокий"
+  "priority": "P1",
+  "impact": 7,
+  "difficulty": 6,
+  "days": 35,
+  "blocking": false,
+  "effort_days": 12
  },
  {
   "id": "R11",
@@ -96,7 +146,12 @@
   "domains": "International, Legal, Finance",
   "playbooks": "PB-25, PB-26",
   "deliverable": "Entity & Tax Structure Memo",
-  "priority": "P1 Высокий"
+  "priority": "P1",
+  "impact": 7,
+  "difficulty": 8,
+  "days": 75,
+  "blocking": false,
+  "effort_days": 16
  },
  {
   "id": "R12",
@@ -105,7 +160,12 @@
   "domains": "Legal, Finance",
   "playbooks": "PB-26, PB-38",
   "deliverable": "Compliance Pack",
-  "priority": "P0 Критично"
+  "priority": "P0",
+  "impact": 8,
+  "difficulty": 8,
+  "days": 75,
+  "blocking": false,
+  "effort_days": 16
  },
  {
   "id": "R13",
@@ -114,7 +174,12 @@
   "domains": "Operations, International",
   "playbooks": "PB-19, PB-25",
   "deliverable": "Fulfillment Model",
-  "priority": "P1 Высокий"
+  "priority": "P1",
+  "impact": 7,
+  "difficulty": 8,
+  "days": 75,
+  "blocking": false,
+  "effort_days": 16
  },
  {
   "id": "R14",
@@ -123,7 +188,12 @@
   "domains": "People, Governance",
   "playbooks": "PB-30, PB-31",
   "deliverable": "Org Design + RACI",
-  "priority": "P1 Высокий"
+  "priority": "P1",
+  "impact": 6,
+  "difficulty": 7,
+  "days": 45,
+  "blocking": false,
+  "effort_days": 10
  },
  {
   "id": "R15",
@@ -132,7 +202,12 @@
   "domains": "Governance",
   "playbooks": "PB-34",
   "deliverable": "Operating Rhythm Charter",
-  "priority": "P2 Средний"
+  "priority": "P2",
+  "impact": 6,
+  "difficulty": 5,
+  "days": 30,
+  "blocking": false,
+  "effort_days": 8
  },
  {
   "id": "R16",
@@ -141,7 +216,12 @@
   "domains": "AI, SEO, Product",
   "playbooks": "PB-33, PB-07",
   "deliverable": "AI Content Pipeline",
-  "priority": "P2 Средний"
+  "priority": "P2",
+  "impact": 5,
+  "difficulty": 7,
+  "days": 40,
+  "blocking": false,
+  "effort_days": 10
  },
  {
   "id": "R17",
@@ -150,7 +230,12 @@
   "domains": "Pricing, Marketplace",
   "playbooks": "PB-13, PB-21",
   "deliverable": "Channel Pricing Policy",
-  "priority": "P1 Высокий"
+  "priority": "P1",
+  "impact": 7,
+  "difficulty": 6,
+  "days": 45,
+  "blocking": false,
+  "effort_days": 12
  },
  {
   "id": "R18",
@@ -159,7 +244,12 @@
   "domains": "CX, People",
   "playbooks": "PB-35",
   "deliverable": "Support Redesign",
-  "priority": "P2 Средний"
+  "priority": "P2",
+  "impact": 6,
+  "difficulty": 5,
+  "days": 25,
+  "blocking": false,
+  "effort_days": 8
  },
  {
   "id": "R19",
@@ -168,7 +258,12 @@
   "domains": "Finance, Product",
   "playbooks": "PB-36, PB-29",
   "deliverable": "Working Capital Plan",
-  "priority": "P0 Критично"
+  "priority": "P0",
+  "impact": 10,
+  "difficulty": 4,
+  "days": 25,
+  "blocking": true,
+  "effort_days": 8
  },
  {
   "id": "R20",
@@ -177,7 +272,12 @@
   "domains": "SEO, Platform",
   "playbooks": "PB-04, PB-05",
   "deliverable": "SEO Recovery Plan",
-  "priority": "P0 Критично"
+  "priority": "P0",
+  "impact": 9,
+  "difficulty": 6,
+  "days": 60,
+  "blocking": false,
+  "effort_days": 12
  },
  {
   "id": "R21",
@@ -186,7 +286,12 @@
   "domains": "Platform, Analytics, CRM",
   "playbooks": "PB-15, PB-10, PB-08",
   "deliverable": "CRO Program + Tracking Audit",
-  "priority": "P0 Критично"
+  "priority": "P0",
+  "impact": 10,
+  "difficulty": 4,
+  "days": 25,
+  "blocking": false,
+  "effort_days": 10
  },
  {
   "id": "R22",
@@ -194,8 +299,13 @@
   "trigger": "SEO не ведётся вообще",
   "domains": "SEO, Platform",
   "playbooks": "PB-04, PB-05, PB-06, PB-07",
-  "deliverable": "SEO Audit Pack: технический, структура, контент, GEO",
-  "priority": "P0 Критично"
+  "deliverable": "'SEO Audit Pack: технический, структура, контент, GEO'",
+  "priority": "P0",
+  "impact": 9,
+  "difficulty": 6,
+  "days": 60,
+  "blocking": false,
+  "effort_days": 12
  },
  {
   "id": "R23",
@@ -204,7 +314,12 @@
   "domains": "Product, Marketing",
   "playbooks": "PB-39, PB-40",
   "deliverable": "Value Proposition Canvas",
-  "priority": "P1 Высокий"
+  "priority": "P1",
+  "impact": 7,
+  "difficulty": 5,
+  "days": 30,
+  "blocking": false,
+  "effort_days": 10
  },
  {
   "id": "R24",
@@ -213,7 +328,12 @@
   "domains": "Product, CX",
   "playbooks": "PB-40, PB-44",
   "deliverable": "Barrier & Objection Map",
-  "priority": "P1 Высокий"
+  "priority": "P1",
+  "impact": 7,
+  "difficulty": 5,
+  "days": 30,
+  "blocking": false,
+  "effort_days": 10
  },
  {
   "id": "R25",
@@ -222,7 +342,12 @@
   "domains": "CX, Marketing",
   "playbooks": "PB-43, PB-40",
   "deliverable": "Persona Set на данных",
-  "priority": "P1 Высокий"
+  "priority": "P1",
+  "impact": 7,
+  "difficulty": 4,
+  "days": 20,
+  "blocking": false,
+  "effort_days": 8
  },
  {
   "id": "R26",
@@ -231,7 +356,12 @@
   "domains": "CX",
   "playbooks": "PB-44",
   "deliverable": "Customer Journey Map",
-  "priority": "P2 Средний"
+  "priority": "P2",
+  "impact": 6,
+  "difficulty": 4,
+  "days": 20,
+  "blocking": false,
+  "effort_days": 8
  },
  {
   "id": "R27",
@@ -240,7 +370,12 @@
   "domains": "CX, Analytics",
   "playbooks": "PB-45",
   "deliverable": "VoC System",
-  "priority": "P2 Средний"
+  "priority": "P2",
+  "impact": 6,
+  "difficulty": 4,
+  "days": 20,
+  "blocking": false,
+  "effort_days": 8
  },
  {
   "id": "R28",
@@ -249,7 +384,12 @@
   "domains": "CX, CRM",
   "playbooks": "PB-45, PB-40",
   "deliverable": "Churn Reason Study",
-  "priority": "P1 Высокий"
+  "priority": "P1",
+  "impact": 7,
+  "difficulty": 4,
+  "days": 20,
+  "blocking": false,
+  "effort_days": 8
  },
  {
   "id": "R29",
@@ -258,7 +398,12 @@
   "domains": "Strategy, Pricing",
   "playbooks": "PB-41, PB-13",
   "deliverable": "Competitive Monitoring System",
-  "priority": "P1 Высокий"
+  "priority": "P1",
+  "impact": 6,
+  "difficulty": 3,
+  "days": 15,
+  "blocking": false,
+  "effort_days": 4
  },
  {
   "id": "R30",
@@ -267,7 +412,12 @@
   "domains": "Strategy",
   "playbooks": "PB-41",
   "deliverable": "Positioning Map + SWOT",
-  "priority": "P2 Средний"
+  "priority": "P2",
+  "impact": 5,
+  "difficulty": 3,
+  "days": 15,
+  "blocking": false,
+  "effort_days": 4
  },
  {
   "id": "R31",
@@ -276,7 +426,12 @@
   "domains": "Strategy, Product",
   "playbooks": "PB-41, PB-39",
   "deliverable": "White Space Analysis",
-  "priority": "P2 Средний"
+  "priority": "P2",
+  "impact": 5,
+  "difficulty": 3,
+  "days": 15,
+  "blocking": false,
+  "effort_days": 4
  },
  {
   "id": "R32",
@@ -285,7 +440,12 @@
   "domains": "Marketing, Strategy",
   "playbooks": "PB-46",
   "deliverable": "Brand Platform",
-  "priority": "P1 Высокий"
+  "priority": "P1",
+  "impact": 7,
+  "difficulty": 6,
+  "days": 40,
+  "blocking": false,
+  "effort_days": 10
  },
  {
   "id": "R33",
@@ -294,7 +454,12 @@
   "domains": "Strategy, Marketing",
   "playbooks": "PB-46, PB-41",
   "deliverable": "Repositioning Sprint",
-  "priority": "P0 Критично"
+  "priority": "P0",
+  "impact": 8,
+  "difficulty": 6,
+  "days": 40,
+  "blocking": false,
+  "effort_days": 10
  },
  {
   "id": "R34",
@@ -303,7 +468,12 @@
   "domains": "Strategy, Product",
   "playbooks": "PB-48",
   "deliverable": "Brand Architecture",
-  "priority": "P1 Высокий"
+  "priority": "P1",
+  "impact": 7,
+  "difficulty": 6,
+  "days": 40,
+  "blocking": false,
+  "effort_days": 10
  },
  {
   "id": "R35",
@@ -312,7 +482,12 @@
   "domains": "Marketing",
   "playbooks": "PB-47, PB-51",
   "deliverable": "Brand Guidelines",
-  "priority": "P2 Средний"
+  "priority": "P2",
+  "impact": 6,
+  "difficulty": 6,
+  "days": 40,
+  "blocking": false,
+  "effort_days": 10
  },
  {
   "id": "R36",
@@ -321,7 +496,12 @@
   "domains": "Analytics, Marketing",
   "playbooks": "PB-50",
   "deliverable": "Brand KPI Dashboard + Baseline",
-  "priority": "P2 Средний"
+  "priority": "P2",
+  "impact": 6,
+  "difficulty": 6,
+  "days": 40,
+  "blocking": false,
+  "effort_days": 10
  },
  {
   "id": "R37",
@@ -330,7 +510,12 @@
   "domains": "Pricing, Marketing",
   "playbooks": "PB-50, PB-46",
   "deliverable": "Price Premium Program",
-  "priority": "P1 Высокий"
+  "priority": "P1",
+  "impact": 7,
+  "difficulty": 6,
+  "days": 40,
+  "blocking": false,
+  "effort_days": 10
  },
  {
   "id": "R38",
@@ -339,7 +524,12 @@
   "domains": "Marketing, SEO",
   "playbooks": "PB-47, PB-07",
   "deliverable": "Content Platform",
-  "priority": "P2 Средний"
+  "priority": "P2",
+  "impact": 5,
+  "difficulty": 4,
+  "days": 20,
+  "blocking": false,
+  "effort_days": 6
  },
  {
   "id": "R39",
@@ -348,7 +538,12 @@
   "domains": "Marketing, Platform",
   "playbooks": "PB-03, PB-47",
   "deliverable": "Message Consistency Audit",
-  "priority": "P1 Высокий"
+  "priority": "P1",
+  "impact": 6,
+  "difficulty": 4,
+  "days": 20,
+  "blocking": false,
+  "effort_days": 6
  },
  {
   "id": "R40",
@@ -357,7 +552,12 @@
   "domains": "Marketing, Product",
   "playbooks": "PB-51, PB-17",
   "deliverable": "Catalog Visual Standard",
-  "priority": "P1 Высокий"
+  "priority": "P1",
+  "impact": 5,
+  "difficulty": 5,
+  "days": 30,
+  "blocking": false,
+  "effort_days": 8
  },
  {
   "id": "R41",
@@ -366,7 +566,12 @@
   "domains": "Platform",
   "playbooks": "PB-52",
   "deliverable": "Design System",
-  "priority": "P2 Средний"
+  "priority": "P2",
+  "impact": 4,
+  "difficulty": 5,
+  "days": 30,
+  "blocking": false,
+  "effort_days": 8
  },
  {
   "id": "R42",
@@ -375,7 +580,12 @@
   "domains": "Finance, Pricing",
   "playbooks": "PB-12",
   "deliverable": "Contribution Margin Model",
-  "priority": "P0 Критично"
+  "priority": "P0",
+  "impact": 10,
+  "difficulty": 4,
+  "days": 25,
+  "blocking": true,
+  "effort_days": 8
  },
  {
   "id": "R43",
@@ -384,7 +594,12 @@
   "domains": "Finance, Marketing",
   "playbooks": "PB-12, PB-36",
   "deliverable": "CAC Payback Plan",
-  "priority": "P0 Критично"
+  "priority": "P0",
+  "impact": 10,
+  "difficulty": 4,
+  "days": 25,
+  "blocking": true,
+  "effort_days": 8
  },
  {
   "id": "R44",
@@ -393,7 +608,12 @@
   "domains": "Finance, CRM",
   "playbooks": "PB-12, PB-08",
   "deliverable": "Unit Economics Recovery",
-  "priority": "P0 Критично"
+  "priority": "P0",
+  "impact": 10,
+  "difficulty": 4,
+  "days": 25,
+  "blocking": true,
+  "effort_days": 8
  },
  {
   "id": "R45",
@@ -402,7 +622,12 @@
   "domains": "Finance, Governance",
   "playbooks": "PB-36, PB-53",
   "deliverable": "Cash Preservation Plan",
-  "priority": "P0 Критично"
+  "priority": "P0",
+  "impact": 10,
+  "difficulty": 4,
+  "days": 25,
+  "blocking": true,
+  "effort_days": 8
  },
  {
   "id": "R46",
@@ -411,7 +636,12 @@
   "domains": "Finance",
   "playbooks": "PB-53",
   "deliverable": "EBITDA Bridge",
-  "priority": "P1 Высокий"
+  "priority": "P1",
+  "impact": 10,
+  "difficulty": 4,
+  "days": 25,
+  "blocking": false,
+  "effort_days": 8
  },
  {
   "id": "R47",
@@ -420,7 +650,12 @@
   "domains": "Finance, Governance",
   "playbooks": "PB-53",
   "deliverable": "Scenario Model",
-  "priority": "P2 Средний"
+  "priority": "P2",
+  "impact": 9,
+  "difficulty": 4,
+  "days": 25,
+  "blocking": false,
+  "effort_days": 8
  },
  {
   "id": "R48",
@@ -429,7 +664,12 @@
   "domains": "AI, Analytics",
   "playbooks": "PB-54, PB-10, PB-17",
   "deliverable": "Data Readiness Program",
-  "priority": "P1 Высокий"
+  "priority": "P1",
+  "impact": 6,
+  "difficulty": 7,
+  "days": 40,
+  "blocking": false,
+  "effort_days": 10
  },
  {
   "id": "R49",
@@ -438,7 +678,12 @@
   "domains": "Legal, AI",
   "playbooks": "PB-56",
   "deliverable": "AI Usage Policy",
-  "priority": "P1 Высокий"
+  "priority": "P1",
+  "impact": 6,
+  "difficulty": 7,
+  "days": 40,
+  "blocking": false,
+  "effort_days": 10
  },
  {
   "id": "R50",
@@ -447,6 +692,39 @@
   "domains": "AI, CX",
   "playbooks": "PB-55",
   "deliverable": "Knowledge Base Build",
-  "priority": "P2 Средний"
+  "priority": "P2",
+  "impact": 5,
+  "difficulty": 7,
+  "days": 40,
+  "blocking": false,
+  "effort_days": 10
+ },
+ {
+  "id": "R51",
+  "area": "Платные каналы",
+  "trigger": "ROAS падает несколько месяцев · CAC растёт без роста объёма · подрядчик отчитывается без сверки",
+  "domains": "Маркетинг, Аналитика",
+  "playbooks": "PB-57, PB-10",
+  "deliverable": "D-70 Аудит рекламных кабинетов",
+  "priority": "P1",
+  "impact": 8,
+  "difficulty": 3,
+  "days": 20,
+  "blocking": false,
+  "effort_days": 8
+ },
+ {
+  "id": "R52",
+  "area": "Планирование",
+  "trigger": "Акции придумываются в последний момент · нет годового календаря · сезонные пики без подготовки",
+  "domains": "Маркетинг, Ценообразование",
+  "playbooks": "PB-58, PB-13",
+  "deliverable": "D-71 Маркетинговый календарь",
+  "priority": "P2",
+  "impact": 5,
+  "difficulty": 3,
+  "days": 15,
+  "blocking": false,
+  "effort_days": 6
  }
 ]

@@ -1,26 +1,40 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase, DEMO } from '../lib/supabase';
 import { QUESTIONS, ACCESSES } from '../lib/model';
 import { useApp } from '../App';
 
-type ClientRow = { id: string; name: string };
+type ClientRow = { id: string; name: string; locked?: boolean };
+type MemberRow = { email: string; client_id: string | null; name: string | null; role: string | null; is_admin: boolean };
+
+/* Пароль, который удобно продиктовать: без похожих символов (0/O, 1/l). */
+const genPassword = () => {
+  const abc = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  let s = '';
+  const buf = new Uint32Array(12);
+  crypto.getRandomValues(buf);
+  for (const n of buf) s += abc[n % abc.length];
+  return s;
+};
 
 export default function AdminPage() {
-  const { member } = useApp();
+  const { member, session } = useApp();
   const [clients, setClients] = useState<ClientRow[]>([]);
+  const [members, setMembers] = useState<MemberRow[]>([]);
   const [answers, setAnswers] = useState<any[]>([]);
   const [access, setAccess] = useState<any[]>([]);
   const [newClient, setNewClient] = useState('');
   const [inv, setInv] = useState({ clientId: '', email: '', name: '', role: 'CEO' });
   const [msg, setMsg] = useState('');
+  const [pw, setPw] = useState('');
 
   const load = () => {
     if (DEMO) {
       setClients([{ id: 'demo', name: 'Demo Store' }]);
       return;
     }
-    supabase.from('clients').select('id,name').then(({ data }) => setClients(data ?? []));
+    supabase.from('clients').select('id,name,locked').then(({ data }) => setClients((data as any) ?? []));
+    supabase.from('members').select('email,client_id,name,role,is_admin').then(({ data }) => setMembers((data as any) ?? []));
     supabase.from('answers').select('client_id,question_id,answer').then(({ data }) => setAnswers(data ?? []));
     supabase.from('access_status').select('client_id,status').then(({ data }) => setAccess(data ?? []));
   };
@@ -51,10 +65,84 @@ export default function AdminPage() {
     });
     setMsg(error ? `Ошибка: ${error.message}` : `Участник ${inv.email} добавлен`);
     setInv({ ...inv, email: '', name: '' });
+    load();
+  };
+
+  /* Серверные операции с учётками (создать/сменить пароль/удалить) — через
+     /api/brief-users с service-ключом; фронт передаёт свой JWT для проверки прав. */
+  const userApi = async (action: string, email: string, password?: string) => {
+    try {
+      const r = await fetch('/api/brief-users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token ?? ''}` },
+        body: JSON.stringify({ action, email, password }),
+      });
+      return await r.json();
+    } catch {
+      return { error: 'API недоступно (работает на weexp.agency/brief, не в демо)' };
+    }
+  };
+
+  /* Выдача доступа: создаём участника + учётку с паролем. Пару отдаёте клиенту сами. */
+  const [issue, setIssue] = useState({ clientId: '', email: '', name: '', role: 'CEO', password: genPassword() });
+  const [issued, setIssued] = useState<{ email: string; password: string } | null>(null);
+  const issueLogin = async () => {
+    if (!issue.email || !issue.clientId) { setMsg('Выберите клиента и укажите email'); return; }
+    const em = issue.email.trim().toLowerCase();
+    const j = await userApi('create', em, issue.password);
+    if (j.error) { setMsg(`Ошибка: ${j.error}`); return; }
+    const { error } = await supabase.from('members').upsert(
+      { email: em, client_id: issue.clientId, name: issue.name || null, role: issue.role },
+      { onConflict: 'email' },
+    );
+    if (error) { setMsg(`Учётка создана, но участник не добавлен: ${error.message}`); return; }
+    setIssued({ email: em, password: issue.password });
+    setMsg(j.note ? `Готово (${j.note})` : 'Доступ выдан — передайте пару клиенту');
+    setIssue({ ...issue, email: '', name: '', password: genPassword() });
+    load();
+  };
+
+  const changePassword = async (email: string) => {
+    const npw = genPassword();
+    if (!window.confirm(`Сменить пароль для ${email}?\n\nНовый пароль: ${npw}\n\nОн будет показан ещё раз после смены.`)) return;
+    const j = await userApi('set_password', email, npw);
+    if (j.error) { setMsg(`Ошибка: ${j.error}`); return; }
+    setIssued({ email, password: npw });
+    setMsg(`Пароль для ${email} изменён — старый больше не действует`);
+  };
+
+  /* Отзыв доступа: удаляем участника (is_invited=false) и учётку в auth —
+     войти нельзя ни по ссылке, ни по старому паролю. */
+  const revokeMember = async (email: string) => {
+    if (!window.confirm(`Отозвать доступ у ${email}? Войти в бриф этот адрес больше не сможет.`)) return;
+    const { error } = await supabase.from('members').delete().eq('email', email);
+    if (error) { setMsg(`Ошибка: ${error.message}`); return; }
+    const j = await userApi('delete', email);
+    setMsg(j.error ? `Участник удалён; учётка auth: ${j.error}` : `Доступ ${email} отозван полностью`);
+    load();
+  };
+
+  /* Замок приёма: клиент видит бриф только для чтения, запись блокирует и RLS в базе. */
+  const toggleLock = async (c: ClientRow) => {
+    const { error } = await supabase.from('clients').update({ locked: !c.locked }).eq('id', c.id);
+    setMsg(error
+      ? `Ошибка: ${error.message}${error.message.includes('locked') ? ' — выполните свежий schema.sql в Supabase' : ''}`
+      : !c.locked ? `«${c.name}»: приём ответов закрыт` : `«${c.name}»: приём ответов открыт`);
+    load();
+  };
+
+  /* Пароль для входа консультанта: после установки можно входить без magic-link. */
+  const setPassword = async () => {
+    if (pw.length < 8) { setMsg('Пароль: минимум 8 символов'); return; }
+    const { error } = await supabase.auth.updateUser({ password: pw });
+    setMsg(error ? `Ошибка: ${error.message}` : 'Пароль установлен — теперь на экране входа можно входить по email + паролю');
+    setPw('');
   };
 
   const copyInvite = (clientName: string) => {
-    const text = `Добрый день!\n\nПриглашаем вас в портал диагностики weexp · Commerce OS™ по проекту «${clientName}».\n\n1. Откройте ${window.location.origin}\n2. Введите ваш рабочий e-mail — придёт ссылка для входа (пароль не нужен)\n3. Идите по шагам: компания → цели → боли → опросник → конкуренты → доступы\n\nВсё сохраняется автоматически, заполнять можно с любого устройства. Чем конкретнее ответы и цифры — тем точнее аудит посчитает деньги.\n\nКоманда weexp`;
+    // Канонический адрес брифа — страница на основном сайте.
+    const portalUrl = 'https://weexp.agency/brief/';
+    const text = `Добрый день!\n\nПриглашаем вас в портал диагностики weexp · Commerce OS™ по проекту «${clientName}».\n\n1. Откройте ${portalUrl}\n2. Введите ваш рабочий e-mail — придёт ссылка для входа (пароль не нужен)\n3. Идите по шагам: компания → цели → боли → опросник → конкуренты → доступы → решение и команда\n\nВсё сохраняется автоматически, заполнять можно с любого устройства. Чем конкретнее ответы и цифры — тем точнее аудит посчитает деньги.\n\nКоманда weexp`;
     navigator.clipboard?.writeText(text);
     setMsg('Текст приглашения скопирован — отправьте письмом или в мессенджер');
   };
@@ -77,7 +165,7 @@ export default function AdminPage() {
             </div>
           </div>
           <div className="card">
-            <h2 style={{ fontSize: 15 }}>Пригласить участника</h2>
+            <h2 style={{ fontSize: 15 }}>Пригласить участника (вход по ссылке на почту)</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
               <select value={inv.clientId} onChange={(e) => setInv({ ...inv, clientId: e.target.value })}>
                 <option value="">— клиент —</option>
@@ -96,9 +184,53 @@ export default function AdminPage() {
         </div>
       )}
 
+      {!DEMO && (
+        <div className="card" style={{ marginTop: 14, borderColor: 'rgba(101,163,13,0.45)' }}>
+          <h2 style={{ fontSize: 15 }}>Выдать логин и пароль (генерируются здесь, передаёте сами)</h2>
+          <p className="sub" style={{ fontSize: 12, marginTop: 4 }}>
+            Пара создаётся на вашей стороне — вы сами решаете, кому её передать. Пароль в любой
+            момент можно сменить (🔑 у участника), доступ — закрыть (✕).
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10, alignItems: 'center' }}>
+            <select value={issue.clientId} onChange={(e) => setIssue({ ...issue, clientId: e.target.value })} style={{ maxWidth: 180 }}>
+              <option value="">— клиент —</option>
+              {clients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+            <input type="email" placeholder="email (это логин)" value={issue.email} onChange={(e) => setIssue({ ...issue, email: e.target.value })} style={{ maxWidth: 220 }} />
+            <input type="text" placeholder="Имя" value={issue.name} onChange={(e) => setIssue({ ...issue, name: e.target.value })} style={{ maxWidth: 130 }} />
+            <select value={issue.role} onChange={(e) => setIssue({ ...issue, role: e.target.value })} style={{ maxWidth: 130 }}>
+              {['CEO', 'Head E-com', 'CFO', 'COO', 'CRM', 'Маркетинг', 'Другое'].map((r) => <option key={r}>{r}</option>)}
+            </select>
+            <input type="text" className="mono" value={issue.password} onChange={(e) => setIssue({ ...issue, password: e.target.value })} style={{ maxWidth: 150 }} title="Пароль — можно свой" />
+            <button className="chip" onClick={() => setIssue({ ...issue, password: genPassword() })} title="Сгенерировать другой">↺</button>
+            <button className="btn" style={{ padding: '10px 16px' }} onClick={issueLogin}>Выдать доступ</button>
+          </div>
+          {issued && (
+            <div className="note" style={{ marginTop: 12 }}>
+              <b>Передайте клиенту</b> (показывается один раз, потом пароль можно только сменить):
+              <div className="mono" style={{ marginTop: 6, fontSize: 13 }}>
+                Адрес: https://weexp.agency/brief/ · вкладка «войти с паролем»<br />
+                Логин: <b>{issued.email}</b><br />
+                Пароль: <b>{issued.password}</b>
+              </div>
+              <button
+                className="chip"
+                style={{ marginTop: 8 }}
+                onClick={() => {
+                  navigator.clipboard?.writeText(`Доступ к брифу weexp · Commerce OS\n\n1. Откройте https://weexp.agency/brief/\n2. Нажмите «войти с паролем»\n3. Логин: ${issued.email}\n   Пароль: ${issued.password}\n\nЗаполнять можно с любого устройства, всё сохраняется автоматически.`);
+                  setMsg('Инструкция с логином и паролем скопирована');
+                }}
+              >
+                Скопировать инструкцию для клиента 📋
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       <table className="admin" style={{ marginTop: 20 }}>
         <thead>
-          <tr><th>Клиент</th><th>Ответов (L1)</th><th>Доступов</th><th></th><th></th></tr>
+          <tr><th>Клиент</th><th>Ответов (L1)</th><th>Доступов</th><th>Приём</th><th></th><th></th></tr>
         </thead>
         <tbody>
           {clients.map((c) => {
@@ -106,22 +238,85 @@ export default function AdminPage() {
               ? '—'
               : `${new Set(answers.filter((a) => a.client_id === c.id && a.answer).map((a) => a.question_id)).size}/${totalL1}`;
             const acc = DEMO ? '—' : `${access.filter((a) => a.client_id === c.id && a.status === 'Выдан').length}/${ACCESSES.length}`;
+            const team = members.filter((m) => m.client_id === c.id);
             return (
-              <tr key={c.id}>
-                <td><b>{c.name}</b></td>
-                <td className="mono">{answered}</td>
-                <td className="mono">{acc}</td>
-                <td><button className="chip" onClick={() => copyInvite(c.name)}>Приглашение 📋</button></td>
-                <td><Link to={`/admin/c/${c.id}`} className="chip" style={{ textDecoration: 'none' }}>Открыть →</Link></td>
-              </tr>
+              <React.Fragment key={c.id}>
+                <tr>
+                  <td><b>{c.name}</b></td>
+                  <td className="mono">{answered}</td>
+                  <td className="mono">{acc}</td>
+                  <td>
+                    <button
+                      className="chip"
+                      style={{ color: c.locked ? 'var(--red)' : 'var(--lime-dark)' }}
+                      title={c.locked ? 'Заполнение закрыто — нажмите, чтобы открыть' : 'Заполнение открыто — нажмите, чтобы закрыть'}
+                      onClick={() => toggleLock(c)}
+                    >
+                      {c.locked ? '🔒 закрыт' : '🟢 открыт'}
+                    </button>
+                  </td>
+                  <td><button className="chip" onClick={() => copyInvite(c.name)}>Приглашение 📋</button></td>
+                  <td><Link to={`/admin/c/${c.id}`} className="chip" style={{ textDecoration: 'none' }}>Открыть →</Link></td>
+                </tr>
+                {!DEMO && (
+                  <tr>
+                    <td colSpan={6} style={{ paddingTop: 0 }}>
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                        <span className="mono" style={{ fontSize: 11, color: 'var(--muted)' }}>Команда:</span>
+                        {team.length === 0 && <span className="sub" style={{ fontSize: 11.5 }}>пока никого — пригласите участника выше</span>}
+                        {team.map((m) => (
+                          <span key={m.email} className="tag" style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+                            {m.name ? `${m.name} · ` : ''}{m.email}{m.role ? ` (${m.role})` : ''}
+                            <button
+                              onClick={() => changePassword(m.email)}
+                              title="Сменить пароль (старый перестанет работать)"
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                            >
+                              🔑
+                            </button>
+                            <button
+                              onClick={() => revokeMember(m.email)}
+                              title="Отозвать доступ"
+                              style={{ background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', fontWeight: 800, padding: 0 }}
+                            >
+                              ✕
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
             );
           })}
         </tbody>
       </table>
       <p className="sub" style={{ fontSize: 12, marginTop: 14 }}>
-        Автонапоминания по email требуют подключения почтового сервиса (Resend) — пока
-        отправляйте приглашение кнопкой «📋». Magic-link для входа Supabase шлёт сам.
+        «🔑» — сменить пароль участнику (старый сразу перестаёт работать). «✕» — отозвать доступ
+        полностью: удаляем и участника, и учётную запись, войти нельзя ни по паролю, ни по ссылке.
+        «🔒» закрывает приём ответов: бриф у клиента становится только для чтения — блокировка
+        работает и на уровне базы данных.
       </p>
+
+      {!DEMO && (
+        <div className="card" style={{ marginTop: 22, maxWidth: 520 }}>
+          <h2 style={{ fontSize: 15 }}>Мой доступ · пароль консультанта</h2>
+          <p className="sub" style={{ fontSize: 12, marginTop: 4 }}>
+            Вы вошли как <b>{member.email}</b>. Задайте пароль — и на экране входа появится
+            возможность входить по email + паролю, без письма со ссылкой.
+          </p>
+          <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+            <input
+              type="password"
+              placeholder="Новый пароль (мин. 8 символов)"
+              value={pw}
+              onChange={(e) => setPw(e.target.value)}
+            />
+            <button className="btn" style={{ padding: '10px 16px' }} onClick={setPassword}>Задать</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

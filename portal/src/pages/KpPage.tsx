@@ -2,12 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { supabase, DEMO, type AnswerRow } from '../lib/supabase';
 import { buildReport } from '../lib/report';
+import { scopeEffort } from '../lib/gantt';
 import { useReportMeta } from '../lib/consultant';
 import { RATE_ITEMS } from '../data/rates';
 import { bandFor } from '../data/method';
 import {
-  PASSPORT_QID, PAINS_QID, PAINS_CUSTOM_QID, GOALS_QID, GOALS, PAINS,
-  effectiveNiche, type Passport,
+  PASSPORT_QID, PAINS_QID, PAINS_CUSTOM_QID, GOALS_QID,
+  effectiveNiche, painById, goalById, tacticalPainsOf, type Passport,
 } from '../data/pains';
 
 /** Генератор КП: боль → цена боли → решение → доказательство → scope → бюджет → next steps. */
@@ -69,10 +70,27 @@ export default function KpPage() {
       </p>
 
       <S n="01" title="Боль — почему вы здесь">
-        <ul style={{ margin: 0, paddingLeft: 18, fontSize: 14 }}>
-          {painIds.map((id) => <li key={id}>{PAINS.find((p) => p.id === id)?.title}</li>)}
-          {customPains && <li>«{customPains}»</li>}
-        </ul>
+        {(() => {
+          const fires = tacticalPainsOf(painIds);
+          const chronic = painIds.map(painById).filter((x) => x && x.horizon !== 'tactical');
+          return (
+            <>
+              {fires.length > 0 && (
+                <>
+                  <p style={{ fontSize: 13, fontWeight: 700, margin: '0 0 4px', color: '#DC2626' }}>Горит сейчас</p>
+                  <ul style={{ margin: '0 0 8px', paddingLeft: 18, fontSize: 14 }}>
+                    {fires.map((f) => <li key={f.id}>{f.title}</li>)}
+                  </ul>
+                </>
+              )}
+              <p style={{ fontSize: 13, fontWeight: 700, margin: '0 0 4px' }}>Болит системно</p>
+              <ul style={{ margin: 0, paddingLeft: 18, fontSize: 14 }}>
+                {chronic.map((x) => <li key={x!.id}>{x!.title}</li>)}
+                {customPains && <li>«{customPains}»</li>}
+              </ul>
+            </>
+          );
+        })()}
       </S>
 
       <S n="02" title="Методика — граница факта и допущения">
@@ -120,10 +138,23 @@ export default function KpPage() {
         </S>
       )}
 
-      <S n="05" title="Точка Б — цели 12 месяцев">
-        <ul style={{ margin: 0, paddingLeft: 18, fontSize: 14 }}>
-          {goalIds.map((id) => <li key={id}>{GOALS.find((g) => g.id === id)?.title}</li>)}
-        </ul>
+      <S n="05" title="Точка Б — два горизонта">
+        {(() => {
+          const tac = goalIds.map(goalById).filter((g) => g?.horizon === 'tactical');
+          const strat = goalIds.map(goalById).filter((g) => g && g.horizon !== 'tactical');
+          return (
+            <>
+              {tac.length > 0 && (
+                <p style={{ fontSize: 14, margin: '0 0 6px' }}>
+                  <b>Тактика · 90 дней:</b> {tac.map((g) => g!.title).join(' · ')}
+                </p>
+              )}
+              <p style={{ fontSize: 14, margin: 0 }}>
+                <b>Стратегия · 12 месяцев:</b> {strat.map((g) => g!.title).join(' · ') || '—'}
+              </p>
+            </>
+          );
+        })()}
       </S>
 
       <S n="06" title="Решение — Commerce OS™">
@@ -143,6 +174,18 @@ export default function KpPage() {
       </S>
 
       <S n="08" title="Архитектура программы — волны">
+        {tacticalPainsOf(painIds).length > 0 && (
+          <div style={{ marginBottom: 10 }}>
+            <p className="mono" style={{ fontSize: 12, fontWeight: 700, margin: '0 0 4px', color: '#DC2626' }}>
+              Волна 0 · Первая помощь · 0–2 недели
+            </p>
+            <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5 }}>
+              {tacticalPainsOf(painIds).map((f) => (
+                <li key={f.id}><b>{f.title}</b> <span className="sub">· {f.fix}</span></li>
+              ))}
+            </ul>
+          </div>
+        )}
         {waves.map((w) => (
           <div key={w.name} style={{ marginBottom: 10 }}>
             <p className="mono" style={{ fontSize: 12, fontWeight: 700, margin: '0 0 4px' }}>{w.name}</p>
@@ -204,6 +247,12 @@ export default function KpPage() {
             </div>
           );
         })()}
+        {scopeEffort(report.rules) > 0 && (
+          <p className="sub" style={{ fontSize: 12.5, marginTop: 8 }}>
+            Трудоёмкость программы: ≈<b>{scopeEffort(report.rules)} чел-дней консультанта</b>{' '}
+            (стартовая оценка по активированным правилам, калибруется по факту на сверках XX-01).
+          </p>
+        )}
         <p className="sub" style={{ fontSize: 12, marginTop: 8 }}>
           Точный бюджет фиксируется после согласования scope; следующий транш — только после
           принятого результата предыдущего этапа.

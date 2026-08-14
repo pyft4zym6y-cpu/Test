@@ -343,7 +343,7 @@ export function HowItWorks() {
 const STRATEGIC = [
   { name: 'Бренд', desc: 'сформований · Brand Book · тригери довіри', color: '#DB2777' },
   { name: 'Позиціонування', desc: 'чітке, відстроєне від конкурентів', color: '#6D28D9' },
-  { name: 'Міжнародна присутність', desc: 'ціль: 2+ ринки · ЄС / US', color: '#0F9488', tag: 'є / нема' },
+  { name: 'Міжнародна присутність', desc: 'ціль: 5+ ринків · EU / UK / US · 25%+ виручки з-за кордону · бренд, який впізнають за межами України', color: '#0F9488', tag: 'є / нема' },
   { name: 'ERP-система', desc: 'єдиний облік, склад, фінанси', color: '#B45309', tag: 'є / нема' },
   { name: 'Наскрізна аналітика', desc: 'GA4 + BI · P&L у реальному часі', color: '#65A30D' },
 ];
@@ -645,7 +645,7 @@ export function RayCase() {
     <Section>
       <FadeIn>
         <Eyebrow>
-          Кейс · <span className="text-[#4D7C0F]">Fashion-виробник</span> · Program of Record 2026
+          Кейс · <span className="text-[#4D7C0F]">Fashion-виробник</span> · Управління проєктом 2026
         </Eyebrow>
         <SectionTitle as="h1">
           Одяговий бренд ·<br />
@@ -718,7 +718,7 @@ export function RayCase() {
 
 /* ================= CTA-стрічка для кінця сторінок ================= */
 
-export function PageCta({ label = 'Почнімо з аудиту' }: { label?: string }) {
+export function PageCta({ label = 'Порахуйте свій розрив у грошах' }: { label?: string }) {
   return (
     <Section>
       <FadeIn>
@@ -729,16 +729,16 @@ export function PageCta({ label = 'Почнімо з аудиту' }: { label?: 
           <div>
             <p className="font-extrabold text-2xl md:text-3xl">{label}</p>
             <p className="text-[#5A6472] text-sm mt-2 max-w-xl">
-              30-хв стратегічна сесія → Diagnostic Sprint. Ви бачите цифри до того, як вкладаєте
-              бюджет у виконання.
+              8 питань · пів хвилини · без контактів і дзвінків. Калькулятор покаже,
+              скільки обороту ви недоотримуєте щомісяця — і де саме.
             </p>
           </div>
           <Link
-            to="/contact"
-            onClick={() => track('cta_click', { location: 'page_cta' })}
+            to="/calculator"
+            onClick={() => track('cta_click', { location: 'page_cta_calc' })}
             className="self-start md:self-auto shrink-0 flex items-center gap-3 border border-[#65A30D] text-[#4D7C0F] px-7 py-3.5 text-sm tracking-wider uppercase hover:bg-[#65A30D] hover:text-[#12161C] transition-colors"
           >
-            Отримати аудит у грошах →
+            Порахувати розрив →
           </Link>
         </div>
       </FadeIn>

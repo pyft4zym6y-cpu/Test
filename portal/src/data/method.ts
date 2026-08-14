@@ -26,6 +26,9 @@ export const MATURITY_DOMAINS: MaturityDomain[] = [
   { domain: 'Governance', weight: 4, sheets: ['34'] },
 ];
 
+const weightSum = MATURITY_DOMAINS.reduce((s, d) => s + d.weight, 0);
+if (weightSum !== 100) console.warn(`[method] сумма весов доменов = ${weightSum}, должна быть ровно 100 — Score A искажён`);
+
 export type CriticalGap = { id: string; label: string; penalty: number; qids: string[] };
 
 /** Разрыв фиксируется, если хотя бы один из вопросов отвечен «Нет». */

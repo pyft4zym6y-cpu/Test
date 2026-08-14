@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { GOALS, GOALS_QID, GOALS_CUSTOM_QID } from '../data/pains';
+import { GOALS, TACTICAL_GOALS, GOALS_QID, GOALS_CUSTOM_QID } from '../data/pains';
 import { BRIEF_TRIED_QID, BRIEF_TEAM_QID, BRIEF_AMBITION_QID } from '../data/method';
 import { useAnswers } from '../lib/useAnswers';
 
@@ -19,10 +19,30 @@ export default function GoalsPage() {
     <div className="container" style={{ padding: '30px 20px 80px', maxWidth: 720 }}>
       <Link to="/company" className="mono" style={{ fontSize: 12, color: 'var(--muted)', textDecoration: 'none' }}>← Назад: компания</Link>
       <p className="eyebrow" style={{ marginTop: 14 }}>Шаг 2 · Цели</p>
-      <h1>Чего хотите достичь за 12 месяцев?</h1>
-      <p className="sub">Верхнеуровнево — «хотим в Европу», «рост продаж». Выберите до 3–4 главных.</p>
+      <h1>Чего хотите достичь?</h1>
+      <p className="sub">
+        Два горизонта: <b>тактика на 90 дней</b> — измеримый результат быстро, и{' '}
+        <b>стратегия на 12 месяцев</b> — куда строим систему. Выберите главное на каждом уровне.
+      </p>
 
-      <div className="grid cols2" style={{ marginTop: 20 }}>
+      <p className="eyebrow" style={{ margin: '22px 0 8px', color: 'var(--amber)' }}>Тактика · 90 дней</p>
+      <div className="grid cols2">
+        {TACTICAL_GOALS.map((g) => {
+          const on = selected.includes(g.id);
+          return (
+            <button key={g.id} type="button" onClick={() => toggle(g.id)} className="card"
+              style={{ textAlign: 'left', cursor: 'pointer', borderColor: on ? 'var(--amber)' : 'rgba(180,83,9,0.25)', background: on ? '#FDF6EC' : '#fff', padding: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+                <span style={{ fontWeight: 700, fontSize: 14.5 }}>{g.title}</span>
+                <span className="mono" style={{ color: on ? 'var(--amber)' : 'var(--line)', fontWeight: 700 }}>{on ? '✓' : '+'}</span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      <p className="eyebrow" style={{ margin: '22px 0 8px' }}>Стратегия · 12 месяцев</p>
+      <div className="grid cols2">
         {GOALS.map((g) => {
           const on = selected.includes(g.id);
           return (

@@ -22,38 +22,21 @@ export function evidenceForSource(source?: string): EvidenceLevel {
   return 'E3'; // GA4 / CRM / Выгрузка заказов / Кабинет площадки
 }
 
-/* ── Capability Maturity: лестница L1–L5 по доменам (модель метода) ── */
-export type Ladder = { domain: string; sheets: string[]; levels: string[] }; // ровно 5: L1…L5
+/* ── Capability Maturity: 18 доменов × L0–L5 (первоисточник: method/references/capability_maturity.md) ── */
+import capabilityRaw from './capability.json';
+import pbDepsRaw from './pb-deps.json';
+import { MATURITY_DOMAINS } from './method';
 
-export const LADDERS: Ladder[] = [
-  { domain: 'CRM / Retention', sheets: ['23'], levels: [
-    'Базы нет или ей не пишут', 'Ручные рассылки «по всем»', 'Сегментация и регулярные кампании',
-    'Автоматические цепочки + метрики (open/click/revenue)', 'Predictive: ML-сегменты, next-best-action'] },
-  { domain: 'Аналитика', sheets: ['24'], levels: [
-    'Решения на ощущениях', 'GA4 стоит, но данные не сверены', 'События размечены, данные сверены с бэкендом',
-    'Дашборды, единый источник правды, атрибуция', 'DWH + прогнозные модели'] },
-  { domain: 'Финансы', sheets: ['31'], levels: [
-    'Только бухгалтерия', 'Оборот виден, прибыль — «в конце года»', 'Управленческий P&L ежемесячно',
-    'Юнит-экономика по каналам и SKU', 'Сценарные модели и стресс-тесты'] },
-  { domain: 'SEO', sheets: ['22'], levels: [
-    'Не занимаются', 'Разовые правки без плана', 'Семантика и техбаза в порядке',
-    'Системный контент-конвейер + мониторинг', 'Топ видимости + GEO/AEO в AI-выдачах'] },
-  { domain: 'Операции', sheets: ['29'], levels: [
-    'Всё вручную, знания в головах', 'Процессы повторяются, но не описаны', 'Регламенты и роли описаны',
-    'Метрики процессов, ERP, автоматизация', 'Самооптимизация: прогноз спроса, автозаказ'] },
-  { domain: 'Маркетинг', sheets: ['21'], levels: [
-    'Реклама «когда вспомнили»', 'Постоянные кампании без учёта прибыли', 'Каналы измеряются, есть UTM-дисциплина',
-    'Управление по CAC/LTV, тесты каналов', 'MMM/инкрементальность, автоматические правила'] },
-  { domain: 'Платформа', sheets: ['28'], levels: [
-    'Сайт «как поставили», правки страшно', 'Правки возможны, но долго и дорого', 'Стабильный релизный процесс, staging',
-    'Метрики скорости/ошибок, быстрые итерации', 'Композиция сервисов, эксперименты на потоке'] },
-  { domain: 'Бренд', sheets: ['16', '17', '18', '19'], levels: [
-    'Логотип есть — бренда нет', 'Визуал стихийный, зависит от исполнителя', 'Позиционирование и гайдлайны зафиксированы',
-    'Бренд управляется: трекинг, ценовая премия', 'Бренд — актив: лицензии, комьюнити, LTV-эффект'] },
-];
+export type Ladder = { domain: string; sheets: string[]; levels: string[] }; // L1…L5
+export const LADDERS: Ladder[] = (capabilityRaw as { domain: string; levels: string[] }[]).map((c) => ({
+  domain: c.domain,
+  sheets: MATURITY_DOMAINS.find((m) => m.domain === c.domain)?.sheets ?? [],
+  levels: c.levels,
+}));
 
-export const levelFromHealth = (h: number): 1 | 2 | 3 | 4 | 5 =>
-  h < 0.2 ? 1 : h < 0.4 ? 2 : h < 0.6 ? 3 : h < 0.8 ? 4 : 5;
+/** 0 = возможности нет вообще (L0 метода). Уровень — по здоровью домена. */
+export const levelFromHealth = (h: number): 0 | 1 | 2 | 3 | 4 | 5 =>
+  h < 0.05 ? 0 : h < 0.2 ? 1 : h < 0.4 ? 2 : h < 0.6 ? 3 : h < 0.8 ? 4 : 5;
 
 /* ── Причинно-следственные цепочки: симптом → корни → влияние ── */
 export type CausalChain = {
@@ -141,16 +124,12 @@ export const METRIC_DEPS: { from: string; to: string; note: string }[] = [
   { from: 'ERP/операции', to: 'Масштабируемость', note: 'рост без роста ошибок' },
 ];
 
-/* ── Пререквизиты плейбуков: что нельзя раньше чего ── */
-export const PB_PREREQS: Record<string, string[]> = {
-  'PB-18': ['PB-16'], // ERP — после карты интеграций
-  'PB-22': ['PB-12', 'PB-17'], // Amazon EU — после юнит-экономики и PIM
-  'PB-23': ['PB-12'], // Allegro — после юнит-экономики
-  'PB-21': ['PB-17', 'PB-12'], // Marketplace kit — после PIM и юнит-экономики
-  'PB-09': ['PB-08'], // лояльность — после retention-контура
-  'PB-13': ['PB-12'], // ценовая архитектура — после юнит-экономики
-  'PB-47': ['PB-46'], // коммуникации — после бренд-платформы
-  'PB-52': ['PB-51'], // дизайн-система — после визуальной системы
-  'PB-53': ['PB-12'], // финмодель — после юнит-экономики
-  'PB-29': ['PB-28'], // планирование закупок — после чистки ассортимента
-};
+/* ── Пререквизиты плейбуков: из method/data/playbook_dependencies.json (24 ребра, с «почему») ── */
+type Dep = { before: string; after: string; why: string };
+export const PB_DEPS = pbDepsRaw as Dep[];
+export const PB_PREREQS: Record<string, string[]> = {};
+export const PB_DEP_WHY: Record<string, string> = {};
+for (const d of PB_DEPS) {
+  (PB_PREREQS[d.after] ??= []).push(d.before);
+  PB_DEP_WHY[`${d.before}→${d.after}`] = d.why;
+}

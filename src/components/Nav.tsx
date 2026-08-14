@@ -5,22 +5,22 @@ import { say, sayIdle } from './speech';
 import { track } from './analytics';
 
 const LINKS = [
-  { to: '/approach', label: 'Підхід', say: 'Чому реклама більше не рятує? Тут — відповідь у цифрах →' },
-  { to: '/system', label: 'Система', say: '12 модулів, один рушій. Зазирни під капот →' },
-  { to: '/product', label: 'Продукт', say: '56 плейбуків і аудит, що рахує гроші. Показати?' },
-  { to: '/expertise', label: 'Експертиза', say: 'Від SEO до AI — 17 напрямів. Знайди свій →' },
+  { to: '/os', label: 'Commerce OS', say: 'Чому зараз, як влаштована система і що ви купуєте — все тут →' },
   { to: '/cases', label: 'Кейси', say: '×18 обороту — не обіцянка, а факт. Перевір →' },
-  { to: '/process', label: 'Процес', say: 'Етапи, DoD і транші під результат — ось як захищено бюджет →' },
-  { to: '/services', label: 'Умови', say: 'Старт від $2K. Три двері — обери свою →' },
+  { to: '/services', label: 'Співпраця', say: 'Три формати співпраці: аудит → консалтинг → управління під ключ →' },
   { to: '/calculator', label: 'Калькулятор', say: '8 питань — і твій розрив у грошах на екрані. Спробуй →' },
   { to: '/about', label: 'Про нас', say: 'Знайомся: weexp. Будуємо активи, а не витрати →' },
 ];
+
+// Клієнтський портал діагностики (Discovery) — окремий продукт на піддомені
+const BRIEF_URL = '/brief/';
 
 const CASE_LINKS = [
   { to: '/cases/premium-textile', num: '×18', label: 'Преміум-текстиль', say: '€48K → €900K за 18 місяців. Хочеш так само?' },
   { to: '/cases/fashion-apparel', num: '≥19 млн ₴', label: 'Fashion-виробник', say: '≥19 млн ₴ знайдених грошей. Дивись аудит →' },
   { to: '/cases/consumer-dtc', num: '+65%', label: 'Consumer DTC', say: 'Бренд із Forbes TOP-250 і +65% продажів за 9 міс →' },
   { to: '/cases/fmcg-distribution', num: '17K SKU', label: 'FMCG-дистриб’ютор', say: '17 000 SKU під контролем однієї системи →' },
+  { to: '/cases/fmcg-transformation', num: '+96%', label: 'Food & FMCG', say: 'З маркетплейсу — на власну платформу: LTV ×4.2, виручка +96% →' },
 ];
 
 function Logo() {
@@ -145,6 +145,17 @@ export default function Nav() {
             >
               Забронювати сесію
             </Link>
+            <a
+              href={BRIEF_URL}
+              target="_blank"
+              rel="noopener"
+              onMouseEnter={() => say('Уже спілкуємось? Заповнюй бриф у порталі — вхід за запрошенням →')}
+              onMouseLeave={sayIdle}
+              onClick={() => track('cta_click', { location: 'nav_brief' })}
+              className="hidden xl:inline-block bg-[#A3E635] px-5 py-2 text-xs font-bold tracking-wider uppercase text-black hover:opacity-85 transition-opacity"
+            >
+              Заповнити бриф
+            </a>
             <Link
               to="/contact"
               onClick={() => track('cta_click', { location: 'nav_mobile' })}
@@ -240,6 +251,18 @@ export default function Nav() {
             >
               Забронювати сесію →
             </Link>
+            <a
+              href={BRIEF_URL}
+              target="_blank"
+              rel="noopener"
+              onClick={() => {
+                setMenuOpen(false);
+                track('cta_click', { location: 'menu_brief' });
+              }}
+              className="block border border-black/30 text-center font-mono text-sm font-bold uppercase tracking-[0.12em] px-8 py-4"
+            >
+              Заповнити бриф →
+            </a>
             <div className="flex items-center justify-between font-mono text-[0.68rem] text-[#5A6472]">
               <a href="tel:+380999188260" className="hover:text-[#12161C] transition-colors">
                 +38 099 918 82 60

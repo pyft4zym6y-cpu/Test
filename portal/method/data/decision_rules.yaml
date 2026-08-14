@@ -1,0 +1,742 @@
+meta:
+  version: '1.0'
+  scale:
+    impact: 1–10, вклад в деньги при закрытии разрыва
+    difficulty: 1–10, стоимость и сложность реализации
+    days: медианный срок, календарных дней
+    roi: impact / difficulty
+    effort_days: человеко-дней консультанта на закрытие правила
+  note: impact, difficulty и days — стартовые значения по типу домена. Калибруются по факту через XX-01.
+    effort_days — стартовая оценка трудоёмкости, подлежит калибровке по факту.
+rules:
+- id: R01
+  area: Триггер проекта
+  priority: P0
+  trigger: Падают продажи
+  domains: SEO, Marketing, Pricing, Analytics
+  playbooks:
+  - PB-02
+  - PB-03
+  - PB-04
+  - PB-10
+  deliverable: Funnel Teardown + Traffic Recovery Plan
+  impact: 9
+  difficulty: 5
+  days: 30
+  blocking: false
+  effort_days: 8
+- id: R02
+  area: Триггер проекта
+  priority: P0
+  trigger: Не можем масштабироваться
+  domains: Platform, Operations, CRM, AI, International
+  playbooks:
+  - PB-14
+  - PB-16
+  - PB-18
+  - PB-32
+  deliverable: Scalability Blueprint
+  impact: 9
+  difficulty: 5
+  days: 30
+  blocking: false
+  effort_days: 8
+- id: R03
+  area: Триггер проекта
+  priority: P0
+  trigger: Инвестор требует роста
+  domains: Finance, Governance, Analytics, Strategy
+  playbooks:
+  - PB-11
+  - PB-12
+  - PB-34
+  deliverable: Growth Plan + BI Layer
+  impact: 9
+  difficulty: 5
+  days: 30
+  blocking: false
+  effort_days: 8
+- id: R04
+  area: Триггер проекта
+  priority: P1
+  trigger: Выход на новый рынок
+  domains: International, Legal, Operations, Marketplace
+  playbooks:
+  - PB-24
+  - PB-25
+  - PB-26
+  - PB-27
+  deliverable: Market Entry Roadmap
+  impact: 8
+  difficulty: 5
+  days: 30
+  blocking: false
+  effort_days: 8
+- id: R05
+  area: Триггер проекта
+  priority: P1
+  trigger: Смена платформы
+  domains: Platform, SEO, Analytics, Operations
+  playbooks:
+  - PB-14
+  - PB-05
+  - PB-10
+  - PB-16
+  deliverable: Replatforming Plan
+  impact: 8
+  difficulty: 5
+  days: 30
+  blocking: false
+  effort_days: 8
+- id: R06
+  area: Маржинальность
+  priority: P0
+  trigger: Маржа падает при росте оборота
+  domains: Finance, Pricing, Operations
+  playbooks:
+  - PB-12
+  - PB-13
+  - PB-36
+  deliverable: Unit Economics Model
+  impact: 10
+  difficulty: 4
+  days: 20
+  blocking: true
+  effort_days: 8
+- id: R07
+  area: Retention
+  priority: P1
+  trigger: Repeat rate < 20%
+  domains: CRM, CX, Product
+  playbooks:
+  - PB-08
+  - PB-09
+  - PB-35
+  deliverable: Retention Engine
+  impact: 10
+  difficulty: 5
+  days: 35
+  blocking: false
+  effort_days: 14
+- id: R08
+  area: Аналитика
+  priority: P0
+  trigger: Нет единого источника правды
+  domains: Analytics, Governance
+  playbooks:
+  - PB-10
+  - PB-11
+  deliverable: Analytics Blueprint
+  impact: 10
+  difficulty: 4
+  days: 20
+  blocking: true
+  effort_days: 10
+- id: R09
+  area: Ассортимент
+  priority: P1
+  trigger: '>5000 SKU без структуры'
+  domains: Product, SEO, Platform
+  playbooks:
+  - PB-28
+  - PB-05
+  - PB-17
+  deliverable: Assortment & Taxonomy Pack
+  impact: 8
+  difficulty: 5
+  days: 25
+  blocking: false
+  effort_days: 10
+- id: R10
+  area: Операции
+  priority: P1
+  trigger: Нет ERP / учёт в Excel
+  domains: Operations, Finance, Governance
+  playbooks:
+  - PB-18
+  - PB-16
+  deliverable: ERP Readiness Assessment
+  impact: 7
+  difficulty: 6
+  days: 35
+  blocking: false
+  effort_days: 12
+- id: R11
+  area: Международное
+  priority: P1
+  trigger: Нет юрлица в ЕС
+  domains: International, Legal, Finance
+  playbooks:
+  - PB-25
+  - PB-26
+  deliverable: Entity & Tax Structure Memo
+  impact: 7
+  difficulty: 8
+  days: 75
+  blocking: false
+  effort_days: 16
+- id: R12
+  area: Международное
+  priority: P0
+  trigger: Нет VAT/OSS регистрации
+  domains: Legal, Finance
+  playbooks:
+  - PB-26
+  - PB-38
+  deliverable: Compliance Pack
+  impact: 8
+  difficulty: 8
+  days: 75
+  blocking: false
+  effort_days: 16
+- id: R13
+  area: Международное
+  priority: P1
+  trigger: Нет локального склада
+  domains: Operations, International
+  playbooks:
+  - PB-19
+  - PB-25
+  deliverable: Fulfillment Model
+  impact: 7
+  difficulty: 8
+  days: 75
+  blocking: false
+  effort_days: 16
+- id: R14
+  area: Команда
+  priority: P1
+  trigger: Нет владельца канала
+  domains: People, Governance
+  playbooks:
+  - PB-30
+  - PB-31
+  deliverable: Org Design + RACI
+  impact: 6
+  difficulty: 7
+  days: 45
+  blocking: false
+  effort_days: 10
+- id: R15
+  area: Governance
+  priority: P2
+  trigger: Нет регулярного управленческого ритма
+  domains: Governance
+  playbooks:
+  - PB-34
+  deliverable: Operating Rhythm Charter
+  impact: 6
+  difficulty: 5
+  days: 30
+  blocking: false
+  effort_days: 8
+- id: R16
+  area: AI
+  priority: P2
+  trigger: Ручное производство контента на >1000 SKU
+  domains: AI, SEO, Product
+  playbooks:
+  - PB-33
+  - PB-07
+  deliverable: AI Content Pipeline
+  impact: 5
+  difficulty: 7
+  days: 40
+  blocking: false
+  effort_days: 10
+- id: R17
+  area: Marketplace
+  priority: P1
+  trigger: Каннибализация цен между каналами
+  domains: Pricing, Marketplace
+  playbooks:
+  - PB-13
+  - PB-21
+  deliverable: Channel Pricing Policy
+  impact: 7
+  difficulty: 6
+  days: 45
+  blocking: false
+  effort_days: 12
+- id: R18
+  area: CX
+  priority: P2
+  trigger: SLA ответа > 24 часов
+  domains: CX, People
+  playbooks:
+  - PB-35
+  deliverable: Support Redesign
+  impact: 6
+  difficulty: 5
+  days: 25
+  blocking: false
+  effort_days: 8
+- id: R19
+  area: Финансы
+  priority: P0
+  trigger: Кассовые разрывы при росте
+  domains: Finance, Product
+  playbooks:
+  - PB-36
+  - PB-29
+  deliverable: Working Capital Plan
+  impact: 10
+  difficulty: 4
+  days: 25
+  blocking: true
+  effort_days: 8
+- id: R20
+  area: SEO
+  priority: P0
+  trigger: Трафик упал после редизайна/миграции
+  domains: SEO, Platform
+  playbooks:
+  - PB-04
+  - PB-05
+  deliverable: SEO Recovery Plan
+  impact: 9
+  difficulty: 6
+  days: 60
+  blocking: false
+  effort_days: 12
+- id: R21
+  area: Конверсия
+  priority: P0
+  trigger: CR сайта < 1%
+  domains: Platform, Analytics, CRM
+  playbooks:
+  - PB-15
+  - PB-10
+  - PB-08
+  deliverable: CRO Program + Tracking Audit
+  impact: 10
+  difficulty: 4
+  days: 25
+  blocking: false
+  effort_days: 10
+- id: R22
+  area: SEO
+  priority: P0
+  trigger: SEO не ведётся вообще
+  domains: SEO, Platform
+  playbooks:
+  - PB-04
+  - PB-05
+  - PB-06
+  - PB-07
+  deliverable: 'SEO Audit Pack: технический, структура, контент, GEO'
+  impact: 9
+  difficulty: 6
+  days: 60
+  blocking: false
+  effort_days: 12
+- id: R23
+  area: Продукт
+  priority: P1
+  trigger: Нет сформулированного Value Proposition
+  domains: Product, Marketing
+  playbooks:
+  - PB-39
+  - PB-40
+  deliverable: Value Proposition Canvas
+  impact: 7
+  difficulty: 5
+  days: 30
+  blocking: false
+  effort_days: 10
+- id: R24
+  area: Продукт
+  priority: P1
+  trigger: Не знают, почему клиенты не покупают
+  domains: Product, CX
+  playbooks:
+  - PB-40
+  - PB-44
+  deliverable: Barrier & Objection Map
+  impact: 7
+  difficulty: 5
+  days: 30
+  blocking: false
+  effort_days: 10
+- id: R25
+  area: Клиенты
+  priority: P1
+  trigger: Персоны отсутствуют или придуманы командой
+  domains: CX, Marketing
+  playbooks:
+  - PB-43
+  - PB-40
+  deliverable: Persona Set на данных
+  impact: 7
+  difficulty: 4
+  days: 20
+  blocking: false
+  effort_days: 8
+- id: R26
+  area: Клиенты
+  priority: P2
+  trigger: Нет CJM ни для одного сегмента
+  domains: CX
+  playbooks:
+  - PB-44
+  deliverable: Customer Journey Map
+  impact: 6
+  difficulty: 4
+  days: 20
+  blocking: false
+  effort_days: 8
+- id: R27
+  area: Клиенты
+  priority: P2
+  trigger: NPS/CSAT/CES не измеряются
+  domains: CX, Analytics
+  playbooks:
+  - PB-45
+  deliverable: VoC System
+  impact: 6
+  difficulty: 4
+  days: 20
+  blocking: false
+  effort_days: 8
+- id: R28
+  area: Клиенты
+  priority: P1
+  trigger: Не изучались причины ухода к конкуренту
+  domains: CX, CRM
+  playbooks:
+  - PB-45
+  - PB-40
+  deliverable: Churn Reason Study
+  impact: 7
+  difficulty: 4
+  days: 20
+  blocking: false
+  effort_days: 8
+- id: R29
+  area: Конкуренты
+  priority: P1
+  trigger: Мониторинг конкурентов не ведётся
+  domains: Strategy, Pricing
+  playbooks:
+  - PB-41
+  - PB-13
+  deliverable: Competitive Monitoring System
+  impact: 6
+  difficulty: 3
+  days: 15
+  blocking: false
+  effort_days: 4
+- id: R30
+  area: Конкуренты
+  priority: P2
+  trigger: Нет карты позиционирования и SWOT
+  domains: Strategy
+  playbooks:
+  - PB-41
+  deliverable: Positioning Map + SWOT
+  impact: 5
+  difficulty: 3
+  days: 15
+  blocking: false
+  effort_days: 4
+- id: R31
+  area: Конкуренты
+  priority: P2
+  trigger: Свободная ниша не искалась
+  domains: Strategy, Product
+  playbooks:
+  - PB-41
+  - PB-39
+  deliverable: White Space Analysis
+  impact: 5
+  difficulty: 3
+  days: 15
+  blocking: false
+  effort_days: 4
+- id: R32
+  area: Бренд
+  priority: P1
+  trigger: Нет бренд-платформы и RTB
+  domains: Marketing, Strategy
+  playbooks:
+  - PB-46
+  deliverable: Brand Platform
+  impact: 7
+  difficulty: 6
+  days: 40
+  blocking: false
+  effort_days: 10
+- id: R33
+  area: Бренд
+  priority: P0
+  trigger: Конкурент может подписаться под вашим позиционированием
+  domains: Strategy, Marketing
+  playbooks:
+  - PB-46
+  - PB-41
+  deliverable: Repositioning Sprint
+  impact: 8
+  difficulty: 6
+  days: 40
+  blocking: false
+  effort_days: 10
+- id: R34
+  area: Бренд
+  priority: P1
+  trigger: Архитектура бренда не определена при 2+ линейках
+  domains: Strategy, Product
+  playbooks:
+  - PB-48
+  deliverable: Brand Architecture
+  impact: 7
+  difficulty: 6
+  days: 40
+  blocking: false
+  effort_days: 10
+- id: R35
+  area: Бренд
+  priority: P2
+  trigger: Нет бренд-бука или он устарел
+  domains: Marketing
+  playbooks:
+  - PB-47
+  - PB-51
+  deliverable: Brand Guidelines
+  impact: 6
+  difficulty: 6
+  days: 40
+  blocking: false
+  effort_days: 10
+- id: R36
+  area: Бренд
+  priority: P2
+  trigger: Метрики бренда не измеряются
+  domains: Analytics, Marketing
+  playbooks:
+  - PB-50
+  deliverable: Brand KPI Dashboard + Baseline
+  impact: 6
+  difficulty: 6
+  days: 40
+  blocking: false
+  effort_days: 10
+- id: R37
+  area: Бренд
+  priority: P1
+  trigger: Нет ценовой премии относительно конкурентов
+  domains: Pricing, Marketing
+  playbooks:
+  - PB-50
+  - PB-46
+  deliverable: Price Premium Program
+  impact: 7
+  difficulty: 6
+  days: 40
+  blocking: false
+  effort_days: 10
+- id: R38
+  area: Коммуникации
+  priority: P2
+  trigger: Нет контент-пилларов и редакционного плана
+  domains: Marketing, SEO
+  playbooks:
+  - PB-47
+  - PB-07
+  deliverable: Content Platform
+  impact: 5
+  difficulty: 4
+  days: 20
+  blocking: false
+  effort_days: 6
+- id: R39
+  area: Коммуникации
+  priority: P1
+  trigger: Сообщения в рекламе не совпадают с сайтом
+  domains: Marketing, Platform
+  playbooks:
+  - PB-03
+  - PB-47
+  deliverable: Message Consistency Audit
+  impact: 6
+  difficulty: 4
+  days: 20
+  blocking: false
+  effort_days: 6
+- id: R40
+  area: Визуал
+  priority: P1
+  trigger: Разнобой в фото и карточках каталога
+  domains: Marketing, Product
+  playbooks:
+  - PB-51
+  - PB-17
+  deliverable: Catalog Visual Standard
+  impact: 5
+  difficulty: 5
+  days: 30
+  blocking: false
+  effort_days: 8
+- id: R41
+  area: Визуал
+  priority: P2
+  trigger: Нет дизайн-системы при активной разработке
+  domains: Platform
+  playbooks:
+  - PB-52
+  deliverable: Design System
+  impact: 4
+  difficulty: 5
+  days: 30
+  blocking: false
+  effort_days: 8
+- id: R42
+  area: Финансы
+  priority: P0
+  trigger: Нет расчёта contribution margin по SKU
+  domains: Finance, Pricing
+  playbooks:
+  - PB-12
+  deliverable: Contribution Margin Model
+  impact: 10
+  difficulty: 4
+  days: 25
+  blocking: true
+  effort_days: 8
+- id: R43
+  area: Финансы
+  priority: P0
+  trigger: CAC payback > 12 месяцев
+  domains: Finance, Marketing
+  playbooks:
+  - PB-12
+  - PB-36
+  deliverable: CAC Payback Plan
+  impact: 10
+  difficulty: 4
+  days: 25
+  blocking: true
+  effort_days: 8
+- id: R44
+  area: Финансы
+  priority: P0
+  trigger: LTV:CAC < 3
+  domains: Finance, CRM
+  playbooks:
+  - PB-12
+  - PB-08
+  deliverable: Unit Economics Recovery
+  impact: 10
+  difficulty: 4
+  days: 25
+  blocking: true
+  effort_days: 8
+- id: R45
+  area: Финансы
+  priority: P0
+  trigger: Runway < 6 месяцев
+  domains: Finance, Governance
+  playbooks:
+  - PB-36
+  - PB-53
+  deliverable: Cash Preservation Plan
+  impact: 10
+  difficulty: 4
+  days: 25
+  blocking: true
+  effort_days: 8
+- id: R46
+  area: Финансы
+  priority: P1
+  trigger: EBITDA не рассчитывается
+  domains: Finance
+  playbooks:
+  - PB-53
+  deliverable: EBITDA Bridge
+  impact: 10
+  difficulty: 4
+  days: 25
+  blocking: false
+  effort_days: 8
+- id: R47
+  area: Финансы
+  priority: P2
+  trigger: Нет стресс-сценария на падение 30%
+  domains: Finance, Governance
+  playbooks:
+  - PB-53
+  deliverable: Scenario Model
+  impact: 9
+  difficulty: 4
+  days: 25
+  blocking: false
+  effort_days: 8
+- id: R48
+  area: AI
+  priority: P1
+  trigger: Данные не готовы к AI (оценка < 3)
+  domains: AI, Analytics
+  playbooks:
+  - PB-54
+  - PB-10
+  - PB-17
+  deliverable: Data Readiness Program
+  impact: 6
+  difficulty: 7
+  days: 40
+  blocking: false
+  effort_days: 10
+- id: R49
+  area: AI
+  priority: P1
+  trigger: Нет политики использования AI
+  domains: Legal, AI
+  playbooks:
+  - PB-56
+  deliverable: AI Usage Policy
+  impact: 6
+  difficulty: 7
+  days: 40
+  blocking: false
+  effort_days: 10
+- id: R50
+  area: AI
+  priority: P2
+  trigger: Нет базы знаний для LLM-ассистентов
+  domains: AI, CX
+  playbooks:
+  - PB-55
+  deliverable: Knowledge Base Build
+  impact: 5
+  difficulty: 7
+  days: 40
+  blocking: false
+  effort_days: 10
+- id: R51
+  area: Платные каналы
+  priority: P1
+  trigger: ROAS падает несколько месяцев · CAC растёт без роста объёма · подрядчик отчитывается без сверки
+    с бэкендом
+  domains: Маркетинг, Аналитика
+  playbooks:
+  - PB-57
+  - PB-10
+  deliverable: D-70 Аудит рекламных кабинетов
+  impact: 8
+  difficulty: 3
+  days: 20
+  blocking: false
+  effort_days: 8
+- id: R52
+  area: Планирование
+  priority: P2
+  trigger: Акции придумываются в последний момент · нет годового календаря · сезонные пики без подготовки
+  domains: Маркетинг, Ценообразование
+  playbooks:
+  - PB-58
+  - PB-13
+  deliverable: D-71 Маркетинговый календарь
+  impact: 5
+  difficulty: 3
+  days: 15
+  blocking: false
+  effort_days: 6

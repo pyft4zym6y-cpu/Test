@@ -1,141 +1,216 @@
 import FadeIn from './FadeIn';
 import { Eyebrow, Section, SectionTitle } from './ui';
 
-const DOORS = [
+/*
+ * Три формати співпраці. Логіка розподілу — за тим, ХТО несе фінальну
+ * відповідальність за результат:
+ *   01 Аудит        — разовий проєкт, далі клієнт діє сам;
+ *   02 Консалтинг   — ми архітектор і контроль, руки та результат — команда клієнта;
+ *   03 Управління   — проєкт ведемо ми, фінальна відповідальність наша.
+ */
+const MODELS = [
   {
+    n: '01',
+    name: 'Аудит',
+    tagline: 'Diagnostic · разовий проєкт',
     period: '4–6 тижнів',
-    name: 'Diagnostic Sprint',
+    price: '$2,900 / $4,900',
+    priceNote: 'фіксовано: $2,900 — оборот до ₴5 млн/міс · $4,900 — вище; сума не змінюється після старту',
     color: '#0F9488',
-    rows: [
-      { k: 'Scope', v: 'Health Score, аудит, розрив→₴, roadmap' },
-      { k: 'Deliverable', v: 'D-01 Discovery Report + Roadmap (PDF)' },
-      { k: 'Інвестиція', v: '$2–6K · фіксована' },
-      { k: 'Next', v: '30-хв дзвінок' },
+    forWhom: 'У вас сильна внутрішня команда. Потрібні не руки, а карта: де саме втрачаються гроші та що робити першим.',
+    includes: [
+      'Discovery-портал: опитувальники, передача доступів, бриф ЛПР',
+      'Health Score і зрілість по 18 доменах',
+      'Розрив у грошах: 8 важелів, baseline, прогноз на 12 міс',
+      'Повний пакет документів аудиту — 19 артефактів',
+      'Роадмапа хвилями: пріоритети, бюджет, строки, команда',
     ],
+    handover: 'Передача документів + 4 години консультацій із розбором + контрольний дзвінок через 30 днів: перевіряємо, що впровадження пішло.',
+    terms: '100% вартості аудиту зараховується в перший місяць формату 03 (50% — у формат 02), якщо старт упродовж 30 днів. Аудит фактично стає безкоштовним входом.',
+    responsibility: 'Впровадження та результат — ваша команда.',
   },
   {
-    period: '6–12 місяців',
-    name: 'Program of Record',
+    n: '02',
+    name: 'Консалтинг і супровід',
+    tagline: 'Advisory · зовнішній експерт',
+    period: 'помісячно · від 1 міс',
+    price: '$50/год',
+    priceNote: 'мінімум 30 год/міс — рахунок не буває менше $1,500/міс; понад мінімум — за фактом годин',
     color: '#65A30D',
     featured: true,
-    rows: [
-      { k: 'Scope', v: 'Повна трансформація, пласти в синхроні' },
-      { k: 'Deliverable', v: 'Система активів + KPI + BI-дашборд' },
-      { k: 'Інвестиція', v: '$40–80K · проєкт / ретейнер' },
-      { k: 'Next', v: 'після Discovery' },
+    forWhom: 'У вас є виконавці та проджект-менеджер. Потрібен архітектор: що робити, в якому порядку і чи якісно зроблено.',
+    includes: [
+      'Щотижневі спринт-сесії: пріоритети, розбори, рішення',
+      'Роадмапа та беклог трансформації під нашим контролем',
+      'Ревʼю виконаного проти DoD і еталонів Commerce OS',
+      'Доступ до плейбуків, стандартів і чеклістів',
+      'Прозорий звіт по годинах щомісяця',
     ],
+    handover: 'Обовʼязкова умова: на вашому боці є виділений проджект або відповідальний, який керує виконанням. Без нього рекомендації зависають у повітрі — тоді чесніше одразу формат 03.',
+    terms: 'Старт — у будь-якому разі після аудиту (формат 01): він дає карту, за якою ведемо. Без аудиту теж можливо, але чесно — це поради наосліп, і їхня влучність суттєво нижча. Початковий термін — 3 місяці, далі помісячно з відмовою за 30 днів. Передоплата на місяць; до 20% невикористаних годин переносяться далі. Щоквартальне ревʼю цінності: продовжуємо, лише якщо цифри це виправдовують.',
+    responsibility: 'Якість рішень і контроль — ми. Виконання руками та результат — ваша команда.',
   },
   {
-    period: '1–3 дні/тиждень',
-    name: 'Fractional Lead',
+    n: '03',
+    name: 'Управління проєктом',
+    tagline: 'Managed · трансформація під ключ',
+    period: '6–12 місяців',
+    price: 'від $3,000/міс',
+    priceNote: 'залежить від масштабу проєкту; фіксується після аудиту',
     color: '#6D28D9',
-    rows: [
-      { k: 'Scope', v: 'Стратегічне лідерство + відповідальність за P&L' },
-      { k: 'Deliverable', v: 'Керування, синхрон, звітність' },
-      { k: 'Інвестиція', v: '$6–20K/міс · ретейнер' },
-      { k: 'Next', v: 'пілот 1 місяць' },
+    forWhom: 'Нема кому вести це зсередини. Потрібен результат, а не поради — і один відповідальний за нього.',
+    includes: [
+      'Керуємо всім проєктом: план, люди, бюджет, ризики',
+      'Команда: ваші люди + наша мережа підрядників з OKR і DoD',
+      'KPI та RACI на кожну хвилю, транші під результат',
+      'Швидкі перемоги першої хвилі фінансують наступні',
+      'Щомісячна звітність власнику: цифри проти плану',
     ],
+    handover: 'Старт — тільки після аудиту (формат 01): без діагностики керувати проєктом означає вести його навмання.',
+    terms: 'Пілот — перші 3 місяці з фіксованими KPI першої хвилі; далі 6–12 міс. Продовження — рішення за цифрами: щомісячна звітність власнику показує факт проти плану. Опційно — бонус за результат (% від приросту, фіксується в договорі).',
+    responsibility: 'Фінальна відповідальність за результат — на нас.',
   },
 ];
 
-const OFFER_CELLS = [
-  { label: 'Що входить', text: 'Діагностика · аудит у грошах · roadmap · виконання пластів · керування (RACI/KPI) · BI-дашборд', color: '#65A30D' },
-  { label: 'Етапи', text: '5: Discovery → Audit → Roadmap → Implementation → Governance', color: '#0F9488' },
-  { label: 'Строки', text: 'Discovery 4–6 тижнів · програма 6–12 міс · перший результат 30–60 днів', color: '#B45309' },
-  { label: 'Бюджет', text: 'Discovery $2–6K · Програма $40–80K (6–12 міс) · Fractional $6–20K/міс', color: '#EA580C' },
-  { label: 'Формат', text: 'Diagnostic Sprint · Program of Record · Fractional Lead — під вашу ситуацію', color: '#6D28D9' },
-  { label: 'Наступний крок', text: '30-хв стратегічна сесія → Discovery Sprint', color: '#65A30D' },
+const COMPARE = [
+  { k: 'Відповідальний за результат', v: ['Ваша команда', 'Ваша команда · ми — за якість рішень', 'Ми'] },
+  { k: 'Хто виконує руками', v: ['Ваша команда', 'Ваша команда під нашим контролем', 'Ваші люди + наші підрядники'] },
+  { k: 'Що потрібно від вас', v: ['Дані й доступи', 'Проджект + виконавці', 'Рішення та бюджет'] },
+  { k: 'Модель оплати', v: ['Фіксована за проєкт', '$50/год · мін. 30 год/міс', 'від $3,000/міс'] },
+  { k: 'Мінімальний вхід', v: ['$2,900', '$1,500/міс', '$3,000/міс'] },
+  { k: 'Мінімальний термін', v: ['разово', '3 місяці', 'пілот 3 міс → 6–12 міс'] },
+  { k: 'Зарахування аудиту', v: ['—', '50% у перший місяць', '100% у перший місяць'] },
 ];
 
-const FAQ = [
-  { q: 'Скільки це коштує?', a: 'Старт від Diagnostic Sprint. Інвестиція завжди зіставляється з упущеним оборотом.' },
+export const FAQ = [
+  { q: 'Скільки це коштує?', a: 'Ми розробили три формати співпраці — від разового аудиту до управління під ключ: кожен знаходить свій за масштабом і ситуацією. Усі ціни відкриті в блоці «Формати та ціни» на початку цієї сторінки.' },
   { q: 'Коли буде результат?', a: 'Перший вимірюваний — за 30–60 днів. Швидкі перемоги в першій хвилі.' },
   { q: 'У нас своя CMS / специфіка', a: 'Платформо-незалежний підхід. Міграція — лише за реальної потреби.' },
-  { q: 'Хто виконує роботу?', a: 'Ядро weexp + керована мережа підрядників з OKR і DoD.' },
-  { q: 'Це не задорого для нас?', a: 'Починаємо з малого; швидкі перемоги фінансують наступні хвилі.' },
-  { q: 'Які гарантії?', a: 'DoD на кожному етапі, транші під результат, дисципліна капіталу.' },
+  { q: 'Хто виконує роботу?', a: 'Залежить від формату: в аудиті й консалтингу — ваша команда, в управлінні — ваші люди + керована мережа підрядників з OKR і DoD.' },
+  { q: 'Чому так недорого проти ринку?', a: 'Ринок США бере за таку експертизу $75–250/год, fractional-керівники — $8–22K/міс. Ми працюємо напряму, без офісних накладних агенції — ви платите за експертизу, а не за бренд.' },
+  { q: 'Чим захищений мій бюджет?', a: 'Кожен етап має Definition of Done — вимірюваний критерій приймання. Наступний транш стартує лише після прийнятого результату попереднього, а звітність щомісяця показує факт проти плану.' },
 ];
 
 export default function Offers() {
   return (
     <>
-      {/* ---- Три двері ---- */}
+      {/* ---- Три формати ---- */}
       <Section id="offers">
         <FadeIn>
-          <Eyebrow>Як працюємо · Scope · Deliverable · Інвестиція · Next</Eyebrow>
-          <SectionTitle as="h1">Три двері — прозорі умови</SectionTitle>
+          <Eyebrow>Формати співпраці · Хто відповідає за результат</Eyebrow>
+          <SectionTitle as="h1">Три формати — за рівнем нашої відповідальності</SectionTitle>
+          <p className="text-[#5A6472] text-sm md:text-base mt-4 max-w-3xl leading-relaxed">
+            Різниця між форматами — не в «пакетах послуг», а в тому, хто несе фінальну
+            відповідальність за результат: ваша команда з нашою картою, ваша команда під нашим
+            контролем — чи ми повністю.
+          </p>
         </FadeIn>
         <div className="grid md:grid-cols-3 gap-5 mt-10 items-stretch">
-          {DOORS.map((d, i) => (
-            <FadeIn key={d.name} delay={i * 0.1}>
+          {MODELS.map((m, i) => (
+            <FadeIn key={m.n} delay={i * 0.1}>
               <div
-                className={`card card-hover accent-top p-7 h-full ${d.featured ? 'lg:scale-[1.03]' : ''}`}
+                className={`card card-hover accent-top p-7 h-full flex flex-col ${m.featured ? 'lg:scale-[1.03]' : ''}`}
                 style={
                   {
-                    '--accent': d.color,
-                    ...(d.featured ? { borderColor: 'rgba(101,163,13,0.4)' } : {}),
+                    '--accent': m.color,
+                    ...(m.featured ? { borderColor: 'rgba(101,163,13,0.4)' } : {}),
                   } as React.CSSProperties
                 }
               >
-                <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em]" style={{ color: d.color }}>
-                  {d.period}
+                <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em]" style={{ color: m.color }}>
+                  {m.n} · {m.tagline}
                 </p>
-                <p className="font-extrabold text-2xl mt-1.5 mb-5">{d.name}</p>
-                <div className="flex flex-col">
-                  {d.rows.map((r, ri) => (
-                    <div key={r.k} className={`py-3 ${ri > 0 ? 'border-t border-[#ECEEF0]' : ''}`}>
-                      <p className="font-mono text-[0.58rem] uppercase tracking-[0.18em] text-[#5A6472] mb-1">
-                        {r.k}
-                      </p>
-                      <p className="text-sm text-[#2F3742] leading-snug">{r.v}</p>
-                    </div>
+                <p className="font-extrabold text-2xl mt-1.5">{m.name}</p>
+                <div className="flex items-baseline gap-3 mt-3">
+                  <span className="font-mono font-bold text-xl" style={{ color: m.color }}>{m.price}</span>
+                  <span className="font-mono text-[0.62rem] uppercase tracking-[0.14em] text-[#5A6472]">{m.period}</span>
+                </div>
+                <p className="text-[#5A6472] text-xs mt-1.5 leading-snug">{m.priceNote}</p>
+
+                <p className="font-mono text-[0.58rem] uppercase tracking-[0.18em] text-[#5A6472] mt-5 mb-1.5">Кому підходить</p>
+                <p className="text-sm text-[#2F3742] leading-snug">{m.forWhom}</p>
+
+                <p className="font-mono text-[0.58rem] uppercase tracking-[0.18em] text-[#5A6472] mt-4 mb-1.5">Що входить</p>
+                <ul className="flex flex-col gap-1.5">
+                  {m.includes.map((it) => (
+                    <li key={it} className="text-sm text-[#2F3742] leading-snug flex gap-2">
+                      <span className="shrink-0" style={{ color: m.color }}>—</span>
+                      <span>{it}</span>
+                    </li>
                   ))}
+                </ul>
+
+                <p className="font-mono text-[0.58rem] uppercase tracking-[0.18em] text-[#5A6472] mt-4 mb-1.5">Формат роботи</p>
+                <p className="text-sm text-[#2F3742] leading-snug">{m.handover}</p>
+
+                <p className="font-mono text-[0.58rem] uppercase tracking-[0.18em] text-[#5A6472] mt-4 mb-1.5">Умови</p>
+                <p className="text-sm text-[#2F3742] leading-snug">{m.terms}</p>
+
+                <div className="mt-auto pt-4">
+                  <p className="text-xs leading-snug border-t border-[#ECEEF0] pt-3 font-semibold" style={{ color: m.color }}>
+                    {m.responsibility}
+                  </p>
                 </div>
               </div>
             </FadeIn>
           ))}
         </div>
+
+        {/* ---- Порівняльна таблиця: мобайл — стопка карток без скролу ---- */}
+        <FadeIn delay={0.2}>
+          <div className="md:hidden flex flex-col gap-3 mt-8">
+            {COMPARE.map((row) => (
+              <div key={row.k} className="card p-4">
+                <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[#5A6472] mb-2.5">{row.k}</p>
+                <div className="flex flex-col gap-1.5">
+                  {row.v.map((cell, ci) => (
+                    <p key={ci} className="text-sm text-[#2F3742] leading-snug flex gap-2.5">
+                      <span className="font-mono font-bold text-[0.68rem] shrink-0 pt-0.5" style={{ color: MODELS[ci].color }}>
+                        {MODELS[ci].n}
+                      </span>
+                      <span>{cell}</span>
+                    </p>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="hidden md:block card p-0 mt-8 overflow-x-auto">
+            <table className="w-full text-sm min-w-[640px]">
+              <thead>
+                <tr className="border-b border-[#ECEEF0]">
+                  <th className="text-left p-4 font-mono text-[0.58rem] uppercase tracking-[0.18em] text-[#5A6472] font-normal" />
+                  {MODELS.map((m) => (
+                    <th key={m.n} className="text-left p-4 font-extrabold" style={{ color: m.color }}>
+                      {m.n} · {m.name}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARE.map((row) => (
+                  <tr key={row.k} className="border-b border-[#F2F4F6] last:border-0">
+                    <td className="p-4 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-[#5A6472] align-top">{row.k}</td>
+                    {row.v.map((cell, ci) => (
+                      <td key={ci} className="p-4 text-[#2F3742] leading-snug align-top">{cell}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </FadeIn>
+
         <FadeIn delay={0.3}>
           <div className="card p-5 mt-6 flex flex-wrap gap-x-6 gap-y-2 items-baseline">
             <span className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#B45309]">
               Завжди
             </span>
             <span className="text-[#3F4854] text-sm">
-              Інвестиція зіставляється з упущеним оборотом із калькулятора. Кожен етап — з DoD і
-              траншами під результат. Перший вимірюваний результат — за 30–60 днів.
+              Будь-яка співпраця починається з аудиту — без діагностики ми не консультуємо і не
+              беремо управління. Інвестиція зіставляється з упущеним оборотом із калькулятора,
+              кожен етап — з DoD і траншами під результат.
             </span>
-          </div>
-        </FadeIn>
-      </Section>
-
-      {/* ---- Комерційна пропозиція ---- */}
-      <Section>
-        <FadeIn>
-          <Eyebrow>Комерційна пропозиція · Прозоро</Eyebrow>
-          <SectionTitle>Що ви отримуєте і як почати</SectionTitle>
-        </FadeIn>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mt-10">
-          {OFFER_CELLS.map((c, i) => (
-            <FadeIn key={c.label} delay={i * 0.06}>
-              <div className="card card-hover accent-left p-6 h-full" style={{ '--accent': c.color } as React.CSSProperties}>
-                <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] mb-2.5" style={{ color: c.color }}>
-                  {c.label}
-                </p>
-                <p className="text-[#3F4854] text-sm leading-relaxed">{c.text}</p>
-              </div>
-            </FadeIn>
-          ))}
-        </div>
-        <FadeIn delay={0.3}>
-          <div
-            className="card p-7 mt-6 flex flex-col md:flex-row gap-5 md:items-center"
-            style={{ borderColor: 'rgba(101,163,13,0.35)' }}
-          >
-            <p className="font-extrabold text-2xl lime-text shrink-0">Почнімо з аудиту</p>
-            <p className="text-[#5A6472] text-sm leading-relaxed">
-              Інвестиція завжди зіставляється з упущеним оборотом. Кожен етап — з DoD і траншами
-              під результат. Ви бачите цифри до того, як вкладаєте бюджет у виконання.
-            </p>
           </div>
         </FadeIn>
       </Section>
@@ -159,7 +234,7 @@ export default function Offers() {
           <FadeIn delay={0.2} x={40} y={0}>
             <div
               className="card accent-top p-8 h-full"
-              style={{ '--accent': 'var(--purple)', background: 'linear-gradient(160deg, #181524, #FFFFFF)' } as React.CSSProperties}
+              style={{ '--accent': 'var(--purple)' } as React.CSSProperties}
             >
               <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#B45309] mb-4">
                 Обмежена доступність

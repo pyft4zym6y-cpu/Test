@@ -7,11 +7,12 @@ import { buildReport, zone } from '../lib/report';
 import { computeConfidence, gapCosts, forecast } from '../lib/engine';
 import { detectContradictions } from '../lib/contradictions';
 import { LADDERS, levelFromHealth } from '../data/engine';
+import { AQC_ITEMS } from '../data/aqc';
 import { supabase, DEMO } from '../lib/supabase';
 import { useEffect, useState } from 'react';
 import {
-  PAINS, PAINS_QID, PAINS_CUSTOM_QID, GOALS, GOALS_QID, GOALS_CUSTOM_QID,
-  PASSPORT_QID, effectiveNiche, type Passport,
+  PAINS_QID, PAINS_CUSTOM_QID, GOALS_QID, GOALS_CUSTOM_QID,
+  PASSPORT_QID, effectiveNiche, painById, goalById, tacticalPainsOf, type Passport,
 } from '../data/pains';
 import { ACCESSES } from '../lib/model';
 import { bandFor } from '../data/method';
@@ -135,13 +136,18 @@ export default function ReportPage() {
               : ''}
           </p>
         )}
-        {(goalIds.length > 0 || customGoals) && (
-          <p className="sub" style={{ maxWidth: 640, marginBottom: 4 }}>
-            <b>Цели 12 мес:</b>{' '}
-            {goalIds.map((g) => GOALS.find((x) => x.id === g)?.title).filter(Boolean).join(' · ')}
-            {customGoals ? `${goalIds.length ? ' · ' : ''}«${customGoals}»` : ''}
-          </p>
-        )}
+        {(goalIds.length > 0 || customGoals) && (() => {
+          const tac = goalIds.map(goalById).filter((g) => g?.horizon === 'tactical');
+          const strat = goalIds.map(goalById).filter((g) => g && g.horizon !== 'tactical');
+          return (
+            <p className="sub" style={{ maxWidth: 640, marginBottom: 4 }}>
+              {tac.length > 0 && <><b>Тактика 90 дней:</b> {tac.map((g) => g!.title).join(' · ')} · </>}
+              <b>Стратегия 12 мес:</b>{' '}
+              {strat.map((g) => g!.title).join(' · ') || '—'}
+              {customGoals ? ` · «${customGoals}»` : ''}
+            </p>
+          );
+        })()}
         <p className="sub" style={{ maxWidth: 640 }}>
           {isFinal ? (
             <>
@@ -164,6 +170,26 @@ export default function ReportPage() {
         <div className="card" style={{ marginTop: 18, borderLeft: '3px solid var(--lime)' }}>
           <p className="eyebrow">Резюме консультанта</p>
           <p style={{ fontSize: 14.5, margin: '8px 0 0', whiteSpace: 'pre-wrap' }}>{meta!.summary}</p>
+        </div>
+      )}
+
+      {tacticalPainsOf(painIds).length > 0 && (
+        <div className="card" style={{ marginTop: 18, borderColor: 'rgba(220,38,38,0.45)' }}>
+          <p className="eyebrow" style={{ color: 'var(--red)' }}>🔥 Первая помощь · 24–48 часов</p>
+          <p className="sub" style={{ fontSize: 12.5, margin: '4px 0 8px' }}>
+            Это тушим до всякой стратегии — параллельно с диагностикой, не вместо неё.
+          </p>
+          {tacticalPainsOf(painIds).map((tp) => (
+            <div key={tp.id} style={{ padding: '8px 0', borderBottom: '1px solid var(--line)' }}>
+              <b style={{ fontSize: 13.5 }}>{tp.title}</b>
+              <p style={{ fontSize: 13, margin: '3px 0 0' }}>{tp.fix}</p>
+              {tp.accesses?.length ? (
+                <p className="mono" style={{ fontSize: 11, margin: '3px 0 0', color: 'var(--muted)' }}>
+                  Нужны сразу: {tp.accesses.join(', ')} — <Link to="/access">передать →</Link>
+                </p>
+              ) : null}
+            </div>
+          ))}
         </div>
       )}
 
@@ -206,7 +232,7 @@ export default function ReportPage() {
                 <div className="chips" style={{ marginTop: 10 }}>
                   {painIds.map((id) => (
                     <span key={id} className="chip" style={{ fontSize: 11.5 }}>
-                      {PAINS.find((p) => p.id === id)?.title}
+                      {painById(id)?.title}
                     </span>
                   ))}
                   {customPains && (
@@ -417,6 +443,43 @@ export default function ReportPage() {
               </div>
             </>
           )}
+
+          {/* AQC-разбор витрины (ручные вердикты консультанта) */}
+          {(() => {
+            const av = (meta?.aqc as Record<string, Record<string, string>> | null) ?? {};
+            let passN = 0, failN = 0;
+            const critFails: { criterion: string; page: string }[] = [];
+            for (const it of AQC_ITEMS) {
+              const v = av[it.page]?.[it.id];
+              if (v === 'pass') passN++;
+              else if (v === 'fail') { failN++; if (it.severity === 'Critical') critFails.push({ criterion: it.criterion, page: it.page }); }
+            }
+            const done = passN + failN;
+            if (done < 5) return null;
+            const score = Math.round((passN / done) * 100);
+            return (
+              <>
+                <p className="eyebrow" style={{ margin: '28px 0 12px' }}>
+                  Разбор витрины · стандарт AQC
+                </p>
+                <div className="card">
+                  <p style={{ fontSize: 14, margin: 0 }}>
+                    Проверено {done} критериев качества витрины (руками, по стандарту Atomic
+                    Quality Criteria): пройдено{' '}
+                    <b className="mono" style={{ color: score >= 75 ? '#4d7c0f' : score >= 50 ? '#b45309' : '#dc2626' }}>{score}%</b>.
+                  </p>
+                  {critFails.length > 0 && (
+                    <>
+                      <p className="qtext" style={{ fontSize: 13, marginTop: 10 }}>Критические несоответствия:</p>
+                      <ul style={{ margin: '4px 0 0', paddingLeft: 18, fontSize: 13 }}>
+                        {critFails.slice(0, 6).map((c, i) => <li key={i}>{c.criterion} <span className="sub">({c.page})</span></li>)}
+                      </ul>
+                    </>
+                  )}
+                </div>
+              </>
+            );
+          })()}
 
           {/* Деньги */}
           {money ? (

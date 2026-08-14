@@ -46,27 +46,27 @@ const PAINS = [
 const PRODUCTS = [
   {
     n: '01',
-    name: 'Diagnostic Sprint',
-    price: '$2–6K',
-    term: '2–4 тижні',
-    result: 'Розрив у грошах + план: 16 документів, 11 із них — ще до передачі доступів.',
+    name: 'Аудит',
+    price: 'Фіксована ціна',
+    term: '4–6 тижнів',
+    result: 'Розрив у грошах, 19 документів, роадмапа + 4 години консультацій. Далі дієте самі.',
     say: 'Вхід у систему: аудит, що повертає розрив у гривнях →',
   },
   {
     n: '02',
-    name: 'Commerce OS™ Build',
-    price: '$40–80K',
-    term: '6–12 міс',
-    result: 'Система росту під ключ: модулі, плейбуки, команда — транші під DoD.',
-    say: 'Повна побудова системи. Бюджет захищено траншами →',
+    name: 'Консалтинг і супровід',
+    price: 'Погодинно',
+    term: 'помісячно',
+    result: 'Зовнішній експерт веде вашу команду: спринти, пріоритети, ревʼю проти DoD.',
+    say: 'Ваша команда виконує — ми відповідаємо за якість рішень →',
   },
   {
     n: '03',
-    name: 'Fractional Head of Commerce',
-    price: '$6–20K/міс',
-    term: 'помісячно',
-    result: 'Керівник e-commerce у вашій команді — без найму в штат і без простою.',
-    say: 'Наш архітектор веде ваш e-commerce щомісяця →',
+    name: 'Управління проєктом',
+    price: 'Під ключ',
+    term: '6–12 міс',
+    result: 'Трансформація під ключ: план, люди, бюджет. Фінальна відповідальність — на нас.',
+    say: 'Потрібен результат, а не поради? Це сюди →',
   },
 ];
 
@@ -119,7 +119,7 @@ export default function Home() {
                 <div className="flex flex-wrap gap-4 mt-8">
                   <Link
                     to="/contact"
-                    onMouseEnter={() => say('Diagnostic Sprint від $2K — і твій розрив у грошах на столі. Почнемо?')}
+                    onMouseEnter={() => say('Аудит з фіксованою ціною — і твій розрив у грошах на столі. Почнемо?')}
                     onMouseLeave={sayIdle}
                     onClick={() => track('cta_click', { location: 'home_hero' })}
                     className="flex items-center gap-3 bg-[#A3E635] px-7 py-3.5 text-sm font-bold tracking-wider uppercase text-black hover:brightness-95 transition-[filter]"
@@ -249,14 +249,14 @@ export default function Home() {
               </p>
               <div className="flex flex-wrap gap-4 mt-7">
                 <Link
-                  to="/system"
+                  to="/os#system"
                   onClick={() => track('cta_click', { location: 'home_os_system' })}
                   className="bg-[#12161C] text-white px-6 py-3 font-mono text-xs uppercase tracking-wider hover:opacity-85 transition-opacity"
                 >
                   Розібрати систему →
                 </Link>
                 <Link
-                  to="/product"
+                  to="/os#product"
                   className="border border-black/30 px-6 py-3 font-mono text-xs uppercase tracking-wider hover:bg-black/5 transition-colors"
                 >
                   Подивитись демо зсередини
@@ -306,10 +306,10 @@ export default function Home() {
             </p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-5">
               {[
-                { k: 'Вхід', v: '$2–6K', d: 'Diagnostic Sprint: аудит, що рахує гроші' },
+                { k: 'Вхід', v: 'Аудит', d: 'фіксована ціна, відома до старту — рахує гроші' },
                 { k: 'Аудит знаходить', v: '≥19 млн ₴/рік', d: 'розрив у кейсі fashion-виробника' },
                 { k: 'Програма', v: 'транші під DoD', d: 'платите за прийнятий результат' },
-                { k: 'ROI року', v: '3.8×', d: 'флагманський кейс · Преміум-текстиль' },
+                { k: 'ROI року', v: '3.8×', d: 'кейс «Преміум-текстиль»' },
               ].map((s, i) => (
                 <div key={s.k} className="relative">
                   <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[#5A6472]">
@@ -333,7 +333,7 @@ export default function Home() {
             },
             {
               t: 'Ціни відкриті',
-              d: 'Вилки прямо на сайті: $2–6K · $40–80K · $6–20K/міс. Без «зателефонуйте, щоб дізнатись вартість».',
+              d: 'Ми розробили три формати співпраці — кожен знайде свій. Усі ціни відкрито на сторінці «Співпраця», без «зателефонуйте менеджеру».',
             },
             {
               t: 'Бюджет під захистом',

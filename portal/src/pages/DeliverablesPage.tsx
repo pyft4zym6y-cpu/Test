@@ -22,6 +22,7 @@ const APPS = [
   ['AD-16', 'Health Score', 'зрелость 18 доменов + одна цифра из 100'],
   ['AD-17', 'ЕКП — рабочая книга', 'движок анализа: каждый ваш ответ со скорингом и роутингом'],
   ['AD-18', 'Гант программы', 'план работ с фазами, RACI и критическим путём'],
+  ['AD-19', 'Реестр гипотез', 'каждая рекомендация как проверяемая гипотеза: уверенность, способ проверки, владелец, сверка на 3/6/12 мес'],
 ];
 
 export default function DeliverablesPage() {
@@ -29,7 +30,7 @@ export default function DeliverablesPage() {
     <div className="container" style={{ padding: '30px 20px 80px', maxWidth: 760 }}>
       <Link to="/" className="mono" style={{ fontSize: 12, color: 'var(--muted)', textDecoration: 'none' }}>← На главную</Link>
       <p className="eyebrow" style={{ marginTop: 14 }}>Что вы получите</p>
-      <h1>18 документов аудита</h1>
+      <h1>19 документов аудита</h1>
       <p className="sub" style={{ maxWidth: 620 }}>
         Диагностика в этом портале — вход в аудит Commerce OS™. На выходе — не презентация
         «с мнением», а рабочий пакет. <b>Большинство документов готовятся ещё до передачи

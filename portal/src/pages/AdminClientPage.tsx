@@ -6,7 +6,7 @@ import {
   useReportMeta, runPSI, computeGap8, LEVER_DEFS, DEFAULT_LEVERS,
   type L0Row, type Levers, type LeverKey,
 } from '../lib/consultant';
-import { PASSPORT_QID, LINKS_QID, PAINS_QID, GOALS_QID, type Passport, type Links } from '../data/pains';
+import { PASSPORT_QID, LINKS_QID, PAINS_QID, GOALS_QID, tacticalPainsOf, painById, goalById, type Passport, type Links } from '../data/pains';
 import {
   runDecisions, computeConfidence, gapCosts, forecast, activeChains, seedHypotheses,
   type Hypothesis,
@@ -16,9 +16,15 @@ import { DECISION_QID, selfScore, type Decision } from '../data/decision';
 import { detectContradictions } from '../lib/contradictions';
 import { parseOrdersCsv, type OrdersMetrics } from '../lib/orders';
 import { screenUrl } from '../lib/screen';
-import { buildGantt, ganttCsv } from '../lib/gantt';
+import { buildGantt, ganttCsv, scopeEffort } from '../lib/gantt';
 import { RATE_ITEMS, EUR_RATE_DEFAULT } from '../data/rates';
-import { byId } from '../lib/model';
+import { byId, QUESTIONS, ACCESSES } from '../lib/model';
+import qmetaRaw from '../data/question-meta.json';
+import sheetMetaRaw from '../data/sheet-meta.json';
+const SHEET_NAME = sheetMetaRaw as Record<string, string>;
+import { AQC_ITEMS, AQC_PAGES, SEVERITY_COLOR, type AqcPage, type AqcVerdict } from '../data/aqc';
+import { plan as abPlan, mde as abMde, readResult as abRead } from '../lib/experiments';
+const QMETA = qmetaRaw as Record<string, { interp: string; pb: string; deliv: string; kpi: string }>;
 import type { AnswerRow } from '../lib/supabase';
 
 const LEVER_SOURCES = ['GA4', 'CRM', 'Выгрузка заказов', 'Кабинет площадки', 'Оценка клиента'];
@@ -37,6 +43,10 @@ export default function AdminClientPage() {
   const [ga4Msg, setGa4Msg] = useState('');
   const [budgetSel, setBudgetSel] = useState<Record<string, number> | null>(null); // id -> months (0=off, для разовых 1)
   const [eurRate, setEurRate] = useState(EUR_RATE_DEFAULT);
+  const [aqcPage, setAqcPage] = useState<AqcPage>('Карточка (PDP)');
+  const [aqcBusy, setAqcBusy] = useState('');
+  const [ab, setAb] = useState({ mode: 'plan' as 'plan' | 'mde' | 'read', p1: '', lift: '10', weekly: '', weeks: '4', nA: '', cA: '', nB: '', cB: '' });
+  const [abOut, setAbOut] = useState('');
 
   useEffect(() => {
     if (DEMO) {
@@ -117,6 +127,69 @@ export default function AdminClientPage() {
   const prereqNotes = [...scopePbs]
     .filter((pb) => PB_PREREQS[pb])
     .map((pb) => `${pb} — только после ${PB_PREREQS[pb].join(', ')}${PB_PREREQS[pb].some((x) => !scopePbs.has(x)) ? ' (пререквизит вне scope — добавить!)' : ''}`);
+
+  const aqcVerdicts: Record<string, Record<string, string>> = (meta?.aqc as any) ?? {};
+  const setAqc = (page: string, id: string, v: AqcVerdict | null) => {
+    const pageMap = { ...(aqcVerdicts[page] ?? {}) };
+    if (v === null) delete pageMap[id];
+    else pageMap[id] = v;
+    save({ aqc: { ...aqcVerdicts, [page]: pageMap } });
+  };
+  const aqcManualStats = (() => {
+    let passN = 0, failN = 0;
+    const critFails: string[] = [];
+    for (const it of AQC_ITEMS) {
+      const v = aqcVerdicts[it.page]?.[it.id];
+      if (v === 'pass') passN++;
+      else if (v === 'fail') { failN++; if (it.severity === 'Critical') critFails.push(it.criterion); }
+    }
+    return { passN, failN, critFails, done: passN + failN };
+  })();
+
+  const runAqcAi = async () => {
+    const url = (passport.sites ?? []).filter(Boolean)[0];
+    if (!url) { setAqcBusy('Нет сайта клиента в паспорте'); return; }
+    setAqcBusy('AI-прогон…');
+    try {
+      const items = AQC_ITEMS.filter((i) => i.page === aqcPage).map(({ id, criterion, pass }) => ({ id, criterion, pass }));
+      const r = await fetch('/api/aqc', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, page: aqcPage, items }),
+      });
+      const j = await r.json();
+      if (j.error) { setAqcBusy(j.error); return; }
+      const pageMap = { ...(aqcVerdicts[aqcPage] ?? {}) };
+      for (const v of j.verdicts ?? []) {
+        if (pageMap[v.id] === 'pass' || pageMap[v.id] === 'fail') continue; // ручной вердикт не трогаем
+        if (v.verdict === 'pass') pageMap[v.id] = 'ai-pass';
+        if (v.verdict === 'fail') pageMap[v.id] = 'ai-fail';
+      }
+      save({ aqc: { ...aqcVerdicts, [aqcPage]: pageMap } });
+      setAqcBusy(`AI-гипотезы получены (достоверность 25) — подтвердите руками`);
+    } catch {
+      setAqcBusy('API недоступно — AI-прогон работает на хостинге Vercel.');
+    }
+  };
+
+  const runAb = () => {
+    const n = (x: string) => parseFloat(x.replace(',', '.')) || 0;
+    try {
+      if (ab.mode === 'plan') {
+        const r = abPlan(n(ab.p1) / 100, n(ab.lift) / 100, n(ab.weekly));
+        setAbOut(`Выборка ${r.n.toLocaleString()}/вариант · всего ${r.total.toLocaleString()} · ${r.weeks === Infinity ? '∞' : r.weeks.toFixed(1)} нед${r.tooLong ? ' · ⚠ дольше 8 недель — тест не окупается: радикальнее изменение, уже сегмент или внедрять без теста' : ''}`);
+      } else if (ab.mode === 'mde') {
+        const r = abMde(n(ab.p1) / 100, n(ab.weekly), n(ab.weeks));
+        setAbOut(`За ${ab.weeks} нед при ${n(ab.weekly).toLocaleString()} сессий/нед детектируем подъём от ${(r * 100).toFixed(1)}% относительных — эффекты меньше не увидите`);
+      } else {
+        const r = abRead(n(ab.nA), n(ab.cA), n(ab.nB), n(ab.cB));
+        setAbOut(`A ${(r.pA * 100).toFixed(2)}% → B ${(r.pB * 100).toFixed(2)}% · подъём ${(r.lift * 100).toFixed(1)}% · p=${r.p.toFixed(4)} · ${r.significant ? '✓ ЗНАЧИМО' : '✗ не значимо (данных не хватило — смотри границы ДИ)'} · ДИ [${(r.ci[0] * 100).toFixed(2)}; ${(r.ci[1] * 100).toFixed(2)}] п.п.`);
+      }
+    } catch (e) { setAbOut(String(e)); }
+  };
+  const writeAbToHyp = (hypId: string) => {
+    if (!abOut) return;
+    save({ hypotheses: hyps.map((h) => (h.id === hypId ? { ...h, validation: `A/B: ${abOut}` } : h)) });
+  };
 
   const onOrdersFile = (f: File) =>
     f.text().then((t) => {
@@ -229,7 +302,7 @@ export default function AdminClientPage() {
     const csv = [
       ['ID', 'Домен', 'Вопрос', 'ОТВЕТ КЛИЕНТА', 'Факты', 'Кто', 'Когда'].map(esc).join(';'),
       ...Object.values(rows)
-        .filter((r) => r.answer)
+        .filter((r) => r.answer && !r.question_id.startsWith('NOTIFY'))
         .map((r) => {
           const q = byId.get(r.question_id);
           return [r.question_id, q?.domain ?? '', q?.text ?? '', r.answer, r.facts, r.updated_by, (r as any).updated_at ?? '']
@@ -240,6 +313,56 @@ export default function AdminClientPage() {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }));
     a.download = `ekp-answers-${clientId}.csv`;
+    a.click();
+  };
+
+  /* AI-резюме: тезисы пересчитываются на каждом рендере из текущих ответов —
+     то есть обновляются в реальном времени по мере заполнения брифа клиентом. */
+  const aiTheses = useMemo(() => {
+    const t: string[] = [];
+    const pct = report.totalL1 ? Math.round((report.answeredL1 / report.totalL1) * 100) : 0;
+    t.push(`Заполнено ${report.answeredL1}/${report.totalL1} вопросов (${pct}%) — ${pct < 25 ? 'самое начало, выводы предварительные' : pct < 60 ? 'середина пути, картина складывается' : 'достаточно для рабочих выводов'}.`);
+    if (report.score !== null)
+      t.push(`Health Score ${report.score}/100 (зрелость ${report.scoreA ?? '—'}, критические разрывы ${report.scoreB ?? '—'}) · достоверность ${conf.score}%.`);
+    const firePains = tacticalPainsOf(painIds);
+    if (firePains.length)
+      t.push(`🔥 Горящие боли: ${firePains.map((p) => p.title).join('; ')} — сначала стабилизация, потом стратегия.`);
+    const strategicPains = painIds.map((id) => painById(id)).filter((p) => p && !firePains.includes(p as any)).slice(0, 3);
+    if (strategicPains.length)
+      t.push(`Ключевые боли клиента: ${strategicPains.map((p) => p!.title).join('; ')}.`);
+    const goals = goalIds.map((id) => goalById(id)).filter(Boolean).slice(0, 3);
+    if (goals.length)
+      t.push(`Цели: ${goals.map((g) => g!.title).join('; ')}.`);
+    if (report.gaps.length)
+      t.push(`Критических разрывов: ${report.gaps.length}. Главный — ${report.gaps[0].label}.`);
+    const weak = report.domains.filter((d) => d.health !== null && d.health < 0.5).sort((a, b) => (a.health ?? 0) - (b.health ?? 0)).slice(0, 3);
+    if (weak.length)
+      t.push(`Слабые домены: ${weak.map((d) => `${SHEET_NAME[d.sheet] ?? d.key} (${Math.round((d.health ?? 0) * 100)}%)`).join(', ')}.`);
+    if (contradictions.length)
+      t.push(`⚠ Противоречий в ответах: ${contradictions.length} (напр., «${contradictions[0].rule.question}») — уточнить на созвоне.`);
+    if (decisions.length)
+      t.push(`Движок рекомендует первым делом: ${decisions.slice(0, 3).map((d, i) => `${i + 1}) ${d.title}`).join(' · ')}.`);
+    if (hasBaseline && gap.conservative > 0)
+      t.push(`Разрыв по 8 рычагам: ≈ ${Math.round(gap.conservative / 1000)} тыс ₴/год недополученного оборота (консервативно).`);
+    t.push(`Доступы: выдано ${accessGranted}/${ACCESSES.length}.`);
+    return t;
+  }, [report, conf.score, painIds, goalIds, contradictions, decisions, hasBaseline, gap, accessGranted]);
+
+  const downloadBrief = () => {
+    const answered = QUESTIONS.filter((q) => rows[q.id]?.answer && !q.id.startsWith('NOTIFY'));
+    const md = [
+      `# Бриф · ${passport.name ?? clientId}`,
+      `Выгружено: ${new Date().toLocaleString('ru-RU')} · заполнено ${report.answeredL1}/${report.totalL1}`,
+      '',
+      '## Резюме (AI, по текущим ответам)',
+      ...aiTheses.map((x) => `- ${x}`),
+      '',
+      '## Ответы',
+      ...answered.map((q) => `**${q.id} · ${q.text}**\n> ${rows[q.id].answer}${rows[q.id].facts ? `\n> _Факты: ${rows[q.id].facts}_` : ''}\n`),
+    ].join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([md], { type: 'text/markdown;charset=utf-8' }));
+    a.download = `brief-${(passport.name ?? clientId).replace(/[^\wа-яіїє-]+/gi, '-')}.md`;
     a.click();
   };
 
@@ -262,6 +385,11 @@ export default function AdminClientPage() {
         · ответов {report.answeredL1}/{report.totalL1} · рисков {report.problems.length} · разрывов{' '}
         {report.gaps.length}
       </p>
+      {tacticalPainsOf(painIds).length > 0 && (
+        <p style={{ fontSize: 13, margin: '6px 0 0', color: 'var(--red)', fontWeight: 700 }}>
+          🔥 Горит: {tacticalPainsOf(painIds).map((tp) => tp.title).join(' · ')} — первая помощь в отчёте, доступы {[...new Set(tacticalPainsOf(painIds).flatMap((tp) => tp.accesses ?? []))].join(', ')}
+        </p>
+      )}
       <details style={{ marginTop: 4 }}>
         <summary className="mono" style={{ fontSize: 11.5, color: 'var(--muted)', cursor: 'pointer' }}>
           Из чего сложилась достоверность {conf.score}% →
@@ -275,6 +403,23 @@ export default function AdminClientPage() {
         </ul>
       </details>
 
+      {/* AI-резюме: живые тезисы по мере заполнения брифа */}
+      <div className="card" style={{ marginTop: 18, borderColor: 'rgba(101,163,13,0.45)', background: 'rgba(163,230,53,0.06)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
+          <h2>Резюме AI · обновляется по мере заполнения</h2>
+          <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: 12 }} onClick={downloadBrief}>
+            Скачать бриф + резюме (.md) ↓
+          </button>
+        </div>
+        <ul style={{ margin: '10px 0 0', paddingLeft: 18, fontSize: 13.5, lineHeight: 1.65, display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {aiTheses.map((th, i) => <li key={i}>{th}</li>)}
+        </ul>
+        <p className="sub" style={{ fontSize: 11.5, marginTop: 10 }}>
+          Тезисы собираются движком из текущих ответов, противоречий и baseline — без ручной
+          работы. Чем больше заполнено, тем точнее выводы; файл включает резюме и все ответы.
+        </p>
+      </div>
+
       {/* Decision Engine */}
       <div className="card" style={{ marginTop: 18, borderColor: 'rgba(101,163,13,0.45)' }}>
         <h2>Decision Engine · приоритеты ({decisions.length})</h2>
@@ -286,13 +431,13 @@ export default function AdminClientPage() {
           <p className="sub" style={{ fontSize: 12.5 }}>Пока мало данных — правила не сработали.</p>
         ) : (
           decisions.map((d, i) => {
-            const quadrant = d.impact >= 7 && d.difficulty <= 4 ? 'Quick win' : d.impact >= 7 ? 'Стратегическое' : 'Поддерживающее';
+            const quadrant = d.horizon === 'tactical' ? '🔥 Тактика' : d.impact >= 7 && d.difficulty <= 4 ? 'Quick win' : d.impact >= 7 ? 'Стратегическое' : 'Поддерживающее';
             return (
               <div key={d.id} style={{ padding: '10px 0', borderBottom: '1px solid var(--line)' }}>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap' }}>
                   <span className="mono" style={{ fontWeight: 800, fontSize: 15 }}>#{i + 1}</span>
                   <b style={{ fontSize: 14 }}>{d.title}</b>
-                  <span className="tag" style={{ color: quadrant === 'Quick win' ? 'var(--lime-dark)' : undefined }}>{quadrant}</span>
+                  <span className="tag" style={{ color: quadrant === 'Quick win' ? 'var(--lime-dark)' : quadrant.startsWith('🔥') ? 'var(--red)' : undefined }}>{quadrant}</span>
                 </div>
                 <p className="mono" style={{ fontSize: 11.5, margin: '4px 0 0', color: 'var(--muted)' }}>
                   Impact {d.impact}/10 · Сложность {d.difficulty}/10 · ~{d.timeDays} дней · ROI {d.roi} · {d.playbooks.join(', ')}
@@ -351,8 +496,8 @@ export default function AdminClientPage() {
             <div key={l.domain} style={{ display: 'flex', gap: 10, alignItems: 'baseline', padding: '7px 0', borderBottom: '1px solid var(--line)', flexWrap: 'wrap' }}>
               <span className="mono" style={{ fontWeight: 800, minWidth: 34, color: lvl <= 2 ? 'var(--red)' : lvl === 3 ? 'var(--amber)' : 'var(--lime-dark)' }}>L{lvl}</span>
               <b style={{ fontSize: 13, minWidth: 130 }}>{l.domain}</b>
-              <span className="sub" style={{ fontSize: 12 }}>{l.levels[lvl - 1]}</span>
-              {lvl < 5 && <span className="sub" style={{ fontSize: 11.5, color: 'var(--lime-dark)' }}>→ L{lvl + 1}: {l.levels[lvl]}</span>}
+              <span className="sub" style={{ fontSize: 12 }}>{lvl === 0 ? 'Возможности нет вообще' : l.levels[lvl - 1]}</span>
+              {lvl < 5 && <span className="sub" style={{ fontSize: 11.5, color: 'var(--lime-dark)' }}>→ L{lvl + 1}: {l.levels[lvl] ?? l.levels[0]}</span>}
             </div>
           );
         })}
@@ -692,6 +837,110 @@ export default function AdminClientPage() {
         )}
       </div>
 
+      {/* AQC-чеклист витрины */}
+      <div className="card" style={{ marginTop: 14 }}>
+        <h2>AQC-чеклист витрины · {aqcManualStats.done}/{AQC_ITEMS.length} проверено</h2>
+        <p className="sub" style={{ fontSize: 12.5 }}>
+          Стандарт Atomic Quality Criteria: находка — это «код · Fail · условие», а не мнение.
+          AI-прогон даёт гипотезы с достоверностью 25 (пунктиром) — подтверждайте руками.
+        </p>
+        <div className="chips" style={{ marginTop: 10 }}>
+          {AQC_PAGES.map((pg) => (
+            <span key={pg} className={`chip ${aqcPage === pg ? 'on' : ''}`} onClick={() => setAqcPage(pg)}>
+              {pg} {(() => { const m = aqcVerdicts[pg] ?? {}; const n = Object.values(m).filter((v) => v === 'pass' || v === 'fail').length; return n ? `· ${n}` : ''; })()}
+            </span>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: 10, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          <button className="chip" onClick={runAqcAi}>🤖 AI-прогон этой страницы</button>
+          {aqcBusy && <span className="sub" style={{ fontSize: 11.5 }}>{aqcBusy}</span>}
+        </div>
+        {AQC_ITEMS.filter((i) => i.page === aqcPage).map((it) => {
+          const v = aqcVerdicts[aqcPage]?.[it.id];
+          const isAi = v === 'ai-pass' || v === 'ai-fail';
+          return (
+            <div key={it.id} style={{ display: 'flex', gap: 10, alignItems: 'baseline', padding: '8px 0', borderBottom: '1px solid var(--line)', flexWrap: 'wrap' }}>
+              <span className="qid" style={{ flexShrink: 0, minWidth: 110 }}>{it.id}</span>
+              <span className="mono" style={{ fontSize: 10, fontWeight: 700, color: SEVERITY_COLOR[it.severity], minWidth: 52 }}>{it.severity}</span>
+              <div style={{ flex: 1, minWidth: 220 }}>
+                <p style={{ fontSize: 13.5, fontWeight: 600, margin: 0 }}>{it.criterion}</p>
+                <p className="sub" style={{ fontSize: 11.5, margin: 0 }}>Pass: {it.pass}</p>
+                {isAi && <p className="sub" style={{ fontSize: 10.5, margin: 0, color: 'var(--amber)' }}>AI-гипотеза (достоверность 25): {v === 'ai-pass' ? 'скорее Pass' : 'скорее Fail'} — подтвердите</p>}
+              </div>
+              <div className="chips" style={{ flexShrink: 0 }}>
+                <span className={`chip ${v === 'pass' ? 'on' : ''}`} style={{ fontSize: 11, borderStyle: v === 'ai-pass' ? 'dashed' : undefined }} onClick={() => setAqc(aqcPage, it.id, v === 'pass' ? null : 'pass')}>Pass</span>
+                <span className={`chip ${v === 'fail' ? 'on' : ''}`} style={{ fontSize: 11, color: v === 'fail' ? 'var(--red)' : undefined, borderStyle: v === 'ai-fail' ? 'dashed' : undefined }} onClick={() => setAqc(aqcPage, it.id, v === 'fail' ? null : 'fail')}>Fail</span>
+                <span className={`chip ${v === 'na' ? 'on' : ''}`} style={{ fontSize: 11 }} onClick={() => setAqc(aqcPage, it.id, v === 'na' ? null : 'na')}>Н/П</span>
+              </div>
+            </div>
+          );
+        })}
+        {aqcManualStats.done > 0 && (
+          <p className="mono" style={{ fontSize: 12.5, marginTop: 10 }}>
+            Итог (ручные вердикты): <b>{Math.round((aqcManualStats.passN / Math.max(aqcManualStats.done, 1)) * 100)}%</b> Pass
+            ({aqcManualStats.passN}/{aqcManualStats.done})
+            {aqcManualStats.critFails.length > 0 && (
+              <span style={{ color: 'var(--red)' }}> · Critical-фейлы: {aqcManualStats.critFails.slice(0, 4).join(' · ')}</span>
+            )}
+          </p>
+        )}
+      </div>
+
+      {/* Планировщик A/B */}
+      <div className="card" style={{ marginTop: 14 }}>
+        <h2>Планировщик A/B-экспериментов</h2>
+        <p className="sub" style={{ fontSize: 12.5 }}>
+          α = 0.05, мощность 80%. Правило метода: тест дольше 8 недель не окупается.
+          Вывод можно записать в способ проверки гипотезы.
+        </p>
+        <div className="chips" style={{ marginTop: 10 }}>
+          {([['plan', 'Спланировать тест'], ['mde', 'Что вообще детектируемо'], ['read', 'Прочитать результат']] as const).map(([m, l]) => (
+            <span key={m} className={`chip ${ab.mode === m ? 'on' : ''}`} onClick={() => { setAb({ ...ab, mode: m }); setAbOut(''); }}>{l}</span>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+          {ab.mode !== 'read' && (
+            <>
+              <input type="text" placeholder="Базовая CR, %" value={ab.p1} style={{ maxWidth: 130 }} onChange={(e) => setAb({ ...ab, p1: e.target.value })} />
+              <input type="text" placeholder="Трафик/нед" value={ab.weekly} style={{ maxWidth: 130 }} onChange={(e) => setAb({ ...ab, weekly: e.target.value })} />
+            </>
+          )}
+          {ab.mode === 'plan' && (
+            <input type="text" placeholder="Ожидаемый подъём, %" value={ab.lift} style={{ maxWidth: 170 }} onChange={(e) => setAb({ ...ab, lift: e.target.value })} />
+          )}
+          {ab.mode === 'mde' && (
+            <input type="text" placeholder="Недель" value={ab.weeks} style={{ maxWidth: 100 }} onChange={(e) => setAb({ ...ab, weeks: e.target.value })} />
+          )}
+          {ab.mode === 'read' && (
+            <>
+              <input type="text" placeholder="n A" value={ab.nA} style={{ maxWidth: 100 }} onChange={(e) => setAb({ ...ab, nA: e.target.value })} />
+              <input type="text" placeholder="конв. A" value={ab.cA} style={{ maxWidth: 100 }} onChange={(e) => setAb({ ...ab, cA: e.target.value })} />
+              <input type="text" placeholder="n B" value={ab.nB} style={{ maxWidth: 100 }} onChange={(e) => setAb({ ...ab, nB: e.target.value })} />
+              <input type="text" placeholder="конв. B" value={ab.cB} style={{ maxWidth: 100 }} onChange={(e) => setAb({ ...ab, cB: e.target.value })} />
+            </>
+          )}
+          <button className="btn btn-ghost" style={{ padding: '8px 16px' }} onClick={runAb}>Посчитать</button>
+          {ab.mode !== 'read' && levers.cr.fact > 0 && (
+            <button className="chip" onClick={() => setAb({ ...ab, p1: String(levers.cr.fact), weekly: String(Math.round((levers.traffic.fact || 0) / 4.33)) })}>
+              ⇐ из baseline
+            </button>
+          )}
+        </div>
+        {abOut && (
+          <>
+            <p className="mono" style={{ fontSize: 13, marginTop: 10 }}>{abOut}</p>
+            {hyps.length > 0 && (
+              <div style={{ display: 'flex', gap: 8, marginTop: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                <span className="sub" style={{ fontSize: 12 }}>Записать в гипотезу:</span>
+                {hyps.map((h) => (
+                  <span key={h.id} className="chip" style={{ fontSize: 11 }} onClick={() => writeAbToHyp(h.id)}>{h.id}</span>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
       {/* Гант · план работ */}
       <div className="card" style={{ marginTop: 14 }}>
         <h2>План работ · черновик Ганта ({gantt.length} задач)</h2>
@@ -716,7 +965,11 @@ export default function AdminClientPage() {
             </tbody>
           </table>
         </div>
-        <button className="btn btn-ghost" style={{ marginTop: 10 }} onClick={downloadGantt}>Экспорт Ганта (CSV) ↓</button>
+        <p className="mono" style={{ fontSize: 12.5, marginTop: 10 }}>
+          Трудоёмкость scope: <b>≈{scopeEffort(report.rules)} чел-дней консультанта</b>{' '}
+          <span className="sub" style={{ fontSize: 11 }}>— стартовая оценка из правил, калибруется по факту (XX-01)</span>
+        </p>
+        <button className="btn btn-ghost" style={{ marginTop: 6 }} onClick={downloadGantt}>Экспорт Ганта (CSV) ↓</button>
       </div>
 
       {/* Бюджет из rate card */}
@@ -833,7 +1086,16 @@ export default function AdminClientPage() {
               {hidden.includes(p.q.id) ? 'Вернуть' : 'Скрыть'}
             </button>
             <span className="qid" style={{ flexShrink: 0 }}>{p.q.id}</span>
-            <span style={{ fontSize: 13 }}>{(p.q as any).risk}</span>
+            <span style={{ fontSize: 13 }}>
+              {(p.q as any).risk}
+              {QMETA[p.q.id]?.interp && (
+                <span className="sub" style={{ fontSize: 11.5, display: 'block' }}>
+                  Интерпретация: {QMETA[p.q.id].interp}
+                  {QMETA[p.q.id].pb ? ` · ${QMETA[p.q.id].pb}` : ''}
+                  {QMETA[p.q.id].kpi ? ` · KPI ${QMETA[p.q.id].kpi}` : ''}
+                </span>
+              )}
+            </span>
           </div>
         ))}
       </div>

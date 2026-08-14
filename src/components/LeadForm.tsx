@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { say } from './speech';
 import { track } from './analytics';
+import { sendLead } from './leads';
 
 const TURNOVER_OPTIONS = [
   'до 1 млн ₴ / міс',
@@ -14,24 +15,37 @@ const inputCls =
   'w-full bg-[#FFFFFF] border border-black/10 px-4 py-3 text-sm text-[#12161C] placeholder:text-[#5A6472] focus:outline-none focus:border-[#65A30D] transition-colors';
 
 /*
- * Форма збирає поля й відкриває поштовий клієнт із заповненим листом (mailto) —
- * працює без бекенда в будь-якому середовищі. На реальному хостингу submit
- * легко переключити на POST до бекенда чи form-сервіса.
+ * Форма шле заявку через /api/lead (Resend) — без відкриття поштовика.
+ * Якщо бекенд недоступний — fallback: формуємо mailto-лист, як раніше.
  */
 export default function LeadForm() {
   const [name, setName] = useState('');
   const [store, setStore] = useState('');
+  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [turnover, setTurnover] = useState('');
   const [comment, setComment] = useState('');
-  const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState<false | 'api' | 'mailto'>(false);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const subject = `Diagnostic Sprint — ${name || 'запит із сайту'}`;
+    if (busy) return;
+    setBusy(true);
+    const ok = await sendLead({ source: 'contact', name, store, email, phone, turnover, comment });
+    setBusy(false);
+    if (ok) {
+      setSent('api');
+      track('lead_submit', { turnover, method: 'api' });
+      say(`Дякую${name ? `, ${name.trim()}` : ''}! Заявку отримано — відповімо протягом робочого дня.`);
+      return;
+    }
+    // fallback: поштовик із заповненим листом
+    const subject = `Аудит — ${name || 'запит із сайту'}`;
     const body = [
       `Ім'я: ${name}`,
       `Магазин / сайт: ${store}`,
+      `Email: ${email}`,
       `Телефон: ${phone}`,
       `Оборот: ${turnover}`,
       comment ? `Коментар: ${comment}` : '',
@@ -42,14 +56,9 @@ export default function LeadForm() {
       .join('\n');
     try {
       navigator.clipboard?.writeText(`${subject}\n\n${body}`);
-    } catch {
-      /* clipboard недоступний — залишиться mailto */
-    }
-    setSent(true);
+    } catch { /* clipboard недоступний */ }
+    setSent('mailto');
     track('lead_submit', { turnover, method: 'mailto' });
-    say(
-      `Дякую${name ? `, ${name.trim()}` : ''}! Лист сформовано й скопійовано в буфер. Якщо поштовик не відкрився — просто встав текст у лист на pashasidorenko18@gmail.com.`,
-    );
     window.location.href = `mailto:pashasidorenko18@gmail.com?subject=${encodeURIComponent(
       subject,
     )}&body=${encodeURIComponent(body)}`;
@@ -91,6 +100,13 @@ export default function LeadForm() {
           placeholder="Телефон *"
           className={inputCls}
         />
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email (необов'язково)"
+          className={inputCls}
+        />
         <select
           required
           value={turnover}
@@ -115,12 +131,18 @@ export default function LeadForm() {
         />
         <button
           type="submit"
-          className="bg-[#A3E635] px-7 py-3.5 font-mono text-sm font-bold uppercase tracking-[0.12em] text-black transition-transform duration-200 hover:scale-[1.02]"
+          disabled={busy}
+          className="bg-[#A3E635] px-7 py-3.5 font-mono text-sm font-bold uppercase tracking-[0.12em] text-black transition-transform duration-200 hover:scale-[1.02] disabled:opacity-60"
           style={{ boxShadow: '0 0 28px rgba(101,163,13,0.3)' }}
         >
-          Забронювати сесію →
+          {busy ? 'Надсилаємо…' : 'Забронювати сесію →'}
         </button>
-        {sent ? (
+        {sent === 'api' ? (
+          <p className="text-[#4d7c0f] text-[0.7rem] leading-relaxed font-medium">
+            ✓ Заявку отримано. Відповімо протягом робочого дня — або телефонуйте одразу:
+            +38 099 918 82 60.
+          </p>
+        ) : sent === 'mailto' ? (
           <p className="text-[#4d7c0f] text-[0.7rem] leading-relaxed font-medium">
             Заявку сформовано й скопійовано в буфер обміну. Якщо вікно пошти не відкрилося —
             вставте текст у лист на{' '}
@@ -129,8 +151,8 @@ export default function LeadForm() {
           </p>
         ) : (
           <p className="text-[#5A6472] text-[0.64rem] leading-relaxed">
-            Кнопка відкриє лист із заповненими даними у вашій пошті — нічого не публікується
-            автоматично.
+            Дані підуть напряму нам на пошту — нічого не публікується. Відповідь — протягом
+            робочого дня.
           </p>
         )}
       </div>

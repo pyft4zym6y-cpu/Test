@@ -208,16 +208,16 @@ export function OfferPage() {
         </p>
         <ul className="list-disc pl-5 flex flex-col gap-1.5">
           <li>
-            <strong className="text-[#12161C]">Diagnostic Sprint</strong> — діагностика e-commerce:
+            <strong className="text-[#12161C]">Аудит (Discovery)</strong> — діагностика e-commerce:
             Health Score, аудит метрик, розрахунок недоотриманого обороту, дорожня карта
             (deliverable — Discovery Report, PDF/XLSX);
           </li>
           <li>
-            <strong className="text-[#12161C]">Program of Record</strong> — програма трансформації
+            <strong className="text-[#12161C]">Управління проєктом</strong> — програма трансформації
             строком 6–12 місяців із виконанням дорожньої карти;
           </li>
           <li>
-            <strong className="text-[#12161C]">Fractional Lead</strong> — стратегічне лідерство
+            <strong className="text-[#12161C]">Консалтинг і супровід</strong> — стратегічне лідерство
             e-commerce напряму на умовах часткової зайнятості.
           </li>
         </ul>

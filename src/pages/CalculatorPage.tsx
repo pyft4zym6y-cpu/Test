@@ -5,6 +5,8 @@ import FadeIn from '../components/FadeIn';
 import { Eyebrow, Section, SectionTitle, CountUp, Bar } from '../components/ui';
 import { say } from '../components/speech';
 import { track } from '../components/analytics';
+import Breadcrumbs from '../components/Breadcrumbs';
+import { sendLead } from '../components/leads';
 
 /*
  * Калькулятор недоотриманого обороту — покроковий майстер (8 кроків).
@@ -30,6 +32,12 @@ const NICHES: Niche[] = [
   { id: 'home', label: 'Дім · меблі · декор', crNorm: 1.4, crGold: 2.2, repeatTarget: 20, aovLow: 2500, aovHigh: 9000 },
   { id: 'electronics', label: 'Електроніка · техніка', crNorm: 1.8, crGold: 2.6, repeatTarget: 25, aovLow: 3000, aovHigh: 15000 },
   { id: 'fmcg', label: 'FMCG · товари щодня', crNorm: 3.2, crGold: 5.0, repeatTarget: 55, aovLow: 600, aovHigh: 1500 },
+  { id: 'kids', label: 'Дитячі товари', crNorm: 2.4, crGold: 3.4, repeatTarget: 40, aovLow: 800, aovHigh: 2500 },
+  { id: 'pets', label: 'Зоотовари', crNorm: 2.6, crGold: 3.8, repeatTarget: 50, aovLow: 600, aovHigh: 1500 },
+  { id: 'sport', label: 'Спорт · outdoor', crNorm: 1.8, crGold: 2.6, repeatTarget: 28, aovLow: 1500, aovHigh: 4500 },
+  { id: 'jewelry', label: 'Ювелірка · аксесуари', crNorm: 1.2, crGold: 2.0, repeatTarget: 22, aovLow: 2000, aovHigh: 8000 },
+  { id: 'auto', label: 'Автотовари', crNorm: 1.6, crGold: 2.4, repeatTarget: 30, aovLow: 1000, aovHigh: 4000 },
+  { id: 'health', label: 'Здоровʼя · аптека', crNorm: 3.0, crGold: 4.5, repeatTarget: 50, aovLow: 500, aovHigh: 1200 },
   { id: 'other', label: 'Інша ніша', crNorm: 2.0, crGold: 3.0, repeatTarget: 30, aovLow: 800, aovHigh: 4000 },
 ];
 
@@ -79,6 +87,13 @@ export default function CalculatorPage() {
   const [email, setEmail] = useState('');
   const [margin, setMargin] = useState('');
   const [done, setDone] = useState(false);
+  const [leadName, setLeadName] = useState('');
+  const [leadStore, setLeadStore] = useState('');
+  const [leadEmail, setLeadEmail] = useState('');
+  const [leadPhone, setLeadPhone] = useState('');
+  const [leadSent, setLeadSent] = useState(false);
+  const [leadBusy, setLeadBusy] = useState(false);
+  const [leadErr, setLeadErr] = useState(false);
 
   const niche = NICHES.find((n) => n.id === nicheId) ?? NICHES[NICHES.length - 1];
 
@@ -234,6 +249,7 @@ export default function CalculatorPage() {
 
   return (
     <div className="pt-16">
+      <Breadcrumbs items={[{ label: 'Калькулятор розриву' }]} />
       <Section className="grid-bg">
         <FadeIn>
           <Eyebrow>Калькулятор · Недоотриманий оборот · Безкоштовно</Eyebrow>
@@ -273,19 +289,21 @@ export default function CalculatorPage() {
                 {step === 0 && (
                   <div>
                     <p className="font-bold text-xl mb-5">У якій ніші працює ваш магазин?</p>
-                    <div className="grid sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                       {NICHES.map((n) => (
                         <button
                           key={n.id}
                           type="button"
                           onClick={() => setNicheId(n.id)}
-                          className={`card card-hover text-left px-5 py-4 transition-colors ${
+                          className={`card card-hover text-left px-3.5 py-3 transition-colors ${
                             nicheId === n.id ? 'border-[#65A30D] bg-[#F4FBE8]' : ''
                           }`}
                         >
-                          <span className="font-mono text-sm text-[#12161C]">{n.label}</span>
-                          <span className="block font-mono text-[0.62rem] text-[#5A6472] mt-1.5">
-                            еталон CR {n.crNorm}% · повторні {n.repeatTarget}%
+                          <span className="block font-semibold text-[0.82rem] leading-snug text-[#12161C]">
+                            {n.label}
+                          </span>
+                          <span className="block font-mono text-[0.58rem] text-[#5A6472] mt-1">
+                            CR {n.crNorm}% · повторні {n.repeatTarget}%
                           </span>
                         </button>
                       ))}
@@ -476,6 +494,102 @@ export default function CalculatorPage() {
                   діапазону. Точний розрахунок — по ваших даних GA4 / CRM / P&L на Diagnostic
                   Sprint.
                 </p>
+
+                {/* ---- Лід-захват: розрахунок на email ---- */}
+                <div className="card p-5 mt-7" style={{ borderColor: 'rgba(101,163,13,0.4)', background: '#F8FCEF' }}>
+                  {leadSent ? (
+                    <p className="text-sm text-[#3F6212] leading-relaxed">
+                      <b>Готово, заявку отримано!</b> Подивимося на ваші цифри й звʼяжемося
+                      упродовж робочого дня — розберемо, які важелі закривати першими.
+                    </p>
+                  ) : (
+                    <form
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        if (leadBusy) return;
+                        setLeadBusy(true);
+                        const ok = await sendLead({
+                          source: 'calculator',
+                          name: leadName,
+                          store: leadStore,
+                          email: leadEmail,
+                          phone: leadPhone,
+                          calc: [
+                            `Ніша: ${niche.label}`,
+                            `Оборот: ${revenue} тис ₴/міс · чек ${aov} ₴`,
+                            `CR: ${cr}% (норма ${niche.crNorm}%) · повторні ${repeat || '~10'}%`,
+                            `Розрив (консервативно): ${fmtUAH(calc.potentialCons)}/рік · ${fmtUAH(calc.monthlyCons)}/міс`,
+                          ].join('\n'),
+                        });
+                        setLeadBusy(false);
+                        if (ok) {
+                          setLeadSent(true);
+                          track('lead_submit', { method: 'api', source: 'calculator' });
+                        } else {
+                          setLeadErr(true);
+                        }
+                      }}
+                    >
+                      <p className="font-bold text-[0.95rem]">Хочете розбір цих цифр?</p>
+                      <p className="text-[#5A6472] text-xs mt-1 leading-relaxed">
+                        Залиште контакти — подивимося на ваш розрахунок і звʼяжемося упродовж
+                        робочого дня: які важелі закривати першими саме у вашій ситуації. Без
+                        розсилок і спаму.
+                      </p>
+                      <div className="grid sm:grid-cols-2 gap-2.5 mt-3.5">
+                        <input
+                          type="text"
+                          required
+                          value={leadName}
+                          onChange={(e) => setLeadName(e.target.value)}
+                          placeholder="Ваше ім'я *"
+                          className={inputCls + ' !text-sm !py-3'}
+                        />
+                        <input
+                          type="text"
+                          required
+                          value={leadStore}
+                          onChange={(e) => setLeadStore(e.target.value)}
+                          placeholder="Посилання на магазин / сайт *"
+                          className={inputCls + ' !text-sm !py-3'}
+                        />
+                        <input
+                          type="tel"
+                          required
+                          pattern="[+()0-9\-\s]{10,18}"
+                          inputMode="tel"
+                          title="Телефон у форматі +38 0XX XXX XX XX"
+                          value={leadPhone}
+                          onChange={(e) => setLeadPhone(e.target.value)}
+                          placeholder="Телефон *"
+                          className={inputCls + ' !text-sm !py-3'}
+                        />
+                        <input
+                          type="email"
+                          value={leadEmail}
+                          onChange={(e) => setLeadEmail(e.target.value)}
+                          placeholder="Email (необов'язково)"
+                          className={inputCls + ' !text-sm !py-3'}
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={leadBusy}
+                        className="w-full sm:w-auto mt-2.5 bg-[#A3E635] px-6 py-3 font-mono text-xs font-bold uppercase tracking-[0.12em] text-black hover:brightness-95 transition-[filter] disabled:opacity-60"
+                      >
+                        {leadBusy ? 'Надсилаємо…' : 'Отримати розбір →'}
+                      </button>
+                      {leadErr && (
+                        <p className="text-[#B45309] text-xs mt-2.5 leading-relaxed">
+                          Не вдалося надіслати. Напишіть нам напряму:{' '}
+                          <a href="mailto:pashasidorenko18@gmail.com" className="underline">
+                            pashasidorenko18@gmail.com
+                          </a>
+                        </p>
+                      )}
+                    </form>
+                  )}
+                </div>
 
                 <div className="flex flex-wrap gap-4 mt-7">
                   <Link

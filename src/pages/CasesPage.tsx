@@ -3,22 +3,23 @@ import FadeIn from '../components/FadeIn';
 import { Eyebrow, Section, SectionTitle } from '../components/ui';
 import { Industries } from '../components/Market';
 import { PageCta } from '../components/NewSections';
+import Breadcrumbs from '../components/Breadcrumbs';
 
 export const CASE_COVERS = [
   {
     slug: 'premium-textile',
     num: '×18',
     title: 'Преміум-текстиль',
-    cat: 'UA→EU · Флагман · 18 міс',
-    text: 'Оборот €48K → €900K: сім пластів у синхроні, топ-1% конверсії сегмента.',
+    cat: 'UA→EU · D2C з нуля · 18 міс',
+    text: 'Оборот €48K → €900K: виробник із B2B/B2G побудував роздрібний канал з чистого листа.',
     color: '#65A30D',
   },
   {
     slug: 'fashion-apparel',
     num: '≥19 млн ₴',
     title: 'Fashion-виробник',
-    cat: 'Program of Record · 2026',
-    text: 'Реальний аудит у грошах і програма росту на 12 місяців із траншами під DoD.',
+    cat: 'Аудит · 2026',
+    text: 'Аудит знайшов ≥19 млн ₴/рік розриву: гроші губились в обробці замовлень, а не в трафіку.',
     color: '#DB2777',
   },
   {
@@ -26,8 +27,16 @@ export const CASE_COVERS = [
     num: '+65%',
     title: 'Consumer DTC-бренд',
     cat: 'Споживчі товари · Forbes TOP-250 UA',
-    text: 'Міжнародний DTC + Amazon: 6 нових ринків, повторні 14,7% → 60%.',
+    text: 'Міжнародний DTC: 6 нових ринків, повторні ×4, +65% продажів за 9 місяців.',
     color: '#0F9488',
+  },
+  {
+    slug: 'fmcg-transformation',
+    num: '+96%',
+    title: 'Food & FMCG дистриб’ютор',
+    cat: 'Commerce Transformation · 7 міс',
+    text: 'З «оренди» маркетплейсу — на власну платформу: LTV ×4.2, чек ×2.5, виручка +96% за рік.',
+    color: '#6D28D9',
   },
   {
     slug: 'fmcg-distribution',
@@ -42,6 +51,7 @@ export const CASE_COVERS = [
 export default function CasesPage() {
   return (
     <div className="pt-16">
+      <Breadcrumbs items={[{ label: 'Кейси' }]} />
       <Section className="grid-bg">
         <FadeIn>
           <Eyebrow>Кейси · Не один результат — система</Eyebrow>
@@ -52,8 +62,9 @@ export default function CasesPage() {
             </span>
           </SectionTitle>
           <p className="text-[#5A6472] mt-4 max-w-3xl">
-            Три завершені кейси і одна діюча програма росту. Цифра на обкладинці — вимірюваний
-            факт, усередині — повний розбір: точка А, рішення, помилки, ROI.
+            Пʼять кейсів — усі завершені проєкти з реальними цифрами. Цифра на обкладинці —
+            вимірюваний факт, усередині — повний розбір за єдиною структурою: точка А, діагноз,
+            рішення, результат, уроки.
           </p>
         </FadeIn>
         <div className="grid sm:grid-cols-2 gap-5 mt-12">
@@ -81,7 +92,7 @@ export default function CasesPage() {
         </div>
       </Section>
       <Industries />
-      <PageCta label="Ваш кейс може бути наступним" />
+      <PageCta label="Скільки втрачає ваш магазин?" />
     </div>
   );
 }

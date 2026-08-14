@@ -3,10 +3,14 @@ import AnimatedText from './AnimatedText';
 import { Eyebrow, Section, SectionTitle } from './ui';
 
 const PAINS = [
-  'CAC росте щомісяця',
-  'SEO не приносить трафік',
+  'CAC росте щомісяця — маржа тане',
+  'вимкнули рекламу — продажі впали до нуля',
+  'знижка — єдиний спосіб продати',
+  'бренд не шукають на імʼя: гуглять «купити …» — і йдуть до будь-кого',
+  'повторні покупки 12–15% — база лежить мертвим вантажем',
+  'на маркетплейсах заробляють усі, крім вас',
+  'сезонний пік знову провалили: товару не було, реклама лилась',
   'CRM не конвертує в продажі',
-  'команда сперечається без даних',
   'аналітики немає — рішення наосліп',
   'власник керує вручну, у ручному тоні',
 ];
@@ -27,44 +31,11 @@ export default function Idea() {
           <SectionTitle>
             <span className="lime-text">«Як зробити компанію дорожчою?»</span>
           </SectionTitle>
-          <p className="font-serif-it text-lg text-[#3F4854] mt-8">
-            Продажі — це квартал. Вартість компанії — це десятиліття. Далі — доказ, що так і
-            працює.
-          </p>
-        </FadeIn>
-      </Section>
-
-      {/* ---- Маніфест ---- */}
-      <Section>
-        <FadeIn>
-          <Eyebrow>Маніфест</Eyebrow>
-          <SectionTitle>
-            Увагу <span className="text-[#EA580C]">не можна купити назавжди</span>.
-            <br />
-            Справжнє зростання починається там, де з&rsquo;являється{' '}
-            <span className="text-[#4D7C0F]">система</span>.
-          </SectionTitle>
         </FadeIn>
         <AnimatedText
-          text="Більшість вірить, що зростання народжується з нових рекламних кампаній. Але увага завжди належить платформам і алгоритмам. Commerce OS — це спосіб мислити про компанію як про актив: маркетинг, аналітика, продукт і команда працюють не заради окремих показників, а заради зростання вартості бізнесу."
+          text="Продажі — це квартал. Вартість компанії — це десятиліття. Commerce OS — спосіб мислити про компанію як про актив: маркетинг, аналітика, продукт і команда працюють не заради окремих показників, а заради зростання вартості бізнесу."
           className="font-serif-it text-lg md:text-xl leading-relaxed text-[#141820] max-w-3xl mt-8"
         />
-        <FadeIn delay={0.15}>
-          <div className="flex flex-wrap gap-x-16 gap-y-6 mt-10">
-            <div className="border-l border-[#E4E7EA] pl-5">
-              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#5A6472] mb-1.5">
-                Ринок говорить
-              </p>
-              <p className="font-bold text-xl text-[#5A6472]">Як більше продати</p>
-            </div>
-            <div className="border-l-2 border-[#65A30D] pl-5">
-              <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[#4D7C0F] mb-1.5">
-                Ми говоримо
-              </p>
-              <p className="font-bold text-xl">Як дорожчати</p>
-            </div>
-          </div>
-        </FadeIn>
       </Section>
 
       {/* ---- Це про ваш бізнес? ---- */}
@@ -108,6 +79,11 @@ export default function Idea() {
                 </p>
                 <p className="text-[#5A6472] mt-2 text-sm leading-relaxed">
                   Система перетворює хаос симптомів на діагноз у грошах і план, що продає сам себе.
+                </p>
+                <p className="text-[#2F3742] mt-3 text-sm leading-relaxed border-t border-black/[0.06] pt-3">
+                  А максимум амбіції — бренд, що стає{' '}
+                  <strong className="text-[#4D7C0F]">загальною назвою категорії</strong>: як Xerox
+                  для копій чи Google для пошуку. Щоб питали не «де купити …», а «де ваш магазин».
                 </p>
               </div>
             </FadeIn>

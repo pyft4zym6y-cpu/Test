@@ -1,7 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 
-const url = import.meta.env.VITE_SUPABASE_URL as string;
-const anon = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+// Конфиг берём из env сборки ИЛИ из window.__PORTAL_CONFIG — его подставляет
+// /api/portal-config, когда портал хостится как статический файл на основном
+// сайте (weexp.agency/brief). Так один билд работает и там, и в демо.
+const rc: { url?: string; anon?: string } =
+  (typeof window !== 'undefined' && (window as any).__PORTAL_CONFIG) || {};
+const url = (import.meta.env.VITE_SUPABASE_URL as string) || rc.url;
+const anon = (import.meta.env.VITE_SUPABASE_ANON_KEY as string) || rc.anon;
 
 export const CONFIGURED = Boolean(url && anon);
 /** Без настроенного Supabase портал работает в демо-режиме: localStorage, без логина. */
