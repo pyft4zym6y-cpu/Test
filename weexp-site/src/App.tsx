@@ -8,12 +8,7 @@ import '@/lib/primitives.css';
 // сайт наперед (three.js та важкі блоки головної не потрапляють на інші сторінки).
 const Home = lazy(() => import('@/pages/Home').then((m) => ({ default: m.Home })));
 const SystemPage = lazy(() => import('@/pages/SystemPage').then((m) => ({ default: m.SystemPage })));
-const WhatWeBuild = lazy(() => import('@/pages/WhatWeBuild').then((m) => ({ default: m.WhatWeBuild })));
-const EuExpansion = lazy(() => import('@/pages/EuExpansion').then((m) => ({ default: m.EuExpansion })));
-const CasesPage = lazy(() => import('@/pages/CasesPage').then((m) => ({ default: m.CasesPage })));
 const CaseDetail = lazy(() => import('@/pages/CaseDetail').then((m) => ({ default: m.CaseDetail })));
-const About = lazy(() => import('@/pages/About').then((m) => ({ default: m.About })));
-const FounderPage = lazy(() => import('@/pages/FounderPage').then((m) => ({ default: m.FounderPage })));
 const FullDiagnosis = lazy(() => import('@/pages/FullDiagnosis').then((m) => ({ default: m.FullDiagnosis })));
 const NotFound = lazy(() => import('@/pages/NotFound').then((m) => ({ default: m.NotFound })));
 // Прев'ю нового напряму «The System in Motion» — поза темним Layout, повноекранне.
@@ -47,27 +42,24 @@ export default function App() {
           <Route element={<Layout />}>
             {/* Попередній (темний) головний — доступний для порівняння/відкату */}
             <Route path="/classic" element={<Home />} />
-            {/* Індекс викликів → світлий фільм «7 систем»; глибокі сторінки систем лишаються */}
+            {/* Усі темні входи зведені у світлий v2. Індекси → відповідні фільми,
+                тематичні сторінки → найближчий v2-екран. Глибокі сторінки-деталі
+                (система/кейс) та повна діагностика лишаються за прямим URL. */}
             <Route path="/challenges" element={<Navigate to="/systems" replace />} />
             <Route path="/challenges/:slug" element={<SystemPage />} />
-            <Route path="/what-we-build" element={<WhatWeBuild />} />
-            <Route path="/what-we-build/eu-expansion" element={<EuExpansion />} />
-            {/* Метод — це той самий Diagnose→Build→Scale→Independence; згорнуто в «Що будуємо» */}
-            <Route path="/how-it-works" element={<Navigate to="/what-we-build" replace />} />
-            {/* Метрики живуть у самому інструменті X-Ray — сторінки-глоссарії згорнуто */}
+            <Route path="/what-we-build" element={<Navigate to="/systems" replace />} />
+            <Route path="/what-we-build/eu-expansion" element={<Navigate to="/systems" replace />} />
+            <Route path="/how-it-works" element={<Navigate to="/systems" replace />} />
             <Route path="/how-it-works/business-health" element={<Navigate to="/diagnose" replace />} />
             <Route path="/how-it-works/independence-score" element={<Navigate to="/diagnose" replace />} />
             <Route path="/how-it-works/benchmark" element={<Navigate to="/diagnose" replace />} />
-            {/* Індекс кейсів → світлий фільм «Докази»; детальні кейси лишаються */}
             <Route path="/cases" element={<Navigate to="/proof" replace />} />
             <Route path="/cases/:slug" element={<CaseDetail />} />
-            {/* Аналітику згорнуто в докази (Кейси) */}
-            <Route path="/intelligence" element={<Navigate to="/cases" replace />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/about/founder" element={<FounderPage />} />
-            {/* Команда вже на /about; окремий «Стандарт» згорнуто в /about */}
-            <Route path="/about/team" element={<Navigate to="/about" replace />} />
-            <Route path="/about/standard" element={<Navigate to="/about" replace />} />
+            <Route path="/intelligence" element={<Navigate to="/proof" replace />} />
+            <Route path="/about" element={<Navigate to="/people" replace />} />
+            <Route path="/about/founder" element={<Navigate to="/people" replace />} />
+            <Route path="/about/team" element={<Navigate to="/people" replace />} />
+            <Route path="/about/standard" element={<Navigate to="/people" replace />} />
             {/* /diagnose і /contact переїхали у світлий v2 (під SystemShell) */}
             <Route path="/diagnose/full" element={<FullDiagnosis />} />
             <Route path="*" element={<NotFound />} />
