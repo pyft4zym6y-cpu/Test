@@ -1,10 +1,10 @@
 import { lazy, Suspense, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { band, seg, setLayer as set, useScrollScene } from '@/lib/scene';
+import { PartnerMarquee } from '@/system/PartnerMarquee';
 import './system.css';
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
-const PartnersStrip = lazy(() => import('@/system/PartnersStrip').then((m) => ({ default: m.PartnersStrip })));
 
 /**
  * WEEXP — INTERNATIONAL EXPANSION (/expansion). Окремо підсвічуємо системний
@@ -111,9 +111,10 @@ export function ExpansionFilm() {
             <Link to="/proof" className="sysx-cta">Кейси експансії</Link>
           </div>
         </div>
+
+        <PartnerMarquee />
       </div>
     </section>
-    <Suspense fallback={null}><PartnersStrip compact /></Suspense>
     </>
   );
 }

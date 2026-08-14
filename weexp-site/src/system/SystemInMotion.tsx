@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { band, seg, setLayer as set, useScrollScene } from '@/lib/scene';
 import './system.css';
 
+import { PartnerMarquee } from '@/system/PartnerMarquee';
+
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
-const PartnersStrip = lazy(() => import('@/system/PartnersStrip').then((m) => ({ default: m.PartnersStrip })));
 const SystemExplorer = lazy(() => import('@/system/SystemExplorer').then((m) => ({ default: m.SystemExplorer })));
 
 /**
@@ -117,10 +118,13 @@ export function SystemInMotion() {
             <Link to="/loss" className="sysx-cta">Порахувати втрати</Link>
           </div>
         </div>
+
+        {/* Технологічний стек — напівпрозорий рядок по низу сцени (частина блоку) */}
+        <PartnerMarquee />
       </div>
     </section>
+    {/* Логічне продовження того ж полотна — інтерактивний розбір систем */}
     <Suspense fallback={null}><SystemExplorer /></Suspense>
-    <Suspense fallback={null}><PartnersStrip /></Suspense>
     </>
   );
 }
