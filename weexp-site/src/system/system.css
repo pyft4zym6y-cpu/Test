@@ -300,6 +300,35 @@
   .cf-row { opacity: 1; transform: none; }
 }
 
+/* ── BUSINESS X-RAY v2 (/diagnose) — поверх .sysx-calc ── */
+.dg-levels { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 10.5px; color: var(--graphite); letter-spacing: .04em; }
+.dg-levels b { color: var(--charcoal); }
+.dg-bar { height: 4px; background: var(--mist); border-radius: 4px; overflow: hidden; }
+.dg-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--charcoal), var(--deep)); border-radius: 4px; transition: width .4s var(--ease-cine); }
+.dg-step { font-size: 11px; color: var(--graphite); letter-spacing: .04em; }
+.dg-q { font-size: clamp(20px, 2.4vw, 30px); color: var(--deep); line-height: 1.15; letter-spacing: -.02em; }
+.dg-opts { display: grid; gap: 8px; }
+.dg-opt { display: flex; align-items: center; gap: 12px; text-align: left; border: 1px solid var(--silver); border-radius: 12px; padding: 13px 16px; background: var(--pure-white); cursor: pointer; font-size: 14px; color: var(--charcoal); transition: border-color var(--dur-fast), transform var(--dur-fast), box-shadow var(--dur-fast); }
+.dg-opt:hover { transform: translateX(2px); border-color: var(--graphite); }
+.dg-opt.on { border-color: var(--deep); box-shadow: inset 3px 0 0 var(--data); }
+.dg-opt-n { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--mist); color: var(--charcoal); font-size: 11px; flex: 0 0 auto; }
+.dg-back { justify-self: start; background: none; border: 0; color: var(--graphite); font-size: 12px; cursor: pointer; padding: 4px 0; }
+.dg-back:hover { color: var(--deep); }
+
+.dg-scores { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: end; }
+.dg-score { display: grid; gap: 4px; }
+.dg-health-num { font-size: clamp(34px, 4.4vw, 56px); color: var(--deep); font-weight: 800; letter-spacing: -.03em; }
+.dg-health-num i { font-size: .42em; color: var(--graphite); font-style: normal; margin-left: 4px; }
+.dg-level-line { font-size: 13px; color: var(--charcoal); line-height: 1.5; }
+.dg-gaps { display: grid; gap: 8px; }
+.dg-gaps-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.dg-gap { display: grid; gap: 2px; padding: 12px; border: 1px solid var(--silver); border-radius: 12px; background: rgba(255, 255, 255, .5); }
+.dg-gap b { font-size: clamp(20px, 2.2vw, 28px); color: var(--deep); }
+.dg-gap b i { font-size: .4em; color: var(--graphite); font-style: normal; }
+.dg-gap span { font-size: 11px; color: var(--charcoal); text-transform: uppercase; letter-spacing: .04em; }
+.dg-opp { font-size: 13px; line-height: 1.5; color: var(--charcoal); border-left: 2px solid var(--data); padding-left: 12px; }
+.dg-opp b { color: var(--deep); }
+
 /* ── THE PEOPLE (people-film, /people) ── */
 .sysx-people { height: 520vh; }
 .pf-bg { position: absolute; inset: 0; z-index: 1; opacity: .5; }  /* об'єкт як спокійне тло */

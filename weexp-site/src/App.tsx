@@ -15,7 +15,6 @@ const CasesPage = lazy(() => import('@/pages/CasesPage').then((m) => ({ default:
 const CaseDetail = lazy(() => import('@/pages/CaseDetail').then((m) => ({ default: m.CaseDetail })));
 const About = lazy(() => import('@/pages/About').then((m) => ({ default: m.About })));
 const FounderPage = lazy(() => import('@/pages/FounderPage').then((m) => ({ default: m.FounderPage })));
-const Diagnose = lazy(() => import('@/pages/Diagnose').then((m) => ({ default: m.Diagnose })));
 const FullDiagnosis = lazy(() => import('@/pages/FullDiagnosis').then((m) => ({ default: m.FullDiagnosis })));
 const ContactPage = lazy(() => import('@/pages/ContactPage').then((m) => ({ default: m.ContactPage })));
 const NotFound = lazy(() => import('@/pages/NotFound').then((m) => ({ default: m.NotFound })));
@@ -24,6 +23,7 @@ const SystemInMotion = lazy(() => import('@/system/SystemInMotion').then((m) => 
 const SystemsFilm = lazy(() => import('@/system/SystemsFilm').then((m) => ({ default: m.SystemsFilm })));
 const CasesFilm = lazy(() => import('@/system/CasesFilm').then((m) => ({ default: m.CasesFilm })));
 const PeopleFilm = lazy(() => import('@/system/PeopleFilm').then((m) => ({ default: m.PeopleFilm })));
+const DiagnoseFilm = lazy(() => import('@/system/DiagnoseFilm').then((m) => ({ default: m.DiagnoseFilm })));
 const SystemShell = lazy(() => import('@/system/SystemShell').then((m) => ({ default: m.SystemShell })));
 const LossCalculator = lazy(() => import('@/system/LossCalculator').then((m) => ({ default: m.LossCalculator })));
 
@@ -39,6 +39,7 @@ export default function App() {
             <Route path="/systems" element={<SystemsFilm />} />
             <Route path="/proof" element={<CasesFilm />} />
             <Route path="/people" element={<PeopleFilm />} />
+            <Route path="/diagnose" element={<DiagnoseFilm />} />
             <Route path="/loss" element={<LossCalculator />} />
           </Route>
           <Route element={<Layout />}>
@@ -62,7 +63,7 @@ export default function App() {
             {/* Команда вже на /about; окремий «Стандарт» згорнуто в /about */}
             <Route path="/about/team" element={<Navigate to="/about" replace />} />
             <Route path="/about/standard" element={<Navigate to="/about" replace />} />
-            <Route path="/diagnose" element={<Diagnose />} />
+            {/* /diagnose переїхав у світлий v2 (під SystemShell) */}
             <Route path="/diagnose/full" element={<FullDiagnosis />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="*" element={<NotFound />} />
