@@ -92,13 +92,15 @@ const UA =
  * https://site/?bypass_code=XXXX. Без этого обход аудирует заглушку, а не магазин
  * (единый 9-символьный title, 0% on-page на всех URL — классический признак).
  *
- * Модель «прогрев + кука»: bypass-параметр несём ТОЛЬКО на корневую навигацию
- * (isRoot / прогрев в auditSingle). Плагин «coming soon» на этом заходе ставит
- * куку разблокировки в контекст браузера — и дальше sitemap/robots/пробы/внутренние
- * страницы тянутся ЧИСТЫМИ URL и едут на куке. Это важно: если тащить ?bypass_code
- * на каждый запрос, плагин перехватывает их как «вход по коду» и ломает выдачу
- * sitemap (симптом прошлого прогона: 59 URL, 1 страница вместо полного магазина).
- * Fallback: если чистый sitemap пуст, повторяем с query (сайты без куки-модели).
+ * Гибридная модель доступа (плагин «coming soon» обычно stateless — разблокирует
+ * только когда bypass-параметр есть в самом запросе, кука не помогает):
+ *  • HTML-навигация (главная + внутренние) — ВСЕГДА с параметром. Без него плагин
+ *    отдаёт 503-заглушку (симптом tmek.shop: главная с параметром 200, внутренние
+ *    чистым URL — error → на on-page разбор попадала 1 страница вместо всего сайта).
+ *  • sitemap.xml / robots.txt / xml-пробы — ЧИСТЫМ URL: XML/txt плагин пропускает,
+ *    а с параметром он их перехватывает как «вход по коду» и ломает разбор sitemap.
+ *    Fallback: если чистый sitemap пуст — повторяем с query (на случай, если и XML
+ *    закрыт). В отчёте адреса всегда чистые (stripAccess).
  * cookies/headers — на случай токена в куке/заголовке, задаётся оператором явно.
  */
 export type SiteAccess = { query?: Record<string, string>; cookies?: { name: string; value: string }[]; headers?: Record<string, string> };
@@ -433,10 +435,13 @@ async function auditPage(page: Page, url: string, isRoot: boolean, access?: Site
   const fail = (msg: string, fUrl = cleanUrl, ttl = ''): { audit: PageAudit; tech: string[]; links: string[] } =>
     ({ audit: { url: cleanUrl, finalUrl: fUrl, kind: 'other', status, title: ttl, checks: [], score: null, error: msg }, tech: [], links: [] });
   try {
-    // Тільки корінь (прогрів) несе bypass-параметр — він ставить куку розблокування
-    // плагіна «сайт в розробці». Далі всі навігації йдуть чистими URL і їдуть на цій
-    // куці; так параметр не ламає sitemap/robots/внутрішні сторінки.
-    const resp = await page.goto(isRoot ? applyAccess(url, access) : cleanUrl, { waitUntil: 'domcontentloaded', timeout: 25000 });
+    // HTML-навігація ЗАВЖДИ несе bypass-параметр. Плагін «сайт в розробці»
+    // часто stateless: без параметра він віддає 503-заглушку навіть за наявності
+    // куки (симптом tmek.shop: головна з параметром — 200, а всі внутрішні чистим
+    // URL — error). Тому параметр потрібен на кожній HTML-навігації, а не лише на
+    // корені. sitemap/robots/xml тягнемо чистими окремо (їх плагін пропускає).
+    // У звіті адреси зберігаємо чистими (stripAccess нижче).
+    const resp = await page.goto(applyAccess(url, access), { waitUntil: 'domcontentloaded', timeout: 25000 });
     status = resp?.status() ?? null;
     headers = resp?.headers() ?? {};
     await page.waitForTimeout(1200); // дать JS дорисоваться
@@ -528,13 +533,8 @@ export async function auditSingle(browser: Browser, url: string, access?: SiteAc
   const ctx = await hardenedContext(browser, acc);
   try {
     const page = await ctx.newPage();
-    // Прогрев: единожды заходим на цель с bypass-параметром, чтобы плагин
-    // «coming soon» поставил куку разблокировки в контекст. Дальше auditPage
-    // тянет чистый URL и едет на куке. У auditSingle нет корневого прогрева,
-    // поэтому делаем его здесь явно.
-    if (acc?.query) {
-      try { await page.goto(applyAccess(url, acc), { waitUntil: 'domcontentloaded', timeout: 20000 }); } catch { /* прогрев не критичен */ }
-    }
+    // auditPage сам несёт bypass-параметр на HTML-навигацию (stateless-плагин), так
+    // что отдельный прогрев не нужен.
     const { audit, tech } = await auditPage(page, url, false, acc);
     return { ...audit, tech };
   } finally {
@@ -751,7 +751,7 @@ export async function crawlSite(
         const pdpUrl = candidates.find((u) => /product|tovar|\/p\/|\/pr\/|item|route=product|goods/i.test(lpath(u)))
           ?? candidates.find((u) => { const m = lpath(u).match(/^\/([a-z0-9-]{10,})\/?$/i); return Boolean(m && m[1].includes('-')); });
         if (pdpUrl) {
-          await page.goto(pdpUrl, { waitUntil: 'domcontentloaded', timeout: 20000 }).catch(() => {});
+          await page.goto(applyAccess(pdpUrl, access), { waitUntil: 'domcontentloaded', timeout: 20000 }).catch(() => {});
           await page.waitForTimeout(1000);
           const added = await page.evaluate(() => {
             const el = document.querySelector('#button-cart, [id*="button-cart" i], [class*="add-to-cart" i], [data-add-to-cart], button[name*="add" i]')
