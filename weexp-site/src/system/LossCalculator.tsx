@@ -162,7 +162,7 @@ export function LossCalculator() {
         )}
       </div>
 
-      {stage2 && <Suspense fallback={null}><Stage2 stage1={inp} onClose={() => setStage2(false)} /></Suspense>}
+      {stage2 && res && <Suspense fallback={null}><Stage2 stage1={inp} stage1Result={res} onClose={() => setStage2(false)} /></Suspense>}
     </section>
   );
 }

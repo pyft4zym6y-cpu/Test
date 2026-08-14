@@ -1,5 +1,5 @@
 import { lazy, Suspense, useMemo, useState } from 'react';
-import { eur, SYS, type LossInput } from './lossModel';
+import { eur, SYS, type LossInput, type LossResult } from './lossModel';
 import { QUESTIONS, scoreStage2, type Stage2Answers } from './stage2Model';
 import './system.css';
 
@@ -31,13 +31,25 @@ function ring(R: number, cx: number, cy: number, n: number) {
   });
 }
 
-export function Stage2({ stage1, onClose }: { stage1: LossInput; onClose: () => void }) {
+export function Stage2({ stage1, stage1Result, onClose }: { stage1: LossInput; stage1Result?: LossResult; onClose: () => void }) {
   const [phase, setPhase] = useState<'url' | 'quiz' | 'report'>('url');
   const [site, setSite] = useState('');
   const [step, setStep] = useState(0);
   const [ans, setAns] = useState<Stage2Answers>({});
   const [stage3, setStage3] = useState(false);
   const res = useMemo(() => (phase === 'report' ? scoreStage2(ans, stage1) : null), [phase, ans, stage1]);
+
+  // Єдина цифра для Етапів 1 і 2: суму беремо з Етапу 1 (computeLoss), а Етап 2
+  // лише показує, ДЕ саме вона зосереджена (зрілість/bottleneck). Не рахуємо
+  // конкурентну суму — щоб не було розходження між кроками.
+  const money = useMemo(() => {
+    if (stage1Result && stage1Result.annualRevenue > 0 && stage1Result.total > 0) {
+      const [lo, hi] = stage1Result.range;
+      const ann = stage1Result.annualRevenue;
+      return { lo, hi, pctLo: Math.max(1, Math.round((lo / ann) * 100)), pctHi: Math.max(1, Math.round((hi / ann) * 100)) };
+    }
+    return null;
+  }, [stage1Result]);
 
   const q = QUESTIONS[step];
   const progress = Math.round((step / QUESTIONS.length) * 100);
@@ -140,12 +152,15 @@ export function Stage2({ stage1, onClose }: { stage1: LossInput; onClose: () => 
               </div>
             </div>
 
-            {/* Можливість */}
+            {/* Можливість — та сама цифра, що й в Етапі 1 (одне число на обидва кроки) */}
             <div className="s2-panel s2-money">
               <span className="sysx-kick">Оцінена можливість</span>
-              {stage1.monthlyRevenue > 0
-                ? <><b className="sysx-display s2-money-big">{eur(res.annualUpside[0])}–{eur(res.annualUpside[1])}</b><span className="mono">на рік · {res.opportunityPct[0]}–{res.opportunityPct[1]}% до обороту</span></>
-                : <><b className="sysx-display s2-money-big">{res.opportunityPct[0]}–{res.opportunityPct[1]}%</b><span className="mono">до обороту (вкажіть виторг в Етапі 1 для суми)</span></>}
+              {money
+                ? <><b className="sysx-display s2-money-big">{eur(money.lo)}–{eur(money.hi)}</b><span className="mono">на рік · {money.pctLo}–{money.pctHi}% до обороту</span></>
+                : stage1.monthlyRevenue > 0
+                  ? <><b className="sysx-display s2-money-big">{eur(res.annualUpside[0])}–{eur(res.annualUpside[1])}</b><span className="mono">на рік · {res.opportunityPct[0]}–{res.opportunityPct[1]}% до обороту</span></>
+                  : <><b className="sysx-display s2-money-big">{res.opportunityPct[0]}–{res.opportunityPct[1]}%</b><span className="mono">до обороту (вкажіть виторг в Етапі 1 для суми)</span></>}
+              {money && <span className="s2-money-note mono">Та сама цифра з Етапу 1. Етап 2 показує не «скільки», а <b>де саме</b> вона зосереджена — за зрілістю систем.</span>}
               <div className="s2-bench">
                 <span className="mono">Ви {res.overall}</span>
                 <div className="s2-bench-track"><i className="s2-bench-you" style={{ left: `${res.overall}%` }} /><i className="s2-bench-mark" style={{ left: '45%' }} /><i className="s2-bench-mark strong" style={{ left: '75%' }} /></div>
