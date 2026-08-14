@@ -80,7 +80,7 @@ const isDoc = (name: string) => /\.(pdf|docx|xlsx|pptx)$/i.test(name);
 // головний висновок, имена «1-…»…«5-…») + коммерческое предложение. Отдельные линзы
 // (UX-UI-A0, SEO-…, Технический-… и т.д.) — это ВНУТРЕННИЙ разбор: они уходят только
 // в наш полный архив, а клиент видит цельные разделы, а не 26 файлов.
-const isThemeDoc = (name: string) => /^[1-5]-.+\.(pdf|docx)$/i.test(name);
+const isThemeDoc = (name: string) => /^[0-5]-.+\.(pdf|docx)$/i.test(name); // 0- = флагманская «Презентація аудиту»
 const isProposal = (name: string) => /(коммерческое.?предложение|комерційна.?пропозиц|kp)\.(pdf|docx)$/i.test(name);
 const isClientDoc = (name: string) => isDoc(name) && (isThemeDoc(name) || isProposal(name));
 

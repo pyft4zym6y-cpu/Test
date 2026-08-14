@@ -21,6 +21,8 @@ import { buildPrototypeReport, narratePrototype, renderPrototypeMd } from './pro
 import { buildSiteAudit, type SiteAuditReport } from './pagereport.js';
 import { reviewDesign } from './designReview.js';
 import { auditFromScreenshots, type VisionFile } from './visionAudit.js';
+import { renderPresentation } from './export/presentationHtml.js';
+import { researchTargetState } from './targetState.js';
 import { renderAuditHtml } from './export/htmlReport.js';
 import { renderExecDiagnostic } from './export/execDiagHtml.js';
 import { buildSeoArch } from './seoarch.js';
@@ -523,6 +525,28 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await renderPdf(execHtml, join(dir, 'Executive-Diagnostic-A0.pdf'), browser);
         log('✓ Executive Diagnostic A0 (PDF): зонтичный отчёт собран');
       } catch (e) { log(`⚠️ Executive Diagnostic не собрался (${String(e).slice(0, 120)}) — остальные материалы не затронуты`); }
+
+      // ФЛАГМАН: «Презентація аудиту» — консультационная арка к решению, со всеми
+      // данными (блок А: конкуренты/SEO/journey/механики/контент; блок Б: ресёрч
+      // целевого состояния, экономика, GEO). Ведёт собственника к решению.
+      if (siteAudit) try {
+        const gaps = [
+          ...siteAudit.pages.flatMap((p) => p.rows.filter((b) => b.state === 'gap' && b.weight !== 'nice').map((b) => `${p.title}: ${b.name}`)).slice(0, 6),
+          ...siteAudit.pageTypes.filter((t) => t.mandatory && t.status === 'не найдена').map((t) => `немає сторінки ${t.label}`).slice(0, 3),
+        ];
+        let research = null;
+        if (hasKey() && !deadline.exceeded()) {
+          log('· ресёрч целевого состояния (тренды/конкуренты ниши)…');
+          research = await researchTargetState(siteAudit.client, gaps, siteAudit.stack?.cms ?? null, log).catch(() => null);
+        }
+        const presHtml = renderPresentation(siteAudit, {
+          bench, seo: seoReport, journey: journeyReport, mech: mechReport, content: contentReport,
+          maturity: ciReport ? { level: ciReport.maturity.level, name: ciReport.maturity.name } : null,
+          money, geo: ds.client.ai ?? null, research,
+        });
+        await renderPdf(cap('presentation', presHtml), join(dir, '0-Презентація-аудиту.pdf'), browser);
+        log('✓ Презентація аудиту (флагман пакета) собрана');
+      } catch (e) { log(`⚠️ Презентація аудиту не собралась (${String(e).slice(0, 120)})`); }
 
       // Слой синтеза — взаимосвязи всех линз в один вывод (нужен ключ).
       if (hasKey() && deadline.exceeded()) {
