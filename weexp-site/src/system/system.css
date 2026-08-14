@@ -461,6 +461,58 @@
   .xp-panel { position: static; inset: auto; opacity: 1 !important; transform: none !important; margin: 40px auto; max-width: 1100px; }
 }
 
+/* ── SYSTEM EXPLORER (інтерактивний блок головної) ── */
+.sysx-explorer { position: relative; min-height: 92vh; overflow: hidden; border-top: 1px solid var(--line); }
+.sxp-stage { position: relative; min-height: 92vh; display: block; isolation: isolate; }
+.sysx-explorer .sysx-object3d { position: absolute; inset: 0; z-index: 1; }
+.sysx-explorer .mono { font-family: var(--mono); }
+
+/* лейбли підпроцесів */
+.sxp-labels { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.sxp-label { position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 7px; opacity: 0; white-space: nowrap; will-change: left, top, opacity; }
+.sxp-label-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--data); box-shadow: 0 0 0 4px rgba(126, 157, 255, .16); flex: 0 0 auto; }
+.sxp-label-t { font: 600 11px/1 ui-monospace, Menlo, monospace; letter-spacing: .04em; color: var(--charcoal); background: rgba(255, 255, 255, .78); backdrop-filter: blur(4px); padding: 4px 9px; border: 1px solid rgba(58, 61, 66, .14); border-radius: 20px; }
+
+/* інтро/підказка */
+.sxp-intro { position: absolute; left: clamp(24px, 6vw, 90px); top: 50%; transform: translateY(-50%); z-index: 3; max-width: 440px; display: grid; gap: 12px;
+  transition: opacity .5s var(--ease-cine), transform .5s var(--ease-cine); }
+.sxp-intro.is-hidden { opacity: 0; transform: translateY(-50%) translateX(-12px); pointer-events: none; }
+.sxp-h { font-size: clamp(30px, 4vw, 58px); }
+.sxp-lead { font-size: clamp(14px, 1.5vw, 18px); color: var(--charcoal); line-height: 1.55; max-width: 40ch; }
+.sxp-hint { font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--graphite); }
+
+/* панель сфокусованої системи */
+.sxp-panel { position: absolute; right: clamp(20px, 5vw, 64px); top: 50%; transform: translateY(-50%); z-index: 4; width: min(92vw, 400px);
+  display: grid; gap: 10px; padding: clamp(20px, 2.6vw, 28px); border-radius: 18px;
+  background: color-mix(in srgb, var(--pure-white) 82%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--silver); box-shadow: 0 40px 80px -50px rgba(21, 23, 26, .5);
+  animation: sxpIn .5s var(--ease-cine); }
+@keyframes sxpIn { from { opacity: 0; transform: translateY(-50%) translateX(16px); } to { opacity: 1; transform: translateY(-50%); } }
+.sxp-close { justify-self: start; background: none; border: 0; color: var(--graphite); font-size: 11px; letter-spacing: .06em; cursor: pointer; padding: 2px 0; }
+.sxp-close:hover { color: var(--deep); }
+.sxp-panel-en { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--graphite); }
+.sxp-panel-h { font-size: clamp(24px, 2.8vw, 36px); color: var(--deep); line-height: .98; }
+.sxp-panel-feel { font-size: 14px; font-style: italic; color: var(--charcoal); line-height: 1.45; }
+.sxp-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.sxp-flow-node { display: inline-flex; align-items: center; font: 600 10.5px/1 ui-monospace, Menlo, monospace; letter-spacing: .02em; color: var(--deep); background: rgba(126, 157, 255, .1); border: 1px solid var(--data-soft); border-radius: 100px; padding: 4px 9px; }
+.sxp-flow-link { width: 8px; height: 1px; background: var(--silver); margin: 0 -3px 0 6px; }
+.sxp-panel-sell { font-size: 12.5px; line-height: 1.5; color: var(--charcoal); border-top: 1px solid var(--line); padding-top: 10px; }
+.sxp-panel-sell b { color: var(--deep); margin-right: 4px; }
+.sxp-cta { justify-self: start; margin-top: 4px; }
+
+@media (max-width: 860px) {
+  .sysx-explorer, .sxp-stage { min-height: auto; }
+  .sysx-explorer .sysx-object3d { position: relative; height: 62vh; }
+  .sxp-intro { position: static; transform: none; max-width: none; padding: 32px 22px 8px; }
+  .sxp-intro.is-hidden { display: none; }
+  .sxp-panel { position: static; transform: none; width: auto; margin: 0 22px 32px; animation: none; }
+  .sxp-labels { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sysx-explorer .sysx-object3d { height: 50vh; position: relative; }
+  .sxp-labels { display: none; }
+}
+
 /* ── PARTNERS STRIP (технологічні партнери) ── */
 .sysx-partners { padding: clamp(56px, 9vh, 120px) clamp(20px, 6vw, 90px); border-top: 1px solid var(--line); }
 .sysx-partners.is-compact { padding: clamp(40px, 6vh, 72px) clamp(20px, 6vw, 90px); }
