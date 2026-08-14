@@ -23,6 +23,7 @@ const NotFound = lazy(() => import('@/pages/NotFound').then((m) => ({ default: m
 const SystemInMotion = lazy(() => import('@/system/SystemInMotion').then((m) => ({ default: m.SystemInMotion })));
 const SystemsFilm = lazy(() => import('@/system/SystemsFilm').then((m) => ({ default: m.SystemsFilm })));
 const CasesFilm = lazy(() => import('@/system/CasesFilm').then((m) => ({ default: m.CasesFilm })));
+const SystemShell = lazy(() => import('@/system/SystemShell').then((m) => ({ default: m.SystemShell })));
 const LossCalculator = lazy(() => import('@/system/LossCalculator').then((m) => ({ default: m.LossCalculator })));
 
 export default function App() {
@@ -31,11 +32,13 @@ export default function App() {
       <RouteSeo />
       <Suspense fallback={null}>
         <Routes>
-          {/* Прев'ю нового cinematic-напряму (живий сайт не чіпаємо) */}
-          <Route path="/system" element={<SystemInMotion />} />
-          <Route path="/systems" element={<SystemsFilm />} />
-          <Route path="/proof" element={<CasesFilm />} />
-          <Route path="/loss" element={<LossCalculator />} />
+          {/* Прев'ю нового cinematic-напряму (живий сайт не чіпаємо) — під спільною оболонкою */}
+          <Route element={<SystemShell />}>
+            <Route path="/system" element={<SystemInMotion />} />
+            <Route path="/systems" element={<SystemsFilm />} />
+            <Route path="/proof" element={<CasesFilm />} />
+            <Route path="/loss" element={<LossCalculator />} />
+          </Route>
           <Route element={<Layout />}>
             <Route path="/" element={<Home />} />
             <Route path="/challenges" element={<Challenges />} />

@@ -143,6 +143,40 @@
   .sysx-object { position: static; height: 60vh; margin: 0 auto; }
 }
 
+/* ── SHELL: cinematic-навігація превʼю-напряму ── */
+.sysh { --sh-deep: #15171A; --sh-charcoal: #3A3D42; --sh-graphite: #A8ADB3; --sh-silver: #D9DDE1; --sh-data: #7E9DFF; }
+.sysh-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  padding: 14px clamp(16px, 4vw, 44px);
+  background: transparent; border-bottom: 1px solid transparent;
+  transition: background .4s cubic-bezier(.22,1,.36,1), border-color .4s, backdrop-filter .4s;
+}
+.sysh-nav.is-solid {
+  background: rgba(247, 247, 245, .72); backdrop-filter: blur(12px) saturate(1.1); -webkit-backdrop-filter: blur(12px) saturate(1.1);
+  border-bottom-color: rgba(58, 61, 66, .1);
+}
+.sysh-brand { display: inline-flex; align-items: baseline; gap: 8px; text-decoration: none; }
+.sysh-brand b { font-family: 'Bricolage Grotesque Variable', system-ui, sans-serif; font-weight: 800; letter-spacing: -.03em; font-size: 18px; color: var(--sh-deep); }
+.sysh-brand span { font-size: 10px; letter-spacing: .28em; text-transform: uppercase; color: var(--sh-graphite); }
+.sysh-links { display: flex; align-items: center; gap: clamp(4px, 1.4vw, 20px); overflow-x: auto; scrollbar-width: none; }
+.sysh-links::-webkit-scrollbar { display: none; }
+.sysh-link { position: relative; font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--sh-charcoal); text-decoration: none; padding: 6px 2px; white-space: nowrap; transition: color .25s; }
+.sysh-link::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px; background: var(--sh-data); transform: scaleX(0); transform-origin: left; transition: transform .3s cubic-bezier(.22,1,.36,1); }
+.sysh-link:hover { color: var(--sh-deep); }
+.sysh-link.is-on { color: var(--sh-deep); }
+.sysh-link.is-on::after { transform: scaleX(1); }
+.sysh-cta { flex: 0 0 auto; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #fff; background: var(--sh-deep); border-radius: 100px; padding: 10px 18px; text-decoration: none; transition: transform .25s, box-shadow .25s; box-shadow: 0 10px 30px -18px rgba(21,23,26,.5); }
+.sysh-cta:hover { transform: translateY(-1px); box-shadow: 0 16px 40px -18px rgba(21,23,26,.65); }
+
+@media (max-width: 720px) {
+  .sysh-brand span { display: none; }
+  .sysh-cta { padding: 9px 13px; }
+  .sysh-nav { gap: 10px; padding: 10px 14px; }
+}
+@media (max-width: 520px) { .sysh-links { display: none; } }
+@media (prefers-reduced-motion: reduce) { .sysh-nav { position: sticky; } }
+
 /* ── THE SEVEN SYSTEMS (challenges-film, /systems) ── */
 .sysx-seven { height: 760vh; }              /* intro + 7 актів + activation */
 
