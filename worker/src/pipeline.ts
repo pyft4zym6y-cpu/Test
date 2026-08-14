@@ -263,8 +263,18 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         const stub = detectStub(ds.client);
         let fromScreens = false;
         const hasBackup = (opts.backupFiles?.length ?? 0) > 0 || Boolean(opts.backupPdf);
-        if (hasBackup && (stub || !ds.client.reachable || !ds.client.pages.some((p) => p.score !== null))) {
-          log(`· резервный контур: живой доступ = ${stub ? 'заглушка' : 'недоступен'} → разбор скриншотов зрением…`);
+        // Мелкий обход: главная открылась, но вглубь не прошёл (только 1–2 страницы,
+        // нет карточки товара). Раньше в этом случае скриншоты игнорировались, т.к.
+        // сайт «не заглушка». Теперь: есть скриншоты + мелкий обход → берём скриншоты
+        // (оператор загрузил их именно потому, что краулер не дотягивается внутрь).
+        const okPages = ds.client.pages.filter((p) => !p.error);
+        const hasPdp = okPages.some((p) => p.kind === 'pdp');
+        const looksCommerce = okPages.some((p) => ['plp', 'cart', 'checkout'].includes(p.kind)) || (ds.client.links ?? []).length > 100;
+        const shallow = okPages.length < 3 || (looksCommerce && !hasPdp);
+        const noneAudited = !ds.client.pages.some((p) => p.score !== null);
+        if (hasBackup && (stub || !ds.client.reachable || noneAudited || shallow)) {
+          const why = stub ? 'заглушка' : !ds.client.reachable ? 'недоступен' : noneAudited ? 'нет данных' : `мелкий обход (${okPages.length} стр., PDP ${hasPdp ? 'есть' : 'нет'})`;
+          log(`· резервный контур: живой доступ = ${why} → разбор скриншотов зрением…`);
           // Резолвим набор файлов (пути → base64 + MIME). Совместимость: один backupPdf.
           const specs = opts.backupFiles?.length ? opts.backupFiles : (opts.backupPdf ? [{ path: opts.backupPdf, type: 'application/pdf' }] : []);
           const vfiles = (await Promise.all(specs.slice(0, 50).map(async (f): Promise<VisionFile | null> => {
