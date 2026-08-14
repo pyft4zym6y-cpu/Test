@@ -157,7 +157,9 @@ function cors(res: ServerResponse) {
 function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
     let b = ''; let size = 0;
-    req.on('data', (c) => { size += c.length; if (size > 8_000_000) reject(new Error('body too large')); else b += c; });
+    // 30 МБ: обычный запрос крошечный, но резервный контур несёт base64 PDF со
+    // скриншотами (лимит Anthropic для PDF — 32 МБ).
+    req.on('data', (c) => { size += c.length; if (size > 30_000_000) reject(new Error('body too large')); else b += c; });
     req.on('end', () => resolve(b));
     req.on('error', reject);
   });
@@ -192,6 +194,17 @@ const server = createServer(async (req, res) => {
         if (b) { opts.answers = opts.answers || b.answers; bundleName = b.name; }
       }
       const id = randomUUID();
+      // Резервный контур: base64 PDF со скриншотами кладём в файл и в opts храним
+      // ПУТЬ, а не мегабайты — иначе job.json раздувается и persist на каждом логе тормозит.
+      if (typeof opts.backupPdf === 'string' && opts.backupPdf.length > 200) {
+        try {
+          const upDir = join(OUT, '_uploads'); await mkdir(upDir, { recursive: true });
+          const pdfPath = join(upDir, `${id}.pdf`);
+          const b64 = opts.backupPdf.replace(/^data:application\/pdf;base64,/, '');
+          await writeFile(pdfPath, Buffer.from(b64, 'base64'));
+          opts.backupPdf = pdfPath;
+        } catch (e) { delete opts.backupPdf; }
+      }
       const client = (() => { try { return opts.prelaunch ? 'предзапуск' : new URL(opts.site).hostname.replace(/^www\./, ''); } catch { return bundleName || opts.site || clientId || '—'; } })();
       const job: Job = { id, client, tier: Number(opts.tier ?? 1), status: 'queued', startedAt: Date.now(), log: [], opts, clientId: clientId || undefined };
       jobs.set(id, job);

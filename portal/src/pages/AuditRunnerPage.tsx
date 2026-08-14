@@ -19,6 +19,8 @@ export default function AuditRunnerPage() {
   const [agentic, setAgentic] = useState(true);
   const [prelaunch, setPrelaunch] = useState(false);
   const [brief, setBrief] = useState('');
+  const [backupPdf, setBackupPdf] = useState('');   // резервный контур: base64 PDF со скриншотами
+  const [backupName, setBackupName] = useState('');
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
   const [files, setFiles] = useState<FileLink[]>([]);
@@ -57,6 +59,7 @@ export default function AuditRunnerPage() {
         body: JSON.stringify({
           tier, site, competitors: competitors.split(/\n+/).map((s) => s.trim()).filter(Boolean),
           request: brief || '', agentic, prelaunch, brief,
+          ...(backupPdf ? { backupPdf } : {}),
         }),
       });
       const j = await r.json();
@@ -124,6 +127,23 @@ export default function AuditRunnerPage() {
             <textarea value={brief} onChange={(e) => setBrief(e.target.value)} rows={3} placeholder="Что за магазин, ниша, рынок, средний чек…" style={{ marginTop: 6 }} />
           </label>
         )}
+        <label>
+          <div className="qid">Резервный PDF со скриншотами страниц (необязательно)</div>
+          <div className="qwhy" style={{ margin: '2px 0 6px' }}>Если сайт за заглушкой / нет доступа — система сама разберёт эти скриншоты зрением вместо обхода. Полностраничные скриншоты, по странице на лист.</div>
+          <input
+            type="file"
+            accept="application/pdf"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (!f) { setBackupPdf(''); setBackupName(''); return; }
+              if (f.size > 28_000_000) { setStatus('PDF больше 28 МБ — сожмите или уменьшите число страниц'); return; }
+              const reader = new FileReader();
+              reader.onload = () => { setBackupPdf(String(reader.result || '')); setBackupName(f.name); };
+              reader.readAsDataURL(f);
+            }}
+          />
+          {backupName && <span className="sub" style={{ marginLeft: 8, fontSize: 12 }}>прикреплён: {backupName} <button className="chip" style={{ fontSize: 11, marginLeft: 6 }} onClick={() => { setBackupPdf(''); setBackupName(''); }}>убрать</button></span>}
+        </label>
         <button className="btn" onClick={run} disabled={busy} style={{ alignSelf: 'flex-start', padding: '11px 22px' }}>
           {busy ? 'Идёт аудит…' : 'Запустить аудит'}
         </button>

@@ -410,3 +410,50 @@ export function buildSiteAudit(ds: AuditDataset, opts: { journey?: JourneyLink[]
 }
 
 export { KIND_LABEL };
+
+/* ══════════ Резервный контур: сборка отчёта из ЗРЕНИЯ (скриншоты/PDF) ══════════
+ * Когда живой доступ к сайту недоступен (заглушка/coming-soon/блок), UX/UI-разбор
+ * строится не по DOM, а по загруженным скриншотам страниц: Claude-зрение выносит
+ * по каждой странице её тип и вердикт по блокам эталона. Итог — та же модель
+ * (BlockRow с key → те же вайрфреймы, баллы, вывод), только источник — зрение. */
+export type VisionBlockVerdict = { key: string; state: BlockState; now: string };
+export type VisionPageInput = {
+  kind: PageKind; title: string; conclusion?: string; url?: string;
+  blocks: VisionBlockVerdict[]; strong?: string[];
+  fixes?: { what: string; crit: 'Блокирующая' | 'Высокая' | 'Средняя'; why: string }[];
+};
+
+function buildPageFromVision(vp: VisionPageInput): PageReport | null {
+  const ref = REFERENCE[vp.kind];
+  if (!ref) return null;
+  const byKey = new Map(vp.blocks.map((b) => [b.key, b]));
+  const rows: BlockRow[] = ref.blocks.map((b) => {
+    const v = byKey.get(b.key);
+    const state: BlockState = v?.state ?? 'check';
+    const max = MAX_BY_WEIGHT[b.weight];
+    const score = state === 'ok' ? max : state === 'weak' ? Math.max(1, Math.round(max / 2)) : state === 'check' ? 1 : 0;
+    const now = v?.now || (state === 'gap' ? 'На екрані не видно' : state === 'check' ? 'Не впевнено (можливо, поза кадром)' : 'Видно');
+    return { key: b.key, name: b.name, role: b.role, chapter: b.chapter, weight: b.weight, dims: DIM_BY_BLOCK[b.key] ?? ['UX'], state, score, max, wordVerdict: wordFor(state, b.weight), now, should: b.detail ?? b.role };
+  });
+  const score = rows.reduce((s, r) => s + r.score, 0);
+  const max = rows.reduce((s, r) => s + r.max, 0);
+  const counts = { ok: rows.filter((r) => r.state === 'ok').length, weak: rows.filter((r) => r.state === 'weak').length, check: rows.filter((r) => r.state === 'check').length, gap: rows.filter((r) => r.state === 'gap').length };
+  const pct = max ? Math.round((score / max) * 100) : 0;
+  const fixes = vp.fixes ?? rows.filter((r) => r.state === 'gap').sort((a, b) => b.max - a.max).map((r) => ({ what: `Додати: ${r.name}`, crit: CRIT_BY_WEIGHT[r.weight], why: r.role }));
+  return { kind: vp.kind, title: vp.title || ref.title, chapter: ref.chapter, principle: ref.principle, url: vp.url ?? '', conclusion: vp.conclusion || pageConclusion(ref.title, rows, pct), screenshot: undefined, annotations: [], score, max, complianceScore: null, counts, rows, requirements: REQUIREMENTS[vp.kind] ?? [], strong: vp.strong ?? rows.filter((r) => r.state === 'ok' && r.weight !== 'nice').map((r) => r.name), fixes };
+}
+
+/** Сборка UX/UI-отчёта из зрения (скриншоты/PDF) — резервный контур без доступа к DOM. */
+export function buildSiteAuditFromVision(input: { client: string; takenAt?: string; pages: VisionPageInput[]; verdict?: string; warning?: string }): SiteAuditReport {
+  const pages = input.pages.map(buildPageFromVision).filter((p): p is PageReport => Boolean(p));
+  const tree: SiteTreeRow[] = pages.map((p) => ({ title: p.title, url: p.url, kind: p.kind, score: p.score, max: p.max, pct: p.max ? Math.round((p.score / p.max) * 100) : 0 }));
+  const totalScore = pages.reduce((s, p) => s + p.score, 0);
+  const totalMax = pages.reduce((s, p) => s + p.max, 0);
+  const totalPct = totalMax ? Math.round((totalScore / totalMax) * 100) : 0;
+  return {
+    client: input.client, takenAt: input.takenAt ?? '', tier: 1, pages, tree, totalScore, totalMax, totalPct,
+    systemic: [], verdict: input.verdict ?? verdictLine(totalPct),
+    warning: input.warning ?? 'Розбір за наданими скріншотами (резервний контур без доступу до сайту): оцінюється видиме на екрані; приховані стани й код не перевіряються.',
+    pageTypes: [], soft404: null,
+  };
+}

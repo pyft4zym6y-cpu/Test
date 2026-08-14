@@ -2,7 +2,7 @@
  * Конвейер аудита как переиспользуемая функция — общий код для CLI (run.ts) и
  * HTTP-сервера (server.ts). Обход → движок → деньги → анализ → материалы.
  */
-import { writeFile, mkdir, readdir } from 'node:fs/promises';
+import { writeFile, mkdir, readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { launchBrowser, crawlSite, reachabilityDiagnosis, type SiteCrawl } from './crawl.js';
 import { computeEngine, normalizeAnswers, engineFacts, type EngineResult } from './portalEngine.js';
@@ -20,6 +20,7 @@ import { exportPrototypeDocx } from './export/prototypeDocx.js';
 import { buildPrototypeReport, narratePrototype, renderPrototypeMd } from './prototype.js';
 import { buildSiteAudit, type SiteAuditReport } from './pagereport.js';
 import { reviewDesign } from './designReview.js';
+import { auditFromScreenshots } from './visionAudit.js';
 import { renderAuditHtml } from './export/htmlReport.js';
 import { renderExecDiagnostic } from './export/execDiagHtml.js';
 import { buildSeoArch } from './seoarch.js';
@@ -80,8 +81,26 @@ export type AuditOptions = {
   answers?: Record<string, unknown> | null;
   baseline?: { levers: Levers; extra?: { name: string; monthly: number }[] } | null;
   out?: string;
+  backupPdf?: string;           // резервный контур: base64 PDF со скриншотами страниц
   log?: (m: string) => void;
 };
+
+/**
+ * Детектор заглушки: живой сайт вернул плейсхолдер (coming-soon/Hostinger/бот-блок),
+ * а не витрину. Признаки: одинаковые тонкие страницы, coming-soon-маркеры, ноль
+ * коммерческих сигналов. Триггерит резервный контур по скриншотам.
+ */
+function detectStub(client: SiteCrawl): boolean {
+  const pages = client.pages.filter((p) => !p.error);
+  if (!pages.length) return false;
+  const COMING = /coming soon|незабаром|briefly unavailable|under construction|maintenance mode|сайт в разработ|у розробц|скоро открыт|новий сайт wordpress|website is coming/i;
+  const comingHit = pages.some((p) => COMING.test(p.title) || COMING.test(client.stack?.signals?.join(' ') ?? ''));
+  const titles = new Set(pages.map((p) => (p.title || '').trim().toLowerCase()));
+  const avgWords = pages.reduce((s, p) => s + (p.ux?.bodyWords ?? 0), 0) / pages.length;
+  const noCommerce = !pages.some((p) => (p.ux?.productCards ?? 0) > 4 || p.ux?.priceVisible || p.ux?.addToCartProminent);
+  // Заглушка: coming-soon-текст ИЛИ (все страницы одинаковый тонкий контент без коммерции)
+  return comingHit || (pages.length >= 2 && titles.size <= 1 && avgWords < 150 && noCommerce);
+}
 
 export type AuditMetrics = {
   compliance: number | null;
@@ -143,12 +162,18 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       const audited = client.pages.some((p) => p.score !== null);
       if (!client.reachable || !audited) {
         const reason = client.error || client.pages[0]?.error || 'сайт не отдал контент (пустой ответ)';
-        log(`✖ доступ к сайту не получен — аудит остановлен: ${reason}`);
-        throw new Error(
-          `Не удалось получить доступ к сайту ${site}: ${reason}. ` +
-          `${reachabilityDiagnosis(client)} ` +
-          `Аудит НЕ проводился — данные не собраны, фиктивные выводы не выпускаются.`,
-        );
+        // Резервный контур: если приложен PDF со скриншотами — не падаем, а
+        // переключаемся на разбор зрением (ниже, в блоке UX/UI).
+        if (opts.backupPdf) {
+          log(`⚠️ живого доступа нет (${reason}) → резервный контур: разбор по скриншотам из PDF`);
+        } else {
+          log(`✖ доступ к сайту не получен — аудит остановлен: ${reason}`);
+          throw new Error(
+            `Не удалось получить доступ к сайту ${site}: ${reason}. ` +
+            `${reachabilityDiagnosis(client)} ` +
+            `Аудит НЕ проводился — данные не собраны, фиктивные выводы не выпускаются.`,
+          );
+        }
       }
     }
 
@@ -232,9 +257,21 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
 
       try {
         siteAudit = buildSiteAudit(ds, { journey: journeySteps });
-        // Дизайн-ревью со зрением: senior design director смотрит на скриншоты и
-        // выносит вкусовой вердикт (дорого/дёшево, шаблон/кастом). Не валит отчёт.
-        try {
+        // Резервный контур: живой сайт — заглушка/недоступен, а приложен PDF со
+        // скриншотами → строим UX/UI разбор ЗРЕНИЕМ по скриншотам вместо DOM.
+        const stub = detectStub(ds.client);
+        let fromScreens = false;
+        if (opts.backupPdf && (stub || !ds.client.reachable || !ds.client.pages.some((p) => p.score !== null))) {
+          log(`· резервный контур: живой доступ = ${stub ? 'заглушка' : 'недоступен'} → разбор PDF со скриншотами зрением…`);
+          // opts.backupPdf — путь к файлу (из server) или уже base64. Резолвим в base64.
+          const b64 = await readFile(opts.backupPdf, 'base64').catch(() => opts.backupPdf as string);
+          const vr = await auditFromScreenshots(b64, siteAudit.client, log).catch((e) => { log(`⚠️ резервный контур упал (${String(e).slice(0, 80)})`); return null; });
+          if (vr?.report?.pages.length) { siteAudit = vr.report; fromScreens = true; log(`✓ UX/UI построен по скриншотам: страниц ${vr.report.pages.length}, соответствие ${vr.report.totalPct}%`); }
+          else log('⚠️ резервный контур не дал страниц — остаёмся на разборе живого');
+        }
+        // Дизайн-ревью со зрением: если UX/UI уже собран по скриншотам — дизайн-вердикт
+        // пришёл вместе с ним; иначе смотрим на живые скриншоты обхода.
+        if (!fromScreens) try {
           log('· дизайн-ревью со зрением (design director смотрит на страницы)…');
           siteAudit.design = await reviewDesign(ds.client, log) ?? undefined;
           if (siteAudit.design) log(`✓ дизайн-вердикт: ${siteAudit.design.tier} · ${siteAudit.design.overallScore}/10 (${siteAudit.design.source})`);
