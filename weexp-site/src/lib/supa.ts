@@ -7,8 +7,12 @@ import { createClient, type Session } from '@supabase/supabase-js';
  * (localStorage), щоб фіча працювала одразу; після додавання ключів вмикається
  * справжній Supabase з синхронізацією між пристроями.
  */
-const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const anon = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+// Фолбэк-значення проєкту (publishable key — публічний за дизайном, доступ гейтить
+// RLS). Env-змінні мають пріоритет, якщо задані у Vercel.
+const FALLBACK_URL = 'https://lpbyigsezimqofygpfof.supabase.co';
+const FALLBACK_ANON = 'sb_publishable_zlBld1bJe-Tf4-UHW6EdNA_I2jr9XcT';
+const url = ((import.meta.env.VITE_SUPABASE_URL as string | undefined) || FALLBACK_URL).replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
+const anon = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined) || FALLBACK_ANON;
 
 export const CONFIGURED = Boolean(url && anon);
 export const supabase = createClient(url ?? 'https://placeholder.supabase.co', anon ?? 'anon', {
