@@ -82,7 +82,7 @@
 .sysx-cta.is-primary:hover { box-shadow: 0 16px 40px -18px rgba(21,23,26,.6); }
 
 /* ── Опенінг-фільм: липка сцена, крізь яку рухається камера-скрол ── */
-.sysx-film { height: 560vh; }
+.sysx-film { height: 680vh; }
 .sysx-stage {
   position: sticky; top: 0; height: 100vh; overflow: hidden;
   display: grid; place-items: center; isolation: isolate;
@@ -111,7 +111,16 @@
 .sysx-h1 { font-size: clamp(52px, 10vw, 150px); }
 .sysx-h2 { font-size: clamp(38px, 6.4vw, 104px); color: var(--deep); }
 .sysx-em { color: var(--data); font-style: normal; }
+.sysx-em-alert { color: var(--alert); }
 .sysx-void .sysx-em { color: var(--charcoal); }
+
+/* 7 систем-лейблів: HTML-мітки на спроєктованих позиціях вузлів об'єкта */
+.sysx-labels { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.sysx-label { position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 7px; opacity: 0; white-space: nowrap; will-change: left, top, opacity; }
+.sysx-label-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--data); box-shadow: 0 0 0 4px rgba(126, 157, 255, .16); flex: 0 0 auto; }
+.sysx-label-t { font: 600 11.5px/1 ui-monospace, "SFMono-Regular", Menlo, monospace; letter-spacing: .06em; text-transform: uppercase; color: var(--charcoal); background: rgba(255, 255, 255, .74); backdrop-filter: blur(4px); padding: 4px 9px; border: 1px solid rgba(58, 61, 66, .14); border-radius: 20px; }
+.sysx-label.is-alert .sysx-label-dot { background: var(--alert); box-shadow: 0 0 0 4px rgba(214, 54, 43, .18); }
+.sysx-label.is-alert .sysx-label-t { color: var(--alert); border-color: rgba(214, 54, 43, .3); }
 .sysx-scrollhint { margin-top: 10px; color: var(--graphite); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; animation: sysxBob 2.6s var(--ease-cine) infinite; }
 @keyframes sysxBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(7px); } }
 .sysx-cta-row { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
@@ -120,9 +129,10 @@
 .sysx-void { align-content: center; }
 
 @media (max-width: 860px) {
-  .sysx-film { height: 640vh; }
+  .sysx-film { height: auto; }
   .sysx-object { width: 118vw; }
   .sysx-node-label { font-size: 15px; }
+  .sysx-labels { display: none; } /* лейбли систем спираються на absolute-об'єкт — на мобільному сцени статичні */
 }
 
 @media (prefers-reduced-motion: reduce) {

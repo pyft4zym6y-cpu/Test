@@ -16,8 +16,11 @@ const NODE_TINT = [0xffffff, 0xd9dde1, 0xffffff, 0xd9dde1, 0xffffff, 0xd9dde1, 0
  * зафіксований стан (для калькулятора: об'єкт вже зібраний і «дихає»). alerts —
  * індекси систем, що світяться червоним (bottleneck / GAP-подія).
  */
-export function CommerceSystem3D({ progress, fixedProgress, alerts }: {
+export function CommerceSystem3D({ progress, fixedProgress, alerts, labels }: {
   progress?: MutableRefObject<number>; fixedProgress?: number; alerts?: MutableRefObject<number[]>;
+  // labels — щокадру заповнюється спроєктованими 2D-позиціями 7 вузлів (для HTML-лейблів
+  // систем у фільмі): {x,y} у % вьюпорта об'єкта, vis 0..1 (видимість/збірка).
+  labels?: MutableRefObject<{ x: number; y: number; vis: number }[]>;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -118,6 +121,7 @@ export function CommerceSystem3D({ progress, fixedProgress, alerts }: {
 
     let raf = 0, t0 = 0, aCur = 0;
     const tmp = new THREE.Vector3();
+    const tmpL = new THREE.Vector3();
     const ALERT = new THREE.Color(0xd6362b), BLUE = new THREE.Color(0x7e9dff);
     const render = (t: number) => {
       if (!t0) t0 = t; const time = (t - t0) / 1000;
@@ -163,6 +167,16 @@ export function CommerceSystem3D({ progress, fixedProgress, alerts }: {
       camera.position.x += (cmx * 1.2 - camera.position.x) * 0.05;
       camera.position.y += (-cmy * 0.8 - camera.position.y) * 0.05;
       camera.lookAt(0, 0, 0);
+
+      // Спроєктовані 2D-позиції вузлів → для HTML-лейблів систем у фільмі.
+      if (labels?.current) {
+        group.updateWorldMatrix(true, true);
+        for (let i = 0; i < N; i++) {
+          nodeMeshes[i].getWorldPosition(tmpL).project(camera);
+          const onScreen = tmpL.z < 1;
+          labels.current[i] = { x: (tmpL.x * 0.5 + 0.5) * 100, y: (-tmpL.y * 0.5 + 0.5) * 100, vis: onScreen ? aCur : 0 };
+        }
+      }
 
       renderer.render(scene, camera);
       raf = requestAnimationFrame(render);
