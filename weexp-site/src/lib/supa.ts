@@ -21,6 +21,9 @@ export const supabase = createClient(url ?? 'https://placeholder.supabase.co', a
 
 export type DiagUser = { id: string; email: string };
 
+/** true, якщо користувач збережений у хмарному кабінеті (Supabase), а не локально. */
+export const isCloudUser = (u: DiagUser | null): boolean => !!u && !u.id.startsWith('local:') && !u.id.startsWith('demo:');
+
 /** Дані діагностики, що зберігаються між сесіями (усі етапи). */
 export type DiagRecord = {
   site?: string;
@@ -51,22 +54,36 @@ export async function currentUser(): Promise<DiagUser | null> {
  * увімкнено Confirm email) — падаємо на локальне збереження, щоб клієнт міг
  * продовжити. Коли сесія є — працює справжній Supabase із синхронізацією.
  */
-export async function authenticate(email: string, password: string): Promise<{ user?: DiagUser; error?: string }> {
+export async function authenticate(email: string, password: string): Promise<{ user?: DiagUser; error?: string; local?: boolean; notice?: string }> {
+  let notice = '';
   if (CONFIGURED) {
     try {
+      // 1) Пробуємо вхід (акаунт уже існує).
       let res = await supabase.auth.signInWithPassword({ email, password });
+      // 2) Немає акаунта → реєструємо. При вимкненому Confirm email одразу є сесія.
       if (res.error) {
         const up = await supabase.auth.signUp({ email, password });
-        if (up.data.session) res = up as typeof res;
-        else res = await supabase.auth.signInWithPassword({ email, password });
+        if (up.error) {
+          notice = up.error.message;
+        } else if (up.data.session) {
+          res = up as unknown as typeof res;            // зареєстрували + увійшли
+        } else {
+          // Сесії немає — найімовірніше увімкнено Confirm email. Пробуємо ще раз увійти.
+          res = await supabase.auth.signInWithPassword({ email, password });
+          if (res.error) notice = 'Підтвердіть email за посиланням у листі, потім увійдіть — або вимкніть Confirm email у Supabase.';
+        }
       }
       const u = res.data?.user, sess = res.data?.session;
-      if (u && sess) { try { localStorage.removeItem(LS_SESSION); } catch { /* ignore */ } return { user: { id: u.id, email: u.email ?? email } }; }
+      if (u && sess) {
+        try { localStorage.removeItem(LS_SESSION); } catch { /* ignore */ }
+        return { user: { id: u.id, email: u.email ?? email } };   // справжній хмарний користувач
+      }
     } catch { /* мережа/налаштування — падаємо на локальний режим */ }
   }
+  // Фолбэк: не заблокувати клієнта. Дані зберігаються локально в браузері.
   const user = { id: 'local:' + email.toLowerCase(), email };
   try { localStorage.setItem(LS_SESSION, JSON.stringify(user)); } catch { /* ignore */ }
-  return { user };
+  return { user, local: true, notice: notice || undefined };
 }
 
 export async function signOut(): Promise<void> {

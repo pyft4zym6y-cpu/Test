@@ -414,6 +414,8 @@
 .s2-hbar-v { font-size: 11px; color: var(--charcoal); text-align: right; }
 .s2-money-big { font-size: clamp(26px, 3.4vw, 44px); color: var(--deep); letter-spacing: -.03em; }
 .s2-money span { font-size: 12px; color: var(--graphite); }
+.s2-money-note { font-size: 11px; line-height: 1.5; color: var(--graphite); border-left: 2px solid var(--data); padding-left: 10px; margin-top: 2px; }
+.s2-money-note b { color: var(--deep); }
 .s2-bench { display: grid; gap: 6px; margin-top: 6px; }
 .s2-bench-track { position: relative; height: 8px; background: var(--mist); border-radius: 6px; }
 .s2-bench-you { position: absolute; top: -3px; width: 4px; height: 14px; border-radius: 3px; background: var(--data); transform: translateX(-50%); }
@@ -451,24 +453,16 @@
 .s3-auth-form { display: grid; gap: 12px; width: min(420px, 92vw); margin-top: 8px; text-align: left; }
 .s3-err { color: var(--alert); font-size: 12px; }
 
-.s3-quiz { min-height: 100vh; display: grid; align-content: start; justify-items: center; gap: 20px; padding: clamp(60px, 9vh, 88px) clamp(16px, 5vw, 40px) 60px; }
-.s3-quiz-head { width: min(760px, 94vw); display: grid; gap: 12px; }
-.s3-secnav { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--graphite); }
-.s3-secnav .on { color: var(--data); } .s3-secnav .done { color: var(--charcoal); }
-.s3-card { width: min(760px, 94vw); }
-.s3-sec-h { font-size: clamp(24px, 3vw, 38px); color: var(--deep); }
-.s3-sec-sub { font-size: 11px; color: var(--graphite); }
-.s3-blocks { display: grid; gap: 16px; }
-.s3-block { display: grid; gap: 8px; padding-bottom: 14px; border-bottom: 1px solid var(--line-soft); }
-.s3-block-l { font-size: 13.5px; color: var(--charcoal); font-weight: 500; } .s3-block-l i { color: var(--graphite); font-weight: 400; }
-.s3-in { border: 1px solid var(--silver); border-radius: 10px; padding: 11px 13px; font-size: 14px; color: var(--deep); outline: 0; width: 100%; }
-.s3-in:focus { border-color: var(--data); }
-.s3-num { display: flex; align-items: center; gap: 8px; } .s3-num .s3-in { flex: 1; } .s3-num i { color: var(--graphite); font-size: 12px; }
-.s3-choices { display: flex; flex-wrap: wrap; gap: 7px; }
-.s3-choice { font-size: 12.5px; color: var(--charcoal); background: var(--pure-white); border: 1px solid var(--silver); border-radius: 100px; padding: 8px 14px; cursor: pointer; transition: border-color .18s, background .18s, color .18s; }
-.s3-choice:hover { border-color: var(--graphite); }
-.s3-choice.on { border-color: var(--deep); background: var(--deep); color: #fff; }
-.s3-quiz-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-top: 4px; }
+/* Tier-2 анкета — один блок на екран (кінематографічний потік, як Етап 2) */
+.s3-flow-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.s3-save { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--graphite);
+  opacity: 0; transform: translateY(-2px); transition: opacity .3s var(--ease-cine), transform .3s var(--ease-cine); }
+.s3-save.on { opacity: 1; transform: none; color: var(--data); }
+.s3-one { animation: s3One .42s var(--ease-cine); }
+@keyframes s3One { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.s3-one-inp { display: grid; gap: 6px; max-width: 460px; }
+.s3-flow-actions { margin-top: 6px; }
+.s3-flow-left, .s3-flow-right { display: inline-flex; align-items: center; gap: 14px; }
 
 /* Tier-2 звіт — додаткові панелі */
 .s3-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }

@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { SYS } from './lossModel';
-import { BLOCKS, SECTIONS, scoreStage3, type Block, type Stage3Answers } from './stage3Model';
+import { BLOCKS, SECTIONS, scoreStage3, type Stage3Answers } from './stage3Model';
 import { levelFor } from './stage2Model';
-import { CONFIGURED, authenticate, currentUser, loadDiag, saveDiag, signOut, type DiagUser, type DiagRecord } from '@/lib/supa';
+import { CONFIGURED, authenticate, currentUser, isCloudUser, loadDiag, saveDiag, signOut, type DiagUser, type DiagRecord } from '@/lib/supa';
 import './system.css';
 
 /**
@@ -32,7 +32,8 @@ export function Stage3({ prior, onClose }: { prior?: DiagRecord; onClose: () => 
   const [email, setEmail] = useState(''); const [pass, setPass] = useState('');
   const [err, setErr] = useState(''); const [busy, setBusy] = useState(false);
   const [ans, setAns] = useState<Stage3Answers>({});
-  const [sec, setSec] = useState(0);           // індекс секції; SECTIONS.length = звіт
+  const [idx, setIdx] = useState(0);           // індекс блоку; BLOCKS.length = звіт
+  const [saved, setSaved] = useState(false);   // пульс «збережено» після автозбереження
   const saveT = useRef<number | undefined>(undefined);
 
   useEffect(() => { currentUser().then((u) => { setUser(u); setChecking(false); }); }, []);
@@ -46,11 +47,13 @@ export function Stage3({ prior, onClose }: { prior?: DiagRecord; onClose: () => 
     });
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Автозбереження прогресу (debounce).
+  // Автозбереження прогресу (debounce) + пульс «збережено».
   useEffect(() => {
     if (!user) return;
     clearTimeout(saveT.current);
-    saveT.current = window.setTimeout(() => { saveDiag(user, { stage3: ans }); }, 700);
+    saveT.current = window.setTimeout(() => {
+      saveDiag(user, { stage3: ans }).then(() => { setSaved(true); window.setTimeout(() => setSaved(false), 1600); });
+    }, 700);
     return () => clearTimeout(saveT.current);
   }, [ans, user]);
 
@@ -58,17 +61,19 @@ export function Stage3({ prior, onClose }: { prior?: DiagRecord; onClose: () => 
     setErr(''); setBusy(true);
     const r = await authenticate(email.trim(), pass);
     setBusy(false);
-    if (r.error) setErr(r.error); else if (r.user) setUser(r.user);
+    if (r.error) { setErr(r.error); return; }
+    if (r.notice) setErr(r.notice);
+    if (r.user) setUser(r.user);
   };
-  const logout = async () => { await signOut(); setUser(null); setSec(0); };
+  const logout = async () => { await signOut(); setUser(null); setIdx(0); };
+  const cloud = isCloudUser(user);
 
   const set = (id: string, v: number | number[] | string) => setAns((a) => ({ ...a, [id]: v }));
   const toggle = (id: string, i: number) => setAns((a) => {
     const cur = (a[id] as number[]) || []; return { ...a, [id]: cur.includes(i) ? cur.filter((x) => x !== i) : [...cur, i] };
   });
 
-  const res = useMemo(() => (sec >= SECTIONS.length ? scoreStage3(ans) : null), [sec, ans]);
-  const blocksIn = (s: string) => BLOCKS.filter((b) => b.section === s);
+  const res = useMemo(() => (idx >= BLOCKS.length ? scoreStage3(ans) : null), [idx, ans]);
   const answeredCount = BLOCKS.filter((b) => { const a = ans[b.id]; return a != null && a !== '' && (!Array.isArray(a) || a.length); }).length;
 
   /* ── Auth gate ── */
@@ -156,7 +161,7 @@ export function Stage3({ prior, onClose }: { prior?: DiagRecord; onClose: () => 
           <div className="s2-rep-foot">
             <div className="s2-foot-l">
               <img src="/qr.svg" alt="QR — weexp.agency" className="s2-qr" width={72} height={72} />
-              <div className="s2-foot-c"><b>WEEXP — Система замість героїзму</b><span className="mono">weexp.agency · {MAIL}</span><span className="s2-note mono">Дані збережено у вашому кабінеті ({user.email}).</span></div>
+              <div className="s2-foot-c"><b>WEEXP — Система замість героїзму</b><span className="mono">weexp.agency · {MAIL}</span><span className="s2-note mono">{cloud ? `Дані збережено у вашому кабінеті (${user.email}).` : `Збережено локально в цьому браузері (${user.email}). Хмарний кабінет підключиться після налаштування.`}</span></div>
             </div>
             <div className="s2-foot-cta">
               <button className="sysx-cta" onClick={() => window.print()}>Завантажити PDF ↓</button>
@@ -169,53 +174,79 @@ export function Stage3({ prior, onClose }: { prior?: DiagRecord; onClose: () => 
     );
   }
 
-  /* ── Questionnaire (по секціях) ── */
-  const section = SECTIONS[sec];
-  const blocks = blocksIn(section);
-  const secPct = Math.round((sec / SECTIONS.length) * 100);
+  /* ── Questionnaire (один блок на екран — кінематографічно) ── */
+  const b = BLOCKS[idx];
+  const secOf = b.section;
+  const secIndex = (SECTIONS as readonly string[]).indexOf(secOf);
+  const progress = Math.round((idx / BLOCKS.length) * 100);
+  const val = ans[b.id];
+  const filled = val != null && val !== '' && (!Array.isArray(val) || val.length > 0);
+  const go = (n: number) => setIdx(Math.max(0, Math.min(BLOCKS.length, n)));
+  const pickSingle = (i: number) => { set(b.id, i); window.setTimeout(() => go(idx + 1), 170); };
+  const lastBlock = idx + 1 >= BLOCKS.length;
+
   return (
     <div className="s2 s3" role="dialog" aria-label="Етап 3 — питання">
       <button className="s2-x mono" onClick={onClose}>✕ Призупинити</button>
-      <div className="s3-quiz">
-        <div className="s3-quiz-head">
-          <div className="sysx-kick">Етап 3 · Tier-2 · {user.email}</div>
-          <div className="s2-bar"><i style={{ width: `${secPct}%` }} /></div>
-          <div className="s3-secnav mono">{SECTIONS.map((s, i) => <span key={s} className={i === sec ? 'on' : i < sec ? 'done' : ''}>{s}</span>)}</div>
+      <div className="s2-quiz s3-flow">
+        <div className="s2-quiz-head">
+          <div className="s3-flow-top">
+            <span className="sysx-kick">Етап 3 · Tier-2 · {secOf}</span>
+            <span className={`s3-save mono${saved ? ' on' : ''}`}>{cloud ? '☁ збережено' : '✓ збережено'}</span>
+          </div>
+          <div className="s2-bar"><i style={{ width: `${progress}%` }} /></div>
         </div>
 
-        <div className="s2-card s3-card">
-          <h2 className="sysx-display s3-sec-h">{section}</h2>
-          <span className="s3-sec-sub mono">Секція {sec + 1} / {SECTIONS.length} · відповіли {answeredCount}/{BLOCKS.length} · прогрес зберігається</span>
-          <div className="s3-blocks">
-            {blocks.map((b) => <BlockField key={b.id} b={b} value={ans[b.id]} onSet={(v) => set(b.id, v)} onToggle={(i) => toggle(b.id, i)} />)}
-          </div>
-          <div className="s3-quiz-actions">
-            {sec > 0 && <button className="s2-back mono" onClick={() => setSec(sec - 1)}>← Назад</button>}
-            <button className="s2-back mono" onClick={onClose}>Призупинити (дані збережено)</button>
-            <button className="sysx-cta is-primary" onClick={() => setSec(sec + 1)}>{sec + 1 < SECTIONS.length ? 'Далі →' : 'Показати Tier-2 звіт →'}</button>
+        <div className="s2-card s3-one" key={b.id}>
+          <div className="s2-step mono">Блок {idx + 1} / {BLOCKS.length} · секція {secIndex + 1}/{SECTIONS.length} · відповіли {answeredCount}</div>
+          <h2 className="sysx-display s2-q">{b.label}</h2>
+          {b.hint && <p className="s2-lead">{b.hint}</p>}
+
+          {b.kind === 'url' && (
+            <label className="s2-inp s3-one-inp"><span className="mono">Посилання</span>
+              <input type="url" inputMode="url" placeholder={b.placeholder || 'https://'} value={(val as string) || ''} onChange={(e) => set(b.id, e.target.value)} autoFocus />
+            </label>
+          )}
+          {b.kind === 'number' && (
+            <label className="s2-inp s3-one-inp"><span className="mono">{b.unit || 'Значення'}</span>
+              <input type="number" inputMode="decimal" placeholder="0" value={(val as string) ?? ''} onChange={(e) => set(b.id, e.target.value)} autoFocus />
+            </label>
+          )}
+          {b.kind === 'single' && (
+            <div className="s2-opts">
+              {b.options!.map((o, i) => (
+                <button key={o.label} className={`s2-opt${val === i ? ' on' : ''}`} onClick={() => pickSingle(i)}>
+                  <span className="s2-opt-mark" aria-hidden="true" />{o.label}
+                </button>
+              ))}
+            </div>
+          )}
+          {b.kind === 'multi' && (
+            <div className="s2-opts">
+              {b.options!.map((o, i) => (
+                <button key={o.label} className={`s2-opt${Array.isArray(val) && val.includes(i) ? ' on' : ''}`} onClick={() => toggle(b.id, i)}>
+                  <span className="s2-opt-mark" aria-hidden="true" />{o.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="s2-quiz-actions s3-flow-actions">
+            <span className="s3-flow-left">
+              {idx > 0 && <button className="s2-back mono" onClick={() => go(idx - 1)}>← Назад</button>}
+              <button className="s2-back mono" onClick={onClose}>Призупинити</button>
+            </span>
+            <span className="s3-flow-right">
+              {b.kind === 'single' && !lastBlock && <button className="s2-back mono" onClick={() => go(idx + 1)}>Пропустити →</button>}
+              {(b.kind !== 'single' || lastBlock) && (
+                <button className="sysx-cta is-primary" onClick={() => go(idx + 1)}>
+                  {lastBlock ? 'Показати Tier-2 звіт →' : filled ? 'Далі →' : 'Пропустити →'}
+                </button>
+              )}
+            </span>
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function BlockField({ b, value, onSet, onToggle }: { b: Block; value: Stage3Answers[string]; onSet: (v: number | string) => void; onToggle: (i: number) => void }) {
-  return (
-    <div className="s3-block">
-      <span className="s3-block-l">{b.label}{b.hint && <i className="mono"> · {b.hint}</i>}</span>
-      {b.kind === 'url' && <input className="s3-in" type="url" inputMode="url" placeholder={b.placeholder} value={(value as string) || ''} onChange={(e) => onSet(e.target.value)} />}
-      {b.kind === 'number' && <span className="s3-num"><input className="s3-in" type="number" inputMode="decimal" value={(value as string) ?? ''} onChange={(e) => onSet(e.target.value)} placeholder="0" /><i className="mono">{b.unit}</i></span>}
-      {b.kind === 'single' && (
-        <div className="s3-choices">
-          {b.options!.map((o, i) => <button key={o.label} className={`s3-choice${value === i ? ' on' : ''}`} onClick={() => onSet(i)}>{o.label}</button>)}
-        </div>
-      )}
-      {b.kind === 'multi' && (
-        <div className="s3-choices">
-          {b.options!.map((o, i) => <button key={o.label} className={`s3-choice${Array.isArray(value) && value.includes(i) ? ' on' : ''}`} onClick={() => onToggle(i)}>{o.label}</button>)}
-        </div>
-      )}
     </div>
   );
 }
