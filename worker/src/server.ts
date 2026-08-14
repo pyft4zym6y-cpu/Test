@@ -248,6 +248,16 @@ const server = createServer(async (req, res) => {
           opts.backupPdf = p;
         }
       } catch (e) { delete opts.backupFiles; delete opts.backupPdf; }
+      // Опросник, загруженный файлом (Excel/Word/PDF) через чанк-аплоуд → путь + MIME
+      // для парсера воркера (questionnaire.ts). JSON-опросник идёт инлайном в opts.answers.
+      if (opts.answersUpload && typeof opts.answersUpload.batch === 'string' && /^[a-z0-9-]{4,60}$/i.test(opts.answersUpload.batch)) {
+        try {
+          const adir = join(OUT, '_uploads', opts.answersUpload.batch);
+          const names = (await readdir(adir).catch(() => [] as string[])).filter((n) => !n.startsWith('.'));
+          if (names.length) opts.answersFile = { path: join(adir, names[0]), type: String(opts.answersUpload.type || '') };
+        } catch { /* noop */ }
+        delete opts.answersUpload;
+      }
       const client = (() => { try { return opts.prelaunch ? 'предзапуск' : new URL(opts.site).hostname.replace(/^www\./, ''); } catch { return bundleName || opts.site || clientId || '—'; } })();
       const job: Job = { id, client, tier: Number(opts.tier ?? 1), status: 'queued', startedAt: Date.now(), log: [], opts, clientId: clientId || undefined };
       jobs.set(id, job);

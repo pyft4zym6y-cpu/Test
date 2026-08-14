@@ -104,8 +104,8 @@ details>summary{cursor:pointer;color:var(--mut);font-size:13px;margin-top:4px}
       <input id="clientId" type="text" placeholder="uuid клиента (таблица clients)">
     </details>
     <details><summary>Данные для T2–T4 (Health Score и деньги)</summary>
-      <label>Ответы опросника <span class="hint">— файл .json (карта вопрос→ответ)</span></label>
-      <input id="answers" type="file" accept=".json,application/json">
+      <label>Ответы опросника <span class="hint">— .json, Excel (.xlsx/.xls), Word (.docx) или PDF; не-JSON распознаётся зрением и сверяется с каталогом вопросов</span></label>
+      <input id="answers" type="file" accept=".json,.xlsx,.xls,.docx,.pdf,application/json">
       <label>Финансовые показатели <span class="hint">— файл .json (levers + extra)</span></label>
       <input id="baseline" type="file" accept=".json,application/json">
     </details>
@@ -232,9 +232,12 @@ function uploadOneFile(batch,f,i,s,total){
 function uploadBackups(batch,s){ var files=BACKUP.slice(0,50);
   return files.reduce(function(chain,f,i){ return chain.then(function(){ return uploadOneFile(batch,f,i,s,files.length); }); }, Promise.resolve()).then(function(){return true;});
 }
+function readFileObj(file){return new Promise(function(res,rej){var r=new FileReader(); r.onload=function(){res({name:file.name,type:file.type||'',data:String(r.result||'')})}; r.onerror=function(){rej(new Error('не прочитать файл'))}; r.readAsDataURL(file);});}
 function run(){
   var s=$('run'); if(!TOK()){s.textContent='введите токен'; s.className='status err'; return;}
-  Promise.all([readJson($('answers')), readJson($('baseline'))]).then(function(a){
+  var ansInp=$('answers'); var ansFile=ansInp.files&&ansInp.files[0];
+  var ansIsJson=ansFile&&/\\.json$/i.test(ansFile.name);
+  Promise.all([ansIsJson?readJson(ansInp):Promise.resolve(null), readJson($('baseline'))]).then(function(a){
     var answers=a[0], baseline=a[1];
     if(answers&&answers.__error){s.textContent=answers.__error; s.className='status err'; return;}
     if(baseline&&baseline.__error){s.textContent=baseline.__error; s.className='status err'; return;}
@@ -249,8 +252,13 @@ function run(){
     $('go').disabled=true; s.className='status';
     // Скриншоты грузим ОТДЕЛЬНЫМИ мелкими запросами (не одним огромным телом), потом ссылаемся batch-ом.
     var batch='b'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
-    var pre=BACKUP.length?uploadBackups(batch,s):Promise.resolve(false);
-    pre.then(function(did){ if(did)body.uploadBatch=batch; s.textContent='ставлю в очередь…';
+    var pre=Promise.resolve();
+    if(BACKUP.length) pre=pre.then(function(){return uploadBackups(batch,s);}).then(function(did){ if(did)body.uploadBatch=batch; });
+    // Опросник в не-JSON формате (Excel/Word/PDF) — грузим файлом, воркер распознает.
+    if(ansFile&&!ansIsJson){ var ab='ans'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+      pre=pre.then(function(){ s.textContent='загрузка опросника…'; return readFileObj(ansFile); })
+        .then(function(f){ return uploadOneFile(ab,f,0,s,1).then(function(){ body.answersUpload={batch:ab,type:f.type||'',name:f.name}; }); }); }
+    pre.then(function(){ s.textContent='ставлю в очередь…';
       return fetch('/audit',{method:'POST',headers:hdr(),body:JSON.stringify(body)});
     }).then(function(r){return r.json()}).then(function(d){
       if(!d||!d.ok){$('go').disabled=false; s.textContent='ошибка: '+((d&&d.error)||'неизвестно'); s.className='status err'; return;}

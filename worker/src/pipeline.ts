@@ -23,6 +23,7 @@ import { reviewDesign } from './designReview.js';
 import { auditFromScreenshots, type VisionFile } from './visionAudit.js';
 import { renderPresentation } from './export/presentationHtml.js';
 import { researchTargetState } from './targetState.js';
+import { parseQuestionnaireFile } from './questionnaire.js';
 import { renderAuditHtml } from './export/htmlReport.js';
 import { renderExecDiagnostic } from './export/execDiagHtml.js';
 import { buildSeoArch } from './seoarch.js';
@@ -81,6 +82,7 @@ export type AuditOptions = {
   prelaunch?: boolean;
   brief?: string;
   answers?: Record<string, unknown> | null;
+  answersFile?: { path: string; type: string }; // опросник файлом (Excel/Word/PDF) — распознаётся воркером
   baseline?: { levers: Levers; extra?: { name: string; monthly: number }[] } | null;
   out?: string;
   backupPdf?: string;           // (устар.) один PDF — резервный контур
@@ -387,6 +389,13 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         catch (e) { log(`⚠️ PDF Конкурентный анализ A0 не собрался (${String(e).slice(0, 120)})`); }
         log(`✓ бенчмарк: индекс клиента ${bench.clientIndex}/100, место ${bench.clientRank}/${bench.totalSites}`);
       }
+    }
+
+    // Опросник файлом (Excel/Word/PDF) → распознаём в карту ответов {qid:{answer}}.
+    if (!opts.answers && opts.answersFile) {
+      log(`· опитувальник файлом (${opts.answersFile.type || 'файл'}) → розпізнаю…`);
+      const parsed = await parseQuestionnaireFile(opts.answersFile.path, opts.answersFile.type, log).catch((e) => { log(`⚠️ опитувальник не розібрано (${String(e).slice(0, 80)})`); return null; });
+      if (parsed) opts.answers = parsed;
     }
 
     let engine: EngineResult | null = null;
