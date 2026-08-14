@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { SYSTEMS } from '@/data/xray';
+import { SYSTEMS, SHORT } from '@/data/xray';
 import './system.css';
 
 const ExplorerCanvas = lazy(() => import('@/system/ExplorerCanvas').then((m) => ({ default: m.ExplorerCanvas })));
@@ -63,6 +63,14 @@ export function SystemExplorer() {
           <h2 className="sysx-display sxp-h">Клікни будь-яку<br />із <span className="sysx-em">семи систем</span>.</h2>
           <p className="sxp-lead">Категорія наблизиться, а від неї розійдуться процеси всередині. Ось як влаштована система, якою ми керуємо.</p>
           <span className="sxp-hint mono">↑ наведіть і клікніть вузол</span>
+          {/* Доступна з клавіатури альтернатива клікам по canvas (WCAG 2.1.1) */}
+          <div className="sxp-picker" role="group" aria-label="Оберіть одну із семи систем">
+            {SYSTEMS.map((s, i) => (
+              <button key={s.key} type="button" className="sxp-pick mono" onClick={() => setFocused(i)}>
+                <b>{s.num}</b> {SHORT[s.key]}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Панель сфокусованої системи */}

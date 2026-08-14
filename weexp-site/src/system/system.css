@@ -13,7 +13,7 @@
   --pure-white: #FFFFFF;   /* світло */
   --mist: #EEF0F2;         /* поверхні */
   --silver: #D9DDE1;       /* структура */
-  --graphite: #A8ADB3;     /* вторинна інформація */
+  --graphite: #7C848B;     /* вторинна інформація (контраст ≈ AA для дрібних підписів) */
   --charcoal: #3A3D42;     /* типографіка */
   --deep: #15171A;         /* cinema / глибина */
   /* — Сигнали (тільки як подія, не тло) — */
@@ -480,6 +480,12 @@
 .sxp-h { font-size: clamp(30px, 4vw, 58px); }
 .sxp-lead { font-size: clamp(14px, 1.5vw, 18px); color: var(--charcoal); line-height: 1.55; max-width: 40ch; }
 .sxp-hint { font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--graphite); }
+/* Доступний з клавіатури вибір систем (дублює клік по canvas) */
+.sxp-picker { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; pointer-events: auto; max-width: 430px; }
+.sxp-pick { font-size: 10.5px; letter-spacing: .03em; color: var(--charcoal); background: rgba(255, 255, 255, .72); border: 1px solid var(--silver); border-radius: 100px; padding: 5px 11px; cursor: pointer; transition: border-color .2s, transform .2s, color .2s; }
+.sxp-pick:hover { border-color: var(--data); color: var(--deep); transform: translateY(-1px); }
+.sxp-pick b { color: var(--data); font-weight: 700; margin-right: 3px; }
+.sxp-pick:focus-visible { outline: 2px solid var(--data); outline-offset: 2px; }
 
 /* панель сфокусованої системи */
 .sxp-panel { position: absolute; right: clamp(20px, 5vw, 64px); top: 50%; transform: translateY(-50%); z-index: 4; width: min(92vw, 400px);

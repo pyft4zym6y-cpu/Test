@@ -179,14 +179,31 @@ export function CommerceSystem3D({ progress, fixedProgress, alerts, labels }: {
       }
 
       renderer.render(scene, camera);
-      raf = requestAnimationFrame(render);
+      raf = running() ? requestAnimationFrame(render) : 0;
     };
-    raf = requestAnimationFrame(render);
+    // Пауза рендеру поза екраном / при схованій вкладці / reduced-motion — не палимо GPU дарма.
+    let visible = true, active = !document.hidden;
+    const running = () => visible && active && !reduce;
+    const pump = () => { if (running() && !raf) raf = requestAnimationFrame(render); };
+    raf = requestAnimationFrame(render); // хоча б один кадр (у т.ч. для reduced-motion)
+    const io = new IntersectionObserver((es) => { visible = es[0].isIntersecting; pump(); }, { threshold: 0 });
+    io.observe(canvas);
+    const onVis = () => { active = !document.hidden; pump(); };
+    document.addEventListener('visibilitychange', onVis);
+    const onLost = (e: Event) => { e.preventDefault(); if (raf) cancelAnimationFrame(raf); raf = 0; };
+    const onRestored = () => pump();
+    canvas.addEventListener('webglcontextlost', onLost);
+    canvas.addEventListener('webglcontextrestored', onRestored);
 
     return () => {
       cancelAnimationFrame(raf);
+      io.disconnect(); document.removeEventListener('visibilitychange', onVis);
+      canvas.removeEventListener('webglcontextlost', onLost); canvas.removeEventListener('webglcontextrestored', onRestored);
       removeEventListener('resize', resize); removeEventListener('pointermove', onMove);
-      scene.traverse((o) => { const m = o as THREE.Mesh; if (m.geometry) m.geometry.dispose(); });
+      scene.traverse((o) => {
+        const m = o as THREE.Mesh; if (m.geometry) m.geometry.dispose();
+        const mat = (m as THREE.Mesh).material; if (mat) (Array.isArray(mat) ? mat : [mat]).forEach((x) => x.dispose());
+      });
       nodeGeo.dispose(); pulseGeo.dispose(); envTex.dispose(); pmrem.dispose(); renderer.dispose();
     };
   }, [progress, fixedProgress]);
