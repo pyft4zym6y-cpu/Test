@@ -198,6 +198,74 @@
   .sysf-rail, .sysf-marker { display: none; }
 }
 
+/* ── THE EVIDENCE (proof-film, /proof) ── */
+.sysx-proof { height: 820vh; }             /* intro + 7 кейс-актів + CTA */
+
+/* Величезне число-герой ехом за активним кейсом */
+.cf-ghost {
+  position: absolute; z-index: 0; left: 50%; top: 46%; transform: translate(-50%, -50%);
+  font-size: clamp(160px, 34vw, 560px); line-height: .8; font-weight: 800;
+  color: transparent; -webkit-text-stroke: 1px rgba(58, 61, 66, .07); letter-spacing: -.05em;
+  white-space: nowrap; pointer-events: none; user-select: none;
+}
+
+/* Кейс-акт: число зліва, дельти справа */
+.cf-act {
+  position: absolute; inset: 0; z-index: 3; display: grid;
+  grid-template-columns: 1.02fr .98fr; align-items: center; gap: clamp(24px, 5vw, 80px);
+  padding: 0 clamp(24px, 7vw, 120px); pointer-events: none; will-change: opacity, transform;
+}
+.cf-act .mono { font-family: var(--mono); }
+
+.cf-hero { display: grid; justify-items: start; gap: 8px; }
+.cf-cat { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--graphite); }
+.cf-num { font-size: clamp(72px, 12vw, 190px); color: var(--deep); line-height: .82; letter-spacing: -.05em; }
+.cf-heroLabel { font-size: clamp(15px, 1.8vw, 22px); color: var(--charcoal); max-width: 22ch; line-height: 1.25; }
+.cf-window { font-size: 11px; color: var(--graphite); letter-spacing: .06em; margin-top: 2px; }
+.cf-money { margin-top: 10px; font-size: clamp(13px, 1.4vw, 16px); line-height: 1.5; color: var(--charcoal); max-width: 34ch; border-left: 2px solid var(--data); padding-left: 12px; }
+.cf-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.cf-chip { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--charcoal); border: 1px solid var(--silver); border-radius: 100px; padding: 4px 10px; background: rgba(255, 255, 255, .55); }
+
+.cf-deltas {
+  display: grid; gap: 2px; align-content: center;
+  background: color-mix(in srgb, var(--pure-white) 76%, transparent);
+  backdrop-filter: blur(9px); -webkit-backdrop-filter: blur(9px);
+  border: 1px solid var(--silver); border-radius: 16px; padding: clamp(18px, 2.4vw, 28px);
+  box-shadow: 0 30px 60px -42px rgba(21, 23, 26, .4);
+}
+.cf-deltas-h { font-size: 10px; letter-spacing: .24em; text-transform: uppercase; color: var(--graphite); margin-bottom: 10px; }
+.cf-row {
+  display: grid; grid-template-columns: minmax(96px, 1fr) auto; align-items: baseline; gap: 12px;
+  padding: 9px 0; border-top: 1px solid var(--line-soft);
+  opacity: 0; transform: translateY(8px); transition: opacity .5s var(--ease-cine), transform .5s var(--ease-cine);
+}
+.cf-act.is-live .cf-row { opacity: 1; transform: none; transition-delay: calc(var(--k) * .06s + .05s); }
+.cf-row-l { font-size: 13px; color: var(--charcoal); }
+.cf-row-v { display: inline-flex; align-items: baseline; gap: 8px; white-space: nowrap; }
+.cf-before { font-style: normal; font-size: 13px; color: var(--graphite); }
+.cf-arrow { color: var(--silver); font-size: 12px; }
+.cf-after { font-family: var(--display); font-weight: 800; font-size: clamp(16px, 1.7vw, 21px); color: var(--deep); letter-spacing: -.02em; }
+.cf-note { font-size: 10px; letter-spacing: .06em; color: var(--data); border: 1px solid var(--data-soft); border-radius: 100px; padding: 2px 7px; }
+.cf-learn { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 12px; line-height: 1.5; color: var(--charcoal); }
+.cf-learn b { color: var(--deep); letter-spacing: .04em; margin-right: 4px; }
+
+/* рейка кейсів — синій акцент (не alert) */
+.sysf-tick.cf-on b { color: var(--deep); }
+.sysf-tick.cf-on::after { background: var(--data); border-color: var(--data); }
+
+@media (max-width: 900px) {
+  .sysx-proof { height: auto; }
+  .cf-ghost, .sysx-proof .sysf-rail { display: none; }
+  .cf-act { position: static; grid-template-columns: 1fr; opacity: 1 !important; transform: none !important; padding: 40px clamp(20px, 6vw, 40px); gap: 20px; min-height: auto; margin: 30px 0; }
+  .cf-act.is-live .cf-row { transition-delay: 0s; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sysx-proof { height: auto; }
+  .cf-ghost, .sysx-proof .sysf-rail { display: none; }
+  .cf-act { position: static; grid-template-columns: 1fr; opacity: 1 !important; transform: none !important; margin: 40px auto; max-width: 900px; }
+  .cf-row { opacity: 1; transform: none; }
+}
+
 /* ── LOSS CALCULATOR ── */
 .sysx-calc { position: relative; min-height: 100vh; display: grid; grid-template-columns: 1.05fr .95fr; }
 .sysx-calc-bg { position: sticky; top: 0; height: 100vh; z-index: 0; }

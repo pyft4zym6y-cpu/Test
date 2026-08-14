@@ -22,6 +22,7 @@ const NotFound = lazy(() => import('@/pages/NotFound').then((m) => ({ default: m
 // Прев'ю нового напряму «The System in Motion» — поза темним Layout, повноекранне.
 const SystemInMotion = lazy(() => import('@/system/SystemInMotion').then((m) => ({ default: m.SystemInMotion })));
 const SystemsFilm = lazy(() => import('@/system/SystemsFilm').then((m) => ({ default: m.SystemsFilm })));
+const CasesFilm = lazy(() => import('@/system/CasesFilm').then((m) => ({ default: m.CasesFilm })));
 const LossCalculator = lazy(() => import('@/system/LossCalculator').then((m) => ({ default: m.LossCalculator })));
 
 export default function App() {
@@ -33,6 +34,7 @@ export default function App() {
           {/* Прев'ю нового cinematic-напряму (живий сайт не чіпаємо) */}
           <Route path="/system" element={<SystemInMotion />} />
           <Route path="/systems" element={<SystemsFilm />} />
+          <Route path="/proof" element={<CasesFilm />} />
           <Route path="/loss" element={<LossCalculator />} />
           <Route element={<Layout />}>
             <Route path="/" element={<Home />} />
