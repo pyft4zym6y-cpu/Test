@@ -16,6 +16,7 @@ const SystemInMotion = lazy(() => import('@/system/SystemInMotion').then((m) => 
 const SystemsFilm = lazy(() => import('@/system/SystemsFilm').then((m) => ({ default: m.SystemsFilm })));
 const CasesFilm = lazy(() => import('@/system/CasesFilm').then((m) => ({ default: m.CasesFilm })));
 const PeopleFilm = lazy(() => import('@/system/PeopleFilm').then((m) => ({ default: m.PeopleFilm })));
+const ExpansionFilm = lazy(() => import('@/system/ExpansionFilm').then((m) => ({ default: m.ExpansionFilm })));
 const DiagnoseFilm = lazy(() => import('@/system/DiagnoseFilm').then((m) => ({ default: m.DiagnoseFilm })));
 const ContactFilm = lazy(() => import('@/system/ContactFilm').then((m) => ({ default: m.ContactFilm })));
 const SystemShell = lazy(() => import('@/system/SystemShell').then((m) => ({ default: m.SystemShell })));
@@ -35,6 +36,7 @@ export default function App() {
             <Route path="/systems" element={<SystemsFilm />} />
             <Route path="/proof" element={<CasesFilm />} />
             <Route path="/people" element={<PeopleFilm />} />
+            <Route path="/expansion" element={<ExpansionFilm />} />
             <Route path="/diagnose" element={<DiagnoseFilm />} />
             <Route path="/contact" element={<ContactFilm />} />
             <Route path="/loss" element={<LossCalculator />} />

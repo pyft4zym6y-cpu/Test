@@ -4,6 +4,7 @@ import { band, seg, setLayer as set, useScrollScene } from '@/lib/scene';
 import './system.css';
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
+const PartnersStrip = lazy(() => import('@/system/PartnersStrip').then((m) => ({ default: m.PartnersStrip })));
 
 /**
  * WEEXP — THE SYSTEM IN MOTION (home-film, /system). Повна драматургія головної на
@@ -59,6 +60,7 @@ export function SystemInMotion() {
   }, []);
 
   return (
+    <>
     <section ref={sec} className="sysx sysx-film" aria-label="WEEXP — The System in Motion">
       <div className="sysx-stage">
         <span className="sysx-field" aria-hidden="true" />
@@ -116,5 +118,7 @@ export function SystemInMotion() {
         </div>
       </div>
     </section>
+    <Suspense fallback={null}><PartnersStrip /></Suspense>
+    </>
   );
 }

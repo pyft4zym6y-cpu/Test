@@ -12,6 +12,7 @@ const LINKS = [
   { to: '/', label: 'Система' },
   { to: '/systems', label: '7 систем' },
   { to: '/proof', label: 'Докази' },
+  { to: '/expansion', label: 'Експансія' },
   { to: '/people', label: 'Люди' },
   { to: '/loss', label: 'Калькулятор' },
 ];
