@@ -107,14 +107,20 @@ export function ExplorerCanvas({ focusedRef, onPick, hoverRef, subLabels }: {
       hasPtr = true;
     };
     const onMove = (e: PointerEvent) => setPtr(e);
-    const onClick = (e: PointerEvent) => {
+    // Клік — лише тап (малий зсув), щоб на мобільному вертикальний свайп-скрол
+    // не фокусував вузол. Тач-скрол дозволено через touch-action: pan-y на канвасі.
+    let downX = 0, downY = 0;
+    const onDown = (e: PointerEvent) => { downX = e.clientX; downY = e.clientY; };
+    const onUp = (e: PointerEvent) => {
+      if (Math.hypot(e.clientX - downX, e.clientY - downY) > 12) return; // свайп, а не тап
       setPtr(e);
       ndc.set(px, py); ray.setFromCamera(ndc, camera);
       const hit = ray.intersectObjects(nodeMeshes, false)[0];
       onPick(hit ? nodeMeshes.indexOf(hit.object as THREE.Mesh) : null);
     };
     canvas.addEventListener('pointermove', onMove, { passive: true });
-    canvas.addEventListener('pointerdown', onClick);
+    canvas.addEventListener('pointerdown', onDown, { passive: true });
+    canvas.addEventListener('pointerup', onUp);
 
     const resize = () => {
       const w = canvas.clientWidth || innerWidth, h = canvas.clientHeight || innerHeight;
@@ -175,8 +181,12 @@ export function ExplorerCanvas({ focusedRef, onPick, hoverRef, subLabels }: {
       linkGeo.attributes.position.needsUpdate = true;
       linkMat.opacity += ((focused !== null ? 0.15 : 0.4) - linkMat.opacity) * 0.1;
 
-      // Камера: у фокусі під'їжджаємо ближче і дивимось на вузол
-      const targetZ = focused !== null ? 8.4 : 11;
+      // Камера: дистанція, за якої кільце вміщується за будь-якого aspect
+      // (портрет-мобайл: вужчий горизонтальний FOV → відсуваємось далі).
+      const halfV = (camera.fov * Math.PI) / 360;
+      const halfH = Math.atan(Math.tan(halfV) * camera.aspect);
+      const fitZ = Math.max(11, 4.3 / Math.tan(Math.min(halfV, halfH)));
+      const targetZ = focused !== null ? fitZ * 0.78 : fitZ;
       camZ.v += (targetZ - camZ.v) * 0.06;
       camera.position.z = camZ.v;
       if (focused !== null) {
@@ -241,7 +251,7 @@ export function ExplorerCanvas({ focusedRef, onPick, hoverRef, subLabels }: {
     return () => {
       cancelAnimationFrame(raf);
       removeEventListener('resize', resize);
-      canvas.removeEventListener('pointermove', onMove); canvas.removeEventListener('pointerdown', onClick);
+      canvas.removeEventListener('pointermove', onMove); canvas.removeEventListener('pointerdown', onDown); canvas.removeEventListener('pointerup', onUp);
       scene.traverse((o) => { const m = o as THREE.Mesh; if (m.geometry) m.geometry.dispose(); });
       nodeGeo.dispose(); subGeo.dispose(); envTex.dispose(); pmrem.dispose(); renderer.dispose();
     };
