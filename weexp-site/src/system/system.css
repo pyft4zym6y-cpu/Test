@@ -143,6 +143,61 @@
   .sysx-object { position: static; height: 60vh; margin: 0 auto; }
 }
 
+/* ── THE SEVEN SYSTEMS (challenges-film, /systems) ── */
+.sysx-seven { height: 760vh; }              /* intro + 7 актів + activation */
+
+/* Плашка-експонат активної системи — знизу-зліва, об'єкт дихає праворуч */
+.sysf-panel {
+  position: absolute; left: clamp(20px, 5vw, 76px); bottom: clamp(24px, 6vh, 76px);
+  z-index: 3; width: min(92vw, 468px); pointer-events: none;
+  will-change: opacity, transform;
+}
+.sysf-panel .mono { font-family: var(--mono); }
+.sysf-ghost {
+  position: absolute; left: -6px; top: clamp(-56px, -6vh, -40px); z-index: -1;
+  font-size: clamp(90px, 15vw, 168px); font-weight: 700; line-height: .8;
+  color: transparent; -webkit-text-stroke: 1px rgba(58, 61, 66, .13); letter-spacing: -.04em;
+}
+.sysf-panel-in {
+  background: color-mix(in srgb, var(--pure-white) 80%, transparent);
+  backdrop-filter: blur(9px); -webkit-backdrop-filter: blur(9px);
+  border: 1px solid var(--silver); border-radius: 16px; padding: clamp(18px, 2.4vw, 26px);
+  display: grid; gap: 12px; box-shadow: 0 30px 60px -40px rgba(21, 23, 26, .4);
+}
+.sysf-en { font-size: 10.5px; letter-spacing: .22em; text-transform: uppercase; color: var(--graphite); }
+.sysf-title { font-size: clamp(26px, 3.4vw, 44px); color: var(--deep); line-height: .98; }
+.sysf-feel { font-size: clamp(14px, 1.5vw, 17px); color: var(--charcoal); font-style: italic; line-height: 1.45; }
+.sysf-pains { display: grid; gap: 7px; margin: 2px 0; }
+.sysf-pain { display: grid; grid-template-columns: 14px 1fr; gap: 9px; align-items: start; font-size: 13px; line-height: 1.4; color: var(--charcoal); }
+.sysf-pain i { width: 6px; height: 6px; margin-top: 6px; border-radius: 50%; background: var(--alert); box-shadow: 0 0 0 3px rgba(214, 54, 43, .14); }
+.sysf-sell { font-size: 12.5px; line-height: 1.5; color: var(--charcoal); border-top: 1px solid var(--line); padding-top: 11px; }
+.sysf-sell b { color: var(--deep); letter-spacing: .04em; margin-right: 4px; }
+
+/* Маркер, прив'язаний до активного 3D-вузла */
+.sysf-marker { position: absolute; z-index: 2; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 8px; opacity: 0; pointer-events: none; will-change: left, top, opacity; }
+.sysf-marker-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--alert); box-shadow: 0 0 0 5px rgba(214, 54, 43, .16), 0 0 14px rgba(214, 54, 43, .5); }
+.sysf-marker-num { font-size: 11px; font-weight: 600; letter-spacing: .08em; color: var(--alert); background: rgba(255, 255, 255, .78); border: 1px solid rgba(214, 54, 43, .28); border-radius: 20px; padding: 3px 8px; }
+
+/* Рейка 01..07 — праворуч */
+.sysf-rail { position: absolute; right: clamp(14px, 3vw, 40px); top: 50%; transform: translateY(-50%); z-index: 3; display: grid; gap: 12px; pointer-events: none; }
+.sysf-tick { display: grid; place-items: center; }
+.sysf-tick b { font-family: var(--mono); font-size: 10px; letter-spacing: .06em; color: var(--graphite); opacity: .5; transition: color var(--dur-fast), opacity var(--dur-fast); }
+.sysf-tick.is-on b { color: var(--alert); opacity: 1; }
+.sysf-tick::after { content: ''; display: block; width: 6px; height: 6px; margin-top: 5px; border-radius: 50%; border: 1px solid var(--silver); transition: background var(--dur-fast), border-color var(--dur-fast); }
+.sysf-tick.is-on::after { background: var(--alert); border-color: var(--alert); }
+
+@media (max-width: 860px) {
+  .sysx-seven { height: auto; }
+  .sysf-rail, .sysf-marker { display: none; }
+  .sysf-panel { position: static; width: auto; margin: 28px auto; }
+  .sysf-ghost { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sysx-seven { height: auto; }
+  .sysf-panel { position: static; opacity: 1 !important; transform: none !important; width: auto; margin: 40px auto; max-width: 560px; }
+  .sysf-rail, .sysf-marker { display: none; }
+}
+
 /* ── LOSS CALCULATOR ── */
 .sysx-calc { position: relative; min-height: 100vh; display: grid; grid-template-columns: 1.05fr .95fr; }
 .sysx-calc-bg { position: sticky; top: 0; height: 100vh; z-index: 0; }
