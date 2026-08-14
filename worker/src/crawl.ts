@@ -129,8 +129,12 @@ export type LinkHealth = {
   missingMeta: number;                        // страниц без title или description
 };
 
+// Чистый UA реального Chrome. РАНЬШЕ в конце был суффикс «weexp-audit» — это
+// прямой бот-раскрыватель: «coming soon»/WAF-фильтры отдают заглушку всему, что
+// выглядит ботом, и такой UA попадал под фильтр. Убрано, чтобы витрина отдавала
+// то же, что живому браузеру.
 const UA =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36 weexp-audit';
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
 
 /**
  * Доступ к закрытой витрине (сайт «в разработке» за bypass-кодом / preview-токеном).
