@@ -78,6 +78,12 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
   const res = useMemo(() => (idx >= BLOCKS.length ? scoreStage3(ans, money) : null), [idx, ans, money]);
   // Живий зріз — щоб 3D-район компанії «зростав», поки клієнт заповнює дані.
   const live = useMemo(() => scoreStage3(ans, money), [ans, money]);
+  // Секції кабінету — щоб клієнт стрибав у будь-яку й редагував, а не проходив лінійно.
+  const sections = useMemo(() => (SECTIONS as readonly string[]).map((name) => {
+    const idxs = BLOCKS.map((b, i) => (b.section === name ? i : -1)).filter((i) => i >= 0);
+    const answered = idxs.filter((i) => { const a = ans[BLOCKS[i].id]; return a != null && a !== '' && (!Array.isArray(a) || a.length > 0); }).length;
+    return { name, start: idxs[0] ?? 0, total: idxs.length, answered };
+  }), [ans]);
   const answeredCount = BLOCKS.filter((b) => { const a = ans[b.id]; return a != null && a !== '' && (!Array.isArray(a) || a.length); }).length;
   const moneyStr = money && money[0] > 0 ? `${eur(money[0])}–${eur(money[1])}` : '';
   // Ціль (точка Б) з першого блоку — щоб вести весь розбір саме до неї.
@@ -284,6 +290,7 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
               <div className="s2-foot-c"><b>WEEXP — Система замість героїзму</b><span className="mono">weexp.agency · {MAIL}</span><span className="s2-note mono">{cloud ? `Дані збережено у вашому кабінеті (${user.email}).` : `Збережено локально в цьому браузері (${user.email}). Хмарний кабінет підключиться після налаштування.`}</span></div>
             </div>
             <div className="s2-foot-cta">
+              <button className="sysx-cta" onClick={() => setIdx(0)}>Редагувати дані</button>
               <button className="sysx-cta" onClick={() => window.print()}>Завантажити PDF ↓</button>
               <button className="sysx-cta" onClick={logout}>Вийти</button>
             </div>
@@ -328,6 +335,17 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
             </span>
           </div>
           <div className="s2-bar"><i style={{ width: `${progress}%` }} /></div>
+          {/* Навігатор секцій — стрибай у будь-яку секцію й редагуй; праворуч — звіт. */}
+          <div className="s3-sections" role="tablist" aria-label="Секції кабінету — перейти й редагувати">
+            {sections.map((s, si) => (
+              <button key={s.name} role="tab" aria-selected={s.name === secOf}
+                className={'s3-sec-chip' + (s.name === secOf ? ' is-on' : '') + (s.total > 0 && s.answered === s.total ? ' is-done' : '')}
+                onClick={() => go(s.start)}>
+                <b className="mono">{String(si + 1).padStart(2, '0')}</b> {s.name} <i className="mono">{s.answered}/{s.total}</i>
+              </button>
+            ))}
+            <button className="s3-sec-chip s3-sec-report" role="tab" onClick={() => go(BLOCKS.length)} aria-label="Показати звіт">Звіт →</button>
+          </div>
         </div>
 
         {/* Живий 3D-район компанії — зростає з кожною відповіддю (ефект «це вже моє»). */}
