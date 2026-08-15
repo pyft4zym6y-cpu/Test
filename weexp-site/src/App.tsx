@@ -40,6 +40,7 @@ const DiagnoseFilm = lazy(() => import('@/system/DiagnoseFilm').then((m) => ({ d
 const ContactFilm = lazy(() => import('@/system/ContactFilm').then((m) => ({ default: m.ContactFilm })));
 const SystemShell = lazy(() => import('@/system/SystemShell').then((m) => ({ default: m.SystemShell })));
 const LossCalculator = lazy(() => import('@/system/LossCalculator').then((m) => ({ default: m.LossCalculator })));
+const Cabinet = lazy(() => import('@/system/Cabinet').then((m) => ({ default: m.Cabinet })));
 
 export default function App() {
   return (
@@ -53,8 +54,10 @@ export default function App() {
           <Route element={<SystemShell />}>
             <Route path="/" element={<SystemInMotion />} />
             <Route path="/system" element={<Navigate to="/" replace />} />
-            {/* /systems об'єднано з головною — розбір систем тепер скрол-етап на «/». */}
+            {/* /systems об'єднано з головною — окремої сторінки більше немає (лише
+                скрол-етап на «/»); старі посилання ведемо на якір головної. */}
             <Route path="/systems" element={<Navigate to="/#systems" replace />} />
+            <Route path="/cabinet" element={<Cabinet />} />
             <Route path="/proof" element={<CasesFilm />} />
             <Route path="/people" element={<PeopleFilm />} />
             <Route path="/expansion" element={<ExpansionFilm />} />

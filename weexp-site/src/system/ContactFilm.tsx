@@ -19,29 +19,31 @@ type Status = 'idle' | 'sending' | 'ok' | 'fallback';
 export function ContactFilm() {
   const [status, setStatus] = useState<Status>('idle');
   const [diag, setDiag] = useState('');
+  const [keepDiag, setKeepDiag] = useState(true);   // чи додавати попередній результат X-Ray
   const [fallbackUrl, setFallbackUrl] = useState('');
 
   useEffect(() => { try { setDiag(localStorage.getItem(DIAG_SUMMARY_KEY) || ''); } catch { /* ignore */ } }, []);
+  const attach = keepDiag ? diag : '';   // реально додаємо лише якщо клієнт не прибрав
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (status === 'sending') return;
     const f = new FormData(e.currentTarget);
     const payload = {
-      source: diag ? 'diagnosis' : 'contact',
+      source: attach ? 'diagnosis' : 'contact',
       name: String(f.get('name') || ''), email: String(f.get('email') || ''),
       phone: String(f.get('phone') || ''), store: String(f.get('store') || ''),
       turnover: String(f.get('turnover') || ''), comment: String(f.get('comment') || ''),
-      diag: diag || undefined, company_website: String(f.get('company_website') || ''),
+      diag: attach || undefined, company_website: String(f.get('company_website') || ''),
     };
     setStatus('sending');
     const res = await sendLead(payload);
-    track('lead_submit', { source: payload.source, result: res, has_diag: Boolean(diag) });
+    track('lead_submit', { source: payload.source, result: res, has_diag: Boolean(attach) });
     if (res === 'ok') { setStatus('ok'); return; }
     const body = [
       `Ім'я: ${payload.name}`, `Email: ${payload.email}`, `Телефон: ${payload.phone}`,
       `Магазин: ${payload.store}`, `Оборот: ${payload.turnover}`, `Коментар: ${payload.comment}`,
-      diag ? `\n— Результат діагностики —\n${diag}` : '',
+      attach ? `\n— Результат діагностики —\n${attach}` : '',
     ].filter(Boolean).join('\n');
     const url = `mailto:${MAIL}?subject=${encodeURIComponent('Запит на діагноз — WEEXP')}&body=${encodeURIComponent(body)}`;
     try { navigator.clipboard?.writeText(body); } catch { /* ignore */ }
@@ -64,16 +66,22 @@ export function ContactFilm() {
           <div className="sysx-card cf-thanks">
             <div className="sysx-kick">Заявку отримано</div>
             <h2 className="sysx-display">Дякуємо. Ми на звʼязку.</h2>
-            <p className="sysx-lead">Заявка з вашими даними{diag ? ' і результатом X-Ray' : ''} вже у нас. Повернемося протягом робочого дня з планом діагностики у грошах.</p>
+            <p className="sysx-lead">Заявка з вашими даними{attach ? ' і результатом X-Ray' : ''} вже у нас. Повернемося протягом робочого дня з планом діагностики у грошах.</p>
             <a className="sysx-cta" href={`mailto:${MAIL}`}>{MAIL}</a>
           </div>
         ) : (
           <div className="sysx-card">
-            {diag && (
+            {diag && keepDiag && (
               <div className="ctf-diag mono">
-                <span className="ctf-diag-lab">До заявки додається ваш результат X-Ray</span>
+                <div className="ctf-diag-top">
+                  <span className="ctf-diag-lab">Додаємо ваш попередній результат X-Ray</span>
+                  <button type="button" className="ctf-diag-x" onClick={() => setKeepDiag(false)} aria-label="Не додавати результат">✕ не додавати</button>
+                </div>
                 <pre className="ctf-diag-body">{diag}</pre>
               </div>
+            )}
+            {diag && !keepDiag && (
+              <button type="button" className="ctf-diag-add mono" onClick={() => setKeepDiag(true)}>+ Додати мій результат X-Ray до заявки</button>
             )}
             <form className="ctf-form" onSubmit={submit}>
               <label className="ctf-field"><span className="mono">Ім'я</span><input name="name" required autoComplete="name" /></label>
