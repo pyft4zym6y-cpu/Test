@@ -109,6 +109,19 @@ export const BLOCKS: Block[] = [
 export type Stage3Answers = Record<string, number | number[] | string | string[] | RefItem[]>;
 
 export type Reco = { key: 'audit' | 'rebuild'; title: string; reason: string; bullets: string[]; riskReversal: string; cta: string; to: string; strong: boolean };
+export type Pain = { label: string; detail: string };
+export type RoadmapItem = { title: string; detail: string };
+
+// Болі по системах — людською мовою, для блоку «ключові болі» у звіті.
+const SYS_PAIN: Record<SysKey, Pain> = {
+  strategy: { label: 'Рішення наосліп', detail: 'Немає моделі росту й управлінського циклу — гроші йдуть не туди' },
+  commercial: { label: 'Оборот є, прибутку нема', detail: 'Керуєте оборотом, а не маржею та юніт-економікою' },
+  customer: { label: 'Клієнт дорогий і разовий', detail: 'Слабкі утримання й attribution — кожен наступний дорожчає' },
+  experience: { label: 'Трафік не конвертує', detail: 'Витоки на сайті: швидкість, картка, checkout' },
+  operations: { label: 'Операції зʼїдають маржу', detail: 'Повернення й ручна робота без SLA' },
+  data: { label: 'У кожного свої цифри', detail: 'Немає наскрізної аналітики й єдиних даних' },
+  org: { label: 'Усе тримається на власнику', detail: 'Немає ролей, KPI і процесів' },
+};
 
 export type Stage3Result = {
   systems: { key: SysKey; label: string; score: number }[];
@@ -121,6 +134,8 @@ export type Stage3Result = {
   marketing: { label: string; value: string }[];
   finance: { label: string; value: string }[];
   goals: string[];
+  pains: Pain[];
+  roadmap: RoadmapItem[];
   recos: Reco[];
   answered: number; total: number;
 };
@@ -196,43 +211,11 @@ export function scoreStage3(ans: Stage3Answers, money?: [number, number]): Stage
   const goals = labelsOf('goal_b', multiIdx('goal_b'));
   const helpSel = labelsOf('help_want', multiIdx('help_want'));
   const painsSel = multiIdx('site_pain');
-  const pains = labelsOf('site_pain', painsSel);
   const auditAge = idxOf('site_audit_age');
   const siteAge = idxOf('site_age');
   const moneyStr = money && money[0] > 0 ? `${eur(money[0])}–${eur(money[1])}` : '';
 
-  // Нативні наступні кроки: клієнт має САМ побачити, що це його рішення.
-  const wantsAudit = auditAge === 0 || auditAge === 1 || helpSel.includes('Повний аудит e-commerce');
-  const audit: Reco = {
-    key: 'audit',
-    title: 'Розбір з командою WEEXP',
-    reason: moneyStr
-      ? `Покажемо, як повернути ${moneyStr} — на ваших цифрах, а не загальними порадами. ${auditAge === 0 ? 'Незалежного аудиту ще не було, тож цифру варто звірити з реальними даними.' : 'Звіримо оцінку з тим, що є в CRM / GA4.'}`
-      : `Зберемо ваш зріз у план повернення виторгу — на ваших цифрах, а не загальними порадами.`,
-    bullets: ['Звіримо оцінку з вашими CRM / GA4', 'Покажемо 3 точки, де витікає найбільше', 'Дамо перші кроки під Definition of Done'],
-    riskReversal: '30 хвилин · безкоштовно · без зобовʼязань',
-    cta: 'Забронювати безкоштовний розбір →',
-    to: '/contact',
-    strong: wantsAudit || overall < 60,
-  };
   const oldSite = siteAge === 0 || siteAge === 1;
-  const wantsSite = helpSel.includes('Новий сайт') || goals.includes('Новий сайт / платформа');
-  const rebuild: Reco = {
-    key: 'rebuild',
-    title: 'Новий сайт / платформа',
-    reason: oldSite
-      ? `Сайт капітально не оновлювали ${siteAge === 0 ? '5+ років' : '3–4 роки'} — це вже стеля для конверсії, швидкості й аналітики. Нова платформа окупається різницею в конверсії.`
-      : pains.length
-        ? `Ви позначили вузькі місця на сайті (${pains.slice(0, 3).join(', ')}) — часто дешевше й швидше побудувати нову платформу, ніж латати стару.`
-        : 'Коли системи готові, нова платформа знімає стелю росту — покажемо окупність на ваших цифрах.',
-    bullets: ['Порахуємо окупність нової платформи на вашій конверсії', 'Покажемо, що втрачає поточний сайт', 'Проєктуємо під ваш P&L, а не наосліп'],
-    riskReversal: 'Почнемо з безкоштовної оцінки — рішення за вами',
-    cta: 'Обговорити нову платформу →',
-    to: '/contact',
-    strong: oldSite || painsSel.length >= 2 || wantsSite,
-  };
-  const recos = [audit, rebuild].sort((a, b) => Number(b.strong) - Number(a.strong));
-
   const answered = BLOCKS.filter((b) => {
     const a = ans[b.id];
     if (a == null) return false;
@@ -242,5 +225,45 @@ export function scoreStage3(ans: Stage3Answers, money?: [number, number]): Stage
   }).length;
   const completeness = Math.round((answered / BLOCKS.length) * 100);
 
-  return { systems, overall, bottleneck, epiphany, completeness, competitors, likes, marketing, finance, goals, recos, answered, total: BLOCKS.length };
+  // Наступний крок 1 — розбір із командою (лишаємо). Крок 2 — Етап 4 (продовження
+  // дослідження до 100% тем і глибини 75%+). Розробку сайта НЕ продаємо в лоб —
+  // вона стає одним з векторів дорожньої карти нижче, якщо болить сайт.
+  const wantsAudit = auditAge === 0 || auditAge === 1 || helpSel.includes('Повний аудит e-commerce');
+  const audit: Reco = {
+    key: 'audit',
+    title: 'Обговорити з командою WEEXP',
+    reason: moneyStr
+      ? `Покажемо, як повернути ${moneyStr} — на ваших цифрах, а не загальними порадами.`
+      : `Зберемо ваш зріз у план повернення виторгу — на ваших цифрах, а не загальними порадами.`,
+    bullets: ['Звіримо оцінку з вашими CRM / GA4', 'Покажемо 3 точки, де витікає найбільше', 'Дамо перші кроки під Definition of Done'],
+    riskReversal: '30 хвилин · безкоштовно · без зобовʼязань',
+    cta: 'Запланувати зустріч →',
+    to: '/contact',
+    strong: true,
+  };
+  const recos = [audit];
+
+  // Ключові болі — реально з відповідей: найслабші системи + конкретні прапорці.
+  const weak = [...systems].sort((a, b) => a.score - b.score);
+  const painList: Pain[] = [];
+  const pushPain = (label: string, detail: string) => { if (!painList.some((p) => p.label === label)) painList.push({ label, detail }); };
+  weak.slice(0, 2).forEach((s) => pushPain(SYS_PAIN[s.key].label, SYS_PAIN[s.key].detail));
+  if (oldSite) pushPain('Застарілий сайт', `Платформу не оновлювали ${siteAge === 0 ? '5+ років' : '3–4 роки'} — стеля для конверсії й швидкості`);
+  else if (painsSel.length) pushPain('Вузькі місця на сайті', `Позначено: ${labelsOf('site_pain', painsSel).slice(0, 3).join(', ')}`);
+  if (idxOf('f_returns') === 0) pushPain('Високі зриви замовлень', 'Повернення/скасування понад 15% — прямий мінус до маржі');
+  if (idxOf('f_margin') === 0 || idxOf('f_unit') === 0) pushPain('Юніт-економіка не сходиться', 'Прибуток з продажу після реклами під питанням');
+  if (idxOf('m_ga4') === 0 || idxOf('m_sc') === 0) pushPain('Аналітика не працює', 'Рішення ухвалюються без наскрізних даних');
+  const painsTop = painList.slice(0, 4);
+
+  // Дорожня карта — розмиті вектори «як прийти до результату» (з болів і цілей).
+  const roadmap: RoadmapItem[] = [];
+  const pushRoad = (title: string, detail: string) => { if (!roadmap.some((r) => r.title === title)) roadmap.push({ title, detail }); };
+  pushRoad(`Фундамент: ${bottleneck.label}`, 'Закриваємо вузол, з якого витікає найбільше — далі все множиться.');
+  if (goals.includes('Нові канали й ринки')) pushRoad('Експансія в ЄС / США', 'Вихід на Allegro, Amazon і локальні майданчики — окремий бізнес-контур, а не «ще один канал».');
+  if (oldSite || painsSel.length) pushRoad('Сайт і платформа', 'Точковий аудит сайту → рішення: цільова доробка чи нова платформа. Без переробок наосліп.');
+  if (bottleneck.key === 'org' || bottleneck.key === 'customer' || idxOf('m_repeat') <= 1) pushRoad('CRM і процеси', 'Впровадження CRM, ролі й RACI, системне утримання — щоб бізнес працював без героя.');
+  if ((weak.find((s) => s.key === 'data')?.score ?? 100) < 50) pushRoad('Наскрізна аналітика', 'Єдині дані + BI: одні цифри для всіх рішень.');
+  const roadmapTop = roadmap.slice(0, 4);
+
+  return { systems, overall, bottleneck, epiphany, completeness, competitors, likes, marketing, finance, goals, pains: painsTop, roadmap: roadmapTop, recos, answered, total: BLOCKS.length };
 }
