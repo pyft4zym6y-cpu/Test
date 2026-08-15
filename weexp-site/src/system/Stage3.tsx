@@ -99,7 +99,7 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
             : (moneyStr ? <>Ми вже оцінили вашу можливість у <b>{moneyStr}/рік</b>. Кабінет доводить аналіз до Tier-2 і показує, де саме вона зосереджена — на ваших даних.</> : 'Кабінет доводить аналіз до рівня Tier-2 — на ваших даних, а не загальних порадах.')}</p>
           <ul className="s3-auth-gets">
             <li>Профіль зрілості 8 систем і головний вузол вашого бізнесу</li>
-            <li>Ваші дані з калькулятора — збережені й доступні будь-коли</li>
+            <li>Ваші дані з калькулятора — збережені й доступні будь‑коли</li>
             <li>Персональні наступні кроки під Definition of Done</li>
           </ul>
           <div className="s3-auth-form">
@@ -107,7 +107,7 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
             <label className="s2-inp"><span className="mono">Пароль</span><input type="password" autoComplete="current-password" value={pass} onChange={(e) => setPass(e.target.value)} placeholder="мінімум 6 символів" /></label>
             {err && <span className="s3-err mono">{err}</span>}
             <button className="sysx-cta is-primary" onClick={doAuth} disabled={busy || !email || pass.length < 6}>{busy ? 'Заходимо…' : (standalone ? 'Увійти / створити кабінет →' : 'Створити кабінет і продовжити →')}</button>
-            <span className="s2-note mono">Той самий email = той самий кабінет із будь-якого пристрою.{!CONFIGURED ? ' Демо-режим: дані у цьому браузері.' : ''}</span>
+            <span className="s2-note mono">Той самий email — той самий кабінет із будь‑якого пристрою.{!CONFIGURED ? ' Демо-режим: дані у цьому браузері.' : ''}</span>
           </div>
         </div>
       </div>
