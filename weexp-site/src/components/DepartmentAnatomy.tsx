@@ -21,6 +21,7 @@ const PARTS: Record<SystemKey, string[]> = {
   operations: ['Склад і WMS', 'Фулфілмент', 'Логістика', 'Постачання й закупівлі'],
   data: ['Наскрізна аналітика', 'Дашборди й звіти', 'Attribution', 'Дані та інтеграції'],
   org: ['Ролі й команда', 'SOP і процеси', 'Roadmap', 'Governance'],
+  expansion: ['Вихід у ЄС/США', 'Маркетплейси', 'Локалізація', 'Логістика'],
 };
 
 const BRAND: Layer = {

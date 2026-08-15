@@ -60,11 +60,11 @@ export function SystemExplorer() {
         {/* Заголовок / підказка */}
         <div className={'sxp-intro' + (focused !== null ? ' is-hidden' : '')}>
           <span className="sysx-kick">Досліди систему · інтерактив</span>
-          <h2 className="sysx-display sxp-h">Клікни будь-яку<br />із <span className="sysx-em">семи систем</span>.</h2>
+          <h2 className="sysx-display sxp-h">Клікни будь-яку<br />із <span className="sysx-em">восьми систем</span>.</h2>
           <p className="sxp-lead">Категорія наблизиться, а від неї розійдуться процеси всередині. Ось як влаштована система, якою ми керуємо.</p>
           <span className="sxp-hint mono">↑ наведіть і клікніть вузол</span>
           {/* Доступна з клавіатури альтернатива клікам по canvas (WCAG 2.1.1) */}
-          <div className="sxp-picker" role="group" aria-label="Оберіть одну із семи систем">
+          <div className="sxp-picker" role="group" aria-label="Оберіть одну із восьми систем">
             {SYSTEMS.map((s, i) => (
               <button key={s.key} type="button" className="sxp-pick mono" onClick={() => setFocused(i)}>
                 <b>{s.num}</b> {SHORT[s.key]}
@@ -77,7 +77,7 @@ export function SystemExplorer() {
         {sys && (
           <div className="sxp-panel">
             <button className="sxp-close mono" onClick={() => setFocused(null)} aria-label="Назад до огляду">← усі системи</button>
-            <span className="sxp-panel-en mono">{sys.en} · {sys.num}/07</span>
+            <span className="sxp-panel-en mono">{sys.en} · {sys.num}/08</span>
             <h3 className="sysx-display sxp-panel-h">{sys.title}</h3>
             <p className="sxp-panel-feel">«{sys.feel}»</p>
             <div className="sxp-flow">
@@ -86,7 +86,7 @@ export function SystemExplorer() {
               ))}
             </div>
             <p className="sxp-panel-sell"><b className="mono">Будуємо:</b> {sys.sell}</p>
-            <Link to="/systems" className="sysx-cta is-primary sxp-cta">Розібрати у «7 системах» →</Link>
+            <Link to="/systems" className="sysx-cta is-primary sxp-cta">Розібрати у «8 системах» →</Link>
           </div>
         )}
       </div>

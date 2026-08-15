@@ -9,7 +9,7 @@
  * Independence Score = зважена на автономність зрілість 0–100.
  */
 
-export type SystemKey = 'strategy' | 'commercial' | 'customer' | 'experience' | 'operations' | 'data' | 'org';
+export type SystemKey = 'strategy' | 'commercial' | 'customer' | 'experience' | 'operations' | 'data' | 'org' | 'expansion';
 
 export type System = {
   key: SystemKey;
@@ -153,6 +153,24 @@ export const SYSTEMS: System[] = [
     ],
     domains: ['Owner і RACI', 'KPI по ролях', 'SOP і база знань', 'Взаємодія підрозділів', 'Roadmap і зміни'],
   },
+  {
+    key: 'expansion', num: '08', slug: 'expansion-markets',
+    title: 'Експансія та ринки', en: 'Expansion & Markets',
+    feel: 'Наш ринок майже вичерпано, а нові — це страшно й незрозуміло.',
+    when: 'Коли ріст упирається в стелю одного ринку',
+    bigIdea: 'Новий ринок — це не «ще один канал», а окремий бізнес-контур.',
+    flow: ['Вибір ринку', 'Локалізація', 'Маркетплейси', 'Логістика', 'Юридика', 'Масштабування'],
+    sell: 'Виводимо в ЄС і США системно: власний сайт, Amazon, Allegro, eBay і локальні майданчики, логістика й податки.',
+    pains: [
+      'Продажі тримаються на одному ринку — і він вичерпується',
+      'Немає локалізованого сайту, мов і валют',
+      'Немає акаунтів і рейтингу на маркетплейсах (Amazon, Allegro)',
+      'Логістика й фулфілмент за кордон не налагоджені',
+      'Юридичні й податкові питання блокують старт',
+      'Виходили хаотично, без юніт-економіки нового ринку',
+    ],
+    domains: ['Вибір ринку', 'Локалізація', 'Маркетплейси', 'Логістика і податки'],
+  },
 ];
 
 export const systemBySlug = (slug: string) => SYSTEMS.find((s) => s.slug === slug);
@@ -161,7 +179,7 @@ export const systemByKey = (k: SystemKey) => SYSTEMS.find((s) => s.key === k)!;
 /** Короткі підписи для радара (повні заголовки не влазять на осі). */
 export const SHORT: Record<SystemKey, string> = {
   strategy: 'Стратегія', commercial: 'Комерція', customer: 'Клієнт',
-  experience: 'Досвід', operations: 'Операції', data: 'Дані', org: 'Організація',
+  experience: 'Досвід', operations: 'Операції', data: 'Дані', org: 'Організація', expansion: 'Експансія',
 };
 
 /** Питання X-Ray — по 2 на систему. answer 0..3 (Ні / Радше ні / Радше так / Так). */
@@ -181,6 +199,8 @@ export const QUESTIONS: Question[] = [
   { id: 't2', text: 'Є наскрізна аналітика й P&L по e-commerce — усі рахують метрики однаково.', system: 'data' },
   { id: 'g1', text: 'Ролі, RACI і KPI зрозумілі; за підсумковий прибуток хтось відповідає.', system: 'org' },
   { id: 'g2', text: 'Бізнес може працювати 2 тижні без щоденної участі власника (SOP, база знань).', system: 'org' },
+  { id: 'x1', text: 'Ви системно присутні більш ніж на одному ринку — не лише на своєму.', system: 'expansion' },
+  { id: 'x2', text: 'Є план виходу на нові ринки з юніт-економікою і локалізацією.', system: 'expansion' },
 ];
 
 /** Розширений набір для повної діагностики (/diagnose/full) — глибше по кожній системі. */
@@ -199,6 +219,8 @@ export const QUESTIONS_EXTRA: Question[] = [
   { id: 't4', text: 'Є регулярні дашборди й автоматичні алерти по ключових метриках.', system: 'data' },
   { id: 'g3', text: 'Є roadmap і пріоритизація за impact/effort замість «усе терміново».', system: 'org' },
   { id: 'g4', text: 'Після великих змін проводиться post-mortem; підхід hypothesis-driven.', system: 'org' },
+  { id: 'x3', text: 'Налагоджені логістика, фулфілмент і повернення для зовнішніх ринків.', system: 'expansion' },
+  { id: 'x4', text: 'Є присутність і рейтинг на релевантних маркетплейсах (Amazon, Allegro, eBay).', system: 'expansion' },
 ];
 
 export const QUESTIONS_FULL: Question[] = [...QUESTIONS, ...QUESTIONS_EXTRA];
@@ -235,7 +257,7 @@ export function scoreXray(answers: Answers, questions: Question[] = QUESTIONS): 
   const health = Math.round(systemScores.reduce((a, s) => a + s.score, 0) / systemScores.length);
 
   // Independence зважує автономність (операції/дані/організація/клієнт) сильніше.
-  const W: Record<SystemKey, number> = { strategy: 1, commercial: 1, customer: 1.1, experience: 0.9, operations: 1.3, data: 1.2, org: 1.5 };
+  const W: Record<SystemKey, number> = { strategy: 1, commercial: 1, customer: 1.1, experience: 0.9, operations: 1.3, data: 1.2, org: 1.5, expansion: 0.8 };
   const wsum = Object.values(W).reduce((a, b) => a + b, 0);
   const independence = Math.round(systemScores.reduce((a, s) => a + s.score * W[s.key], 0) / wsum);
 
@@ -258,12 +280,12 @@ export const DIAG_SUMMARY_KEY = 'weexp:diag-summary';
 export function diagnosisSummary(r: XrayResult, full: boolean): string {
   const line = (s: SystemScore) => `${systemByKey(s.key).num}·${s.title} — ${s.score}/100`;
   return [
-    `Тип: ${full ? 'Повна діагностика (28 питань)' : 'Швидкий X-Ray (14 питань)'}`,
+    `Тип: ${full ? `Повна діагностика (${QUESTIONS_FULL.length} питань)` : `Швидкий X-Ray (${QUESTIONS.length} питань)`}`,
     `Independence Score: ${r.independence}/100 — ${r.level.title}`,
     `Business Health: ${r.health}/100`,
     `Головний bottleneck: ${line(r.bottleneck)}`,
     `Три найслабші системи: ${r.gaps.map(line).join('; ')}`,
     `Оцінена можливість: ${opportunityLabel(r.independence)}`,
-    `Профіль 7 систем: ${r.systemScores.map((s) => `${systemByKey(s.key).num}:${s.score}`).join(' · ')}`,
+    `Профіль ${SYSTEMS.length} систем: ${r.systemScores.map((s) => `${systemByKey(s.key).num}:${s.score}`).join(' · ')}`,
   ].join('\n');
 }

@@ -57,6 +57,11 @@ export const QUESTIONS: Q[] = [
     options: [{ label: 'Усе на власнику', score: 0 }, { label: 'Кілька людей, ролі розмиті', score: 1 }, { label: 'Є ролі, немає KPI', score: 1.7 }, { label: 'Ролі + KPI, місцями конфліктні', score: 2.3 }, { label: 'Ролі + RACI + KPI', score: 3 }, { label: 'Працюємо з підрядниками', score: 1.4 }] },
   { id: 'g2', system: 'org', text: 'Бізнес без вас 2 тижні:', kind: 'single',
     options: [{ label: 'Зупиниться', score: 0 }, { label: 'Помітно просяде', score: 1 }, { label: 'Протримається на автопілоті', score: 1.8 }, { label: 'Втримається без втрат', score: 2.4 }, { label: 'Працюватиме й зростатиме', score: 3 }, { label: 'Не перевіряли', score: 1 }] },
+  // Експансія (8-а система)
+  { id: 'x1', system: 'expansion', text: 'Ви продаєте лише на одному ринку — чи виходите за його межі?', kind: 'single',
+    options: [{ label: 'Лише один ринок, і не думали про інші', score: 0 }, { label: 'Хочемо, але не знаємо як', score: 0.8 }, { label: 'Пробували, без системи', score: 1.5 }, { label: 'Є продажі на маркетплейсах ЄС/США', score: 2.2 }, { label: 'Системна присутність на кількох ринках', score: 3 }, { label: 'Нам вистачає свого ринку', score: 1.5 }] },
+  { id: 'x2', system: 'expansion', text: 'Що готове до виходу на нові ринки? (оберіть усе)', kind: 'multi',
+    options: [{ label: 'Локалізований сайт / мова', score: 0.7 }, { label: 'Логістика й фулфілмент за кордон', score: 0.7 }, { label: 'Акаунти на маркетплейсах', score: 0.7 }, { label: 'Юридично / податки', score: 0.7 }, { label: 'Нічого з цього', score: 0 }] },
 ];
 
 export type Stage2Answers = Record<string, number | number[]>;
@@ -69,9 +74,10 @@ const ACTION: Record<SysKey, string> = {
   operations: 'Поставити SLA обробки, викуп/доставку й контроль повернень.',
   data: 'Наскрізна аналітика + єдиний master data: одні цифри для всіх рішень.',
   org: 'Операційна модель: ролі, RACI, KPI, SOP — щоб бізнес працював без героя.',
+  expansion: 'Вихід у нові ринки як окремий контур: ЄС/США, маркетплейси, локалізація.',
 };
 
-const W: Record<SysKey, number> = { strategy: 1, commercial: 1, customer: 1.1, experience: 0.9, operations: 1.3, data: 1.2, org: 1.5 };
+const W: Record<SysKey, number> = { strategy: 1, commercial: 1, customer: 1.1, experience: 0.9, operations: 1.3, data: 1.2, org: 1.5, expansion: 0.8 };
 
 export type SysMaturity = { key: SysKey; label: string; score: number };
 export type Stage2Level = { min: number; code: string; title: string; line: string };

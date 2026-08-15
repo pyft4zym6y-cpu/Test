@@ -26,7 +26,7 @@ export type Block = {
 export type RefItem = { url: string; what: number[] };
 
 export const SECTIONS = [
-  'Ваша ціль', 'Конкурентне поле', 'Орієнтири', 'Маркетинг та аналітика', 'Фінанси', 'Позиціонування і бренд', 'Сайт і технології', 'Команда і процеси',
+  'Ваша ціль', 'Конкурентне поле', 'Орієнтири', 'Маркетинг та аналітика', 'Фінанси', 'Позиціонування і бренд', 'Сайт і технології', 'Ринки та експансія', 'Команда і процеси',
 ] as const;
 
 export const LIKE_WHAT = [
@@ -97,7 +97,15 @@ export const BLOCKS: Block[] = [
   { id: 'site_pain', section: 'Сайт і технології', label: 'Що на сайті найбільше стримує продажі? (оберіть усе)', kind: 'multi',
     options: [{ label: 'Швидкість' }, { label: 'Мобільна версія' }, { label: 'Checkout / кошик' }, { label: 'Каталог і пошук' }, { label: 'Картка / контент' }, { label: 'Інтеграції й дані' }, { label: 'Застарілий дизайн' }] },
 
-  // 7 — Команда і процеси (+ намір: з чим потрібна команда)
+  // 7 — Ринки та експансія (8-а система)
+  { id: 'x_markets', section: 'Ринки та експансія', label: 'На скількох ринках ви зараз продаєте?', kind: 'single', system: 'expansion',
+    options: [{ label: 'Один — і не думали про інші', score: 0 }, { label: 'Один + маркетплейси', score: 1.2 }, { label: 'Пробували інші, без системи', score: 1.6 }, { label: '2–3 ринки системно', score: 2.3 }, { label: 'Багато ринків, налагоджено', score: 3 }, { label: 'Нам вистачає свого ринку', score: 1.5 }] },
+  { id: 'x_intent', section: 'Ринки та експансія', label: 'Наскільки серйозно дивитесь на вихід у ЄС / США?', kind: 'single', system: 'expansion',
+    options: [{ label: 'Не розглядаємо', score: 3 }, { label: 'Цікаво, але страшно / незрозуміло', score: 0.5 }, { label: 'Плануємо в найближчий рік', score: 1.5 }, { label: 'Уже готуємось', score: 2.2 }, { label: 'Уже там продаємо', score: 3 }] },
+  { id: 'x_ready', section: 'Ринки та експансія', label: 'Що вже готове до виходу на нові ринки? (оберіть усе)', kind: 'multi',
+    options: [{ label: 'Локалізований сайт / мова' }, { label: 'Логістика й фулфілмент за кордон' }, { label: 'Акаунти на маркетплейсах (Amazon, Allegro…)' }, { label: 'Юридично / податки' }, { label: 'Локальний маркетинг' }, { label: 'Нічого з цього' }] },
+
+  // 8 — Команда і процеси (+ намір: з чим потрібна команда)
   { id: 'o_owner', section: 'Команда і процеси', label: 'Хто відповідає за прибуток e-commerce?', kind: 'single', system: 'org',
     options: [{ label: 'Ніхто конкретно', score: 0 }, { label: 'Власник', score: 1 }, { label: 'Керівник напряму', score: 2 }, { label: 'Роль + KPI по прибутку', score: 3 }] },
   { id: 'o_sop', section: 'Команда і процеси', label: 'Наскільки бізнес працює без вас (процеси, SOP)?', kind: 'single', system: 'org',
@@ -121,6 +129,7 @@ const SYS_PAIN: Record<SysKey, Pain> = {
   operations: { label: 'Операції зʼїдають маржу', detail: 'Повернення й ручна робота без SLA' },
   data: { label: 'У кожного свої цифри', detail: 'Немає наскрізної аналітики й єдиних даних' },
   org: { label: 'Усе тримається на власнику', detail: 'Немає ролей, KPI і процесів' },
+  expansion: { label: 'Уперлися в стелю ринку', detail: 'Один ринок вичерпується, нові — не відкриті системно' },
 };
 
 export type Stage3Result = {
@@ -140,7 +149,7 @@ export type Stage3Result = {
   answered: number; total: number;
 };
 
-const W: Record<SysKey, number> = { strategy: 1, commercial: 1, customer: 1.1, experience: 0.9, operations: 1.3, data: 1.2, org: 1.5 };
+const W: Record<SysKey, number> = { strategy: 1, commercial: 1, customer: 1.1, experience: 0.9, operations: 1.3, data: 1.2, org: 1.5, expansion: 0.8 };
 const byId = (id: string) => BLOCKS.find((b) => b.id === id);
 const scoreOf = (b: Block, a: Stage3Answers[string]): number | null => {
   if (b.kind === 'single' && b.options) return typeof a === 'number' ? (b.options[a]?.score ?? 0) : null;
@@ -158,6 +167,7 @@ const EPIPHANY: Record<SysKey, { surface: string; consequence: string }> = {
   operations: { surface: 'це просто дрібні збої', consequence: 'повернення й ручна робота тихо з’їдають маржу' },
   data: { surface: 'потрібні нові інструменти', consequence: 'у кожного свої цифри, а рішення — інтуїтивні' },
   org: { surface: 'треба просто більше працювати', consequence: 'усе тримається на власнику й не масштабується' },
+  expansion: { surface: 'ринок майже вичерпано', consequence: 'ріст упирається в стелю, а нові ринки не відкриті' },
 };
 
 export function scoreStage3(ans: Stage3Answers, money?: [number, number]): Stage3Result {

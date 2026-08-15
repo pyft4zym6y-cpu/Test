@@ -9,7 +9,7 @@ import * as THREE from 'three';
  * кераміка/матовий алюміній під м'яким студійним світлом (env через PMREM).
  * Свідомо світле полотно (alpha), без темного/verdigris.
  */
-const NODE_TINT = [0xffffff, 0xd9dde1, 0xffffff, 0xd9dde1, 0xffffff, 0xd9dde1, 0xffffff];
+const NODE_TINT = [0xffffff, 0xd9dde1, 0xffffff, 0xd9dde1, 0xffffff, 0xd9dde1, 0xffffff, 0xd9dde1];
 
 /**
  * progress — скрол-керований прогрес (для фільму головної). fixedProgress —
@@ -27,7 +27,7 @@ export function CommerceSystem3D({ progress, fixedProgress, alerts, labels }: {
   useEffect(() => {
     const canvas = ref.current; if (!canvas) return;
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const N = 7;
+    const N = 8;
 
     let renderer: THREE.WebGLRenderer;
     try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' }); }

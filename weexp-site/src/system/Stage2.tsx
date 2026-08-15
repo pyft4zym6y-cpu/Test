@@ -71,11 +71,11 @@ export function Stage2({ stage1, stage1Result, onClose }: { stage1: LossInput; s
           {phase === 'url' && (
             <div className="s2-card s2-url">
               <h2 className="sysx-display s2-q">Почнімо з вашого сайту</h2>
-              <p className="s2-lead">Далі — 18 коротких питань. Майже все — вибір варіанта, вписувати руками нічого не треба.</p>
+              <p className="s2-lead">Далі — {QUESTIONS.length} коротких питань. Майже все — вибір варіанта, вписувати руками нічого не треба.</p>
               <label className="s2-inp"><span className="mono">Посилання на сайт</span>
                 <input type="url" inputMode="url" placeholder="https://" value={site} onChange={(e) => setSite(e.target.value)} />
               </label>
-              <button className="sysx-cta is-primary" onClick={() => setPhase('quiz')}>Почати 18 питань →</button>
+              <button className="sysx-cta is-primary" onClick={() => setPhase('quiz')}>Почати {QUESTIONS.length} питань →</button>
             </div>
           )}
 
@@ -110,7 +110,7 @@ export function Stage2({ stage1, stage1Result, onClose }: { stage1: LossInput; s
           <div className="s2-grid">
             {/* Радар 7 систем — інтерактивний, синхронізований із барами */}
             <div className="s2-panel s2-radar-wrap">
-              <span className="sysx-kick">7 систем — профіль зрілості</span>
+              <span className="sysx-kick">8 систем — профіль зрілості</span>
               <RadarChart systems={res.systems} hover={hover} onHover={setHover} />
               <span className="s2-hint mono">Наведіть на систему — підсвітиться скрізь</span>
             </div>
