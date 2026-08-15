@@ -89,7 +89,7 @@ export function PeopleFilm() {
           <div className="pf-standard-head">
             <span className="sysx-kick">Стандарт · 3-й рівень</span>
             <h2 className="sysx-display pf-standard-h">Команда працює<br />як <span className="sysx-em">система</span>.</h2>
-            <p className="pf-standard-lead">Власники — це рівень «хто». Ось рівень «як»: правила, за якими сім систем тримаються разом і працюють без героя.</p>
+            <p className="pf-standard-lead">Власники — це рівень «хто». Ось рівень «як»: правила, за якими вісім систем тримаються разом і працюють без героя.</p>
           </div>
           <ol className="pf-std-grid">
             {STANDARD.map((s) => (
