@@ -178,7 +178,8 @@
 .sysh-cta { flex: 0 0 auto; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #fff; background: var(--sh-deep); border-radius: 100px; padding: 10px 18px; text-decoration: none; transition: transform .25s, box-shadow .25s; box-shadow: 0 10px 30px -18px rgba(21,23,26,.5); }
 .sysh-cta:hover { transform: translateY(-1px); box-shadow: 0 16px 40px -18px rgba(21,23,26,.65); }
 
-/* Мобільна навігація: бургер + нижній таб-бар + оверлей-меню (десктоп — сховані) */
+/* Мобільна навігація: бургер + нижній таб-бар + оверлей-меню (десктоп — сховані).
+   build-marker: mobile-nav + live-object (redeploy nudge) */
 .sysh-burger { display: none; background: none; border: 0; color: var(--sh-charcoal); padding: 6px; cursor: pointer; }
 .sysh-burger svg { width: 26px; height: 26px; display: block; }
 .sysh-tabs, .sysh-sheet { display: none; }
