@@ -61,9 +61,9 @@ export function BusinessXray({ questions = QUESTIONS, storageKey, full = false }
     return (
       <div className="xray xray--intro">
         <div className="xray-badge mono">{full ? 'Повна діагностика · результат зберігається' : 'Безкоштовний інструмент'}</div>
-        <h2 className="xray-title">{full ? <>Повна діагностика<br />системи онлайн-продажів</> : <>Знайдіть головний<br />bottleneck вашого бізнесу</>}</h2>
-        <p className="xray-lead">{questions.length} тверджень · {full ? '5 хвилин' : '2 хвилини'}. Отримаєте Business Health по 8 системах,
-          Independence Score і вузьке місце, що тримає прибуток{full ? '. Результат зберігається у браузері.' : ' — без реєстрації.'}</p>
+        <h2 className="xray-title">{full ? <>Повна діагностика<br />системи онлайн-продажів</> : <>Знайдіть головне <br />вузьке місце вашого бізнесу</>}</h2>
+        <p className="xray-lead">{questions.length} тверджень · {full ? '5 хвилин' : '2 хвилини'}. Отримаєте <b>Business Health</b> (здоров’я бізнесу) по 8 системах,
+          <b> Independence Score</b> (індекс незалежності) і вузьке місце, що тримає прибуток{full ? '. Результат зберігається у браузері.' : ' — без реєстрації.'}</p>
         <button className="btn-primary mono" onClick={() => { setPhase('quiz'); setStep(0); track('xray_start', { mode: full ? 'full' : 'quick' }); }}>
           {full ? 'Почати повну діагностику →' : 'Почати X-Ray →'}
         </button>

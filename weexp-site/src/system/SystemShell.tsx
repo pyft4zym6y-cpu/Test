@@ -40,19 +40,26 @@ const TABS = [
 
 export function SystemShell() {
   const nav = useRef<HTMLElement>(null);
+  const sentinel = useRef<HTMLSpanElement>(null);
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
 
+  // Тінь шапки — через IntersectionObserver на верхньому сентінелі (без scroll-лісенера).
   useEffect(() => {
-    const onScroll = () => nav.current?.classList.toggle('is-solid', scrollY > 12);
-    onScroll(); addEventListener('scroll', onScroll, { passive: true });
-    return () => removeEventListener('scroll', onScroll);
+    const el = sentinel.current; if (!el) return;
+    const io = new IntersectionObserver(
+      ([e]) => nav.current?.classList.toggle('is-solid', !e.isIntersecting),
+      { rootMargin: '-12px 0px 0px 0px', threshold: 0 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
   }, []);
   useEffect(() => { setOpen(false); }, [pathname]);   // закриваємо меню при переході
   const isActive = (to: string) => (to === '/' ? pathname === '/' : pathname.startsWith(to));
 
   return (
     <div className="sysh">
+      <span ref={sentinel} className="sysh-sentinel" aria-hidden="true" />
       <header ref={nav} className="sysh-nav">
         <Link to="/" className="sysh-brand"><b>WEEXP</b><span className="mono">system</span></Link>
         <nav className="sysh-links">

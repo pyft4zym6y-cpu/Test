@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { eur } from './lossModel';
 import { BLOCKS, SECTIONS, LIKE_WHAT, scoreStage3, type Stage3Answers, type RefItem } from './stage3Model';
 import { levelFor } from './stage2Model';
-import { RadarChart, SystemBars } from './charts';
+import { RadarChart, SystemBars, HW } from './charts';
 
 // Важкий three.js-район — ліниво, щоб форма входу відкривалась миттєво.
 const CompanyWorld = lazy(() => import('@/system/CompanyWorld').then((m) => ({ default: m.CompanyWorld })));
@@ -154,6 +154,12 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
                 <span><i className="cw-dot bad" />слабка (&lt;40)</span>
               </div>
               <div className="cw-fill mono"><span>Заповнено даних</span><div className="cw-fill-tr"><i style={{ width: `${res.completeness}%` }} /></div><b>{res.completeness}%</b></div>
+              {/* Ключ до веж: порядок = розташування веж у районі (за годинниковою) */}
+              <ul className="cw-systems">
+                {res.systems.map((s, i) => (
+                  <li key={s.key}><span className="cw-sys-n mono">{String(i + 1).padStart(2, '0')}</span><i className={`cw-dot ${HW(s.score)}`} /><span className="cw-sys-l">{s.label.split(/\s|\//)[0]}</span><b className="mono">{s.score}</b></li>
+                ))}
+              </ul>
             </div>
             <div className="cw-stage">
               <Suspense fallback={<div className="cw-load mono">Збираємо ваш район…</div>}>
