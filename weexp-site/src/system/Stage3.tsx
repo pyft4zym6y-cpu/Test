@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BLOCKS, SECTIONS, scoreStage3, type Stage3Answers } from './stage3Model';
+import { BLOCKS, SECTIONS, LIKE_WHAT, scoreStage3, type Stage3Answers, type RefItem } from './stage3Model';
 import { levelFor } from './stage2Model';
 import { RadarChart, SystemBars } from './charts';
 import { CONFIGURED, authenticate, currentUser, isCloudUser, loadDiag, saveDiag, signOut, type DiagUser, type DiagRecord } from '@/lib/supa';
@@ -59,7 +59,7 @@ export function Stage3({ prior, onClose }: { prior?: DiagRecord; onClose: () => 
   const logout = async () => { await signOut(); setUser(null); setIdx(0); };
   const cloud = isCloudUser(user);
 
-  const set = (id: string, v: number | number[] | string) => setAns((a) => ({ ...a, [id]: v }));
+  const set = (id: string, v: Stage3Answers[string]) => setAns((a) => ({ ...a, [id]: v }));
   const toggle = (id: string, i: number) => setAns((a) => {
     const cur = (a[id] as number[]) || []; return { ...a, [id]: cur.includes(i) ? cur.filter((x) => x !== i) : [...cur, i] };
   });
@@ -135,6 +135,22 @@ export function Stage3({ prior, onClose }: { prior?: DiagRecord; onClose: () => 
           <div className="s2-panel s3-verdict">
             <span className="sysx-kick">Головний висновок</span>
             <p><b>{res.bottleneck.label}</b> — найслабша ланка ({res.bottleneck.score}/100). Це точка, з якої почнеться Tier-2-побудова: разом із вашими маркетинговими й фінансовими даними та конкурентним полем ми зведемо це в план під Definition of Done.</p>
+            {res.goals.length > 0 && (
+              <div className="s3-goals"><span className="s3-sub">Ваша точка Б</span><div className="s3-goal-chips">{res.goals.map((g) => <span key={g} className="s3-goal-chip">{g}</span>)}</div></div>
+            )}
+          </div>
+
+          {/* Нативні наступні кроки: повний аудит командою + нова платформа */}
+          <div className="s3-recos">
+            {res.recos.map((r) => (
+              <div key={r.key} className={`s2-panel s3-reco${r.strong ? ' strong' : ''}`}>
+                {r.strong && <span className="s3-reco-tag mono">Рекомендовано вам</span>}
+                <span className="sysx-kick">{r.key === 'audit' ? 'Наступний крок' : 'Коли готові рости далі'}</span>
+                <b className="sysx-display s3-reco-h">{r.title}</b>
+                <p className="s3-reco-p">{r.reason}</p>
+                <Link to={r.to} className={`sysx-cta${r.strong ? ' is-primary' : ''}`}>{r.cta}</Link>
+              </div>
+            ))}
           </div>
 
           <div className="s2-rep-foot">
@@ -144,7 +160,6 @@ export function Stage3({ prior, onClose }: { prior?: DiagRecord; onClose: () => 
             </div>
             <div className="s2-foot-cta">
               <button className="sysx-cta" onClick={() => window.print()}>Завантажити PDF ↓</button>
-              <Link to="/contact" className="sysx-cta is-primary">Записатися на розбір Tier-2 →</Link>
               <button className="sysx-cta" onClick={logout}>Вийти</button>
             </div>
           </div>
@@ -159,10 +174,19 @@ export function Stage3({ prior, onClose }: { prior?: DiagRecord; onClose: () => 
   const secIndex = (SECTIONS as readonly string[]).indexOf(secOf);
   const progress = Math.round((idx / BLOCKS.length) * 100);
   const val = ans[b.id];
-  const filled = val != null && val !== '' && (!Array.isArray(val) || val.length > 0);
+  const urls: string[] = b.kind === 'urllist' ? (Array.isArray(val) ? (val as string[]) : ['']) : [];
+  const refs: RefItem[] = b.kind === 'refs' ? (Array.isArray(val) && val.length ? (val as RefItem[]) : [{ url: '', what: [] }]) : [];
+  const filled =
+    b.kind === 'urllist' ? urls.some((u) => u && u.trim())
+    : b.kind === 'refs' ? refs.some((r) => r.url && r.url.trim())
+    : val != null && val !== '' && (!Array.isArray(val) || val.length > 0);
   const go = (n: number) => setIdx(Math.max(0, Math.min(BLOCKS.length, n)));
   const pickSingle = (i: number) => { set(b.id, i); window.setTimeout(() => go(idx + 1), 170); };
   const lastBlock = idx + 1 >= BLOCKS.length;
+
+  // Динамічні списки: конкуренти (urllist) і сайти-орієнтири (refs).
+  const setUrls = (next: string[]) => set(b.id, next.length ? next : ['']);
+  const setRefs = (next: RefItem[]) => set(b.id, (next.length ? next : [{ url: '', what: [] }]) as unknown as string[]);
 
   return (
     <div className="s2 s3" role="dialog" aria-label="Етап 3 — питання">
@@ -203,10 +227,56 @@ export function Stage3({ prior, onClose }: { prior?: DiagRecord; onClose: () => 
           {b.kind === 'multi' && (
             <div className="s2-opts">
               {b.options!.map((o, i) => (
-                <button key={o.label} className={`s2-opt${Array.isArray(val) && val.includes(i) ? ' on' : ''}`} onClick={() => toggle(b.id, i)}>
+                <button key={o.label} className={`s2-opt${Array.isArray(val) && (val as number[]).includes(i) ? ' on' : ''}`} onClick={() => toggle(b.id, i)}>
                   <span className="s2-opt-mark" aria-hidden="true" />{o.label}
                 </button>
               ))}
+            </div>
+          )}
+
+          {b.kind === 'urllist' && (
+            <div className="s3-list-in">
+              {urls.map((u, i) => (
+                <div key={i} className="s3-row">
+                  <input type="url" inputMode="url" placeholder={b.placeholder || 'https://'} value={u}
+                    autoFocus={i === urls.length - 1}
+                    onChange={(e) => setUrls(urls.map((x, j) => (j === i ? e.target.value : x)))} />
+                  {urls.length > 1 && <button className="s3-del" aria-label="Прибрати" onClick={() => setUrls(urls.filter((_, j) => j !== i))}>✕</button>}
+                </div>
+              ))}
+              <button className="s3-add" onClick={() => setUrls([...urls, ''])}>{b.addLabel || '+ Додати ще'}</button>
+            </div>
+          )}
+
+          {b.kind === 'refs' && (
+            <div className="s3-refs">
+              {refs.map((r, i) => (
+                <div key={i} className="s3-ref">
+                  <div className="s3-row">
+                    <input type="url" inputMode="url" placeholder="https://" value={r.url}
+                      autoFocus={i === refs.length - 1}
+                      onChange={(e) => setRefs(refs.map((x, j) => (j === i ? { ...x, url: e.target.value } : x)))} />
+                    {refs.length > 1 && <button className="s3-del" aria-label="Прибрати" onClick={() => setRefs(refs.filter((_, j) => j !== i))}>✕</button>}
+                  </div>
+                  <div className="s3-ref-what">
+                    <span className="s3-ref-lab mono">Що саме подобається?</span>
+                    <div className="s2-opts s3-chips">
+                      {LIKE_WHAT.map((o, k) => {
+                        const on = (r.what || []).includes(k);
+                        return (
+                          <button key={o.label} className={`s2-opt s2-opt-chip${on ? ' on' : ''}`}
+                            onClick={() => setRefs(refs.map((x, j) => j === i
+                              ? { ...x, what: on ? (x.what || []).filter((w) => w !== k) : [...(x.what || []), k] }
+                              : x))}>
+                            <span className="s2-opt-mark" aria-hidden="true" />{o.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <button className="s3-add" onClick={() => setRefs([...refs, { url: '', what: [] }])}>{b.addLabel || '+ Ще сайт'}</button>
             </div>
           )}
 
