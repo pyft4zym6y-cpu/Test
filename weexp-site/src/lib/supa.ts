@@ -28,6 +28,7 @@ export const isCloudUser = (u: DiagUser | null): boolean => !!u && !u.id.startsW
 export type DiagRecord = {
   site?: string;
   stage1?: unknown;
+  stage1Money?: [number, number];   // діапазон можливості з Етапу 1 (€) — якір для Етапу 3
   stage2?: unknown;
   stage2Result?: unknown;
   stage3?: Record<string, unknown>;

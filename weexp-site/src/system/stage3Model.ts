@@ -1,13 +1,13 @@
 /**
  * Калькулятор · Етап 3 (Tier-2) — кабінет кваліфікації ліда. Клієнт реєструється й
- * «занурює» нас у бізнес: конкуренти (динамічні рядки + додати), сайти-орієнтири
- * (рядок + що саме подобається), і нативна діагностика за показниками GA4 / Search
- * Console / фінансів / команди + точка Б. Питання не в лоб («введи X»), а через
- * вибір/чекбокси. Мета — нативно підвести до (1) повного аудиту командою WEEXP і
- * (2) розробки нового сайту, через питання-вигоди. На виході — Tier-2 звіт із
- * рекомендаціями під Definition of Done.
+ * «занурює» нас у бізнес: спершу — його ціль (точка Б), далі конкуренти (динамічні
+ * рядки), сайти-орієнтири (рядок + що подобається) і нативна діагностика за
+ * показниками GA4 / Search Console / фінансів / команди. Питання не в лоб, а через
+ * вибір. Мета — щоб клієнт САМ побачив вузол і дійшов, що йому потрібні (1) повний
+ * розбір командою WEEXP і (2) нова платформа. На виході — Tier-2 звіт з епіфанією
+ * (де насправді корінь) і персональними наступними кроками під Definition of Done.
  */
-import { SYS, type SysKey } from './lossModel';
+import { SYS, eur, type SysKey } from './lossModel';
 
 export type BlockKind = 'single' | 'multi' | 'number' | 'url' | 'urllist' | 'refs';
 export type Block = {
@@ -15,28 +15,32 @@ export type Block = {
   section: string;
   label: string;
   kind: BlockKind;
-  system?: SysKey;           // до якої з 7 систем відносити для зрілості
+  system?: SysKey;
   options?: { label: string; score?: number }[];
   unit?: string;
   placeholder?: string;
   hint?: string;
-  addLabel?: string;         // текст кнопки «+ додати» для urllist/refs
+  addLabel?: string;
 };
 
 export type RefItem = { url: string; what: number[] };
 
 export const SECTIONS = [
-  'Конкурентне поле', 'Орієнтири', 'Маркетинг та аналітика', 'Фінанси', 'Позиціонування і бренд', 'Сайт і технології', 'Команда і точка Б',
+  'Ваша ціль', 'Конкурентне поле', 'Орієнтири', 'Маркетинг та аналітика', 'Фінанси', 'Позиціонування і бренд', 'Сайт і технології', 'Команда і процеси',
 ] as const;
 
-// Що саме подобається в сайті-орієнтирі (для блоку refs).
 export const LIKE_WHAT = [
   { label: 'Візуал / дизайн' }, { label: 'Логіка / UX' }, { label: 'Швидкість і плавність' },
   { label: 'Контент / картка товару' }, { label: 'Асортимент / пропозиція' }, { label: 'Довіра / бренд' },
 ];
 
 export const BLOCKS: Block[] = [
-  // 1 — Конкурентне поле (динамічні рядки, «+ додати ще»)
+  // 0 — Ваша ціль (точка Б перша: емоційний якір, з якого починається весь шлях)
+  { id: 'goal_b', section: 'Ваша ціль', label: 'Куди ви хочете прийти за 12 місяців?', kind: 'multi',
+    hint: 'Оберіть усе, що відгукується. Далі весь розбір ведемо саме до цього.',
+    options: [{ label: 'Кратний ріст виторгу' }, { label: 'Вища маржа і прибуток' }, { label: 'Незалежність від власника' }, { label: 'Новий сайт / платформа' }, { label: 'Нові канали й ринки' }, { label: 'Системна аналітика і контроль' }] },
+
+  // 1 — Конкурентне поле (динамічні рядки)
   { id: 'comp_direct', section: 'Конкурентне поле', kind: 'urllist', placeholder: 'https://',
     label: 'Хто ваші прямі конкуренти?', hint: 'Ті, хто продає те саме. Один рядок — один сайт, додайте скільки треба.', addLabel: '+ Ще конкурент' },
   { id: 'comp_indirect', section: 'Конкурентне поле', kind: 'urllist', placeholder: 'https://',
@@ -44,7 +48,7 @@ export const BLOCKS: Block[] = [
   { id: 'cpos', section: 'Конкурентне поле', label: 'Як ви почуваєтесь поруч із ними?', kind: 'single', system: 'strategy',
     options: [{ label: 'Слабші майже в усьому', score: 0 }, { label: 'Схожі, без явної переваги', score: 1 }, { label: 'Є 1–2 сильні сторони', score: 2 }, { label: 'Маємо чітку різницю', score: 3 }] },
 
-  // 2 — Орієнтири (сайт + що саме подобається, «+ додати сайт»)
+  // 2 — Орієнтири
   { id: 'refs', section: 'Орієнтири', kind: 'refs',
     label: 'На які сайти ви рівняєтесь?', hint: 'Додайте сайт і позначте, що саме вам у ньому подобається. Можна кілька.', addLabel: '+ Ще сайт-орієнтир' },
 
@@ -59,10 +63,8 @@ export const BLOCKS: Block[] = [
     options: [{ label: 'Дорожче за сам чек', score: 0 }, { label: 'Приблизно як чек', score: 1 }, { label: 'Дешевше, але без запасу', score: 2 }, { label: 'Значно дешевше за чек', score: 3 }] },
   { id: 'm_repeat', section: 'Маркетинг та аналітика', label: 'Скільки покупців повертаються за другою покупкою?', kind: 'single', system: 'customer',
     options: [{ label: 'Майже ніхто', score: 0 }, { label: 'До 15%', score: 1 }, { label: '15–30%', score: 2 }, { label: 'Понад 30%', score: 3 }] },
-  { id: 'm_attr', section: 'Маркетинг та аналітика', label: 'Чи знаєте ви, який канал реально приносить гроші?', kind: 'single', system: 'data',
-    options: [{ label: 'Ні, здогадуємось', score: 0 }, { label: 'Last-click у GA4', score: 1 }, { label: 'Частково мульти-тач', score: 2 }, { label: 'Наскрізна з CRM', score: 3 }] },
 
-  // 4 — Фінанси (нативні діапазони; точні числа — необов'язково)
+  // 4 — Фінанси
   { id: 'f_margin', section: 'Фінанси', label: 'Яка у вас валова маржа?', kind: 'single', system: 'commercial',
     options: [{ label: 'До 20%', score: 0 }, { label: '20–35%', score: 1 }, { label: '35–50%', score: 2 }, { label: 'Понад 50%', score: 3 }] },
   { id: 'f_returns', section: 'Фінанси', label: 'Скільки замовлень зривається (повернення + скасування)?', kind: 'single', system: 'operations',
@@ -83,10 +85,8 @@ export const BLOCKS: Block[] = [
     options: [{ label: 'Майже немає', score: 0 }, { label: 'Опис товарів', score: 1 }, { label: '+ гайди / відео', score: 2 }, { label: 'Контент-система', score: 3 }] },
   { id: 'b_social', section: 'Позиціонування і бренд', label: 'Що з довірою (відгуки, UGC, кейси)?', kind: 'single', system: 'experience',
     options: [{ label: 'Немає', score: 0 }, { label: 'Кілька відгуків', score: 1 }, { label: 'Регулярні відгуки', score: 2 }, { label: 'Система UGC + рейтинги', score: 3 }] },
-  { id: 'b_diff', section: 'Позиціонування і бренд', label: 'У чому ваша головна перевага? (оберіть усе)', kind: 'multi',
-    options: [{ label: 'Ціна' }, { label: 'Асортимент' }, { label: 'Якість / бренд' }, { label: 'Сервіс / доставка' }, { label: 'Експертиза' }] },
 
-  // 6 — Сайт і технології (нативно веде до нового сайту та аудиту)
+  // 6 — Сайт і технології (нативно веде до нового сайту й розбору)
   { id: 'd_stack', section: 'Сайт і технології', label: 'На чому побудований ваш сайт?', kind: 'single', system: 'data',
     options: [{ label: 'Конструктор / шаблон', score: 0 }, { label: 'CMS на шаблоні', score: 1 }, { label: 'Кастомна на CMS', score: 2 }, { label: 'Headless / кастом', score: 3 }] },
   { id: 'site_age', section: 'Сайт і технології', label: 'Коли ви востаннє капітально робили або переробляли сайт?', kind: 'single', system: 'experience',
@@ -96,28 +96,25 @@ export const BLOCKS: Block[] = [
     options: [{ label: 'Ніколи', score: 0 }, { label: '2+ роки тому', score: 1 }, { label: 'Цього року', score: 2 }, { label: 'Робимо регулярно', score: 3 }] },
   { id: 'site_pain', section: 'Сайт і технології', label: 'Що на сайті найбільше стримує продажі? (оберіть усе)', kind: 'multi',
     options: [{ label: 'Швидкість' }, { label: 'Мобільна версія' }, { label: 'Checkout / кошик' }, { label: 'Каталог і пошук' }, { label: 'Картка / контент' }, { label: 'Інтеграції й дані' }, { label: 'Застарілий дизайн' }] },
-  { id: 'd_master', section: 'Сайт і технології', label: 'Наскільки узгоджені ваші дані (ціни / залишки / статуси)?', kind: 'single', system: 'data',
-    options: [{ label: 'Розсипані', score: 0 }, { label: 'Частково', score: 1 }, { label: 'Здебільшого єдині', score: 2 }, { label: 'Єдине джерело правди', score: 3 }] },
 
-  // 7 — Команда і точка Б (намір → нативний продаж аудиту й сайту)
-  { id: 'o_owner', section: 'Команда і точка Б', label: 'Хто відповідає за прибуток e-commerce?', kind: 'single', system: 'org',
+  // 7 — Команда і процеси (+ намір: з чим потрібна команда)
+  { id: 'o_owner', section: 'Команда і процеси', label: 'Хто відповідає за прибуток e-commerce?', kind: 'single', system: 'org',
     options: [{ label: 'Ніхто конкретно', score: 0 }, { label: 'Власник', score: 1 }, { label: 'Керівник напряму', score: 2 }, { label: 'Роль + KPI по прибутку', score: 3 }] },
-  { id: 'o_sop', section: 'Команда і точка Б', label: 'Наскільки бізнес працює без вас (процеси, SOP)?', kind: 'single', system: 'org',
+  { id: 'o_sop', section: 'Команда і процеси', label: 'Наскільки бізнес працює без вас (процеси, SOP)?', kind: 'single', system: 'org',
     options: [{ label: 'Усе в головах', score: 0 }, { label: 'Дещо задокументовано', score: 1 }, { label: 'Основні процеси', score: 2 }, { label: 'Повна база + онбординг', score: 3 }] },
-  { id: 'goal_b', section: 'Команда і точка Б', label: 'Ваша точка Б за 12 місяців — чого ви хочете? (оберіть усе)', kind: 'multi',
-    options: [{ label: 'Кратний ріст виторгу' }, { label: 'Вища маржа і прибуток' }, { label: 'Незалежність від власника' }, { label: 'Новий сайт / платформа' }, { label: 'Нові канали й ринки' }, { label: 'Системна аналітика і контроль' }] },
-  { id: 'help_want', section: 'Команда і точка Б', label: 'З чим вам найбільше потрібна команда поруч? (оберіть усе)', kind: 'multi',
+  { id: 'help_want', section: 'Команда і процеси', label: 'З чим вам найбільше потрібна команда поруч? (оберіть усе)', kind: 'multi',
     options: [{ label: 'Повний аудит e-commerce' }, { label: 'Новий сайт' }, { label: 'Трафік і маркетинг' }, { label: 'Аналітика й дані' }, { label: 'Операції й процеси' }, { label: 'Стратегія росту' }] },
 ];
 
 export type Stage3Answers = Record<string, number | number[] | string | string[] | RefItem[]>;
 
-export type Reco = { key: 'audit' | 'rebuild'; title: string; reason: string; cta: string; to: string; strong: boolean };
+export type Reco = { key: 'audit' | 'rebuild'; title: string; reason: string; bullets: string[]; riskReversal: string; cta: string; to: string; strong: boolean };
 
 export type Stage3Result = {
   systems: { key: SysKey; label: string; score: number }[];
   overall: number;
   bottleneck: { key: SysKey; label: string; score: number };
+  epiphany: string;
   completeness: number;
   competitors: { direct: string[]; indirect: string[] };
   likes: { url: string; what: string[] }[];
@@ -136,8 +133,19 @@ const scoreOf = (b: Block, a: Stage3Answers[string]): number | null => {
   return null;
 };
 
-export function scoreStage3(ans: Stage3Answers): Stage3Result {
-  // Зрілість по системах — з блоків, що мають system і score.
+// Епіфанія: поверхнева версія проблеми (у що клієнт зазвичай вірить) → справжній
+// корінь (вузол) → наслідок, поки він не закритий. Ламає хибне переконання.
+const EPIPHANY: Record<SysKey, { surface: string; consequence: string }> = {
+  strategy: { surface: 'бракує ідей або бюджету на ріст', consequence: 'рішення ухвалюються наосліп, а гроші йдуть не туди' },
+  commercial: { surface: 'треба просто більше продажів', consequence: 'оборот росте, а прибуток — ні' },
+  customer: { surface: 'проблема у трафіку', consequence: 'кожен наступний клієнт коштує дедалі дорожче' },
+  experience: { surface: 'потрібно більше реклами', consequence: 'ви платите за трафік, який не купує' },
+  operations: { surface: 'це просто дрібні збої', consequence: 'повернення й ручна робота тихо з’їдають маржу' },
+  data: { surface: 'потрібні нові інструменти', consequence: 'у кожного свої цифри, а рішення — інтуїтивні' },
+  org: { surface: 'треба просто більше працювати', consequence: 'усе тримається на власнику й не масштабується' },
+};
+
+export function scoreStage3(ans: Stage3Answers, money?: [number, number]): Stage3Result {
   const systems = SYS.map(({ key, label }) => {
     const bs = BLOCKS.filter((b) => b.system === key);
     const vals = bs.map((b) => scoreOf(b, ans[b.id])).filter((v): v is number => v != null);
@@ -147,20 +155,19 @@ export function scoreStage3(ans: Stage3Answers): Stage3Result {
   const wsum = Object.values(W).reduce((a, b) => a + b, 0);
   const overall = Math.round(systems.reduce((a, s) => a + s.score * W[s.key], 0) / wsum);
   const bottleneck = [...systems].sort((a, b) => a.score - b.score)[0];
+  const ep = EPIPHANY[bottleneck.key];
+  const epiphany = `Виглядає, ніби ${ep.surface}. Але справжній вузол — «${bottleneck.label}»: поки він не закритий, ${ep.consequence}.`;
 
-  // Конкуренти — з динамічних списків (urllist).
   const urlList = (id: string): string[] =>
     (Array.isArray(ans[id]) ? (ans[id] as unknown[]) : []).filter((x): x is string => typeof x === 'string').map((s) => s.trim()).filter(Boolean);
   const competitors = { direct: urlList('comp_direct'), indirect: urlList('comp_indirect') };
 
-  // Орієнтири — з refs (url + що саме подобається).
   const refsVal: RefItem[] = Array.isArray(ans['refs']) ? (ans['refs'] as unknown[]).filter((r): r is RefItem => !!r && typeof (r as RefItem).url === 'string') as RefItem[] : [];
   const likes = refsVal.filter((r) => r.url.trim()).map((r) => {
     const whatArr: number[] = Array.isArray(r.what) ? (r.what as number[]) : [];
     return { url: r.url.trim(), what: whatArr.map((i) => LIKE_WHAT[i]?.label).filter(Boolean) as string[] };
   });
 
-  // Нативні метрики зі зроблених виборів (показуємо мовою клієнта, без сирих чисел).
   const optLabel = (id: string): string => { const b = byId(id); const a = ans[id]; return b?.options && typeof a === 'number' ? (b.options[a]?.label ?? '—') : '—'; };
   const multiLabels = (id: string): string => { const b = byId(id); const a = ans[id]; return b?.options && Array.isArray(a) && a.length ? (a as number[]).map((i) => b.options![i]?.label).filter(Boolean).join(' · ') : '—'; };
   const num = (id: string) => (typeof ans[id] === 'string' && ans[id] !== '' ? String(ans[id]) : '');
@@ -186,35 +193,45 @@ export function scoreStage3(ans: Stage3Answers): Stage3Result {
   const multiIdx = (id: string): number[] => (Array.isArray(ans[id]) ? (ans[id] as number[]).filter((x) => typeof x === 'number') : []);
   const labelsOf = (id: string, sel: number[]) => { const b = byId(id); return b?.options ? sel.map((i) => b.options![i]?.label).filter(Boolean) as string[] : []; };
 
-  const goalsSel = multiIdx('goal_b');
-  const goals = labelsOf('goal_b', goalsSel);
+  const goals = labelsOf('goal_b', multiIdx('goal_b'));
   const helpSel = labelsOf('help_want', multiIdx('help_want'));
   const painsSel = multiIdx('site_pain');
   const pains = labelsOf('site_pain', painsSel);
   const auditAge = idxOf('site_audit_age');
   const siteAge = idxOf('site_age');
+  const moneyStr = money && money[0] > 0 ? `${eur(money[0])}–${eur(money[1])}` : '';
 
-  // Нативні рекомендації: 1) повний аудит командою, 2) новий сайт/платформа.
+  // Нативні наступні кроки: клієнт має САМ побачити, що це його рішення.
   const wantsAudit = auditAge === 0 || auditAge === 1 || helpSel.includes('Повний аудит e-commerce');
-  const auditReason = auditAge === 0
-    ? 'Незалежний аудит ви не робили жодного разу — цифру можливості ще не звіряли з вашими CRM / GA4. Повний аудит команди підтвердить її й дасть план під Definition of Done.'
-    : auditAge === 1
-      ? 'Аудит не робили понад 2 роки — за цей час змінились і ринок, і ваші дані. Повний аудит звірить оцінку й покаже, де саме витікає виторг.'
-      : 'Повний аудит зведе маркетинг, фінанси й операції в одну картину і перетворить оцінку на план повернення виторгу.';
-
+  const audit: Reco = {
+    key: 'audit',
+    title: 'Розбір з командою WEEXP',
+    reason: moneyStr
+      ? `Покажемо, як повернути ${moneyStr} — на ваших цифрах, а не загальними порадами. ${auditAge === 0 ? 'Незалежного аудиту ще не було, тож цифру варто звірити з реальними даними.' : 'Звіримо оцінку з тим, що є в CRM / GA4.'}`
+      : `Зберемо ваш зріз у план повернення виторгу — на ваших цифрах, а не загальними порадами.`,
+    bullets: ['Звіримо оцінку з вашими CRM / GA4', 'Покажемо 3 точки, де витікає найбільше', 'Дамо перші кроки під Definition of Done'],
+    riskReversal: '30 хвилин · безкоштовно · без зобовʼязань',
+    cta: 'Забронювати безкоштовний розбір →',
+    to: '/contact',
+    strong: wantsAudit || overall < 60,
+  };
   const oldSite = siteAge === 0 || siteAge === 1;
   const wantsSite = helpSel.includes('Новий сайт') || goals.includes('Новий сайт / платформа');
-  const rebuildReason = oldSite
-    ? `Сайт капітально не оновлювали ${siteAge === 0 ? '5+ років' : '3–4 роки'} — це вже стеля для конверсії, швидкості й аналітики. Нова платформа окупається різницею в конверсії.`
-    : pains.length
-      ? `Ви позначили вузькі місця на сайті (${pains.slice(0, 3).join(', ')}) — часто дешевше й швидше побудувати нову платформу, ніж латати стару.`
-      : 'Коли системи готові, нова платформа знімає стелю росту — покажемо окупність на ваших цифрах.';
-
-  const recoItems: Reco[] = [
-    { key: 'audit', title: 'Повний аудит від команди WEEXP', reason: auditReason, cta: 'Записатися на повний аудит →', to: '/contact', strong: wantsAudit || overall < 60 },
-    { key: 'rebuild', title: 'Новий сайт / платформа', reason: rebuildReason, cta: 'Обговорити нову платформу →', to: '/contact', strong: oldSite || painsSel.length >= 2 || wantsSite },
-  ];
-  const recos = recoItems.sort((a, b) => Number(b.strong) - Number(a.strong));
+  const rebuild: Reco = {
+    key: 'rebuild',
+    title: 'Новий сайт / платформа',
+    reason: oldSite
+      ? `Сайт капітально не оновлювали ${siteAge === 0 ? '5+ років' : '3–4 роки'} — це вже стеля для конверсії, швидкості й аналітики. Нова платформа окупається різницею в конверсії.`
+      : pains.length
+        ? `Ви позначили вузькі місця на сайті (${pains.slice(0, 3).join(', ')}) — часто дешевше й швидше побудувати нову платформу, ніж латати стару.`
+        : 'Коли системи готові, нова платформа знімає стелю росту — покажемо окупність на ваших цифрах.',
+    bullets: ['Порахуємо окупність нової платформи на вашій конверсії', 'Покажемо, що втрачає поточний сайт', 'Проєктуємо під ваш P&L, а не наосліп'],
+    riskReversal: 'Почнемо з безкоштовної оцінки — рішення за вами',
+    cta: 'Обговорити нову платформу →',
+    to: '/contact',
+    strong: oldSite || painsSel.length >= 2 || wantsSite,
+  };
+  const recos = [audit, rebuild].sort((a, b) => Number(b.strong) - Number(a.strong));
 
   const answered = BLOCKS.filter((b) => {
     const a = ans[b.id];
@@ -225,5 +242,5 @@ export function scoreStage3(ans: Stage3Answers): Stage3Result {
   }).length;
   const completeness = Math.round((answered / BLOCKS.length) * 100);
 
-  return { systems, overall, bottleneck, completeness, competitors, likes, marketing, finance, goals, recos, answered, total: BLOCKS.length };
+  return { systems, overall, bottleneck, epiphany, completeness, competitors, likes, marketing, finance, goals, recos, answered, total: BLOCKS.length };
 }

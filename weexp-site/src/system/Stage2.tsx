@@ -167,7 +167,7 @@ export function Stage2({ stage1, stage1Result, onClose }: { stage1: LossInput; s
 
       {stage3 && (
         <Suspense fallback={null}>
-          <Stage3 prior={{ site, stage1, stage2: ans, stage2Result: res ?? undefined }} onClose={() => setStage3(false)} />
+          <Stage3 prior={{ site, stage1, stage1Money: money ? [money.lo, money.hi] : undefined, stage2: ans, stage2Result: res ?? undefined }} onClose={() => setStage3(false)} />
         </Suspense>
       )}
     </div>

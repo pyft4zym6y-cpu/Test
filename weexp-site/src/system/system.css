@@ -521,6 +521,41 @@
 
 @media (max-width: 720px) { .s3-recos { grid-template-columns: 1fr; } }
 
+/* P1 — живий €-якір у потоці й у звіті */
+.s3-flow-right-top { display: inline-flex; align-items: center; gap: 12px; }
+.s3-money-pill { font-size: 11px; color: var(--deep); background: color-mix(in srgb, var(--data) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--data) 25%, transparent); border-radius: 100px; padding: 4px 11px; white-space: nowrap; }
+.s3-rep-money { font-size: 12.5px; color: var(--charcoal); } .s3-rep-money b { color: var(--deep); }
+
+/* P2 — нитка цілі під питанням */
+.s3-goal-thread { font-size: 11px; color: var(--data); letter-spacing: .02em; margin-top: -6px; }
+
+/* P3 — що дає кабінет (реєстрація) */
+.s3-auth-gets { list-style: none; margin: 4px 0 6px; padding: 0; display: grid; gap: 8px; text-align: left; width: min(420px, 92vw); }
+.s3-auth-gets li { position: relative; padding-left: 22px; font-size: 13.5px; color: var(--charcoal); line-height: 1.45; }
+.s3-auth-gets li::before { content: ''; position: absolute; left: 4px; top: 7px; width: 7px; height: 7px; border-radius: 50%; background: var(--data); }
+
+/* P5 — епіфанія у звіті */
+.s3-epiphany { font-size: clamp(15px, 1.7vw, 19px); line-height: 1.5; color: var(--deep); font-weight: 500; }
+.s3-verdict-sub { font-size: 13px; line-height: 1.55; color: var(--charcoal); margin-top: 2px; }
+
+/* P4 — булети й ризик-реверс у рекомендаціях */
+.s3-reco-bul { list-style: none; margin: 2px 0 4px; padding: 0; display: grid; gap: 7px; }
+.s3-reco-bul li { position: relative; padding-left: 20px; font-size: 13px; line-height: 1.45; color: var(--charcoal); }
+.s3-reco-bul li::before { content: '→'; position: absolute; left: 0; top: 0; color: var(--data); font-weight: 700; }
+.s3-reco-rr { font-size: 11px; color: var(--graphite); margin-top: 2px; }
+
+/* P6 — мікро-нагорода при переході між секціями */
+.s3-milestone { width: min(680px, 92vw); font-size: 12px; color: var(--data);
+  background: color-mix(in srgb, var(--data) 8%, transparent); border: 1px solid color-mix(in srgb, var(--data) 22%, transparent);
+  border-radius: 100px; padding: 8px 16px; text-align: center; animation: s3Mile .5s var(--ease-cine); }
+@keyframes s3Mile { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+/* P7/P8 — тиха довіра + розбірливість */
+.s3-trust { display: flex; flex-wrap: wrap; gap: 6px 20px; justify-content: center; text-align: center;
+  font-size: 11px; color: var(--graphite); padding: 4px 0 2px; }
+.s3-trust span { position: relative; }
+
 /* Tier-2 звіт — додаткові панелі */
 .s3-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .s3-sub { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--graphite); display: block; margin-bottom: 6px; }
