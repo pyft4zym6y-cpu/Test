@@ -13,7 +13,7 @@
   --pure-white: #FFFFFF;   /* світло */
   --mist: #EEF0F2;         /* поверхні */
   --silver: #D9DDE1;       /* структура */
-  --graphite: #7C848B;     /* вторинна інформація (контраст ≈ AA для дрібних підписів) */
+  --graphite: #61686F;     /* вторинна інформація — затемнено до ≈5:1 на warm-white (AA для дрібного тексту) */
   --charcoal: #3A3D42;     /* типографіка */
   --deep: #15171A;         /* cinema / глибина */
   /* — Сигнали (тільки як подія, не тло) — */
@@ -71,7 +71,7 @@
 /* — CTA — */
 .sysx-cta {
   display: inline-flex; align-items: center; gap: 10px; font-family: var(--mono);
-  font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
+  font-size: 12.5px; letter-spacing: .02em; text-transform: none;
   color: var(--deep); background: var(--pure-white);
   border: 1px solid var(--silver); border-radius: 100px; padding: 13px 22px;
   text-decoration: none; transition: border-color var(--dur-fast) var(--ease-cine), transform var(--dur-fast) var(--ease-cine), box-shadow var(--dur-fast);
@@ -80,6 +80,20 @@
 .sysx-cta:hover { border-color: var(--graphite); transform: translateY(-1px); }
 .sysx-cta.is-primary { background: var(--deep); color: var(--pure-white); border-color: var(--deep); }
 .sysx-cta.is-primary:hover { box-shadow: 0 16px 40px -18px rgba(21,23,26,.6); }
+
+/* — Доступність: видимий фокус для клавіатури/скрінрідера — */
+.sysx a:focus-visible, .sysx button:focus-visible, .sysx input:focus-visible, .sysx select:focus-visible, .sysx textarea:focus-visible,
+.sysh a:focus-visible, .sysh button:focus-visible,
+.s2 a:focus-visible, .s2 button:focus-visible, .s2 input:focus-visible, .s2 select:focus-visible, .s2 textarea:focus-visible {
+  outline: 2px solid var(--data, #7E9DFF); outline-offset: 2px;
+}
+/* На тач-екранах hover «залипає» після тапу — прибираємо рух-стан (гейтимо hover-моушн) */
+@media (hover: none) {
+  .sysx-cta:hover, .sysh-cta:hover, .sysh-account:hover, .dg-opt:hover, .s2-opt:hover,
+  .sysx-sym-b:hover, .sxp-pick:hover, .pt-logo:hover, .s3-add:hover, .ctf-diag-add:hover, .s2-x:hover {
+    transform: none;
+  }
+}
 
 /* ── Опенінг-фільм: липка сцена, крізь яку рухається камера-скрол ── */
 .sysx-film { height: 680vh; }
@@ -153,7 +167,7 @@
 }
 
 /* ── SHELL: cinematic-навігація превʼю-напряму ── */
-.sysh { --sh-deep: #15171A; --sh-charcoal: #3A3D42; --sh-graphite: #A8ADB3; --sh-silver: #D9DDE1; --sh-data: #7E9DFF; }
+.sysh { --sh-deep: #15171A; --sh-charcoal: #3A3D42; --sh-graphite: #646B72; --sh-silver: #D9DDE1; --sh-data: #7E9DFF; }
 .sysh-nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 50;
   display: flex; align-items: center; justify-content: space-between; gap: 20px;
@@ -170,12 +184,12 @@
 .sysh-brand span { font-size: 10px; letter-spacing: .28em; text-transform: uppercase; color: var(--sh-graphite); }
 .sysh-links { display: flex; align-items: center; gap: clamp(4px, 1.4vw, 20px); overflow-x: auto; scrollbar-width: none; }
 .sysh-links::-webkit-scrollbar { display: none; }
-.sysh-link { position: relative; font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--sh-charcoal); text-decoration: none; padding: 6px 2px; white-space: nowrap; transition: color .25s; }
+.sysh-link { position: relative; font-size: 13px; letter-spacing: .01em; text-transform: none; color: var(--sh-charcoal); text-decoration: none; padding: 6px 2px; white-space: nowrap; transition: color .25s; }
 .sysh-link::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px; background: var(--sh-data); transform: scaleX(0); transform-origin: left; transition: transform .3s cubic-bezier(.22,1,.36,1); }
 .sysh-link:hover { color: var(--sh-deep); }
 .sysh-link.is-on { color: var(--sh-deep); }
 .sysh-link.is-on::after { transform: scaleX(1); }
-.sysh-cta { flex: 0 0 auto; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #fff; background: var(--sh-deep); border-radius: 100px; padding: 10px 18px; text-decoration: none; transition: transform .25s, box-shadow .25s; box-shadow: 0 10px 30px -18px rgba(21,23,26,.5); }
+.sysh-cta { flex: 0 0 auto; font-size: 12.5px; letter-spacing: .01em; text-transform: none; color: #fff; background: var(--sh-deep); border-radius: 100px; padding: 10px 18px; text-decoration: none; transition: transform .25s, box-shadow .25s; box-shadow: 0 10px 30px -18px rgba(21,23,26,.5); }
 .sysh-cta:hover { transform: translateY(-1px); box-shadow: 0 16px 40px -18px rgba(21,23,26,.65); }
 
 /* Мобільна навігація: бургер + нижній таб-бар + оверлей-меню (десктоп — сховані).
@@ -547,6 +561,16 @@
 .s2-proj-badge.down { color: #2f6b4d; background: rgba(58,125,92,.12); }
 .s2-proj-note { font-size: 10.5px; line-height: 1.5; color: var(--graphite); }
 @media (max-width: 640px) { .s2-proj-income, .s2-proj-rows { grid-template-columns: 1fr; } }
+
+/* Каскадна поява списків звіту (stagger) — лише коли рух дозволено */
+@media (prefers-reduced-motion: no-preference) {
+  .s3-road-step, .s2-proj-inc, .s3-pain { animation: rvUp .5s var(--ease-cine) both; }
+  .s3-road-step:nth-child(2), .s2-proj-inc:nth-child(2), .s3-pain:nth-child(2) { animation-delay: .06s; }
+  .s3-road-step:nth-child(3), .s2-proj-inc:nth-child(3), .s3-pain:nth-child(3) { animation-delay: .12s; }
+  .s3-road-step:nth-child(4), .s3-pain:nth-child(4) { animation-delay: .18s; }
+  .s3-road-step:nth-child(n+5) { animation-delay: .24s; }
+}
+@keyframes rvUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
 @media (max-width: 820px) { .s2-grid { grid-template-columns: 1fr; } }
 @media print {
@@ -986,7 +1010,7 @@
 .sysx-steps .on { color: var(--deep); }
 .sysx-steps i { color: var(--silver); font-style: normal; }
 
-.sysx-card { background: color-mix(in srgb, var(--pure-white) 78%, transparent); backdrop-filter: blur(8px); border: 1px solid var(--silver); border-radius: 16px; padding: clamp(18px, 3vw, 28px); display: grid; gap: 18px; box-shadow: 0 30px 60px -40px rgba(21,23,26,.35); }
+.sysx-card { background: color-mix(in srgb, var(--pure-white) 94%, transparent); backdrop-filter: blur(3px); border: 1px solid var(--silver); border-radius: 16px; padding: clamp(18px, 3vw, 28px); display: grid; gap: 18px; box-shadow: 0 30px 60px -40px rgba(21,23,26,.35); }
 .sysx-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
 .sysx-inp { display: grid; gap: 6px; }
 .sysx-inp-l { font-size: 12px; color: var(--charcoal); font-weight: 500; }
