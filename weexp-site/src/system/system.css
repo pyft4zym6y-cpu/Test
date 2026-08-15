@@ -545,6 +545,32 @@
   .sysx-marquee, .sysh-nav, .sysh-tabs, .sysh-sheet { display: none !important; }
 }
 
+/* ── COMPANY WORLD — 3D-район компанії клієнта ── */
+.cw-canvas { display: block; width: 100%; height: 100%; }
+.cw-load { display: grid; place-items: center; height: 100%; color: var(--graphite); font-size: 11px; letter-spacing: .08em; }
+/* Герой у звіті: копія зліва, район справа */
+.cw-hero { display: grid; grid-template-columns: .9fr 1.1fr; gap: clamp(18px, 3vw, 34px); align-items: center;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--data) 5%, var(--pure-white)), var(--pure-white)); }
+.cw-hero-copy { display: grid; gap: 12px; align-content: center; }
+.cw-hero-sub { font-size: 13.5px; line-height: 1.55; color: var(--charcoal); }
+.cw-legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 11px; color: var(--graphite); }
+.cw-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.cw-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.cw-dot.ok { background: #3a7d5c; } .cw-dot.warn { background: #c08a2e; } .cw-dot.bad { background: var(--alert); }
+.cw-fill { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; font-size: 11px; color: var(--graphite); }
+.cw-fill-tr { height: 7px; border-radius: 5px; background: var(--mist); overflow: hidden; }
+.cw-fill-tr i { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, var(--data-soft), var(--data)); transition: width .5s var(--ease-cine); }
+.cw-fill b { color: var(--deep); font-size: 13px; }
+.cw-stage { position: relative; height: clamp(280px, 34vh, 400px); border-radius: 16px; overflow: hidden;
+  background: radial-gradient(120% 90% at 50% 20%, #fff, #eef0f2); border: 1px solid var(--line); }
+/* Живий район у потоці анкети */
+.cw-quiz { display: grid; gap: 6px; margin: 4px 0 14px; }
+.cw-quiz-stage { position: relative; height: clamp(150px, 22vh, 210px); border-radius: 14px; overflow: hidden;
+  background: radial-gradient(120% 90% at 50% 15%, #fff, #eef0f2); border: 1px solid var(--line); }
+.cw-quiz-cap { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 10.5px; color: var(--graphite); }
+.cw-quiz-cap b { color: var(--deep); }
+@media (max-width: 760px) { .cw-hero { grid-template-columns: 1fr; } }
+
 /* ── STAGE 3 (кабінет, Tier-2) ── */
 .s3-auth { min-height: 100vh; display: grid; align-content: center; justify-items: center; text-align: center; gap: 14px; padding: 80px 22px; }
 .s3-auth-h { font-size: clamp(28px, 3.6vw, 50px); color: var(--deep); }
