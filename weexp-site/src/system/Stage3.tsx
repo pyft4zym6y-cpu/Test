@@ -5,6 +5,7 @@ import { BLOCKS, SECTIONS, LIKE_WHAT, scoreStage3, type Stage3Answers, type RefI
 import { levelFor } from './stage2Model';
 import { RadarChart, SystemBars } from './charts';
 import { CONFIGURED, authenticate, currentUser, isCloudUser, loadDiag, saveDiag, signOut, type DiagUser, type DiagRecord } from '@/lib/supa';
+import { sendReport } from '@/lib/report';
 import './system.css';
 
 /**
@@ -27,6 +28,8 @@ export function Stage3({ prior, onClose }: { prior?: DiagRecord; onClose: () => 
   const [saved, setSaved] = useState(false);   // пульс «збережено» після автозбереження
   const [hover, setHover] = useState<number | null>(null);
   const [money, setMoney] = useState<[number, number] | undefined>(prior?.stage1Money);  // €-якір з Етапу 1
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState<false | 'sent' | 'saved'>(false);
   const saveT = useRef<number | undefined>(undefined);
 
   useEffect(() => { currentUser().then((u) => { setUser(u); setChecking(false); }); }, []);
@@ -105,6 +108,20 @@ export function Stage3({ prior, onClose }: { prior?: DiagRecord; onClose: () => 
   /* ── Report ── */
   if (res) {
     const lvl = levelFor(res.overall);
+    const audit = res.recos[0];
+    const doSend = async () => {
+      setSending(true);
+      const r = await sendReport({
+        email: user.email, site: typeof prior?.site === 'string' ? prior.site : '',
+        stage1Money: money, overall: res.overall,
+        bottleneck: { label: res.bottleneck.label, score: res.bottleneck.score }, epiphany: res.epiphany,
+        goals: res.goals, pains: res.pains, roadmap: res.roadmap, competitors: res.competitors, likes: res.likes,
+        marketing: res.marketing, finance: res.finance, completeness: res.completeness,
+        createdAt: new Date().toISOString(),
+      });
+      saveDiag(user, { stage3: { ...ans, __submitted: true } as Record<string, unknown> });
+      setSending(false); setSent(r.mode);
+    };
     return (
       <div className="s2 s3" role="dialog" aria-label="Tier-2 звіт">
         <button className="s2-x mono" onClick={onClose}>✕ Закрити</button>
@@ -155,19 +172,69 @@ export function Stage3({ prior, onClose }: { prior?: DiagRecord; onClose: () => 
             )}
           </div>
 
-          {/* Нативні наступні кроки — щоб клієнт сам побачив, що це його рішення */}
-          <div className="s3-recos">
-            {res.recos.map((r) => (
-              <div key={r.key} className={`s2-panel s3-reco${r.strong ? ' strong' : ''}`}>
-                {r.strong && <span className="s3-reco-tag mono">Схоже, це про вас</span>}
-                <span className="sysx-kick">{r.key === 'audit' ? 'Наступний крок' : 'Коли готові рости далі'}</span>
-                <b className="sysx-display s3-reco-h">{r.title}</b>
-                <p className="s3-reco-p">{r.reason}</p>
-                <ul className="s3-reco-bul">{r.bullets.map((x) => <li key={x}>{x}</li>)}</ul>
-                <Link to={r.to} className={`sysx-cta${r.strong ? ' is-primary' : ''}`}>{r.cta}</Link>
-                <span className="s3-reco-rr mono">{r.riskReversal}</span>
+          {/* Ключові болі — реально з відповідей */}
+          {res.pains.length > 0 && (
+            <div className="s2-panel s3-pains">
+              <span className="sysx-kick">Ключові болі — що ми побачили у ваших відповідях</span>
+              <div className="s3-pain-grid">
+                {res.pains.map((p) => (
+                  <div key={p.label} className="s3-pain"><b>{p.label}</b>{p.detail && <span>{p.detail}</span>}</div>
+                ))}
               </div>
-            ))}
+            </div>
+          )}
+
+          {/* Дорожня карта — розмиті вектори «як прийти до результату» */}
+          {res.roadmap.length > 0 && (
+            <div className="s2-panel s3-roadmap">
+              <span className="sysx-kick">Вектори дорожньої карти{res.goals.length ? ' — до вашої цілі' : ''}</span>
+              <div className="s3-road">
+                {res.roadmap.map((r, i) => (
+                  <div key={r.title} className="s3-road-step">
+                    <i className="s3-road-n mono">{String(i + 1).padStart(2, '0')}</i>
+                    <div className="s3-road-c"><b>{r.title}</b><span>{r.detail}</span></div>
+                  </div>
+                ))}
+              </div>
+              <span className="s3-road-note mono">Точні кроки, терміни й окупність — складемо разом на розборі.</span>
+            </div>
+          )}
+
+          {/* Наступні кроки: розбір із командою + Крок 4 (без продажу сайта в лоб) */}
+          <div className="s3-recos">
+            <div className="s2-panel s3-reco strong">
+              <span className="s3-reco-tag mono">Рекомендовано</span>
+              <span className="sysx-kick">Наступний крок</span>
+              <b className="sysx-display s3-reco-h">{audit.title}</b>
+              <p className="s3-reco-p">{audit.reason}</p>
+              <ul className="s3-reco-bul">{audit.bullets.map((x) => <li key={x}>{x}</li>)}</ul>
+              <Link to={audit.to} className="sysx-cta is-primary">{audit.cta}</Link>
+              <span className="s3-reco-rr mono">{audit.riskReversal}</span>
+            </div>
+            <div className="s2-panel s3-reco">
+              <span className="sysx-kick">Крок 4 · Повне дослідження</span>
+              <b className="sysx-display s3-reco-h">Продовжуємо дослідження</b>
+              <p className="s3-reco-p">Ми вже майже готові скласти ваш план дій. Крок 4 доводить охоплення до <b>100% тем</b> і глибину до <b>75%+</b> — його проходимо разом із командою.</p>
+              <div className="s3-depth"><span className="mono">Зараз охоплено ~{Math.max(20, Math.round(res.completeness * 0.35))}% глибокої анкети</span>
+                <div className="s3-depth-track"><i style={{ width: `${Math.max(20, Math.round(res.completeness * 0.35))}%` }} /><i className="s3-depth-goal" /></div>
+                <span className="mono">ціль Кроку 4 — 75%+</span>
+              </div>
+              <Link to="/contact" className="sysx-cta">Запустити Крок 4 →</Link>
+            </div>
+          </div>
+
+          {/* Надіслати повний звіт команді + зустріч */}
+          <div className="s2-panel s3-send">
+            <div className="s3-send-l">
+              <b className="sysx-display">Готові рухатись до плану?</b>
+              <p className="s3-reco-p">Надішлемо команді ваш повний зріз і чернетку дорожньої карти — щоб на зустрічі почати не з нуля, а з вашого контексту.</p>
+            </div>
+            <div className="s3-send-r">
+              {sent
+                ? <span className="s3-sent mono">✓ {sent === 'sent' ? 'Звіт надіслано команді' : 'Звіт збережено — команда його отримає'}</span>
+                : <button className="sysx-cta is-primary" onClick={doSend} disabled={sending}>{sending ? 'Надсилаємо…' : 'Надіслати звіт команді →'}</button>}
+              <Link to="/contact" className="sysx-cta">Обрати час зустрічі</Link>
+            </div>
           </div>
 
           {/* Тиха довіра + розбірливість (без тиску) */}

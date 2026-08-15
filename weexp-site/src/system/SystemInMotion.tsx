@@ -15,8 +15,10 @@ const SystemExplorer = lazy(() => import('@/system/SystemExplorer').then((m) => 
  *   (слабка ланка червоним) → CONNECT (частини як одне) → ACTIVATION (гроші течуть)
  *   → INDEPENDENCE (CTA). Світле cinematic-полотно. Живий (темний) сайт не чіпаємо.
  */
-const SYSTEMS = ['Трафік', 'Конверсія', 'Утримання', 'Операції', 'Дані', 'Бренд', 'Юніт-економіка'];
-const BOTTLENECK = 2; // «Утримання» — слабка ланка у сцені кореневої причини
+// Канонічні 7 систем — ті самі, що в діагностиці/радарі (lossModel.SYS), щоб сайт
+// був узгоджений: головна, калькулятор і звіти говорять про одні й ті ж системи.
+const SYSTEMS = ['Стратегія', 'Комерція', 'Попит і клієнт', 'Досвід', 'Операції', 'Дані', 'Організація'];
+const BOTTLENECK = 2; // «Попит і клієнт» — слабка ланка у сцені кореневої причини
 
 export function SystemInMotion() {
   const sec = useRef<HTMLElement>(null);
@@ -88,7 +90,7 @@ export function SystemInMotion() {
         {/* FORM — 7 систем збираються */}
         <div ref={sForm} className="sysx-scene sysx-form" style={{ opacity: 0 }}>
           <h2 className="sysx-display sysx-h2">E-commerce — це <span className="sysx-em">система</span><br />із семи частин.</h2>
-          <p className="sysx-lead">Трафік, конверсія, утримання, операції, дані, бренд, юніт-економіка — вони працюють лише разом.</p>
+          <p className="sysx-lead">Стратегія, комерція, попит і клієнт, досвід, операції, дані й організація — вони працюють лише разом.</p>
         </div>
 
         {/* ROOT CAUSE — слабка ланка */}
