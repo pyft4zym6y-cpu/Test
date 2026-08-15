@@ -318,7 +318,7 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
             <span className="sysx-kick">Етап 3 · Tier-2 · {secOf}</span>
             <span className="s3-flow-right-top">
               {moneyStr && <span className="s3-money-pill mono">Можливість: {moneyStr}/рік · уточнюємо…</span>}
-              <span className={`s3-save mono${saved ? ' on' : ''}`}>{cloud ? '☁ збережено' : '✓ збережено'}</span>
+              <span className={`s3-save mono${saved ? ' on' : ''}`}>{cloud ? 'збережено в кабінеті' : 'збережено'}</span>
             </span>
           </div>
           <div className="s2-bar"><i style={{ width: `${progress}%` }} /></div>
