@@ -701,6 +701,23 @@
   border-radius: 100px; padding: 8px 16px; text-align: center; animation: s3Mile .5s var(--ease-cine); }
 @keyframes s3Mile { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 
+/* Навігатор секцій кабінету — стрічка чипів (стрибок + редагування будь-якої) */
+.s3-sections { display: flex; gap: 6px; margin-top: 10px; overflow-x: auto; padding-bottom: 2px;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 16px, #000 calc(100% - 16px), transparent); }
+.s3-sections::-webkit-scrollbar { display: none; }
+.s3-sec-chip { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  font-size: 11.5px; color: var(--charcoal); background: var(--pure-white); border: 1px solid var(--silver);
+  border-radius: 100px; padding: 6px 12px; transition: border-color .2s, color .2s, background .2s; white-space: nowrap; }
+.s3-sec-chip b { color: var(--graphite); font-size: 10px; }
+.s3-sec-chip i { color: var(--graphite); font-style: normal; font-size: 10px; }
+.s3-sec-chip.is-on { border-color: var(--deep); color: var(--deep); background: color-mix(in srgb, var(--data) 5%, var(--pure-white)); }
+.s3-sec-chip.is-on b { color: var(--data); }
+.s3-sec-chip.is-done b { color: #3a7d5c; }
+.s3-sec-chip.is-done b::after { content: ' ✓'; }
+.s3-sec-report { color: var(--deep); border-color: var(--deep); font-weight: 500; }
+.s3-sec-report:hover { background: var(--deep); color: #fff; }
+
 /* P7/P8 — тиха довіра + розбірливість */
 .s3-trust { display: flex; flex-wrap: wrap; gap: 6px 20px; justify-content: center; text-align: center;
   font-size: 11px; color: var(--graphite); padding: 4px 0 2px; }
