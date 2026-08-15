@@ -875,13 +875,21 @@
  * сцени/плашки/акти розкладаємо у вертикальний стек елегантних карток. Число
  * лишається героєм, дельти читаються, нічого не залежить від скрол-камери. */
 @media (max-width: 860px) {
-  .sysx-film { height: auto; }
-  .sysx-stage { position: static; height: auto; display: block; padding: 76px 0 40px; background: transparent; }
+  /* 2.5D fallback застосовуємо до фільмів БЕЗ opt-in .sysx-scroll-mobile */
+  .sysx-film:not(.sysx-scroll-mobile) { height: auto; }
+  .sysx-film:not(.sysx-scroll-mobile) .sysx-stage { position: static; height: auto; display: block; padding: 76px 0 40px; background: transparent; }
   /* Об'єкт-інфографіка лишається — тепер як живе напівпрозоре тло, що анімується
      від скролу; контент-сцени стекуються поверх нього (читабельно). */
-  .sysx-object3d { display: block; position: fixed; inset: 0; width: 100%; height: 100dvh; z-index: 0; opacity: .5; pointer-events: none; }
-  .sysx-scene { position: relative; z-index: 1; inset: auto; opacity: 1 !important; transform: none !important;
+  .sysx-film:not(.sysx-scroll-mobile) .sysx-object3d { display: block; position: fixed; inset: 0; width: 100%; height: 100dvh; z-index: 0; opacity: .5; pointer-events: none; }
+  .sysx-film:not(.sysx-scroll-mobile) .sysx-scene { position: relative; z-index: 1; inset: auto; opacity: 1 !important; transform: none !important;
     min-height: auto; margin: 52px 0; padding: 0 22px; }
+
+  /* ── Головний герой-фільм: ЛИШАЄМО скрол-кіно на мобільному (надписи «випливають»
+     при скролі, а не стекуються всі одразу). Об'єкт — живе тло у липкій сцені. ── */
+  .sysx-scroll-mobile.sysx-film { height: 560vh; }          /* трохи коротший хід на телефоні */
+  .sysx-scroll-mobile .sysx-stage { position: sticky; top: 0; height: 100dvh; display: grid; place-items: center; overflow: hidden; }
+  .sysx-scroll-mobile .sysx-object3d { display: block; position: absolute; inset: 0; z-index: 1; opacity: .82; }
+  .sysx-scroll-mobile .sysx-scene { padding: clamp(84px, 13vh, 132px) 22px calc(96px + env(safe-area-inset-bottom)); }
   .sysx-labels { display: none; }
   .sysx-h1 { font-size: clamp(42px, 13vw, 76px); }
   .sysx-h2 { font-size: clamp(32px, 9vw, 60px); }
