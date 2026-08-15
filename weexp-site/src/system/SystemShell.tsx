@@ -15,6 +15,7 @@ const LINKS = [
   { to: '/expansion', label: 'Експансія' },
   { to: '/people', label: 'Люди' },
   { to: '/loss', label: 'Калькулятор' },
+  { to: '/contact', label: 'Контакт' },
 ];
 
 export function SystemShell() {

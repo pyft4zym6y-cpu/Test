@@ -109,13 +109,22 @@ export function SystemInMotion() {
           <p className="sysx-lead">Менша вартість клієнта, органіка, повторні продажі. Вітрина стає активом, а не статтею витрат.</p>
         </div>
 
-        {/* CTA — INDEPENDENCE */}
+        {/* CTA — INDEPENDENCE (+ позиціонування, докази й прямий контакт при першому знайомстві) */}
         <div ref={sCta} className="sysx-scene sysx-ctaScene" style={{ opacity: 0 }}>
           <div className="sysx-kick">Independence Score</div>
           <h2 className="sysx-display sysx-h2">Наскільки незалежний<br />ваш <span className="sysx-em">e-commerce</span>?</h2>
+          <p className="sysx-lead">Веб-розробка, ERP, UX/CRO та аналітика — сім систем під одним дахом. Команда з власником кожної.</p>
+          <div className="sysx-proof">
+            <span><b>17</b> трансформацій</span>
+            <i aria-hidden="true" />
+            <span><b>7</b> систем під дахом</span>
+            <i aria-hidden="true" />
+            <span>D2C-бренди <b>$0.5–10M</b></span>
+          </div>
           <div className="sysx-cta-row">
             <Link to="/diagnose" className="sysx-cta is-primary">Знайти вузьке місце →</Link>
             <Link to="/loss" className="sysx-cta">Порахувати втрати</Link>
+            <Link to="/contact" className="sysx-cta">Написати нам</Link>
           </div>
         </div>
 
