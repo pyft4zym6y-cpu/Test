@@ -67,7 +67,7 @@ export function SystemInMotion() {
 
   return (
     <>
-    <section ref={sec} className="sysx sysx-film" aria-label="WEEXP — The System in Motion">
+    <section ref={sec} className="sysx sysx-film sysx-scroll-mobile" aria-label="WEEXP — The System in Motion">
       <div className="sysx-stage">
         <span className="sysx-field" aria-hidden="true" />
         <Suspense fallback={null}><CommerceSystem3D progress={progress} alerts={alerts} labels={labels} /></Suspense>
@@ -121,7 +121,7 @@ export function SystemInMotion() {
           <div className="sysx-proof">
             <span><b>17</b> трансформацій</span>
             <i aria-hidden="true" />
-            <span><b>7</b> систем під дахом</span>
+            <span><b>8</b> систем під дахом</span>
             <i aria-hidden="true" />
             <span>D2C-бренди <b>$0.5–10M</b></span>
           </div>
