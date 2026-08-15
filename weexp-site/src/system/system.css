@@ -462,9 +462,9 @@
 .s2-quiz-actions { display: flex; gap: 12px; align-items: center; justify-content: space-between; }
 .s2-back { background: none; border: 0; color: var(--graphite); font-size: 12px; cursor: pointer; }
 .s2-back:hover { color: var(--deep); }
-.s2-url .s2-inp { display: grid; gap: 6px; }
+.s2-inp { display: grid; gap: 6px; }
 .s2-inp > span { font-size: 12px; color: var(--charcoal); }
-.s2-inp input { border: 1px solid var(--silver); border-radius: 10px; padding: 12px 13px; font-size: 15px; color: var(--deep); outline: 0; }
+.s2-inp input { width: 100%; border: 1px solid var(--silver); border-radius: 10px; padding: 12px 14px; font-size: 16px; color: var(--deep); outline: 0; background: var(--pure-white); }
 .s2-inp input:focus { border-color: var(--data); }
 
 /* Звіт — повний екран */
@@ -618,9 +618,9 @@
 
 /* ── STAGE 3 (кабінет, Tier-2) ── */
 .s3-auth { min-height: 100vh; display: grid; align-content: center; justify-items: center; text-align: center; gap: 14px; padding: 80px 22px; }
-.s3-auth-h { font-size: clamp(28px, 3.6vw, 50px); color: var(--deep); }
-.s3-auth-lead { font-size: 15px; color: var(--charcoal); max-width: 46ch; line-height: 1.55; }
-.s3-auth-form { display: grid; gap: 12px; width: min(420px, 92vw); margin-top: 8px; text-align: left; }
+.s3-auth-h { font-size: clamp(26px, 3.6vw, 50px); color: var(--deep); text-wrap: balance; hyphens: none; }
+.s3-auth-lead { font-size: 14.5px; color: var(--charcoal); max-width: 40ch; line-height: 1.6; text-wrap: pretty; hyphens: none; }
+.s3-auth-form { display: grid; gap: 14px; width: min(400px, 92vw); margin-top: 10px; text-align: left; }
 .s3-err { color: var(--alert); font-size: 12px; }
 
 /* Tier-2 анкета — один блок на екран (кінематографічний потік, як Етап 2) */
@@ -682,7 +682,7 @@
 
 /* P3 — що дає кабінет (реєстрація) */
 .s3-auth-gets { list-style: none; margin: 4px 0 6px; padding: 0; display: grid; gap: 8px; text-align: left; width: min(420px, 92vw); }
-.s3-auth-gets li { position: relative; padding-left: 22px; font-size: 13.5px; color: var(--charcoal); line-height: 1.45; }
+.s3-auth-gets li { position: relative; padding-left: 22px; font-size: 13.5px; color: var(--charcoal); line-height: 1.5; text-wrap: pretty; hyphens: none; }
 .s3-auth-gets li::before { content: ''; position: absolute; left: 4px; top: 7px; width: 7px; height: 7px; border-radius: 50%; background: var(--data); }
 
 /* P5 — епіфанія у звіті */
@@ -919,14 +919,26 @@
 @media (max-width: 860px) {
   .sysx-explorer, .sxp-stage { min-height: 100vh; min-height: 100svh; }
   .sysx-explorer .sysx-object3d { display: block; position: absolute; inset: 0; touch-action: pan-y; }
-  .sxp-intro { left: 0; right: 0; top: 0; max-width: none; transform: none; text-align: center; justify-items: center;
-    padding: calc(56px + env(safe-area-inset-top)) 22px 0; }
+  /* Інтро на весь екран: текст зверху, а «значки»-систем — акуратною стрічкою знизу */
+  .sxp-intro { position: absolute; inset: 0; left: 0; right: 0; top: 0; max-width: none; transform: none;
+    display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;
+    padding: calc(60px + env(safe-area-inset-top)) 22px calc(64px + env(safe-area-inset-bottom)); }
   .sxp-intro.is-hidden { opacity: 0; transform: translateY(-8px); }
   .sxp-h { font-size: clamp(28px, 8vw, 46px); }
   .sxp-lead { max-width: 34ch; }
+  /* Стрічка систем: один рядок, горизонтальний скрол, тулиться донизу */
+  .sxp-picker { margin-top: auto; width: 100%; max-width: none; flex-wrap: nowrap; overflow-x: auto;
+    gap: 8px; padding: 10px 2px 2px; justify-content: flex-start; scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none; -webkit-mask-image: linear-gradient(90deg, transparent, #000 18px, #000 calc(100% - 18px), transparent); }
+  .sxp-picker::-webkit-scrollbar { display: none; }
+  .sxp-pick { flex: 0 0 auto; scroll-snap-align: start; font-size: 12px; padding: 8px 13px; background: rgba(255,255,255,.9); }
+  /* Деталь-панель — суцільний нижній шит (не просвічує обʼєкт) */
   .sxp-panel { top: auto; bottom: 0; left: 0; right: 0; transform: none; width: auto; border-radius: 20px 20px 0 0;
-    max-height: 64svh; overflow-y: auto; animation: sxpUp .4s var(--ease-cine); padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
-  .sxp-label-t { font-size: 9.5px; padding: 3px 7px; }
+    background: color-mix(in srgb, var(--pure-white) 97%, transparent); backdrop-filter: blur(6px);
+    max-height: 72svh; overflow-y: auto; animation: sxpUp .4s var(--ease-cine);
+    padding: 22px 22px calc(88px + env(safe-area-inset-bottom)); box-shadow: 0 -30px 60px -40px rgba(21,23,26,.45); }
+  /* Плаваючі підпис-процеси ховаємо на телефоні (клипаються за край; є у панелі) */
+  .sxp-labels { display: none; }
 }
 @keyframes sxpUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 @media (prefers-reduced-motion: reduce) {
@@ -998,9 +1010,10 @@
   .pf-bg { display: block; position: fixed; inset: 0; z-index: 0; opacity: 1; }
   /* Увесь контент фільмів — над тлом-об'єктом */
   .sysf-panel, .cf-act, .pf-founder, .pf-roster, .pf-standard, .xp-panel, .xp-head { position: relative; z-index: 1; }
-  /* seven: плашки в стек, з тонкою лінією-роздільником */
-  .sysf-panel { border-top: 1px solid var(--line); padding-top: 26px; }
+  /* seven: плашки в стек, з тонкою лінією-роздільником + бічні поля (текст не в край) */
+  .sysf-panel { border-top: 1px solid var(--line); padding: 26px 22px 0; }
   .sysf-panel-in { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; border: 0; box-shadow: none; padding: 0; }
+  .sysf-feel, .sysf-pain, .sysf-sell { overflow-wrap: break-word; }
   /* proof: акт як картка, число зверху, дельти під ним */
   .cf-act { gap: 16px; }
   .cf-hero { justify-items: start; }

@@ -125,7 +125,7 @@ export function SystemsFilm() {
           <div key={s.key} ref={(el) => { panels.current[i] = el; }} className="sysf-panel" style={{ opacity: 0 }}>
             <span className="sysf-ghost mono" aria-hidden="true">{s.num}</span>
             <div className="sysf-panel-in">
-              <span className="sysf-en mono">{s.en} · Система {s.num}/07</span>
+              <span className="sysf-en mono">{s.en} · Система {s.num}/08</span>
               <h2 className="sysx-display sysf-title">{s.title}</h2>
               <p className="sysf-feel">«{s.feel}»</p>
               <div className="sysf-pains">
