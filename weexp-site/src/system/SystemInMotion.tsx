@@ -15,9 +15,9 @@ const SystemExplorer = lazy(() => import('@/system/SystemExplorer').then((m) => 
  *   (слабка ланка червоним) → CONNECT (частини як одне) → ACTIVATION (гроші течуть)
  *   → INDEPENDENCE (CTA). Світле cinematic-полотно. Живий (темний) сайт не чіпаємо.
  */
-// Канонічні 7 систем — ті самі, що в діагностиці/радарі (lossModel.SYS), щоб сайт
+// Канонічні 8 систем — ті самі, що в діагностиці/радарі (lossModel.SYS), щоб сайт
 // був узгоджений: головна, калькулятор і звіти говорять про одні й ті ж системи.
-const SYSTEMS = ['Стратегія', 'Комерція', 'Попит і клієнт', 'Досвід', 'Операції', 'Дані', 'Організація'];
+const SYSTEMS = ['Стратегія', 'Комерція', 'Попит і клієнт', 'Досвід', 'Операції', 'Дані', 'Організація', 'Експансія'];
 const BOTTLENECK = 2; // «Попит і клієнт» — слабка ланка у сцені кореневої причини
 
 export function SystemInMotion() {
@@ -89,8 +89,8 @@ export function SystemInMotion() {
 
         {/* FORM — 7 систем збираються */}
         <div ref={sForm} className="sysx-scene sysx-form" style={{ opacity: 0 }}>
-          <h2 className="sysx-display sysx-h2">E-commerce — це <span className="sysx-em">система</span><br />із семи частин.</h2>
-          <p className="sysx-lead">Стратегія, комерція, попит і клієнт, досвід, операції, дані й організація — вони працюють лише разом.</p>
+          <h2 className="sysx-display sysx-h2">E-commerce — це <span className="sysx-em">система</span><br />із восьми частин.</h2>
+          <p className="sysx-lead">Стратегія, комерція, попит і клієнт, досвід, операції, дані, організація й експансія — вони працюють лише разом.</p>
         </div>
 
         {/* ROOT CAUSE — слабка ланка */}
@@ -115,7 +115,7 @@ export function SystemInMotion() {
         <div ref={sCta} className="sysx-scene sysx-ctaScene" style={{ opacity: 0 }}>
           <div className="sysx-kick">Independence Score</div>
           <h2 className="sysx-display sysx-h2">Наскільки незалежний<br />ваш <span className="sysx-em">e-commerce</span>?</h2>
-          <p className="sysx-lead">Веб-розробка, ERP, UX/CRO та аналітика — сім систем під одним дахом. Команда з власником кожної.</p>
+          <p className="sysx-lead">Веб-розробка, ERP, UX/CRO, аналітика та експансія — вісім систем під одним дахом. Команда з власником кожної.</p>
           <div className="sysx-proof">
             <span><b>17</b> трансформацій</span>
             <i aria-hidden="true" />

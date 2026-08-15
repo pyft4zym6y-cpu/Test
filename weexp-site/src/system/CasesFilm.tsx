@@ -97,7 +97,7 @@ export function CasesFilm() {
           <p className="sysx-lead">Почніть із діагнозу: за 2 хвилини побачите, яка система дасть найбільшу дельту саме вам.</p>
           <div className="sysx-cta-row">
             <Link to="/diagnose" className="sysx-cta is-primary">Знайти свою дельту →</Link>
-            <Link to="/systems" className="sysx-cta">7 систем</Link>
+            <Link to="/systems" className="sysx-cta">8 систем</Link>
           </div>
         </div>
       </div>

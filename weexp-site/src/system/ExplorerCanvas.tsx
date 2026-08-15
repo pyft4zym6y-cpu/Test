@@ -9,8 +9,8 @@ import { SYSTEMS } from '@/data/xray';
  * лініями — інші вузли тьмяніють, обертання завмирає. Повторний клік по тлу —
  * назад до огляду. Позиції підвузлів щокадру проєктуються у 2D для HTML-лейблів.
  */
-const N = 7;
-const NODE_TINT = [0xffffff, 0xd9dde1, 0xffffff, 0xd9dde1, 0xffffff, 0xd9dde1, 0xffffff];
+const N = 8;
+const NODE_TINT = [0xffffff, 0xd9dde1, 0xffffff, 0xd9dde1, 0xffffff, 0xd9dde1, 0xffffff, 0xd9dde1];
 const MAX_SUB = 5;
 
 export function ExplorerCanvas({ focusedRef, onPick, hoverRef, subLabels }: {

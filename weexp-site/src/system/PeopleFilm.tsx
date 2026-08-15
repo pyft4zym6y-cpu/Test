@@ -52,7 +52,7 @@ export function PeopleFilm() {
         <div ref={intro} className="sysx-scene sysx-void">
           <div className="sysx-kick">WEEXP — The People · {TEAM.length} ролей</div>
           <h1 className="sysx-display sysx-h1">Систему будують<br /><span className="sysx-em">власники</span>, не герої</h1>
-          <p className="sysx-lead">У кожної з семи систем онлайн-продажів є відповідальний за результат. Не універсали — власники конкретного контуру.</p>
+          <p className="sysx-lead">У кожної системи онлайн-продажів є відповідальний за результат. Не універсали — власники конкретного контуру.</p>
           <span className="sysx-scrollhint mono">↓ познайомитись</span>
         </div>
 

@@ -10,7 +10,7 @@ import './system.css';
  */
 const LINKS = [
   { to: '/', label: 'Система' },
-  { to: '/systems', label: '7 систем' },
+  { to: '/systems', label: '8 систем' },
   { to: '/proof', label: 'Докази' },
   { to: '/expansion', label: 'Експансія' },
   { to: '/people', label: 'Люди' },

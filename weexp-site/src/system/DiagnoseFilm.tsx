@@ -61,7 +61,7 @@ export function DiagnoseFilm() {
 
         {phase === 'intro' && (
           <div className="sysx-card">
-            <p className="sysx-lead">Оцініть 7 систем онлайн-продажів. Наприкінці отримаєте Independence Score,
+            <p className="sysx-lead">Оцініть 8 систем онлайн-продажів. Наприкінці отримаєте Independence Score,
               Business Health по кожній системі й вузьке місце, що тримає прибуток — без реєстрації.</p>
             <div className="dg-levels mono">
               {['Хаос', 'Залежність', 'Функції', 'Система', 'Незалежність'].map((t, i) => (
@@ -107,7 +107,7 @@ export function DiagnoseFilm() {
             <p className="dg-level-line">{levelFor(result.independence).line}</p>
 
             <div className="sysx-health">
-              <div className="sysx-health-head"><span className="sysx-kick">7 систем</span><span className="mono sysx-note">оцінка / 100</span></div>
+              <div className="sysx-health-head"><span className="sysx-kick">8 систем</span><span className="mono sysx-note">оцінка / 100</span></div>
               <div className="sysx-health-grid">
                 {result.systemScores.map((h) => (
                   <div key={h.key} className="sysx-hbar">

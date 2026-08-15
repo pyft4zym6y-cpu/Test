@@ -4,7 +4,7 @@
  * «estimate». Логіка ланцюгова: втрати важелів не складаються напряму (сумарна
  * можливість = найбільший важіль + частка решти), як і в методі WEEXP.
  */
-export type SysKey = 'strategy' | 'commercial' | 'customer' | 'experience' | 'operations' | 'data' | 'org';
+export type SysKey = 'strategy' | 'commercial' | 'customer' | 'experience' | 'operations' | 'data' | 'org' | 'expansion';
 
 export const SYS: { key: SysKey; label: string; node: number }[] = [
   { key: 'strategy', label: 'Стратегія та управління', node: 0 },
@@ -14,6 +14,7 @@ export const SYS: { key: SysKey; label: string; node: number }[] = [
   { key: 'operations', label: 'Операції та fulfillment', node: 4 },
   { key: 'data', label: 'Дані та технології', node: 5 },
   { key: 'org', label: 'Організація', node: 6 },
+  { key: 'expansion', label: 'Експансія та ринки', node: 7 },
 ];
 
 export type LossInput = {
@@ -42,6 +43,7 @@ const ACTION: Record<SysKey, string> = {
   operations: 'Поставити SLA обробки, викуп/доставку й контроль повернень — від кошика до returns.',
   data: 'Наскрізна аналітика + єдиний master data: одні цифри для всіх рішень.',
   org: 'Операційна модель: ролі, RACI, KPI, SOP — щоб бізнес працював без героя.',
+  expansion: 'Вихід у ЄС/США як окремий контур: Allegro, Amazon і локальні майданчики.',
 };
 
 export function computeLoss(inp: LossInput): LossResult {
@@ -107,7 +109,7 @@ export function computeLoss(inp: LossInput): LossResult {
     if (has(sym, key)) s -= 22;
     return { key, label, score: Math.round(clamp(s, 5, 98)) };
   });
-  const W: Record<SysKey, number> = { strategy: 1, commercial: 1, customer: 1.1, experience: .9, operations: 1.3, data: 1.2, org: 1.5 };
+  const W: Record<SysKey, number> = { strategy: 1, commercial: 1, customer: 1.1, experience: .9, operations: 1.3, data: 1.2, org: 1.5, expansion: .8 };
   const wsum = Object.values(W).reduce((a, b) => a + b, 0);
   const overallHealth = Math.round(health.reduce((a, h) => a + h.score * W[h.key], 0) / wsum);
 

@@ -14,6 +14,7 @@ const SERVICES: Record<SystemKey, string[]> = {
   operations: ['ERP-автоматизація', 'Fulfillment / SLA', 'Інтеграції'],
   data: ['Аналітика / BI', 'Наскрізна аналітика', 'Master data', 'Інтеграції'],
   org: ['Операційна модель', 'RACI та KPI', 'SOP і база знань'],
+  expansion: ['Вихід у ЄС/США', 'Маркетплейси', 'Локалізація й логістика'],
 };
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
@@ -93,7 +94,7 @@ export function SystemsFilm() {
   }, []);
 
   return (
-    <section ref={sec} className="sysx sysx-film sysx-seven" aria-label="WEEXP — сім систем, у яких бізнес втрачає гроші">
+    <section ref={sec} className="sysx sysx-film sysx-seven" aria-label="WEEXP — вісім систем, у яких бізнес втрачає гроші">
       <div className="sysx-stage">
         <span className="sysx-field" aria-hidden="true" />
         <Suspense fallback={null}><CommerceSystem3D progress={progress} alerts={alerts} labels={labels} /></Suspense>
@@ -113,10 +114,10 @@ export function SystemsFilm() {
 
         {/* INTRO */}
         <div ref={intro} className="sysx-scene sysx-void">
-          <div className="sysx-kick">WEEXP — The Seven Systems</div>
+          <div className="sysx-kick">WEEXP — The Eight Systems</div>
           <h1 className="sysx-display sysx-h1">Де ваш бізнес<br />втрачає <span className="sysx-em sysx-em-alert">гроші</span>?</h1>
-          <p className="sysx-lead">Не сайт і не канал — уся система онлайн-продажів. Веб-розробка, ERP-автоматизація, UX/UI та CRO, аналітика — усі сім систем ми закриваємо самі, під одним дахом. Пройдемо крізь кожну.</p>
-          <span className="sysx-scrollhint mono">↓ крізь 7 систем</span>
+          <p className="sysx-lead">Не сайт і не канал — уся система онлайн-продажів. Веб-розробка, ERP-автоматизація, UX/UI та CRO, аналітика та експансія — усі вісім систем ми закриваємо самі, під одним дахом. Пройдемо крізь кожну.</p>
+          <span className="sysx-scrollhint mono">↓ крізь 8 систем</span>
         </div>
 
         {/* 7 актів — плашки-експонати біля об'єкта */}
@@ -145,7 +146,7 @@ export function SystemsFilm() {
         <div ref={outro} className="sysx-scene sysx-ctaScene">
           <div className="sysx-kick">Знайдіть свою слабку ланку</div>
           <h2 className="sysx-display sysx-h2">Не вгадуйте систему —<br />знайдіть <span className="sysx-em">bottleneck</span>.</h2>
-          <p className="sysx-lead">Business X-Ray за 2 хвилини покаже, яка з семи систем зараз стримує ваш зріст найсильніше.</p>
+          <p className="sysx-lead">Business X-Ray за 2 хвилини покаже, яка з восьми систем зараз стримує ваш зріст найсильніше.</p>
           <div className="sysx-cta-row">
             <Link to="/diagnose" className="sysx-cta is-primary">Пройти Business X-Ray →</Link>
             <Link to="/loss" className="sysx-cta">Порахувати втрати</Link>

@@ -16,6 +16,7 @@ const PARTS: Record<SystemKey, string[]> = {
   operations: ['Склад · WMS', 'Фулфілмент', 'Логістика', 'Постачання'],
   data: ['Наскрізна аналітика', 'Дашборди', 'Attribution', 'Інтеграції'],
   org: ['Ролі · команда', 'SOP', 'Roadmap', 'Governance'],
+  expansion: ['ЄС/США', 'Маркетплейси', 'Локалізація', 'Логістика'],
 };
 type Layer = { num: string; title: string; short: string; feel: string; parts: string[] };
 const LAYERS: Layer[] = [
