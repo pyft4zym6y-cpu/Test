@@ -127,6 +127,13 @@
 @keyframes sysxBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(7px); } }
 .sysx-cta-row { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
 
+/* Докази при першому знайомстві — конкретні сигнали (число кейсів, охоплення, фіт) */
+.sysx-proof { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 16px;
+  font-size: clamp(12px, 1.3vw, 14px); color: var(--charcoal); }
+.sysx-proof b { color: var(--deep); font-weight: 700; }
+.sysx-proof i { width: 4px; height: 4px; border-radius: 50%; background: var(--silver); }
+@media (max-width: 560px) { .sysx-proof i { display: none; } }
+
 /* VOID сцена трохи піднята — щоб об'єкт «народжувався» знизу за текстом */
 .sysx-void { align-content: center; }
 
