@@ -46,7 +46,7 @@ export const BLOCKS: Block[] = [
   { id: 'comp_indirect', section: 'Конкурентне поле', kind: 'urllist', placeholder: 'https://',
     label: 'А хто забирає той самий бюджет і увагу клієнта?', hint: 'Непрямі — інша категорія, але конкурують за ваші гроші клієнта.', addLabel: '+ Ще один' },
   { id: 'cpos', section: 'Конкурентне поле', label: 'Як ви почуваєтесь поруч із ними?', kind: 'single', system: 'strategy',
-    options: [{ label: 'Слабші майже в усьому', score: 0 }, { label: 'Схожі, без явної переваги', score: 1 }, { label: 'Є 1–2 сильні сторони', score: 2 }, { label: 'Маємо чітку різницю', score: 3 }] },
+    options: [{ label: 'Слабші майже в усьому', score: 0 }, { label: 'Виграємо лише ціною', score: 0.8 }, { label: 'Схожі, без явної переваги', score: 1.4 }, { label: 'Є 1–2 сильні сторони', score: 2.2 }, { label: 'Маємо чітку різницю', score: 3 }, { label: 'Чесно — не порівнювали', score: 1 }] },
 
   // 2 — Орієнтири
   { id: 'refs', section: 'Орієнтири', kind: 'refs',
@@ -56,29 +56,29 @@ export const BLOCKS: Block[] = [
   { id: 'm_traffic', section: 'Маркетинг та аналітика', label: 'Звідки зараз приходить більшість покупців?', kind: 'multi',
     options: [{ label: 'Платна реклама' }, { label: 'SEO-органіка' }, { label: 'Соцмережі' }, { label: 'Email / CRM' }, { label: 'Маркетплейси' }, { label: 'Прямі й рекомендації' }] },
   { id: 'm_ga4', section: 'Маркетинг та аналітика', label: 'Що ви бачите у своїй аналітиці (GA4)?', kind: 'single', system: 'data',
-    options: [{ label: 'Толком не налаштована', score: 0 }, { label: 'Дивимось трафік і перегляди', score: 1 }, { label: 'Рахуємо конверсії по цілях', score: 2 }, { label: 'Наскрізна — до доходу й ROI', score: 3 }] },
+    options: [{ label: 'Толком не налаштована', score: 0 }, { label: 'Дивимось у кабінетах реклами', score: 0.8 }, { label: 'Дивимось трафік і перегляди', score: 1.4 }, { label: 'Рахуємо конверсії по цілях', score: 2.2 }, { label: 'Наскрізна — до доходу й ROI', score: 3 }, { label: 'Не знаю, що налаштовано', score: 0.6 }] },
   { id: 'm_sc', section: 'Маркетинг та аналітика', label: 'Як вас видно в Google (Search Console)?', kind: 'single', system: 'data',
-    options: [{ label: 'Не відстежуємо', score: 0 }, { label: 'Позиції переважно низькі', score: 1 }, { label: 'Ростемо, але нерівномірно', score: 2 }, { label: 'Топ по частині запитів', score: 3 }] },
+    options: [{ label: 'Не відстежуємо', score: 0 }, { label: 'Позиції переважно низькі', score: 1 }, { label: 'Ростемо, але нерівномірно', score: 2 }, { label: 'Топ по частині запитів', score: 3 }, { label: 'SEO для нас не пріоритет', score: 1 }, { label: 'Не знаю', score: 0.6 }] },
   { id: 'm_cac', section: 'Маркетинг та аналітика', label: 'Скільки коштує залучити покупця — відносно чека?', kind: 'single', system: 'customer',
-    options: [{ label: 'Дорожче за сам чек', score: 0 }, { label: 'Приблизно як чек', score: 1 }, { label: 'Дешевше, але без запасу', score: 2 }, { label: 'Значно дешевше за чек', score: 3 }] },
+    options: [{ label: 'Дорожче за сам чек', score: 0 }, { label: 'Приблизно як чек', score: 1 }, { label: 'Дешевше, але без запасу', score: 2 }, { label: 'Значно дешевше за чек', score: 3 }, { label: 'Залежить від каналу', score: 1.5 }, { label: 'Не рахували CAC', score: 0.5 }] },
   { id: 'm_repeat', section: 'Маркетинг та аналітика', label: 'Скільки покупців повертаються за другою покупкою?', kind: 'single', system: 'customer',
-    options: [{ label: 'Майже ніхто', score: 0 }, { label: 'До 15%', score: 1 }, { label: '15–30%', score: 2 }, { label: 'Понад 30%', score: 3 }] },
+    options: [{ label: 'Майже ніхто', score: 0 }, { label: 'До 15%', score: 1 }, { label: '15–30%', score: 2 }, { label: 'Понад 30%', score: 3 }, { label: 'Товар разової покупки', score: 1.5 }, { label: 'Не рахували', score: 0.6 }] },
 
   // 4 — Фінанси
   { id: 'f_margin', section: 'Фінанси', label: 'Яка у вас валова маржа?', kind: 'single', system: 'commercial',
-    options: [{ label: 'До 20%', score: 0 }, { label: '20–35%', score: 1 }, { label: '35–50%', score: 2 }, { label: 'Понад 50%', score: 3 }] },
+    options: [{ label: 'До 20%', score: 0 }, { label: '20–35%', score: 1 }, { label: '35–50%', score: 2 }, { label: '50–65%', score: 2.6 }, { label: 'Понад 65%', score: 3 }, { label: 'Не рахували точно', score: 0.8 }] },
   { id: 'f_returns', section: 'Фінанси', label: 'Скільки замовлень зривається (повернення + скасування)?', kind: 'single', system: 'operations',
-    options: [{ label: 'Понад 15%', score: 0 }, { label: '8–15%', score: 1 }, { label: '4–8%', score: 2 }, { label: 'Менше 4%', score: 3 }] },
+    options: [{ label: 'Понад 15%', score: 0 }, { label: '8–15%', score: 1 }, { label: '4–8%', score: 2 }, { label: 'Менше 4%', score: 3 }, { label: 'Передоплата — зривів майже немає', score: 2.6 }, { label: 'Не відстежуємо', score: 0.6 }] },
   { id: 'f_unit', section: 'Фінанси', label: 'Чи заробляєте ви з кожного продажу після реклами?', kind: 'single', system: 'commercial',
-    options: [{ label: 'Ні / не рахуємо', score: 0 }, { label: 'На межі', score: 1 }, { label: 'Так, з невеликим запасом', score: 2 }, { label: 'Так, стабільно', score: 3 }] },
+    options: [{ label: 'Ні / у мінус', score: 0 }, { label: 'На межі', score: 1 }, { label: 'Так, з невеликим запасом', score: 2 }, { label: 'Так, стабільно', score: 3 }, { label: 'Заробляємо на повторних, не на першому', score: 1.5 }, { label: 'Не рахуємо', score: 0.5 }] },
   { id: 'f_pnl', section: 'Фінанси', label: 'Наскільки прозорий ваш P&L по e-commerce?', kind: 'single', system: 'commercial',
-    options: [{ label: 'Немає', score: 0 }, { label: 'Бачимо оборот', score: 1 }, { label: 'Є маржа по групах', score: 2 }, { label: 'Повний P&L + unit economics', score: 3 }] },
+    options: [{ label: 'Немає', score: 0 }, { label: 'Бачимо оборот', score: 1 }, { label: 'Є маржа по групах', score: 2 }, { label: 'Повний P&L + unit economics', score: 3 }, { label: 'Веде бухгалтер, ми не бачимо', score: 1 }, { label: 'Не знаю', score: 0.6 }] },
   { id: 'f_aov', section: 'Фінанси', label: 'Середній чек (AOV)', kind: 'number', unit: '€', hint: 'необовʼязково — якщо знаєте' },
   { id: 'f_ltv', section: 'Фінанси', label: 'Скільки приносить клієнт за рік (LTV)', kind: 'number', unit: '€', hint: 'необовʼязково' },
 
   // 5 — Позиціонування і бренд
   { id: 'b_pos', section: 'Позиціонування і бренд', label: 'Чи є у вас чітке позиціонування?', kind: 'single', system: 'strategy',
-    options: [{ label: 'Немає, продаємо ціною', score: 0 }, { label: 'Розмите', score: 1 }, { label: 'Є, але не всюди', score: 2 }, { label: 'Чітке, послідовне', score: 3 }] },
+    options: [{ label: 'Немає, продаємо ціною', score: 0 }, { label: 'Розмите', score: 1 }, { label: 'Є в голові, не на сайті', score: 1.6 }, { label: 'Є, але не всюди', score: 2.3 }, { label: 'Чітке, послідовне', score: 3 }, { label: 'Важко сказати', score: 1 }] },
   { id: 'b_audience', section: 'Позиціонування і бренд', label: 'Наскільки добре ви знаєте свою аудиторію?', kind: 'single', system: 'strategy',
     options: [{ label: 'Інтуїтивно', score: 0 }, { label: 'Демографія', score: 1 }, { label: 'Сегменти + болі', score: 2 }, { label: 'JTBD + дані', score: 3 }] },
   { id: 'b_content', section: 'Позиціонування і бренд', label: 'Чи працює на вас контент?', kind: 'single', system: 'experience',
@@ -88,7 +88,7 @@ export const BLOCKS: Block[] = [
 
   // 6 — Сайт і технології (нативно веде до нового сайту й розбору)
   { id: 'd_stack', section: 'Сайт і технології', label: 'На чому побудований ваш сайт?', kind: 'single', system: 'data',
-    options: [{ label: 'Конструктор / шаблон', score: 0 }, { label: 'CMS на шаблоні', score: 1 }, { label: 'Кастомна на CMS', score: 2 }, { label: 'Headless / кастом', score: 3 }] },
+    options: [{ label: 'Конструктор (Tilda, Wix…)', score: 0 }, { label: 'Shopify / готова платформа', score: 1.3 }, { label: 'CMS на шаблоні', score: 1.6 }, { label: 'Кастомна на CMS', score: 2.3 }, { label: 'Headless / кастом', score: 3 }, { label: 'Не знаю', score: 0.8 }] },
   { id: 'site_age', section: 'Сайт і технології', label: 'Коли ви востаннє капітально робили або переробляли сайт?', kind: 'single', system: 'experience',
     hint: 'Не косметика, а платформа й логіка.',
     options: [{ label: '5+ років тому', score: 0 }, { label: '3–4 роки тому', score: 1 }, { label: '1–2 роки тому', score: 2 }, { label: 'Менше року тому', score: 3 }] },
@@ -107,9 +107,9 @@ export const BLOCKS: Block[] = [
 
   // 8 — Команда і процеси (+ намір: з чим потрібна команда)
   { id: 'o_owner', section: 'Команда і процеси', label: 'Хто відповідає за прибуток e-commerce?', kind: 'single', system: 'org',
-    options: [{ label: 'Ніхто конкретно', score: 0 }, { label: 'Власник', score: 1 }, { label: 'Керівник напряму', score: 2 }, { label: 'Роль + KPI по прибутку', score: 3 }] },
+    options: [{ label: 'Ніхто конкретно', score: 0 }, { label: 'Власник особисто', score: 1 }, { label: 'Маркетолог / керівник частково', score: 1.7 }, { label: 'Керівник напряму', score: 2.3 }, { label: 'Роль + KPI по прибутку', score: 3 }, { label: 'Підрядник / агенція', score: 1.4 }] },
   { id: 'o_sop', section: 'Команда і процеси', label: 'Наскільки бізнес працює без вас (процеси, SOP)?', kind: 'single', system: 'org',
-    options: [{ label: 'Усе в головах', score: 0 }, { label: 'Дещо задокументовано', score: 1 }, { label: 'Основні процеси', score: 2 }, { label: 'Повна база + онбординг', score: 3 }] },
+    options: [{ label: 'Усе в головах', score: 0 }, { label: 'Дещо задокументовано', score: 1 }, { label: 'Основні процеси описані', score: 1.8 }, { label: 'Процеси + відповідальні', score: 2.4 }, { label: 'Повна база + онбординг', score: 3 }, { label: 'Не перевіряли', score: 1 }] },
   { id: 'help_want', section: 'Команда і процеси', label: 'З чим вам найбільше потрібна команда поруч? (оберіть усе)', kind: 'multi',
     options: [{ label: 'Повний аудит e-commerce' }, { label: 'Новий сайт' }, { label: 'Трафік і маркетинг' }, { label: 'Аналітика й дані' }, { label: 'Операції й процеси' }, { label: 'Стратегія росту' }] },
 ];

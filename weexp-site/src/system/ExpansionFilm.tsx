@@ -14,18 +14,29 @@ const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m)
  * INTRO → ВІТРИНИ РИНКУ → ЩО БУДУЄМО (+ готовність) → CTA з числом кейсу.
  */
 const CHANNELS: { name: string; d: string }[] = [
-  { name: 'Власний сайт', d: 'Локалізована вітрина: мова, оплата, доставка й повернення під ринок.' },
-  { name: 'Amazon', d: 'Лістинги й контент, FBA-логістика, Buy Box, PPC-реклама.' },
+  { name: 'Власний сайт', d: 'Локалізована вітрина: мова, валюта, оплата, доставка й повернення під ринок.' },
+  { name: 'Amazon (EU + US)', d: 'Лістинги й контент, FBA-логістика, Buy Box, PPC-реклама на двох континентах.' },
   { name: 'Allegro', d: 'Провідний маркетплейс Польщі — вхід у ЄС через регіон CEE.' },
   { name: 'eBay', d: 'Крос-бордер продажі на ринки ЄС і США.' },
-  { name: 'Kaufland · локальні', d: 'Майданчики під конкретну країну — там, де вже є попит.' },
+  { name: 'Kaufland · Bol · Cdiscount', d: 'Локальні лідери DE / NL / FR — там, де вже є попит.' },
   { name: 'Etsy', d: 'Ніша дизайн / hand-made — прямий вихід на US-попит.' },
+  { name: 'TikTok Shop', d: 'Соціальна комерція ЄС/США — попит, який росте найшвидше.' },
+  { name: 'Google Shopping · Meta', d: 'Платний і органічний трафік під новий ринок, з першого дня.' },
 ];
 const BUILD: { t: string; d: string }[] = [
-  { t: 'Локалізація й логістика', d: 'Мова, оплата, доставка й повернення під кожен ринок ЄС/США.' },
-  { t: 'Юридичний контур', d: 'Юрособа, податки (VAT/sales tax), комплаєнс і договори.' },
+  { t: 'Локалізація й логістика', d: 'Мова, валюта, оплата, доставка й повернення під кожен ринок ЄС/США.' },
+  { t: 'Юридичний контур', d: 'Юрособа, податки (VAT / sales tax), EPR, комплаєнс і договори.' },
   { t: 'Маркетплейси й попит', d: 'Amazon, Allegro, локальні майданчики, органіка й бренд у новій країні.' },
+  { t: 'Бренд і попит на ринку', d: 'Локальний маркетинг, органіка й контент — вас знаходять і впізнають.' },
   { t: 'Юніт-економіка ринку', d: 'Окремий P&L: маржа виживає після мит, логістики й реклами.' },
+];
+// «Під ключ» — систематичний шлях від готовності до масштабування (рівень, який очікують від світового партнера).
+const PROCESS: { n: string; t: string }[] = [
+  { n: '01', t: 'Аудит готовності й економіки' },
+  { n: '02', t: 'Вибір ринку та вітрин' },
+  { n: '03', t: 'Локалізація + юридика' },
+  { n: '04', t: 'Запуск на всіх вітринах' },
+  { n: '05', t: 'Масштабування й бренд' },
 ];
 const READY = [
   'є traction на домашньому ринку',
@@ -59,7 +70,14 @@ export function ExpansionFilm() {
         <div ref={intro} className="sysx-scene sysx-void">
           <div className="sysx-kick">Scale · Міжнародна експансія · ЄС + США</div>
           <h1 className="sysx-display sysx-h1">Вихід у ЄС і США<br />як <span className="sysx-em">система</span>, не спроба</h1>
-          <p className="sysx-lead">Європа і Штати — не «ще один канал», а окремий бізнес-контур. Виводимо системно й одразу на всіх вітринах ринку: власний сайт, Amazon, Allegro, eBay та локальні майданчики.</p>
+          <p className="sysx-lead">Європа і Штати — сотні мільйонів покупців і вищий середній чек, ніж удома. Ми будуємо ваш міжнародний контур <b>під ключ</b>: власний сайт, Amazon, Allegro, eBay і локальні майданчики — одразу на всіх вітринах ринку.</p>
+          <div className="sysx-proof">
+            <span><b>4+</b> ринки за один контур</span>
+            <i aria-hidden="true" />
+            <span><b>8</b> вітрин продажу</span>
+            <i aria-hidden="true" />
+            <span>кейс <b>0% → 32%</b></span>
+          </div>
           <span className="sysx-scrollhint mono">↓ як виводимо</span>
         </div>
 
@@ -83,7 +101,12 @@ export function ExpansionFilm() {
         {/* ЩО БУДУЄМО + ГОТОВНІСТЬ */}
         <div ref={build} className="xp-panel xp-build" style={{ opacity: 0 }}>
           <div className="xp-build-l">
-            <span className="sysx-kick">Що будуємо під ринок</span>
+            <span className="sysx-kick">Що будуємо під ринок · під ключ</span>
+            <div className="xp-process">
+              {PROCESS.map((s) => (
+                <span key={s.n} className="xp-step"><i className="mono">{s.n}</i>{s.t}</span>
+              ))}
+            </div>
             <div className="xp-build-list">
               {BUILD.map((b) => (
                 <div key={b.t} className="xp-build-item">

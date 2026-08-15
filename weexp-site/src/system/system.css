@@ -699,6 +699,10 @@
 /* build + ready */
 .xp-build { grid-template-columns: 1.15fr .85fr; gap: clamp(24px, 4vw, 64px); align-items: center; max-width: 1180px; margin: 0 auto; width: 100%; }
 .xp-build-l { display: grid; gap: 14px; }
+.xp-process { display: flex; flex-wrap: wrap; gap: 7px; }
+.xp-step { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; color: var(--charcoal);
+  border: 1px solid var(--silver); border-radius: 100px; padding: 6px 12px 6px 8px; background: var(--pure-white); }
+.xp-step i { font-size: 10px; font-weight: 700; color: var(--data); font-style: normal; }
 .xp-build-list { display: grid; gap: 10px; }
 .xp-build-item { display: grid; gap: 3px; border-left: 2px solid var(--data); padding: 4px 0 4px 14px; }
 .xp-build-item b { font-size: clamp(15px, 1.5vw, 19px); color: var(--deep); }
