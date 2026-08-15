@@ -7,6 +7,8 @@ import { PartnerMarquee } from '@/system/PartnerMarquee';
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
 const SystemExplorer = lazy(() => import('@/system/SystemExplorer').then((m) => ({ default: m.SystemExplorer })));
+// Розбір 8 систем (колишня окрема /systems) тепер — глибший скрол-етап головної.
+const SystemsFilm = lazy(() => import('@/system/SystemsFilm').then((m) => ({ default: m.SystemsFilm })));
 
 /**
  * WEEXP — THE SYSTEM IN MOTION (home-film, /system). Повна драматургія головної на
@@ -136,6 +138,8 @@ export function SystemInMotion() {
     </section>
     {/* Логічне продовження того ж полотна — інтерактивний розбір систем */}
     <Suspense fallback={null}><SystemExplorer /></Suspense>
+    {/* Глибший скрол-етап: покадровий розбір 8 систем (об'єднано з колишньою /systems) */}
+    <div id="systems"><Suspense fallback={null}><SystemsFilm /></Suspense></div>
     </>
   );
 }

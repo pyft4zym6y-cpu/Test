@@ -1,7 +1,24 @@
-import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { lazy, Suspense, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { RouteSeo } from '@/lib/seo';
 import '@/lib/primitives.css';
+
+// Плавний скрол до якоря (#systems тощо) при зміні хеша — для об'єднаних сторінок.
+function ScrollToHash() {
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (!hash) return;
+    const id = hash.slice(1);
+    let tries = 0;
+    const go = () => {
+      const el = document.getElementById(id);
+      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+      if (tries++ < 20) setTimeout(go, 120);   // чекаємо, поки lazy-секція змонтується
+    };
+    setTimeout(go, 80);
+  }, [hash]);
+  return null;
+}
 
 // Класичний (темний) Layout тягне framer-motion/lenis/gsap — вантажимо ліниво,
 // щоб цей ваговий чанк не потрапляв у entry світлого v2 (де він не потрібен).
@@ -16,7 +33,6 @@ const FullDiagnosis = lazy(() => import('@/pages/FullDiagnosis').then((m) => ({ 
 const NotFound = lazy(() => import('@/pages/NotFound').then((m) => ({ default: m.NotFound })));
 // Прев'ю нового напряму «The System in Motion» — поза темним Layout, повноекранне.
 const SystemInMotion = lazy(() => import('@/system/SystemInMotion').then((m) => ({ default: m.SystemInMotion })));
-const SystemsFilm = lazy(() => import('@/system/SystemsFilm').then((m) => ({ default: m.SystemsFilm })));
 const CasesFilm = lazy(() => import('@/system/CasesFilm').then((m) => ({ default: m.CasesFilm })));
 const PeopleFilm = lazy(() => import('@/system/PeopleFilm').then((m) => ({ default: m.PeopleFilm })));
 const ExpansionFilm = lazy(() => import('@/system/ExpansionFilm').then((m) => ({ default: m.ExpansionFilm })));
@@ -29,6 +45,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <RouteSeo />
+      <ScrollToHash />
       <Suspense fallback={null}>
         <Routes>
           {/* Новий cinematic-напрям — тепер головний вхід сайту, під спільною оболонкою.
@@ -36,7 +53,8 @@ export default function App() {
           <Route element={<SystemShell />}>
             <Route path="/" element={<SystemInMotion />} />
             <Route path="/system" element={<Navigate to="/" replace />} />
-            <Route path="/systems" element={<SystemsFilm />} />
+            {/* /systems об'єднано з головною — розбір систем тепер скрол-етап на «/». */}
+            <Route path="/systems" element={<Navigate to="/#systems" replace />} />
             <Route path="/proof" element={<CasesFilm />} />
             <Route path="/people" element={<PeopleFilm />} />
             <Route path="/expansion" element={<ExpansionFilm />} />
