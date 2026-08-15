@@ -1,5 +1,5 @@
 import { lazy, Suspense, useMemo, useState } from 'react';
-import { eur, SYS, type LossInput, type LossResult, type SysKey } from './lossModel';
+import { eur, project, SYS, type LossInput, type LossResult, type SysKey } from './lossModel';
 import { QUESTIONS, scoreStage2, type Stage2Answers } from './stage2Model';
 import { RadarChart, SystemBars } from './charts';
 import './system.css';
@@ -24,6 +24,8 @@ export function Stage2({ stage1, stage1Result, onClose }: { stage1: LossInput; s
   const [stage3, setStage3] = useState(false);
   const [hover, setHover] = useState<number | null>(null);
   const res = useMemo(() => (phase === 'report' ? scoreStage2(ans, stage1) : null), [phase, ans, stage1]);
+  // Проєкція «Зараз → Куди можемо прийти» — рахуємо з даних Етапу 1 (реальні метрики).
+  const proj = useMemo(() => (stage1Result ? project(stage1, stage1Result) : null), [stage1, stage1Result]);
 
   // Єдина цифра для Етапів 1 і 2: суму беремо з Етапу 1 (computeLoss), а Етап 2
   // лише показує, ДЕ саме вона зосереджена (зрілість/bottleneck). Не рахуємо
@@ -145,6 +147,50 @@ export function Stage2({ stage1, stage1Result, onClose }: { stage1: LossInput; s
               <ol className="s2-actions">{res.priorities.map((p) => <li key={p.key}>{p.text}</li>)}</ol>
             </div>
           </div>
+
+          {/* «Зараз → Куди можемо прийти» — не лише витік, а конкретне майбутнє.
+              Психологія: клієнт бачить своє «Б» у цифрах — день/місяць/рік, час, юніт. */}
+          {proj && (proj.income.length > 0 || proj.unit.length > 0) && (
+            <div className="s2-project">
+              <div className="s2-proj-head">
+                <span className="sysx-kick">Зараз → Куди можемо прийти</span>
+                <p className="s2-proj-sub">Консервативна ціль за <b>{proj.horizon}</b>: ваші поточні метрики, підтягнуті до робочих бенчмарків. Приріст доходу обмежено вже порахованою можливістю — жодних «в космос».</p>
+              </div>
+
+              {proj.income.length > 0 && (
+                <div className="s2-proj-income">
+                  {proj.income.map((d) => (
+                    <div key={d.label} className={`s2-proj-inc${d.hero ? ' is-hero' : ''}`}>
+                      <span className="s2-proj-inc-l mono">{d.label}</span>
+                      <div className="s2-proj-inc-v">
+                        <span className="s2-proj-now">{d.before}</span>
+                        <em aria-hidden="true">→</em>
+                        <b className="sysx-display s2-proj-aft">{d.after}</b>
+                      </div>
+                      <span className="s2-proj-badge up">+{d.pct}%</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {(proj.unit.length > 0 || proj.ops.length > 0) && (
+                <div className="s2-proj-rows">
+                  {[...proj.unit, ...proj.ops].map((d) => (
+                    <div key={d.label} className="s2-proj-row">
+                      <span className="s2-proj-row-l">{d.label}</span>
+                      <span className="s2-proj-row-v">
+                        <i className="s2-proj-b">{d.before}</i>
+                        <em aria-hidden="true">→</em>
+                        <b>{d.after}</b>
+                      </span>
+                      <span className={`s2-proj-badge ${d.dir}`}>{d.dir === 'down' ? '−' : '+'}{d.pct}%</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <span className="s2-proj-note mono">Оцінка за вашими даними та бенчмарками ніші. Точні цілі підтверджуємо на повному аудиті (Етап 3 / команда).</span>
+            </div>
+          )}
 
           {/* Футер звіту: PDF + QR + контакти + Етап 3 */}
           <div className="s2-rep-foot">

@@ -127,3 +127,66 @@ export function computeLoss(inp: LossInput): LossResult {
 }
 
 export const eur = (n: number) => '€' + Math.round(n).toLocaleString('en-US');
+
+/* ── Проєкція «Зараз → Куди можемо прийти» ─────────────────────────────────
+ * Не обіцянка, а КОНСЕРВАТИВНА ціль за 6–9 місяців системної роботи: беремо
+ * поточні метрики клієнта й підтягуємо їх до бенчмарків (не далі), а приріст
+ * доходу обмежуємо вже порахованою можливістю (total) — щоб «до/після» не
+ * розходилось із цифрою витоку. Психологія: клієнт бачить не абстрактну втрату,
+ * а конкретне майбутнє (день/місяць/рік, час, юніт-економіка) — і своє «Б». */
+export type Delta = { label: string; before: string; after: string; pct: number; dir: 'up' | 'down'; hero?: boolean };
+export type Projection = { income: Delta[]; unit: Delta[]; ops: Delta[]; upliftPct: number; horizon: string };
+
+const r1 = (n: number) => Math.round(n * 10) / 10;
+const pctUp = (a: number, b: number) => (a > 0 ? Math.round((b / a - 1) * 100) : 0);
+const pctDown = (a: number, b: number) => (a > 0 ? Math.round((1 - b / a) * 100) : 0);
+
+export function project(inp: LossInput, res: LossResult): Projection {
+  const nowM = Math.max(0, inp.monthlyRevenue);
+  const nowA = nowM * 12;
+
+  // Цільові метрики — тягнемось до бенчмарку, але реалістично (не «в космос»).
+  const crNow = inp.conversion;
+  const crTgt = crNow > 0 ? r1(clamp(crNow * 1.55, crNow + 0.3, Math.max(B.cr, crNow * 1.15))) : B.cr;
+  const repNow = inp.repeatRate;
+  const repTgt = repNow > 0 ? Math.round(clamp(repNow * 1.4, repNow + 6, B.repeat + 8)) : B.repeat;
+  const marNow = inp.grossMargin;
+  const marTgt = marNow > 0 ? Math.round(clamp(marNow + (B.margin - marNow) * 0.5, marNow + 2, B.margin + 3)) : B.margin;
+  const cacNow = inp.cac;
+  const cacTgt = cacNow > 0 ? Math.round(cacNow * 0.72) : 0;
+
+  // Приріст доходу: комбінація конверсії й повторних, але не більше, ніж
+  // порахована річна можливість (res.total) поверх поточного обороту.
+  const crFactor = crNow > 0 ? crTgt / crNow : 1.15;
+  const repFactor = repNow > 0 ? 1 + ((repTgt - repNow) / 100) * 0.5 : 1.05;
+  const uplift = clamp(crFactor * repFactor, 1.05, 2.2);
+  const afterA = nowA > 0 ? Math.min(nowA * uplift, nowA + res.total) : 0;
+  const afterM = afterA / 12;
+  const upliftPct = pctUp(nowA, afterA);
+
+  const income: Delta[] = nowM > 0 ? [
+    { label: 'Дохід / день', before: eur(nowM / 30), after: eur(afterM / 30), pct: upliftPct, dir: 'up' },
+    { label: 'Дохід / місяць', before: eur(nowM), after: eur(afterM), pct: upliftPct, dir: 'up', hero: true },
+    { label: 'Дохід / рік', before: eur(nowA), after: eur(afterA), pct: upliftPct, dir: 'up' },
+  ] : [];
+
+  const profitNow = nowM * (marNow || B.margin) / 100;
+  const profitAfter = afterM * marTgt / 100;
+
+  const unit: Delta[] = [];
+  if (crNow > 0) unit.push({ label: 'Конверсія', before: crNow + '%', after: crTgt + '%', pct: pctUp(crNow, crTgt), dir: 'up' });
+  if (repNow > 0) unit.push({ label: 'Повторні продажі', before: repNow + '%', after: repTgt + '%', pct: pctUp(repNow, repTgt), dir: 'up' });
+  if (cacNow > 0) unit.push({ label: 'Вартість клієнта (CAC)', before: eur(cacNow), after: eur(cacTgt), pct: pctDown(cacNow, cacTgt), dir: 'down' });
+  if (marNow > 0) unit.push({ label: 'Валова маржа', before: marNow + '%', after: marTgt + '%', pct: pctUp(marNow, marTgt), dir: 'up' });
+  if (nowM > 0) unit.push({ label: 'Прибуток / місяць', before: eur(profitNow), after: eur(profitAfter), pct: pctUp(profitNow, profitAfter), dir: 'up' });
+
+  // Операції: час обробки замовлення — оцінка за зрілістю операцій (health).
+  const ops = res.health.find((h) => h.key === 'operations')?.score ?? 55;
+  const procNow = Math.round(clamp((100 - ops) / 100 * 40 + 6, 6, 42));
+  const procAfter = Math.max(2, Math.round(procNow * 0.35));
+  const opsRows: Delta[] = [
+    { label: 'Час обробки замовлення', before: procNow + ' год', after: procAfter + ' год', pct: pctDown(procNow, procAfter), dir: 'down' },
+  ];
+
+  return { income, unit, ops: opsRows, upliftPct, horizon: '6–9 місяців системної роботи' };
+}
