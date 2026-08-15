@@ -168,6 +168,7 @@
 
 /* ── SHELL: cinematic-навігація превʼю-напряму ── */
 .sysh { --sh-deep: #15171A; --sh-charcoal: #3A3D42; --sh-graphite: #646B72; --sh-silver: #D9DDE1; --sh-data: #7E9DFF; }
+.sysh-sentinel { position: absolute; top: 0; left: 0; width: 1px; height: 12px; pointer-events: none; }
 .sysh-nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 50;
   display: flex; align-items: center; justify-content: space-between; gap: 20px;
@@ -435,8 +436,9 @@
   overflow-y: auto; animation: s2In .45s var(--ease-cine); font-family: var(--sans); }
 @keyframes s2In { from { opacity: 0; transform: scale(.985); } to { opacity: 1; transform: none; } }
 .s2 .mono { font-family: var(--mono); }
-.s2-x { position: fixed; top: 16px; right: 18px; z-index: 3; background: var(--pure-white); border: 1px solid var(--silver);
-  border-radius: 100px; padding: 8px 14px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--charcoal); cursor: pointer; }
+.s2-x { position: fixed; top: 14px; right: 16px; z-index: 3; display: inline-flex; align-items: center; min-height: 44px;
+  background: var(--pure-white); border: 1px solid var(--silver);
+  border-radius: 100px; padding: 10px 18px; font-size: 12px; letter-spacing: .02em; text-transform: none; color: var(--charcoal); cursor: pointer; }
 .s2-x:hover { border-color: var(--graphite); color: var(--deep); }
 
 /* Квіз */
@@ -598,6 +600,12 @@
 .cw-fill-tr { height: 7px; border-radius: 5px; background: var(--mist); overflow: hidden; }
 .cw-fill-tr i { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, var(--data-soft), var(--data)); transition: width .5s var(--ease-cine); }
 .cw-fill b { color: var(--deep); font-size: 13px; }
+.cw-systems { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; }
+.cw-systems li { display: grid; grid-template-columns: auto auto 1fr auto; align-items: center; gap: 7px; font-size: 12px; color: var(--charcoal); }
+.cw-sys-n { font-size: 10px; color: var(--graphite); }
+.cw-sys-l { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cw-systems b { color: var(--deep); font-size: 11.5px; }
+@media (max-width: 520px) { .cw-systems { grid-template-columns: 1fr; } }
 .cw-stage { position: relative; height: clamp(280px, 34vh, 400px); border-radius: 16px; overflow: hidden;
   background: radial-gradient(120% 90% at 50% 20%, #fff, #eef0f2); border: 1px solid var(--line); }
 /* Живий район у потоці анкети */
