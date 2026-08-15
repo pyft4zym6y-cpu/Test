@@ -1,9 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { eur } from './lossModel';
 import { BLOCKS, SECTIONS, LIKE_WHAT, scoreStage3, type Stage3Answers, type RefItem } from './stage3Model';
 import { levelFor } from './stage2Model';
 import { RadarChart, SystemBars } from './charts';
+
+// Важкий three.js-район — ліниво, щоб форма входу відкривалась миттєво.
+const CompanyWorld = lazy(() => import('@/system/CompanyWorld').then((m) => ({ default: m.CompanyWorld })));
 import { CONFIGURED, authenticate, currentUser, isCloudUser, loadDiag, saveDiag, signOut, type DiagUser, type DiagRecord } from '@/lib/supa';
 import { sendReport } from '@/lib/report';
 import './system.css';
@@ -71,6 +74,8 @@ export function Stage3({ prior, onClose }: { prior?: DiagRecord; onClose: () => 
   });
 
   const res = useMemo(() => (idx >= BLOCKS.length ? scoreStage3(ans, money) : null), [idx, ans, money]);
+  // Живий зріз — щоб 3D-район компанії «зростав», поки клієнт заповнює дані.
+  const live = useMemo(() => scoreStage3(ans, money), [ans, money]);
   const answeredCount = BLOCKS.filter((b) => { const a = ans[b.id]; return a != null && a !== '' && (!Array.isArray(a) || a.length); }).length;
   const moneyStr = money && money[0] > 0 ? `${eur(money[0])}–${eur(money[1])}` : '';
   // Ціль (точка Б) з першого блоку — щоб вести весь розбір саме до неї.
@@ -132,6 +137,26 @@ export function Stage3({ prior, onClose }: { prior?: DiagRecord; onClose: () => 
             <p className="s2-rep-line"><b>{lvl.title}.</b> {lvl.line}</p>
             {moneyStr && <p className="s3-rep-money mono">Ваша можливість з Етапу 1: <b>{moneyStr}/рік</b> — тепер видно, де саме вона зосереджена.</p>}
           </header>
+
+          {/* Компанія клієнта як 3D-екосистема: висота вежі = зрілість системи,
+              «живість» району = скільки даних заповнено. Це його бізнес — зараз. */}
+          <div className="s2-panel cw-hero">
+            <div className="cw-hero-copy">
+              <span className="sysx-kick">Ваша компанія як система</span>
+              <p className="cw-hero-sub">Вісім веж — вісім систем; висота кожної — її зрілість. Що більше даних ви дали, то живіший район: засвічуються звʼязки, вікна й потоки. Ось ваш бізнес як єдина екосистема — і де в ній просідає висота.</p>
+              <div className="cw-legend">
+                <span><i className="cw-dot ok" />зріла (65+)</span>
+                <span><i className="cw-dot warn" />середня (40–64)</span>
+                <span><i className="cw-dot bad" />слабка (&lt;40)</span>
+              </div>
+              <div className="cw-fill mono"><span>Заповнено даних</span><div className="cw-fill-tr"><i style={{ width: `${res.completeness}%` }} /></div><b>{res.completeness}%</b></div>
+            </div>
+            <div className="cw-stage">
+              <Suspense fallback={<div className="cw-load mono">Збираємо ваш район…</div>}>
+                <CompanyWorld systems={res.systems} completeness={res.completeness} />
+              </Suspense>
+            </div>
+          </div>
 
           <div className="s2-grid">
             <div className="s2-panel s2-radar-wrap">
@@ -293,6 +318,19 @@ export function Stage3({ prior, onClose }: { prior?: DiagRecord; onClose: () => 
             </span>
           </div>
           <div className="s2-bar"><i style={{ width: `${progress}%` }} /></div>
+        </div>
+
+        {/* Живий 3D-район компанії — зростає з кожною відповіддю (ефект «це вже моє»). */}
+        <div className="cw-quiz">
+          <div className="cw-quiz-stage">
+            <Suspense fallback={<div className="cw-load mono">Збираємо ваш район…</div>}>
+              <CompanyWorld systems={live.systems} completeness={live.completeness} />
+            </Suspense>
+          </div>
+          <div className="cw-quiz-cap mono">
+            <span>Ваша компанія збирається</span>
+            <b>{live.completeness}% даних · {answeredCount} відповідей</b>
+          </div>
         </div>
 
         {firstOfSection && (
