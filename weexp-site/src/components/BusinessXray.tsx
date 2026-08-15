@@ -28,13 +28,18 @@ export function BusinessXray({ questions = QUESTIONS, storageKey, full = false }
   const [answers, setAnswers] = useState<Answers>(saved ?? {});
 
   const result = useMemo(() => (phase === 'result' ? scoreXray(answers, questions) : null), [phase, answers, questions]);
-  // Зберігаємо читабельний підсумок + фіксуємо завершення діагностики в аналітику.
+  // Зберігаємо підсумок ЛИШЕ якщо діагностику реально пройдено (не менше 60% питань),
+  // щоб форма контакту не підтягувала «фантомний» результат із порожнього прогону.
   useEffect(() => {
     if (phase === 'result' && result) {
-      try { localStorage.setItem(DIAG_SUMMARY_KEY, diagnosisSummary(result, full)); } catch { /* ignore */ }
-      track('xray_complete', { mode: full ? 'full' : 'quick', independence: result.independence, level: result.level.title });
+      const answered = Object.keys(answers).length;
+      const enough = answered >= Math.ceil(questions.length * 0.6);
+      if (enough) {
+        try { localStorage.setItem(DIAG_SUMMARY_KEY, diagnosisSummary(result, full)); } catch { /* ignore */ }
+        track('xray_complete', { mode: full ? 'full' : 'quick', independence: result.independence, level: result.level.title });
+      }
     }
-  }, [phase, result, full]);
+  }, [phase, result, full]); // eslint-disable-line react-hooks/exhaustive-deps
   const q = questions[step];
   const progress = Math.round((step / questions.length) * 100);
 

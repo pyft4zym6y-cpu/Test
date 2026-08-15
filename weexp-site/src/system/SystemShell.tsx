@@ -10,19 +10,20 @@ import './system.css';
  */
 const LINKS = [
   { to: '/', label: 'Система' },
-  { to: '/systems', label: '8 систем' },
   { to: '/proof', label: 'Докази' },
   { to: '/expansion', label: 'Експансія' },
-  { to: '/people', label: 'Люди' },
+  { to: '/people', label: 'Команда' },
   { to: '/loss', label: 'Калькулятор' },
+  { to: '/cabinet', label: 'Кабінет' },
   { to: '/contact', label: 'Контакт' },
 ];
 
 const I = {
   home: 'M3 11.2 12 4l9 7.2M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9',
-  grid: 'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z',
+  people: 'M17 20v-1.6a3.4 3.4 0 0 0-3.4-3.4H7.4A3.4 3.4 0 0 0 4 18.4V20M10.5 11.4a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4M20 20v-1.6a3.4 3.4 0 0 0-2.6-3.3M15.5 5.2a3.2 3.2 0 0 1 0 6.1',
   calc: 'M6 3h12a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM8 7h8M8 11h2M12 11h2M8 15h2M12 15h2',
   chat: 'M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-4 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z',
+  user: 'M20 21v-1.8a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4V21M12 11.2a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
   menu: 'M4 7h16M4 12h16M4 17h16',
 };
 const Icon = ({ d }: { d: string }) => (
@@ -32,7 +33,7 @@ const Icon = ({ d }: { d: string }) => (
 // Ключові сторінки для нижньої панелі (як таб-бар у застосунку).
 const TABS = [
   { to: '/', label: 'Система', icon: I.home },
-  { to: '/systems', label: 'Системи', icon: I.grid },
+  { to: '/people', label: 'Команда', icon: I.people },
   { to: '/loss', label: 'Калькулятор', icon: I.calc },
   { to: '/contact', label: 'Контакт', icon: I.chat },
 ];
@@ -59,6 +60,7 @@ export function SystemShell() {
             <NavLink key={l.to} to={l.to} end={l.to === '/'} className={({ isActive }) => 'sysh-link mono' + (isActive ? ' is-on' : '')}>{l.label}</NavLink>
           ))}
         </nav>
+        <Link to="/cabinet" className={'sysh-account' + (isActive('/cabinet') ? ' is-on' : '')} aria-label="Особистий кабінет" title="Кабінет"><Icon d={I.user} /></Link>
         <Link to="/diagnose" className="sysh-cta mono">Діагностика →</Link>
         <button className="sysh-burger" aria-label="Меню" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
           <Icon d={I.menu} />

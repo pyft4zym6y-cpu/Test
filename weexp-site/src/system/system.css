@@ -182,6 +182,13 @@
    build-marker: mobile-nav + live-object (redeploy nudge) */
 .sysh-burger { display: none; background: none; border: 0; color: var(--sh-charcoal); padding: 6px; cursor: pointer; }
 .sysh-burger svg { width: 26px; height: 26px; display: block; }
+/* Іконка-кабінет (акаунт) — праворуч у шапці, видима завжди */
+.sysh-account { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+  width: 38px; height: 38px; border-radius: 100px; border: 1px solid var(--silver); color: var(--sh-charcoal);
+  background: rgba(255,255,255,.5); text-decoration: none; transition: border-color .25s, color .25s, transform .25s; }
+.sysh-account svg { width: 19px; height: 19px; }
+.sysh-account:hover { border-color: var(--sh-graphite); color: var(--sh-deep); transform: translateY(-1px); }
+.sysh-account.is-on { border-color: var(--sh-deep); color: var(--sh-deep); }
 .sysh-tabs, .sysh-sheet { display: none; }
 
 @media (max-width: 720px) {
@@ -191,6 +198,7 @@
 @media (max-width: 860px) {
   .sysh-links, .sysh-nav .sysh-cta { display: none; }
   .sysh-burger { display: inline-flex; }
+  .sysh-account { margin-left: auto; width: 36px; height: 36px; }   /* акаунт тулиться до бургера справа */
 
   /* Нижня app-панель — напівпрозора «окантовка» з ключовими сторінками */
   .sysh-tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 62;
@@ -369,7 +377,12 @@
 .ctf-field textarea { resize: vertical; }
 .ctf-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 .ctf-diag { grid-column: 1 / -1; display: grid; gap: 6px; border: 1px solid var(--silver); border-radius: 12px; padding: 12px 14px; background: rgba(255, 255, 255, .5); margin-bottom: 4px; }
+.ctf-diag-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .ctf-diag-lab { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--graphite); }
+.ctf-diag-x { background: none; border: 0; color: var(--graphite); font-size: 10.5px; letter-spacing: .04em; cursor: pointer; padding: 2px 4px; }
+.ctf-diag-x:hover { color: var(--alert); }
+.ctf-diag-add { grid-column: 1 / -1; justify-self: start; background: none; border: 1px dashed var(--silver); border-radius: 100px; color: var(--charcoal); font-size: 11px; letter-spacing: .04em; padding: 8px 14px; cursor: pointer; margin-bottom: 4px; }
+.ctf-diag-add:hover { border-color: var(--data); color: var(--deep); }
 .ctf-diag-body { font-family: var(--mono); font-size: 11px; line-height: 1.55; color: var(--charcoal); white-space: pre-wrap; margin: 0; max-height: 148px; overflow: auto; }
 .cf-thanks { justify-items: start; gap: 12px; }
 .cf-thanks h2 { font-size: clamp(26px, 3vw, 40px); color: var(--deep); }
@@ -404,7 +417,7 @@
 .dg-opp b { color: var(--deep); }
 
 /* ── CALCULATOR · STAGE 2 (повноекранний глибший діагноз) ── */
-.s2 { position: fixed; inset: 0; z-index: 80; background: var(--warm-white); color: var(--charcoal);
+.s2 { position: fixed; inset: 0; z-index: 80; background: var(--warm-white, #F7F7F5); color: var(--charcoal, #3A3D42);
   overflow-y: auto; animation: s2In .45s var(--ease-cine); font-family: var(--sans); }
 @keyframes s2In { from { opacity: 0; transform: scale(.985); } to { opacity: 1; transform: none; } }
 .s2 .mono { font-family: var(--mono); }

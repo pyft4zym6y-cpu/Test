@@ -21,7 +21,7 @@ import './system.css';
 const MAIL = 'hello@weexp.agency';
 const host = (u: string) => u.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
 
-export function Stage3({ prior, onClose }: { prior?: DiagRecord; onClose: () => void }) {
+export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onClose: () => void; standalone?: boolean }) {
   const [user, setUser] = useState<DiagUser | null>(null);
   const [checking, setChecking] = useState(true);
   const [email, setEmail] = useState(''); const [pass, setPass] = useState('');
@@ -44,6 +44,8 @@ export function Stage3({ prior, onClose }: { prior?: DiagRecord; onClose: () => 
       if (rec.stage3) setAns(rec.stage3 as Stage3Answers);
       if (rec.stage1Money && !money) setMoney(rec.stage1Money);
       if (prior) saveDiag(user, { ...prior }); // stage1/2 зберігаються теж
+      // Повернення в кабінет із завершеним розбором → одразу показуємо звіт.
+      if ((rec.stage3 as Record<string, unknown> | undefined)?.__submitted) setIdx(BLOCKS.length);
     });
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -90,20 +92,22 @@ export function Stage3({ prior, onClose }: { prior?: DiagRecord; onClose: () => 
       <div className="s2 s3" role="dialog" aria-label="Етап 3 — кабінет">
         <button className="s2-x mono" onClick={onClose}>✕ Закрити</button>
         <div className="s3-auth">
-          <div className="sysx-kick">Ви пройшли 2 з 3 етапів — лишився кабінет</div>
-          <h2 className="sysx-display s3-auth-h">Ваш персональний<br />Tier-2 розбір</h2>
-          <p className="s3-auth-lead">{moneyStr ? <>Ми вже оцінили вашу можливість у <b>{moneyStr}/рік</b>. Кабінет доводить аналіз до Tier-2 і показує, де саме вона зосереджена — на ваших даних.</> : 'Кабінет доводить аналіз до рівня Tier-2 — на ваших даних, а не загальних порадах.'}</p>
+          <div className="sysx-kick">{standalone ? 'Особистий кабінет клієнта' : 'Ви пройшли 2 з 3 етапів — лишився кабінет'}</div>
+          <h2 className="sysx-display s3-auth-h">{standalone ? <>Вхід у ваш<br />кабінет WEEXP</> : <>Ваш персональний<br />Tier-2 розбір</>}</h2>
+          <p className="s3-auth-lead">{standalone
+            ? 'Увійдіть тим самим email — і побачите свій збережений розбір: дані з калькулятора, профіль зрілості й дорожню карту. Немає кабінету — створимо за 10 секунд.'
+            : (moneyStr ? <>Ми вже оцінили вашу можливість у <b>{moneyStr}/рік</b>. Кабінет доводить аналіз до Tier-2 і показує, де саме вона зосереджена — на ваших даних.</> : 'Кабінет доводить аналіз до рівня Tier-2 — на ваших даних, а не загальних порадах.')}</p>
           <ul className="s3-auth-gets">
             <li>Профіль зрілості 8 систем і головний вузол вашого бізнесу</li>
-            <li>Карта конкурентного поля й орієнтирів</li>
+            <li>Ваші дані з калькулятора — збережені й доступні будь-коли</li>
             <li>Персональні наступні кроки під Definition of Done</li>
           </ul>
           <div className="s3-auth-form">
             <label className="s2-inp"><span className="mono">Email</span><input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" /></label>
-            <label className="s2-inp"><span className="mono">Пароль</span><input type="password" autoComplete="new-password" value={pass} onChange={(e) => setPass(e.target.value)} placeholder="мінімум 6 символів" /></label>
+            <label className="s2-inp"><span className="mono">Пароль</span><input type="password" autoComplete="current-password" value={pass} onChange={(e) => setPass(e.target.value)} placeholder="мінімум 6 символів" /></label>
             {err && <span className="s3-err mono">{err}</span>}
-            <button className="sysx-cta is-primary" onClick={doAuth} disabled={busy || !email || pass.length < 6}>{busy ? 'Створюємо кабінет…' : 'Створити кабінет і продовжити →'}</button>
-            <span className="s2-note mono">Прогрес зберігається — можна призупинити й продовжити будь-коли, з будь-якого пристрою.{!CONFIGURED ? ' Демо-режим: дані у цьому браузері.' : ''}</span>
+            <button className="sysx-cta is-primary" onClick={doAuth} disabled={busy || !email || pass.length < 6}>{busy ? 'Заходимо…' : (standalone ? 'Увійти / створити кабінет →' : 'Створити кабінет і продовжити →')}</button>
+            <span className="s2-note mono">Той самий email = той самий кабінет із будь-якого пристрою.{!CONFIGURED ? ' Демо-режим: дані у цьому браузері.' : ''}</span>
           </div>
         </div>
       </div>

@@ -52,7 +52,6 @@ WEEXP керує e-commerce як системою із восьми частин
 ## Ключові сторінки
 
 - Головна: https://weexp.agency/
-- 8 систем: https://weexp.agency/systems
 - Докази (кейси): https://weexp.agency/proof
 - Люди: https://weexp.agency/people
 - Міжнародна експансія: https://weexp.agency/expansion
