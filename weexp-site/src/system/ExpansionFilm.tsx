@@ -71,7 +71,7 @@ export function ExpansionFilm() {
           <div className="sysx-kick">Scale · Міжнародна експансія · ЄС + США</div>
           <h1 className="sysx-display sysx-h1">Вихід у ЄС і США<br />як <span className="sysx-em">система</span>, не спроба</h1>
           <p className="sysx-lead">Європа і Штати — сотні мільйонів покупців і вищий середній чек, ніж удома. Ми будуємо ваш міжнародний контур <b>під ключ</b>: власний сайт, Amazon, Allegro, eBay і локальні майданчики — одразу на всіх вітринах ринку.</p>
-          <div className="sysx-proof">
+          <div className="sysx-proofbar">
             <span><b>4+</b> ринки за один контур</span>
             <i aria-hidden="true" />
             <span><b>8</b> вітрин продажу</span>

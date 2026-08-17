@@ -141,12 +141,14 @@
 @keyframes sysxBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(7px); } }
 .sysx-cta-row { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
 
-/* Докази при першому знайомстві — конкретні сигнали (число кейсів, охоплення, фіт) */
-.sysx-proof { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 16px;
+/* Докази при першому знайомстві — конкретні сигнали (число кейсів, охоплення, фіт).
+   ПРИМІТКА: клас .sysx-proofbar, а не .sysx-proof — щоб не конфліктувати з
+   фільмом /proof (.sysx-proof = height:820vh). Колізія імен ламала /proof. */
+.sysx-proofbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 16px;
   font-size: clamp(12px, 1.3vw, 14px); color: var(--charcoal); }
-.sysx-proof b { color: var(--deep); font-weight: 700; }
-.sysx-proof i { width: 4px; height: 4px; border-radius: 50%; background: var(--silver); }
-@media (max-width: 560px) { .sysx-proof i { display: none; } }
+.sysx-proofbar b { color: var(--deep); font-weight: 700; }
+.sysx-proofbar i { width: 4px; height: 4px; border-radius: 50%; background: var(--silver); }
+@media (max-width: 560px) { .sysx-proofbar i { display: none; } }
 
 /* VOID сцена трохи піднята — щоб об'єкт «народжувався» знизу за текстом */
 .sysx-void { align-content: center; }
@@ -827,12 +829,15 @@
 }
 .pf-roster-h { font-size: clamp(30px, 4.6vw, 62px); text-align: center; }
 .pf-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-.pf-card { display: grid; gap: 8px; align-content: start; padding: 16px; border-radius: 14px;
-  background: color-mix(in srgb, var(--pure-white) 72%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+.pf-card { display: grid; gap: 7px; align-content: start; padding: 16px; border-radius: 14px;
+  background: color-mix(in srgb, var(--pure-white) 90%, transparent); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
   border: 1px solid var(--silver); box-shadow: 0 20px 40px -34px rgba(21, 23, 26, .4); }
 .pf-card-owns { display: flex; flex-wrap: wrap; gap: 5px; }
 .pf-card-role { font-size: 14px; color: var(--deep); font-weight: 700; line-height: 1.2; }
+.pf-card-zone { font-size: 10.5px; letter-spacing: .02em; color: var(--data); }
 .pf-card-focus { font-size: 12px; line-height: 1.45; color: var(--charcoal); }
+.pf-card-fn { margin: 2px 0 0; padding-left: 15px; display: grid; gap: 3px; }
+.pf-card-fn li { font-size: 11px; line-height: 1.4; color: var(--graphite); }
 
 /* STANDARD — 3-й рівень */
 .pf-standard { position: absolute; inset: 0; z-index: 3; display: grid; align-content: center;

@@ -78,7 +78,9 @@ export function PeopleFilm() {
               <div key={r.role} className="pf-card">
                 <div className="pf-card-owns">{r.owns.map((k) => <span key={k} className="pf-chip mono">{SHORT[k]}</span>)}</div>
                 <b className="pf-card-role">{r.role}</b>
+                <span className="pf-card-zone mono">Закриває: {r.zone}</span>
                 <span className="pf-card-focus">{r.focus}</span>
+                <ul className="pf-card-fn">{r.expertise.slice(0, 3).map((x) => <li key={x}>{x}</li>)}</ul>
               </div>
             ))}
           </div>
