@@ -1,5 +1,5 @@
 import { lazy, Suspense, useRef, useState } from 'react';
-import { computeLoss, eur, SYS, type LossInput, type LossResult, type SysKey } from './lossModel';
+import { computeLoss, eur, project, SYS, type LossInput, type LossResult, type SysKey } from './lossModel';
 import './system.css';
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
@@ -139,6 +139,29 @@ export function LossCalculator() {
               <span className="sysx-kick">Три перші дії</span>
               <ol>{res.actions.map((a) => <li key={a.key}>{a.text}</li>)}</ol>
             </div>
+
+            {/* «Зараз → Куди можемо прийти» — чорнова ціль (уточнимо на наступних кроках) */}
+            {(() => {
+              const proj = project(inp, res);
+              if (!proj.income.length) return null;
+              return (
+                <div className="s2-project sysx-proj1">
+                  <div className="s2-proj-head">
+                    <span className="sysx-kick">Зараз → Куди можемо прийти · чорнова ціль</span>
+                    <p className="s2-proj-sub">Перша оцінка за <b>{proj.horizon}</b>. На Кроці 2 і в кабінеті цей діапазон <b>уточнюється</b> вашими даними — не рахуємо наново.</p>
+                  </div>
+                  <div className="s2-proj-income">
+                    {proj.income.map((d) => (
+                      <div key={d.label} className={`s2-proj-inc${d.hero ? ' is-hero' : ''}`}>
+                        <span className="s2-proj-inc-l mono">{d.label}</span>
+                        <div className="s2-proj-inc-v"><span className="s2-proj-now">{d.before}</span><em aria-hidden="true">→</em><b className="sysx-display s2-proj-aft">{d.after}</b></div>
+                        <span className="s2-proj-badge up">+{d.pct}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Крок 2 — місток до повної діагностики: число → карта → план */}
             <div className="sysx-next2">
