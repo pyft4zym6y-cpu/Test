@@ -9,6 +9,8 @@ const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m)
 const SystemExplorer = lazy(() => import('@/system/SystemExplorer').then((m) => ({ default: m.SystemExplorer })));
 // Розбір 8 систем (колишня окрема /systems) тепер — глибший скрол-етап головної.
 const SystemsFilm = lazy(() => import('@/system/SystemsFilm').then((m) => ({ default: m.SystemsFilm })));
+// Сканована повна карта Commerce OS: 8 систем + вкладені домени (акордеон).
+const CommerceMap = lazy(() => import('@/system/CommerceMap').then((m) => ({ default: m.CommerceMap })));
 
 /**
  * WEEXP — THE SYSTEM IN MOTION (home-film, /system). Повна драматургія головної на
@@ -140,6 +142,8 @@ export function SystemInMotion() {
     <Suspense fallback={null}><SystemExplorer /></Suspense>
     {/* Глибший скрол-етап: покадровий розбір 8 систем (об'єднано з колишньою /systems) */}
     <div id="systems"><Suspense fallback={null}><SystemsFilm /></Suspense></div>
+    {/* Сканована повна карта: 8 систем як верхній рівень, домени вкладено (акордеон) */}
+    <Suspense fallback={null}><CommerceMap /></Suspense>
     </>
   );
 }

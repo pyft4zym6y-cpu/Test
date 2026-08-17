@@ -1203,3 +1203,51 @@
   .sysx-calc-bg .sysx-object3d { display: block; }
   .sysx-grid { grid-template-columns: 1fr; }
 }
+
+/* ============================================================
+   COMMERCE MAP — «Де ваш бізнес втрачає гроші» (акордеон 8 систем)
+   Сканована повна карта: система → зона → проблема → причини → домени.
+   Світле cinematic-полотно, доповнює скрол-фільм SystemsFilm.
+   ============================================================ */
+.cmap { background: var(--warm-white); padding: clamp(64px, 9vw, 128px) 0; }
+.cmap-in { max-width: 1080px; margin: 0 auto; padding: 0 clamp(18px, 5vw, 40px); }
+.cmap-head { max-width: 62ch; margin-bottom: clamp(28px, 4vw, 48px); }
+.cmap-h { font-size: clamp(34px, 6vw, 74px); margin: 14px 0 16px; }
+.cmap-lead { font-size: clamp(14px, 1.5vw, 18px); line-height: 1.6; color: var(--charcoal); text-wrap: pretty; }
+.cmap-lead b { color: var(--deep); }
+
+.cmap-list { display: grid; gap: 10px; }
+.cmap-row { border: 1px solid var(--silver); border-radius: 16px; background: color-mix(in srgb, var(--pure-white) 70%, transparent); overflow: hidden; transition: border-color var(--dur-fast) var(--ease-cine), box-shadow var(--dur-fast) var(--ease-cine); }
+.cmap-row.is-open { border-color: var(--data-soft); box-shadow: 0 18px 44px -30px rgba(21,23,26,.5), inset 3px 0 0 var(--data); }
+.cmap-row-head { width: 100%; display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 16px; padding: clamp(16px, 2.2vw, 22px) clamp(16px, 2.4vw, 26px); background: none; border: 0; cursor: pointer; text-align: left; }
+.cmap-num { font-size: 12px; letter-spacing: .12em; color: var(--data); font-weight: 600; }
+.cmap-row-t { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.cmap-row-t b { font-family: var(--display); font-weight: 600; font-size: clamp(19px, 2.4vw, 27px); line-height: 1.05; color: var(--deep); letter-spacing: -.01em; }
+.cmap-row-t i { font-style: normal; font-size: 10px; letter-spacing: .22em; text-transform: uppercase; color: var(--graphite); }
+.cmap-when { font-size: 11.5px; line-height: 1.4; color: var(--graphite); max-width: 26ch; text-align: right; text-wrap: pretty; }
+.cmap-caret { font-family: var(--mono); font-size: 22px; line-height: 1; color: var(--deep); width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--silver); border-radius: 50%; flex: 0 0 auto; transition: background var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast); }
+.cmap-row.is-open .cmap-caret { background: var(--deep); color: var(--pure-white); border-color: var(--deep); }
+
+.cmap-body { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(20px, 3vw, 40px); padding: 4px clamp(16px, 2.4vw, 26px) clamp(22px, 2.8vw, 30px); border-top: 1px solid var(--line); animation: cmapReveal .5s var(--ease-cine) both; }
+@keyframes cmapReveal { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.cmap-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.cmap-lab { font-size: 9.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--data); margin-top: 6px; }
+.cmap-lab:first-child { margin-top: 12px; }
+.cmap-feel { font-size: clamp(14px, 1.5vw, 17px); font-style: italic; line-height: 1.45; color: var(--charcoal); text-wrap: pretty; }
+.cmap-pains { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.cmap-pains li { position: relative; padding-left: 16px; font-size: 12.5px; line-height: 1.45; color: var(--charcoal); text-wrap: pretty; }
+.cmap-pains li::before { content: ''; position: absolute; left: 0; top: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--alert); box-shadow: 0 0 0 3px rgba(214,54,43,.14); }
+.cmap-domains { display: flex; flex-wrap: wrap; gap: 6px; }
+.cmap-domain { font-size: 10.5px; letter-spacing: .01em; color: var(--deep); background: rgba(126,157,255,.1); border: 1px solid var(--data-soft); border-radius: 100px; padding: 4px 10px; }
+.cmap-sell { font-size: 12.5px; line-height: 1.5; color: var(--charcoal); border-top: 1px solid var(--line); padding-top: 11px; text-wrap: pretty; }
+
+.cmap-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; justify-content: space-between; margin-top: clamp(28px, 4vw, 44px); padding: clamp(18px, 2.6vw, 26px) clamp(20px, 3vw, 30px); border: 1px solid var(--silver); border-radius: 18px; background: color-mix(in srgb, var(--pure-white) 60%, transparent); }
+.cmap-cta-note { font-size: 12.5px; line-height: 1.5; color: var(--charcoal); max-width: 42ch; }
+
+@media (max-width: 760px) {
+  .cmap-row-head { grid-template-columns: auto 1fr auto; gap: 12px; }
+  .cmap-when { display: none; }
+  .cmap-body { grid-template-columns: 1fr; gap: 4px; }
+  .cmap-cta { flex-direction: column; align-items: stretch; text-align: left; }
+  .cmap-cta .sysx-cta { justify-content: center; }
+}
