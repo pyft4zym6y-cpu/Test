@@ -11,7 +11,7 @@ const CompanyWorld = lazy(() => import('@/system/CompanyWorld').then((m) => ({ d
 const Stage5 = lazy(() => import('@/system/Stage5').then((m) => ({ default: m.Stage5 })));
 import { CONFIGURED, authenticate, currentUser, isCloudUser, loadDiag, saveDiag, signOut, type DiagUser, type DiagRecord } from '@/lib/supa';
 import { sendReport } from '@/lib/report';
-import { downloadReportDoc, downloadWorksheetXls, type DocData } from '@/lib/docs';
+import { openReportPage, downloadWorksheetXls, type DocData } from '@/lib/docs';
 import './system.css';
 
 /**
@@ -56,6 +56,7 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
   const [step4Err, setStep4Err] = useState('');
   const [step4Unlocked, setStep4Unlocked] = useState(false);
   const [step5On, setStep5On] = useState(false);     // відкрито AI-інтерв'ю Кроку 5
+  const quizRef = useRef<HTMLDivElement>(null);      // скрол-контейнер питань (для reset при зміні блоку)
   const saveT = useRef<number | undefined>(undefined);
 
   useEffect(() => { currentUser().then((u) => { setUser(u); setChecking(false); }); }, []);
@@ -75,6 +76,9 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Автозбереження прогресу (debounce) + пульс «збережено».
+  // При зміні блоку — прокрутити крок на початок (щоб екран не «зависав» посередині)
+  useEffect(() => { quizRef.current?.scrollTo({ top: 0 }); }, [idx]);
+
   useEffect(() => {
     if (!user) return;
     clearTimeout(saveT.current);
@@ -331,8 +335,13 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
               <b className="sysx-display s3-reco-h">{audit.title}</b>
               <p className="s3-reco-p">{audit.reason}</p>
               <ul className="s3-reco-bul">{audit.bullets.map((x) => <li key={x}>{x}</li>)}</ul>
-              <Link to={audit.to} className="sysx-cta is-primary">{audit.cta}</Link>
-              <span className="s3-reco-rr mono">{audit.riskReversal}</span>
+              <div className="s3-reco-actions">
+                <Link to={audit.to} className="sysx-cta is-primary">{audit.cta}</Link>
+                {sent
+                  ? <span className="s3-sent mono">✓ {sent === 'sent' ? 'Зріз надіслано команді' : 'Зріз збережено — команда його отримає'}</span>
+                  : <button className="sysx-cta" onClick={doSend} disabled={sending}>{sending ? 'Надсилаємо…' : 'Надіслати зріз команді'}</button>}
+              </div>
+              <span className="s3-reco-rr mono">{audit.riskReversal} · зустріч почнемо з вашого контексту, не з нуля</span>
             </div>
             <div className="s2-panel s3-reco">
               <span className="sysx-kick">Крок 4 · Поглиблена діагностика</span>
@@ -354,7 +363,7 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
                   </label>
                   {step4Err && <span className="s3-err mono">{step4Err}</span>}
                   <button className="sysx-cta is-primary" onClick={unlockStep4} disabled={!step4Code.trim()}>Активувати Крок 4 →</button>
-                  <span className="s3-gate-note mono">Код надає менеджер після короткого дзвінка — або доступ через оплату. Так ми беремо в глибоку роботу лише готові проєкти.</span>
+                  <span className="s3-gate-note mono">Код видає WEEXP після короткого дзвінка — так у глибоку роботу беремо лише готові проєкти. Немає коду? Натисніть «{audit.cta.replace(' →', '')}» вище — призначимо дзвінок.</span>
                 </div>
               )}
               {step4Unlocked && <span className="s3-sent mono">✓ Крок 4 активовано — розбір нижче</span>}
@@ -409,31 +418,16 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
             </div>
           )}
 
-          {/* Завантажити документи-шаблони (ТЗ §19): Word-звіт + Excel-аркуш — усе на фронті */}
+          {/* Забрати з собою — один блок, надійні завантаження (ТЗ §19) */}
           <div className="s2-panel s3-docs">
             <div className="s3-docs-l">
               <span className="sysx-kick">Забрати з собою</span>
               <b className="sysx-display s3-docs-h">Документи діагностики</b>
-              <p className="s3-reco-p">Фірмовий звіт і робочий аркуш юніт-економіки — вашими даними. Word і Excel відкриються в Google Docs / Sheets, Word / Excel чи LibreOffice.</p>
+              <p className="s3-reco-p">Фірмовий звіт — вашими даними. PDF відкриється окремою вкладкою (звідти «Поділитися → Зберегти в файли» або друк у PDF). Excel-таблиця — для розрахунків.</p>
             </div>
             <div className="s3-docs-r">
-              <button className="sysx-cta is-primary" onClick={() => downloadReportDoc(docData)}>Звіт Word ↓</button>
-              <button className="sysx-cta" onClick={() => downloadWorksheetXls(docData)}>Юніт-економіка Excel ↓</button>
-              <button className="sysx-cta" onClick={() => window.print()}>PDF (друк) ↓</button>
-            </div>
-          </div>
-
-          {/* Надіслати повний звіт команді + зустріч */}
-          <div className="s2-panel s3-send">
-            <div className="s3-send-l">
-              <b className="sysx-display">Готові рухатись до плану?</b>
-              <p className="s3-reco-p">Надішлемо команді ваш повний зріз і чернетку дорожньої карти — щоб на зустрічі почати не з нуля, а з вашого контексту.</p>
-            </div>
-            <div className="s3-send-r">
-              {sent
-                ? <span className="s3-sent mono">✓ {sent === 'sent' ? 'Звіт надіслано команді' : 'Звіт збережено — команда його отримає'}</span>
-                : <button className="sysx-cta is-primary" onClick={doSend} disabled={sending}>{sending ? 'Надсилаємо…' : 'Надіслати звіт команді →'}</button>}
-              <Link to="/contact" className="sysx-cta">Обрати час зустрічі</Link>
+              <button className="sysx-cta is-primary" onClick={() => openReportPage(docData)}>Завантажити звіт (PDF) ↓</button>
+              <button className="sysx-cta" onClick={() => downloadWorksheetXls(docData)}>Excel-таблиця ↓</button>
             </div>
           </div>
 
@@ -450,7 +444,6 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
             </div>
             <div className="s2-foot-cta">
               <button className="sysx-cta" onClick={() => setIdx(0)}>Редагувати дані</button>
-              <button className="sysx-cta" onClick={() => window.print()}>Завантажити PDF ↓</button>
               <button className="sysx-cta" onClick={logout}>Вийти</button>
             </div>
           </div>
@@ -485,7 +478,7 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
 
   return (
     <StepOverlay>
-    <div className="sysx s2 s3" role="dialog" aria-label="Етап 3 — питання">
+    <div ref={quizRef} className="sysx s2 s3" role="dialog" aria-label="Етап 3 — питання">
       <button className="s2-x mono" onClick={onClose}>✕ Призупинити</button>
       <div className="s2-quiz s3-flow">
         <div className="s2-quiz-head">

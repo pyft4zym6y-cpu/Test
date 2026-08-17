@@ -146,10 +146,10 @@ export function SystemsFilm() {
         <div ref={outro} className="sysx-scene sysx-ctaScene">
           <div className="sysx-kick">Знайдіть свою слабку ланку</div>
           <h2 className="sysx-display sysx-h2">Не вгадуйте систему —<br />знайдіть <span className="sysx-em">bottleneck</span>.</h2>
-          <p className="sysx-lead">Business X-Ray за 2 хвилини покаже, яка з восьми систем зараз стримує ваш зріст найсильніше.</p>
+          <p className="sysx-lead">Діагностика за кілька хвилин покаже, яка з восьми систем зараз стримує ваш зріст найсильніше — і скільки це коштує.</p>
           <div className="sysx-cta-row">
-            <Link to="/diagnose" className="sysx-cta is-primary">Пройти Business X-Ray →</Link>
-            <Link to="/loss" className="sysx-cta">Порахувати втрати</Link>
+            <Link to="/diagnose" className="sysx-cta is-primary">Пройти діагностику →</Link>
+            <Link to="/proof" className="sysx-cta">Кейси</Link>
           </div>
         </div>
       </div>

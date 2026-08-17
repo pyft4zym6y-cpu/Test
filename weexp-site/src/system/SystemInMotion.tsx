@@ -129,7 +129,7 @@ export function SystemInMotion() {
           </div>
           <div className="sysx-cta-row">
             <Link to="/diagnose" className="sysx-cta is-primary">Знайти вузьке місце →</Link>
-            <Link to="/loss" className="sysx-cta">Порахувати втрати</Link>
+            <Link to="/proof" className="sysx-cta">Дивитись докази</Link>
             <Link to="/contact" className="sysx-cta">Написати нам</Link>
           </div>
         </div>

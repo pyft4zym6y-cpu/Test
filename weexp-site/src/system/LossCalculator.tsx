@@ -1,4 +1,4 @@
-import { lazy, Suspense, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { computeLoss, eur, project, SYS, type LossInput, type LossResult, type SysKey } from './lossModel';
 import './system.css';
 
@@ -35,6 +35,13 @@ export function LossCalculator() {
   const [res, setRes] = useState<LossResult | null>(null);
   const [stage2, setStage2] = useState(false);
   const alerts = useRef<number[]>([]);
+  const panelRef = useRef<HTMLDivElement>(null);
+  // Зміна кроку — підводимо панель до верху вьюпорта (щоб екран не «стрибав» посередині форми)
+  useEffect(() => {
+    const el = panelRef.current; if (!el) return;
+    const y = el.getBoundingClientRect().top + window.scrollY - 72;
+    window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+  }, [step]);
 
   const setNum = (k: keyof Omit<LossInput, 'symptoms'>) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setInp((s) => ({ ...s, [k]: parseFloat(e.target.value) || 0 }));
@@ -48,13 +55,13 @@ export function LossCalculator() {
       <div className="sysx-field" aria-hidden="true" />
       <div className="sysx-calc-bg"><Suspense fallback={null}><CommerceSystem3D fixedProgress={0.72} alerts={alerts} /></Suspense></div>
 
-      <div className="sysx-calc-panel">
+      <div className="sysx-calc-panel" ref={panelRef}>
         {step !== 3 && (
           <header className="sysx-calc-head">
-            <div className="sysx-kick">Крок 1 з 2 · Калькулятор витрат · 5 хвилин</div>
-            <h1 className="sysx-display sysx-calc-h1">Порахуйте, скільки<br />ви <span className="sysx-em">втрачаєте</span></h1>
-            <p className="sysx-lead">Спершу — число: скільки грошей витікає з вітрини щороку. Потім, у повній діагностиці, перетворимо його на карту: де саме й як повернути.</p>
-            <div className="sysx-steps mono"><span className={step === 1 ? 'on' : ''}>01 Профіль</span><i>→</i><span className={step === 2 ? 'on' : ''}>02 Симптоми</span><i>→</i><span>03 Ваш витік</span></div>
+            <div className="sysx-kick">Діагностика e-commerce · крок {step} · ~5 хвилин</div>
+            <h1 className="sysx-display sysx-calc-h1">Діагностика:<br />почнімо з <span className="sysx-em">числа</span></h1>
+            <p className="sysx-lead">Один інструмент від першого числа до плану. Спершу порахуємо, скільки витікає щороку; далі — карта систем, кабінет із вашими даними та поглиблений розбір. Це кроки однієї діагностики, а не окремі інструменти.</p>
+            <div className="sysx-steps mono"><span className={step === 1 ? 'on' : ''}>01 Профіль</span><i>→</i><span className={step === 2 ? 'on' : ''}>02 Симптоми</span><i>→</i><span>03 Витік</span><i>→</i><span>04 Карта</span><i>→</i><span>05 Кабінет</span></div>
           </header>
         )}
 
@@ -163,21 +170,21 @@ export function LossCalculator() {
               );
             })()}
 
-            {/* Крок 2 — місток до повної діагностики: число → карта → план */}
+            {/* Наступний крок тієї ж діагностики: число → карта → кабінет → план */}
             <div className="sysx-next2">
-              <span className="sysx-kick">Крок 2 з 2 · Повна діагностика</span>
-              <p className="sysx-next2-lead">Це <b>оцінка за 5 хвилин</b>. Повна діагностика підтвердить цифру вашими даними (CRM/ERP/GA4) і покаже, <b>де саме</b> витікає виторг і <b>як його повернути</b> — план під Definition of Done.</p>
+              <span className="sysx-kick">Крок 4 · Повна карта систем</span>
+              <p className="sysx-next2-lead">Ви завершили <b>кроки 1–3</b> — маєте число. Далі, у тій самій діагностиці, підтвердимо його вашими даними (CRM/ERP/GA4) і покажемо, <b>де саме</b> витікає виторг і <b>як його повернути</b> — план під Definition of Done.</p>
               <div className="sysx-next2-ladder mono">
-                <span><b>Зараз</b><i>Число: скільки втрачаєте</i></span>
+                <span><b>Кроки 1–3</b><i>Число: скільки втрачаєте</i></span>
                 <em>→</em>
-                <span><b>Крок 2</b><i>Карта: де саме й чому</i></span>
+                <span><b>Крок 4</b><i>Карта: де саме й чому</i></span>
                 <em>→</em>
-                <span><b>Побудова</b><i>План повернення виторгу</i></span>
+                <span><b>Крок 5</b><i>Кабінет + план повернення</i></span>
               </div>
             </div>
 
             <div className="sysx-calc-actions">
-              <button className="sysx-cta is-primary" onClick={() => setStage2(true)}>Крок 2 — глибша діагностика →</button>
+              <button className="sysx-cta is-primary" onClick={() => setStage2(true)}>Далі: повна карта систем →</button>
               <button className="sysx-cta" onClick={restart}>Перерахувати</button>
             </div>
             <span className="sysx-note mono">Оцінка за наданими даними. Не фінансовий аудит. Етап 2 уточнює зріз за логікою Commerce OS.</span>
