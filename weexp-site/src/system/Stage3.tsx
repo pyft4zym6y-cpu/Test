@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { eur } from './lossModel';
+import { eur, project, computeLoss, type LossInput } from './lossModel';
 import { BLOCKS, SECTIONS, LIKE_WHAT, scoreStage3, type Stage3Answers, type RefItem } from './stage3Model';
 import { levelFor } from './stage2Model';
 import { RadarChart, SystemBars, HW } from './charts';
@@ -21,6 +21,19 @@ import './system.css';
 const MAIL = 'hello@weexp.agency';
 const host = (u: string) => u.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
 
+// Крок 4 відкривається Access Code від менеджера (або оплатою). Реальні коди —
+// через env VITE_ACCESS_CODES (через кому); поки не налаштовано, приймаємо
+// демо-формат WEEXP-XXXX, щоб потік був робочим.
+const ACCESS_CODES = ((import.meta.env.VITE_ACCESS_CODES as string | undefined) || '')
+  .split(',').map((s) => s.trim().toUpperCase()).filter(Boolean);
+const isValidCode = (c: string) => {
+  const u = c.trim().toUpperCase();
+  if (!u) return false;
+  return ACCESS_CODES.length ? ACCESS_CODES.includes(u) : /^WEEXP-[A-Z0-9]{3,}$/.test(u);
+};
+// Впевненість висновку за повнотою даних (Evidence → Confidence).
+const confLabel = (completeness: number) => (completeness >= 70 ? 'висока' : completeness >= 45 ? 'середня' : 'попередня');
+
 export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onClose: () => void; standalone?: boolean }) {
   const [user, setUser] = useState<DiagUser | null>(null);
   const [checking, setChecking] = useState(true);
@@ -31,8 +44,14 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
   const [saved, setSaved] = useState(false);   // пульс «збережено» після автозбереження
   const [hover, setHover] = useState<number | null>(null);
   const [money, setMoney] = useState<[number, number] | undefined>(prior?.stage1Money);  // €-якір з Етапу 1
+  const [stage1Inp, setStage1Inp] = useState<LossInput | undefined>(prior?.stage1 as LossInput | undefined);  // для проєкції «куди прийдемо»
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState<false | 'sent' | 'saved'>(false);
+  // Крок 4 — ворота Access Code
+  const [step4On, setStep4On] = useState(false);     // розгорнуто поле коду
+  const [step4Code, setStep4Code] = useState('');
+  const [step4Err, setStep4Err] = useState('');
+  const [step4Unlocked, setStep4Unlocked] = useState(false);
   const saveT = useRef<number | undefined>(undefined);
 
   useEffect(() => { currentUser().then((u) => { setUser(u); setChecking(false); }); }, []);
@@ -43,9 +62,11 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
     loadDiag(user).then((rec) => {
       if (rec.stage3) setAns(rec.stage3 as Stage3Answers);
       if (rec.stage1Money && !money) setMoney(rec.stage1Money);
+      if ((rec as { stage1?: LossInput }).stage1 && !stage1Inp) setStage1Inp((rec as { stage1?: LossInput }).stage1);
       if (prior) saveDiag(user, { ...prior }); // stage1/2 зберігаються теж
       // Повернення в кабінет із завершеним розбором → одразу показуємо звіт.
       if ((rec.stage3 as Record<string, unknown> | undefined)?.__submitted) setIdx(BLOCKS.length);
+      if ((rec.stage3 as Record<string, unknown> | undefined)?.__step4) setStep4Unlocked(true);
     });
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -68,6 +89,11 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
     if (r.user) setUser(r.user);
   };
   const logout = async () => { await signOut(); setUser(null); setIdx(0); };
+  const unlockStep4 = () => {
+    if (!isValidCode(step4Code)) { setStep4Err('Код недійсний. Попросіть його в менеджера або оберіть оплату.'); return; }
+    setStep4Err(''); setStep4Unlocked(true);
+    if (user) saveDiag(user, { stage3: { ...ans, __step4: true } as Record<string, unknown> });
+  };
   const cloud = isCloudUser(user);
 
   const set = (id: string, v: Stage3Answers[string]) => setAns((a) => ({ ...a, [id]: v }));
@@ -124,6 +150,7 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
   if (res) {
     const lvl = levelFor(res.overall);
     const audit = res.recos[0];
+    const proj = stage1Inp ? project(stage1Inp, computeLoss(stage1Inp)) : null;
     const doSend = async () => {
       setSending(true);
       const r = await sendReport({
@@ -213,6 +240,38 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
             )}
           </div>
 
+          {/* «Зараз → Куди можемо прийти» — уточнена ціль (Tier-2), не рахуємо наново */}
+          {proj && (proj.income.length > 0 || proj.unit.length > 0) && (
+            <div className="s2-project">
+              <div className="s2-proj-head">
+                <span className="sysx-kick">Зараз → Куди можемо прийти · уточнена ціль (Tier-2)</span>
+                <p className="s2-proj-sub">Та сама модель, що й на Кроках 1–2, але звужена вашими даними кабінету. Приріст доходу обмежено вже порахованою можливістю.</p>
+              </div>
+              {proj.income.length > 0 && (
+                <div className="s2-proj-income">
+                  {proj.income.map((d) => (
+                    <div key={d.label} className={`s2-proj-inc${d.hero ? ' is-hero' : ''}`}>
+                      <span className="s2-proj-inc-l mono">{d.label}</span>
+                      <div className="s2-proj-inc-v"><span className="s2-proj-now">{d.before}</span><em aria-hidden="true">→</em><b className="sysx-display s2-proj-aft">{d.after}</b></div>
+                      <span className="s2-proj-badge up">+{d.pct}%</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {(proj.unit.length > 0 || proj.ops.length > 0) && (
+                <div className="s2-proj-rows">
+                  {[...proj.unit, ...proj.ops].map((d) => (
+                    <div key={d.label} className="s2-proj-row">
+                      <span className="s2-proj-row-l">{d.label}</span>
+                      <span className="s2-proj-row-v"><i className="s2-proj-b">{d.before}</i><em aria-hidden="true">→</em><b>{d.after}</b></span>
+                      <span className={`s2-proj-badge ${d.dir}`}>{d.dir === 'down' ? '−' : '+'}{d.pct}%</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Ключові болі — реально з відповідей */}
           {res.pains.length > 0 && (
             <div className="s2-panel s3-pains">
@@ -253,16 +312,79 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
               <span className="s3-reco-rr mono">{audit.riskReversal}</span>
             </div>
             <div className="s2-panel s3-reco">
-              <span className="sysx-kick">Крок 4 · Повне дослідження</span>
+              <span className="sysx-kick">Крок 4 · Поглиблена діагностика</span>
               <b className="sysx-display s3-reco-h">Продовжуємо дослідження</b>
-              <p className="s3-reco-p">Ми вже майже готові скласти ваш план дій. Крок 4 доводить охоплення до <b>100% тем</b> і глибину до <b>75%+</b> — його проходимо разом із командою.</p>
-              <div className="s3-depth"><span className="mono">Зараз охоплено ~{Math.max(20, Math.round(res.completeness * 0.35))}% глибокої анкети</span>
-                <div className="s3-depth-track"><i style={{ width: `${Math.max(20, Math.round(res.completeness * 0.35))}%` }} /><i className="s3-depth-goal" /></div>
-                <span className="mono">ціль Кроку 4 — 75%+</span>
-              </div>
-              <Link to="/contact" className="sysx-cta">Запустити Крок 4 →</Link>
+              <p className="s3-reco-p">Ми майже готові скласти ваш план. Крок 4 звіряє попередні відповіді, знаходить <b>ключові болі, докази й причини</b> та формує <b>первинну дорожню карту</b>. Глибина зростає, але діагностика ще не завершена.</p>
+              {(() => { const cov = Math.min(72, 30 + Math.round(res.completeness * 0.35)); return (
+                <div className="s3-depth"><span className="mono">Diagnostic Coverage зараз ~{cov}%</span>
+                  <div className="s3-depth-track"><i style={{ width: `${cov}%` }} /><i className="s3-depth-goal" /></div>
+                  <span className="mono">Крок 4 → 75%+ · Крок 5 закриває решту</span>
+                </div>
+              ); })()}
+              {!step4Unlocked && !step4On && (
+                <button className="sysx-cta is-primary" onClick={() => setStep4On(true)}>Продовжити діагностику (Крок 4) →</button>
+              )}
+              {!step4Unlocked && step4On && (
+                <div className="s3-gate">
+                  <label className="s2-inp"><span className="mono">Access Code</span>
+                    <input value={step4Code} onChange={(e) => setStep4Code(e.target.value)} placeholder="WEEXP-XXXX" autoFocus />
+                  </label>
+                  {step4Err && <span className="s3-err mono">{step4Err}</span>}
+                  <button className="sysx-cta is-primary" onClick={unlockStep4} disabled={!step4Code.trim()}>Активувати Крок 4 →</button>
+                  <span className="s3-gate-note mono">Код надає менеджер після короткого дзвінка — або доступ через оплату. Так ми беремо в глибоку роботу лише готові проєкти.</span>
+                </div>
+              )}
+              {step4Unlocked && <span className="s3-sent mono">✓ Крок 4 активовано — розбір нижче</span>}
             </div>
           </div>
+
+          {/* Крок 4 · результат — Key Problems + Evidence + Diagnosis + Roadmap (за кодом) */}
+          {step4Unlocked && (
+            <div className="s2-panel s3-step4">
+              <span className="sysx-kick">Крок 4 · Поглиблений розбір</span>
+              <h3 className="sysx-display s3-step4-h">Ключові проблеми, докази й напрям руху</h3>
+
+              {res.pains.length > 0 && (
+                <div className="s3-kp">
+                  <div className="s3-kp-head mono"><span>Проблема</span><span>Докази</span><span>Впевненість</span><span>Пріоритет</span></div>
+                  {res.pains.slice(0, 6).map((p, i) => (
+                    <div key={p.label} className="s3-kp-row">
+                      <b>{p.label}</b>
+                      <span className="s3-kp-ev">{p.detail || 'за вашими відповідями'}</span>
+                      <span className="s3-kp-conf">{confLabel(res.completeness)}</span>
+                      <span className="s3-kp-pri mono">P{i + 1}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="s3-step4-diag">
+                <span className="sysx-kick">Попередній діагноз</span>
+                <p className="s3-epiphany">{res.epiphany}</p>
+                <p className="s3-verdict-sub">Вузьке місце — «{res.bottleneck.label}» ({res.bottleneck.score}/100). Це не вирок «потрібен новий сайт» чи «винен відділ»: спершу перевіряємо дані (UX, аналітику, конверсію, процеси), і лише тоді — рішення. Логіка: <b>Проблема → Докази → Впевненість → Вплив → Пріоритет</b>.</p>
+              </div>
+
+              {res.roadmap.length > 0 && (
+                <div className="s3-step4-road">
+                  <span className="sysx-kick">Первинна дорожня карта</span>
+                  <div className="s3-road">
+                    {res.roadmap.map((r, i) => (
+                      <div key={r.title} className="s3-road-step">
+                        <i className="s3-road-n mono">{String(i + 1).padStart(2, '0')}</i>
+                        <div className="s3-road-c"><b>{r.title} <span className="s3-road-pri mono">P{i + 1} · {i === 0 ? 'висока віддача' : i === 1 ? 'середня складність' : 'фонова'}</span></b><span>{r.detail}</span></div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="s3-step4-cta">
+                <Link to="/contact" className="sysx-cta is-primary">Крок 5 — глибока AI-діагностика →</Link>
+                <Link to="/contact" className="sysx-cta">Запланувати зустріч</Link>
+                <span className="s3-step4-note mono">Крок 5 динамічно ставить питання під ваш випадок і запитує лише потрібні дані/доступи. Відкривається так само — за кодом або оплатою.</span>
+              </div>
+            </div>
+          )}
 
           {/* Надіслати повний звіт команді + зустріч */}
           <div className="s2-panel s3-send">

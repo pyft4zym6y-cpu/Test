@@ -748,6 +748,31 @@
 .s3-depth-track > i { position: absolute; left: 0; top: 0; height: 100%; background: linear-gradient(90deg, var(--charcoal), var(--deep)); border-radius: 5px; }
 .s3-depth-goal { left: 75%; width: 2px; background: #3a7d5c; border-radius: 0; }
 
+/* Крок 4 — ворота Access Code */
+.s3-gate { display: grid; gap: 10px; margin-top: 4px; }
+.s3-gate-note { font-size: 10.5px; line-height: 1.5; color: var(--graphite); }
+/* Крок 4 — поглиблений результат */
+.s3-step4 { display: grid; gap: 16px; border-color: var(--data); box-shadow: inset 3px 0 0 var(--data); }
+.s3-step4-h { font-size: clamp(20px, 2.4vw, 30px); color: var(--deep); }
+.s3-kp { display: grid; gap: 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.s3-kp-head, .s3-kp-row { display: grid; grid-template-columns: 1.3fr 1.6fr .7fr .5fr; gap: 12px; align-items: center; padding: 10px 14px; }
+.s3-kp-head { background: color-mix(in srgb, var(--data) 6%, var(--pure-white)); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--graphite); }
+.s3-kp-row { border-top: 1px solid var(--line-soft); font-size: 13px; }
+.s3-kp-row b { color: var(--deep); }
+.s3-kp-ev { color: var(--charcoal); font-size: 12.5px; }
+.s3-kp-conf { color: #2f6b4d; font-size: 12px; }
+.s3-kp-pri { color: var(--alert); font-weight: 600; text-align: right; }
+.s3-step4-diag, .s3-step4-road { display: grid; gap: 8px; }
+.s3-road-pri { color: var(--data); font-size: 10px; letter-spacing: .04em; margin-left: 6px; }
+.s3-step4-cta { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; border-top: 1px solid var(--line); padding-top: 14px; }
+.s3-step4-note { flex-basis: 100%; font-size: 10.5px; color: var(--graphite); line-height: 1.5; }
+@media (max-width: 640px) {
+  .s3-kp-head { display: none; }
+  .s3-kp-row { grid-template-columns: 1fr auto; gap: 4px 10px; }
+  .s3-kp-ev { grid-column: 1 / -1; }
+  .s3-kp-conf { grid-column: 1; } .s3-kp-pri { grid-column: 2; }
+}
+
 /* Надіслати звіт команді */
 .s3-send { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; justify-content: space-between; border-color: var(--data); }
 .s3-send-l { flex: 1 1 320px; display: grid; gap: 6px; }
