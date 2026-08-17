@@ -4,6 +4,7 @@ import { eur, project, computeLoss, type LossInput } from './lossModel';
 import { BLOCKS, SECTIONS, LIKE_WHAT, scoreStage3, type Stage3Answers, type RefItem } from './stage3Model';
 import { levelFor } from './stage2Model';
 import { RadarChart, SystemBars, HW } from './charts';
+import { StepOverlay } from './StepOverlay';
 
 // Важкий three.js-район — ліниво, щоб форма входу відкривалась миттєво.
 const CompanyWorld = lazy(() => import('@/system/CompanyWorld').then((m) => ({ default: m.CompanyWorld })));
@@ -118,10 +119,11 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
     ? (ans['goal_b'] as number[]).map((i) => goalBlock.options![i]?.label).filter(Boolean) as string[] : [];
 
   /* ── Auth gate ── */
-  if (checking) return <div className="s2 s3"><div className="s3-auth"><span className="mono">…</span></div></div>;
+  if (checking) return <StepOverlay><div className="sysx s2 s3"><div className="s3-auth"><span className="mono">…</span></div></div></StepOverlay>;
   if (!user) {
     return (
-      <div className="s2 s3" role="dialog" aria-label="Етап 3 — кабінет">
+      <StepOverlay>
+      <div className="sysx s2 s3" role="dialog" aria-label="Етап 3 — кабінет">
         <button className="s2-x mono" onClick={onClose}>✕ Закрити</button>
         <div className="s3-auth">
           <div className="sysx-kick">{standalone ? 'Особистий кабінет клієнта' : 'Ви пройшли 2 з 3 етапів — лишився кабінет'}</div>
@@ -143,6 +145,7 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
           </div>
         </div>
       </div>
+      </StepOverlay>
     );
   }
 
@@ -165,7 +168,8 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
       setSending(false); setSent(r.mode);
     };
     return (
-      <div className="s2 s3" role="dialog" aria-label="Tier-2 звіт">
+      <StepOverlay>
+      <div className="sysx s2 s3" role="dialog" aria-label="Tier-2 звіт">
         <button className="s2-x mono" onClick={onClose}>✕ Закрити</button>
         <div className="s2-report">
           <header className="s2-rep-head">
@@ -419,6 +423,7 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
           </div>
         </div>
       </div>
+      </StepOverlay>
     );
   }
 
@@ -445,7 +450,8 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
   const setRefs = (next: RefItem[]) => set(b.id, (next.length ? next : [{ url: '', what: [] }]) as unknown as string[]);
 
   return (
-    <div className="s2 s3" role="dialog" aria-label="Етап 3 — питання">
+    <StepOverlay>
+    <div className="sysx s2 s3" role="dialog" aria-label="Етап 3 — питання">
       <button className="s2-x mono" onClick={onClose}>✕ Призупинити</button>
       <div className="s2-quiz s3-flow">
         <div className="s2-quiz-head">
@@ -585,5 +591,6 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
         </div>
       </div>
     </div>
+    </StepOverlay>
   );
 }
