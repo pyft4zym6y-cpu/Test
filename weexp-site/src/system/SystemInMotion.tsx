@@ -118,7 +118,7 @@ export function SystemInMotion() {
           <div className="sysx-kick">Independence Score</div>
           <h2 className="sysx-display sysx-h2">Наскільки незалежний<br />ваш <span className="sysx-em">e-commerce</span>?</h2>
           <p className="sysx-lead">Веб-розробка, ERP, UX/CRO, аналітика та експансія — вісім систем під одним дахом. Команда з власником кожної.</p>
-          <div className="sysx-proof">
+          <div className="sysx-proofbar">
             <span><b>17</b> трансформацій</span>
             <i aria-hidden="true" />
             <span><b>8</b> систем під дахом</span>
