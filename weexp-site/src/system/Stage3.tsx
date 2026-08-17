@@ -8,6 +8,7 @@ import { StepOverlay } from './StepOverlay';
 
 // Важкий three.js-район — ліниво, щоб форма входу відкривалась миттєво.
 const CompanyWorld = lazy(() => import('@/system/CompanyWorld').then((m) => ({ default: m.CompanyWorld })));
+const Stage5 = lazy(() => import('@/system/Stage5').then((m) => ({ default: m.Stage5 })));
 import { CONFIGURED, authenticate, currentUser, isCloudUser, loadDiag, saveDiag, signOut, type DiagUser, type DiagRecord } from '@/lib/supa';
 import { sendReport } from '@/lib/report';
 import { downloadReportDoc, downloadWorksheetXls, type DocData } from '@/lib/docs';
@@ -54,6 +55,7 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
   const [step4Code, setStep4Code] = useState('');
   const [step4Err, setStep4Err] = useState('');
   const [step4Unlocked, setStep4Unlocked] = useState(false);
+  const [step5On, setStep5On] = useState(false);     // відкрито AI-інтерв'ю Кроку 5
   const saveT = useRef<number | undefined>(undefined);
 
   useEffect(() => { currentUser().then((u) => { setUser(u); setChecking(false); }); }, []);
@@ -164,6 +166,13 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
       competitors: res.competitors, marketing: res.marketing, finance: res.finance,
       projection: proj ? { income: proj.income, unit: proj.unit, ops: proj.ops, upliftPct: proj.upliftPct, horizon: proj.horizon } : undefined,
     };
+    // Контекст для Кроку 5 (AI-інтерв'ю) — той самий зріз, що й у документах
+    const s5Ctx = {
+      site: docData.site, overall: res.overall, bottleneck: res.bottleneck, goals: res.goals,
+      pains: res.pains, systems: res.systems.map((s) => ({ label: s.label, score: s.score })),
+      marketing: res.marketing, finance: res.finance, completeness: res.completeness,
+    };
+    const saveStep5 = (h: { q: string; a: string }[]) => saveDiag(user, { stage3: { ...ans, __step5: h } as Record<string, unknown> });
     const doSend = async () => {
       setSending(true);
       const r = await sendReport({
@@ -393,9 +402,9 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
               )}
 
               <div className="s3-step4-cta">
-                <Link to="/contact" className="sysx-cta is-primary">Крок 5 — глибока AI-діагностика →</Link>
+                <button className="sysx-cta is-primary" onClick={() => setStep5On(true)}>Крок 5 — глибока AI-діагностика →</button>
                 <Link to="/contact" className="sysx-cta">Запланувати зустріч</Link>
-                <span className="s3-step4-note mono">Крок 5 динамічно ставить питання під ваш випадок і запитує лише потрібні дані/доступи. Відкривається так само — за кодом або оплатою.</span>
+                <span className="s3-step4-note mono">Крок 5 динамічно ставить питання під ваш випадок і зводить докази, корені й дорожню карту. Відповіді зберігаються у вашому кабінеті.</span>
               </div>
             </div>
           )}
@@ -446,6 +455,7 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
             </div>
           </div>
         </div>
+        {step5On && <Suspense fallback={null}><Stage5 context={s5Ctx} onClose={() => setStep5On(false)} onSaveHistory={saveStep5} /></Suspense>}
       </div>
       </StepOverlay>
     );
