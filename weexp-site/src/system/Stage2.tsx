@@ -2,6 +2,7 @@ import { lazy, Suspense, useMemo, useState } from 'react';
 import { eur, project, SYS, type LossInput, type LossResult, type SysKey } from './lossModel';
 import { QUESTIONS, scoreStage2, type Stage2Answers } from './stage2Model';
 import { RadarChart, SystemBars } from './charts';
+import { StepOverlay } from './StepOverlay';
 import './system.css';
 
 const Stage3 = lazy(() => import('@/system/Stage3').then((m) => ({ default: m.Stage3 })));
@@ -60,7 +61,8 @@ export function Stage2({ stage1, stage1Result, onClose }: { stage1: LossInput; s
   };
 
   return (
-    <div className="s2" role="dialog" aria-label="Калькулятор — Етап 2">
+    <StepOverlay>
+    <div className="sysx s2" role="dialog" aria-label="Калькулятор — Етап 2">
       <button className="s2-x mono" onClick={onClose} aria-label="Закрити">✕ Закрити</button>
 
       {phase !== 'report' && (
@@ -217,5 +219,6 @@ export function Stage2({ stage1, stage1Result, onClose }: { stage1: LossInput; s
         </Suspense>
       )}
     </div>
+    </StepOverlay>
   );
 }
