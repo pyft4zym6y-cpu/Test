@@ -75,6 +75,30 @@ export function downloadReportDoc(d: DocData) {
   triggerDownload(new Blob(['﻿', buildReportDoc(d)], { type: 'application/msword' }), `WEEXP-звіт-${slug(d)}.doc`);
 }
 
+/**
+ * Надійний «Завантажити звіт (PDF)» для всіх пристроїв: відкриваємо фірмовий звіт
+ * окремою вкладкою і викликаємо друк — користувач зберігає як PDF (працює і на
+ * iOS, де blob-завантаження <a download> віддає порожній файл). Якщо попап
+ * заблоковано — м'яко відкочуємось на завантаження .doc.
+ */
+export function openReportPage(d: DocData) {
+  const inner = buildReportDoc(d);
+  const w = window.open('', '_blank');
+  if (!w) { downloadReportDoc(d); return; }
+  const withPrint = inner.replace(
+    '</body>',
+    `<div class="wx-noprint" style="position:sticky;bottom:0;display:flex;gap:10px;justify-content:center;padding:12px;background:#fff;border-top:1px solid #D9DDE1">
+       <button onclick="window.print()" style="font:600 14px/-apple-system,sans-serif;padding:11px 20px;border-radius:100px;border:0;background:#15171A;color:#fff;cursor:pointer">Зберегти як PDF / Друк</button>
+     </div>
+     <style>@media print{.wx-noprint{display:none!important}}</style>
+     <script>setTimeout(function(){try{window.focus();window.print();}catch(e){}},700)</script>
+     </body>`,
+  );
+  w.document.open();
+  w.document.write(withPrint);
+  w.document.close();
+}
+
 export function buildReportDoc(d: DocData): string {
   const DEEP = '#15171A', DATA = '#2f4fd0', GRAPH = '#61686F', LINE = '#D9DDE1', ALERT = '#D6362B';
   const kick = (t: string) => `<p style="font-family:'Consolas',monospace;font-size:9pt;letter-spacing:2px;text-transform:uppercase;color:${DATA};margin:18pt 0 4pt">${esc(t)}</p>`;

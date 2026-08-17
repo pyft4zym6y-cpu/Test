@@ -36,7 +36,6 @@ const SystemInMotion = lazy(() => import('@/system/SystemInMotion').then((m) => 
 const CasesFilm = lazy(() => import('@/system/CasesFilm').then((m) => ({ default: m.CasesFilm })));
 const PeopleFilm = lazy(() => import('@/system/PeopleFilm').then((m) => ({ default: m.PeopleFilm })));
 const ExpansionFilm = lazy(() => import('@/system/ExpansionFilm').then((m) => ({ default: m.ExpansionFilm })));
-const DiagnoseFilm = lazy(() => import('@/system/DiagnoseFilm').then((m) => ({ default: m.DiagnoseFilm })));
 const ContactFilm = lazy(() => import('@/system/ContactFilm').then((m) => ({ default: m.ContactFilm })));
 const SystemShell = lazy(() => import('@/system/SystemShell').then((m) => ({ default: m.SystemShell })));
 const LossCalculator = lazy(() => import('@/system/LossCalculator').then((m) => ({ default: m.LossCalculator })));
@@ -61,9 +60,11 @@ export default function App() {
             <Route path="/proof" element={<CasesFilm />} />
             <Route path="/people" element={<PeopleFilm />} />
             <Route path="/expansion" element={<ExpansionFilm />} />
-            <Route path="/diagnose" element={<DiagnoseFilm />} />
+            {/* Єдиний інструмент діагностики: калькулятор → карта → кабінет → Крок 4/5.
+                /loss (стара окрема назва) веде сюди ж, щоб не було двох паралельних. */}
+            <Route path="/diagnose" element={<LossCalculator />} />
+            <Route path="/loss" element={<Navigate to="/diagnose" replace />} />
             <Route path="/contact" element={<ContactFilm />} />
-            <Route path="/loss" element={<LossCalculator />} />
           </Route>
           <Route element={<Layout />}>
             {/* Попередній (темний) головний — доступний для порівняння/відкату */}

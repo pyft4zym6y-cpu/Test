@@ -13,7 +13,7 @@ const LINKS = [
   { to: '/proof', label: 'Докази' },
   { to: '/expansion', label: 'Експансія' },
   { to: '/people', label: 'Команда' },
-  { to: '/loss', label: 'Калькулятор' },
+  { to: '/diagnose', label: 'Діагностика' },
   { to: '/cabinet', label: 'Кабінет' },
   { to: '/contact', label: 'Контакт' },
 ];
@@ -34,7 +34,7 @@ const Icon = ({ d }: { d: string }) => (
 const TABS = [
   { to: '/', label: 'Система', icon: I.home },
   { to: '/people', label: 'Команда', icon: I.people },
-  { to: '/loss', label: 'Калькулятор', icon: I.calc },
+  { to: '/diagnose', label: 'Діагностика', icon: I.calc },
   { to: '/contact', label: 'Контакт', icon: I.chat },
 ];
 
