@@ -782,6 +782,13 @@
 .s3-send-r { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .s3-sent { color: #3a7d5c; font-size: 13px; }
 
+/* Завантажити документи-шаблони (Word/Excel) */
+.s3-docs { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; justify-content: space-between; }
+.s3-docs-l { flex: 1 1 320px; display: grid; gap: 6px; }
+.s3-docs-h { font-size: clamp(18px, 2vw, 24px); color: var(--deep); }
+.s3-docs-r { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+@media (max-width: 620px) { .s3-docs-r { width: 100%; } .s3-docs-r .sysx-cta { flex: 1 1 auto; justify-content: center; } }
+
 /* Tier-2 звіт — додаткові панелі */
 .s3-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .s3-sub { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--graphite); display: block; margin-bottom: 6px; }

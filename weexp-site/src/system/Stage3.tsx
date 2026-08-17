@@ -10,6 +10,7 @@ import { StepOverlay } from './StepOverlay';
 const CompanyWorld = lazy(() => import('@/system/CompanyWorld').then((m) => ({ default: m.CompanyWorld })));
 import { CONFIGURED, authenticate, currentUser, isCloudUser, loadDiag, saveDiag, signOut, type DiagUser, type DiagRecord } from '@/lib/supa';
 import { sendReport } from '@/lib/report';
+import { downloadReportDoc, downloadWorksheetXls, type DocData } from '@/lib/docs';
 import './system.css';
 
 /**
@@ -154,6 +155,15 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
     const lvl = levelFor(res.overall);
     const audit = res.recos[0];
     const proj = stage1Inp ? project(stage1Inp, computeLoss(stage1Inp)) : null;
+    // Дані для завантажуваних документів (Word-звіт / Excel-аркуш) — ТЗ §19
+    const docData: DocData = {
+      email: user.email, site: typeof prior?.site === 'string' ? prior.site : undefined,
+      createdAt: new Date().toISOString(), overall: res.overall, levelTitle: lvl.title, levelLine: lvl.line,
+      completeness: res.completeness, moneyStr, bottleneck: res.bottleneck, epiphany: res.epiphany, goals: res.goals,
+      systems: res.systems.map((s) => ({ label: s.label, score: s.score })), pains: res.pains, roadmap: res.roadmap,
+      competitors: res.competitors, marketing: res.marketing, finance: res.finance,
+      projection: proj ? { income: proj.income, unit: proj.unit, ops: proj.ops, upliftPct: proj.upliftPct, horizon: proj.horizon } : undefined,
+    };
     const doSend = async () => {
       setSending(true);
       const r = await sendReport({
@@ -389,6 +399,20 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
               </div>
             </div>
           )}
+
+          {/* Завантажити документи-шаблони (ТЗ §19): Word-звіт + Excel-аркуш — усе на фронті */}
+          <div className="s2-panel s3-docs">
+            <div className="s3-docs-l">
+              <span className="sysx-kick">Забрати з собою</span>
+              <b className="sysx-display s3-docs-h">Документи діагностики</b>
+              <p className="s3-reco-p">Фірмовий звіт і робочий аркуш юніт-економіки — вашими даними. Word і Excel відкриються в Google Docs / Sheets, Word / Excel чи LibreOffice.</p>
+            </div>
+            <div className="s3-docs-r">
+              <button className="sysx-cta is-primary" onClick={() => downloadReportDoc(docData)}>Звіт Word ↓</button>
+              <button className="sysx-cta" onClick={() => downloadWorksheetXls(docData)}>Юніт-економіка Excel ↓</button>
+              <button className="sysx-cta" onClick={() => window.print()}>PDF (друк) ↓</button>
+            </div>
+          </div>
 
           {/* Надіслати повний звіт команді + зустріч */}
           <div className="s2-panel s3-send">
