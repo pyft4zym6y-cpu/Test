@@ -872,7 +872,7 @@
 }
 
 /* ── INTERNATIONAL EXPANSION (/expansion) ── */
-.sysx-expansion { height: 620vh; }
+.sysx-expansion { height: 900vh; }   /* Expansion Engine — 8 актів + інтро + CTA */
 .xp-panel { position: absolute; inset: 0; z-index: 3; display: grid; align-content: center; gap: clamp(20px, 3vw, 34px);
   padding: 0 clamp(24px, 6vw, 96px); pointer-events: none; will-change: opacity, transform; }
 .xp-panel .mono { font-family: var(--mono); }
@@ -905,15 +905,72 @@
 .xp-ready-list li::before { content: '✓'; color: var(--data); font-weight: 800; }
 .xp-ready-note { font-size: 11px; color: var(--graphite); border-top: 1px solid var(--line); padding-top: 10px; }
 
+/* ── EXPANSION ENGINE — карта Європи + 8 актів ── */
+.xpe-map { position: absolute; inset: 0; display: grid; place-items: center; z-index: 1; pointer-events: none; }
+.xpe-svg { width: min(92vw, 940px); height: auto; overflow: visible; }
+.xpe-map-cap { position: absolute; top: calc(50% + clamp(150px, 22vh, 220px)); left: 50%; transform: translateX(-50%);
+  font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--graphite); }
+.xpe-edge { stroke: var(--data); stroke-width: .45; opacity: .08; transition: opacity .5s var(--ease-cine), stroke-width .3s; }
+.xpe-edge.is-on { opacity: .9; stroke-width: .7; filter: drop-shadow(0 0 1.2px rgba(126,157,255,.6)); }
+.xpe-node-hit { fill: transparent; }
+.xpe-node-dot { fill: var(--pure-white); stroke: var(--silver); stroke-width: .6; transition: fill .4s, stroke .4s, r .3s; }
+.xpe-node.is-src .xpe-node-dot { fill: var(--deep); stroke: var(--deep); }
+.xpe-node.is-lit .xpe-node-dot { fill: var(--data); stroke: var(--data); filter: drop-shadow(0 0 2px rgba(126,157,255,.7)); }
+.xpe-node-t { font: 700 2.2px var(--mono); fill: var(--graphite); letter-spacing: .04em; transition: fill .4s; }
+.xpe-node.is-lit .xpe-node-t, .xpe-node.is-src .xpe-node-t { fill: var(--deep); }
+
+/* Рейка кроків — праворуч */
+.xpe-rail { position: absolute; right: clamp(12px, 3vw, 40px); top: 50%; transform: translateY(-50%); z-index: 4;
+  display: grid; gap: 6px; }
+.xpe-tick { display: grid; grid-template-columns: auto auto; align-items: center; gap: 7px; justify-content: end;
+  background: none; border: 0; cursor: pointer; color: var(--graphite); text-align: right; padding: 2px 0; transition: color .2s; }
+.xpe-tick b { font-size: 10px; opacity: .5; }
+.xpe-tick span { font-size: 10.5px; letter-spacing: .04em; opacity: .5; white-space: nowrap; }
+.xpe-tick.is-on { color: var(--deep); } .xpe-tick.is-on b, .xpe-tick.is-on span { opacity: 1; }
+.xpe-tick.is-on b { color: var(--data); }
+
+/* Заголовок Engine — зверху зліва */
+.xpe-title { position: absolute; left: clamp(20px, 5vw, 76px); top: clamp(84px, 12vh, 128px); z-index: 3; display: grid; gap: 10px; max-width: 620px; pointer-events: none; }
+.xpe-h1 { font-size: clamp(30px, 4.6vw, 62px); }
+
+/* Акт — скляна плашка знизу зліва */
+.xpe-act { position: absolute; left: clamp(20px, 5vw, 76px); bottom: clamp(70px, 10vh, 104px); z-index: 3;
+  width: min(92vw, 460px); will-change: opacity; }
+.xpe-act-in { background: color-mix(in srgb, var(--pure-white) 92%, transparent); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  border: 1px solid var(--silver); border-radius: 16px; padding: clamp(18px, 2.4vw, 26px); display: grid; gap: 10px;
+  box-shadow: 0 30px 60px -42px rgba(21,23,26,.42); }
+.xpe-act-tag { font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--data); }
+.xpe-act-tag i { color: var(--graphite); font-style: normal; margin-right: 4px; }
+.xpe-act-h { font-size: clamp(26px, 3.4vw, 44px); color: var(--deep); line-height: .98; }
+.xpe-act-lead { font-size: clamp(13.5px, 1.5vw, 16px); line-height: 1.5; color: var(--charcoal); }
+.xpe-act-points { list-style: none; margin: 2px 0 0; padding: 0; display: grid; gap: 6px; }
+.xpe-act-points li { display: grid; grid-template-columns: 14px 1fr; gap: 9px; font-size: 13px; line-height: 1.4; color: var(--charcoal); }
+.xpe-act-points li::before { content: ''; width: 6px; height: 6px; margin-top: 6px; border-radius: 50%; background: var(--data); }
+.xpe-layers { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.xpe-layer { font-size: 10.5px; letter-spacing: .02em; color: var(--deep); background: rgba(126,157,255,.1);
+  border: 1px solid var(--data-soft); border-radius: 100px; padding: 4px 10px;
+  animation: xpeLayer .5s var(--ease-cine) both; animation-delay: calc(var(--k) * .04s); }
+@keyframes xpeLayer { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
 @media (max-width: 900px) {
+  /* Мобільний: карта зверху (повний контур), акти — стек карток */
   .sysx-expansion { height: auto; }
+  .sysx-expansion .sysx-stage { position: static; height: auto; display: block; padding: 76px 0 40px; }
+  .xpe-map { position: relative; inset: auto; height: 44vh; }
+  .xpe-map-cap { top: auto; bottom: 6px; }
+  .xpe-edge { opacity: .9 !important; } .xpe-node .xpe-node-dot { fill: var(--data); stroke: var(--data); }
+  .xpe-rail { display: none; }
+  .xpe-title { position: static; padding: 0 22px; max-width: none; margin-bottom: 8px; }
+  .xpe-act { position: static; width: auto; opacity: 1 !important; padding: 12px 22px; }
   .xp-panel { position: static; inset: auto; opacity: 1 !important; transform: none !important; padding: 48px 22px; margin: 40px 0; }
   .xp-head { text-align: left; justify-items: start; }
   .xp-grid, .xp-build { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
   .sysx-expansion { height: auto; }
-  .xp-panel { position: static; inset: auto; opacity: 1 !important; transform: none !important; margin: 40px auto; max-width: 1100px; }
+  .xpe-map { position: relative; height: 50vh; } .xpe-edge { opacity: .9; }
+  .xpe-act { position: static; width: auto; opacity: 1 !important; }
+  .xpe-title { position: static; }
 }
 
 /* ── SYSTEM EXPLORER (інтерактивне продовження головної) ── */
