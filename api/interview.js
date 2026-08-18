@@ -11,7 +11,13 @@
 //   → { mode:'question', question:{text,why,hint,kind,options?}, coverage, done }
 //   → { mode:'diagnosis', diagnosis:{summary,problems[],rootCauses[],roadmap[],connect[]}, coverage:100 }
 
+// Дозволяємо функції жити довше за дефолтні ~10с (інакше виклик Claude обривається
+// → на фронті «Звʼязок перервався»). Vercel застосує стелю плану.
+export const config = { maxDuration: 60 };
+
 const TARGET_Q = 7; // орієнтир глибини; модель може завершити раніше/пізніше
+// Швидка модель за замовчуванням — щоб укладатися в таймаут функції й тримати діалог жвавим.
+const DEFAULT_MODEL = 'claude-haiku-4-5-20251001';
 
 // Вирізаємо перший збалансований JSON-об'єкт (модель іноді додає префікс/суфікс).
 function extractJson(text) {
@@ -93,19 +99,23 @@ ${action === 'finish' ? 'КЛІЄНТ ПРОСИТЬ ЗАВЕРШИТИ — ві
 
   try {
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 30000);
+    const timer = setTimeout(() => ctrl.abort(), 55000);
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       signal: ctrl.signal,
       headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
       body: JSON.stringify({
-        model: process.env.INTERVIEW_MODEL || 'claude-sonnet-5',
-        max_tokens: 1600,
+        model: process.env.INTERVIEW_MODEL || DEFAULT_MODEL,
+        max_tokens: 1200,
         system,
         messages: [{ role: 'user', content: userMsg }],
       }),
     });
     clearTimeout(timer);
+    if (!r.ok) {
+      const t = await r.text().catch(() => '');
+      throw new Error(`Anthropic HTTP ${r.status}${t ? ': ' + t.slice(0, 160) : ''}`);
+    }
     const j = await r.json();
     if (j.error) throw new Error(j.error.message || 'Anthropic error');
     const text = (j.content ?? []).map((c) => c.text ?? '').join('');

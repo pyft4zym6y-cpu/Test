@@ -699,6 +699,8 @@
 .s3-reco-bul li::before { content: '→'; position: absolute; left: 0; top: 0; color: var(--data); font-weight: 700; }
 .s3-reco-rr { font-size: 11px; color: var(--graphite); margin-top: 2px; }
 .s3-reco-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 2px; }
+.s3-step4-intro { font-size: 13px; line-height: 1.55; color: var(--charcoal); background: color-mix(in srgb, var(--data) 7%, transparent); border-left: 3px solid var(--data); border-radius: 8px; padding: 10px 13px; margin: 2px 0 4px; }
+.s3-step4-intro b { color: var(--deep); }
 
 /* P6 — мікро-нагорода при переході між секціями */
 .s3-milestone { width: min(680px, 92vw); font-size: 12px; color: var(--data);

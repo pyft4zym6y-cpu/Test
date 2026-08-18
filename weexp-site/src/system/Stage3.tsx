@@ -327,7 +327,9 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
             </div>
           )}
 
-          {/* Наступні кроки: розбір із командою + Крок 4 (без продажу сайта в лоб) */}
+          {/* Наступні кроки — показуємо ЛИШЕ поки Крок 4 не активовано (щоб не було
+              купи конкурентних CTA одразу). Після активації — лінійно веде розбір нижче. */}
+          {!step4Unlocked && (
           <div className="s3-recos">
             <div className="s2-panel s3-reco strong">
               <span className="s3-reco-tag mono">Рекомендовано</span>
@@ -366,15 +368,16 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
                   <span className="s3-gate-note mono">Код видає WEEXP після короткого дзвінка — так у глибоку роботу беремо лише готові проєкти. Немає коду? Натисніть «{audit.cta.replace(' →', '')}» вище — призначимо дзвінок.</span>
                 </div>
               )}
-              {step4Unlocked && <span className="s3-sent mono">✓ Крок 4 активовано — розбір нижче</span>}
             </div>
           </div>
+          )}
 
           {/* Крок 4 · результат — Key Problems + Evidence + Diagnosis + Roadmap (за кодом) */}
           {step4Unlocked && (
             <div className="s2-panel s3-step4">
               <span className="sysx-kick">Крок 4 · Поглиблений розбір</span>
               <h3 className="sysx-display s3-step4-h">Ключові проблеми, докази й напрям руху</h3>
+              <p className="s3-step4-intro">Ми <b>не питаємо заново</b> — зводимо ваші відповіді з Кроків 1–3 у докази, впевненість і пріоритети. Нові питання під ваш конкретний випадок з'являться на <b>Кроці 5 (AI-інтерв'ю)</b>.</p>
 
               {res.pains.length > 0 && (
                 <div className="s3-kp">
@@ -528,12 +531,12 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
 
           {b.kind === 'url' && (
             <label className="s2-inp s3-one-inp"><span className="mono">Посилання</span>
-              <input type="url" inputMode="url" placeholder={b.placeholder || 'https://'} value={(val as string) || ''} onChange={(e) => set(b.id, e.target.value)} autoFocus />
+              <input type="url" inputMode="url" placeholder={b.placeholder || 'https://'} value={(val as string) || ''} onChange={(e) => set(b.id, e.target.value)} />
             </label>
           )}
           {b.kind === 'number' && (
             <label className="s2-inp s3-one-inp"><span className="mono">{b.unit || 'Значення'}</span>
-              <input type="number" inputMode="decimal" placeholder="0" value={(val as string) ?? ''} onChange={(e) => set(b.id, e.target.value)} autoFocus />
+              <input type="number" inputMode="decimal" placeholder="0" value={(val as string) ?? ''} onChange={(e) => set(b.id, e.target.value)} />
             </label>
           )}
           {b.kind === 'single' && (

@@ -82,21 +82,97 @@ export function downloadReportDoc(d: DocData) {
  * заблоковано — м'яко відкочуємось на завантаження .doc.
  */
 export function openReportPage(d: DocData) {
-  const inner = buildReportDoc(d);
   const w = window.open('', '_blank');
   if (!w) { downloadReportDoc(d); return; }
-  const withPrint = inner.replace(
-    '</body>',
-    `<div class="wx-noprint" style="position:sticky;bottom:0;display:flex;gap:10px;justify-content:center;padding:12px;background:#fff;border-top:1px solid #D9DDE1">
-       <button onclick="window.print()" style="font:600 14px/-apple-system,sans-serif;padding:11px 20px;border-radius:100px;border:0;background:#15171A;color:#fff;cursor:pointer">Зберегти як PDF / Друк</button>
-     </div>
-     <style>@media print{.wx-noprint{display:none!important}}</style>
-     <script>setTimeout(function(){try{window.focus();window.print();}catch(e){}},700)</script>
-     </body>`,
-  );
   w.document.open();
-  w.document.write(withPrint);
+  w.document.write(buildPrintReport(d));
   w.document.close();
+}
+
+/**
+ * Чистий, компактний звіт під друк/PDF (≤2 сторінки A4) — окремо від Word-версії
+ * (та має MSO-розмітку, що «пливе» у браузерному друку на телефоні). Справжня
+ * друкована типографіка, контроль розривів сторінок, кнопка «Зберегти як PDF».
+ */
+export function buildPrintReport(d: DocData): string {
+  const DEEP = '#15171A', DATA = '#2f4fd0', GRAPH = '#61686F', LINE = '#E2E5E9', ALERT = '#D6362B';
+  const sysColor = (s: number) => (s >= 65 ? '#1f9d55' : s >= 40 ? '#b8860b' : ALERT);
+
+  const painRows = d.pains.slice(0, 5)
+    .map((p, i) => `<tr><td class="pri">P${i + 1}</td><td class="pl"><b>${esc(p.label)}</b>${p.detail ? `<span>${esc(p.detail)}</span>` : ''}</td><td class="cf">${confLabel(d.completeness)}</td></tr>`)
+    .join('');
+
+  const proj = d.projection;
+  const projRows = proj
+    ? [...proj.income, ...proj.unit.slice(0, 3), ...proj.ops].slice(0, 7)
+        .map((x) => `<tr><td>${esc(x.label)}</td><td class="g">${esc(x.before)}</td><td class="b">${esc(x.after)}</td><td class="d">${x.dir === 'down' ? '−' : '+'}${x.pct}%</td></tr>`)
+        .join('')
+    : '';
+
+  const road = d.roadmap.slice(0, 5)
+    .map((r, i) => `<li><i>${String(i + 1).padStart(2, '0')}</i><div><b>${esc(r.title)}</b><span>${esc(r.detail)}</span></div></li>`)
+    .join('');
+
+  const sysChips = d.systems
+    .map((s) => `<span class="sys"><em style="color:${sysColor(s.score)}">${s.score}</em> ${esc(s.label.split(/\s|\//)[0])}</span>`)
+    .join('');
+
+  return `<!doctype html><html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WEEXP — звіт діагностики</title>
+<style>
+  :root{--deep:${DEEP};--data:${DATA};--graph:${GRAPH};--line:${LINE}}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#fff;color:#1c1e22;font:13px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;-webkit-text-size-adjust:100%}
+  .wrap{max-width:760px;margin:0 auto;padding:22px 20px 90px}
+  .kick{font:600 9px/1 ui-monospace,monospace;letter-spacing:2px;text-transform:uppercase;color:var(--graph);margin:0 0 5px}
+  h1{font-size:24px;line-height:1.1;margin:0 0 4px;color:var(--deep)}
+  h1 em{color:var(--data);font-style:normal}
+  .lvl{font-size:12.5px;color:#333;margin:0 0 6px}
+  .meta{font:10px/1.4 ui-monospace,monospace;color:var(--graph);margin:0 0 10px}
+  .opp{display:inline-block;background:#eef2ff;color:var(--data);font-weight:600;font-size:12px;padding:6px 11px;border-radius:8px;margin:0 0 12px}
+  h2{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--data);margin:16px 0 6px;font-family:ui-monospace,monospace}
+  .epi{font-size:15px;line-height:1.4;color:#111;margin:0 0 6px}
+  .sub{font-size:12px;color:#333;margin:0}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  td{padding:5px 7px;border-bottom:1px solid var(--line);vertical-align:top}
+  .pri{font:700 11px ui-monospace,monospace;color:var(--data);width:30px}
+  .pl b{display:block;color:var(--deep)}.pl span{display:block;color:#555;font-size:11px}
+  .cf{text-align:right;color:var(--graph);white-space:nowrap;width:70px}
+  .g{color:var(--graph)}.b{font-weight:700}.d{text-align:right;color:var(--data);white-space:nowrap}
+  ol{list-style:none;margin:0;padding:0}
+  ol li{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);break-inside:avoid}
+  ol li i{font:700 11px ui-monospace,monospace;color:var(--data);padding-top:2px}
+  ol li b{display:block;color:var(--deep)}ol li span{display:block;color:#555;font-size:11.5px}
+  .sysrow{display:flex;flex-wrap:wrap;gap:6px}
+  .sys{font-size:11px;border:1px solid var(--line);border-radius:100px;padding:3px 9px;color:#333}
+  .sys em{font-weight:700;font-style:normal}
+  .foot{margin-top:18px;padding-top:8px;border-top:2px solid var(--deep);font:9.5px/1.5 ui-monospace,monospace;color:var(--graph)}
+  section{break-inside:avoid}
+  .bar{position:fixed;bottom:0;left:0;right:0;display:flex;gap:10px;justify-content:center;padding:11px;background:#fff;border-top:1px solid var(--line)}
+  .bar button{font:600 14px -apple-system,sans-serif;padding:11px 22px;border-radius:100px;border:0;background:var(--deep);color:#fff}
+  @media print{.bar{display:none}.wrap{padding-bottom:22px}@page{size:A4;margin:12mm}}
+</style></head><body>
+<div class="wrap">
+  <p class="kick">WEEXP · Звіт діагностики</p>
+  <h1>Зрілість e-commerce — <em>${d.overall}</em>/100</h1>
+  <p class="lvl"><b>${esc(d.levelTitle)}.</b> ${esc(d.levelLine)}</p>
+  <p class="meta">${esc(d.email)}${d.site ? ' · ' + esc(d.site) : ''} · ${fmtDate(d.createdAt)} · дані ${d.completeness}%</p>
+  ${d.moneyStr ? `<div class="opp">Можливість: ${esc(d.moneyStr)} / рік</div>` : ''}
+
+  <section><h2>Головний висновок</h2>
+  <p class="epi">${esc(d.epiphany)}</p>
+  <p class="sub">Вузьке місце — <b>«${esc(d.bottleneck.label)}»</b> (${d.bottleneck.score}/100).${d.goals.length ? ` Ціль: ${d.goals.map(esc).join(' · ')}.` : ''}</p></section>
+
+  ${painRows ? `<section><h2>Ключові болі</h2><table>${painRows}</table></section>` : ''}
+  ${projRows ? `<section><h2>Зараз → ціль${proj ? ` · ${esc(proj.horizon)}` : ''}</h2><table>${projRows}</table></section>` : ''}
+  ${road ? `<section><h2>Дорожня карта</h2><ol>${road}</ol></section>` : ''}
+  <section><h2>Бали по системах</h2><div class="sysrow">${sysChips}</div></section>
+
+  <p class="foot">WEEXP — Система замість героїзму · weexp.agency<br>Попередня діагностика. Точний план під Definition of Done — на розборі з командою.</p>
+</div>
+<div class="bar"><button onclick="window.print()">Зберегти як PDF / Друк</button></div>
+<script>setTimeout(function(){try{window.focus();window.print();}catch(e){}},600)</script>
+</body></html>`;
 }
 
 export function buildReportDoc(d: DocData): string {
