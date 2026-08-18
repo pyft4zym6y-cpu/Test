@@ -39,6 +39,8 @@ import { buildCroFlow } from '../src/croflow.js';
 import { renderCroFlowHtml } from '../src/export/croFlowHtml.js';
 import { buildAnalyticsFlow } from '../src/analyticsflow.js';
 import { renderAnalyticsFlowHtml } from '../src/export/analyticsFlowHtml.js';
+import { buildCjmFlow } from '../src/cjmflow.js';
+import { renderCjmFlowHtml } from '../src/export/cjmFlowHtml.js';
 import { buildAuditChain } from '../src/auditchain.js';
 import { renderAuditChainHtml } from '../src/export/auditChainHtml.js';
 import { buildIntelligence } from '../src/intelligence.js';
@@ -348,6 +350,7 @@ async function main(): Promise<void> {
   await pdf(renderMerchFlowHtml(buildMerchFlow(ds)), 'Merchandising-Audit-A0.pdf');
   await pdf(renderCroFlowHtml(buildCroFlow(ds)), 'CRO-Audit-A0.pdf');
   await pdf(renderAnalyticsFlowHtml(buildAnalyticsFlow(ds)), 'Analytics-Audit-A0.pdf');
+  await pdf(renderCjmFlowHtml(buildCjmFlow(ds)), 'Customer-Journey-Audit-A0.pdf');
   await pdf(renderSeoFlowHtml(buildSeoFlow(ds)), 'SEO-аудит-система-A0.pdf');
   await pdf(renderGeoFlowHtml(buildGeoFlow(ds)), 'GEO-AEO-LLM-аудит-A0.pdf');
   await pdf(renderAuditChainHtml(buildAuditChain(ds)), 'Єдина-система-аудиту-A0.pdf');
