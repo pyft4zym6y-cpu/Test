@@ -66,6 +66,12 @@ import { buildBacklog, renderBacklogHtml, type RawRec } from '../src/backlog.js'
 import { buildQa, renderQaHtml } from '../src/qa.js';
 import { buildSocialAudit, buildMentionsAudit, buildReviewsAudit } from '../src/externalAudits.js';
 import { renderSocialHtml, renderMentionsHtml, renderReviewsHtml } from '../src/export/externalHtml.js';
+import { buildUnitEcon } from '../src/unitecon.js';
+import { renderUnitEconHtml } from '../src/export/unitEconHtml.js';
+import { buildGeoExpand } from '../src/geoexpand.js';
+import { renderGeoExpandHtml } from '../src/export/geoExpandHtml.js';
+import { buildAuditSystem } from '../src/auditsystem.js';
+import { renderAuditSystemHtml } from '../src/export/auditSystemHtml.js';
 
 const ORIGIN = 'https://lavanda-home.example';
 const OUT = process.argv[2] || 'proto-out';
@@ -353,6 +359,9 @@ async function main(): Promise<void> {
   await pdf(renderCjmFlowHtml(buildCjmFlow(ds)), 'Customer-Journey-Audit-A0.pdf');
   await pdf(renderSeoFlowHtml(buildSeoFlow(ds)), 'SEO-аудит-система-A0.pdf');
   await pdf(renderGeoFlowHtml(buildGeoFlow(ds)), 'GEO-AEO-LLM-аудит-A0.pdf');
+  await pdf(renderUnitEconHtml(buildUnitEcon(ds)), 'Unit-Economics-Audit-A0.pdf');
+  await pdf(renderGeoExpandHtml(buildGeoExpand(ds)), 'New-Market-Expansion-A0.pdf');
+  await pdf(renderAuditSystemHtml(buildAuditSystem(ds)), 'Master-Audit-System-A0.pdf');
   await pdf(renderAuditChainHtml(buildAuditChain(ds)), 'Єдина-система-аудиту-A0.pdf');
   await pdf(renderIntelligenceHtml(buildIntelligence(ds)), 'Commerce-Intelligence-Audit-A0.pdf');
   await pdf(renderChannelsHtml(buildChannels(ds)), 'Аудит-каналов-A0.pdf');

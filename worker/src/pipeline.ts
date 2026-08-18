@@ -55,6 +55,12 @@ import { buildCjmFlow } from './cjmflow.js';
 import { renderCjmFlowHtml } from './export/cjmFlowHtml.js';
 import { buildAuditChain } from './auditchain.js';
 import { renderAuditChainHtml } from './export/auditChainHtml.js';
+import { buildUnitEcon } from './unitecon.js';
+import { renderUnitEconHtml } from './export/unitEconHtml.js';
+import { buildGeoExpand } from './geoexpand.js';
+import { renderGeoExpandHtml } from './export/geoExpandHtml.js';
+import { buildAuditSystem } from './auditsystem.js';
+import { renderAuditSystemHtml } from './export/auditSystemHtml.js';
 import { renderCompetitorHtml } from './export/competitorHtml.js';
 import { buildChannels } from './channels.js';
 import { renderChannelsHtml } from './export/channelsHtml.js';
@@ -451,6 +457,34 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await renderPdf(cap('chain', renderAuditChainHtml(chain)), join(dir, 'Единая-система-аудита-A0.pdf'), browser);
         log(`✓ Единая система аудита (PDF): готовность ${chain.overall.value}/100, задач ${chain.backlog.length}`);
       } catch (e) { log(`⚠️ PDF Единая система аудита не собралась (${String(e).slice(0, 120)})`); }
+
+      // Unit Economics Audit — framework + калькулятор-шаблон (100% на бизнес-данных,
+      // не измеряется из обхода; числа не выдумываются).
+      try {
+        const ue = buildUnitEcon(ds);
+        await writeFile(join(dir, 'unitecon.json'), JSON.stringify(ue, null, 2), 'utf8');
+        await renderPdf(cap('unitecon', renderUnitEconHtml(ue)), join(dir, 'Unit-Economics-Audit-A0.pdf'), browser);
+        log(`✓ Unit Economics Audit (PDF): метрик ${ue.decomposition.length}, единиц ${ue.units.length}`);
+      } catch (e) { log(`⚠️ PDF Unit Economics не собрался (${String(e).slice(0, 120)})`); }
+
+      // GEO / New Market Expansion — readiness framework: i18n-готовность из обхода +
+      // research/intake по рынку (без выдуманных данных о спросе/экономике).
+      try {
+        const gx = buildGeoExpand(ds);
+        await writeFile(join(dir, 'geoexpand.json'), JSON.stringify(gx, null, 2), 'utf8');
+        await renderPdf(cap('geoexpand', renderGeoExpandHtml(gx)), join(dir, 'New-Market-Expansion-A0.pdf'), browser);
+        log(`✓ New Market Expansion (PDF): i18n readiness ${gx.i18nReadiness.score}/10, критериев ${gx.criteria.length}`);
+      } catch (e) { log(`⚠️ PDF New Market Expansion не собрался (${String(e).slice(0, 120)})`); }
+
+      // Master Audit System — связка ВОЕДИНО: реестр всех аудитов по доменам, единый
+      // стандарт (12 шагов) + карта находки (17 полей), последовательный ланцюг и
+      // сквозной беклог. Главный деливерабл.
+      try {
+        const sys = buildAuditSystem(ds);
+        await writeFile(join(dir, 'auditsystem.json'), JSON.stringify(sys, null, 2), 'utf8');
+        await renderPdf(cap('auditsystem', renderAuditSystemHtml(sys)), join(dir, 'Master-Audit-System-A0.pdf'), browser);
+        log(`✓ Master Audit System (PDF): аудитов ${sys.coverage.total}, задач ${sys.backlog.length}, готовность ${sys.readiness.value}/10`);
+      } catch (e) { log(`⚠️ PDF Master Audit System не собрался (${String(e).slice(0, 120)})`); }
 
       // Commerce Intelligence Audit A0 — реконструкция бизнеса из сайта (35+ слоёв,
       // цепочки наблюдаем→дедуцируем→проверить→решение, зрелость 1–5). Флагман.
