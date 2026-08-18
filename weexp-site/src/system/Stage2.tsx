@@ -64,8 +64,10 @@ export function Stage2({ stage1, stage1Result, onClose }: { stage1: LossInput; s
   return (
     <StepOverlay>
     <div className="sysx s2" role="dialog" aria-label="Калькулятор — Етап 2">
-      <FunnelSteps active={4} />
-      <button className="s2-x s2-x-flow mono" onClick={onClose} aria-label="Назад до розрахунку">← Назад</button>
+      <div className="s2-flowhead">
+        <button className="s2-flowback mono" onClick={onClose} aria-label="Назад до розрахунку">← Назад до розрахунку</button>
+        <FunnelSteps active={4} />
+      </div>
 
       {phase !== 'report' && (
         <div className="s2-quiz">
