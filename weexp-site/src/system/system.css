@@ -393,6 +393,13 @@
 .ctf-field input:focus, .ctf-field select:focus, .ctf-field textarea:focus { border-color: var(--data); }
 .ctf-field textarea { resize: vertical; }
 .ctf-opt { font-style: normal; font-size: 10px; color: var(--graphite); font-weight: 400; }
+
+/* Доказовість кейсів: провенанс цифр + (за наявності) реальний відгук */
+.cf-verified { margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; letter-spacing: .02em; color: #1f9d55; background: rgba(31,157,85,.08); border: 1px solid rgba(31,157,85,.22); border-radius: 100px; padding: 5px 11px; }
+.cf-verified span { font-weight: 700; }
+.cf-quote { margin: 12px 0 0; padding: 12px 16px; border-left: 3px solid var(--data); background: color-mix(in srgb, var(--pure-white) 60%, transparent); border-radius: 0 10px 10px 0; }
+.cf-quote p { margin: 0 0 6px; font-size: 14px; line-height: 1.45; font-style: italic; color: var(--deep); }
+.cf-quote cite { font-size: 11px; font-style: normal; color: var(--graphite); }
 .ctf-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 .ctf-diag { grid-column: 1 / -1; display: grid; gap: 6px; border: 1px solid var(--silver); border-radius: 12px; padding: 12px 14px; background: rgba(255, 255, 255, .5); margin-bottom: 4px; }
 .ctf-diag-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
