@@ -205,11 +205,10 @@ export function Stage2({ stage1, stage1Result, onClose }: { stage1: LossInput; s
               </div>
             </div>
             <div className="s2-foot-cta">
-              <button className="sysx-cta" onClick={() => window.print()}>Завантажити PDF ↓</button>
-              <button className="sysx-cta is-primary" onClick={() => setStage3(true)}>Етап 3 — глибша діагностика в кабінеті →</button>
+              <button className="sysx-cta is-primary" onClick={() => setStage3(true)}>Далі: кабінет Tier-2 →</button>
             </div>
           </div>
-          <span className="s2-stage3-note mono">Етап 3 відкривається через реєстрацію: дані зберігаються, можна продовжити будь-коли — і ми доводимо аналіз до рівня Tier-2.</span>
+          <span className="s2-stage3-note mono">Це проміжна карта. У кабінеті (наступний крок) зберемо повний звіт — його можна завантажити (PDF / Excel) і він доповнюється на кожному кроці діагностики.</span>
         </div>
       )}
 
