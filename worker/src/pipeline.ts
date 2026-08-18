@@ -47,6 +47,8 @@ import { buildBlockFlow } from './blockflow.js';
 import { renderBlockFlowHtml } from './export/blockFlowHtml.js';
 import { buildMerchFlow } from './merchflow.js';
 import { renderMerchFlowHtml } from './export/merchFlowHtml.js';
+import { buildCroFlow } from './croflow.js';
+import { renderCroFlowHtml } from './export/croFlowHtml.js';
 import { buildAuditChain } from './auditchain.js';
 import { renderAuditChainHtml } from './export/auditChainHtml.js';
 import { renderCompetitorHtml } from './export/competitorHtml.js';
@@ -399,6 +401,15 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await renderPdf(cap('merchaudit', renderMerchFlowHtml(merchFlow)), join(dir, 'Merchandising-Audit-A0.pdf'), browser);
         log(`✓ Merchandising Audit (PDF): Health ${merchFlow.health.overall}/10, разрывов ${merchFlow.gaps.length}`);
       } catch (e) { log(`⚠️ PDF Merchandising Audit не собрался (${String(e).slice(0, 120)})`); }
+
+      // CRO Audit — системное превращение посетителя в целевое действие: воронка,
+      // friction/trust/CTA maps, block-cards, гипотезы (ICE), roadmap.
+      try {
+        const croFlow = buildCroFlow(ds);
+        await writeFile(join(dir, 'croaudit.json'), JSON.stringify(croFlow, null, 2), 'utf8');
+        await renderPdf(cap('croaudit', renderCroFlowHtml(croFlow)), join(dir, 'CRO-Audit-A0.pdf'), browser);
+        log(`✓ CRO Audit (PDF): Health ${croFlow.health.overall}/10, гипотез ${croFlow.hypotheses.length}`);
+      } catch (e) { log(`⚠️ PDF CRO Audit не собрался (${String(e).slice(0, 120)})`); }
 
       // GEO / AEO / LLM Visibility — отдельный модуль: измеримое из обхода
       // (AI-crawlability, answerability, сущности, разметка) + честный шаблон под
