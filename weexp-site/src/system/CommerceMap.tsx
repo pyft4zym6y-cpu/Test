@@ -50,6 +50,7 @@ export function CommerceMap() {
                       <div className="cmap-domains">{s.domains.map((d) => <span key={d} className="cmap-domain">{d}</span>)}</div>
                       <span className="cmap-lab mono">Будуємо</span>
                       <p className="cmap-sell">{s.sell}</p>
+                      <Link to={`/systems/${s.slug}`} className="cmap-more mono">Детальніше про систему →</Link>
                     </div>
                   </div>
                 )}
