@@ -49,6 +49,8 @@ import { buildMerchFlow } from './merchflow.js';
 import { renderMerchFlowHtml } from './export/merchFlowHtml.js';
 import { buildCroFlow } from './croflow.js';
 import { renderCroFlowHtml } from './export/croFlowHtml.js';
+import { buildAnalyticsFlow } from './analyticsflow.js';
+import { renderAnalyticsFlowHtml } from './export/analyticsFlowHtml.js';
 import { buildAuditChain } from './auditchain.js';
 import { renderAuditChainHtml } from './export/auditChainHtml.js';
 import { renderCompetitorHtml } from './export/competitorHtml.js';
@@ -410,6 +412,15 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await renderPdf(cap('croaudit', renderCroFlowHtml(croFlow)), join(dir, 'CRO-Audit-A0.pdf'), browser);
         log(`✓ CRO Audit (PDF): Health ${croFlow.health.overall}/10, гипотез ${croFlow.hypotheses.length}`);
       } catch (e) { log(`⚠️ PDF CRO Audit не собрался (${String(e).slice(0, 120)})`); }
+
+      // Analytics Audit — система измерения (GA4/GTM/CRM/attribution/reporting).
+      // Честно: ~95% требует доступа; обход даёт baseline инструментирования + план.
+      try {
+        const analyticsFlow = buildAnalyticsFlow(ds);
+        await writeFile(join(dir, 'analyticsaudit.json'), JSON.stringify(analyticsFlow, null, 2), 'utf8');
+        await renderPdf(cap('analyticsaudit', renderAnalyticsFlowHtml(analyticsFlow)), join(dir, 'Analytics-Audit-A0.pdf'), browser);
+        log(`✓ Analytics Audit (PDF): baseline ${analyticsFlow.baseline.instrumentation}/10, L${analyticsFlow.maturity.floor}`);
+      } catch (e) { log(`⚠️ PDF Analytics Audit не собрался (${String(e).slice(0, 120)})`); }
 
       // GEO / AEO / LLM Visibility — отдельный модуль: измеримое из обхода
       // (AI-crawlability, answerability, сущности, разметка) + честный шаблон под
