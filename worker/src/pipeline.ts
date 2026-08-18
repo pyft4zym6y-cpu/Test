@@ -299,7 +299,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         } catch (e) { log(`⚠️ дизайн-ревью пропущено (${String(e).slice(0, 90)})`); }
         if (siteAudit.stack?.signals?.length) log(`✓ платформа: ${siteAudit.stack.cms ?? '—'}${siteAudit.stack.templateName ? ` · ${siteAudit.stack.templateName}` : ''}${siteAudit.stack.builder ? ` · ${siteAudit.stack.builder}` : ''}`);
         await writeFile(join(dir, 'pagereport.json'), JSON.stringify(siteAudit, null, 2), 'utf8');
-        await renderPdf(cap('uxui', renderAuditHtml(siteAudit)), join(dir, 'UX-UI-аудит-A0.pdf'), browser);
+        await renderPdf(cap('uxui', renderAuditHtml(siteAudit, uxui)), join(dir, 'UX-UI-аудит-A0.pdf'), browser);
         log(`✓ UX/UI Audit A0 (PDF): соответствие эталону ${siteAudit.totalPct}%, системных дефектов ${siteAudit.systemic.length}`);
       } catch (e) { log(`⚠️ PDF UX/UI Audit A0 не собрался (${String(e).slice(0, 120)}) — остальные материалы не затронуты`); }
 
