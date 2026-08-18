@@ -11,6 +11,8 @@ const SystemExplorer = lazy(() => import('@/system/SystemExplorer').then((m) => 
 const SystemsFilm = lazy(() => import('@/system/SystemsFilm').then((m) => ({ default: m.SystemsFilm })));
 // Сканована повна карта Commerce OS: 8 систем + вкладені домени (акордеон).
 const CommerceMap = lazy(() => import('@/system/CommerceMap').then((m) => ({ default: m.CommerceMap })));
+// Меседжинг за роллю ЛПР (§8): одна система — різні виграші.
+const AudienceByRole = lazy(() => import('@/system/AudienceByRole').then((m) => ({ default: m.AudienceByRole })));
 
 /**
  * WEEXP — THE SYSTEM IN MOTION (home-film, /system). Повна драматургія головної на
@@ -119,7 +121,7 @@ export function SystemInMotion() {
         <div ref={sCta} className="sysx-scene sysx-ctaScene" style={{ opacity: 0 }}>
           <div className="sysx-kick">Independence Score</div>
           <h2 className="sysx-display sysx-h2">Наскільки незалежний<br />ваш <span className="sysx-em">e-commerce</span>?</h2>
-          <p className="sysx-lead">Веб-розробка, ERP, UX/CRO, аналітика та експансія — вісім систем під одним дахом. Команда з власником кожної.</p>
+          <p className="sysx-lead">Ми вирішуємо одну дорогу проблему: продажі, що тримаються на ручному режимі й людях, а не на системі. Збираємо вісім систем в одну керовану — щоб виторг ріс, а бізнес не залежав від вас.</p>
           <div className="sysx-proofbar">
             <span><b>17</b> трансформацій</span>
             <i aria-hidden="true" />
@@ -144,6 +146,8 @@ export function SystemInMotion() {
     <div id="systems"><Suspense fallback={null}><SystemsFilm /></Suspense></div>
     {/* Сканована повна карта: 8 систем як верхній рівень, домени вкладено (акордеон) */}
     <Suspense fallback={null}><CommerceMap /></Suspense>
+    {/* Меседжинг за роллю ЛПР: одна система — різні виграші */}
+    <Suspense fallback={null}><AudienceByRole /></Suspense>
     </>
   );
 }
