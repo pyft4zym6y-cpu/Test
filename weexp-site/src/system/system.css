@@ -392,6 +392,7 @@
 }
 .ctf-field input:focus, .ctf-field select:focus, .ctf-field textarea:focus { border-color: var(--data); }
 .ctf-field textarea { resize: vertical; }
+.ctf-opt { font-style: normal; font-size: 10px; color: var(--graphite); font-weight: 400; }
 .ctf-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 .ctf-diag { grid-column: 1 / -1; display: grid; gap: 6px; border: 1px solid var(--silver); border-radius: 12px; padding: 12px 14px; background: rgba(255, 255, 255, .5); margin-bottom: 4px; }
 .ctf-diag-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }

@@ -13,6 +13,12 @@ const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m)
  * скляній картці. «Це ще не робота, це діагноз».
  */
 const TURNOVER = ['до $0.5M', '$0.5–1M', '$1–3M', '$3–10M', '> $10M'];
+// Кваліфікація ліда (ТЗ §9): роль ЛПР, головна задача, терміни, бюджет —
+// щоб відділ продажів одразу бачив, з ким і про що говорити.
+const ROLES = ['Власник / CEO', 'Комерційний директор', 'Маркетинг / CMO', 'Керівник e-commerce', 'Інше'];
+const TASKS = ['Знайти вузьке місце', 'Зростання виторгу', 'Вихід у ЄС / США', 'Новий сайт / платформа', 'CRM / відділ продажів', 'Аналітика й дані', 'Ще не визначився'];
+const TIMELINE = ['Готовий почати зараз', 'Протягом 1–3 місяців', 'Досліджую ринок'];
+const BUDGET = ['Ще не визначено', 'до €5k', '€5–15k', '€15–40k', '€40k+'];
 const MAIL = 'pashasidorenko18@gmail.com';
 type Status = 'idle' | 'sending' | 'ok' | 'fallback';
 
@@ -34,6 +40,8 @@ export function ContactFilm() {
       name: String(f.get('name') || ''), email: String(f.get('email') || ''),
       phone: String(f.get('phone') || ''), store: String(f.get('store') || ''),
       turnover: String(f.get('turnover') || ''), comment: String(f.get('comment') || ''),
+      role: String(f.get('role') || ''), task: String(f.get('task') || ''),
+      timeline: String(f.get('timeline') || ''), budget: String(f.get('budget') || ''),
       diag: attach || undefined, company_website: String(f.get('company_website') || ''),
     };
     setStatus('sending');
@@ -41,8 +49,9 @@ export function ContactFilm() {
     track('lead_submit', { source: payload.source, result: res, has_diag: Boolean(attach) });
     if (res === 'ok') { setStatus('ok'); return; }
     const body = [
-      `Ім'я: ${payload.name}`, `Email: ${payload.email}`, `Телефон: ${payload.phone}`,
-      `Магазин: ${payload.store}`, `Оборот: ${payload.turnover}`, `Коментар: ${payload.comment}`,
+      `Ім'я: ${payload.name}`, `Роль: ${payload.role}`, `Email: ${payload.email}`, `Телефон: ${payload.phone}`,
+      `Магазин: ${payload.store}`, `Оборот: ${payload.turnover}`, `Задача: ${payload.task}`,
+      `Терміни: ${payload.timeline}`, `Бюджет: ${payload.budget}`, `Коментар: ${payload.comment}`,
       attach ? `\n— Результат діагностики —\n${attach}` : '',
     ].filter(Boolean).join('\n');
     const url = `mailto:${MAIL}?subject=${encodeURIComponent('Запит на діагноз — WEEXP')}&body=${encodeURIComponent(body)}`;
@@ -85,16 +94,40 @@ export function ContactFilm() {
             )}
             <form className="ctf-form" onSubmit={submit}>
               <label className="ctf-field"><span className="mono">Ім'я</span><input name="name" required autoComplete="name" /></label>
+              <label className="ctf-field"><span className="mono">Ваша роль</span>
+                <select name="role" required defaultValue="">
+                  <option value="" disabled>оберіть…</option>
+                  {ROLES.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </label>
               <label className="ctf-field"><span className="mono">Email</span><input name="email" type="email" required autoComplete="email" /></label>
               <label className="ctf-field"><span className="mono">Телефон</span><input name="phone" type="tel" autoComplete="tel" /></label>
               <label className="ctf-field"><span className="mono">Магазин / сайт</span><input name="store" required /></label>
-              <label className="ctf-field ctf-full"><span className="mono">Оборот / міс</span>
+              <label className="ctf-field"><span className="mono">Оборот / міс</span>
                 <select name="turnover" required defaultValue="">
                   <option value="" disabled>оберіть…</option>
                   {TURNOVER.map((t) => <option key={t} value={t}>{t}</option>)}
                 </select>
               </label>
-              <label className="ctf-field ctf-full"><span className="mono">Коментар</span><textarea name="comment" rows={3} /></label>
+              <label className="ctf-field"><span className="mono">Головна задача</span>
+                <select name="task" required defaultValue="">
+                  <option value="" disabled>оберіть…</option>
+                  {TASKS.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </label>
+              <label className="ctf-field"><span className="mono">Терміни</span>
+                <select name="timeline" defaultValue="">
+                  <option value="" disabled>оберіть…</option>
+                  {TIMELINE.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </label>
+              <label className="ctf-field ctf-full"><span className="mono">Орієнтовний бюджет <i className="ctf-opt">(необовʼязково)</i></span>
+                <select name="budget" defaultValue="">
+                  <option value="" disabled>оберіть…</option>
+                  {BUDGET.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </label>
+              <label className="ctf-field ctf-full"><span className="mono">Коментар / поточна проблема</span><textarea name="comment" rows={3} placeholder="Що зараз найбільше турбує у продажах?" /></label>
               <input name="company_website" tabIndex={-1} autoComplete="off" className="ctf-hp" aria-hidden="true" />
               <div className="sysx-calc-actions ctf-full">
                 <button className="sysx-cta is-primary" type="submit" disabled={status === 'sending'}>
