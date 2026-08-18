@@ -97,6 +97,29 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
     if (r.user) setUser(r.user);
   };
   const logout = async () => { await signOut(); setUser(null); setIdx(0); };
+  // Прокрутка всередині кабінету (оверлей .s2 — свій скрол-контейнер)
+  const scrollCab = (sel?: string) => {
+    if (sel) { document.querySelector(sel)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+    document.querySelector('.s2.s3')?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  // Шапка робочого акаунта — щоб клієнт розумів, що він у своєму кабінеті (а не на сторінці сайту)
+  const accountBar = (full: boolean) => (
+    <div className="cab-bar">
+      <div className="cab-id">
+        <span className="cab-badge mono">● Кабінет</span>
+        <span className="cab-email mono">{user?.email}</span>
+      </div>
+      <div className="cab-actions">
+        {full && <>
+          <button className="cab-nav mono" onClick={() => scrollCab()}>Огляд</button>
+          <button className="cab-nav mono" onClick={() => scrollCab('.s3-docs')}>Документи</button>
+          <button className="cab-nav mono" onClick={() => { setIdx(0); scrollCab(); }}>Дані</button>
+        </>}
+        <button className="cab-out mono" onClick={logout}>Вийти</button>
+        <button className="cab-site mono" onClick={onClose}>На сайт →</button>
+      </div>
+    </div>
+  );
   const unlockStep4 = () => {
     if (!isValidCode(step4Code)) { setStep4Err('Код недійсний. Попросіть його в менеджера або оберіть оплату.'); return; }
     setStep4Err(''); setStep4Unlocked(true);
@@ -193,7 +216,7 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
     return (
       <StepOverlay>
       <div className="sysx s2 s3" role="dialog" aria-label="Tier-2 звіт">
-        <button className="s2-x mono" onClick={onClose}>✕ Закрити</button>
+        {standalone && user ? accountBar(true) : <button className="s2-x mono" onClick={onClose}>✕ Закрити</button>}
         <div className="s2-report">
           <header className="s2-rep-head">
             <div className="sysx-kick">Tier-2 звіт · {user.email} · заповнено {res.completeness}% даних</div>
@@ -473,7 +496,7 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
   return (
     <StepOverlay>
     <div ref={quizRef} className="sysx s2 s3" role="dialog" aria-label="Етап 3 — питання">
-      <button className="s2-x mono" onClick={onClose}>✕ Призупинити</button>
+      {standalone && user ? accountBar(false) : <button className="s2-x mono" onClick={onClose}>✕ Призупинити</button>}
       <div className="s2-quiz s3-flow">
         <div className="s2-quiz-head">
           <div className="s3-flow-top">
