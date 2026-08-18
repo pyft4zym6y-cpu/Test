@@ -33,6 +33,8 @@ import { renderTechAuditHtml } from './export/techAuditHtml.js';
 import { buildContentAudit } from './contentaudit.js';
 import { buildContentFlow } from './contentflow.js';
 import { renderContentAuditHtml } from './export/contentAuditHtml.js';
+import { buildAuditChain } from './auditchain.js';
+import { renderAuditChainHtml } from './export/auditChainHtml.js';
 import { renderCompetitorHtml } from './export/competitorHtml.js';
 import { buildChannels } from './channels.js';
 import { renderChannelsHtml } from './export/channelsHtml.js';
@@ -328,6 +330,15 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await renderPdf(cap('content', renderContentAuditHtml(content, contentFlow)), join(dir, 'Content-Audit-A0.pdf'), browser);
         log(`✓ Content Audit A0 (PDF): типов страниц ${content.rows.length}`);
       } catch (e) { log(`⚠️ PDF Content Audit A0 не собрался (${String(e).slice(0, 120)})`); }
+
+      // Единая система аудита — связка 5 уровней (Business → Structure → UX/UI →
+      // Content → CRO): конвейер готовности, хендофы и сквозной беклог Impact×Effort.
+      try {
+        const chain = buildAuditChain(ds);
+        await writeFile(join(dir, 'auditchain.json'), JSON.stringify(chain, null, 2), 'utf8');
+        await renderPdf(cap('chain', renderAuditChainHtml(chain)), join(dir, 'Единая-система-аудита-A0.pdf'), browser);
+        log(`✓ Единая система аудита (PDF): готовность ${chain.overall.value}/100, задач ${chain.backlog.length}`);
+      } catch (e) { log(`⚠️ PDF Единая система аудита не собралась (${String(e).slice(0, 120)})`); }
 
       // Commerce Intelligence Audit A0 — реконструкция бизнеса из сайта (35+ слоёв,
       // цепочки наблюдаем→дедуцируем→проверить→решение, зрелость 1–5). Флагман.
