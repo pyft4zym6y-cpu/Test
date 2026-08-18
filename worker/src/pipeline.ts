@@ -39,6 +39,8 @@ import { buildGeoFlow } from './geoflow.js';
 import { renderGeoFlowHtml } from './export/geoFlowHtml.js';
 import { buildStrategyFlow } from './strategyflow.js';
 import { renderStrategyFlowHtml } from './export/strategyFlowHtml.js';
+import { buildStructureFlow } from './structureflow.js';
+import { renderStructureFlowHtml } from './export/structureFlowHtml.js';
 import { buildAuditChain } from './auditchain.js';
 import { renderAuditChainHtml } from './export/auditChainHtml.js';
 import { renderCompetitorHtml } from './export/competitorHtml.js';
@@ -354,6 +356,15 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await renderPdf(cap('strategy', renderStrategyFlowHtml(strat)), join(dir, 'Strategic-Audit-A0.pdf'), browser);
         log(`✓ Strategic Audit (PDF): Health ${strat.health.overall}/10, рисков ${strat.risks.length}`);
       } catch (e) { log(`⚠️ PDF Strategic Audit не собрался (${String(e).slice(0, 120)})`); }
+
+      // Structure & Site Tree Audit — архитектура сайта как система: дерево + граф
+      // + коммерческие оси + точки входа/выхода + целевое дерево + roadmap.
+      try {
+        const structure = buildStructureFlow(ds);
+        await writeFile(join(dir, 'structureaudit.json'), JSON.stringify(structure, null, 2), 'utf8');
+        await renderPdf(cap('structure', renderStructureFlowHtml(structure)), join(dir, 'Structure-Site-Tree-A0.pdf'), browser);
+        log(`✓ Structure & Site Tree (PDF): Health ${structure.health.overall}/10, разрывов ${structure.gaps.length}`);
+      } catch (e) { log(`⚠️ PDF Structure & Site Tree не собрался (${String(e).slice(0, 120)})`); }
 
       // GEO / AEO / LLM Visibility — отдельный модуль: измеримое из обхода
       // (AI-crawlability, answerability, сущности, разметка) + честный шаблон под
