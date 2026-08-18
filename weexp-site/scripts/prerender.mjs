@@ -69,6 +69,27 @@ const ROUTES = [
     content: `<h1>Зростання — це система. Почнімо з діагнозу.</h1><p>Залиште контакт — повернемося з першим зрізом розриву у грошах. Для e-commerce виробників і D2C-брендів $0.5–10M.</p>` },
 ];
 
+// Глибокі сторінки послуг (одна на систему) — для індексації комерційної структури.
+const SERVICE_META = [
+  ['strategy-management', 'Стратегія та управління', 'Strategy & Management'],
+  ['commercial-performance', 'Комерційна ефективність', 'Commercial Performance'],
+  ['demand-customer', 'Попит і клієнт', 'Demand & Customer'],
+  ['experience-conversion', 'Досвід і конверсія', 'Experience & Conversion'],
+  ['operations-fulfillment', 'Операції та fulfillment', 'Operations & Fulfillment'],
+  ['data-technology', 'Дані, технології, інтеграції', 'Data, Technology & Integration'],
+  ['organization-operating-model', 'Організація та операційна модель', 'Organization & Operating Model'],
+  ['expansion-markets', 'Експансія та ринки', 'Expansion & Markets'],
+];
+for (const [slug, title, en] of SERVICE_META) {
+  const promise = (SYSTEMS.find((s) => s.startsWith(title)) || '').split(' — ')[1] || '';
+  ROUTES.push({
+    path: `/systems/${slug}`,
+    title: `${title} — послуга WEEXP · Commerce OS`,
+    desc: `${title}: проблема → наслідки → діагностика → рішення → процес → результат → докази. ${promise}`.slice(0, 300),
+    content: `<h1>${esc(title)}</h1><p>${esc(en)}. ${esc(promise)}</p><h2>Як працюємо</h2><p>Діагностуємо систему за даними (CRM/ERP/GA4), будуємо її під ключ і доводимо до економіки — щоб бізнес працював без героя. Проблема → наслідки → діагностика → рішення → процес → результат → докази → умови.</p>`,
+  });
+}
+
 const canon = (p) => ORIGIN + (p === '/' ? '/' : p);
 
 function build(tpl, r) {

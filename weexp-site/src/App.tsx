@@ -40,6 +40,7 @@ const ContactFilm = lazy(() => import('@/system/ContactFilm').then((m) => ({ def
 const SystemShell = lazy(() => import('@/system/SystemShell').then((m) => ({ default: m.SystemShell })));
 const LossCalculator = lazy(() => import('@/system/LossCalculator').then((m) => ({ default: m.LossCalculator })));
 const Cabinet = lazy(() => import('@/system/Cabinet').then((m) => ({ default: m.Cabinet })));
+const ServicePage = lazy(() => import('@/system/ServicePage').then((m) => ({ default: m.ServicePage })));
 
 export default function App() {
   return (
@@ -64,6 +65,7 @@ export default function App() {
                 /loss (стара окрема назва) веде сюди ж, щоб не було двох паралельних. */}
             <Route path="/diagnose" element={<LossCalculator />} />
             <Route path="/loss" element={<Navigate to="/diagnose" replace />} />
+            <Route path="/systems/:slug" element={<ServicePage />} />
             <Route path="/contact" element={<ContactFilm />} />
           </Route>
           <Route element={<Layout />}>
