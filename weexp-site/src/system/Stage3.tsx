@@ -7,8 +7,8 @@ import { RadarChart, SystemBars, HW } from './charts';
 import { StepOverlay } from './StepOverlay';
 import { FunnelSteps } from './FunnelSteps';
 
-// Легка візуалізація 8 систем (замість важкого three.js-району — швидше й зрозуміліше).
-import { SystemSkyline } from '@/system/SystemSkyline';
+// «Жива» констеляція 8 систем (SVG, без WebGL) — ефектно, зрозуміло, без jank.
+import { SystemOrbit } from '@/system/SystemOrbit';
 const Stage5 = lazy(() => import('@/system/Stage5').then((m) => ({ default: m.Stage5 })));
 import { CONFIGURED, authenticate, currentUser, isCloudUser, loadDiag, saveDiag, signOut, type DiagUser, type DiagRecord } from '@/lib/supa';
 import { sendReport } from '@/lib/report';
@@ -243,7 +243,7 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
               </div>
             </div>
             <div className="cw-stage">
-              <SystemSkyline systems={res.systems} completeness={res.completeness} />
+              <SystemOrbit systems={res.systems} completeness={res.completeness} />
             </div>
           </div>
 
@@ -533,7 +533,7 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
             <span>Ваш профіль збирається — вісім систем</span>
             <b>{answeredCount} відповідей</b>
           </div>
-          <SystemSkyline systems={live.systems} completeness={live.completeness} activeKey={live.systems.find((s) => s.label.split(/\s|\//)[0] === secOf.split(/\s|\//)[0])?.key} compact />
+          <SystemOrbit systems={live.systems} completeness={live.completeness} activeKey={live.systems.find((s) => s.label.split(/\s|\//)[0] === secOf.split(/\s|\//)[0])?.key} compact />
         </div>
 
         {firstOfSection && (
