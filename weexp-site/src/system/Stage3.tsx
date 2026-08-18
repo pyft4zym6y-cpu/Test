@@ -6,8 +6,8 @@ import { levelFor } from './stage2Model';
 import { RadarChart, SystemBars, HW } from './charts';
 import { StepOverlay } from './StepOverlay';
 
-// Важкий three.js-район — ліниво, щоб форма входу відкривалась миттєво.
-const CompanyWorld = lazy(() => import('@/system/CompanyWorld').then((m) => ({ default: m.CompanyWorld })));
+// Легка візуалізація 8 систем (замість важкого three.js-району — швидше й зрозуміліше).
+import { SystemSkyline } from '@/system/SystemSkyline';
 const Stage5 = lazy(() => import('@/system/Stage5').then((m) => ({ default: m.Stage5 })));
 import { CONFIGURED, authenticate, currentUser, isCloudUser, loadDiag, saveDiag, signOut, type DiagUser, type DiagRecord } from '@/lib/supa';
 import { sendReport } from '@/lib/report';
@@ -202,29 +202,20 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
             {moneyStr && <p className="s3-rep-money mono">Ваша можливість з Етапу 1: <b>{moneyStr}/рік</b> — тепер видно, де саме вона зосереджена.</p>}
           </header>
 
-          {/* Компанія клієнта як 3D-екосистема: висота вежі = зрілість системи,
-              «живість» району = скільки даних заповнено. Це його бізнес — зараз. */}
+          {/* Вісім систем як «скайлайн»: висота стовпчика = зрілість, колір = здоров'я.
+              Зрозуміло з першого погляду — де просідає й що тягне бізнес. */}
           <div className="s2-panel cw-hero">
             <div className="cw-hero-copy">
               <span className="sysx-kick">Ваша компанія як система</span>
-              <p className="cw-hero-sub">Вісім веж — вісім систем; висота кожної — її зрілість. Що більше даних ви дали, то живіший район: засвічуються звʼязки, вікна й потоки. Ось ваш бізнес як єдина екосистема — і де в ній просідає висота.</p>
+              <p className="cw-hero-sub">Вісім стовпчиків — вісім систем онлайн-продажів. Висота = зрілість, колір = здоров'я. Найнижчий червоний — ваше вузьке місце, звідки витікають гроші.</p>
               <div className="cw-legend">
                 <span><i className="cw-dot ok" />зріла (65+)</span>
                 <span><i className="cw-dot warn" />середня (40–64)</span>
                 <span><i className="cw-dot bad" />слабка (&lt;40)</span>
               </div>
-              <div className="cw-fill mono"><span>Заповнено даних</span><div className="cw-fill-tr"><i style={{ width: `${res.completeness}%` }} /></div><b>{res.completeness}%</b></div>
-              {/* Ключ до веж: порядок = розташування веж у районі (за годинниковою) */}
-              <ul className="cw-systems">
-                {res.systems.map((s, i) => (
-                  <li key={s.key}><span className="cw-sys-n mono">{String(i + 1).padStart(2, '0')}</span><i className={`cw-dot ${HW(s.score)}`} /><span className="cw-sys-l">{s.label.split(/\s|\//)[0]}</span><b className="mono">{s.score}</b></li>
-                ))}
-              </ul>
             </div>
             <div className="cw-stage">
-              <Suspense fallback={<div className="cw-load mono">Збираємо ваш район…</div>}>
-                <CompanyWorld systems={res.systems} completeness={res.completeness} />
-              </Suspense>
+              <SystemSkyline systems={res.systems} completeness={res.completeness} />
             </div>
           </div>
 
@@ -506,17 +497,13 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
           </div>
         </div>
 
-        {/* Живий 3D-район компанії — зростає з кожною відповіддю (ефект «це вже моє»). */}
+        {/* Живий профіль 8 систем — зрозуміло росте з кожною відповіддю (без важкого 3D). */}
         <div className="cw-quiz">
-          <div className="cw-quiz-stage">
-            <Suspense fallback={<div className="cw-load mono">Збираємо ваш район…</div>}>
-              <CompanyWorld systems={live.systems} completeness={live.completeness} />
-            </Suspense>
-          </div>
           <div className="cw-quiz-cap mono">
-            <span>Ваша компанія збирається</span>
-            <b>{live.completeness}% даних · {answeredCount} відповідей</b>
+            <span>Ваш профіль збирається — вісім систем</span>
+            <b>{answeredCount} відповідей</b>
           </div>
+          <SystemSkyline systems={live.systems} completeness={live.completeness} activeKey={live.systems.find((s) => s.label.split(/\s|\//)[0] === secOf.split(/\s|\//)[0])?.key} compact />
         </div>
 
         {firstOfSection && (

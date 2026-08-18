@@ -1,0 +1,46 @@
+import { Link } from 'react-router-dom';
+import './system.css';
+
+/**
+ * Мікропідвал сайту — на всіх сторінках (під контентом у SystemShell). Компактна
+ * навігація, контакт, юридичні лінки та мітка збірки (__BUILD_TIME__) — щоб було
+ * видно, що деплой застосувався.
+ */
+const NAV = [
+  { to: '/', label: 'Система' },
+  { to: '/diagnose', label: 'Діагностика' },
+  { to: '/proof', label: 'Докази' },
+  { to: '/expansion', label: 'Експансія' },
+  { to: '/people', label: 'Команда' },
+  { to: '/cabinet', label: 'Кабінет' },
+  { to: '/contact', label: 'Контакт' },
+];
+const MAIL = 'hello@weexp.agency';
+
+export function SiteFooter() {
+  const year = 2026; // без Date() у рантаймі; оновлюється зі збіркою за потреби
+  return (
+    <footer className="sfoot sysx">
+      <div className="sfoot-in">
+        <div className="sfoot-brand">
+          <b>WEEXP</b>
+          <span className="sfoot-tag">Система замість героїзму</span>
+        </div>
+        <nav className="sfoot-nav" aria-label="Підвал">
+          {NAV.map((l) => <Link key={l.to} to={l.to} className="sfoot-link">{l.label}</Link>)}
+        </nav>
+        <div className="sfoot-meta mono">
+          <a href={`mailto:${MAIL}`} className="sfoot-mail">{MAIL}</a>
+          <span className="sfoot-legal">
+            <a href="/privacy.html">Політика</a>
+            <a href="/oferta.html">Оферта</a>
+          </span>
+        </div>
+      </div>
+      <div className="sfoot-bottom mono">
+        <span>© {year} WEEXP</span>
+        <span className="sfoot-build" title="Час збірки — видно, що деплой застосувався">build {__BUILD_TIME__}</span>
+      </div>
+    </footer>
+  );
+}
