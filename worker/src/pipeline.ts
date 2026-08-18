@@ -45,6 +45,8 @@ import { buildPageFlow } from './pageflow.js';
 import { renderPageFlowHtml } from './export/pageFlowHtml.js';
 import { buildBlockFlow } from './blockflow.js';
 import { renderBlockFlowHtml } from './export/blockFlowHtml.js';
+import { buildMerchFlow } from './merchflow.js';
+import { renderMerchFlowHtml } from './export/merchFlowHtml.js';
 import { buildAuditChain } from './auditchain.js';
 import { renderAuditChainHtml } from './export/auditChainHtml.js';
 import { renderCompetitorHtml } from './export/competitorHtml.js';
@@ -388,6 +390,15 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await renderPdf(cap('blockaudit', renderBlockFlowHtml(blockFlow)), join(dir, 'Block-by-Block-Audit-A0.pdf'), browser);
         log(`✓ Block-by-Block Audit (PDF): Health ${blockFlow.overall}/10, блоков ${blockFlow.cards.length}`);
       } catch (e) { log(`⚠️ PDF Block-by-Block Audit не собрался (${String(e).slice(0, 120)})`); }
+
+      // E-commerce / Merchandising Audit — управление ассортиментом и коммерческая
+      // экспозиция: механики, карточка товара, пути discovery, block-by-block.
+      try {
+        const merchFlow = buildMerchFlow(ds);
+        await writeFile(join(dir, 'merchaudit.json'), JSON.stringify(merchFlow, null, 2), 'utf8');
+        await renderPdf(cap('merchaudit', renderMerchFlowHtml(merchFlow)), join(dir, 'Merchandising-Audit-A0.pdf'), browser);
+        log(`✓ Merchandising Audit (PDF): Health ${merchFlow.health.overall}/10, разрывов ${merchFlow.gaps.length}`);
+      } catch (e) { log(`⚠️ PDF Merchandising Audit не собрался (${String(e).slice(0, 120)})`); }
 
       // GEO / AEO / LLM Visibility — отдельный модуль: измеримое из обхода
       // (AI-crawlability, answerability, сущности, разметка) + честный шаблон под
