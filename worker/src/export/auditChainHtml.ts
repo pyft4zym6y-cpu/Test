@@ -1,6 +1,6 @@
 /**
  * «Єдина система аудиту» — верхньорівневий документ, що зв'язує 5 аудитів у
- * один потік Business → Structure → UX/UI → Content → CRO: візуальний конвеєр
+ * один потік Business → Structure → UX/UI → Content → SEO → CRO: візуальний конвеєр
  * готовності, хендофи (вихід→вхід), картки рівнів і НАСКРІЗНИЙ беклог
  * Impact×Effort з усіх рівнів. Єдиний візуальний стандарт (reportShell).
  */
@@ -9,7 +9,7 @@ import type { AuditChainReport, ChainLevel, ChainBacklogItem } from '../auditcha
 
 const rcls = (v: number) => (v >= 70 ? 'ok' : v >= 45 ? 'check' : 'gap');
 const priCls = (p: string) => (p === 'P0' ? 'gap' : p === 'P1' ? 'check' : p === 'P2' ? 'lime' : 'ok');
-const LID_COLOR: Record<string, string> = { B: '#7c3aed', S: '#2563eb', X: '#0891b2', C: '#65a30d', R: '#dc2626' };
+const LID_COLOR: Record<string, string> = { B: '#7c3aed', S: '#2563eb', X: '#0891b2', C: '#65a30d', E: '#ea580c', R: '#dc2626' };
 
 // Конвеєр готовності — 5 рівнів у ряд зі стрілками й барами.
 function pipeline(levels: ChainLevel[]): string {
@@ -60,11 +60,11 @@ function backlog(items: ChainBacklogItem[]): string {
     <td class="ac-bk-c"><span class="ac-imp">${'●'.repeat(it.impact)}<span class="ac-dim">${'●'.repeat(5 - it.impact)}</span></span></td>
     <td class="ac-bk-c"><span class="ac-eff">${'●'.repeat(it.effort)}<span class="ac-dim">${'●'.repeat(5 - it.effort)}</span></span></td>
     <td class="ac-bk-c"><span class="chip ${priCls(it.priority)}">${esc(it.priority)}</span></td></tr>`).join('');
-  return `<section class="block"><h2>Наскрізний беклог: один план на всі 5 рівнів</h2>
-    <p class="lead">Не п'ять окремих списків, а один пріоритезований беклог Impact×Effort із усіх рівнів. Сортування — за співвідношенням віддача/зусилля (quick wins зверху).</p>
+  return `<section class="block"><h2>Наскрізний беклог: один план на всі 6 рівнів</h2>
+    <p class="lead">Не окремі списки по кожному рівню, а один пріоритезований беклог Impact×Effort із усіх рівнів. Сортування — за співвідношенням віддача/зусилля (quick wins зверху).</p>
     <table class="ac-bk"><thead><tr><th>#</th><th>Рівень</th><th>Задача</th><th>Impact</th><th>Effort</th><th>Пріор.</th></tr></thead>
       <tbody>${rows}</tbody></table>
-    <p class="fn-note"><sup>*</sup> Impact — вплив на гроші/ключові сценарії (5 = максимум). Effort — трудомісткість (5 = найважче). Порядок робіт — за ланцюгом Business → Structure → UX/UI → Content → CRO з урахуванням quick wins.</p></section>`;
+    <p class="fn-note"><sup>*</sup> Impact — вплив на гроші/ключові сценарії (5 = максимум). Effort — трудомісткість (5 = найважче). Порядок робіт — за ланцюгом Business → Structure → UX/UI → Content → SEO → CRO з урахуванням quick wins.</p></section>`;
 }
 
 const AC_CSS = `
@@ -102,17 +102,17 @@ const AC_CSS = `
 export function renderAuditChainHtml(r: AuditChainReport): string {
   const coverHtml = cover({
     kicker: 'Єдина система аудиту',
-    title: 'Аудит як система: Business → Structure → UX/UI → Content → CRO',
+    title: 'Аудит як система: Business → Structure → UX/UI → Content → SEO → CRO',
     verdict: `Загальна готовність воронки — ${r.overall.value}/100 (${r.overall.label}).`,
     metrics: [
       { label: 'Клієнт', value: r.client },
       { label: 'Рівнів у ланцюгу', value: String(r.levels.length) },
       { label: 'Наскрізних задач', value: String(r.backlog.length) },
     ],
-    note: `<b>Навіщо разом:</b> це не 5 окремих звітів, а один потік. Кожен рівень бере результат попереднього і передає свій наступному. Оптимізувати нижні рівні (контент, конверсію), поки болять верхні (бізнес-цілі, структура) — марно: тому порядок робіт іде строго за ланцюгом.`,
+    note: `<b>Навіщо разом:</b> це не 6 окремих звітів, а один потік. Кожен рівень бере результат попереднього і передає свій наступному. Оптимізувати нижні рівні (контент, конверсію), поки болять верхні (бізнес-цілі, структура) — марно: тому порядок робіт іде строго за ланцюгом.`,
   });
 
-  const spine = `<section class="block"><h2>Ланцюг готовності: 5 рівнів воронки</h2>
+  const spine = `<section class="block"><h2>Ланцюг готовності: ${r.levels.length} рівнів воронки</h2>
     <p class="lead">Висота бару — готовність рівня (0–100 за спільною шкалою). Найнижчий стовпчик — вузьке місце, з якого починати.</p>
     ${pipeline(r.levels)}
     <div class="ac-through">${esc(r.throughline)}</div></section>`;

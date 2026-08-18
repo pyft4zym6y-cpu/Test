@@ -19,6 +19,7 @@ import { buildUxUiReport } from './uxui.js';
 import { buildUxFlow } from './uxflow.js';
 import { buildContentAudit } from './contentaudit.js';
 import { buildContentFlow } from './contentflow.js';
+import { buildSeoFlow } from './seoflow.js';
 import { buildMechanics } from './mechanics.js';
 
 export type Priority = 'P0' | 'P1' | 'P2' | 'P3';
@@ -71,6 +72,7 @@ export function buildAuditChain(ds: AuditDataset): AuditChainReport {
   const uxflow = buildUxFlow(uxui);
   const content = buildContentAudit(ds);
   const cflow = buildContentFlow(ds, content);
+  const seo = buildSeoFlow(ds);
   const mech = buildMechanics(ds);
 
   /* ── B · Business ── */
@@ -131,13 +133,30 @@ export function buildAuditChain(ds: AuditDataset): AuditChainReport {
     readiness: cReady, metric: `Content Score ${cflow.score.overall}/10 · розривів ${cflow.gaps.length}`,
     verdict: cReady >= 70 ? 'Контент здебільшого веде до рішення — доробки точкові.' : 'Контент не доведений до стану «продає сам»: є розриви й тонкі місця в точках рішення.',
     input: 'Від UX/UI: чисті екрани → куди покласти вирішальну інформацію (опис, докази, відповіді).',
-    output: 'Контент, що веде до рішення → що CRO лишається підсилити доказами й терміновістю.',
+    output: 'Контент, що веде до рішення → база сторінок і сутностей, які SEO виводить в органічну видачу.',
     findings: [
       `Блоків потребують контентних правок: ${cflow.cards.length}`,
       cflow.gaps.length ? `Content Gap Map: ${cflow.gaps.slice(0, 3).map((g) => g.title.replace(/^Немає /, '')).join(', ')}` : 'Критичних контентних розривів немає',
       `Перелінковка: проєкція головної ${cflow.linking.keyPageLinksNow} → ${cflow.linking.keyPageLinksTarget}`,
     ],
     p0: cP0,
+  };
+
+  /* ── E · SEO ── */
+  const eReady = clamp100(seo.score.overall * 10);
+  const eP0 = seo.problems.filter((p) => p.priority === 'P0').length + seo.blockCards.filter((c) => c.priority === 'P0').length;
+  const eLevel: ChainLevel = {
+    id: 'E', name: 'SEO', question: 'Чи здатний сайт системно отримувати органічний трафік і масштабувати видимість?',
+    readiness: eReady, metric: `SEO Score ${seo.score.overall}/10 · проблем ${seo.problems.length}`,
+    verdict: eReady >= 70 ? 'Органічний канал технічно готовий — фокус на масштабуванні семантики.' : 'Органічний канал недобудований: структура/індексація/семантика гальмують трафік ще до конверсії.',
+    input: 'Від Content: сторінки й сутності під рішення → що виводити в органіку (Structure → Content → SEO).',
+    output: 'Органічний трафік на потрібні сторінки → що CRO конвертує в замовлення.',
+    findings: [
+      seo.problems.length ? `Топ-проблеми: ${seo.problems.slice(0, 2).map((p) => p.problem.slice(0, 48)).join('; ')}` : 'Критичних SEO-проблем не виявлено',
+      `Semantic Map: ${seo.semantic.filter((s) => s.status === 'missing').length}/${seo.semantic.length} кластерів без URL`,
+      `Можливостей росту: ${seo.opportunities.length}`,
+    ],
+    p0: eP0,
   };
 
   /* ── R · CRO ── */
@@ -148,20 +167,21 @@ export function buildAuditChain(ds: AuditDataset): AuditChainReport {
     id: 'R', name: 'CRO', question: 'Чи перетворює сайт готове рішення на замовлення: докази, терміновість, менше тертя на оплаті?',
     readiness: rReady, metric: `Механік конверсії ${mech.score.have}/${mech.score.measurable} (${mech.score.pct}%)`,
     verdict: rReady >= 70 ? 'Конверсійні механіки переважно на місці — тонке налаштування.' : 'Конверсійні механіки недобрані — попередні рівні працюють, але гроші не доводяться до каси.',
-    input: 'Від Content: контент під рішення → що лишилось підсилити доказом, дефіцитом, зняттям тертя на оплаті.',
+    input: 'Від SEO: органічний трафік на потрібні сторінки → що лишилось підсилити доказом, дефіцитом, зняттям тертя на оплаті.',
     output: 'Замовлення (фінальний рівень воронки) → дані конверсії живлять наступний цикл Business.',
     findings: croWeak.length ? croWeak : ['Базові конверсійні механіки присутні'],
     p0: rP0,
   };
 
-  const levels = [bLevel, sLevel, xLevel, cLevel, rLevel];
+  const levels = [bLevel, sLevel, xLevel, cLevel, eLevel, rLevel];
 
   /* ── Хендофи (сполучна тканина) ── */
   const handoffs: ChainHandoff[] = [
     { from: 'Business', to: 'Structure', passes: 'Цілі · ЦА · УТП · позиціонування → вимоги до розділів, хабів і посадкових.' },
     { from: 'Structure', to: 'UX/UI', passes: 'Карта сторінок і типів → пріоритетні екрани, де знімати тертя.' },
     { from: 'UX/UI', to: 'Content', passes: 'Екрани без тертя → місця, куди лягає вирішальна інформація.' },
-    { from: 'Content', to: 'CRO', passes: 'Контент, що веде до рішення → готовність підсилити доказом і терміновістю.' },
+    { from: 'Content', to: 'SEO', passes: 'Сторінки й сутності під рішення → що виводити в органічну видачу.' },
+    { from: 'SEO', to: 'CRO', passes: 'Органічний трафік на потрібні сторінки → що конвертувати в замовлення.' },
     { from: 'CRO', to: 'Business', passes: 'Конверсія в замовлення → дані для наступного циклу цілей і юніт-економіки.' },
   ];
 
@@ -186,6 +206,9 @@ export function buildAuditChain(ds: AuditDataset): AuditChainReport {
     push('Content', 'C', `${c.page}: ${verb} блок «${c.name}» — ${c.task.toLowerCase()}`, c.priority === 'P0' ? 5 : 4, 3);
   }
   for (const g of cflow.gaps.filter((g) => g.priority === 'P0')) push('Content', 'C', g.title, 5, 4);
+  // SEO — P0 проблеми + P0 блоки
+  for (const p of seo.problems.filter((p) => p.priority === 'P0').slice(0, 3)) push('SEO', 'E', p.problem, 5, p.effort);
+  for (const c of seo.blockCards.filter((c) => c.priority === 'P0').slice(0, 2)) push('SEO', 'E', `${c.page}: ${c.name} — ${c.recommendation.slice(0, 60)}`, 4, 3);
   // CRO — P0 механіки
   for (const r of mech.rows.filter((r) => r.pr === 'P0' && r.status === 'нет').slice(0, 3)) {
     push('CRO', 'R', `${r.name} — ${r.what}`, 5, 2);

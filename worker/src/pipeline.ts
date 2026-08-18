@@ -33,6 +33,8 @@ import { renderTechAuditHtml } from './export/techAuditHtml.js';
 import { buildContentAudit } from './contentaudit.js';
 import { buildContentFlow } from './contentflow.js';
 import { renderContentAuditHtml } from './export/contentAuditHtml.js';
+import { buildSeoFlow } from './seoflow.js';
+import { renderSeoFlowHtml } from './export/seoFlowHtml.js';
 import { buildAuditChain } from './auditchain.js';
 import { renderAuditChainHtml } from './export/auditChainHtml.js';
 import { renderCompetitorHtml } from './export/competitorHtml.js';
@@ -331,8 +333,17 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         log(`✓ Content Audit A0 (PDF): типов страниц ${content.rows.length}`);
       } catch (e) { log(`⚠️ PDF Content Audit A0 не собрался (${String(e).slice(0, 120)})`); }
 
-      // Единая система аудита — связка 5 уровней (Business → Structure → UX/UI →
-      // Content → CRO): конвейер готовности, хендофы и сквозной беклог Impact×Effort.
+      // SEO-аудит как система — 8 артефактов (Strategy/Semantic/Technical/Page/
+      // Block/Problem-Opportunity/Score/Roadmap), а не «мета-теги + индексация».
+      try {
+        const seoFlow = buildSeoFlow(ds);
+        await writeFile(join(dir, 'seoflow.json'), JSON.stringify(seoFlow, null, 2), 'utf8');
+        await renderPdf(cap('seoflow', renderSeoFlowHtml(seoFlow)), join(dir, 'SEO-аудит-система-A0.pdf'), browser);
+        log(`✓ SEO-аудит (система, PDF): SEO Score ${seoFlow.score.overall}/10, проблем ${seoFlow.problems.length}`);
+      } catch (e) { log(`⚠️ PDF SEO-аудит (система) не собрался (${String(e).slice(0, 120)})`); }
+
+      // Единая система аудита — связка 6 уровней (Business → Structure → UX/UI →
+      // Content → SEO → CRO): конвейер готовности, хендофы и сквозной беклог Impact×Effort.
       try {
         const chain = buildAuditChain(ds);
         await writeFile(join(dir, 'auditchain.json'), JSON.stringify(chain, null, 2), 'utf8');
