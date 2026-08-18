@@ -726,6 +726,20 @@
 .skl-foot b { color: var(--deep); }
 @media (max-width: 560px) { .skl-lbl { font-size: 8px; } .skl-bars { gap: 3px; } }
 
+/* Кнопка «← Назад» у потоці (не модальний ✕): у звичайному потоці, під смугою кроків */
+.s2-x-flow { position: static; top: auto; right: auto; margin: 10px 0 -6px clamp(12px, 3vw, 20px); box-shadow: none; }
+
+/* ── Єдина сходинкова смуга діагностики (калькулятор → карта → кабінет) ── */
+.fsteps { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; font-size: 11px; letter-spacing: .04em; color: var(--graphite); padding: 10px clamp(14px, 3vw, 24px); background: color-mix(in srgb, var(--warm-white) 90%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--silver); }
+.fstep { display: inline-flex; align-items: center; gap: 6px; color: var(--silver); }
+.fstep b { font-size: 10px; font-weight: 700; color: inherit; }
+.fstep i { font-style: normal; margin-left: 3px; color: var(--silver); }
+.fstep.is-done { color: var(--graphite); }
+.fstep.is-done b { color: #1f9d55; }
+.fstep.is-on { color: var(--deep); }
+.fstep.is-on b { color: var(--data); }
+@media (max-width: 560px) { .fsteps { gap: 5px; font-size: 10px; padding: 9px 12px; } .fstep i { margin-left: 1px; } }
+
 /* ── Шапка робочого акаунта (кабінет) — щоб було ясно: «я у своєму акаунті» ── */
 .cab-bar { position: sticky; top: 0; z-index: 6; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; padding: 9px clamp(12px, 3vw, 22px); background: color-mix(in srgb, var(--warm-white) 92%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--silver); }
 .cab-id { display: flex; align-items: center; gap: 10px; min-width: 0; }

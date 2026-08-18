@@ -3,6 +3,7 @@ import { eur, project, SYS, type LossInput, type LossResult, type SysKey } from 
 import { QUESTIONS, scoreStage2, type Stage2Answers } from './stage2Model';
 import { RadarChart, SystemBars } from './charts';
 import { StepOverlay } from './StepOverlay';
+import { FunnelSteps } from './FunnelSteps';
 import './system.css';
 
 const Stage3 = lazy(() => import('@/system/Stage3').then((m) => ({ default: m.Stage3 })));
@@ -63,12 +64,13 @@ export function Stage2({ stage1, stage1Result, onClose }: { stage1: LossInput; s
   return (
     <StepOverlay>
     <div className="sysx s2" role="dialog" aria-label="Калькулятор — Етап 2">
-      <button className="s2-x mono" onClick={onClose} aria-label="Закрити">✕ Закрити</button>
+      <FunnelSteps active={4} />
+      <button className="s2-x s2-x-flow mono" onClick={onClose} aria-label="Назад до розрахунку">← Назад</button>
 
       {phase !== 'report' && (
         <div className="s2-quiz">
           <div className="s2-quiz-head">
-            <div className="sysx-kick">Етап 2 · Глибша діагностика · Commerce OS</div>
+            <div className="sysx-kick">Крок 4 · Повна карта систем · Commerce OS</div>
             <div className="s2-bar"><i style={{ width: `${phase === 'url' ? 0 : progress}%` }} /></div>
           </div>
 
@@ -106,7 +108,7 @@ export function Stage2({ stage1, stage1Result, onClose }: { stage1: LossInput; s
       {phase === 'report' && res && (
         <div className="s2-report">
           <header className="s2-rep-head">
-            <div className="sysx-kick">Ваш зріз системи · Етап 2{site ? ` · ${site.replace(/^https?:\/\//, '')}` : ''}</div>
+            <div className="sysx-kick">Крок 4 · Карта систем{site ? ` · ${site.replace(/^https?:\/\//, '')}` : ''}</div>
             <h1 className="sysx-display s2-rep-h">Зрілість системи — <span className="sysx-em">{res.overall}</span><i>/100</i></h1>
             <p className="s2-rep-line"><b>{res.level.title}.</b> {res.level.line}</p>
           </header>
