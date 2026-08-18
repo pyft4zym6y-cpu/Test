@@ -13,6 +13,8 @@ const SystemsFilm = lazy(() => import('@/system/SystemsFilm').then((m) => ({ def
 const CommerceMap = lazy(() => import('@/system/CommerceMap').then((m) => ({ default: m.CommerceMap })));
 // Меседжинг за роллю ЛПР (§8): одна система — різні виграші.
 const AudienceByRole = lazy(() => import('@/system/AudienceByRole').then((m) => ({ default: m.AudienceByRole })));
+// Механіка довіри (§6): метод, прозорий процес, платформи, реальні сигнали.
+const Credibility = lazy(() => import('@/system/Credibility').then((m) => ({ default: m.Credibility })));
 
 /**
  * WEEXP — THE SYSTEM IN MOTION (home-film, /system). Повна драматургія головної на
@@ -148,6 +150,8 @@ export function SystemInMotion() {
     <Suspense fallback={null}><CommerceMap /></Suspense>
     {/* Меседжинг за роллю ЛПР: одна система — різні виграші */}
     <Suspense fallback={null}><AudienceByRole /></Suspense>
+    {/* Механіка довіри: метод, прозорий процес, платформи */}
+    <Suspense fallback={null}><Credibility /></Suspense>
     </>
   );
 }
