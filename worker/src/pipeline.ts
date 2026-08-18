@@ -41,6 +41,8 @@ import { buildStrategyFlow } from './strategyflow.js';
 import { renderStrategyFlowHtml } from './export/strategyFlowHtml.js';
 import { buildStructureFlow } from './structureflow.js';
 import { renderStructureFlowHtml } from './export/structureFlowHtml.js';
+import { buildPageFlow } from './pageflow.js';
+import { renderPageFlowHtml } from './export/pageFlowHtml.js';
 import { buildAuditChain } from './auditchain.js';
 import { renderAuditChainHtml } from './export/auditChainHtml.js';
 import { renderCompetitorHtml } from './export/competitorHtml.js';
@@ -365,6 +367,15 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await renderPdf(cap('structure', renderStructureFlowHtml(structure)), join(dir, 'Structure-Site-Tree-A0.pdf'), browser);
         log(`✓ Structure & Site Tree (PDF): Health ${structure.health.overall}/10, разрывов ${structure.gaps.length}`);
       } catch (e) { log(`⚠️ PDF Structure & Site Tree не собрался (${String(e).slice(0, 120)})`); }
+
+      // Page Audit — каждая страница как единица бизнеса: 16 направлений на
+      // страницу, Page Health Matrix, карточки с 7 вопросами, Golden Standard/Gap.
+      try {
+        const pageFlow = buildPageFlow(ds);
+        await writeFile(join(dir, 'pageaudit.json'), JSON.stringify(pageFlow, null, 2), 'utf8');
+        await renderPdf(cap('pageaudit', renderPageFlowHtml(pageFlow)), join(dir, 'Page-Audit-A0.pdf'), browser);
+        log(`✓ Page Audit (PDF): Health ${pageFlow.overall}/10, страниц ${pageFlow.cards.length}`);
+      } catch (e) { log(`⚠️ PDF Page Audit не собрался (${String(e).slice(0, 120)})`); }
 
       // GEO / AEO / LLM Visibility — отдельный модуль: измеримое из обхода
       // (AI-crawlability, answerability, сущности, разметка) + честный шаблон под

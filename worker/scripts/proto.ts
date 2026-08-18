@@ -29,6 +29,8 @@ import { buildStrategyFlow } from '../src/strategyflow.js';
 import { renderStrategyFlowHtml } from '../src/export/strategyFlowHtml.js';
 import { buildStructureFlow } from '../src/structureflow.js';
 import { renderStructureFlowHtml } from '../src/export/structureFlowHtml.js';
+import { buildPageFlow } from '../src/pageflow.js';
+import { renderPageFlowHtml } from '../src/export/pageFlowHtml.js';
 import { buildAuditChain } from '../src/auditchain.js';
 import { renderAuditChainHtml } from '../src/export/auditChainHtml.js';
 import { buildIntelligence } from '../src/intelligence.js';
@@ -333,6 +335,7 @@ async function main(): Promise<void> {
   await pdf(renderContentAuditHtml(contentA, buildContentFlow(ds, contentA)), 'Content-Audit-A0.pdf');
   await pdf(renderStrategyFlowHtml(buildStrategyFlow(ds)), 'Strategic-Audit-A0.pdf');
   await pdf(renderStructureFlowHtml(buildStructureFlow(ds)), 'Structure-Site-Tree-A0.pdf');
+  await pdf(renderPageFlowHtml(buildPageFlow(ds)), 'Page-Audit-A0.pdf');
   await pdf(renderSeoFlowHtml(buildSeoFlow(ds)), 'SEO-аудит-система-A0.pdf');
   await pdf(renderGeoFlowHtml(buildGeoFlow(ds)), 'GEO-AEO-LLM-аудит-A0.pdf');
   await pdf(renderAuditChainHtml(buildAuditChain(ds)), 'Єдина-система-аудиту-A0.pdf');
