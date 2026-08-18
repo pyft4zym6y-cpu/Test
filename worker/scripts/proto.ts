@@ -23,6 +23,8 @@ import { buildContentFlow } from '../src/contentflow.js';
 import { renderContentAuditHtml } from '../src/export/contentAuditHtml.js';
 import { buildSeoFlow } from '../src/seoflow.js';
 import { renderSeoFlowHtml } from '../src/export/seoFlowHtml.js';
+import { buildGeoFlow } from '../src/geoflow.js';
+import { renderGeoFlowHtml } from '../src/export/geoFlowHtml.js';
 import { buildAuditChain } from '../src/auditchain.js';
 import { renderAuditChainHtml } from '../src/export/auditChainHtml.js';
 import { buildIntelligence } from '../src/intelligence.js';
@@ -326,6 +328,7 @@ async function main(): Promise<void> {
   const contentA = buildContentAudit(ds);
   await pdf(renderContentAuditHtml(contentA, buildContentFlow(ds, contentA)), 'Content-Audit-A0.pdf');
   await pdf(renderSeoFlowHtml(buildSeoFlow(ds)), 'SEO-аудит-система-A0.pdf');
+  await pdf(renderGeoFlowHtml(buildGeoFlow(ds)), 'GEO-AEO-LLM-аудит-A0.pdf');
   await pdf(renderAuditChainHtml(buildAuditChain(ds)), 'Єдина-система-аудиту-A0.pdf');
   await pdf(renderIntelligenceHtml(buildIntelligence(ds)), 'Commerce-Intelligence-Audit-A0.pdf');
   await pdf(renderChannelsHtml(buildChannels(ds)), 'Аудит-каналов-A0.pdf');

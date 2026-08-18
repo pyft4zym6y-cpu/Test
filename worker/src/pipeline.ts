@@ -35,6 +35,8 @@ import { buildContentFlow } from './contentflow.js';
 import { renderContentAuditHtml } from './export/contentAuditHtml.js';
 import { buildSeoFlow } from './seoflow.js';
 import { renderSeoFlowHtml } from './export/seoFlowHtml.js';
+import { buildGeoFlow } from './geoflow.js';
+import { renderGeoFlowHtml } from './export/geoFlowHtml.js';
 import { buildAuditChain } from './auditchain.js';
 import { renderAuditChainHtml } from './export/auditChainHtml.js';
 import { renderCompetitorHtml } from './export/competitorHtml.js';
@@ -341,6 +343,16 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await renderPdf(cap('seoflow', renderSeoFlowHtml(seoFlow)), join(dir, 'SEO-аудит-система-A0.pdf'), browser);
         log(`✓ SEO-аудит (система, PDF): SEO Score ${seoFlow.score.overall}/10, проблем ${seoFlow.problems.length}`);
       } catch (e) { log(`⚠️ PDF SEO-аудит (система) не собрался (${String(e).slice(0, 120)})`); }
+
+      // GEO / AEO / LLM Visibility — отдельный модуль: измеримое из обхода
+      // (AI-crawlability, answerability, сущности, разметка) + честный шаблон под
+      // живой прогон AI-запросов (без выдуманных данных о цитировании).
+      try {
+        const geoFlow = buildGeoFlow(ds);
+        await writeFile(join(dir, 'geoflow.json'), JSON.stringify(geoFlow, null, 2), 'utf8');
+        await renderPdf(cap('geoflow', renderGeoFlowHtml(geoFlow)), join(dir, 'GEO-AEO-LLM-аудит-A0.pdf'), browser);
+        log(`✓ GEO/AEO/LLM-аудит (PDF): GEO Score ${geoFlow.score.overall}/10, блоков ${geoFlow.blockCards.length}`);
+      } catch (e) { log(`⚠️ PDF GEO/AEO/LLM-аудит не собрался (${String(e).slice(0, 120)})`); }
 
       // Единая система аудита — связка 6 уровней (Business → Structure → UX/UI →
       // Content → SEO → CRO): конвейер готовности, хендофы и сквозной беклог Impact×Effort.
