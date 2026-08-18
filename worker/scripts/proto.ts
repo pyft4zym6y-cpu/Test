@@ -19,6 +19,7 @@ import { renderSeoArchHtml } from '../src/export/seoArchHtml.js';
 import { buildTechAudit } from '../src/techaudit.js';
 import { renderTechAuditHtml } from '../src/export/techAuditHtml.js';
 import { buildContentAudit } from '../src/contentaudit.js';
+import { buildContentFlow } from '../src/contentflow.js';
 import { renderContentAuditHtml } from '../src/export/contentAuditHtml.js';
 import { buildIntelligence } from '../src/intelligence.js';
 import { renderIntelligenceHtml } from '../src/export/intelligenceHtml.js';
@@ -318,7 +319,8 @@ async function main(): Promise<void> {
   await pdf(renderAuditHtml(siteAudit), 'UX-UI-аудит-A0.pdf');
   await pdf(renderSeoArchHtml(buildSeoArch(ds)), 'SEO-Architecture-A0.pdf');
   await pdf(renderTechAuditHtml(buildTechAudit(ds)), 'Технический-аудит-A0.pdf');
-  await pdf(renderContentAuditHtml(buildContentAudit(ds)), 'Content-Audit-A0.pdf');
+  const contentA = buildContentAudit(ds);
+  await pdf(renderContentAuditHtml(contentA, buildContentFlow(ds, contentA)), 'Content-Audit-A0.pdf');
   await pdf(renderIntelligenceHtml(buildIntelligence(ds)), 'Commerce-Intelligence-Audit-A0.pdf');
   await pdf(renderChannelsHtml(buildChannels(ds)), 'Аудит-каналов-A0.pdf');
   const bench = buildBenchmark(ds);

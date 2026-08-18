@@ -31,6 +31,7 @@ import { renderSeoArchHtml } from './export/seoArchHtml.js';
 import { buildTechAudit } from './techaudit.js';
 import { renderTechAuditHtml } from './export/techAuditHtml.js';
 import { buildContentAudit } from './contentaudit.js';
+import { buildContentFlow } from './contentflow.js';
 import { renderContentAuditHtml } from './export/contentAuditHtml.js';
 import { renderCompetitorHtml } from './export/competitorHtml.js';
 import { buildChannels } from './channels.js';
@@ -322,8 +323,9 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       // Content Audit A0 — контент по способности вести к решению (A0 §11).
       try {
         const content = buildContentAudit(ds); contentReport = content;
+        const contentFlow = buildContentFlow(ds, content);
         await writeFile(join(dir, 'contentaudit.json'), JSON.stringify(content, null, 2), 'utf8');
-        await renderPdf(cap('content', renderContentAuditHtml(content)), join(dir, 'Content-Audit-A0.pdf'), browser);
+        await renderPdf(cap('content', renderContentAuditHtml(content, contentFlow)), join(dir, 'Content-Audit-A0.pdf'), browser);
         log(`✓ Content Audit A0 (PDF): типов страниц ${content.rows.length}`);
       } catch (e) { log(`⚠️ PDF Content Audit A0 не собрался (${String(e).slice(0, 120)})`); }
 
