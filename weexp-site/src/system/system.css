@@ -716,6 +716,7 @@
 .skl-bar.h-ok { background: linear-gradient(180deg, #34b371, #1f9d55); }
 .skl-bar.h-warn { background: linear-gradient(180deg, #e0a92e, #c78a12); }
 .skl-bar.h-bad { background: linear-gradient(180deg, #e0574d, var(--alert)); }
+.skl-bar.h-none { background: var(--silver); }
 .skl-col.is-active .skl-track::after { content: ''; position: absolute; inset: -3px -3px 0; border: 1.5px solid var(--data); border-bottom: 0; border-radius: 8px 8px 0 0; opacity: .6; }
 .skl-lbl { font-size: 9px; letter-spacing: .01em; color: var(--graphite); text-align: center; line-height: 1.1; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .skl-col.is-active .skl-lbl { color: var(--deep); font-weight: 600; }
@@ -724,6 +725,32 @@
 .skl-fill i { display: block; height: 100%; background: var(--data); border-radius: 100px; transition: width .6s var(--ease-cine); }
 .skl-foot b { color: var(--deep); }
 @media (max-width: 560px) { .skl-lbl { font-size: 8px; } .skl-bars { gap: 3px; } }
+
+/* Кнопка «← Назад» у потоці (не модальний ✕): у звичайному потоці, під смугою кроків */
+.s2-x-flow { position: static; top: auto; right: auto; margin: 10px 0 -6px clamp(12px, 3vw, 20px); box-shadow: none; }
+
+/* ── Єдина сходинкова смуга діагностики (калькулятор → карта → кабінет) ── */
+.fsteps { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; font-size: 11px; letter-spacing: .04em; color: var(--graphite); padding: 10px clamp(14px, 3vw, 24px); background: color-mix(in srgb, var(--warm-white) 90%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--silver); }
+.fstep { display: inline-flex; align-items: center; gap: 6px; color: var(--silver); }
+.fstep b { font-size: 10px; font-weight: 700; color: inherit; }
+.fstep i { font-style: normal; margin-left: 3px; color: var(--silver); }
+.fstep.is-done { color: var(--graphite); }
+.fstep.is-done b { color: #1f9d55; }
+.fstep.is-on { color: var(--deep); }
+.fstep.is-on b { color: var(--data); }
+@media (max-width: 560px) { .fsteps { gap: 5px; font-size: 10px; padding: 9px 12px; } .fstep i { margin-left: 1px; } }
+
+/* ── Шапка робочого акаунта (кабінет) — щоб було ясно: «я у своєму акаунті» ── */
+.cab-bar { position: sticky; top: 0; z-index: 6; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; padding: 9px clamp(12px, 3vw, 22px); background: color-mix(in srgb, var(--warm-white) 92%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--silver); }
+.cab-id { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.cab-badge { font-size: 11px; font-weight: 700; letter-spacing: .06em; color: #fff; background: var(--deep); border-radius: 100px; padding: 5px 11px; white-space: nowrap; }
+.cab-email { font-size: 12px; color: var(--graphite); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cab-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.cab-nav { font-size: 12px; color: var(--charcoal); background: none; border: 1px solid transparent; border-radius: 8px; padding: 8px 11px; min-height: 40px; cursor: pointer; transition: background .2s, border-color .2s; }
+.cab-nav:hover { background: var(--pure-white); border-color: var(--silver); color: var(--deep); }
+.cab-out, .cab-site { font-size: 12px; min-height: 40px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--silver); background: var(--pure-white); color: var(--deep); cursor: pointer; }
+.cab-site { background: var(--deep); color: #fff; border-color: var(--deep); }
+@media (max-width: 560px) { .cab-email { max-width: 46vw; } .cab-nav, .cab-out, .cab-site { font-size: 11px; padding: 7px 9px; } }
 
 /* ── Мікропідвал сайту (усі сторінки) ── */
 .sfoot { position: relative; z-index: 1; background: var(--deep); color: #cfd4da; padding: clamp(30px, 5vw, 48px) 0 20px; }

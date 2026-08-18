@@ -9,7 +9,7 @@ import './system.css';
  */
 export type SkylineSystem = { key: string; label: string; score: number };
 
-const health = (s: number) => (s >= 65 ? 'ok' : s >= 40 ? 'warn' : 'bad');
+const health = (s: number) => (s <= 0 ? 'none' : s >= 65 ? 'ok' : s >= 40 ? 'warn' : 'bad');
 const short = (label: string) => label.split(/\s|\//)[0];
 
 export function SystemSkyline({
