@@ -3,16 +3,49 @@ import { createPortal } from 'react-dom';
 
 /**
  * Повноекранний крок діагностики. Портал у <body> — щоб position:fixed рахувався
- * від вьюпорта, а не від трансформованих/липких предків калькулятора (через що
- * на мобільному крок відкривався «поверх» попереднього). Плюс блокування скролу
- * тла: попередній крок повністю прихований і не прокручується — step-by-step.
+ * від вьюпорта, а не від трансформованих/липких предків калькулятора.
+ *
+ * Надійне блокування скролу тла (важливо для iOS, де body{overflow:hidden} НЕ
+ * фіксує сторінку — вона «пливе»): фіксуємо сам body через position:fixed зі
+ * збереженням позиції. Лічильник lockCount коректно тримає блок при вкладених
+ * оверлеях (Крок 4 → Крок 5) і знімає його лише коли закрито останній.
  */
+let lockCount = 0;
+let savedY = 0;
+
+function lock() {
+  if (lockCount === 0) {
+    savedY = window.scrollY || window.pageYOffset || 0;
+    const b = document.body.style;
+    b.position = 'fixed';
+    b.top = `-${savedY}px`;
+    b.left = '0';
+    b.right = '0';
+    b.width = '100%';
+    b.overflow = 'hidden';
+    document.documentElement.style.overscrollBehavior = 'none';
+  }
+  lockCount++;
+}
+function unlock() {
+  lockCount = Math.max(0, lockCount - 1);
+  if (lockCount === 0) {
+    const b = document.body.style;
+    b.position = '';
+    b.top = '';
+    b.left = '';
+    b.right = '';
+    b.width = '';
+    b.overflow = '';
+    document.documentElement.style.overscrollBehavior = '';
+    window.scrollTo(0, savedY);
+  }
+}
+
 export function StepOverlay({ children }: { children: ReactNode }) {
   useEffect(() => {
-    const b = document.body;
-    const prevOverflow = b.style.overflow;
-    b.style.overflow = 'hidden';
-    return () => { b.style.overflow = prevOverflow; };
+    lock();
+    return unlock;
   }, []);
   return createPortal(children, document.body);
 }

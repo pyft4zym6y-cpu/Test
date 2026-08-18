@@ -157,7 +157,7 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
       <div className="sysx s2 s3" role="dialog" aria-label="Етап 3 — кабінет">
         {standalone
           ? <button className="s2-x mono" onClick={onClose}>✕ Закрити</button>
-          : <><FunnelSteps active={5} /><button className="s2-x s2-x-flow mono" onClick={onClose}>← Назад до карти</button></>}
+          : <div className="s2-flowhead"><button className="s2-flowback mono" onClick={onClose}>← Назад до карти</button><FunnelSteps active={5} /></div>}
         <div className="s3-auth">
           <div className="sysx-kick">{standalone ? 'Особистий кабінет клієнта' : 'Крок 5 з 5 — ваш робочий кабінет'}</div>
           <h2 className="sysx-display s3-auth-h">{standalone ? <>Вхід у ваш<br />кабінет WEEXP</> : <>Ваш персональний<br />Tier-2 розбір</>}</h2>
@@ -221,7 +221,7 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
       <div className="sysx s2 s3" role="dialog" aria-label="Tier-2 звіт">
         {standalone && user
           ? accountBar(true)
-          : <><FunnelSteps active={5} /><button className="s2-x s2-x-flow mono" onClick={onClose}>← Назад до карти</button></>}
+          : <div className="s2-flowhead"><button className="s2-flowback mono" onClick={onClose}>← Назад до карти</button><FunnelSteps active={5} /></div>}
         <div className="s2-report">
           <header className="s2-rep-head">
             <div className="sysx-kick">Tier-2 звіт · {user.email} · заповнено {res.completeness}% даних</div>
@@ -503,7 +503,7 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
     <div ref={quizRef} className="sysx s2 s3" role="dialog" aria-label="Етап 3 — питання">
       {standalone && user
         ? accountBar(false)
-        : <><FunnelSteps active={5} /><button className="s2-x s2-x-flow mono" onClick={onClose}>← Назад до карти</button></>}
+        : <div className="s2-flowhead"><button className="s2-flowback mono" onClick={onClose}>← Назад до карти</button><FunnelSteps active={5} /></div>}
       <div className="s2-quiz s3-flow">
         <div className="s2-quiz-head">
           <div className="s3-flow-top">
