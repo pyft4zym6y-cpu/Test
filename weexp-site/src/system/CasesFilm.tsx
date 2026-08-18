@@ -86,6 +86,13 @@ export function CasesFilm() {
                 </div>
               ))}
               <p className="cf-learn"><b className="mono">Урок:</b> {c.learning}</p>
+              <div className="cf-verified mono"><span aria-hidden="true">✓</span> {c.verified || 'Кожна дельта звірена з CRM / ERP / GA4 клієнта'}</div>
+              {c.testimonial && (
+                <blockquote className="cf-quote">
+                  <p>«{c.testimonial.quote}»</p>
+                  <cite className="mono">{c.testimonial.name ? `${c.testimonial.name}, ` : ''}{c.testimonial.role}</cite>
+                </blockquote>
+              )}
             </div>
           </div>
         ))}

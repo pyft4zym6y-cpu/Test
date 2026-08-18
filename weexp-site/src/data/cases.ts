@@ -27,6 +27,10 @@ export type CaseStudy = {
   after: string;           // 1 речення результату
   independence: string;    // 1 речення — що клієнт може без WEEXP
   learning: string;        // 1 речення — чого кейс навчив систему WEEXP
+  verified?: string;       // джерело перевірки цифр (за замовч. — CRM/ERP/GA4)
+  // Реальний відгук — заповнюйте ЛИШЕ з дозволу клієнта (роль обовʼязкова,
+  // імʼя за згодою). Порожньо = не показуємо. НЕ вигадувати.
+  testimonial?: { quote: string; role: string; name?: string };
 };
 
 export const CASES: CaseStudy[] = [

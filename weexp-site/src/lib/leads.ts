@@ -10,6 +10,10 @@ export type LeadPayload = {
   name?: string;
   store?: string;
   turnover?: string;
+  role?: string;      // роль ЛПР
+  task?: string;      // головна задача / напрям
+  timeline?: string;  // терміни
+  budget?: string;    // орієнтовний бюджет
   comment?: string;
   diag?: string; // текстовий підсумок Business X-Ray / повної діагностики
   calc?: string; // розрахунок калькулятора
