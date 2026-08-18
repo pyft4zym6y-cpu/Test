@@ -702,6 +702,60 @@
 .s3-step4-intro { font-size: 13px; line-height: 1.55; color: var(--charcoal); background: color-mix(in srgb, var(--data) 7%, transparent); border-left: 3px solid var(--data); border-radius: 8px; padding: 10px 13px; margin: 2px 0 4px; }
 .s3-step4-intro b { color: var(--deep); }
 
+/* ── SYSTEM SKYLINE — легка візуалізація 8 систем (заміна 3D-міста) ── */
+.skl { position: relative; width: 100%; }
+.skl-grid { position: absolute; left: 0; right: 0; top: 22px; bottom: 34px; pointer-events: none; }
+.skl-grid span { position: absolute; left: 0; right: 0; height: 1px; background: repeating-linear-gradient(90deg, var(--silver) 0 4px, transparent 4px 9px); opacity: .5; }
+.skl-bars { position: relative; display: grid; grid-template-columns: repeat(8, 1fr); gap: clamp(4px, 1.2vw, 12px); align-items: end; height: 150px; }
+.skl.is-compact .skl-bars { height: 116px; }
+.skl-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 4px; min-width: 0; }
+.skl-score { font-size: 10.5px; font-weight: 700; color: var(--graphite); line-height: 1; }
+.skl-col.is-active .skl-score { color: var(--deep); }
+.skl-track { position: relative; width: 100%; max-width: 34px; flex: 1; display: flex; align-items: flex-end; }
+.skl-bar { width: 100%; border-radius: 5px 5px 2px 2px; min-height: 4px; transition: height .7s var(--ease-cine), background-color .5s var(--ease-cine); box-shadow: inset 0 1px 0 rgba(255,255,255,.4); }
+.skl-bar.h-ok { background: linear-gradient(180deg, #34b371, #1f9d55); }
+.skl-bar.h-warn { background: linear-gradient(180deg, #e0a92e, #c78a12); }
+.skl-bar.h-bad { background: linear-gradient(180deg, #e0574d, var(--alert)); }
+.skl-col.is-active .skl-track::after { content: ''; position: absolute; inset: -3px -3px 0; border: 1.5px solid var(--data); border-bottom: 0; border-radius: 8px 8px 0 0; opacity: .6; }
+.skl-lbl { font-size: 9px; letter-spacing: .01em; color: var(--graphite); text-align: center; line-height: 1.1; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.skl-col.is-active .skl-lbl { color: var(--deep); font-weight: 600; }
+.skl-foot { display: flex; align-items: center; gap: 9px; margin-top: 12px; font-size: 10.5px; color: var(--graphite); }
+.skl-fill { flex: 1; height: 5px; border-radius: 100px; background: var(--silver); overflow: hidden; }
+.skl-fill i { display: block; height: 100%; background: var(--data); border-radius: 100px; transition: width .6s var(--ease-cine); }
+.skl-foot b { color: var(--deep); }
+@media (max-width: 560px) { .skl-lbl { font-size: 8px; } .skl-bars { gap: 3px; } }
+
+/* ── Мікропідвал сайту (усі сторінки) ── */
+.sfoot { position: relative; z-index: 1; background: var(--deep); color: #cfd4da; padding: clamp(30px, 5vw, 48px) 0 20px; }
+.sfoot-in { max-width: 1180px; margin: 0 auto; padding: 0 clamp(18px, 5vw, 40px); display: flex; flex-wrap: wrap; gap: 22px 40px; align-items: flex-start; justify-content: space-between; }
+.sfoot-brand { display: grid; gap: 4px; }
+.sfoot-brand b { font-family: var(--display); font-size: 22px; letter-spacing: .04em; color: #fff; }
+.sfoot-tag { font-size: 12px; color: #8b929b; }
+.sfoot-nav { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.sfoot-link { font-size: 13px; color: #cfd4da; text-decoration: none; padding: 6px 2px; min-height: 32px; display: inline-flex; align-items: center; transition: color .2s; }
+.sfoot-link:hover { color: #fff; }
+.sfoot-meta { display: grid; gap: 8px; font-size: 12px; }
+.sfoot-mail { color: var(--data-soft); text-decoration: none; }
+.sfoot-legal { display: flex; gap: 14px; }
+.sfoot-legal a { color: #8b929b; text-decoration: none; }
+.sfoot-legal a:hover { color: #cfd4da; }
+.sfoot-bottom { max-width: 1180px; margin: 22px auto 0; padding: 14px clamp(18px, 5vw, 40px) 0; border-top: 1px solid rgba(255,255,255,.1); display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: space-between; font-size: 10.5px; color: #6b727b; }
+.sfoot-build { opacity: .7; }
+@media (max-width: 700px) { .sfoot-in { flex-direction: column; gap: 18px; } }
+/* На мобільному лишаємо місце під фіксованою нижньою панеллю (щоб build-мітка не ховалась) */
+@media (max-width: 860px) { .sfoot { padding-bottom: calc(80px + env(safe-area-inset-bottom)); } }
+
+/* ── Мобільна адаптивність кнопок: touch-цілі 44px, без переносу тексту ── */
+@media (max-width: 620px) {
+  .sysx-cta { min-height: 46px; padding: 12px 18px; font-size: 13px; }
+  .sysx-cta-row { gap: 10px; }
+  .sysx-cta-row .sysx-cta { flex: 1 1 auto; justify-content: center; text-align: center; }
+  .s2-opt, .dg-opt { min-height: 48px; }
+  /* короткі CTA не ламаємо на два рядки */
+  .sysx-cta { white-space: nowrap; }
+  .sysx-cta.is-wrap, .s3-reco .sysx-cta, .s5-opts .s2-opt { white-space: normal; }
+}
+
 /* P6 — мікро-нагорода при переході між секціями */
 .s3-milestone { width: min(680px, 92vw); font-size: 12px; color: var(--data);
   background: color-mix(in srgb, var(--data) 8%, transparent); border: 1px solid color-mix(in srgb, var(--data) 22%, transparent);
