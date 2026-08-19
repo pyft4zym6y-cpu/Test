@@ -32,8 +32,8 @@ const COLS = [
 export default function Footer() {
   return (
     <footer className="bg-ink text-white border-t-[3px] border-ink">
-      <div className="max-w-[1150px] mx-auto px-6 py-14 grid md:grid-cols-[1.4fr_1fr_1fr_1fr] gap-10">
-        <div>
+      <div className="max-w-[1150px] mx-auto px-6 py-14 grid grid-cols-2 md:grid-cols-[1.4fr_1fr_1fr_1fr] gap-x-6 gap-y-10 md:gap-10">
+        <div className="col-span-2 md:col-span-1">
           <div className="font-oswald font-bold uppercase text-2xl leading-none mb-3">
             Commerce
             <br />
@@ -73,7 +73,7 @@ export default function Footer() {
           </a>
         </div>
         {COLS.map((col) => (
-          <div key={col.title}>
+          <div key={col.title} className={col.title === 'Документи' ? 'col-span-2 md:col-span-1' : ''}>
             <div className="font-oswald font-semibold uppercase tracking-wider text-[13px] text-white/50 mb-4">
               {col.title}
             </div>
