@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom';
 import { COURSES, courseById, courseStats, fmtPrice } from './data/courses';
 import { TOTALS } from './data/program';
 import { SCHOOL, FAQ } from './data/school';
+import { POSTS, postBySlug } from './data/blog';
 
 export const SITE = 'https://school.weexp.agency';
 const SUFFIX = ' | Commerce Architecture';
@@ -32,6 +33,11 @@ const STATIC_PAGES: Record<string, Omit<PageSeo, 'canonical'>> = {
   '/program': {
     title: `Програма: ${TOTALS.levels} рівнів, ${TOTALS.modules} модуль` + SUFFIX,
     description: `Повна програма школи: ${TOTALS.levels} рівнів компетентності, ${TOTALS.modules} модуль, ${TOTALS.questions} екзаменаційних питань — від будови інтернет-магазину до стратегії, AI Commerce і капстоуна із захистом.`,
+  },
+  '/blog': {
+    title: 'Блог: аналітика, фінанси, SEO і карʼєра в e-commerce' + SUFFIX,
+    description:
+      'Практичні розбори з методології школи: юніт-економіка, діагностика падіння продажів, RFM і LTV, SEO та GEO/AEO, карʼєра e-commerce директора.',
   },
   '/enroll': {
     title: 'Запис на навчання' + SUFFIX,
@@ -62,6 +68,14 @@ export function getSeo(pathname: string): PageSeo {
   const staticPage = STATIC_PAGES[clean];
   if (staticPage) return { ...staticPage, canonical };
 
+  const postMatch = clean.match(/^\/blog\/([\w-]+)$/);
+  if (postMatch) {
+    const post = postBySlug(postMatch[1]);
+    if (post) {
+      return { title: post.title + SUFFIX, description: post.description, canonical };
+    }
+  }
+
   const courseMatch = clean.match(/^\/courses\/([\w-]+)$/);
   if (courseMatch) {
     const course = courseById(courseMatch[1]);
@@ -85,7 +99,11 @@ export function getSeo(pathname: string): PageSeo {
 
 /* Список маршрутів для пререндера */
 export function prerenderRoutes(): string[] {
-  return [...Object.keys(STATIC_PAGES), ...COURSES.map((c) => `/courses/${c.id}`)];
+  return [
+    ...Object.keys(STATIC_PAGES),
+    ...COURSES.map((c) => `/courses/${c.id}`),
+    ...POSTS.map((p) => `/blog/${p.slug}`),
+  ];
 }
 
 function setMeta(attr: 'name' | 'property', key: string, content: string) {
@@ -259,6 +277,10 @@ export function llmsTxt(): string {
     lines.push(
       `- [${c.name}](${SITE}/courses/${c.id}): ${tier}, ${fmtPrice(c.price)}, ${c.duration}, ${stats.modules} модулів. ${c.audience}. ${c.result}.`,
     );
+  }
+  lines.push('', '## Статті блогу', '');
+  for (const p of POSTS) {
+    lines.push(`- [${p.title}](${SITE}/blog/${p.slug}): ${p.description}`);
   }
   lines.push(
     '',

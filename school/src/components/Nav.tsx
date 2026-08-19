@@ -5,6 +5,7 @@ const LINKS = [
   { to: '/about', label: 'Про школу' },
   { to: '/courses', label: 'Курси' },
   { to: '/program', label: 'Програма' },
+  { to: '/blog', label: 'Блог' },
   { to: '/faq', label: 'FAQ' },
   { to: '/contacts', label: 'Контакти' },
 ];

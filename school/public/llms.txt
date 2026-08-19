@@ -27,6 +27,15 @@
 - [Omnichannel і B2B Commerce](https://school.weexp.agency/courses/omni-b2b): експертний курс, $3,500, 8 тижнів, 10 модулів. Ритейлу з офлайном, брендам із дилерами, B2B-виробникам. Статус Omnichannel Lead: єдина система каналів і B2B-продажі.
 - [AI Commerce](https://school.weexp.agency/courses/ai-commerce): експертний курс, $3,900, 8 тижнів, 10 модулів. Директорам і власникам, що впроваджують AI системно, а не хаотично. Статус AI-Driven Director: AI-стратегія, агенти, персоналізація, GEO.
 
+## Статті блогу
+
+- [Як стати e-commerce директором: покроковий шлях від новачка](https://school.weexp.agency/blog/yak-staty-ecommerce-dyrektorom): Що має вміти E-Commerce Director, скільки триває шлях від новачка і з чого почати: покрокова карта компетенцій — від будови магазину до P&L і стратегії.
+- [Юніт-економіка інтернет-магазину: як порахувати і не обдурити себе](https://school.weexp.agency/blog/unit-ekonomika-internet-magazynu): Формула юніт-економіки для e-commerce: contribution margin, CAC, LTV, точка беззбитковості. Покроковий розрахунок із типовими помилками.
+- [Чому падають продажі в інтернет-магазині: чек-лист діагностики за 1 день](https://school.weexp.agency/blog/chomu-padayut-prodazhi): Продажі впали — трафік, сайт чи асортимент? Покроковий алгоритм діагностики падіння продажів в e-commerce: які звіти відкрити і в якому порядку.
+- [SEO для інтернет-магазину у 2026: Core Web Vitals, структура і GEO/AEO](https://school.weexp.agency/blog/seo-dlya-internet-magazynu-2026): Що працює в SEO інтернет-магазинів у 2026: технічна база, архітектура категорій, structured data і видимість в AI-пошуку (GEO/AEO, AI Overviews, ChatGPT Search).
+- [RFM-сегментація і LTV: як збудувати повторні продажі без знижок на все](https://school.weexp.agency/blog/rfm-segmentacia-ltv): Як сегментувати клієнтську базу за RFM, порахувати LTV по когортах і збудувати тригерні ланцюжки, що повертають клієнтів — без тотальних знижок.
+- [Скільки заробляє e-commerce директор і за що йому платять](https://school.weexp.agency/blog/skilky-zaroblyaye-ecommerce-dyrektor): Зарплата e-commerce директора в Україні та ЄС: вилки, з чого складається компенсація, і які компетенції реально підвищують ставку.
+
 ## Сторінки
 
 - [Програма всіх 16 рівнів](https://school.weexp.agency/program)
