@@ -39,6 +39,32 @@ System) и выпускает пакет отчётов (PDF/XLSX).
 | 16 | Дорожная карта | [`16-roadmap-change-management.md`](./16-roadmap-change-management.md) | Планы, управление изменениями, версии |
 | 17 | Логистика аудита | [`17-auditor-access-and-logistics.md`](./17-auditor-access-and-logistics.md) | Как дать аудитору доступ, NDA, скоуп, сроки |
 
+### Слой глубины v2 — Evidence · Validation · Governance · Measurement
+
+По итогам внешней оценки (7,8/10) добавлен сквозной слой: не новые темы, а **доказательность,
+воспроизводимость, управляемость и измеримость** существующих. Часть — реализована в коде.
+
+| # | Раздел | Файл | Слой |
+|---|--------|------|------|
+| 18 | Audit Run Record | [`18-audit-run-record.md`](./18-audit-run-record.md) | ✅ код: воспроизводимость прогона |
+| 19 | Evidence Matrix | [`19-evidence-matrix.md`](./19-evidence-matrix.md) | Evidence: утверждение→доказательство→проверка |
+| 20 | Quality & Validity Framework | [`20-audit-quality-and-validity-framework.md`](./20-audit-quality-and-validity-framework.md) | Measurement: Audit Reliability Score |
+| 21 | Golden Dataset & Regression | [`21-golden-dataset-and-regression.md`](./21-golden-dataset-and-regression.md) | ✅ код: regression |
+| 22 | AI Output Evaluation | [`22-ai-output-evaluation-framework.md`](./22-ai-output-evaluation-framework.md) | Validation: против галлюцинаций |
+| 23 | Security Evidence Pack | [`23-security-evidence-pack.md`](./23-security-evidence-pack.md) | ✅ реальный npm audit |
+| 24 | Incident Response Plan | [`24-incident-response-plan.md`](./24-incident-response-plan.md) | Governance: SEV, рантбук |
+| 25 | Backup / Restore / BCDR | [`25-backup-restore-and-bcdr.md`](./25-backup-restore-and-bcdr.md) | Governance: RPO/RTO |
+| 26 | GDPR Operational Pack | [`26-gdpr-operational-pack.md`](./26-gdpr-operational-pack.md) | Governance: RoPA/DPA/DSAR/breach |
+| 27 | Access Matrix | [`27-employee-and-contractor-access-matrix.md`](./27-employee-and-contractor-access-matrix.md) | Governance: least-privilege |
+| 28 | Benchmark Register | [`28-benchmark-register.md`](./28-benchmark-register.md) | Validation: почему «хорошо» |
+| 29 | Methodology Governance & Change Control | [`29-methodology-governance-and-change-control.md`](./29-methodology-governance-and-change-control.md) | Governance |
+| 30 | Audit Trail | [`30-audit-trail.md`](./30-audit-trail.md) | Governance |
+| 31 | Separation of Duties | [`31-separation-of-duties.md`](./31-separation-of-duties.md) | Governance: producer/reviewer/approver |
+| 32 | Unit Economics — Cost per Audit | [`32-unit-economics-cost-per-audit.md`](./32-unit-economics-cost-per-audit.md) | Measurement: экономика |
+| 33 | Product KPI Framework | [`33-product-kpi-framework.md`](./33-product-kpi-framework.md) | Measurement |
+| 34 | Open Questions & Owner Register | [`34-open-questions-and-owner-register.md`](./34-open-questions-and-owner-register.md) | журнал P0/P1 |
+| 35 | Industry Landscape & Learning Sources | [`35-industry-landscape-and-learning-sources.md`](./35-industry-landscape-and-learning-sources.md) | ресёрч: конкуренты + кого читать |
+
 ---
 
 ## Статусы документов

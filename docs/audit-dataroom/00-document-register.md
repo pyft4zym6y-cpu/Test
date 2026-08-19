@@ -177,3 +177,35 @@ WEEXP Commerce OS. Сгруппирован по 17 доменам. Статус
 > Бизнес/юр/HR/финансы (J–L, части I) — здесь даны каркасы и точный перечень
 > того, что владельцам нужно приложить. Пробелы показаны честно — это часть
 > ценности data room для аудитора.
+
+---
+
+## P · Слой глубины v2 (Evidence · Validation · Governance · Measurement)
+
+По итогам внешней оценки (7,8/10): не расширение библиотеки, а второй слой глубины —
+доказательность, воспроизводимость, управляемость, измеримость. Разделы 18–35.
+
+| ID | Документ | Слой | Статус | Владелец |
+|----|----------|------|--------|----------|
+| P-01 | Audit Run Record (18) | Evidence/Repro | ✅ реализован в коде (`runrecord.ts`) | ENG |
+| P-02 | Evidence Matrix (19) | Evidence | 📝 живой (7✅/7🟡/4⛔) | PO/ENG |
+| P-03 | Audit Quality & Validity Framework + ARS (20) | Measurement | 📝 определён | PO |
+| P-04 | Golden Dataset & Regression (21) | Measurement | ✅ харнес в коде | ENG |
+| P-05 | AI Output Evaluation Framework (22) | Validation | 📝 определён | ENG/PO |
+| P-06 | Security Evidence Pack (23) | Evidence | 🟡 реальный npm audit; пентест ⛔ | SEC |
+| P-07 | Incident Response Plan (24) | Governance | 📝 Draft | SEC |
+| P-08 | Backup/Restore/BCDR (25) | Governance | 📝 Draft (restore-тест ⛔) | OPS |
+| P-09 | GDPR Operational Pack (26) | Governance | 📝 Draft | DPO |
+| P-10 | Access Matrix (27) | Governance | 📝 Draft | SEC/HR |
+| P-11 | Benchmark Register (28) | Validation | 📝 наполнен (сверить первоисточники) | PO |
+| P-12 | Methodology Governance & Change Control (29) | Governance | 📝 (версии ✅ в коде) | PO/ENG |
+| P-13 | Audit Trail (30) | Governance | 📝 частично | ENG |
+| P-14 | Separation of Duties (31) | Governance | 📝 (поля ✅ в коде) | PO/SEC |
+| P-15 | Unit Economics — Cost per Audit (32) | Measurement | 📝 модель | BIZ/ENG |
+| P-16 | Product KPI Framework (33) | Measurement | 📝 определён | PO/BIZ |
+| P-17 | Open Questions & Owner Register (34) | журнал | 📝 живой | PO |
+| P-18 | Industry Landscape & Learning Sources (35) | ресёрч | ✅ собрано | PO |
+
+**Реализовано в коде (доказательство, а не описание):** `worker/src/version.ts`,
+`worker/src/runrecord.ts` (zod), запись `audit-run-record.json` в пайплайне, `worker/golden/`
++ `scripts/goldenCheck.ts`, зависимость `zod`. Реальные сканы: `npm audit` (раздел 23).
