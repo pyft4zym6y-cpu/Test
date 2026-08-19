@@ -281,34 +281,132 @@ export const ASSETS: Record<string, Asset> = {
     ].join('\n'),
   },
 
+  /* ── Инструкции по доступу к сайту (instruction) ── */
+  'ins-crawler-access': {
+    id: 'ins-crawler-access',
+    kind: 'instruction',
+    title: 'Пустить наш краулер (лучший путь — обходим сами)',
+    note: 'Цель — построить РЕАЛЬНОЕ дерево сайта, не полагаясь на sitemap. Достаточно пустить нас на 2–3 дня.',
+    body: [
+      'Лучший вариант — мы обходим сайт сами: рекурсивно, с отрисовкой JS (для UX/UI),',
+      'находя скрытые и orphan-страницы, которых нет в sitemap. От вас — только пустить',
+      'наш краулер на окно аудита (2–3 дня):',
+      '',
+      '1. robots.txt — разрешите наш user-agent:',
+      '     User-agent: WeexpAudit',
+      '     Allow: /',
+      '2. Cloudflare / WAF / антибот — добавьте правило-исключение (allowlist) для:',
+      '     · user-agent «WeexpAudit», либо',
+      '     · наших IP-адресов (пришлём списком), либо',
+      '     · временно снизьте бот-защиту на указанных путях.',
+      '3. «Under Attack Mode» / JS-challenge / капча — на окно аудита отключите для нашего',
+      '   user-agent, иначе краулер видит заглушку защиты, а не сайт.',
+      '4. Rate limit — поднимите порог или исключите наш UA (обходим бережно).',
+      '',
+      'Запускать ничего не нужно — дальше работаем мы. Если пустить не получается —',
+      'используйте скрипт «рендер-краулер у себя»: он запускается изнутри вашей сети,',
+      'и внешние ограничения ему не мешают.',
+    ].join('\n'),
+  },
+  'ins-platform-urls': {
+    id: 'ins-platform-urls',
+    kind: 'instruction',
+    title: 'Полный список URL из CMS/платформы (ground truth)',
+    note: 'Sitemap неполон и врёт — истина обо ВСЕХ страницах живёт в базе платформы.',
+    body: [
+      'Sitemap может отсутствовать, быть неполным или неверным. Настоящий список всех',
+      'страниц знает только ваша CMS/платформа. Выгрузите ПОЛНЫЙ перечень URL (товары +',
+      'категории + статические + блог), включая незалинкованные и не попавшие в sitemap:',
+      '',
+      '· Shopify: Admin → Products / Pages / Collections → Export (CSV);',
+      '· WooCommerce/WordPress: Инструменты → Экспорт → «Всё»; или плагин экспорта URL;',
+      '· Хорошоп / Bitrix / OpenCart: выгрузка каталога (все товары и категории) + список CMS-страниц;',
+      '· Любая платформа: выгрузка таблицы страниц/товаров со слагами (URL).',
+      '',
+      'Нужны только адреса (по одному в строке) и, если можно, флаг «опубликовано/скрыто».',
+      'Мы сверим это с обходом: что есть в базе, но никуда не залинковано — orphan;',
+      'что залинковано, но отдаёт 404 — «призрак»; чего нет в sitemap — дыра индексации.',
+    ].join('\n'),
+  },
+
   /* ── Скрипты (script) ── */
   'scr-site-audit': {
     id: 'scr-site-audit',
     kind: 'script',
-    title: 'Скрипт для 100% доступа к сайту (полный краул)',
-    note: 'Даёт нам собрать все страницы, метаданные и битые ссылки без ручного обхода.',
-    lang: 'bash',
-    body: [
-      '# Вариант A — вы отдаёте sitemap, мы обходим сами (ничего запускать не надо):',
-      '#   пришлите https://ваш-сайт/sitemap.xml и снимите на время аудита ограничение robots.txt',
-      '#   для user-agent "WeexpAudit" (строка ниже в robots.txt):',
-      '#     User-agent: WeexpAudit',
-      '#     Allow: /',
-      '',
-      '# Вариант B — вы сами делаете полный список URL и метаданных (на своём сервере):',
-      'BASE="https://ваш-сайт"',
-      'curl -s "$BASE/sitemap.xml" -o sitemap.xml',
-      '# извлечь все URL из карты сайта:',
-      "grep -oP '(?<=<loc>)[^<]+' sitemap.xml > urls.txt",
-      'echo "Найдено URL: $(wc -l < urls.txt)"',
-      '# снять код ответа и title по каждому URL:',
-      'while read u; do',
-      '  code=$(curl -s -o /dev/null -w "%{http_code}" "$u")',
-      '  title=$(curl -s "$u" | grep -oiP "(?<=<title>)[^<]+" | head -1)',
-      '  echo "$code\\t$u\\t$title"',
-      'done < urls.txt > site-inventory.tsv',
-      'echo "Готово: site-inventory.tsv — пришлите нам этот файл."',
-    ].join('\n'),
+    title: 'Рендер-краулер сайта (запуск у себя, если сайт закрыт/за Cloudflare)',
+    note: 'Строит полное дерево из ОТРИСОВАННЫХ страниц по ссылкам, не полагаясь на sitemap. Ловит скрытые/orphan-страницы и рендерит JS для UX/UI. Запускается изнутри вашей сети — внешняя защита не мешает.',
+    lang: 'javascript',
+    body:
+`// weexp-crawl.mjs — полный РЕНДЕР-краул сайта для аудита WEEXP.
+// Зачем: построить реальное дерево сайта и найти то, чего НЕТ в sitemap —
+// скрытые, orphan- и «призрачные» страницы, хаос в иерархии — и оценить UX/UI
+// по ОТРИСОВАННЫМ (JS) страницам. Не зависит от корректности sitemap.
+//
+// Как: рекурсивно обходит внутренние ссылки из отрисованного DOM (headless
+// Chromium), подмешивает sitemap/robots и типовые пути как подсказки, снимает
+// статус, заголовок, H1, объём текста и способ обнаружения каждой страницы.
+//
+// Запуск НА МАШИНЕ КЛИЕНТА (так обходятся IP-фильтры и Cloudflare):
+//   npm i playwright && npx playwright install chromium
+//   node weexp-crawl.mjs https://ВАШ-САЙТ --max 3000 --out inventory.jsonl
+// Если сайт за паролем/защитой:
+//   --auth ЛОГИН:ПАРОЛЬ                     (HTTP basic / staging)
+//   --header "CF-Access-Client-Id: ..."      (Cloudflare Access и любой заголовок)
+import { chromium } from 'playwright';
+import { appendFileSync, writeFileSync } from 'node:fs';
+
+const a = process.argv.slice(2);
+const start = a[0];
+if (!start) { console.error('Укажите URL: node weexp-crawl.mjs https://site'); process.exit(1); }
+const opt = (name, def) => { const i = a.indexOf(name); return i >= 0 ? a[i + 1] : def; };
+const MAX = parseInt(opt('--max', '3000'), 10);
+const OUT = opt('--out', 'inventory.jsonl');
+const origin = new URL(start).origin;
+const norm = (u) => { try { const x = new URL(u, origin); x.hash = ''; return x.origin === origin ? x.href : null; } catch { return null; } };
+
+const httpCredentials = (() => { const v = opt('--auth', ''); if (!v) return undefined; const [username, ...p] = v.split(':'); return { username, password: p.join(':') }; })();
+const extraHTTPHeaders = (() => { const v = opt('--header', ''); if (!v) return undefined; const i = v.indexOf(':'); return { [v.slice(0, i).trim()]: v.slice(i + 1).trim() }; })();
+
+writeFileSync(OUT, '');
+const seen = new Set();
+const queue = [];
+const push = (u, depth, via) => { const nrm = norm(u); if (nrm && !seen.has(nrm)) { seen.add(nrm); queue.push([nrm, depth, via]); } };
+
+// 1) seeds: старт + типовые пути + sitemap/robots (как ПОДСКАЗКА, не как истина)
+push(start, 0, 'seed');
+for (const p of ['/', '/sitemap.xml', '/catalog', '/products', '/blog', '/search', '/account', '/cart', '/checkout']) push(origin + p, 0, 'probe');
+try {
+  const rob = await (await fetch(origin + '/robots.txt')).text();
+  for (const line of rob.split('\\n')) {
+    const m = line.match(/^\\s*Sitemap:\\s*(\\S+)/i);
+    if (m) { try { const sm = await (await fetch(m[1])).text(); for (const loc of sm.match(/<loc>([^<]+)<\\/loc>/g) || []) push(loc.replace(/<\\/?loc>/g, ''), 0, 'sitemap'); } catch {} }
+  }
+} catch {}
+
+// 2) рекурсивный РЕНДЕР-обход
+const browser = await chromium.launch();
+const ctx = await browser.newContext({ userAgent: 'WeexpAudit/1.0 (+audit)', httpCredentials, extraHTTPHeaders, ignoreHTTPSErrors: true });
+let n = 0;
+while (queue.length && n < MAX) {
+  const [url, depth, via] = queue.shift();
+  const page = await ctx.newPage();
+  let status = 0, title = '', h1 = '', words = 0, links = [];
+  try {
+    const resp = await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+    status = resp ? resp.status() : 0;
+    title = await page.title().catch(() => '');
+    h1 = await page.$eval('h1', (e) => e.innerText.trim()).catch(() => '');
+    words = await page.evaluate(() => (document.body ? document.body.innerText.trim().split(/\\s+/).length : 0)).catch(() => 0);
+    links = await page.$$eval('a[href]', (as) => as.map((x) => x.href)).catch(() => []);
+  } catch (e) { status = -1; }
+  appendFileSync(OUT, JSON.stringify({ url, depth, via, status, title, h1, words, out_links: links.length }) + '\\n');
+  for (const l of links) push(l, depth + 1, 'link');
+  await page.close();
+  n++;
+  if (n % 25 === 0) console.log(n + ' страниц... в очереди ' + queue.length);
+}
+await browser.close();
+console.log('Готово: ' + n + ' страниц → ' + OUT + '. Пришлите этот файл — он даёт полное дерево, включая скрытые и orphan-страницы.');`,
   },
   'scr-ga4-export': {
     id: 'scr-ga4-export',
@@ -395,9 +493,11 @@ export const BLOCKS: AuditBlock[] = [
     tagline: 'Карта страниц, типы, вложенность, навигация, orphan-страницы.',
     minTier: 1,
     reqs: [
-      R('sct-crawl', 'access', 1, 'Публичный сайт (обход)', 'Строим дерево и типы страниц из обхода.'),
-      R('sct-sitemap', 'document', 2, 'sitemap.xml и robots.txt', 'Полнота карты, что закрыто от индексации.', 'scr-site-audit'),
-      R('sct-full', 'access', 4, '100% список URL из платформы (полный инвентарь)', 'Сверка «что в каталоге» ⇄ «что видно».', 'scr-site-audit'),
+      R('sct-crawl', 'access', 1, 'Публичный сайт (рендер-обход)', 'Строим дерево из отрисованных страниц: типы, вложенность, навигация — по факту, не по карте.'),
+      R('sct-sitemap', 'document', 2, 'sitemap.xml и robots.txt (как подсказка)', 'Стартовые сигналы. Могут быть неполными/неверными — не единственный источник.'),
+      R('sct-allow', 'access', 2, 'Пустить наш краулер: allowlist UA/IP, снять антибот на окно аудита', 'Полный обход даже при Cloudflare/WAF: ловим скрытые и orphan-страницы, рендерим JS для UX/UI.', 'ins-crawler-access'),
+      R('sct-export', 'document', 3, 'Полный список URL из CMS/платформы (ground truth)', 'Истина обо ВСЕХ страницах, включая незалинкованные и не попавшие в sitemap.', 'ins-platform-urls'),
+      R('sct-script', 'access', 3, 'Если сайт закрыт/за Cloudflare — запустить наш рендер-краулер у себя', 'Полный обход изнутри вашей сети, минуя IP-фильтры и защиту; отдаёт полное дерево.', 'scr-site-audit'),
     ],
   },
   {
