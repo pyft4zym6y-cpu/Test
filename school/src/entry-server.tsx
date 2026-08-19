@@ -4,9 +4,9 @@
 import { renderToString } from 'react-dom/server';
 import { StaticRouter } from 'react-router';
 import { AppShell } from './App';
-import { getSeo, prerenderRoutes, SITE } from './seo';
+import { getSeo, llmsTxt, prerenderRoutes, SITE } from './seo';
 
-export { getSeo, prerenderRoutes, SITE };
+export { getSeo, llmsTxt, prerenderRoutes, SITE };
 
 export function render(url: string): string {
   return renderToString(

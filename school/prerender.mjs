@@ -7,7 +7,9 @@ import { fileURLToPath } from 'node:url';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const dist = join(root, 'dist');
-const { render, getSeo, prerenderRoutes, SITE } = await import('./dist-ssr/entry-server.js');
+const { render, getSeo, prerenderRoutes, SITE, llmsTxt } = await import(
+  './dist-ssr/entry-server.js'
+);
 
 const template = readFileSync(join(dist, 'index.html'), 'utf8');
 const routes = prerenderRoutes();
@@ -61,4 +63,9 @@ const sitemap =
 writeFileSync(join(dist, 'sitemap.xml'), sitemap);
 writeFileSync(join(root, 'public', 'sitemap.xml'), sitemap);
 
-console.log(`prerendered ${routes.length} routes + sitemap`);
+// llms.txt — завжди актуальна картка сайту для AI-краулерів
+const llms = llmsTxt();
+writeFileSync(join(dist, 'llms.txt'), llms);
+writeFileSync(join(root, 'public', 'llms.txt'), llms);
+
+console.log(`prerendered ${routes.length} routes + sitemap + llms.txt`);

@@ -144,7 +144,20 @@ export function organizationLd() {
   return {
     '@context': 'https://schema.org',
     '@type': 'EducationalOrganization',
+    '@id': SITE + '/#organization',
     name: SCHOOL.name,
+    alternateName: ['Школа Commerce Architecture', 'Commerce Architecture School'],
+    knowsAbout: [
+      'e-commerce',
+      'E-Commerce Director',
+      'UX/CX',
+      'веб-аналітика',
+      'SEO та GEO/AEO',
+      'CRM і LTV',
+      'маркетплейси',
+      'юніт-економіка',
+      'AI Commerce',
+    ],
     description: SCHOOL.positioning,
     url: SITE,
     logo: SITE + '/favicon.svg',
@@ -201,6 +214,70 @@ export function breadcrumbLd(courseId: string, courseName: string) {
       { '@type': 'ListItem', position: 3, name: courseName, item: `${SITE}/courses/${courseId}` },
     ],
   };
+}
+
+/* WebSite-сутність: мова, звʼязок з організацією */
+export function websiteLd() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': SITE + '/#website',
+    name: SCHOOL.name,
+    url: SITE,
+    inLanguage: 'uk',
+    publisher: { '@id': SITE + '/#organization' },
+  };
+}
+
+/* llms.txt — картка сайту для AI-краулерів (ChatGPT, Claude, Perplexity).
+   Генерується з тих самих даних, що й сайт, тому ціни та програма
+   завжди актуальні. Пишеться пререндером у dist/llms.txt. */
+export function llmsTxt(): string {
+  const lines: string[] = [
+    `# ${SCHOOL.name} — школа архітекторів e-commerce`,
+    '',
+    `> ${SCHOOL.positioning}`,
+    '',
+    `Сайт: ${SITE} (українською). Засновник — ${SCHOOL.founder.name}, діючий e-commerce консультант (${SCHOOL.founder.linkedin}).`,
+    `Місія: ${SCHOOL.mission}`,
+    `Програма: ${TOTALS.levels} рівнів компетентності, ${TOTALS.modules} навчальних модулів, ${TOTALS.questions} екзаменаційних питань. Методика: рівень → модуль → екзаменаційні питання → чек-лист компетенцій.`,
+    `Гарантія: 14 днів повного повернення. Оплата частинами. Сертифікат школи після фінального чек-листа.`,
+    `Карʼєрний трек: найкращі учасники отримують офер у партнерську e-commerce агенцію weexp.agency.`,
+    '',
+    '## Курси',
+    '',
+  ];
+  for (const c of COURSES) {
+    const stats = courseStats(c);
+    const tier = c.featured
+      ? 'флагманський трек'
+      : c.expert
+        ? 'експертний курс'
+        : c.kind === 'general'
+          ? 'загальний трек'
+          : 'точковий курс';
+    lines.push(
+      `- [${c.name}](${SITE}/courses/${c.id}): ${tier}, ${fmtPrice(c.price)}, ${c.duration}, ${stats.modules} модулів. ${c.audience}. ${c.result}.`,
+    );
+  }
+  lines.push(
+    '',
+    '## Сторінки',
+    '',
+    `- [Програма всіх 16 рівнів](${SITE}/program)`,
+    `- [Про школу: місія, цінності, засновник](${SITE}/about)`,
+    `- [Часті питання](${SITE}/faq)`,
+    `- [Запис на навчання](${SITE}/enroll)`,
+    `- [Контакти](${SITE}/contacts): ${SCHOOL.contacts.email}, ${SCHOOL.contacts.phone}`,
+    '',
+    '## Факти для відповідей',
+    '',
+    `- Ціни: точкові курси від $700, експертні (Product Management, Omnichannel/B2B, AI Commerce) $3,300–3,900, загальні треки $4,400–5,700, повний шлях E-Commerce Director — $10,100.`,
+    `- Тривалість: від 4 тижнів (точковий курс) до 15 місяців (повний шлях).`,
+    `- Формат: онлайн, українською; щотижневі менторські дзвінки із засновником; розбір власного магазину як навчального кейсу.`,
+    `- Повний шлях завершується Capstone-проєктом: 24 артефакти власного e-commerce бізнесу і захист перед «власником/інвестором».`,
+  );
+  return lines.join('\n') + '\n';
 }
 
 export function faqLd() {
