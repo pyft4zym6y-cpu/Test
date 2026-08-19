@@ -25,9 +25,27 @@ function get(): Anthropic {
 
 export const hasKey = () => Boolean(process.env.ANTHROPIC_API_KEY);
 
+/* ── Учёт токенов на прогон (для unit-economics / cost per audit). ──
+ * Аккумулятор сбрасывается в начале прогона (pipeline) и читается в Audit Run Record. */
+export type TokenUsage = { calls: number; inputTokens: number; outputTokens: number };
+let meter: TokenUsage = { calls: 0, inputTokens: 0, outputTokens: 0 };
+export function resetUsage(): void { meter = { calls: 0, inputTokens: 0, outputTokens: 0 }; }
+export function getUsage(): TokenUsage { return { ...meter }; }
+function recordUsage(resp: any): void {
+  try {
+    const u = resp?.usage;
+    if (!u) return;
+    meter.calls += 1;
+    meter.inputTokens += (u.input_tokens || 0) + (u.cache_read_input_tokens || 0) + (u.cache_creation_input_tokens || 0);
+    meter.outputTokens += u.output_tokens || 0;
+  } catch { /* учёт токенов не должен ронять прогон */ }
+}
+
 /** Низкоуровневый вызов для агентного цикла (tool-use). params — как в API. */
 export async function createMessage(params: any): Promise<any> {
-  return withTimeout(get().messages.create({ model: MODEL, ...params }), CALL_TIMEOUT_MS + 5000, 'createMessage');
+  const resp = await withTimeout(get().messages.create({ model: MODEL, ...params }), CALL_TIMEOUT_MS + 5000, 'createMessage');
+  recordUsage(resp);
+  return resp;
 }
 
 export async function ask(system: string, user: string, maxTokens = 8000): Promise<string> {
@@ -43,6 +61,7 @@ export async function ask(system: string, user: string, maxTokens = 8000): Promi
     messages: [{ role: 'user', content: userMsg }],
   };
   const resp = await withTimeout(get().messages.create(params), CALL_TIMEOUT_MS + 5000, 'ask');
+  recordUsage(resp);
   return resp.content
     .filter((b: any) => b.type === 'text')
     .map((b: any) => b.text)

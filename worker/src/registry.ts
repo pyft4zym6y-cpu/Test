@@ -71,6 +71,14 @@ export type Finding = Omit<FindingInput, 'difficulty'> & {
   priority: Priority;        // полоса P0/P1/P2
   rootCause?: string;        // заполняется причинной картой
   dependsOn?: string[];      // ID-зависимости (причинно-следственная связь)
+  /* ── Finding Lifecycle (замыкание цикла: находка → действие → проверка → закрытие) ── */
+  recommendation?: string;   // рекомендованное действие
+  businessImpact?: string;   // влияние на бизнес словами
+  owner?: string;            // кто отвечает за устранение
+  effort?: number;           // 1–5 трудоёмкость (для roadmap)
+  status?: 'open' | 'in-progress' | 'verified' | 'closed'; // жизненный цикл
+  targetDate?: string;       // целевая дата устранения
+  verification?: string;     // как проверить, что устранено
 };
 
 /* ─────────── Веса факторов уверенности (детерминированные) ─────────── */

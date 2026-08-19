@@ -27,6 +27,20 @@ export type BuildInfo = {
   runRecordSchemaVersion: string;
 };
 
+/**
+ * Ориентировочные цены токенов, $/1M (input, output). ⚠️ Цены меняются — сверять с
+ * прайс-страницей провайдера на дату; переопределяются env MODEL_PRICE_IN / MODEL_PRICE_OUT.
+ * Значения по умолчанию — плейсхолдер frontier-тира; для cost per audit нужны актуальные.
+ */
+export const MODEL_PRICE_IN = Number(process.env.MODEL_PRICE_IN ?? 5); // $/1M input
+export const MODEL_PRICE_OUT = Number(process.env.MODEL_PRICE_OUT ?? 25); // $/1M output
+export const MODEL_PRICE_ASOF = process.env.MODEL_PRICE_ASOF ?? '2026-08 (placeholder — verify)';
+
+/** Оценка стоимости LLM по токенам, $. */
+export function estimateLlmCostUsd(inputTokens: number, outputTokens: number): number {
+  return (inputTokens / 1e6) * MODEL_PRICE_IN + (outputTokens / 1e6) * MODEL_PRICE_OUT;
+}
+
 export function buildInfo(model?: string): BuildInfo {
   return {
     methodologyVersion: METHODOLOGY_VERSION,

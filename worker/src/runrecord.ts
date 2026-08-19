@@ -14,7 +14,7 @@
  */
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
-import { buildInfo, RUN_RECORD_SCHEMA_VERSION } from './version.js';
+import { buildInfo, RUN_RECORD_SCHEMA_VERSION, estimateLlmCostUsd, MODEL_PRICE_ASOF } from './version.js';
 
 export const AuditRunRecordSchema = z.object({
   schemaVersion: z.string(),
@@ -63,6 +63,16 @@ export const AuditRunRecordSchema = z.object({
   }),
 
   metrics: z.record(z.string(), z.any()),
+
+  // Телеметрия стоимости прогона (unit economics / cost per audit).
+  cost: z.object({
+    llmCalls: z.number().int(),
+    inputTokens: z.number().int(),
+    outputTokens: z.number().int(),
+    llmCostUsd: z.number().nullable(),
+    priceAsOf: z.string(),
+    note: z.string(),
+  }),
 
   outputs: z.object({
     fileCount: z.number().int(),
@@ -145,6 +155,7 @@ export type RunRecordInput = {
   failedModules?: string[];
   findings?: Partial<AuditRunRecord['findings']>;
   metrics?: Record<string, unknown>;
+  usage?: { calls: number; inputTokens: number; outputTokens: number };
   reportFiles?: string[];
   review?: Partial<AuditRunRecord['review']>;
 };
@@ -189,6 +200,14 @@ export function buildRunRecord(inp: RunRecordInput): AuditRunRecord {
       avgConfidence: inp.findings?.avgConfidence ?? null,
     },
     metrics: (inp.metrics ?? {}) as Record<string, unknown>,
+    cost: {
+      llmCalls: inp.usage?.calls ?? 0,
+      inputTokens: inp.usage?.inputTokens ?? 0,
+      outputTokens: inp.usage?.outputTokens ?? 0,
+      llmCostUsd: inp.usage ? Math.round(estimateLlmCostUsd(inp.usage.inputTokens, inp.usage.outputTokens) * 10000) / 10000 : null,
+      priceAsOf: MODEL_PRICE_ASOF,
+      note: 'Только стоимость LLM-токенов. Полная cost per audit = + crawl/compute + внешние API + human QA (раздел 32).',
+    },
     outputs: { fileCount: inp.files.length, reportFiles: inp.reportFiles ?? inp.files.filter((f) => f.endsWith('.pdf')) },
     review: {
       reviewer: inp.review?.reviewer ?? null,

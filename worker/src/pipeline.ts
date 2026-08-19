@@ -94,7 +94,7 @@ import { narrateSynthesis, renderSynthesisMd } from './synthesis.js';
 import { buildKp, renderKpMd, renderKpPdf } from './kp.js';
 import { exportKpDocx } from './export/methodDocs.js';
 import { knowledgeCount } from './knowledge.js';
-import { hasKey, apiErrorHint } from './anthropic.js';
+import { hasKey, apiErrorHint, resetUsage, getUsage } from './anthropic.js';
 import { makeDeadline } from './util/timeout.js';
 import type { Analysis } from './analyze.js';
 import type { UxUiReport } from './uxui.js';
@@ -168,6 +168,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
   const log = (m: string) => { if (/⚠️|✖/.test(m)) debugLog.push(m.replace(/^[⚠️✖]+\s*/, '')); baseLog(m); };
   const metrics: AuditMetrics = { compliance: null, confidence: null, health: null, benchmarkIndex: null, aqcFails: null, potentialYear: null };
   const t0 = Date.now(); // старт прогона — для durationMs в Audit Run Record
+  resetUsage(); // обнуляем счётчик токенов на прогон (cost per audit)
   const prelaunch = Boolean(opts.prelaunch);
   const tier: Tier = prelaunch ? 0 : ((opts.tier ?? 1) as Tier);
   const site = normalizeUrl(opts.site ?? '');
@@ -558,6 +559,17 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       if (parsed) opts.answers = parsed;
     }
 
+    // PII-маскирование на входе (жёсткий контроль, не рекомендация): e-mail/телефоны
+    // из ответов не попадают ни к Claude, ни в артефакты.
+    if (opts.answers) {
+      try {
+        const { maskDeep } = await import('./pii.js');
+        const masked = maskDeep(opts.answers);
+        opts.answers = masked.value;
+        if (masked.emails || masked.phones) log(`· PII-маскирование ответов: e-mail ${masked.emails}, телефонов ${masked.phones}`);
+      } catch (e) { log(`⚠️ PII-маскирование не отработало (${String(e).slice(0, 80)})`); }
+    }
+
     let engine: EngineResult | null = null;
     if (opts.answers) {
       engine = computeEngine(normalizeAnswers(opts.answers));
@@ -797,9 +809,39 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
     const cs = client.pages.filter((p) => p.score !== null);
     metrics.compliance = cs.length ? Math.round(cs.reduce((s, p) => s + (p.score ?? 0), 0) / cs.length) : null;
 
+    // ── META-AUDIT + QUALITY GATE: система проверяет САМ результат аудита. ──
+    // Считает качество (ARS/Evidence Debt/Coverage) и прогоняет батарею гейтов;
+    // критический провал = выдача блокируется. См. data room: 36-closing-the-loop.
+    try {
+      if (registry && registry.length) {
+        const { buildQualitySummary } = await import('./quality.js');
+        const { runMetaAudit } = await import('./metaaudit.js');
+        const { moduleStatusFromFiles } = await import('./runrecord.js');
+        const { METHODOLOGY_VERSION } = await import('./version.js');
+        const q = buildQualitySummary(registry, { reachabilityPassed: !prelaunch });
+        const { executed } = moduleStatusFromFiles(files);
+        const meta = runMetaAudit({
+          tier, prelaunch, findings: registry, quality: q, reachabilityPassed: !prelaunch,
+          pagesCrawled: client.pages.filter((p) => !p.error).length,
+          modulesExecuted: executed, modulesFailed: [], reportFiles: files,
+          requiredReports: ['Презентація', 'Сводный-бэклог', 'Протокол-синергии'],
+          methodologyVersion: METHODOLOGY_VERSION, money,
+          brokenLinks: (ds.client as { linkHealth?: { broken?: unknown[] } })?.linkHealth?.broken?.length ?? null,
+          evidenceCoverageTarget: 0.6,
+        });
+        await writeFile(join(dir, 'quality.json'), JSON.stringify(q, null, 2), 'utf8');
+        await writeFile(join(dir, 'meta-audit.json'), JSON.stringify(meta, null, 2), 'utf8');
+        (metrics as Record<string, unknown>).qaGate = meta.decision;
+        (metrics as Record<string, unknown>).ars = q.ars.provisional;
+        (metrics as Record<string, unknown>).evidenceDebt = q.evidenceDebt.debtRatio;
+        const icon = meta.decision === 'BLOCK' ? '⛔' : meta.decision === 'DELIVER_WITH_WARNINGS' ? '🟡' : '✅';
+        log(`${icon} Meta-Audit / Quality Gate: ${meta.decision} · ARS ${q.ars.provisional ?? '—'}/100 · блокеров ${meta.blockers.length}, предупреждений ${meta.warnings.length}`);
+      }
+    } catch (e) { log(`⚠️ Meta-Audit не отработал (${String(e).slice(0, 140)})`); }
+
     // ── AUDIT RUN RECORD: воспроизводимость и трассируемость прогона. ──
     // Штампует версию методологии/движка/модели, снимок входа (+hash), статусы модулей,
-    // счётчики находок и покрытие доказательствами. См. data room: 18-audit-run-record.
+    // счётчики находок, покрытие доказательствами, стоимость токенов. См. data room: 18.
     try {
       const { buildRunRecord } = await import('./runrecord.js');
       const reg = registry ?? [];
@@ -830,6 +872,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
           avgConfidence: avgConf,
         } : {},
         metrics: metrics as unknown as Record<string, unknown>,
+        usage: getUsage(),
       });
       await writeFile(join(dir, 'audit-run-record.json'), JSON.stringify(rr, null, 2), 'utf8');
       log(`✓ Audit Run Record: методология ${rr.methodologyVersion}, модулей вып. ${rr.modules.executed.length}, находок ${rr.findings.total}, evidence-покрытие ${rr.findings.evidenceCoverage ?? '—'}`);
