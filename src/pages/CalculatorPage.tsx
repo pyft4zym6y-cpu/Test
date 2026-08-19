@@ -5,6 +5,8 @@ import { Eyebrow } from '../components/ui';
 import { track } from '../components/analytics';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { sendLead } from '../components/leads';
+import { NICHES, fmtUAH, num, compute as computeAudit, type Tone } from '../lib/audit';
+import { markLead } from '../lib/account';
 
 /*
  * КАЛЬКУЛЯТОР АУДИТУ — єдиний step-by-step інструмент у одному вікні (3 кроки):
@@ -18,37 +20,9 @@ import { sendLead } from '../components/leads';
  * суму — вони підвищують достовірність і збагачують профіль каналів.
  */
 
-type Niche = { id: string; label: string; crNorm: number; crGold: number; repeatTarget: number; aovLow: number; aovHigh: number };
-
-const NICHES: Niche[] = [
-  { id: 'fashion', label: 'Fashion · одяг і взуття', crNorm: 2.2, crGold: 3.2, repeatTarget: 35, aovLow: 1500, aovHigh: 3500 },
-  { id: 'beauty', label: 'Beauty · косметика', crNorm: 2.8, crGold: 4.0, repeatTarget: 45, aovLow: 900, aovHigh: 2000 },
-  { id: 'home', label: 'Дім · меблі · декор', crNorm: 1.4, crGold: 2.2, repeatTarget: 20, aovLow: 2500, aovHigh: 9000 },
-  { id: 'electronics', label: 'Електроніка · техніка', crNorm: 1.8, crGold: 2.6, repeatTarget: 25, aovLow: 3000, aovHigh: 15000 },
-  { id: 'fmcg', label: 'FMCG · товари щодня', crNorm: 3.2, crGold: 5.0, repeatTarget: 55, aovLow: 600, aovHigh: 1500 },
-  { id: 'kids', label: 'Дитячі товари', crNorm: 2.4, crGold: 3.4, repeatTarget: 40, aovLow: 800, aovHigh: 2500 },
-  { id: 'pets', label: 'Зоотовари', crNorm: 2.6, crGold: 3.8, repeatTarget: 50, aovLow: 600, aovHigh: 1500 },
-  { id: 'sport', label: 'Спорт · outdoor', crNorm: 1.8, crGold: 2.6, repeatTarget: 28, aovLow: 1500, aovHigh: 4500 },
-  { id: 'jewelry', label: 'Ювелірка · аксесуари', crNorm: 1.2, crGold: 2.0, repeatTarget: 22, aovLow: 2000, aovHigh: 8000 },
-  { id: 'auto', label: 'Автотовари', crNorm: 1.6, crGold: 2.4, repeatTarget: 30, aovLow: 1000, aovHigh: 4000 },
-  { id: 'health', label: 'Здоровʼя · аптека', crNorm: 3.0, crGold: 4.5, repeatTarget: 50, aovLow: 500, aovHigh: 1200 },
-  { id: 'other', label: 'Інша ніша', crNorm: 2.0, crGold: 3.0, repeatTarget: 30, aovLow: 800, aovHigh: 4000 },
-];
-
-const ORGANIC_TARGET = 35;
-const EMAIL_TARGET = 20;
-
-const fmtUAH = (n: number) => {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toLocaleString('uk-UA', { maximumFractionDigits: 1 })} млн ₴`;
-  return `${Math.round(n / 1000).toLocaleString('uk-UA')} тис ₴`;
-};
-const num = (s: string) => parseFloat((s || '').replace(',', '.')) || 0;
-
 const inputCls =
   'w-full bg-white border border-black/10 px-4 py-3 text-lg font-mono text-[#12161C] placeholder:text-[#8b93a0] focus:outline-none focus:border-[#65A30D] transition-colors';
 
-type Tone = 'red' | 'yellow' | 'green' | 'na';
-type Zone = { label: string; value: string; tone: Tone; hint: string };
 const TONE: Record<Tone, { bg: string; fg: string; mark: string }> = {
   red: { bg: 'rgba(220,38,38,0.08)', fg: '#DC2626', mark: '🔴' },
   yellow: { bg: 'rgba(180,83,9,0.08)', fg: '#B45309', mark: '🟡' },
@@ -73,45 +47,6 @@ const EMPTY: State = {
 
 const STEPS = ['Ключові цифри', 'Уточнення', 'Передфінал'] as const;
 
-function compute(s: State) {
-  const niche = NICHES.find((n) => n.id === s.nicheId) ?? NICHES[NICHES.length - 1];
-  const M = num(s.revenue) * 1000;
-  const crC = Math.min(Math.max(num(s.cr), 0.1), 15);
-  const rC = Math.min(Math.max(num(s.repeat) || 10, 0), 80) / 100;
-  const aovC = num(s.aov);
-  const orgC = s.organic === '' ? null : Math.min(Math.max(num(s.organic), 0), 100);
-  const emC = s.email === '' ? null : Math.min(Math.max(num(s.email), 0), 100);
-  const mgC = s.margin === '' ? null : Math.min(Math.max(num(s.margin), 5), 90);
-  const R = M * 12;
-
-  const inNorm = crC >= niche.crNorm;
-  const crT = inNorm ? niche.crGold : niche.crNorm;
-  const crFactor = Math.min(Math.max(crT / crC, 1), 3);
-  const rT = Math.max(rC, niche.repeatTarget / 100);
-  const repFactor = Math.min(Math.max((1 - rC) / (1 - rT), 1), 1.6);
-
-  const upliftFull = crFactor * repFactor - 1;
-  const potentialFull = R * upliftFull;
-  const potentialCons = potentialFull * 0.55;
-  const crShare = R * (crFactor - 1);
-  const repShare = R * crFactor * (repFactor - 1);
-  const orders = aovC > 0 ? Math.round(M / aovC) : null;
-  const marginLoss = mgC !== null ? potentialCons * (mgC / 100) : null;
-
-  const zones: Zone[] = [
-    { label: 'Конверсія', value: `${crC}%`, tone: crC >= niche.crGold ? 'green' : crC >= niche.crNorm ? 'yellow' : 'red', hint: `норма ${niche.crNorm}% · золотий стандарт ${niche.crGold}%` },
-    { label: 'Повторні', value: `${Math.round(rC * 100)}%`, tone: rC * 100 >= niche.repeatTarget ? 'green' : rC * 100 >= niche.repeatTarget * 0.6 ? 'yellow' : 'red', hint: `ціль ніші ${niche.repeatTarget}%` },
-    { label: 'Середній чек', value: aovC > 0 ? `${aovC.toLocaleString('uk-UA')} ₴` : '—', tone: aovC <= 0 ? 'na' : aovC < niche.aovLow ? 'yellow' : 'green', hint: aovC <= 0 ? 'не вказано' : `діапазон ніші ${niche.aovLow.toLocaleString('uk-UA')}–${niche.aovHigh.toLocaleString('uk-UA')} ₴` },
-    { label: 'Органіка', value: orgC === null ? '—' : `${orgC}%`, tone: orgC === null ? 'na' : orgC >= ORGANIC_TARGET ? 'green' : orgC >= 20 ? 'yellow' : 'red', hint: orgC === null ? 'уточнюється на кроці 2' : `ціль ≥${ORGANIC_TARGET}% — інакше ріст купується` },
-    { label: 'Email / CRM', value: emC === null ? '—' : `${emC}%`, tone: emC === null ? 'na' : emC >= EMAIL_TARGET ? 'green' : emC >= 10 ? 'yellow' : 'red', hint: emC === null ? 'уточнюється на кроці 2' : `ціль ≥${EMAIL_TARGET}% виручки` },
-  ];
-  // достовірність оцінки зростає з кроками (чесно: більше даних — вужчий діапазон)
-  const filled2 = [s.organic, s.email, s.margin, s.trafficSrc, s.marketplaceDep, s.mobileShare].filter(Boolean).length;
-  const filled3 = [s.goal, s.pain, s.whoRuns, s.budget, s.timeline].filter(Boolean).length + (s.stack.length ? 1 : 0);
-  const confidence = Math.min(95, 40 + filled2 * 6 + filled3 * 3);
-
-  return { niche, R, inNorm, crC, crT, rC: rC * 100, rT: rT * 100, potentialFull, potentialCons, monthlyCons: potentialCons / 12, crShare, repShare, upliftPct: Math.round(upliftFull * 100), orders, marginLoss, zones, redCount: zones.filter((z) => z.tone === 'red').length, confidence };
-}
 
 const CHIPS = (opts: string[], val: string, set: (v: string) => void) => (
   <div className="flex flex-wrap gap-2">
@@ -145,7 +80,11 @@ export default function CalculatorPage() {
   const reportRef = useRef<HTMLDivElement>(null);
 
   const upd = (patch: Partial<State>) => setS((p) => ({ ...p, ...patch }));
-  const calc = useMemo(() => compute(s), [s]);
+  const calc = useMemo(() => {
+    const extraFilled2 = [s.organic, s.email, s.margin, s.trafficSrc, s.marketplaceDep, s.mobileShare].filter(Boolean).length;
+    const extraFilled3 = [s.goal, s.pain, s.whoRuns, s.budget, s.timeline].filter(Boolean).length + (s.stack.length ? 1 : 0);
+    return computeAudit({ ...s, extraFilled2, extraFilled3 });
+  }, [s]);
 
   const step1ok = s.nicheId && num(s.revenue) > 0 && num(s.cr) > 0;
   const canNext = step === 0 ? step1ok : true;
@@ -194,7 +133,7 @@ export default function CalculatorPage() {
       store: lead.site, turnover: `${num(s.revenue)} тис ₴/міс`, calc: calcSummary, company_website: lead.hp,
     });
     setLeadBusy(false);
-    if (ok) { setLeadSent(true); track('calc_lead', {}); } else { setLeadErr(true); }
+    if (ok) { setLeadSent(true); markLead(lead.email || lead.phone); track('calc_lead', {}); } else { setLeadErr(true); }
   }
 
   const zonesShown = calc.zones.filter((z) => !(step === 0 && (z.label === 'Органіка' || z.label === 'Email / CRM')));

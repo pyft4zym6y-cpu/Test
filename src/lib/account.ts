@@ -40,6 +40,33 @@ export const EMPTY_COMPANY: Company = { name: '', site: '', niche: '', revenue: 
 export const getCompany = (): Company => ({ ...EMPTY_COMPANY, ...(read<Company>(COMPANY_KEY) || {}) });
 export const saveCompany = (c: Company) => write(COMPANY_KEY, c);
 
+/* ── воронка (стратегічна наскрізна логіка) ── */
+const FUNNEL_KEY = 'weexp-funnel-v1';
+export type Funnel = { leadContact?: string; leadAt?: string; deepRequested?: boolean; deepAt?: string; deepDepth?: string };
+export const getFunnel = (): Funnel => read<Funnel>(FUNNEL_KEY) || {};
+export function markLead(contact?: string) { const f = getFunnel(); write(FUNNEL_KEY, { ...f, leadContact: contact, leadAt: new Date().toISOString() }); }
+export function markDeepRequested(depth: string) { const f = getFunnel(); write(FUNNEL_KEY, { ...f, deepRequested: true, deepAt: new Date().toISOString(), deepDepth: depth }); }
+
+export type JourneyStep = { id: string; label: string; done: boolean; current: boolean };
+/** Один шлях клієнта: де він зараз і що наступне. Кабінет — хаб цієї воронки. */
+export function getJourney(): JourneyStep[] {
+  const audits = getAudits();
+  const company = getCompany();
+  const funnel = getFunnel();
+  const session = getSession();
+  const flags = [
+    { id: 'express', label: 'Експрес-аудит', done: audits.length > 0 },
+    { id: 'lead', label: 'Заявка на розбір', done: Boolean(funnel.leadContact) },
+    { id: 'account', label: 'Акаунт у кабінеті', done: Boolean(session) },
+    { id: 'profile', label: 'Профіль компанії', done: Boolean(company.name && company.site) },
+    { id: 'deep', label: 'Глибокий аудит (T1–T4)', done: Boolean(funnel.deepRequested) },
+    { id: 'findings', label: 'Знахідки та дорожня карта', done: false },
+    { id: 'collab', label: 'Співпраця та зростання', done: false },
+  ];
+  const firstUndone = flags.findIndex((f) => !f.done);
+  return flags.map((f, i) => ({ ...f, current: i === firstUndone }));
+}
+
 /* ── аудити (підтягуються з калькулятора + збережені) ── */
 export function getAudits(): AuditRecord[] {
   const out: AuditRecord[] = [];

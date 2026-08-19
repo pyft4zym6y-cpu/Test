@@ -6,8 +6,10 @@ import {
 } from 'lucide-react';
 import {
   getSession, login, logout, getCompany, saveCompany, getAudits,
+  getJourney, getFunnel, markDeepRequested,
   type Company, type Session, type AuditRecord,
 } from '../lib/account';
+import { sendLead } from '../components/leads';
 
 /*
  * КАБІНЕТ КЛІЄНТА — з чистого листа. Ліва панель розділів + робоча область.
@@ -21,7 +23,7 @@ const NAV: { id: SectionId; label: string; icon: typeof LayoutDashboard; soon?: 
   { id: 'overview', label: 'Огляд', icon: LayoutDashboard },
   { id: 'company', label: 'Дані компанії', icon: Building2 },
   { id: 'audits', label: 'Мої аудити', icon: FileSearch },
-  { id: 'deep', label: 'Глибокий аудит', icon: Microscope, soon: true },
+  { id: 'deep', label: 'Глибокий аудит', icon: Microscope },
   { id: 'findings', label: 'Знахідки та беклог', icon: ListChecks, soon: true },
   { id: 'roadmap', label: 'Дорожня карта', icon: Map, soon: true },
   { id: 'access', label: 'Доступи', icon: KeyRound, soon: true },
@@ -130,6 +132,7 @@ export default function CabinetPage() {
                   <button onClick={() => go(lastAudit ? 'deep' : 'audits')} className="text-[13px] text-[#65A30D] font-semibold mt-2 inline-flex items-center gap-1">Перейти <ArrowRight size={14} /></button>
                 </div>
               </div>
+              <Journey onGo={go} />
               {!lastAudit && (
                 <div className={`${card} px-7 py-7`}>
                   <h3 className="text-lg font-bold text-[#12161C]">Почніть з експрес-аудиту</h3>
@@ -156,17 +159,7 @@ export default function CabinetPage() {
             </>
           )}
 
-          {active === 'deep' && (
-            <>
-              <div><H>Глибокий аудит</H><Sub>Розширена аналітика з доступом до ваших даних — від T1 (обхід) до T4 (живі доступи).</Sub></div>
-              <Soon title="Інструмент глибокого аудиту T1–T4" points={[
-                'Одна змінна — глибина: чим більше даних, тим вища достовірність висновків.',
-                'Підключення доступів (GA4/CRM/реклама) з інструкціями — крок «Доступи».',
-                '19 блоків аналізу: SEO, CRO, UX, мерчендайзинг, retention, юніт-економіка тощо.',
-                'Результат — знахідки з пріоритетами, гроші та дорожня карта під ваші цифри.',
-              ]} cta={<Link to="/calculator" className="inline-flex items-center gap-2 px-5 py-3 bg-[#65A30D] text-white font-semibold hover:bg-[#4d7c0f]">Поки що — експрес-аудит <ArrowRight size={16} /></Link>} />
-            </>
-          )}
+          {active === 'deep' && <DeepAudit session={session} />}
           {active === 'findings' && (<><div><H>Знахідки та беклог</H><Sub>Єдиний список знахідок з пріоритетами P0–P2 та грошима.</Sub></div>
             <Soon title="Реєстр знахідок Impact × Effort" points={['Кожна знахідка: доказ → пріоритет → рекомендація → власник → статус → перевірка.', 'Наскрізний беклог з усіх блоків аудиту в один план.', 'Життєвий цикл: open → in-progress → verified → closed.']} /></>)}
           {active === 'roadmap' && (<><div><H>Дорожня карта</H><Sub>План зростання під ваші цифри: що і в якому порядку.</Sub></div>
@@ -190,6 +183,95 @@ export default function CabinetPage() {
         </main>
       </div>
     </div>
+  );
+}
+
+function Journey({ onGo }: { onGo: (id: any) => void }) {
+  const steps = getJourney();
+  const map: Record<string, string> = { express: 'audits', lead: 'audits', account: 'overview', profile: 'company', deep: 'deep', findings: 'findings', collab: 'docs' };
+  return (
+    <div className={`${card} px-6 py-5`}>
+      <div className="text-[13px] font-semibold text-[#12161C] mb-3">Ваш шлях</div>
+      <div className="flex flex-wrap gap-x-2 gap-y-3">
+        {steps.map((st, i) => (
+          <button key={st.id} onClick={() => onGo(map[st.id] || 'overview')} className="flex items-center gap-2 text-left">
+            <span className="w-6 h-6 flex items-center justify-center text-[11px] font-mono shrink-0"
+              style={st.done ? { background: '#65A30D', color: '#fff' } : st.current ? { border: '2px solid #65A30D', color: '#3f6212', fontWeight: 700 } : { border: '1px solid rgba(10,14,18,0.15)', color: '#8b93a0' }}>
+              {st.done ? '✓' : i + 1}
+            </span>
+            <span className="text-[13px]" style={{ color: st.current ? '#12161C' : st.done ? '#4D7C0F' : '#8b93a0', fontWeight: st.current ? 700 : 400 }}>{st.label}</span>
+            {i < steps.length - 1 && <span className="text-[#d0d4cc] mx-1">›</span>}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const DEEP_TIERS = [
+  { code: 'T1', name: 'Експрес — зовнішній обхід', desc: 'Тільки сайт, без доступів', conf: 'до 35%' },
+  { code: 'T2', name: 'Базовий — + аналітика', desc: 'GA4, Search Console, короткий бриф', conf: 'до 55%' },
+  { code: 'T3', name: 'Глибокий — + бізнес-дані', desc: 'Вивантаження заказів/товарів, кабінети, CRM', conf: 'до 78%' },
+  { code: 'T4', name: 'Повний — живі доступи', desc: 'ERP/фінанси/логи, інтервʼю, дослідження', conf: 'до 92%' },
+];
+
+function DeepAudit({ session }: { session: Session }) {
+  const funnel = getFunnel();
+  const [depth, setDepth] = useState<string>(funnel.deepDepth || 'T3');
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(Boolean(funnel.deepRequested));
+  const company = getCompany();
+
+  async function request() {
+    setBusy(true);
+    const t = DEEP_TIERS.find((x) => x.code === depth)!;
+    const ok = await sendLead({
+      source: 'deep-audit-request', name: session.name, email: session.email,
+      store: company.site || company.name, turnover: company.revenue ? `${company.revenue} тис ₴/міс` : undefined,
+      comment: `Запит на глибокий аудит · глибина ${t.code} (${t.name}). Ніша: ${company.niche || '—'}. Канали: ${company.channels.join(', ') || '—'}.`,
+    });
+    setBusy(false);
+    if (ok) { markDeepRequested(depth); setSent(true); }
+  }
+
+  return (
+    <>
+      <div><H>Глибокий аудит</H><Sub>Одна змінна — глибина. Чим більше даних, тим вища достовірність висновків. 19 блоків аналізу → знахідки, гроші, дорожня карта.</Sub></div>
+      <div className="grid sm:grid-cols-2 gap-3">
+        {DEEP_TIERS.map((t) => {
+          const on = depth === t.code;
+          return (
+            <button key={t.code} onClick={() => setDepth(t.code)} className={`${card} text-left px-5 py-4 transition-colors`}
+              style={on ? { borderColor: '#65A30D', boxShadow: '0 0 0 2px rgba(101,163,13,0.25)' } : {}}>
+              <div className="flex items-center justify-between">
+                <span className="font-mono font-bold text-[#12161C]">{t.code}</span>
+                <span className="text-[11px] font-mono px-2 py-0.5" style={{ background: 'rgba(101,163,13,0.12)', color: '#3f6212' }}>достовірність {t.conf}</span>
+              </div>
+              <div className="text-sm font-semibold text-[#12161C] mt-1.5">{t.name}</div>
+              <div className="text-[12px] text-[#8b93a0] mt-0.5">{t.desc}</div>
+            </button>
+          );
+        })}
+      </div>
+      <div className={`${card} px-7 py-6`}>
+        {sent ? (
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="text-[#4D7C0F] shrink-0 mt-0.5" size={22} />
+            <div>
+              <div className="font-bold text-lg text-[#12161C]">Запит на глибокий аудит прийнято</div>
+              <div className="text-sm text-[#5A6472] mt-1">Глибина {depth}. Ми звʼяжемося щодо доступів і даних. Далі — розділ «Доступи».</div>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="text-sm text-[#5A6472]">Обрана глибина <b className="text-[#12161C] font-mono">{depth}</b>. Для {depth === 'T1' ? 'старту достатньо сайту' : 'цієї глибини знадобляться доступи/дані — інструкції в розділі «Доступи»'}.</div>
+            <button disabled={busy} onClick={request} className="mt-4 inline-flex items-center gap-2 px-6 py-3.5 bg-[#12161C] text-white font-semibold hover:bg-black transition-colors disabled:opacity-60">
+              {busy ? 'Надсилаю…' : 'Замовити глибокий аудит'} <ArrowRight size={18} />
+            </button>
+          </>
+        )}
+      </div>
+    </>
   );
 }
 
