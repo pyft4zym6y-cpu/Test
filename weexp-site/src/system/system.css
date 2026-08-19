@@ -1529,10 +1529,15 @@
 
 @media (max-width: 900px) {
   .sysx-calc { grid-template-columns: 1fr; }
-  .sysx-calc-bg { position: fixed; inset: 0; height: 100vh; opacity: 1; }
-  /* мобайл: лишаємо живий об'єкт як тло (fixedProgress → зібраний і обертається) */
+  /* мобайл: живий об'єкт лишається тлом, але приглушений — щоб щільні дані
+     (витоки, health-бари, bottleneck) на кроці «витік» читались чисто, а не
+     «наляписто» поверх активної 3D-сцени. */
+  .sysx-calc-bg { position: fixed; inset: 0; height: 100vh; opacity: .4; }
   .sysx-calc-bg .sysx-object3d { display: block; }
   .sysx-grid { grid-template-columns: 1fr; }
+  /* М'який світлий скрим під панеллю — гарантує контраст тексту навіть там,
+     де за ним проходить ребро 3D-об'єкта. */
+  .sysx-calc-panel { background: linear-gradient(180deg, color-mix(in srgb, var(--warm-white) 82%, transparent), color-mix(in srgb, var(--warm-white) 88%, transparent)); }
 }
 
 /* ============================================================
