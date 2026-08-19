@@ -1,5 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { computeLoss, eur, project, SYS, type LossInput, type LossResult, type SysKey } from './lossModel';
+import { saveExpressAudit } from './cabinetData';
 import './system.css';
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
@@ -46,7 +48,7 @@ export function LossCalculator() {
   const setNum = (k: keyof Omit<LossInput, 'symptoms'>) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setInp((s) => ({ ...s, [k]: parseFloat(e.target.value) || 0 }));
   const toggle = (k: SysKey) => setInp((s) => ({ ...s, symptoms: s.symptoms.includes(k) ? s.symptoms.filter((x) => x !== k) : [...s.symptoms, k] }));
-  const compute = () => { const r = computeLoss(inp); setRes(r); alerts.current = r.bottleneckNodes; setStep(3); };
+  const compute = () => { const r = computeLoss(inp); setRes(r); alerts.current = r.bottleneckNodes; saveExpressAudit(inp, r); setStep(3); };
   const restart = () => { alerts.current = []; setRes(null); setStep(1); };
   const primaryLabel = (k: SysKey) => SYS.find((s) => s.key === k)!.label;
 
@@ -185,6 +187,7 @@ export function LossCalculator() {
 
             <div className="sysx-calc-actions">
               <button className="sysx-cta is-primary" onClick={() => setStage2(true)}>Далі: повна карта систем →</button>
+              <Link className="sysx-cta" to="/cabinet">Зберегти в кабінет →</Link>
               <button className="sysx-cta" onClick={restart}>Перерахувати</button>
             </div>
             <span className="sysx-note mono">Оцінка за наданими даними. Не фінансовий аудит. Етап 2 уточнює зріз за логікою Commerce OS.</span>

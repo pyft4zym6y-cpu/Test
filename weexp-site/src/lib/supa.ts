@@ -24,6 +24,14 @@ export type DiagUser = { id: string; email: string };
 /** true, якщо користувач збережений у хмарному кабінеті (Supabase), а не локально. */
 export const isCloudUser = (u: DiagUser | null): boolean => !!u && !u.id.startsWith('local:') && !u.id.startsWith('demo:');
 
+/** Профіль компанії в кабінеті (розділ «Дані компанії»). */
+export type CompanyProfile = {
+  name?: string; site?: string; niche?: string; revenue?: string;
+  channels?: string[]; contactName?: string; contactPhone?: string; notes?: string;
+};
+/** Стан воронки клієнта (наскрізна логіка кабінету). */
+export type FunnelState = { leadAt?: string; leadContact?: string; deepRequested?: boolean; deepAt?: string; deepDepth?: string };
+
 /** Дані діагностики, що зберігаються між сесіями (усі етапи). */
 export type DiagRecord = {
   site?: string;
@@ -32,6 +40,8 @@ export type DiagRecord = {
   stage2?: unknown;
   stage2Result?: unknown;
   stage3?: Record<string, unknown>;
+  company?: CompanyProfile;         // розділ «Дані компанії»
+  funnel?: FunnelState;             // наскрізна воронка кабінету
   updatedAt?: string;
 };
 

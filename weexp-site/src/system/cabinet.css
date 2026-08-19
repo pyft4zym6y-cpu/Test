@@ -1,0 +1,114 @@
+/* Кабінет клієнта — світла тема .sysx. Сайдбар + контент, адаптив. */
+.cab { min-height: 100vh; background: var(--warm-white); color: var(--charcoal); }
+.cab-boot { padding: 22vh 6vw; color: var(--graphite); }
+
+/* ── Ворота входу ── */
+.cab-gate { display: grid; place-items: center; padding: 8vh 5vw; }
+.cab-gate-card { width: min(560px, 100%); }
+.cab-gate-back { display: inline-block; color: var(--graphite); text-decoration: none; margin-bottom: 22px; }
+.cab-gate-back:hover { color: var(--charcoal); }
+.cab-gate-h { font-size: clamp(34px, 6vw, 60px); line-height: 1.02; margin: 10px 0 14px; color: var(--deep); }
+.cab-form { display: flex; flex-direction: column; gap: 14px; margin-top: 26px; }
+.cab-auth-err { color: var(--alert); font-size: 12.5px; }
+
+/* ── Каркас ── */
+.cab:not(.cab-gate) { display: grid; grid-template-columns: 264px 1fr; }
+.cab-side { position: sticky; top: 0; align-self: start; height: 100vh; display: flex; flex-direction: column;
+  background: var(--pure-white); border-right: 1px solid var(--line); padding: 26px 18px; }
+.cab-brand { display: flex; align-items: baseline; gap: 8px; text-decoration: none; color: var(--deep); padding: 0 8px 22px; }
+.cab-brand b { font-family: var(--display); font-size: 22px; letter-spacing: -.01em; }
+.cab-brand span { color: var(--graphite); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; }
+.cab-nav { display: flex; flex-direction: column; gap: 18px; flex: 1; overflow-y: auto; }
+.cab-nav-g { display: flex; flex-direction: column; gap: 2px; }
+.cab-nav-gl { color: var(--graphite); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; padding: 4px 8px; }
+.cab-nav-i { display: flex; align-items: center; justify-content: space-between; gap: 8px; text-align: left;
+  background: none; border: none; cursor: pointer; padding: 9px 10px; border-radius: 9px; color: var(--charcoal);
+  font: inherit; font-size: 14.5px; transition: background var(--dur-fast), color var(--dur-fast); }
+.cab-nav-i:hover { background: var(--mist); }
+.cab-nav-i.on { background: var(--deep); color: var(--pure-white); }
+.cab-soon { font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--graphite);
+  border: 1px solid var(--line); border-radius: 20px; padding: 2px 7px; font-style: normal; }
+.cab-nav-i.on .cab-soon { color: var(--data-soft); border-color: rgba(255,255,255,.28); }
+.cab-side-foot { display: grid; gap: 3px; padding: 16px 8px 0; margin-top: 12px; border-top: 1px solid var(--line); }
+.cab-user { font-size: 12px; color: var(--charcoal); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cab-user-mode { font-size: 10.5px; color: var(--graphite); }
+.cab-signout { justify-self: start; background: none; border: none; cursor: pointer; color: var(--graphite);
+  font: inherit; font-size: 12px; padding: 6px 0 0; text-decoration: underline; text-underline-offset: 3px; }
+.cab-signout:hover { color: var(--alert); }
+
+.cab-main { padding: clamp(28px, 4vw, 56px); max-width: 1080px; }
+.cab-sec { display: flex; flex-direction: column; gap: 22px; animation: cab-in var(--dur-mid) var(--ease-cine); }
+@keyframes cab-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.cab-sec-head { display: flex; flex-direction: column; gap: 8px; }
+.cab-h1 { font-size: clamp(28px, 4vw, 48px); line-height: 1.03; color: var(--deep); }
+
+/* ── Картки / огляд ── */
+.cab-cards { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; }
+.cab-card { background: var(--pure-white); border: 1px solid var(--line); border-radius: 16px; padding: 22px;
+  display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.cab-card-hero { background: linear-gradient(150deg, var(--pure-white), var(--mist)); }
+.cab-big { font-size: clamp(34px, 5vw, 54px); color: var(--deep); line-height: 1; }
+.cab-big i { font-style: normal; font-size: .4em; color: var(--graphite); margin-left: 6px; }
+.cab-big-empty { color: var(--silver); }
+.cab-sub { color: var(--graphite); font-size: 12.5px; }
+.cab-next-t { font-family: var(--display); font-size: 22px; color: var(--deep); }
+.cab-next-d { color: var(--charcoal); font-size: 14px; line-height: 1.5; }
+
+/* ── Наскрізний шлях ── */
+.cab-journey { background: var(--pure-white); border: 1px solid var(--line); border-radius: 16px; padding: 22px; display: grid; gap: 14px; }
+.cab-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.cab-step { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 11px; border: 1px solid var(--line-soft); }
+.cab-step.current { border-color: var(--data); background: rgba(126,157,255,.06); }
+.cab-step.done { opacity: .85; }
+.cab-step-dot { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+  font: 600 12px/1 var(--mono); background: var(--mist); color: var(--graphite); border: 1px solid var(--line); }
+.cab-step.done .cab-step-dot { background: var(--deep); color: var(--pure-white); border-color: var(--deep); }
+.cab-step.current .cab-step-dot { background: var(--data); color: var(--pure-white); border-color: var(--data); }
+.cab-step-b { display: flex; flex-direction: column; gap: 1px; }
+.cab-step-b b { font-size: 14.5px; color: var(--charcoal); }
+.cab-step-b i { font-size: 11px; color: var(--graphite); font-style: normal; }
+
+/* ── Аудити ── */
+.cab-audits, .cab-collab { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.cab-collab { grid-template-columns: 1fr; max-width: 560px; }
+.cab-audit { background: var(--pure-white); border: 1px solid var(--line); border-radius: 16px; padding: 20px;
+  display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.cab-audit-top { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+.cab-audit-top b { font-size: 15px; color: var(--deep); }
+.cab-audit-v { font-size: clamp(26px, 3.4vw, 38px); color: var(--deep); line-height: 1; }
+.cab-audit-v i { font-style: normal; font-size: .42em; color: var(--graphite); margin-left: 5px; }
+.cab-badge { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--graphite);
+  background: var(--mist); border: 1px solid var(--line); border-radius: 20px; padding: 3px 9px; }
+
+/* ── Форми ── */
+.cab-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.cab-ch { display: grid; gap: 8px; }
+.cab-ch-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.cab-chip { background: var(--pure-white); border: 1px solid var(--line); border-radius: 20px; padding: 7px 14px;
+  cursor: pointer; font: inherit; font-size: 13px; color: var(--charcoal); transition: all var(--dur-fast); }
+.cab-chip:hover { border-color: var(--graphite); }
+.cab-chip.on { background: var(--deep); color: var(--pure-white); border-color: var(--deep); }
+.cab-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.cab-saved { color: #2e7d32; font-size: 12.5px; }
+
+/* ── Доступи T1–T4 ── */
+.cab-depths { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.cab-depth { text-align: left; background: var(--pure-white); border: 1px solid var(--line); border-radius: 14px;
+  padding: 18px; cursor: pointer; display: grid; gap: 8px; transition: all var(--dur-fast); }
+.cab-depth:hover { border-color: var(--graphite); transform: translateY(-1px); }
+.cab-depth.on { border-color: var(--data); box-shadow: 0 0 0 1px var(--data), 0 16px 40px -24px rgba(126,157,255,.6); }
+.cab-depth-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.cab-depth-top b { font-size: 15px; color: var(--deep); }
+
+.cab-soon-box { border: 1px dashed var(--silver); border-radius: 14px; padding: 28px; color: var(--graphite);
+  background: var(--pure-white); }
+.cab-deep-wrap .sysx-calc, .cab-deep-wrap .s2, .cab-deep-wrap .s3 { margin: 0; }
+
+@media (max-width: 900px) {
+  .cab:not(.cab-gate) { grid-template-columns: 1fr; }
+  .cab-side { position: static; height: auto; flex-direction: column; border-right: none; border-bottom: 1px solid var(--line); }
+  .cab-nav { flex-direction: row; flex-wrap: wrap; overflow: visible; }
+  .cab-nav-g { flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .cab-nav-gl { display: none; }
+  .cab-cards, .cab-audits, .cab-grid2, .cab-depths { grid-template-columns: 1fr; }
+}
