@@ -527,15 +527,6 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
           </div>
         </div>
 
-        {/* Живий профіль 8 систем — зрозуміло росте з кожною відповіддю (без важкого 3D). */}
-        <div className="cw-quiz">
-          <div className="cw-quiz-cap mono">
-            <span>Ваш профіль збирається — вісім систем</span>
-            <b>{answeredCount} відповідей</b>
-          </div>
-          <SystemOrbit systems={live.systems} completeness={live.completeness} activeKey={live.systems.find((s) => s.label.split(/\s|\//)[0] === secOf.split(/\s|\//)[0])?.key} compact />
-        </div>
-
         {firstOfSection && (
           <div className="s3-milestone mono" key={`m-${idx}`}>✓ Секцію «{prevSection}» пройдено · профіль на {progress}%</div>
         )}
@@ -635,6 +626,15 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
               )}
             </span>
           </div>
+        </div>
+
+        {/* Живий профіль 8 систем — під опитувальником: спершу питання, потім видно, як росте профіль. */}
+        <div className="cw-quiz cw-quiz-below">
+          <div className="cw-quiz-cap mono">
+            <span>Ваш профіль збирається — вісім систем</span>
+            <b>{answeredCount} відповідей</b>
+          </div>
+          <SystemOrbit systems={live.systems} completeness={live.completeness} activeKey={live.systems.find((s) => s.label.split(/\s|\//)[0] === secOf.split(/\s|\//)[0])?.key} compact />
         </div>
       </div>
     </div>
