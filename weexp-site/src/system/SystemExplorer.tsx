@@ -1,5 +1,4 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { SYSTEMS, SHORT } from '@/data/xray';
 import './system.css';
 
@@ -86,7 +85,6 @@ export function SystemExplorer() {
               ))}
             </div>
             <p className="sxp-panel-sell"><b className="mono">Будуємо:</b> {sys.sell}</p>
-            <Link to="/systems" className="sysx-cta is-primary sxp-cta">Розібрати у «8 системах» →</Link>
           </div>
         )}
       </div>

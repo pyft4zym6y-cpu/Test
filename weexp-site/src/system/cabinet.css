@@ -8,7 +8,22 @@
 .cab-gate-back { display: inline-flex; align-items: center; min-height: 40px; color: var(--graphite); text-decoration: none; margin-bottom: 14px; }
 .cab-gate-back:hover { color: var(--charcoal); }
 .cab-gate-h { font-size: clamp(34px, 6vw, 60px); line-height: 1.02; margin: 10px 0 14px; color: var(--deep); }
-.cab-form { display: flex; flex-direction: column; gap: 14px; margin-top: 26px; }
+.cab-form { display: flex; flex-direction: column; gap: 14px; margin-top: 26px; max-width: 400px; }
+
+/* Поля кабінету: мій розділ використовує .sysx-inp з прямим <input> (без .sysx-inp-row),
+   тож стилі полів каркаса не діяли — інпути були браузерно-дефолтні (на десктопі
+   розтягнуті й тонкі). Стилізуємо їх узгоджено: рамка-бокс, зручна висота. */
+.cab .sysx-inp { display: grid; gap: 6px; }
+.cab .sysx-inp > input,
+.cab .sysx-inp > textarea {
+  width: 100%; border: 1px solid var(--silver); border-radius: 10px; background: var(--pure-white);
+  padding: 12px 14px; font-family: var(--sans); font-size: 15px; line-height: 1.4; color: var(--deep);
+  outline: 0; transition: border-color .18s; }
+.cab .sysx-inp > input::placeholder,
+.cab .sysx-inp > textarea::placeholder { color: var(--graphite); opacity: .7; }
+.cab .sysx-inp > input:focus,
+.cab .sysx-inp > textarea:focus { border-color: var(--data); }
+.cab .sysx-inp > input:read-only { background: var(--mist); color: var(--graphite); }
 .cab-auth-err { color: var(--alert); font-size: 12.5px; }
 
 /* ── Каркас ── */
