@@ -35,7 +35,7 @@ function Hero() {
             <Hand className="text-brand block mb-6">…геніально ж, правда?</Hand>
             <p className="max-w-xl text-[17px] leading-relaxed font-semibold mb-9">
               Ми вчимо будувати e-commerce як систему: від будови кошика до крісла директора.
-              12 рівнів, зібраних із сотень реальних аудитів — а не з чужих презентацій.
+              16 рівнів, зібраних із сотень реальних аудитів — а не з чужих презентацій.
             </p>
             <div className="flex flex-wrap gap-4">
               <ComicButton to="/courses">Обрати курс</ComicButton>
@@ -71,7 +71,7 @@ function Hero() {
             rotate={-12}
             size={110}
           >
-            12 рівнів
+            16 рівнів
           </Burst>
         </motion.div>
       </div>
@@ -299,7 +299,7 @@ export default function Home() {
         items={[
           'Стратегія → Система → Результат',
           'Від новачка до E-Commerce Director',
-          '12 рівнів · 114 модулів · 1325 питань',
+          `${TOTALS.levels} рівнів · ${TOTALS.modules} модулів · ${TOTALS.questions} питань`,
         ]}
       />
       <WhoYouBecome />

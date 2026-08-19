@@ -1,5 +1,6 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { courseById, courseLevels, courseStats, fmtPrice, levelsLabel } from '../data/courses';
+import CourseCard from '../components/CourseCard';
 import { Guarantee, Included, TrustStrip } from '../components/Trust';
 import {
   ComicButton,
@@ -126,13 +127,48 @@ export default function CourseDetail() {
           ))}
         </div>
 
+        <Pop className="mt-14">
+          <Eyebrow>Практика і матеріали</Eyebrow>
+          <H2>
+            Зробиш <span className="yellowmark">руками</span>, а не «прослухаєш»
+          </H2>
+        </Pop>
+        <div className="grid md:grid-cols-2 gap-6 mt-6">
+          {course.practice.map((p, i) => (
+            <Pop key={p} delay={(i % 2) * 0.08}>
+              <div className="comic-border bg-white hard-shadow-sm p-6 h-full flex gap-4 items-start">
+                <span className="shrink-0 inline-flex items-center justify-center w-9 h-9 comic-border bg-brand text-white font-oswald font-bold text-[16px]">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <p className="text-[14.5px] leading-relaxed font-semibold">{p}</p>
+              </div>
+            </Pop>
+          ))}
+        </div>
       </Section>
 
       <TrustStrip />
       <Included />
       <Guarantee />
 
-      <Section className="!pt-0">
+      {course.next && courseById(course.next) && (
+        <Section className="!py-0">
+          <Pop>
+            <Eyebrow>Куди далі</Eyebrow>
+            <H2 className="!mb-2">
+              Наступний крок <span className="redmark">шляху</span>
+            </H2>
+            <Hand className="text-brand block mb-8">курс — не тупик, а сходинка.</Hand>
+          </Pop>
+          <div className="grid md:grid-cols-2 gap-7">
+            <Pop delay={0.08}>
+              <CourseCard course={courseById(course.next)!} />
+            </Pop>
+          </div>
+        </Section>
+      )}
+
+      <Section>
         <Pop>
           <div className="comic-border bg-sun hard-shadow p-8 md:p-10 text-center">
             <H2 className="!mb-3">Звучить як твій курс?</H2>

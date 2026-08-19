@@ -74,10 +74,9 @@ export default function ProgramPage() {
 
         <Pop className="mt-14">
           <div className="comic-border bg-brand halftone-red text-white hard-shadow p-8 md:p-12 text-center">
-            <H2 className="text-white !mb-3">Пройшов усі 12 рівнів?</H2>
+            <H2 className="text-white !mb-3">Пройшов усі 16 рівнів?</H2>
             <p className="font-semibold text-[15px] text-white/85 max-w-xl mx-auto mb-7">
-              Ти готовий до ролі E-Commerce Director, незалежного експерта й архітектора e-commerce
-              систем.
+              Ти готовий до ролі E-Commerce Director, незалежного експерта й архітектора e-commerce систем — із захищеним капстоуном у портфоліо.
             </p>
             <ComicButton to="/courses" variant="ink">
               Обрати свій курс
