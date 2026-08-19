@@ -178,9 +178,14 @@ const server = createServer(async (req, res) => {
   if (path === '/health') { json(res, 200, { ok: true, hasKey: hasKey(), knowledge: await knowledgeCount(), store: storeEnabled() }); return; }
   if (req.method === 'GET' && (path === '/' || path === '/admin')) { cors(res); res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); res.end(CONSOLE_HTML); return; }
 
-  // ниже — только по токену
-  const token = (req.headers['x-audit-token'] as string) || url.searchParams.get('t') || '';
-  if (TOKEN && token !== TOKEN) { json(res, 401, { ok: false, error: 'Неверный токен доступа' }); return; }
+  // ниже — только по токену. FAIL-CLOSED: пустой AUDIT_SERVER_TOKEN не «открывает» сервер,
+  // а ОТКЛЮЧАЕТ защищённые маршруты (иначе незаконфигуренный деплой полностью открыт — SSRF/
+  // выгрузка чужих результатов). Токен принимаем только из заголовка (query ?t= — лишь для
+  // ссылок-скачиваний файлов, чтобы не текло в логи прокси на API-маршрутах).
+  const isFileDownload = req.method === 'GET' && /^\/(result|job)\//.test(path);
+  const token = (req.headers['x-audit-token'] as string) || (isFileDownload ? url.searchParams.get('t') || '' : '');
+  if (!TOKEN) { json(res, 503, { ok: false, error: 'Сервер не сконфигурирован: AUDIT_SERVER_TOKEN не задан — защищённые маршруты отключены.' }); return; }
+  if (token !== TOKEN) { json(res, 401, { ok: false, error: 'Неверный токен доступа' }); return; }
 
   // Чанк-загрузка резервных скриншотов: по одному файлу на запрос (чтобы не слать
   // 50 файлов одним огромным телом — прокси Railway рвёт большие запросы → «Failed to fetch»).

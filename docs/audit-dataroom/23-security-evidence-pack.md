@@ -33,16 +33,37 @@ grep по репозиторию (`sk-ant-`, `AIza…`, `-----BEGIN`, JWT, дл�
 ключей/токенов/приватных ключей не найдено**; `.env` не в гите. Единственное — личный e-mail
 `pashasidorenko18@gmail.com` как дефолтный контакт (PII, не секрет). Метод: Test (раздел 05).
 
-## E-06c · Penetration test / SAST / DAST (⛔ не проведён)
+## E-06c · Security assessment (white-box, целевой) — проведён 🟡
 
-Формального пентеста и SAST/DAST **нет** (E-06 = gap). Приоритетные цели (из раздела 05):
-- **SSRF** в `portal/api/fetch.js` и `aqc.js` (произвольный URL от клиента, без allowlist) — S-5.
-- **Открытый движок** при пустом `AUDIT_SERVER_TOKEN` — S-1.
-- **RLS-обход** — проверить корректность политик (граница между клиентами) — S-10/EV-10.
+Проведён ручной **source-grounded white-box** разбор трёх приоритетных поверхностей (SSRF,
+auth-токен, RLS). Инструментальный прогон **Strix** в текущем окружении не выполнялся
+(нет Docker для OSS CLI и нет `STRIX_API_TOKEN` для Cloud) — команды для авторитетного
+прогона ниже. Полный структурированный список — `security-assessment-findings.json`.
 
-**План:** прогнать пентест доступным инструментом (в окружении есть скилл strix —
-penetration-testing-with-strix / ci-security-scanning), плюс SAST на `portal/api/*`. Приложить
-отчёт + remediation-evidence сюда. Владелец: SEC. Это стандартное SOC 2 доказательство.
+Итог: **0 critical, 3 high, 1 medium, 1 low, 1 info**. Два high-риска **исправлены в коде**.
+
+| ID | Находка | Severity | Статус | Где / фикс |
+|----|---------|----------|--------|------------|
+| WEEXP-2026-001 | **SSRF**: серверный fetch произвольного URL без allowlist | high (7.7) | ✅ fixed | `portal/api/_ssrfGuard.js` (блок приватных/metadata/внутренних + DNS-резолв + валидация редиректов), применён в `fetch.js`/`aqc.js` |
+| WEEXP-2026-002 | **Fail-open auth**: пустой `AUDIT_SERVER_TOKEN` открывает защищённые маршруты | high (8.2) | ✅ fixed | `server.ts`: fail-closed (503), токен только из заголовка |
+| WEEXP-2026-003 | Токен в query `?t=` → в логи прокси | medium | 🟡 mitigated | `server.ts`: query разрешён только для ссылок-скачиваний (/result,/job) |
+| WEEXP-2026-004 | Wildcard CORS `*` | low | принят | bearer-заголовок, cookies не используются |
+| WEEXP-2026-005 | `xlsx` (SheetJS) proto-pollution/ReDoS на загруженных Excel | high | ⛔ open | `questionnaire.ts` — заменить/изолировать (R-16, OQ-01) |
+| WEEXP-2026-RLS | Проверка RLS (граница между клиентами) | info | ✅ no-finding | `schema.sql`: RLS корректен, `client_locked` не обходится (есть drop policy перед lock-версиями) |
+
+**PoC (пример SSRF, до фикса):** `GET /api/fetch?url=http://169.254.169.254/latest/meta-data/`
+возвращал тело внутреннего адреса. После фикса — `400 URL отклонён SSRF-защитой
+(ssrf:private-ip)`. Проверено юнит-тестом guard: metadata/localhost/loopback/10.x/192.168/
+IPv6-loopback/file: — блокируются; публичный хост — проходит.
+
+**Остаётся (⛔):** авторитетный инструментальный прогон + SAST/DAST + замена `xlsx`.
+Запуск Strix (OSS CLI, нужен Docker + LLM-ключ):
+```bash
+export STRIX_LLM="anthropic/claude-..."; export LLM_API_KEY="<key>"
+strix -n -t ./ -t https://staging.weexp.agency --scan-mode standard --max-budget 15 \
+  --instruction "Focus: SSRF in portal/api/fetch.js & aqc.js, auth on worker server, Supabase RLS."
+```
+или Cloud (`STRIX_API_TOKEN` с app.strix.ai). Отчёт + SARIF приложить сюда. Владелец: SEC.
 
 ## E-06d · Access review / rotation (⛔)
 

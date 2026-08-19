@@ -24,7 +24,9 @@ Test = запуск теста/скана · Vendor = аттестация су�
 | EV-07 | Регрессия качества ловится после изменений | `worker/golden/` + `scripts/goldenCheck.ts` | код | Test | 🟡 (харнес есть, baseline не снят) | ENG | R-08 |
 | EV-08 | Зависимости без критических уязвимостей | `npm audit` (раздел 23) | скан | Test | ✅ (проведён: 3 high worker, 2 high+3 mod portal) | SEC | R-16 |
 | EV-09 | Секреты не в репозитории | grep-скан (раздел 05, 23) | скан | Test | ✅ | SEC | — |
-| EV-10 | Разграничение клиентов (RLS) | `portal/supabase/schema.sql` | код | Code | 🟡 (RLS описан; не пентестирован) | SEC | R-01 |
+| EV-10 | Разграничение клиентов (RLS) | `portal/supabase/schema.sql` | код | Code | ✅ (проверено: RLS на всех табл./bucket, client_locked не обходится) | SEC | R-01 |
+| EV-28 | SSRF закрыт (валидация URL/DNS/редиректов) | `portal/api/_ssrfGuard.js` + юнит-тест | код | Test | ✅ (metadata/private/loopback блокируются) | SEC | R-02 |
+| EV-29 | Auth fail-closed при пустом токене | `worker/src/server.ts` | код | Code | ✅ (503 вместо открытого сервера) | SEC | R-01 |
 | EV-11 | Пароли клиента не хранятся | `AccessPage.tsx`, PrivacyPage; отсутствие полей паролей | код | Code | ✅ | SEC | — |
 | EV-12 | Субпроцессоры перечислены, DPA оформлены | раздел 06 (список) / DPA (раздел 26) | док | Doc | ⛔ (DPA не подписаны) | LEG | R-07 |
 | EV-13 | Бэкапы и restore протестированы | BCDR (раздел 25) | док/тест | Test | ⛔ (restore-тест не проведён) | OPS | R-06 |
