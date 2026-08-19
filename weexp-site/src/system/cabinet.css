@@ -55,6 +55,14 @@
 .cab-signout:hover { color: var(--alert); }
 
 .cab-main { padding: clamp(28px, 4vw, 56px); max-width: 1080px; }
+
+/* Кабінет рендериться під фіксованою шапкою сайту (SystemShell). На десктопі
+   зсуваємо контент нижче шапки, щоб бренд сайдбара «WEEXP кабінет» не накладався
+   на бренд шапки «WEEXP system». Мобільна розкладка (≤900px) має свій layout. */
+@media (min-width: 901px) {
+  .cab:not(.cab-gate) { padding-top: 68px; }
+  .cab-side { top: 68px; height: calc(100vh - 68px); }
+}
 .cab-sec { display: flex; flex-direction: column; gap: 22px; animation: cab-in var(--dur-mid) var(--ease-cine); }
 @keyframes cab-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .cab-sec-head { display: flex; flex-direction: column; gap: 8px; }
