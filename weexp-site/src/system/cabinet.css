@@ -18,7 +18,10 @@
 .cab-brand { display: flex; align-items: baseline; gap: 8px; text-decoration: none; color: var(--deep); padding: 0 8px 22px; }
 .cab-brand b { font-family: var(--display); font-size: 22px; letter-spacing: -.01em; }
 .cab-brand span { color: var(--graphite); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; }
-.cab-nav { display: flex; flex-direction: column; gap: 18px; flex: 1; overflow-y: auto; }
+/* Скоупимо під .cab: імена .cab-nav/.cab-actions/.cab-badge також визначені в
+   system.css для акаунт-бару Stage3 (який порталиться в <body>, поза .cab).
+   Вища специфічність .cab .* гарантує, що кожна частина тримає свій стиль. */
+.cab .cab-nav { display: flex; flex-direction: column; gap: 18px; flex: 1; overflow-y: auto; }
 .cab-nav-g { display: flex; flex-direction: column; gap: 2px; }
 .cab-nav-gl { color: var(--graphite); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; padding: 4px 8px; }
 .cab-nav-i { display: flex; align-items: center; justify-content: space-between; gap: 8px; text-align: left;
@@ -77,7 +80,7 @@
 .cab-audit-top b { font-size: 15px; color: var(--deep); }
 .cab-audit-v { font-size: clamp(26px, 3.4vw, 38px); color: var(--deep); line-height: 1; }
 .cab-audit-v i { font-style: normal; font-size: .42em; color: var(--graphite); margin-left: 5px; }
-.cab-badge { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--graphite);
+.cab .cab-badge { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--graphite);
   background: var(--mist); border: 1px solid var(--line); border-radius: 20px; padding: 3px 9px; }
 
 /* ── Форми ── */
@@ -88,7 +91,7 @@
   cursor: pointer; font: inherit; font-size: 13px; color: var(--charcoal); transition: all var(--dur-fast); }
 .cab-chip:hover { border-color: var(--graphite); }
 .cab-chip.on { background: var(--deep); color: var(--pure-white); border-color: var(--deep); }
-.cab-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.cab .cab-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .cab-saved { color: #2e7d32; font-size: 12.5px; }
 
 /* ── Доступи T1–T4 ── */
