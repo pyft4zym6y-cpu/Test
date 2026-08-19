@@ -12,6 +12,7 @@ import Faq from './pages/Faq';
 import Contacts from './pages/Contacts';
 import { Privacy, Terms } from './pages/Legal';
 import NotFound from './pages/NotFound';
+import { Seo } from './seo';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -21,13 +22,12 @@ function ScrollToTop() {
   return null;
 }
 
-// Прод — BrowserRouter (чисті URL для SEO, rewrites у vercel.json).
-// Демо-збірка одним файлом — HashRouter: VITE_HASH_ROUTER=1 npm run build
-const Router = import.meta.env.VITE_HASH_ROUTER === '1' ? HashRouter : BrowserRouter;
-
-export default function App() {
+// Спільна оболонка: використовується клієнтом (BrowserRouter/HashRouter)
+// і пререндером (StaticRouter в entry-server.tsx)
+export function AppShell() {
   return (
-    <Router>
+    <>
+      <Seo />
       <ScrollToTop />
       <div className="font-manrope min-h-screen flex flex-col">
         <Nav />
@@ -48,6 +48,18 @@ export default function App() {
         </main>
         <Footer />
       </div>
+    </>
+  );
+}
+
+// Прод — BrowserRouter (чисті URL для SEO, rewrites у vercel.json).
+// Демо-збірка одним файлом — HashRouter: VITE_HASH_ROUTER=1 npm run build
+const Router = import.meta.env.VITE_HASH_ROUTER === '1' ? HashRouter : BrowserRouter;
+
+export default function App() {
+  return (
+    <Router>
+      <AppShell />
     </Router>
   );
 }

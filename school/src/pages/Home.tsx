@@ -5,6 +5,7 @@ import { SCHOOL } from '../data/school';
 import CourseCard from '../components/CourseCard';
 import CareerTrack from '../components/CareerTrack';
 import { Guarantee, Results, TrustStrip } from '../components/Trust';
+import { JsonLd, organizationLd } from '../seo';
 import {
   Bubble,
   Burst,
@@ -294,6 +295,7 @@ function CtaStrip() {
 export default function Home() {
   return (
     <>
+      <JsonLd data={organizationLd()} />
       <Hero />
       <Marquee
         items={[

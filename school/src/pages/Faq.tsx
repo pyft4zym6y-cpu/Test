@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { FAQ } from '../data/school';
 import { ComicButton, PageHead, Pop, Section } from '../components/comic';
+import { faqLd, JsonLd } from '../seo';
 
 export default function Faq() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
     <>
+      <JsonLd data={faqLd()} />
       <PageHead
         eyebrow="FAQ"
         title={

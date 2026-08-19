@@ -2,6 +2,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import { courseById, courseLevels, courseStats, fmtPrice, levelsLabel } from '../data/courses';
 import CourseCard from '../components/CourseCard';
 import { Guarantee, Included, TrustStrip } from '../components/Trust';
+import { breadcrumbLd, courseLd, JsonLd } from '../seo';
 import {
   ComicButton,
   Eyebrow,
@@ -22,6 +23,8 @@ export default function CourseDetail() {
 
   return (
     <>
+      <JsonLd data={courseLd(course.id)!} />
+      <JsonLd data={breadcrumbLd(course.id, course.name)} />
       <Section className="halftone !pb-12 pt-28 md:pt-36">
         <Pop>
           <Link
