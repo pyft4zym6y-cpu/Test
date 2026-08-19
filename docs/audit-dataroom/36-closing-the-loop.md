@@ -81,7 +81,9 @@ DATA (достижимость, страницы) → EVIDENCE (покрытие
 | 17 | Sensitivity Analysis | ⛔ roadmap (на money-модели) |
 | 18 | Uncertainty Budget | 🟡 confidence/exposure есть; доверительный интервал результата — roadmap |
 | 19 | Audit Coverage Map | ✅ реализовано (`quality.ts`) |
-| 20 | Learning Core | ⛔ roadmap — см. ниже |
+| 20 | Learning Core | ✅ конвейер реализован (`learning/`) — калибровка/паттерны/бенчмарки/авто-golden — см. раздел 37 |
+| 7 | Confidence Calibration | ✅ реализовано (Learning Core калибровка + ECE) |
+| 6 | Benchmark Intelligence (distribution) | 🟡 эмпирические распределения + `clientPercentile` (Learning Core); подключить в отчёт |
 
 ## Learning Core (главный недостающий уровень)
 
