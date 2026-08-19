@@ -132,9 +132,22 @@
 
 @media (max-width: 900px) {
   .cab:not(.cab-gate) { grid-template-columns: 1fr; }
-  .cab-side { position: static; height: auto; flex-direction: column; border-right: none; border-bottom: 1px solid var(--line); }
-  .cab-nav { flex-direction: row; flex-wrap: wrap; overflow: visible; }
-  .cab-nav-g { flex-direction: row; flex-wrap: wrap; align-items: center; }
+  /* Верхній блок кабінету: під фіксованою шапкою сайту, без дубля бренду,
+     розділи — рівною стрічкою однакових чіпів (а не мішанина текст+пілюля). */
+  .cab-side { position: static; height: auto; flex-direction: column; border-right: none;
+    border-bottom: 1px solid var(--line); background: var(--pure-white); gap: 12px;
+    padding: calc(60px + env(safe-area-inset-top)) 16px 14px; }
+  .cab-brand { display: none; }                     /* бренд «WEEXP» уже є в шапці сайту */
+  .cab .cab-nav { flex: none; flex-direction: row; flex-wrap: wrap; gap: 8px; overflow: visible; }
+  .cab-nav-g { display: contents; }                 /* прибираємо групи — єдина рівна стрічка */
   .cab-nav-gl { display: none; }
+  .cab-nav-i { width: auto; flex: 0 0 auto; justify-content: flex-start; gap: 6px; font-size: 13.5px;
+    border: 1px solid var(--line); border-radius: 100px; padding: 8px 14px; background: var(--pure-white); }
+  .cab-nav-i:hover { background: var(--pure-white); }
+  .cab-nav-i.on { background: var(--deep); color: var(--pure-white); border-color: var(--deep); }
+  .cab-side-foot { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center;
+    gap: 4px 14px; padding: 12px 2px 0; margin-top: 2px; }
+  .cab-user { max-width: 60vw; }
+  .cab-signout { padding: 0; }
   .cab-cards, .cab-audits, .cab-grid2, .cab-depths { grid-template-columns: 1fr; }
 }
