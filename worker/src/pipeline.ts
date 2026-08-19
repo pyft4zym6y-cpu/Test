@@ -167,6 +167,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
   const debugLog: string[] = [];
   const log = (m: string) => { if (/⚠️|✖/.test(m)) debugLog.push(m.replace(/^[⚠️✖]+\s*/, '')); baseLog(m); };
   const metrics: AuditMetrics = { compliance: null, confidence: null, health: null, benchmarkIndex: null, aqcFails: null, potentialYear: null };
+  const t0 = Date.now(); // старт прогона — для durationMs в Audit Run Record
   const prelaunch = Boolean(opts.prelaunch);
   const tier: Tier = prelaunch ? 0 : ((opts.tier ?? 1) as Tier);
   const site = normalizeUrl(opts.site ?? '');
@@ -795,6 +796,45 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
     const files = (await readdir(dir)).sort();
     const cs = client.pages.filter((p) => p.score !== null);
     metrics.compliance = cs.length ? Math.round(cs.reduce((s, p) => s + (p.score ?? 0), 0) / cs.length) : null;
+
+    // ── AUDIT RUN RECORD: воспроизводимость и трассируемость прогона. ──
+    // Штампует версию методологии/движка/модели, снимок входа (+hash), статусы модулей,
+    // счётчики находок и покрытие доказательствами. См. data room: 18-audit-run-record.
+    try {
+      const { buildRunRecord } = await import('./runrecord.js');
+      const reg = registry ?? [];
+      const withEvidence = reg.filter((f) => f.evidence && (f.evidence.url || f.evidence.dom || f.evidence.test || f.evidence.screenshot)).length;
+      const avgConf = reg.length ? Math.round((reg.reduce((s, f) => s + f.confidence, 0) / reg.length) * 100) / 100 : null;
+      const compPages = (comps as { pages?: { error?: unknown }[] }[]).reduce((s, c) => s + (c?.pages?.filter((p) => !p.error).length ?? 0), 0);
+      const snap = { site: site || null, tier, takenAt: ds.takenAt, pages: client.pages.map((p) => ({ url: p.url, score: p.score })) };
+      const rr = buildRunRecord({
+        auditId: id, client: clientName(ds), tier, takenAt: ds.takenAt,
+        generatedAt: new Date().toISOString(), durationMs: Date.now() - t0,
+        config: {
+          agentic: Boolean(opts.agentic), prelaunch, premium: Boolean(opts.premium),
+          webSearch: process.env.AUDIT_WEB_SEARCH !== '0', hasApiKey: hasKey(),
+        },
+        input: {
+          site: site || null, competitors: comps.length,
+          pagesCrawled: client.pages.filter((p) => !p.error).length, competitorPagesCrawled: compPages,
+          backupScreenshots: Boolean((opts as Record<string, unknown>).backupPdf || (opts as Record<string, unknown>).backupFiles || (opts as Record<string, unknown>).uploadBatch),
+          answersProvided: Boolean(opts.answers), dataSnapshot: snap,
+        },
+        files,
+        findings: reg.length ? {
+          total: reg.length,
+          p0: reg.filter((f) => f.priority === 'P0').length,
+          p1: reg.filter((f) => f.priority === 'P1').length,
+          p2: reg.filter((f) => f.priority === 'P2').length,
+          evidenceCoverage: Math.round((withEvidence / reg.length) * 100) / 100,
+          avgConfidence: avgConf,
+        } : {},
+        metrics: metrics as unknown as Record<string, unknown>,
+      });
+      await writeFile(join(dir, 'audit-run-record.json'), JSON.stringify(rr, null, 2), 'utf8');
+      log(`✓ Audit Run Record: методология ${rr.methodologyVersion}, модулей вып. ${rr.modules.executed.length}, находок ${rr.findings.total}, evidence-покрытие ${rr.findings.evidenceCoverage ?? '—'}`);
+    } catch (e) { log(`⚠️ Audit Run Record не собрался (${String(e).slice(0, 140)})`); }
+
     const parts = [`${files.length} файлов`];
     if (metrics.compliance != null) parts.push(`соответствие ${metrics.compliance}%`);
     if (engine?.score != null) parts.push(`Health Score ${engine.score}/100`);
