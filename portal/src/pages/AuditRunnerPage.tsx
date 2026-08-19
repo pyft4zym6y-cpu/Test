@@ -107,11 +107,12 @@ export default function AuditRunnerPage() {
         </label>
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
           <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            <span className="qid">Тир</span>
+            <span className="qid">Глубина</span>
             <select value={tier} onChange={(e) => setTier(Number(e.target.value))} disabled={prelaunch}>
-              <option value={1}>T1 · только сайт</option>
-              <option value={2}>T2 · + конкуренты</option>
-              <option value={3}>T3 · + данные</option>
+              <option value={1}>T1 · экспресс (только сайт)</option>
+              <option value={2}>T2 · + аналитика и поиск</option>
+              <option value={3}>T3 · + бизнес-данные</option>
+              <option value={4}>T4 · полный (живые доступы)</option>
             </select>
           </label>
           <label style={{ display: 'flex', gap: 6, alignItems: 'center' }} className="qid">

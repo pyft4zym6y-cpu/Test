@@ -1,0 +1,5 @@
+sku;title;category;subcategory;brand;price_uah;cost_uah;stock_qty;is_active;first_seen_date;supplier
+SKU-15;Кросівки Model A;Взуття;Кросівки;BrandX;1200;540;38;yes;2024-03-01;Постачальник 1
+SKU-88;Куртка Winter Pro;Одяг;Куртки;BrandY;2400;1080;12;yes;2024-09-15;Постачальник 2
+SKU-90;Рюкзак City 20L;Аксесуари;Рюкзаки;BrandX;900;360;0;yes;2023-11-20;Постачальник 1
+SKU-91;Шапка Merino;Аксесуари;Головні убори;BrandZ;450;150;120;no;2024-01-10;Постачальник 3
