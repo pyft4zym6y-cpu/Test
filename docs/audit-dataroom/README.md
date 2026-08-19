@@ -64,6 +64,7 @@ System) и выпускает пакет отчётов (PDF/XLSX).
 | 33 | Product KPI Framework | [`33-product-kpi-framework.md`](./33-product-kpi-framework.md) | Measurement |
 | 34 | Open Questions & Owner Register | [`34-open-questions-and-owner-register.md`](./34-open-questions-and-owner-register.md) | журнал P0/P1 |
 | 35 | Industry Landscape & Learning Sources | [`35-industry-landscape-and-learning-sources.md`](./35-industry-landscape-and-learning-sources.md) | ресёрч: конкуренты + кого читать |
+| 36 | Closing the Loop | [`36-closing-the-loop.md`](./36-closing-the-loop.md) | ✅ код: Meta-Audit, Quality Gate, ARS, PII, cost; roadmap до 10/10 |
 
 ---
 
