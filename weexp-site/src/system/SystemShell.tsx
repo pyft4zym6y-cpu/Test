@@ -9,13 +9,14 @@ import './system.css';
  * (іконки) та класичний бургер, що відкриває повне меню. Fixed-overlay, аби
  * липкі WebGL-сцени під нею жили як є.
  */
+// «Кабінет» свідомо не в меню: він представлений іконкою-акаунтом у шапці,
+// щоб не дублювати вхід. LINKS — і для десктоп-навігації, і для мобільного меню.
 const LINKS = [
   { to: '/', label: 'Система' },
   { to: '/proof', label: 'Докази' },
   { to: '/expansion', label: 'Експансія' },
   { to: '/people', label: 'Команда' },
   { to: '/diagnose', label: 'Діагностика' },
-  { to: '/cabinet', label: 'Кабінет' },
   { to: '/contact', label: 'Контакт' },
 ];
 
@@ -68,8 +69,10 @@ export function SystemShell() {
             <NavLink key={l.to} to={l.to} end={l.to === '/'} className={({ isActive }) => 'sysh-link mono' + (isActive ? ' is-on' : '')}>{l.label}</NavLink>
           ))}
         </nav>
-        <Link to="/cabinet" className={'sysh-account' + (isActive('/cabinet') ? ' is-on' : '')} aria-label="Особистий кабінет" title="Кабінет"><Icon d={I.user} /></Link>
-        <Link to="/diagnose" className="sysh-cta mono">Діагностика →</Link>
+        <div className="sysh-right">
+          <Link to="/cabinet" className={'sysh-account' + (isActive('/cabinet') ? ' is-on' : '')} aria-label="Особистий кабінет" title="Кабінет"><Icon d={I.user} /></Link>
+          <Link to="/diagnose" className="sysh-cta mono">Діагностика →</Link>
+        </div>
         <button className="sysh-burger" aria-label="Меню" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
           <Icon d={I.menu} />
         </button>

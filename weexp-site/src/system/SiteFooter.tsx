@@ -46,7 +46,6 @@ export function SiteFooter() {
       </div>
       <div className="sfoot-bottom mono">
         <span>© {year} WEEXP</span>
-        <span className="sfoot-build" title="Час збірки — видно, що деплой застосувався">build {__BUILD_TIME__}</span>
       </div>
     </footer>
   );

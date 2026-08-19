@@ -206,6 +206,8 @@
 .sysh-account svg { width: 19px; height: 19px; }
 .sysh-account:hover { border-color: var(--sh-graphite); color: var(--sh-deep); transform: translateY(-1px); }
 .sysh-account.is-on { border-color: var(--sh-deep); color: var(--sh-deep); }
+/* Іконка-кабінет і кнопка «Діагностика» — одна щільна група праворуч. */
+.sysh-right { display: inline-flex; align-items: center; gap: 10px; flex: 0 0 auto; }
 .sysh-tabs, .sysh-sheet { display: none; }
 
 @media (max-width: 720px) {
@@ -215,7 +217,8 @@
 @media (max-width: 860px) {
   .sysh-links, .sysh-nav .sysh-cta { display: none; }
   .sysh-burger { display: inline-flex; }
-  .sysh-account { margin-left: auto; width: 36px; height: 36px; }   /* акаунт тулиться до бургера справа */
+  .sysh-right { margin-left: auto; }   /* група акаунта тулиться до бургера справа */
+  .sysh-account { width: 36px; height: 36px; }
 
   /* Нижня app-панель — напівпрозора «окантовка» з ключовими сторінками */
   .sysh-tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 62;
