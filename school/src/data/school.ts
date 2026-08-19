@@ -48,6 +48,11 @@ export const SCHOOL = {
     linkedin: 'https://linkedin.com/in/pvsidorenko',
   },
 
+  // Соцмережі школи
+  social: {
+    linkedin: 'https://www.linkedin.com/company/commerce-architecture-school/',
+  },
+
   // Кар'єрний трек: найкращим учасникам — офер у партнерську агенцію
   career: {
     partner: 'weexp.agency',

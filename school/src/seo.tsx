@@ -188,7 +188,7 @@ export function organizationLd() {
       jobTitle: SCHOOL.founder.role,
       sameAs: [SCHOOL.founder.linkedin],
     },
-    sameAs: [SCHOOL.contacts.linkedin],
+    sameAs: [SCHOOL.social.linkedin, SCHOOL.contacts.linkedin],
   };
 }
 
