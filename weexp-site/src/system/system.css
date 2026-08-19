@@ -1356,17 +1356,24 @@
   .sysx-explorer .sysx-object3d { display: block; position: absolute; inset: 0; touch-action: pan-y; }
   /* Інтро на весь екран: текст зверху, а «значки»-систем — акуратною стрічкою знизу */
   .sxp-intro { position: absolute; inset: 0; left: 0; right: 0; top: 0; max-width: none; transform: none;
-    display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;
-    padding: calc(60px + env(safe-area-inset-top)) 22px calc(64px + env(safe-area-inset-bottom)); }
-  .sxp-intro.is-hidden { opacity: 0; transform: translateY(-8px); }
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px;
+    padding: calc(150px + env(safe-area-inset-top)) 22px calc(64px + env(safe-area-inset-bottom)); }
+  /* Обрано систему: ховаємо ЛИШЕ текст інтро; стрічка вибору лишається вгорі й завжди доступна. */
+  .sxp-intro.is-hidden { opacity: 1; transform: none; }
+  .sxp-intro.is-hidden > .sysx-kick,
+  .sxp-intro.is-hidden > .sxp-h,
+  .sxp-intro.is-hidden > .sxp-lead,
+  .sxp-intro.is-hidden > .sxp-hint { opacity: 0; transform: translateY(-8px); pointer-events: none;
+    transition: opacity .35s var(--ease-cine), transform .35s var(--ease-cine); }
   .sxp-h { font-size: clamp(28px, 8vw, 46px); }
   .sxp-lead { max-width: 34ch; }
-  /* Стрічка систем: один рядок, горизонтальний скрол, тулиться донизу */
-  .sxp-picker { margin-top: auto; width: 100%; max-width: none; flex-wrap: nowrap; overflow-x: auto;
-    gap: 8px; padding: 10px 2px 2px; justify-content: flex-start; scroll-snap-type: x proximity;
-    -webkit-overflow-scrolling: touch; scrollbar-width: none; -webkit-mask-image: linear-gradient(90deg, transparent, #000 18px, #000 calc(100% - 18px), transparent); }
-  .sxp-picker::-webkit-scrollbar { display: none; }
-  .sxp-pick { flex: 0 0 auto; scroll-snap-align: start; font-size: 12px; padding: 8px 13px; background: rgba(255,255,255,.9); }
+  /* Стрічка систем: 2 ряди (перенос замість скролу), закріплена ВГОРІ — над нижнім
+     шитом-панеллю, тож і чіпи, і панель завжди доступні одночасно. */
+  .sxp-picker { position: absolute; top: calc(62px + env(safe-area-inset-top)); left: 0; right: 0; margin: 0;
+    width: auto; max-width: none; flex-wrap: wrap; overflow: visible; justify-content: center; gap: 8px;
+    padding: 10px 14px; z-index: 6; pointer-events: auto; -webkit-mask-image: none; mask-image: none; }
+  .sxp-pick { flex: 0 0 auto; font-size: 12px; padding: 8px 13px; background: rgba(255,255,255,.92);
+    box-shadow: 0 6px 18px -12px rgba(21,23,26,.45); }
   /* Деталь-панель — суцільний нижній шит (не просвічує обʼєкт) */
   .sxp-panel { top: auto; bottom: 0; left: 0; right: 0; transform: none; width: auto; border-radius: 20px 20px 0 0;
     background: color-mix(in srgb, var(--pure-white) 97%, transparent); backdrop-filter: blur(6px);
