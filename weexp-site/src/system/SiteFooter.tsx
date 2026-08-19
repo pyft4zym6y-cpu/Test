@@ -26,6 +26,13 @@ export function SiteFooter() {
           <b>WEEXP</b>
           <span className="sfoot-tag">Система замість героїзму</span>
         </div>
+        <div className="sfoot-school">
+          <span className="sfoot-school-l">Освітній напрям</span>
+          <a href="https://school.weexp.agency/" target="_blank" rel="noopener noreferrer" className="sfoot-school-a">
+            Commerce Architecture · Школа <i aria-hidden="true">↗</i>
+          </a>
+          <span className="sfoot-school-d">Від новачка до E-Commerce Director</span>
+        </div>
         <nav className="sfoot-nav" aria-label="Підвал">
           {NAV.map((l) => <Link key={l.to} to={l.to} className="sfoot-link">{l.label}</Link>)}
         </nav>
