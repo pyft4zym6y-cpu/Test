@@ -130,6 +130,14 @@
   background: var(--pure-white); }
 .cab-deep-wrap .sysx-calc, .cab-deep-wrap .s2, .cab-deep-wrap .s3 { margin: 0; }
 
+/* Stage3 embedded — рендериться inline в кабінеті (не повноекранний оверлей):
+   знімаємо fixed/inset/100vh/фон, щоб анкета жила всередині .cab-main. */
+.s2.s3-embedded { position: static; inset: auto; z-index: auto; height: auto; min-height: 0;
+  overflow: visible; background: transparent; animation: none; }
+.s3-embedded .s2-quiz { min-height: 0; padding: 0; align-content: start; }
+.s3-embedded .s2-report { padding: 0; }
+.s3-embedded .s2-x { display: none; }
+
 @media (max-width: 900px) {
   .cab:not(.cab-gate) { grid-template-columns: 1fr; }
   /* Верхній блок кабінету: під фіксованою шапкою сайту, без дубля бренду,

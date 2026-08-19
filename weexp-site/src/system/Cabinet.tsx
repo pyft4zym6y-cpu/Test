@@ -132,7 +132,9 @@ export function Cabinet() {
           <section className="cab-sec cab-deep-wrap">
             <SecHead kick="Глибокий аудит · Tier-2" title="Розбір систем магазину" lead="Реєстрація вже пройдена — заповнюйте блоки по секціях. На виході інтерактивний Tier-2 звіт: зрілість, конкурентне поле, маркетинг/фінанси, позиціонування. Прогрес зберігається автоматично." />
             <Suspense fallback={<div className="cab-boot mono">Відкриваємо розбір…</div>}>
-              <Stage3 standalone onClose={() => setSection('overview')} />
+              {/* embedded — рендеримо inline в кабінеті (без повноекранного оверлея),
+                  щоб клієнт лишався в кабінеті, а не «перекидався» на окрему сторінку. */}
+              <Stage3 embedded onClose={() => setSection('overview')} />
             </Suspense>
           </section>
         )}

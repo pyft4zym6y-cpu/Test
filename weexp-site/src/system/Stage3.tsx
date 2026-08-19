@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { eur, project, computeLoss, type LossInput } from './lossModel';
 import { BLOCKS, SECTIONS, LIKE_WHAT, scoreStage3, type Stage3Answers, type RefItem } from './stage3Model';
@@ -38,7 +38,16 @@ const isValidCode = (c: string) => {
 // Впевненість висновку за повнотою даних (Evidence → Confidence).
 const confLabel = (completeness: number) => (completeness >= 70 ? 'висока' : completeness >= 45 ? 'середня' : 'попередня');
 
-export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onClose: () => void; standalone?: boolean }) {
+/**
+ * Рамка кроку. За замовчуванням — повноекранний StepOverlay (портал у <body>,
+ * fixed, блок скролу). У режимі `embedded` (усередині кабінету) рендеримо inline,
+ * щоб клієнт лишався в кабінеті, а не «перекидався» на окрему сторінку.
+ */
+function Frame({ embedded, children }: { embedded?: boolean; children: ReactNode }) {
+  return embedded ? <>{children}</> : <StepOverlay>{children}</StepOverlay>;
+}
+
+export function Stage3({ prior, onClose, standalone, embedded }: { prior?: DiagRecord; onClose: () => void; standalone?: boolean; embedded?: boolean }) {
   const [user, setUser] = useState<DiagUser | null>(null);
   const [checking, setChecking] = useState(true);
   const [email, setEmail] = useState(''); const [pass, setPass] = useState('');
@@ -150,12 +159,12 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
     ? (ans['goal_b'] as number[]).map((i) => goalBlock.options![i]?.label).filter(Boolean) as string[] : [];
 
   /* ── Auth gate ── */
-  if (checking) return <StepOverlay><div className="sysx s2 s3"><div className="s3-auth"><span className="mono">…</span></div></div></StepOverlay>;
+  if (checking) return <Frame embedded={embedded}><div className={'sysx s2 s3' + (embedded ? ' s3-embedded' : '')}><div className="s3-auth"><span className="mono">…</span></div></div></Frame>;
   if (!user) {
     return (
-      <StepOverlay>
-      <div className="sysx s2 s3" role="dialog" aria-label="Етап 3 — кабінет">
-        {standalone
+      <Frame embedded={embedded}>
+      <div className={'sysx s2 s3' + (embedded ? ' s3-embedded' : '')} role="dialog" aria-label="Етап 3 — кабінет">
+        {embedded ? null : standalone
           ? <button className="s2-x mono" onClick={onClose}>✕ Закрити</button>
           : <div className="s2-flowhead"><button className="s2-flowback mono" onClick={onClose}>← Назад до карти</button><FunnelSteps active={5} /></div>}
         <div className="s3-auth">
@@ -178,7 +187,7 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
           </div>
         </div>
       </div>
-      </StepOverlay>
+      </Frame>
     );
   }
 
@@ -217,9 +226,9 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
       setSending(false); setSent(r.mode);
     };
     return (
-      <StepOverlay>
-      <div className="sysx s2 s3" role="dialog" aria-label="Tier-2 звіт">
-        {standalone && user
+      <Frame embedded={embedded}>
+      <div className={'sysx s2 s3' + (embedded ? ' s3-embedded' : '')} role="dialog" aria-label="Tier-2 звіт">
+        {embedded ? null : standalone && user
           ? accountBar(true)
           : <div className="s2-flowhead"><button className="s2-flowback mono" onClick={onClose}>← Назад до карти</button><FunnelSteps active={5} /></div>}
         <div className="s2-report">
@@ -472,7 +481,7 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
         </div>
         {step5On && <Suspense fallback={null}><Stage5 context={s5Ctx} onClose={() => setStep5On(false)} onSaveHistory={saveStep5} /></Suspense>}
       </div>
-      </StepOverlay>
+      </Frame>
     );
   }
 
@@ -499,9 +508,9 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
   const setRefs = (next: RefItem[]) => set(b.id, (next.length ? next : [{ url: '', what: [] }]) as unknown as string[]);
 
   return (
-    <StepOverlay>
-    <div ref={quizRef} className="sysx s2 s3" role="dialog" aria-label="Етап 3 — питання">
-      {standalone && user
+    <Frame embedded={embedded}>
+    <div ref={quizRef} className={'sysx s2 s3' + (embedded ? ' s3-embedded' : '')} role="dialog" aria-label="Етап 3 — питання">
+      {embedded ? null : standalone && user
         ? accountBar(false)
         : <div className="s2-flowhead"><button className="s2-flowback mono" onClick={onClose}>← Назад до карти</button><FunnelSteps active={5} /></div>}
       <div className="s2-quiz s3-flow">
@@ -638,6 +647,6 @@ export function Stage3({ prior, onClose, standalone }: { prior?: DiagRecord; onC
         </div>
       </div>
     </div>
-    </StepOverlay>
+    </Frame>
   );
 }
