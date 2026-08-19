@@ -1,0 +1,43 @@
+{
+  "caseId": "GC-001",
+  "title": "D2C текстиль на OpenCart, внешний обход без доступов (T1)",
+  "anonymized": true,
+  "input": {
+    "site": "https://example-textile.test/",
+    "tier": 1,
+    "mode": "external-crawl",
+    "note": "Обезличенный кейс на основе реального внешнего аудита D2C-магазина текстиля (OpenCart + маркетплейсы). Реальный домен и цифры денег НЕ включены — только наблюдаемые снаружи факты."
+  },
+  "expectedObservations": [
+    { "key": "pagesCrawled", "expected": 31, "tolerance": 6, "verified": true, "source": "КП внешнего обхода, слой L0/A0" },
+    { "key": "pagesMissingProductSchema", "expected": 27, "tolerance": 4, "verified": true, "source": "обход: товарная Schema.org" },
+    { "key": "pagesMissingMetaDescription", "expected": 27, "tolerance": 4, "verified": true, "source": "обход: meta description" },
+    { "key": "pagesMissingReviews", "expected": 18, "tolerance": 4, "verified": true, "source": "обход: отзывы/рейтинг" },
+    { "key": "analyticsStackPresent", "expected": true, "tolerance": null, "verified": true, "source": "обход: GA4/GTM/Meta Pixel/Hotjar/Clarity установлены" },
+    { "key": "checkoutIsWorstPage", "expected": true, "tolerance": null, "verified": true, "source": "обход: чекаут — худшая страница по чек-листу" }
+  ],
+  "expectedMetrics": {
+    "compliance": { "min": 40, "max": 75 },
+    "findingsTotal": { "min": 8, "max": 30 },
+    "p0": { "min": 1, "max": 8 },
+    "evidenceCoverage": { "min": 0.7, "max": 1.0 }
+  },
+  "expectedFindings": [
+    { "theme": "нет товарной микроразметки Schema.org", "minCount": 1, "priorityAtLeast": "P1", "mustHaveEvidence": true },
+    { "theme": "нет meta description на большинстве страниц", "minCount": 1, "priorityAtLeast": "P1", "mustHaveEvidence": true },
+    { "theme": "нет отзывов/рейтинга (контур доверия)", "minCount": 1, "priorityAtLeast": "P1", "mustHaveEvidence": true },
+    { "theme": "чекаут — барьеры конверсии", "minCount": 1, "priorityAtLeast": "P0", "mustHaveEvidence": true },
+    { "theme": "производительность: preconnect/preload/ALT", "minCount": 1, "priorityAtLeast": "P2", "mustHaveEvidence": true }
+  ],
+  "mustNotContain": [
+    "измеренная потеря выручки в гривнах без доступа к GA4",
+    "точная конверсия воронки без данных аналитики",
+    "фактическая маржа без данных о себестоимости"
+  ],
+  "baseline": {
+    "capturedFromRunId": null,
+    "capturedAt": null,
+    "methodologyVersion": "2026.08.1",
+    "reviewer": null
+  }
+}
