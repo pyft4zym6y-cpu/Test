@@ -16,6 +16,7 @@ export interface Course {
   duration: string; // строк навчання
   practice: string[]; // практикуми, шаблони і hands-on всередині курсу
   next?: string; // id наступного курсу в апсел-ланцюжку «Куди далі»
+  expert?: boolean; // преміум-курс з експертного блоку (рівні 13–15)
   featured?: boolean;
 }
 
@@ -87,10 +88,10 @@ export const COURSES: Course[] = [
     levels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
     audience: 'Тим, хто йде повний шлях з нуля до директора й архітектора',
     price: 10100,
-    oldPrice: 11300,
+    oldPrice: 22000,
     duration: '15 місяців',
     practice: [
-      '4 ексклюзивні блоки, яких немає в жодному іншому курсі: Product Management, Omnichannel і B2B, AI Commerce, Capstone',
+      'Усі блоки програми, включно з експертними (окремо вони коштують $22,000) — і Capstone, який не продається окремо',
       'Capstone-проєкт: 24 артефакти власного e-commerce бізнесу — від бізнес-моделі й фінмоделі до IT-архітектури і стратегії на 3 роки',
       'Захист проєкту перед «власником/інвестором» — фінальний екзамен ролі директора',
       'Проміжні «ворота» між блоками: екзамен після кожного треку тримає темп 15 місяців',
@@ -262,6 +263,65 @@ export const COURSES: Course[] = [
     ],
     next: 'full',
     result: 'Продаєте експертизу, ведете кілька проєктів, будуєте бренд',
+  },
+
+  // -------- Експертні курси (рівні 13–15) --------
+  {
+    id: 'product-management',
+    kind: 'targeted',
+    name: 'Product Management в e-commerce',
+    hook: 'Магазин — це продукт. Керуй ним як продакт.',
+    levels: [13],
+    audience: 'Керівникам e-commerce, продактам і власникам, що будують продуктову культуру',
+    price: 3300,
+    duration: '8 тижнів',
+    practice: [
+      'Product roadmap свого магазину: від vision до кварталу',
+      'Пріоритизація реального бэклогу за RICE/ICE із захистом рішень',
+      'North Star Metric і дерево продуктових метрик для свого бізнесу',
+      'Скрипт discovery-інтервʼю і перевірка продуктової гіпотези',
+    ],
+    next: 'ai-commerce',
+    expert: true,
+    result: 'Статус Head of Product: стратегія, discovery, експерименти, метрики',
+  },
+  {
+    id: 'omni-b2b',
+    kind: 'targeted',
+    name: 'Omnichannel і B2B Commerce',
+    hook: 'Один клієнт. Один склад. Одна ціна. Всюди.',
+    levels: [14],
+    audience: 'Ритейлу з офлайном, брендам із дилерами, B2B-виробникам',
+    price: 3500,
+    duration: '8 тижнів',
+    practice: [
+      'Omnichannel P&L: модель економіки всіх каналів разом',
+      'Blueprint Click & Collect і Ship From Store для своєї мережі',
+      'ТЗ на B2B-портал: customer-specific pricing, approval workflows, EDI',
+      'Схема єдиного customer ID між офлайном, сайтом і маркетплейсами',
+    ],
+    next: 'full',
+    expert: true,
+    result: 'Статус Omnichannel Lead: єдина система каналів і B2B-продажі',
+  },
+  {
+    id: 'ai-commerce',
+    kind: 'targeted',
+    name: 'AI Commerce',
+    hook: 'Поки конкуренти «тестують ChatGPT», ти будуєш AI-систему.',
+    levels: [15],
+    audience: 'Директорам і власникам, що впроваджують AI системно, а не хаотично',
+    price: 3900,
+    duration: '8 тижнів',
+    practice: [
+      'AI maturity assessment свого бізнесу і карта use-case-ів з ROI',
+      'Специфікація пілотного AI-агента: від сервісу до agentic commerce',
+      'Чек-лист видимості бренду в AI-пошуку: GEO/AEO, LLM citations',
+      'Шаблон AI governance: політика, ризики, контроль якості',
+    ],
+    next: 'full',
+    expert: true,
+    result: 'Статус AI-Driven Director: AI-стратегія, агенти, персоналізація, GEO',
   },
 ];
 

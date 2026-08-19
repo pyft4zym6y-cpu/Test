@@ -3,17 +3,23 @@ import { COURSES, type CourseKind } from '../data/courses';
 import CourseCard from '../components/CourseCard';
 import { PageHead, Pop, Section } from '../components/comic';
 
-type Filter = 'all' | CourseKind;
+type Filter = 'all' | CourseKind | 'expert';
 
 const FILTERS: { id: Filter; label: string }[] = [
   { id: 'all', label: 'Усі' },
   { id: 'general', label: 'Загальні треки' },
   { id: 'targeted', label: 'Точкові курси' },
+  { id: 'expert', label: 'Експертні ★' },
 ];
 
 export default function Courses() {
   const [filter, setFilter] = useState<Filter>('all');
-  const list = COURSES.filter((c) => filter === 'all' || c.kind === filter);
+  const list = COURSES.filter((c) => {
+    if (filter === 'all') return true;
+    if (filter === 'expert') return c.expert === true;
+    if (filter === 'targeted') return c.kind === 'targeted' && !c.expert;
+    return c.kind === filter;
+  });
 
   return (
     <>

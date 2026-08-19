@@ -16,10 +16,20 @@ export default function CourseCard({ course, index = 0 }: { course: Course; inde
       <div className="flex items-start justify-between gap-3 mb-4">
         <span
           className={`inline-block comic-border px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.15em] ${
-            course.featured ? 'bg-white text-ink' : course.kind === 'general' ? 'bg-sun' : 'bg-paper'
+            course.featured
+              ? 'bg-white text-ink'
+              : course.expert
+                ? 'bg-ink text-white'
+                : course.kind === 'general'
+                  ? 'bg-sun'
+                  : 'bg-paper'
           }`}
         >
-          {course.kind === 'general' ? 'Загальний курс' : 'Точковий курс'}
+          {course.expert
+            ? 'Експертний курс ★'
+            : course.kind === 'general'
+              ? 'Загальний курс'
+              : 'Точковий курс'}
         </span>
         <span
           className={`text-[12px] font-extrabold uppercase tracking-wider whitespace-nowrap ${
