@@ -98,6 +98,9 @@ function ReqRow({
         <div style={{ flex: 1, minWidth: 200 }}>
           <div style={{ fontSize: 13.5, fontWeight: 600 }}>{req.title}</div>
           <div className="sub" style={{ fontSize: 12 }}>{req.why}</div>
+          {req.fallback && (
+            <div className="wc-fallback">⛑ Если недоступно: {req.fallback}</div>
+          )}
         </div>
         <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 12.5, cursor: 'pointer', whiteSpace: 'nowrap' }}>
           <input type="checkbox" checked={provided} onChange={onToggle} />
@@ -208,6 +211,13 @@ export default function AuditIntakePage() {
         выводов. Выберите глубину и блоки — ниже раскроется точный перечень доступов, документов и скриптов; к каждому
         приложен шаблон, инструкция «как выдать» или скрипт.
       </p>
+
+      <div className="wc-banner">
+        <b>Мы исходим из худшего.</b> Даже если сайт не открывается извне, нет sitemap и robots, отсутствует CRM и
+        готовые отчёты — мы всё равно вытаскиваем максимум из самого сайта (рендер-обход, скриншоты, история из
+        Web Archive) и внешних источников, а данные о продажах восстанавливаем по сигналам и{' '}
+        <b>сверяем между источниками</b>. Каждая позиция ниже, где нужен доступ, имеет запасной путь «⛑ Если недоступно».
+      </div>
 
       {/* 1 · Глубина */}
       <h2 style={{ fontSize: 16, margin: '26px 0 10px' }}>1 · Глубина аудита</h2>

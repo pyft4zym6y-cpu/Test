@@ -48,7 +48,7 @@ const overview: Sheet = {
 function tierSheet(tier: Tier): Sheet {
   const t = TIERS.find((x) => x.tier === tier)!;
   const reqs = flatReqsAtTier(tier);
-  const header = ['#', 'Блок аудита', 'Тип', 'Что нужно', 'Зачем это нужно', 'Впервые с', 'Что прикладываем'];
+  const header = ['#', 'Блок аудита', 'Тип', 'Что нужно', 'Зачем это нужно', 'Впервые с', 'Что прикладываем', 'Если недоступно (worst-case)'];
   const rows = reqs.map((r, i) => [
     i + 1,
     r.blockName,
@@ -57,6 +57,7 @@ function tierSheet(tier: Tier): Sheet {
     r.why,
     `T${r.tier}`,
     assetCell(r.assetId),
+    r.fallback ?? '—',
   ]);
   // Первая строка-аннотация внутри листа — как «шапка смысла».
   const intro: (string | number)[] = [
@@ -67,11 +68,12 @@ function tierSheet(tier: Tier): Sheet {
     `Достоверность до ${t.confidence}%. Перечень кумулятивный: включает всё из младших тиров.`,
     '',
     `Требований: ${reqs.length}`,
+    'Исходим из худшего: у каждого доступа есть запасной путь.',
   ];
   return {
     name: t.code,
     header,
-    cols: [5, 26, 18, 40, 50, 10, 52],
+    cols: [5, 24, 16, 36, 46, 9, 46, 52],
     rows: [intro, ...rows],
   };
 }

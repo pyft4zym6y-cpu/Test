@@ -119,3 +119,7 @@ table.admin th, table.admin td { border-bottom: 1px solid var(--line); text-alig
 .asset-kind-tpl { color: var(--lime-dark); }
 .asset-kind-ins { color: #b45309; }
 .asset-kind-scr { color: #3949ab; }
+
+/* ── worst-case: банер принципа + запасной путь ── */
+.wc-banner { border: 1px solid #fdd9a8; background: #fff7ed; border-left: 4px solid #d97706; border-radius: 0 10px 10px 0; padding: 11px 14px; font-size: 12.5px; line-height: 1.5; color: #7c4a03; margin: 16px 0 4px; }
+.wc-fallback { margin-top: 5px; font-size: 11.5px; line-height: 1.45; color: #b45309; background: #fff7ed; border-radius: 6px; padding: 5px 8px; }
