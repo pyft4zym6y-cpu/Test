@@ -26,7 +26,7 @@ function ScrollToHash() {
 const SystemInMotion = lazy(() => import('@/system/SystemInMotion').then((m) => ({ default: m.SystemInMotion })));
 const SystemNotFound = lazy(() => import('@/system/SystemNotFound').then((m) => ({ default: m.SystemNotFound })));
 const CasesFilm = lazy(() => import('@/system/CasesFilm').then((m) => ({ default: m.CasesFilm })));
-const PeopleFilm = lazy(() => import('@/system/PeopleFilm').then((m) => ({ default: m.PeopleFilm })));
+const About = lazy(() => import('@/system/About').then((m) => ({ default: m.About })));
 const ExpansionHub = lazy(() => import('@/system/ExpansionHub').then((m) => ({ default: m.ExpansionHub })));
 const Expertise = lazy(() => import('@/system/Expertise').then((m) => ({ default: m.Expertise })));
 const ContactFilm = lazy(() => import('@/system/ContactFilm').then((m) => ({ default: m.ContactFilm })));
@@ -48,7 +48,7 @@ const PAGES: { path: string; el: JSX.Element }[] = [
   { path: '/', el: <SystemInMotion /> },
   { path: '/cabinet', el: <Cabinet /> },
   { path: '/proof', el: <CasesFilm /> },
-  { path: '/people', el: <PeopleFilm /> },
+  { path: '/people', el: <About /> },
   { path: '/expansion', el: <ExpansionHub /> },
   { path: '/expansion/:slug', el: <Expertise /> },
   { path: '/diagnose', el: <LossCalculator /> },
