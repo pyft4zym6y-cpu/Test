@@ -601,6 +601,15 @@
 .ctf-diag-add { grid-column: 1 / -1; justify-self: start; background: none; border: 1px dashed var(--silver); border-radius: 100px; color: var(--charcoal); font-size: 11px; letter-spacing: .04em; padding: 8px 14px; cursor: pointer; margin-bottom: 4px; }
 .ctf-diag-add:hover { border-color: var(--data); color: var(--deep); }
 .ctf-diag-body { font-family: var(--mono); font-size: 11px; line-height: 1.55; color: var(--charcoal); white-space: pre-wrap; margin: 0; max-height: 148px; overflow: auto; }
+/* Чекбокс «додати підсумок аудиту» + пропозиція пройти аудит (бруталіст) */
+.ctf-attach { grid-column: 1 / -1; display: grid; gap: 10px; border: 2.5px solid var(--deep); border-radius: 0;
+  padding: 14px 16px; background: var(--pure-white); box-shadow: 4px 4px 0 var(--deep); margin-bottom: 6px; }
+.ctf-attach-check { display: flex; align-items: center; gap: 11px; cursor: pointer; font-weight: 700; font-size: 13.5px; color: var(--deep); }
+.ctf-attach-check input { width: 20px; height: 20px; flex: 0 0 auto; accent-color: var(--red); cursor: pointer; }
+.ctf-attach-none { box-shadow: 4px 4px 0 var(--red); }
+.ctf-attach-lab { font-weight: 800; text-transform: uppercase; letter-spacing: .1em; font-size: 11px; color: var(--red); }
+.ctf-attach-none p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--charcoal); }
+.ctf-attach-none .sysx-cta { justify-self: start; }
 .cf-thanks { justify-items: start; gap: 12px; }
 .cf-thanks h2 { font-size: clamp(26px, 3vw, 40px); color: var(--deep); }
 

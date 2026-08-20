@@ -12,11 +12,11 @@ import './system.css';
  */
 const LINKS = [
   { to: '/', uk: 'Система', en: 'System' },
-  { to: '/proof', uk: 'Докази', en: 'Proof' },
+  { to: '/proof', uk: 'Наші перемоги', en: 'Our wins' },
   { to: '/expansion', uk: 'Експансія', en: 'Expansion' },
-  { to: '/people', uk: 'Команда', en: 'Team' },
-  { to: '/diagnose', uk: 'Діагностика', en: 'Diagnostics' },
-  { to: '/pricing', uk: 'Формати', en: 'Pricing' },
+  { to: '/people', uk: 'Про нас', en: 'About' },
+  { to: '/diagnose', uk: 'Express audit', en: 'Express audit' },
+  { to: '/pricing', uk: 'Початок співпраці', en: 'Get started' },
   { to: '/contact', uk: 'Контакт', en: 'Contact' },
 ];
 
@@ -34,8 +34,8 @@ const Icon = ({ d }: { d: string }) => (
 
 const TABS = [
   { to: '/', uk: 'Система', en: 'System', icon: I.home },
-  { to: '/people', uk: 'Команда', en: 'Team', icon: I.people },
-  { to: '/diagnose', uk: 'Діагностика', en: 'Diagnostics', icon: I.calc },
+  { to: '/people', uk: 'Про нас', en: 'About', icon: I.people },
+  { to: '/diagnose', uk: 'Express audit', en: 'Express audit', icon: I.calc },
   { to: '/contact', uk: 'Контакт', en: 'Contact', icon: I.chat },
 ];
 
@@ -85,7 +85,7 @@ export function SystemShell() {
         <div className="sysh-right">
           <LangToggle />
           <Link to={lp('/cabinet')} className={'sysh-account' + (isActive('/cabinet') ? ' is-on' : '')} aria-label={t('Особистий кабінет', 'Client cabinet')} title={t('Кабінет', 'Cabinet')}><Icon d={I.user} /></Link>
-          <Link to={lp('/diagnose')} className="sysh-cta mono">{t('Діагностика', 'Diagnostics')} →</Link>
+          <Link to={lp('/diagnose')} className="sysh-cta mono">Express audit →</Link>
         </div>
         <button className="sysh-burger" aria-label={t('Меню', 'Menu')} aria-expanded={open} onClick={() => setOpen((v) => !v)}>
           <Icon d={I.menu} />

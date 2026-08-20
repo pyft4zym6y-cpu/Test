@@ -8,8 +8,6 @@ import { PartnerMarquee } from '@/system/PartnerMarquee';
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
 const SystemExplorer = lazy(() => import('@/system/SystemExplorer').then((m) => ({ default: m.SystemExplorer })));
-// Розбір 8 систем (колишня окрема /systems) тепер — глибший скрол-етап головної.
-const SystemsFilm = lazy(() => import('@/system/SystemsFilm').then((m) => ({ default: m.SystemsFilm })));
 // Сканована повна карта Commerce OS: 8 систем + вкладені домени (акордеон).
 // Меседжинг за роллю ЛПР (§8): одна система — різні виграші.
 const AudienceByRole = lazy(() => import('@/system/AudienceByRole').then((m) => ({ default: m.AudienceByRole })));
@@ -106,7 +104,7 @@ export function SystemInMotion() {
           <p className="sysx-lead">{t('Продажі тримаються на людях і ручному режимі, а не на системі. Збираємо вісім систем в одну керовану — щоб виторг ріс, а бізнес не залежав від вас.', 'Sales rest on people and manual effort, not on a system. We assemble eight systems into one managed system — so revenue grows and the business no longer depends on you.')}</p>
           <div className="sysx-cta-row sysx-void-cta">
             <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати мій витік', 'Calculate my leak')} →</Link>
-            <Link to={lp('/pricing')} className="sysx-cta">{t('Формати і ціни', 'Pricing')}</Link>
+            <Link to={lp('/contact')} className="sysx-cta">{t('Залишити заявку', 'Leave a request')} →</Link>
           </div>
           <span className="sysx-scrollhint mono">{t('↓ або погортайте, як це працює', '↓ or scroll to see how it works')}</span>
         </div>
@@ -158,11 +156,10 @@ export function SystemInMotion() {
         <PartnerMarquee />
       </div>
     </section>
-    {/* Логічне продовження того ж полотна — інтерактивний розбір систем */}
-    <Suspense fallback={null}><SystemExplorer /></Suspense>
-    {/* Глибший скрол-етап: покадровий розбір 8 систем (об'єднано з колишньою /systems) */}
-    <div id="systems"><Suspense fallback={null}><SystemsFilm /></Suspense></div>
-    {/* CommerceMap прибрано — дублював заголовок «Де ваш бізнес втрачає гроші» одразу після SystemsFilm. */}
+    {/* Логічне продовження того ж полотна — інтерактивний розбір систем (8 систем).
+        SystemsFilm прибрано з головної: дублював цей самий розбір 8 систем нижче
+        (заголовок «Де ваш бізнес втрачає гроші»). Лишаємо один — інтерактивний вище. */}
+    <div id="systems"><Suspense fallback={null}><SystemExplorer /></Suspense></div>
     {/* Меседжинг за роллю ЛПР: одна система — різні виграші */}
     <Suspense fallback={null}><AudienceByRole /></Suspense>
     {/* Механіка довіри: метод, прозорий процес, платформи */}

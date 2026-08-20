@@ -65,7 +65,7 @@ export function Pricing() {
       forWhom: t('Нема кому вести це зсередини. Потрібен результат, а не поради — і один відповідальний за нього.', "There's no one to lead this from inside. You need a result, not advice — and one person accountable for it."),
       includes: [
         t('Керуємо всім проєктом: план, люди, бюджет, ризики', 'We run the whole project: plan, people, budget, risks'),
-        t('Команда: ваші люди + наша мережа підрядників з OKR і DoD', 'Team: your people + our contractor network with OKRs and DoD'),
+        t('Команда: ваші люди + наша мережа партнерів з OKR і DoD', 'Team: your people + our partner network with OKRs and DoD'),
         t('KPI та RACI на кожну хвилю, транші під результат', 'KPIs and RACI for each wave, tranches tied to results'),
         t('Швидкі перемоги першої хвилі фінансують наступні', 'First-wave quick wins fund the ones that follow'),
         t('Щомісячна звітність власнику: цифри проти плану', 'Monthly reporting to the owner: numbers against plan'),
@@ -78,7 +78,7 @@ export function Pricing() {
 
   const COMPARE: { k: string; v: [string, string, string] }[] = [
     { k: t('Відповідальний за результат', 'Responsible for the result'), v: [t('Ваша команда', 'Your team'), t('Ви · ми — за якість рішень', 'You · us — for decision quality'), t('Ми', 'Us')] },
-    { k: t('Хто виконує руками', 'Who does the hands-on work'), v: [t('Ваша команда', 'Your team'), t('Ваша команда під контролем', 'Your team, under our control'), t('Ваші люди + наші підрядники', 'Your people + our contractors')] },
+    { k: t('Хто виконує руками', 'Who does the hands-on work'), v: [t('Ваша команда', 'Your team'), t('Ваша команда під контролем', 'Your team, under our control'), t('Ваші люди + наші партнери', 'Your people + our partners')] },
     { k: t('Що потрібно від вас', 'What we need from you'), v: [t('Дані й доступи', 'Data and access'), t('Проджект + виконавці', 'A project lead + doers'), t('Рішення та бюджет', 'Decisions and budget')] },
     { k: t('Модель оплати', 'Payment model'), v: [t('Фіксована за проєкт', 'Fixed per project'), t('$50/год · мін. 30 год/міс', '$50/hr · min. 30 hrs/mo'), t('від $4,900/міс', 'from $4,900/mo')] },
     { k: t('Мінімальний вхід', 'Minimum entry'), v: ['$2,900', t('$1,500/міс', '$1,500/mo'), t('$4,900/міс', '$4,900/mo')] },
@@ -90,7 +90,7 @@ export function Pricing() {
     { q: t('Скільки це коштує?', 'How much does it cost?'), a: t('Три формати — від разового аудиту до управління під ключ: кожен знаходить свій за масштабом і ситуацією. Усі ціни відкриті вище, у блоці «Формати та ціни».', 'Three formats — from a one-off audit to managed delivery: each finds its own by scale and situation. All prices are open above, in the "Pricing & formats" block.') },
     { q: t('Коли буде результат?', 'When will there be a result?'), a: t('Перший вимірюваний — за 30–60 днів. Швидкі перемоги в першій хвилі.', 'The first measurable one — within 30–60 days. Quick wins in the first wave.') },
     { q: t('У нас своя CMS / специфіка', 'We have our own CMS / specifics'), a: t('Платформо-незалежний підхід. Міграція — лише за реальної потреби.', 'A platform-independent approach. Migration — only when genuinely needed.') },
-    { q: t('Хто виконує роботу?', 'Who does the work?'), a: t('Залежить від формату: в аудиті й консалтингу — ваша команда, в управлінні — ваші люди + керована мережа підрядників з OKR і DoD.', 'It depends on the format: in audit and consulting — your team; in managed delivery — your people + a managed contractor network with OKRs and DoD.') },
+    { q: t('Хто виконує роботу?', 'Who does the work?'), a: t('Залежить від формату: в аудиті й консалтингу — ваша команда, в управлінні — ваші люди + керована мережа партнерів з OKR і DoD.', 'It depends on the format: in audit and consulting — your team; in managed delivery — your people + a managed partner network with OKRs and DoD.') },
     { q: t('Чому дешевше за ринок?', 'Why cheaper than the market?'), a: t('Ринок США бере за таку експертизу $75–250/год, fractional-керівники — $8–22K/міс. Ми працюємо напряму, без офісних накладних агенції — ви платите за експертизу, а не за бренд.', "The US market charges $75–250/hr for this expertise, fractional executives — $8–22K/mo. We work directly, without an agency's office overhead — you pay for expertise, not for a brand.") },
     { q: t('Чим захищений мій бюджет?', 'How is my budget protected?'), a: t('Кожен етап має Definition of Done — вимірюваний критерій приймання. Наступний транш стартує лише після прийнятого результату попереднього, а звітність щомісяця показує факт проти плану.', 'Each stage has a Definition of Done — a measurable acceptance criterion. The next tranche starts only after the previous result is accepted, and monthly reporting shows actuals against plan.') },
   ];
