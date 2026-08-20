@@ -1,7 +1,8 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  authenticate, currentUser, signOut, loadDiag, saveDiag, CONFIGURED, isCloudUser,
+  currentUser, signOut, loadDiag, saveDiag, CONFIGURED, isCloudUser,
+  registerWithEmail, signInWithEmail, resendConfirmation, signInWithGoogle, onAuth,
   type DiagUser, type DiagRecord, type CompanyProfile, type TierStatus,
 } from '@/lib/supa';
 import { getExpressAudit, clearExpressAudit, buildJourney, type ExpressAudit } from './cabinetData';
@@ -43,11 +44,14 @@ export function Cabinet() {
   const [express, setExpress] = useState<ExpressAudit | null>(null);
   const [section, setSection] = useState<SectionId>('overview');
 
-  // логін
+  // логін / реєстрація
+  const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [pass, setPass] = useState('');
   const [busy, setBusy] = useState(false);
   const [authErr, setAuthErr] = useState('');
+  const [confirmSent, setConfirmSent] = useState('');   // email, на який надіслано лист підтвердження
+  const [resendMsg, setResendMsg] = useState('');
 
   useEffect(() => { setExpress(getExpressAudit()); }, []);
   useEffect(() => {
@@ -56,15 +60,41 @@ export function Cabinet() {
       if (u) loadDiag(u).then(setRec);
     });
   }, []);
+  // Google OAuth повертає користувача редіректом → сесія зʼявляється після монтування.
+  useEffect(() => onAuth((u) => { if (u) { setUser(u); loadDiag(u).then(setRec); setConfirmSent(''); } }), []);
 
   const journey = useMemo(() => buildJourney({ loggedIn: Boolean(user), rec, express }), [user, rec, express]);
 
-  const doAuth = async () => {
-    setBusy(true); setAuthErr('');
-    const r = await authenticate(email.trim(), pass);
+  const enter = (u: DiagUser) => { setUser(u); loadDiag(u).then(setRec); };
+  const doLogin = async () => {
+    setBusy(true); setAuthErr(''); setResendMsg('');
+    const r = await signInWithEmail(email.trim(), pass);
     setBusy(false);
-    if (r.user) { setUser(r.user); loadDiag(r.user).then(setRec); if (r.notice) setAuthErr(r.notice); }
-    else setAuthErr(r.error || t('Не вдалося увійти. Спробуйте ще раз.', 'Could not sign in. Please try again.'));
+    if (r.user) enter(r.user);
+    else if (r.confirm) { setConfirmSent(r.confirm); }
+    else setAuthErr(r.error || t('Не вдалося увійти. Перевірте email і пароль.', 'Could not sign in. Check your email and password.'));
+  };
+  const doRegister = async () => {
+    setBusy(true); setAuthErr(''); setResendMsg('');
+    const r = await registerWithEmail(email.trim(), pass);
+    setBusy(false);
+    if (r.confirm) setConfirmSent(r.confirm);          // увімкнено підтвердження email → лист надіслано
+    else if (r.user) enter(r.user);                     // сесія одразу (демо або без Confirm email)
+    else setAuthErr(r.error || t('Не вдалося зареєструватися. Спробуйте ще раз.', 'Could not sign up. Please try again.'));
+  };
+  const doAuth = () => (mode === 'register' ? doRegister() : doLogin());
+  const doResend = async () => {
+    setResendMsg(''); setBusy(true);
+    const r = await resendConfirmation(confirmSent);
+    setBusy(false);
+    setResendMsg(r.ok ? t('Лист надіслано ще раз. Перевірте пошту.', 'Email sent again. Check your inbox.') : (r.error || t('Не вдалося надіслати. Спробуйте пізніше.', 'Could not send. Try again later.')));
+  };
+  const doGoogle = async () => {
+    setAuthErr(''); setBusy(true);
+    const r = await signInWithGoogle();
+    setBusy(false);
+    if (r.error) setAuthErr(r.error === 'not_configured' ? t('Google-вхід зʼявиться після налаштування.', 'Google sign-in will appear once configured.') : r.error);
+    // успіх → редірект на Google, повернення обробить onAuth
   };
   const doSignOut = async () => { await signOut(); setUser(null); setRec(null); setSection('overview'); };
   const refreshRec = () => { if (user) loadDiag(user).then(setRec); };
@@ -87,16 +117,43 @@ export function Cabinet() {
             </ul>
           </div>
           <div className="cab-gate-right">
-            <div className="cab-form">
-              <span className="sysx-kick">{t('Вхід / реєстрація', 'Sign in / sign up')}</span>
-              <label className="sysx-inp"><span className="sysx-inp-l">Email</span>
-                <input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@shop.com" /></label>
-              <label className="sysx-inp"><span className="sysx-inp-l">{t('Пароль · мін. 6 символів', 'Password · min. 6 characters')}</span>
-                <input type="password" autoComplete="current-password" value={pass} onChange={(e) => setPass(e.target.value)} placeholder="••••••" onKeyDown={(e) => e.key === 'Enter' && email && pass.length >= 6 && doAuth()} /></label>
-              {authErr && <p className="cab-auth-err mono">{authErr}</p>}
-              <button className="sysx-cta is-primary" onClick={doAuth} disabled={busy || !email || pass.length < 6}>{busy ? t('Заходимо…', 'Signing in…') : t('Увійти / створити кабінет →', 'Sign in / create cabinet →')}</button>
-              <p className="sysx-note mono">{CONFIGURED ? t('Захищений вхід. Дані синхронізуються між пристроями.', 'Secure sign-in. Data syncs across your devices.') : t('Демо-режим: дані зберігаються локально в цьому браузері.', 'Demo mode: data is stored locally in this browser.')}</p>
-            </div>
+            {confirmSent ? (
+              /* ── Стан «підтвердіть email» ── */
+              <div className="cab-form cab-confirm">
+                <span className="cab-confirm-ic" aria-hidden="true">✉</span>
+                <span className="sysx-kick">{t('Підтвердіть email', 'Confirm your email')}</span>
+                <p className="cab-confirm-p">{t('Ми надіслали лист на', 'We sent a message to')} <b>{confirmSent}</b>. {t('Відкрийте посилання в листі — і кабінет відкриється автоматично.', 'Open the link in it — and your cabinet will open automatically.')}</p>
+                <p className="sysx-note mono">{t('Не бачите листа? Перевірте «Спам» і «Промоакції».', 'Don\'t see it? Check Spam and Promotions.')}</p>
+                {resendMsg && <p className="cab-auth-note mono">{resendMsg}</p>}
+                <button className="sysx-cta" onClick={doResend} disabled={busy}>{busy ? t('Надсилаємо…', 'Sending…') : t('Надіслати лист повторно', 'Resend email')}</button>
+                <button className="cab-linkbtn mono" onClick={() => { setConfirmSent(''); setResendMsg(''); setMode('login'); }}>← {t('Інший email', 'Use another email')}</button>
+              </div>
+            ) : (
+              <div className="cab-form">
+                <div className="cab-auth-tabs" role="tablist">
+                  <button role="tab" className={`cab-auth-tab${mode === 'login' ? ' on' : ''}`} onClick={() => { setMode('login'); setAuthErr(''); }}>{t('Вхід', 'Sign in')}</button>
+                  <button role="tab" className={`cab-auth-tab${mode === 'register' ? ' on' : ''}`} onClick={() => { setMode('register'); setAuthErr(''); }}>{t('Реєстрація', 'Sign up')}</button>
+                </div>
+                {CONFIGURED && (
+                  <>
+                    <button className="cab-google" onClick={doGoogle} disabled={busy}>
+                      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.71-1.57 2.68-3.89 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.9 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
+                      {t('Продовжити з Google', 'Continue with Google')}
+                    </button>
+                    <div className="cab-or mono"><span>{t('або через email', 'or with email')}</span></div>
+                  </>
+                )}
+                <label className="sysx-inp"><span className="sysx-inp-l">Email</span>
+                  <input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@shop.com" /></label>
+                <label className="sysx-inp"><span className="sysx-inp-l">{t('Пароль · мін. 6 символів', 'Password · min. 6 characters')}</span>
+                  <input type="password" autoComplete={mode === 'register' ? 'new-password' : 'current-password'} value={pass} onChange={(e) => setPass(e.target.value)} placeholder="••••••" onKeyDown={(e) => e.key === 'Enter' && email && pass.length >= 6 && doAuth()} /></label>
+                {authErr && <p className="cab-auth-err mono">{authErr}</p>}
+                <button className="sysx-cta is-primary" onClick={doAuth} disabled={busy || !email || pass.length < 6}>
+                  {busy ? (mode === 'register' ? t('Реєструємо…', 'Signing up…') : t('Заходимо…', 'Signing in…')) : (mode === 'register' ? t('Створити кабінет →', 'Create cabinet →') : t('Увійти →', 'Sign in →'))}
+                </button>
+                <p className="sysx-note mono">{CONFIGURED ? t('Захищений вхід. Дані синхронізуються між пристроями.', 'Secure sign-in. Data syncs across your devices.') : t('Демо-режим: дані зберігаються локально в цьому браузері.', 'Demo mode: data is stored locally in this browser.')}</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

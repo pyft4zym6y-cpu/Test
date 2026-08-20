@@ -37,6 +37,39 @@
 .cab .sysx-inp > textarea:focus { box-shadow: 3px 3px 0 var(--red); }
 .cab .sysx-inp > input:read-only { background: var(--cream-2); color: var(--graphite); }
 .cab-auth-err { color: var(--red); font-weight: 700; font-size: 12.5px; }
+.cab-auth-note { color: var(--deep); font-weight: 600; font-size: 12.5px; }
+
+/* Таби Вхід / Реєстрація */
+.cab-auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 2.5px solid var(--deep); margin-bottom: 2px; }
+.cab-auth-tab { appearance: none; border: 0; background: var(--cream); color: var(--graphite);
+  font-family: var(--sans); font-weight: 800; font-size: 13px; letter-spacing: .02em; text-transform: uppercase;
+  padding: 11px 8px; cursor: pointer; transition: background .12s, color .12s; }
+.cab-auth-tab + .cab-auth-tab { border-left: 2.5px solid var(--deep); }
+.cab-auth-tab.on { background: var(--deep); color: var(--cream); }
+
+/* Кнопка Google */
+.cab-google { display: flex; align-items: center; justify-content: center; gap: 10px;
+  border: 2.5px solid var(--deep); background: var(--pure-white); color: var(--deep);
+  font-family: var(--sans); font-weight: 800; font-size: 14px; padding: 12px 14px; cursor: pointer;
+  box-shadow: 4px 4px 0 var(--deep); transition: transform .12s, box-shadow .12s; }
+.cab-google:hover:not(:disabled) { transform: translate(-1px, -1px); box-shadow: 5px 5px 0 var(--deep); }
+.cab-google:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--deep); }
+.cab-google:disabled { opacity: .55; cursor: default; }
+
+/* Роздільник «або» */
+.cab-or { display: flex; align-items: center; gap: 12px; color: var(--graphite);
+  font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+.cab-or::before, .cab-or::after { content: ''; flex: 1; height: 2px; background: var(--deep); opacity: .18; }
+
+/* Стан «підтвердіть email» */
+.cab-confirm { align-items: flex-start; text-align: left; }
+.cab-confirm-ic { display: inline-flex; align-items: center; justify-content: center; width: 46px; height: 46px;
+  border: 2.5px solid var(--deep); background: var(--yellow); font-size: 22px; box-shadow: 4px 4px 0 var(--deep); }
+.cab-confirm-p { font-size: 14.5px; font-weight: 500; color: var(--charcoal); line-height: 1.5; }
+.cab-confirm-p b { color: var(--deep); font-weight: 800; }
+.cab-linkbtn { appearance: none; border: 0; background: none; color: var(--graphite); cursor: pointer;
+  font-size: 12.5px; padding: 2px 0; text-align: left; }
+.cab-linkbtn:hover { color: var(--red); }
 
 /* ═══ Каркас ═══ */
 .cab:not(.cab-gate) { display: grid; grid-template-columns: 272px 1fr; }
