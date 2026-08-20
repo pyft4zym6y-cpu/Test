@@ -195,3 +195,13 @@
   .s3-embedded .s2-panel { padding: 16px 14px; }
   .s3-embedded .s2-report { gap: 14px; }
 }
+
+/* Доступи T1–T4: індикатор запитаного рівня + кнопка видалення аудиту */
+.cab-badge-ok { background: var(--ok, #1F9D55); color: #fff; border-color: var(--deep); }
+.cab-depth.is-req { border-color: var(--ok, #1F9D55); }
+.cab-depth.is-req.on { border-color: var(--deep); }
+.cab-audit-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: auto; }
+.cab-del { display: inline-flex; align-items: center; gap: 6px; background: none; border: 2px solid var(--silver, #E3D9C0);
+  color: var(--graphite, #6B675E); font-size: 12px; letter-spacing: .04em; padding: 8px 14px; cursor: pointer; border-radius: 0;
+  transition: border-color .15s, color .15s; }
+.cab-del:hover { border-color: var(--red, #F5301C); color: var(--red, #F5301C); }

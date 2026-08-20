@@ -4,7 +4,7 @@ import {
   authenticate, currentUser, signOut, loadDiag, saveDiag, CONFIGURED, isCloudUser,
   type DiagUser, type DiagRecord, type CompanyProfile,
 } from '@/lib/supa';
-import { getExpressAudit, buildJourney, type ExpressAudit } from './cabinetData';
+import { getExpressAudit, clearExpressAudit, buildJourney, type ExpressAudit } from './cabinetData';
 import { eur } from './lossModel';
 import { sendLead } from '@/lib/leads';
 import { isValidCode } from '@/lib/access';
@@ -32,7 +32,7 @@ export function Cabinet() {
   const lp = useLp();
   const nav = useNavigate();
   const NAV: { group: string; items: NavItem[] }[] = [
-    { group: t('Огляд', 'Overview'), items: [{ id: 'overview', label: t('Огляд і шлях', 'Overview & path') }, { id: 'audits', label: t('Мої аудити', 'My audits') }] },
+    { group: t('Огляд', 'Overview'), items: [{ id: 'overview', label: t('Огляд та шлях', 'Overview & path') }, { id: 'audits', label: t('Мої аудити', 'My audits') }] },
     { group: t('Дані', 'Data'), items: [{ id: 'company', label: t('Дані компанії', 'Company data') }, { id: 'access', label: t('Доступи · T1–T4', 'Access · T1–T4') }] },
     { group: t('Розбір', 'Analysis'), items: [{ id: 'deep', label: t('Глибокий аудит', 'Deep audit') }, { id: 'findings', label: t('Знахідки та план', 'Findings & plan'), soon: true }, { id: 'docs', label: t('Документи', 'Documents'), soon: true }] },
     { group: t('Робота разом', 'Work with us'), items: [{ id: 'collab', label: t('Співпраця', 'Work with us') }, { id: 'settings', label: t('Налаштування', 'Settings') }] },
@@ -132,7 +132,7 @@ export function Cabinet() {
       {/* Контент */}
       <main className="cab-main">
         {section === 'overview' && <Overview journey={journey} express={express} cur={cur?.label} go={setSection} />}
-        {section === 'audits' && <Audits express={express} rec={rec} go={setSection} />}
+        {section === 'audits' && <Audits express={express} rec={rec} go={setSection} onDelete={() => setExpress(getExpressAudit())} />}
         {section === 'company' && <CompanyForm user={user} rec={rec} onSaved={refreshRec} />}
         {section === 'access' && <Access user={user} rec={rec} onDone={refreshRec} />}
         {section === 'deep' && <DeepAudit user={user} express={express} onClose={() => setSection('overview')} go={setSection} />}
@@ -196,10 +196,11 @@ function Overview({ journey, express, cur, go }: { journey: ReturnType<typeof bu
   );
 }
 
-function Audits({ express, rec, go }: { express: ExpressAudit | null; rec: DiagRecord | null; go: (s: SectionId) => void }) {
+function Audits({ express, rec, go, onDelete }: { express: ExpressAudit | null; rec: DiagRecord | null; go: (s: SectionId) => void; onDelete: () => void }) {
   const t = useT();
   const lp = useLp();
   const deepDone = Boolean(rec?.stage3 && Object.keys(rec.stage3).length > 0);
+  const del = () => { if (typeof window !== 'undefined' && !window.confirm(t('Видалити збережений експрес-аудит?', 'Delete the saved express audit?'))) return; clearExpressAudit(); onDelete(); };
   return (
     <section className="cab-sec">
       <SecHead kick={t('Мої аудити', 'My audits')} title={t('Ваші розбори', 'Your analyses')} lead={t('Тут зібрані ваші аудити — від швидкого експрес-витоку до глибокого Tier-2 розбору. Кожен наступний рівень уточнює попередній, а не рахує наново.', 'Your audits gathered here — from the quick express leak to the deep Tier-2 analysis. Each next level refines the previous one rather than starting over.')} />
@@ -209,7 +210,10 @@ function Audits({ express, rec, go }: { express: ExpressAudit | null; rec: DiagR
           {express
             ? <><span className="sysx-display cab-audit-v">{eur(express.total)}<i>{t('/ рік', '/ year')}</i></span>
                 <span className="mono cab-sub">{t('від', 'from')} {new Date(express.at).toLocaleDateString(t('uk-UA', 'en-GB'))} · Health {express.overallHealth}/100 · {t('діапазон', 'range')} {eur(express.range[0])}–{eur(express.range[1])}</span>
-                <Link className="sysx-cta" to={lp('/diagnose')}>{t('Перерахувати →', 'Recalculate →')}</Link></>
+                <div className="cab-audit-actions">
+                  <Link className="sysx-cta" to={lp('/diagnose')}>{t('Перерахувати →', 'Recalculate →')}</Link>
+                  <button className="cab-del mono" onClick={del} aria-label={t('Видалити аудит', 'Delete audit')} title={t('Видалити', 'Delete')}>🗑 {t('Видалити', 'Delete')}</button>
+                </div></>
             : <><p className="cab-sub">{t('Швидка оцінка втрат за 7 показниками — ~2 хвилини.', 'A quick loss estimate across 7 metrics — ~2 minutes.')}</p><Link className="sysx-cta is-primary" to={lp('/diagnose')}>{t('Порахувати витік →', 'Measure the leak →')}</Link></>}
         </div>
         <div className="cab-audit">
@@ -265,29 +269,35 @@ function Access({ user, rec, onDone }: { user: DiagUser; rec: DiagRecord | null;
     { id: 'T4', title: t('T4 · Живі доступи', 'T4 · Live access'), cap: t('до 92%', 'up to 92%'), desc: t('Рекламні кабінети, CMS: максимальна достовірність і план.', 'Ad accounts, CMS: maximum confidence and a plan.') },
   ];
   const [depth, setDepth] = useState(rec?.funnel?.deepDepth || 'T2');
-  const [sent, setSent] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const request = async () => {
-    setBusy(true);
-    await sendLead({ source: 'cabinet-access', email: user.email, role: 'cabinet', task: `Запит доступів для глибокого аудиту, глибина ${depth}`, comment: rec?.company?.name ? `Компанія: ${rec.company.name} · ${rec.company.site || ''}` : undefined });
-    await saveDiag(user, { funnel: { ...(rec?.funnel || {}), deepRequested: true, deepAt: new Date().toISOString(), deepDepth: depth } });
-    setBusy(false); setSent(true); onDone();
+  // Кожен рівень має ВЛАСНИЙ статус доступу (незалежно один від одного).
+  const [requested, setRequested] = useState<string[]>(rec?.funnel?.deepTiers || []);
+  const [busy, setBusy] = useState('');
+  const isReq = (id: string) => requested.includes(id);
+  const request = async (id: string) => {
+    if (isReq(id)) return;
+    setBusy(id);
+    const next = [...requested, id];
+    await sendLead({ source: 'cabinet-access', email: user.email, role: 'cabinet', task: `Запит доступів для глибокого аудиту, рівень ${id}`, comment: rec?.company?.name ? `Компанія: ${rec.company.name} · ${rec.company.site || ''}` : undefined });
+    await saveDiag(user, { funnel: { ...(rec?.funnel || {}), deepRequested: true, deepAt: new Date().toISOString(), deepDepth: id, deepTiers: next } });
+    setRequested(next); setBusy(''); onDone();
   };
+  const cur = DEPTHS.find((d) => d.id === depth)!;
   return (
     <section className="cab-sec">
-      <SecHead kick={t('Доступи · T1–T4', 'Access · T1–T4')} title={t('Глибина розбору = достовірність', 'Depth of analysis = confidence')} lead={t('Одна змінна визначає точність аудиту — обсяг доступів. Більше даних НЕ роздуває суму втрат, а підвищує впевненість висновку. Оберіть рівень — ми надішлемо інструкції з безпечного надання доступів (read-only, за потреби — з обмеженим строком).', 'One variable determines the accuracy of the audit — the scope of access. More data does NOT inflate the loss figure, it raises the confidence of the conclusion. Choose a level — we\'ll send instructions for granting access safely (read-only, time-limited if needed).')} />
+      <SecHead kick={t('Доступи до рівнів T1–T4', 'Access to levels T1–T4')} title={t('Запросіть доступ до глибших рівнів', 'Request access to deeper levels')} lead={t('Тут ви запитуєте доступ до додаткових рівнів аудиту й надаєте дані для їх підготовки. Кожен наступний рівень додає джерело даних і підвищує достовірність висновку (не роздуває суму втрат). Оберіть рівень і запитайте доступ — ми надішлемо інструкції з безпечного надання (read-only, за потреби — з обмеженим строком). Статус кожного рівня — окремий.', 'Here you request access to additional audit levels and provide the data to prepare them. Each next level adds a data source and raises the confidence of the conclusion (it does not inflate the loss figure). Pick a level and request access — we\'ll send instructions for granting it safely (read-only, time-limited if needed). Each level has its own status.')} />
       <div className="cab-depths">
         {DEPTHS.map((d) => (
-          <button key={d.id} className={`cab-depth${depth === d.id ? ' on' : ''}`} onClick={() => setDepth(d.id)}>
-            <div className="cab-depth-top"><b>{d.title}</b><span className="cab-badge mono">{d.cap}</span></div>
+          <button key={d.id} className={`cab-depth${depth === d.id ? ' on' : ''}${isReq(d.id) ? ' is-req' : ''}`} onClick={() => setDepth(d.id)}>
+            <div className="cab-depth-top"><b>{d.title}</b>{isReq(d.id) ? <span className="cab-badge cab-badge-ok mono">{t('✓ запитано', '✓ requested')}</span> : <span className="cab-badge mono">{d.cap}</span>}</div>
             <span className="cab-sub">{d.desc}</span>
           </button>
         ))}
       </div>
       <div className="cab-actions">
-        {sent
-          ? <span className="cab-saved mono">{t(`✓ Запит на доступи (${depth}) надіслано. Ми напишемо інструкції на ${user.email}.`, `✓ Access request (${depth}) sent. We'll send instructions to ${user.email}.`)}</span>
-          : <button className="sysx-cta is-primary" onClick={request} disabled={busy}>{busy ? t('Надсилаємо…', 'Sending…') : t(`Запросити інструкції для ${depth} →`, `Request instructions for ${depth} →`)}</button>}
+        {isReq(depth)
+          ? <span className="cab-saved mono">{t(`✓ Доступ до ${depth} запитано — інструкції надішлемо на ${user.email}. Оберіть інший рівень, щоб запросити його.`, `✓ Access to ${depth} requested — we'll send instructions to ${user.email}. Pick another level to request it.`)}</span>
+          : <button className="sysx-cta is-primary" onClick={() => request(depth)} disabled={busy === depth}>{busy === depth ? t('Надсилаємо…', 'Sending…') : t(`Запросити доступ до ${depth} →`, `Request access to ${depth} →`)}</button>}
+        {requested.length > 0 && !isReq(depth) && <span className="cab-sub mono">{t('Уже запитано:', 'Already requested:')} {requested.join(', ')}</span>}
       </div>
     </section>
   );

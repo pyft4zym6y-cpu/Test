@@ -46,6 +46,11 @@ export function LossCalculator() {
   const [res, setRes] = useState<LossResult | null>(null);
   const [leadBusy, setLeadBusy] = useState(false);
   const [leadSent, setLeadSent] = useState(false);
+  const [orderOpen, setOrderOpen] = useState(false);
+  const [oName, setOName] = useState('');
+  const [oEmail, setOEmail] = useState('');
+  const [oPhone, setOPhone] = useState('');
+  const [oErr, setOErr] = useState('');
   const alerts = useRef<number[]>([]);
   const panelRef = useRef<HTMLDivElement>(null);
   // Зміна кроку — підводимо панель до верху вьюпорта (щоб екран не «стрибав» посередині форми)
@@ -62,16 +67,21 @@ export function LossCalculator() {
   const restart = () => { alerts.current = []; setRes(null); setLeadSent(false); setStep(1); };
   const primaryLabel = (k: SysKey) => sysLabel(k, lang);
 
-  // «Замовити аудит» — заявка прямо тут (лід на команду) + інлайн-підтвердження.
-  const orderAudit = async () => {
+  // «Замовити аудит» — збираємо контакт (щоб було куди відповісти) + дані аудиту,
+  // надсилаємо лід команді й показуємо зрозуміле підтвердження з наступними кроками.
+  const orderAudit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!res) return;
-    setLeadBusy(true);
+    const email = oEmail.trim();
+    if (!email || !/.+@.+\..+/.test(email)) { setOErr(t('Вкажіть коректний email — щоб ми надіслали план аудиту.', 'Enter a valid email — so we can send you the audit plan.')); return; }
+    setOErr(''); setLeadBusy(true);
     await sendLead({
-      source: 'calc-order-audit', role: 'calc',
-      task: t('Заявка на аудит з калькулятора', 'Audit request from calculator'),
+      source: 'calc-order-audit', role: 'calc', name: oName.trim() || undefined, email, phone: oPhone.trim() || undefined,
+      task: t('Заявка на повний аудит з калькулятора', 'Full-audit request from calculator'),
       comment: `${t('Витік', 'Leak')}: ${eur(res.total)}/${t('рік', 'yr')} · bottleneck: ${sysLabel(res.primary, lang)} · Health ${res.overallHealth}/100`,
+      calc: `total=${res.total};range=${res.range[0]}-${res.range[1]};bottleneck=${res.primary};health=${res.overallHealth}`,
     });
-    setLeadBusy(false); setLeadSent(true);
+    setLeadBusy(false); setLeadSent(true); setOrderOpen(false);
   };
 
   // Брендований PDF результату — самодостатня друкована сторінка (нова вкладка → друк/зберегти в PDF).
@@ -249,15 +259,48 @@ ${projRows ? `<div class="card"><h2>${esc(t('Зараз → куди можем�
               <p className="sysx-next2-lead">{t('Число у вас є. Заберіть брендований PDF або ', 'You have the number. Take the branded PDF or ')}<b>{t('замовте повний аудит', 'order the full audit')}</b>{t(' — ми підтвердимо цифру вашими даними (CRM/ERP/GA4), знайдемо ', ' — we confirm the figure with your data (CRM/ERP/GA4), find ')}<b>{t('де саме', 'exactly where')}</b>{t(' витікає виторг і складемо план повернення під Definition of Done.', ' revenue leaks and build a recovery plan under a Definition of Done.')}</p>
             </div>
 
-            <div className="sysx-calc-actions">
-              {leadSent
-                ? <span className="cab-saved mono">{t('✓ Заявку на аудит прийнято — звʼяжемося з вами', '✓ Audit request received — we\'ll be in touch')}</span>
-                : <button className="sysx-cta is-primary" onClick={orderAudit} disabled={leadBusy}>{leadBusy ? t('Надсилаємо…', 'Sending…') : t('Замовити аудит', 'Order the audit')} →</button>}
-              <button className="sysx-cta" onClick={downloadBrandedPdf}>{t('Завантажити PDF', 'Download PDF')} ↓</button>
-              <Link className="sysx-cta" to={lp('/pricing')}>{t('Формати і ціни', 'Formats & pricing')} →</Link>
-              <Link className="sysx-cta" to={lp('/cabinet')}>{t('Зберегти в кабінет', 'Save to cabinet')} →</Link>
-              <button className="sysx-cta" onClick={restart}>{t('Перерахувати', 'Recalculate')}</button>
-            </div>
+            {leadSent ? (
+              <div className="calc-ordered">
+                <span className="sysx-kick">{t('✓ Заявку надіслано', '✓ Request sent')}</span>
+                <b className="sysx-display calc-ordered-h">{oName ? `${t('Дякуємо, ', 'Thank you, ')}${oName}!` : t('Дякуємо!', 'Thank you!')}</b>
+                <p className="calc-ordered-p">{t('Ми отримали вашу заявку на повний аудит разом із результатом експрес-витоку ', 'We received your full-audit request together with your express-leak result ')}<b>{eur(res.total)}/{t('рік', 'yr')}</b>{t(' і головним вузлом «', ' and the main bottleneck «')}{primaryLabel(res.primary)}».</p>
+                <div className="calc-ordered-next">
+                  <span className="mono">{t('Що далі', "What's next")}:</span>
+                  <ol>
+                    <li>{t('Менеджер WEEXP звʼяжеться з вами на ', 'A WEEXP manager will contact you at ')}<b>{oEmail}</b>{oPhone ? ` / ${oPhone}` : ''} {t('протягом робочого дня.', 'within one business day.')}</li>
+                    <li>{t('Короткий дзвінок (15–20 хв): звіримо контекст і цілі.', 'A short call (15–20 min): we align on context and goals.')}</li>
+                    <li>{t('Надішлемо план і формат аудиту під ваш випадок.', 'We send an audit plan and format tailored to your case.')}</li>
+                  </ol>
+                </div>
+                <div className="sysx-calc-actions">
+                  <button className="sysx-cta" onClick={downloadBrandedPdf}>{t('Завантажити PDF', 'Download PDF')} ↓</button>
+                  <Link className="sysx-cta" to={lp('/cabinet')}>{t('Зберегти в кабінет', 'Save to cabinet')} →</Link>
+                </div>
+              </div>
+            ) : orderOpen ? (
+              <form className="calc-order-form" onSubmit={orderAudit}>
+                <span className="sysx-kick">{t('Замовити повний аудит', 'Order the full audit')}</span>
+                <p className="calc-order-lead">{t('Лишіть контакт — надішлемо план повного аудиту й звʼяжемося протягом робочого дня. Результат вашого експрес-витоку додається до заявки автоматично.', 'Leave your contact — we\'ll send the full-audit plan and get in touch within a business day. Your express-leak result is attached to the request automatically.')}</p>
+                <div className="calc-order-row">
+                  <label className="sysx-inp"><span className="sysx-inp-l">{t("Ім'я", 'Name')}</span><input value={oName} onChange={(e) => setOName(e.target.value)} placeholder={t('Ваше імʼя', 'Your name')} /></label>
+                  <label className="sysx-inp"><span className="sysx-inp-l">Email *</span><input type="email" value={oEmail} onChange={(e) => setOEmail(e.target.value)} placeholder="you@company.com" required /></label>
+                  <label className="sysx-inp"><span className="sysx-inp-l">{t('Телефон', 'Phone')}</span><input type="tel" value={oPhone} onChange={(e) => setOPhone(e.target.value)} placeholder="+380…" /></label>
+                </div>
+                {oErr && <span className="s3-err mono">{oErr}</span>}
+                <div className="sysx-calc-actions">
+                  <button className="sysx-cta is-primary" type="submit" disabled={leadBusy}>{leadBusy ? t('Надсилаємо…', 'Sending…') : t('Надіслати заявку', 'Send the request')} →</button>
+                  <button className="sysx-cta" type="button" onClick={() => setOrderOpen(false)}>{t('Скасувати', 'Cancel')}</button>
+                </div>
+              </form>
+            ) : (
+              <div className="sysx-calc-actions">
+                <button className="sysx-cta is-primary" onClick={() => setOrderOpen(true)}>{t('Замовити аудит', 'Order the audit')} →</button>
+                <button className="sysx-cta" onClick={downloadBrandedPdf}>{t('Завантажити PDF', 'Download PDF')} ↓</button>
+                <Link className="sysx-cta" to={lp('/pricing')}>{t('Формати і ціни', 'Formats & pricing')} →</Link>
+                <Link className="sysx-cta" to={lp('/cabinet')}>{t('Зберегти в кабінет', 'Save to cabinet')} →</Link>
+                <button className="sysx-cta" onClick={restart}>{t('Перерахувати', 'Recalculate')}</button>
+              </div>
+            )}
             <span className="sysx-note mono">{t('Оцінка за наданими даними. Не фінансовий аудит. Точну карту «де саме й чому» дає глибокий аудит (за кодом від менеджера).', 'An estimate based on your data. Not a financial audit. A precise map of “exactly where and why” comes from the deep audit (with a code from your manager).')}</span>
           </div>
         )}

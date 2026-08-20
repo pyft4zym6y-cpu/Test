@@ -3,6 +3,14 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from '
 import { RouteSeo } from '@/lib/seo';
 import '@/lib/primitives.css';
 
+// Нова сторінка — на початок (щоб перехід, напр. «Формати і ціни», відкривався
+// зверху, а не з середини/низу через відновлення позиції скролу). Хеш — не чіпаємо.
+function ScrollToTop() {
+  const { pathname, hash } = useLocation();
+  useEffect(() => { if (!hash) window.scrollTo(0, 0); }, [pathname, hash]);
+  return null;
+}
+
 // Плавний скрол до якоря (#systems тощо) при зміні хеша — для об'єднаних сторінок.
 function ScrollToHash() {
   const { hash } = useLocation();
@@ -61,6 +69,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <RouteSeo />
+      <ScrollToTop />
       <ScrollToHash />
       <Suspense fallback={null}>
         <Routes>

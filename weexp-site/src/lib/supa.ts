@@ -30,7 +30,7 @@ export type CompanyProfile = {
   channels?: string[]; contactName?: string; contactPhone?: string; notes?: string;
 };
 /** Стан воронки клієнта (наскрізна логіка кабінету). */
-export type FunnelState = { leadAt?: string; leadContact?: string; deepRequested?: boolean; deepAt?: string; deepDepth?: string };
+export type FunnelState = { leadAt?: string; leadContact?: string; deepRequested?: boolean; deepAt?: string; deepDepth?: string; deepTiers?: string[] };
 
 /** Дані діагностики, що зберігаються між сесіями (усі етапи). */
 export type DiagRecord = {

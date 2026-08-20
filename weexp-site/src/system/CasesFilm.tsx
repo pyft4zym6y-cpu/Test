@@ -111,7 +111,7 @@ export function CasesFilm() {
           <p className="sysx-lead">{t('Почніть із діагнозу: за 2 хвилини побачите, яка система дасть найбільшу дельту саме вам.', 'Start with the diagnosis: in 2 minutes you\'ll see which system delivers the biggest delta for you.')}</p>
           <div className="sysx-cta-row">
             <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Знайти свою дельту →', 'Find your delta →')}</Link>
-            <Link to={lp('/systems')} className="sysx-cta">{t('8 систем', '8 systems')}</Link>
+            <Link to={lp('/contact')} className="sysx-cta">{t('Написати нам', 'Contact us')} →</Link>
           </div>
         </div>
       </div>
