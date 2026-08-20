@@ -256,6 +256,10 @@
   .sysx-calc-panel { padding-bottom: calc(94px + env(safe-area-inset-bottom)); }
   .sysx-scene:last-of-type, .xp-panel:last-of-type, .sysf-panel:last-of-type, .cf-act:last-of-type,
   .pf-standard:last-of-type, .s2-report, .s3-quiz, .s2-quiz { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+  /* Фінальна CTA-сцена: маркета (absolute, z2) перекривала другу кнопку — даємо
+     запас знизу, щоб кнопки були над маркетою, і піднімаємо ряд CTA над нею. */
+  .sysx-ctaScene { padding-bottom: calc(124px + env(safe-area-inset-bottom)); }
+  .sysx-cta-row { position: relative; z-index: 3; }
 }
 @media (prefers-reduced-motion: reduce) { .sysh-nav { position: sticky; } }
 
