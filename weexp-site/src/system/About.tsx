@@ -1,16 +1,27 @@
 import { Link } from 'react-router-dom';
 import { useT, useLp, useLang } from '@/i18n';
 import { TEAM, localizeRole } from '@/data/team';
-import { shortOf } from '@/data/xray';
+import { L } from '@/system/expertises';
 import './system.css';
 
 /**
- * «Про нас» (/people). Місія, візія, цінності + компактний блок команди і
- * власника (структура: хто веде проєкт). Бруталіст-верстка, без cinematic-фільму,
- * щоб сторінка читалась за секунди й не було наповзань. UA/EN.
+ * «Про нас» (/people). Місія, візія, цінності + статусний блок власника +
+ * глибина експертизи агентства (9 напрямів, а не 18 вузьких посад). UA/EN.
  */
 const FOUNDER = TEAM[0];
-const ROSTER = TEAM.slice(1);
+
+// 9 укрупнених напрямів експертизи (кожен — напрям + пул спеціалістів під задачу).
+const AREAS: { t: [string, string]; d: [string, string] }[] = [
+  { t: ['Head of E-commerce', 'Head of E-commerce'], d: ['Власник результату: зводить усі системи до зростання й P&L.', 'Owner of the result: aligns all systems toward growth and P&L.'] },
+  { t: ['E-commerce Strategy', 'E-commerce Strategy'], d: ['Стратегія, позиціонування, модель росту й пріоритети.', 'Strategy, positioning, growth model and priorities.'] },
+  { t: ['Business & Process Architect', 'Business & Process Architect'], d: ['Операційна модель, процеси, CRM/ERP, ролі та регламенти.', 'Operating model, processes, CRM/ERP, roles and playbooks.'] },
+  { t: ['Marketing & Performance', 'Marketing & Performance'], d: ['Платний трафік, попит і креатив під юніт-економіку.', 'Paid traffic, demand and creative for unit economics.'] },
+  { t: ['Retention & CRM', 'Retention & CRM'], d: ['Утримання, повторні продажі, LTV, lifecycle-сценарії.', 'Retention, repeat sales, LTV, lifecycle scenarios.'] },
+  { t: ['SEO / GEO / AEO', 'SEO / GEO / AEO'], d: ['Органіка й видимість у пошуку та AI-відповідях.', 'Organic and visibility in search and AI answers.'] },
+  { t: ['UX / CRO Lead', 'UX / CRO Lead'], d: ['Досвід і конверсія: каталог, картка, checkout, mobile.', 'Experience and conversion: catalog, product, checkout, mobile.'] },
+  { t: ['Web & Technology', 'Web & Technology'], d: ['Платформа, інтеграції, швидкість, розробка й підтримка.', 'Platform, integrations, speed, development and support.'] },
+  { t: ['Analytics & BI', 'Analytics & BI'], d: ['Наскрізна аналітика, дані й звітність для рішень.', 'End-to-end analytics, data and reporting for decisions.'] },
+];
 
 export function About() {
   const t = useT();
@@ -98,27 +109,29 @@ export function About() {
               <div className="about-founder-ph"><img src={FOUNDER.photo} alt={`${FOUNDER.name ?? 'Founder'} — ${t('засновник WEEXP', 'founder of WEEXP')}`} width="900" height="1125" loading="lazy" /></div>
             )}
             <div className="about-founder-l">
-              <span className="about-eyebrow mono">{t('Засновник і архітектор', 'Founder & architect')}</span>
+              <span className="about-eyebrow mono">{t('Засновник і архітектор Commerce', 'Founder & Architect of Commerce')}</span>
               {FOUNDER.name && <h3 className="sysx-display about-name">{FOUNDER.name}</h3>}
               <span className="about-role">{fnd.role}</span>
-              <p className="about-focus">{fnd.focus}</p>
-              <p className="about-focus">{t('Саме власник бізнесу найбільше виграє від системи: коли продажі перестають триматися на ручному режимі, звільняється головний ресурс — увага й час засновника. Наша роль — зняти з власника операційний героїзм і дати керований актив, а не ще одного підрядника, якого треба контролювати.', 'It’s the business owner who benefits most from a system: once sales stop resting on manual mode, the main resource is freed — the founder’s attention and time. Our role is to take operational heroics off the owner and hand over a managed asset, not one more contractor to supervise.')}</p>
-              <div className="about-chips">{FOUNDER.owns.map((k) => <span key={k} className="about-chip mono">{shortOf(k, lang)}</span>)}</div>
-              <span className="about-exp mono">{fnd.exp}</span>
+              <p className="about-focus">{t('Понад 8 років будує міжнародний e-commerce на ринках США, ЄС і MENA — від виробників до брендів рівня Forbes TOP-250. Працює з бізнесом не як консультант «за окремою ділянкою», а як архітектор системи: бачить онлайн-продажі цілісно — від стратегії й позиціонування до процесів, технологій, маркетингу, команди й фінансового результату.', 'Over 8 years building international e-commerce across the US, EU and MENA — from manufacturers to Forbes TOP-250 brands. Works with a business not as a consultant «for a single area», but as a system architect: sees online sales as a whole — from strategy and positioning to processes, technology, marketing, team and financial result.')}</p>
+              <p className="about-focus">{t('Відповідає за результат бізнесу, а не за окремий фрагмент роботи: рішення ухвалюються на рівні системних змін — з P&L-відповідальністю, керованим циклом і вимірюваним ефектом. Саме власник найбільше виграє від системи: коли продажі перестають триматися на ручному режимі, звільняється головний ресурс — увага й час засновника.', 'Accountable for the business result, not a single fragment of work: decisions are made at the level of systemic change — with P&L ownership, a managed cycle and measurable effect. It’s the owner who benefits most from a system: once sales stop resting on manual mode, the main resource is freed — the founder’s attention and time.')}</p>
+              <div className="about-creds">
+                <span><b>8+</b> {t('років у e-commerce', 'years in e-commerce')}</span>
+                <span><b>US · EU · MENA</b></span>
+                <span>{t('бренди', 'brands')} <b>Forbes TOP-250</b></span>
+                <span>P&amp;L <b>$0.5–10M</b></span>
+              </div>
             </div>
           </div>
 
-          <span className="about-roster-lab mono">{t('Хто працює над вашим проєктом — власники за системами:', 'Who works on your project — owners by system:')}</span>
-          <div className="about-roster">
-            {ROSTER.map((r) => {
-              const lr = localizeRole(r, lang);
-              return (
-                <div key={r.role} className="about-role-c">
-                  <b>{lr.role}</b>
-                  <span className="about-role-zone">{lr.zone}</span>
-                </div>
-              );
-            })}
+          <span className="about-roster-lab mono">{t('Глибина експертизи агентства — 9 напрямів, кожен із власним пулом спеціалістів під вашу задачу:', 'The agency’s depth of expertise — 9 practices, each with its own pool of specialists for your task:')}</span>
+          <div className="about-roster about-roster-3">
+            {AREAS.map((a, i) => (
+              <div key={a.t[0]} className="about-role-c about-area-c">
+                <i className="about-area-n mono">{String(i + 1).padStart(2, '0')}</i>
+                <b>{L(a.t, lang)}</b>
+                <span className="about-role-zone">{L(a.d, lang)}</span>
+              </div>
+            ))}
           </div>
         </div>
 

@@ -1883,9 +1883,10 @@
 /* ═══ Хаб «Експансія» + підсторінки експертиз (бруталіст) ═══ */
 .xhub, .xp2 { position: relative; min-height: 80vh; padding: calc(90px + env(safe-area-inset-top)) clamp(18px,5vw,64px) clamp(60px,8vw,110px); }
 .xhub-in, .xp2-in { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; }
-.xhub-head { max-width: 46ch; }
+.xhub-head { max-width: 86ch; }
+.xhub-h1 { max-width: 18ch; }
 .xhub-h1 { font-size: clamp(40px,7vw,88px); margin-top: 14px; }
-.xhub-head .sysx-lead { margin-top: 20px; }
+.xhub-head .sysx-lead { margin-top: 20px; max-width: 78ch; font-size: clamp(14px, 1.4vw, 17px); }
 
 .xhub-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: clamp(18px,2.2vw,26px); margin-top: clamp(34px,5vw,56px); }
 @media (max-width: 760px) { .xhub-grid { grid-template-columns: 1fr; } }
@@ -1912,7 +1913,7 @@
 .xp2-head { max-width: 52ch; }
 .xp2-h1 { font-size: clamp(38px,6.4vw,80px); margin-top: 12px; }
 .xp2-script { display: block; font-size: clamp(24px,3vw,38px); margin-top: 10px; }
-.xp2-intro { margin: 20px 0 26px; max-width: 54ch; }
+.xp2-intro { margin: 20px 0 26px; max-width: 76ch; font-size: clamp(15px, 1.5vw, 18px); }
 .xp2-sec { margin-top: clamp(34px,4.5vw,56px); }
 .xp2-sec > .sysx-kick { display: block; margin-bottom: 18px; }
 .xp2-serv { display: grid; grid-template-columns: repeat(3,1fr); gap: 0; border: var(--bd); box-shadow: var(--sh-lg); background: var(--pure-white); }
@@ -2048,3 +2049,14 @@
 .about-role-c { padding: 15px 16px; gap: 4px; }
 .about-role-c b { font-size: 13.5px; }
 .about-role-zone { font-size: 12.5px; line-height: 1.35; color: var(--graphite); text-transform: none; letter-spacing: 0; font-weight: 500; }
+
+/* «Про нас»: кредити засновника + 9 напрямів експертизи (3×3) */
+.about-creds { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 8px; }
+.about-creds span { font-family: var(--mono); font-size: 12px; color: var(--graphite); }
+.about-creds b { color: var(--deep); font-weight: 800; }
+.about-roster-3 { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 900px) { .about-roster-3 { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .about-roster-3 { grid-template-columns: 1fr; } }
+.about-area-c { gap: 6px; }
+.about-area-n { font-family: var(--display); font-weight: 900; font-size: 18px; color: var(--red); font-style: normal; }
+.about-area-c b { font-size: 15px; }
