@@ -88,10 +88,14 @@ export function SystemInMotion() {
 
         {/* SYMPTOM / VOID */}
         <div ref={sVoid} className="sysx-scene sysx-void">
-          <div className="sysx-kick">WEEXP — The System in Motion</div>
+          <div className="sysx-kick">Commerce OS для e-commerce і D2C-брендів $0.5–10M</div>
           <h1 className="sysx-display sysx-h1">Система<br />замість <span className="sysx-em">героїзму</span></h1>
-          <p className="sysx-lead">Продажі тримаються на людях і ручному режимі, а не на системі. Подивіться, як має бути влаштовано.</p>
-          <span className="sysx-scrollhint mono">↓ scroll to enter</span>
+          <p className="sysx-lead">Продажі тримаються на людях і ручному режимі, а не на системі. Збираємо вісім систем в одну керовану — щоб виторг ріс, а бізнес не залежав від вас.</p>
+          <div className="sysx-cta-row sysx-void-cta">
+            <Link to="/diagnose" className="sysx-cta is-primary">Порахувати мій витік →</Link>
+            <Link to="/pricing" className="sysx-cta">Формати і ціни</Link>
+          </div>
+          <span className="sysx-scrollhint mono">↓ або погортайте, як це працює</span>
         </div>
 
         {/* FORM — 7 систем збираються */}

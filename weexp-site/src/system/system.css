@@ -1749,3 +1749,11 @@
   .pric-compare-card p b { color: var(--data); flex: 0 0 auto; }
   .pric-faqwrap { grid-template-columns: 1fr; }
 }
+
+/* Дві сутності аудиту (магазин / відділ) у картці 01 */
+.pric-scopes { list-style: none; margin: 10px 0 0; padding: 10px 0 0; border-top: 1px dashed var(--line); display: grid; gap: 8px; }
+.pric-scopes li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 13px; color: var(--charcoal); }
+.pric-scopes li b { color: var(--deep); white-space: nowrap; }
+
+/* CTA-рядок у героєві головної (над згином) */
+.sysx-void-cta { margin-top: 24px; }
