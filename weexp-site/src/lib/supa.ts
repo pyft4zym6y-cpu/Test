@@ -30,7 +30,9 @@ export type CompanyProfile = {
   channels?: string[]; contactName?: string; contactPhone?: string; notes?: string;
 };
 /** Стан воронки клієнта (наскрізна логіка кабінету). */
-export type FunnelState = { leadAt?: string; leadContact?: string; deepRequested?: boolean; deepAt?: string; deepDepth?: string; deepTiers?: string[] };
+/** Статус доступу до кожного рівня аудиту (керована воронка): відсутній ключ = «не запрошено». */
+export type TierStatus = 'requested' | 'data' | 'granted' | 'rejected';
+export type FunnelState = { leadAt?: string; leadContact?: string; deepRequested?: boolean; deepAt?: string; deepDepth?: string; deepTiers?: string[]; tierStatus?: Record<string, TierStatus>; tierReason?: Record<string, string> };
 
 /** Дані діагностики, що зберігаються між сесіями (усі етапи). */
 export type DiagRecord = {

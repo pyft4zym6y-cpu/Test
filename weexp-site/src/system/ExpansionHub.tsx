@@ -18,7 +18,7 @@ export function ExpansionHub() {
         <header className="xhub-head">
           <span className="sysx-kick">{t('Експертизи WEEXP', 'WEEXP expertise')}</span>
           <h1 className="sysx-display xhub-h1">{t('Фокусні ', 'Focused ')}<span className="hl">{t('експертизи', 'expertise')}</span></h1>
-          <p className="sysx-lead">{t('Фокус на експертизі та окремих напрямах. Кожен напрям — зі своєю командою партнерів, конкретною експертизою та результатом під вашу задачу. Ми не позиціонуємо всі напрями як внутрішню команду агентства: під окремі задачі залучаємо перевірених партнерів і лідерів ринку — кожен відповідає за свою експертизу.', 'Focus on expertise and distinct practices. Each practice has its own team of partners, specific expertise and an outcome measured against your task. We don\'t position every direction as an in-house agency team: for specific tasks we bring in vetted partners and market leaders — each accountable for their expertise.')}</p>
+          <p className="sysx-lead">{t('Кожен напрям — зі своєю командою партнерів і результатом під вашу задачу. Ми не подаємо все як «внутрішню команду на всё»: під конкретні задачі залучаємо перевірених партнерів і лідерів ринку, кожен відповідає за свою експертизу.', 'Each practice has its own team of partners and an outcome for your task. We don\'t pass everything off as an «in-house team for everything»: for specific tasks we bring in vetted partners and market leaders — each accountable for their expertise.')}</p>
         </header>
 
         <div className="xhub-grid">
