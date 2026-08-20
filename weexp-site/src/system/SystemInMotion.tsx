@@ -39,6 +39,7 @@ export function SystemInMotion() {
   const alerts = useRef<number[]>([]);               // системи, що світяться червоним
   const labels = useRef(Array.from({ length: 8 }, () => ({ x: 50, y: 50, vis: 0 }))); // спроєктовані позиції вузлів
   const labelEls = useRef<(HTMLDivElement | null)[]>([]);
+  const sObj = useRef<HTMLDivElement>(null);          // обгортка 3D-об'єкта — гейтимо прозорість скролом
   const sVoid = useRef<HTMLDivElement>(null);
   const sForm = useRef<HTMLDivElement>(null);
   const sRoot = useRef<HTMLDivElement>(null);
@@ -49,6 +50,10 @@ export function SystemInMotion() {
   useScrollScene(sec, (p, reduce) => {
     progress.current = p;
     alerts.current = !reduce && p >= 0.30 && p <= 0.52 ? [BOTTLENECK] : [];
+    // 3D-об'єкт — ТІЛЬКИ підложка: схований на першому екрані (постер-герой чистий,
+    // і на мобайлі), далі проявляється як тонка «блакитрук»-текстура з низькою
+    // непрозорістю, щоб НЕ конкурувати з текстом і вписуватись у бруталіст-стиль.
+    if (sObj.current) sObj.current.style.opacity = (reduce ? 0 : band(p, 0.13, 0.2) * 0.3).toFixed(3);
     set(sVoid.current, reduce ? 1 : seg(p, -1, 0, 0.07, 0.13), `translateY(${((1 - band(p, 0, 0.07)) * -3).toFixed(1)}vh)`);
     set(sForm.current, reduce ? 1 : seg(p, 0.13, 0.18, 0.26, 0.32));
     set(sRoot.current, reduce ? 1 : seg(p, 0.34, 0.39, 0.46, 0.52));
@@ -81,7 +86,9 @@ export function SystemInMotion() {
     <section ref={sec} className="sysx sysx-film sysx-scroll-mobile" aria-label="WEEXP — The System in Motion">
       <div className="sysx-stage">
         <span className="sysx-field" aria-hidden="true" />
-        <Suspense fallback={null}><CommerceSystem3D progress={progress} alerts={alerts} labels={labels} /></Suspense>
+        <div ref={sObj} className="sysx-obj-wrap" aria-hidden="true" style={{ opacity: 0 }}>
+          <Suspense fallback={null}><CommerceSystem3D progress={progress} alerts={alerts} labels={labels} /></Suspense>
+        </div>
 
         {/* 7 систем-лейблів (позиціонуються rAF-ом) */}
         <div className="sysx-labels" aria-hidden="true">

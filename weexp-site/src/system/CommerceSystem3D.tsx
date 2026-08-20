@@ -9,7 +9,8 @@ import * as THREE from 'three';
  * кераміка/матовий алюміній під м'яким студійним світлом (env через PMREM).
  * Свідомо світле полотно (alpha), без темного/verdigris.
  */
-const NODE_TINT = [0xffffff, 0xd9dde1, 0xffffff, 0xd9dde1, 0xffffff, 0xd9dde1, 0xffffff, 0xd9dde1];
+/* Neo-brutalist: вузли чергуються папір/чорнило, акцент — бренд-червоний */
+const NODE_TINT = [0xffffff, 0x141210, 0xffffff, 0x141210, 0xffffff, 0x141210, 0xffffff, 0x141210];
 
 /**
  * progress — скрол-керований прогрес (для фільму головної). fixedProgress —
@@ -100,7 +101,7 @@ export function CommerceSystem3D({ progress, fixedProgress, alerts, labels }: {
     // — Data-імпульси (сині) — течуть ядро←вузол в ACTIVATION —
     const pulses: THREE.Mesh[] = [];
     const pulseGeo = new THREE.SphereGeometry(0.09, 16, 16);
-    const pulseMat = new THREE.MeshBasicMaterial({ color: 0x7e9dff });
+    const pulseMat = new THREE.MeshBasicMaterial({ color: 0xf5301c });
     for (let i = 0; i < N; i++) { const p = new THREE.Mesh(pulseGeo, pulseMat); p.visible = false; group.add(p); pulses.push(p); }
 
     // pointer parallax
@@ -122,7 +123,7 @@ export function CommerceSystem3D({ progress, fixedProgress, alerts, labels }: {
     let raf = 0, t0 = 0, aCur = 0;
     const tmp = new THREE.Vector3();
     const tmpL = new THREE.Vector3();
-    const ALERT = new THREE.Color(0xd6362b), BLUE = new THREE.Color(0x7e9dff);
+    const ALERT = new THREE.Color(0xf5301c), BLUE = new THREE.Color(0xf5301c);
     const render = (t: number) => {
       if (!t0) t0 = t; const time = (t - t0) / 1000;
       const p = reduce ? 1 : (fixedProgress ?? progress?.current ?? 0);
