@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, Link, Outlet, useLocation } from 'react-router-dom';
 import { SiteFooter } from '@/system/SiteFooter';
+import { RouteBreadcrumbs } from '@/system/Breadcrumbs';
 import './system.css';
 
 /**
@@ -106,6 +107,7 @@ export function SystemShell() {
         </button>
       </nav>
 
+      <RouteBreadcrumbs />
       <Outlet />
       <SiteFooter />
     </div>

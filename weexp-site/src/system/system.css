@@ -210,6 +210,17 @@
 .sysh-right { display: inline-flex; align-items: center; gap: 10px; flex: 0 0 auto; }
 .sysh-tabs, .sysh-sheet { display: none; }
 
+/* Хлібні крихти — тонка смуга під фіксованою шапкою (не на головній/кабінеті). */
+.sysx-crumbs { position: relative; z-index: 30; background: var(--warm-white); border-bottom: 1px solid var(--line-soft);
+  padding: calc(58px + env(safe-area-inset-top)) clamp(16px, 4vw, 44px) 11px; }
+.sysx-crumbs-in { list-style: none; margin: 0 auto; padding: 0; max-width: 1180px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 12.5px; }
+.sysx-crumb { display: inline-flex; align-items: center; gap: 8px; color: var(--graphite); }
+.sysx-crumb a { color: var(--graphite); text-decoration: none; transition: color .2s; }
+.sysx-crumb a:hover { color: var(--deep); }
+.sysx-crumb span[aria-current="page"] { color: var(--deep); font-weight: 600; }
+.sysx-crumb-sep { color: var(--silver); font-style: normal; }
+@media (max-width: 860px) { .sysx-crumbs { padding-top: calc(54px + env(safe-area-inset-top)); } }
+
 @media (max-width: 720px) {
   .sysh-brand span { display: none; }
   .sysh-nav { gap: 10px; padding: 10px 14px; }

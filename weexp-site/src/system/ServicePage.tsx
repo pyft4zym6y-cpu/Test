@@ -28,10 +28,7 @@ export function ServicePage() {
   return (
     <section className="sysx svc" aria-label={sys.title}>
       <div className="svc-in">
-        <nav className="svc-crumbs mono">
-          <Link to="/#systems">Commerce OS</Link><span aria-hidden="true">›</span><b>{sys.title}</b>
-        </nav>
-
+        {/* Локальні крихти прибрано — глобальні «Головна / Системи / …» тепер у шапці (SystemShell). */}
         <header className="svc-head">
           <span className="sysx-kick">Система {sys.num} · {sys.en}</span>
           <h1 className="sysx-display svc-h1">{sys.title}</h1>
