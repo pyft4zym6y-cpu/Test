@@ -29,7 +29,6 @@ const Layout = lazy(() => import('@/Layout').then((m) => ({ default: m.Layout })
 const Home = lazy(() => import('@/pages/Home').then((m) => ({ default: m.Home })));
 const SystemPage = lazy(() => import('@/pages/SystemPage').then((m) => ({ default: m.SystemPage })));
 const CaseDetail = lazy(() => import('@/pages/CaseDetail').then((m) => ({ default: m.CaseDetail })));
-const FullDiagnosis = lazy(() => import('@/pages/FullDiagnosis').then((m) => ({ default: m.FullDiagnosis })));
 const NotFound = lazy(() => import('@/pages/NotFound').then((m) => ({ default: m.NotFound })));
 // Прев'ю нового напряму «The System in Motion» — поза темним Layout, повноекранне.
 const SystemInMotion = lazy(() => import('@/system/SystemInMotion').then((m) => ({ default: m.SystemInMotion })));
@@ -90,7 +89,8 @@ export default function App() {
             <Route path="/about/team" element={<Navigate to="/people" replace />} />
             <Route path="/about/standard" element={<Navigate to="/people" replace />} />
             {/* /diagnose і /contact переїхали у світлий v2 (під SystemShell) */}
-            <Route path="/diagnose/full" element={<FullDiagnosis />} />
+            {/* Business X-Ray виведено з ужитку — уся діагностика веде в єдиний потік /diagnose. */}
+            <Route path="/diagnose/full" element={<Navigate to="/diagnose" replace />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

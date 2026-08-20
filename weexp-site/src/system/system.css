@@ -779,6 +779,19 @@
 .s3-one { animation: s3One .42s var(--ease-cine); }
 @keyframes s3One { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 .s3-one-inp { display: grid; gap: 6px; max-width: 460px; }
+/* Крок 4 — відкриті відповіді й завантаження файлів */
+.s3-one-inp input[type="text"] { border: 1px solid var(--silver); border-radius: 10px; padding: 12px 13px; font-size: 16px; color: var(--deep); background: var(--pure-white); outline: 0; }
+.s3-one-inp input[type="text"]:focus { border-color: var(--data); }
+.s3-longtext { max-width: 620px; }
+.s3-longtext textarea { min-height: 104px; resize: vertical; font-family: var(--sans); font-size: 16px; line-height: 1.5; padding: 12px 13px; border: 1px solid var(--silver); border-radius: 10px; background: var(--pure-white); color: var(--deep); outline: 0; }
+.s3-longtext textarea:focus { border-color: var(--data); }
+.s3-file { display: grid; gap: 10px; max-width: 520px; }
+.s3-file-tpl { justify-self: start; font-size: 12px; color: var(--data); text-decoration: none; border: 1px solid color-mix(in srgb, var(--data) 30%, transparent); border-radius: 100px; padding: 7px 13px; background: color-mix(in srgb, var(--data) 8%, transparent); transition: border-color .18s, color .18s; }
+.s3-file-tpl:hover { color: var(--deep); border-color: var(--data); }
+.s3-file-drop { position: relative; display: flex; align-items: center; min-height: 54px; border: 1px dashed var(--silver); border-radius: 12px; padding: 12px 16px; cursor: pointer; background: var(--pure-white); transition: border-color .18s, background .18s; }
+.s3-file-drop:hover { border-color: var(--data); background: color-mix(in srgb, var(--data) 4%, transparent); }
+.s3-file-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.s3-file-cta { font-size: 13px; color: var(--charcoal); }
 .s3-flow-actions { margin-top: 6px; }
 .s3-flow-left, .s3-flow-right { display: inline-flex; align-items: center; gap: 14px; }
 

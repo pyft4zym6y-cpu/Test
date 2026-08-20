@@ -9,7 +9,13 @@
  */
 import { SYS, eur, type SysKey } from './lossModel';
 
-export type BlockKind = 'single' | 'multi' | 'number' | 'url' | 'urllist' | 'refs';
+export type BlockKind =
+  | 'single' | 'multi' | 'number' | 'url' | 'urllist' | 'refs'
+  // Глибші типи для Кроку 4 (поглиблений аудит):
+  | 'text'      // короткий відкритий (до 1 речення)
+  | 'longtext'  // розгорнутий відкритий (до ~7 речень)
+  | 'file';     // завантаження файлу (Word/Excel/PDF) за шаблоном
+export type Template = { label: string; href: string };
 export type Block = {
   id: string;
   section: string;
@@ -21,6 +27,11 @@ export type Block = {
   placeholder?: string;
   hint?: string;
   addLabel?: string;
+  rows?: number;         // для longtext
+  maxLen?: number;       // мʼякий ліміт символів (text/longtext)
+  accept?: string;       // для file, напр. '.xlsx,.xls,.csv,.pdf,.doc,.docx'
+  template?: Template;   // шаблон для завантаження поруч із питанням (file)
+  optional?: boolean;    // явно необовʼязкове питання
 };
 
 export type RefItem = { url: string; what: number[] };
@@ -114,7 +125,9 @@ export const BLOCKS: Block[] = [
     options: [{ label: 'Повний аудит e-commerce' }, { label: 'Новий сайт' }, { label: 'Трафік і маркетинг' }, { label: 'Аналітика й дані' }, { label: 'Операції й процеси' }, { label: 'Стратегія росту' }] },
 ];
 
-export type Stage3Answers = Record<string, number | number[] | string | string[] | RefItem[]>;
+/** Метадані завантаженого файлу (бінарник — на бекенді; тут — довідка про файл). */
+export type FileMeta = { name: string; size: number; type: string; at: string };
+export type Stage3Answers = Record<string, number | number[] | string | string[] | RefItem[] | FileMeta>;
 
 export type Reco = { key: 'audit' | 'rebuild'; title: string; reason: string; bullets: string[]; riskReversal: string; cta: string; to: string; strong: boolean };
 export type Pain = { label: string; detail: string };

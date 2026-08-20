@@ -556,6 +556,25 @@ export function Stage3({ prior, onClose, standalone, embedded }: { prior?: DiagR
               <input type="number" inputMode="decimal" placeholder="0" value={(val as string) ?? ''} onChange={(e) => set(b.id, e.target.value)} />
             </label>
           )}
+          {b.kind === 'text' && (
+            <label className="s2-inp s3-one-inp"><span className="mono">Ваша відповідь{b.optional ? ' · необовʼязково' : ''}</span>
+              <input type="text" maxLength={b.maxLen || 160} placeholder={b.placeholder || 'Коротко, одним реченням…'} value={(val as string) || ''} onChange={(e) => set(b.id, e.target.value)} />
+            </label>
+          )}
+          {b.kind === 'longtext' && (
+            <label className="s2-inp s3-one-inp s3-longtext"><span className="mono">Розгорніть{b.optional ? ' · необовʼязково' : ''}</span>
+              <textarea rows={b.rows || 5} maxLength={b.maxLen || 900} placeholder={b.placeholder || 'До кількох речень — що важливо, те й пишіть.'} value={(val as string) || ''} onChange={(e) => set(b.id, e.target.value)} />
+            </label>
+          )}
+          {b.kind === 'file' && (
+            <div className="s3-file">
+              {b.template && <a className="s3-file-tpl mono" href={b.template.href} download>↓ Шаблон: {b.template.label}</a>}
+              <label className="s3-file-drop">
+                <input type="file" accept={b.accept} onChange={(e) => { const f = e.target.files?.[0]; if (f) set(b.id, { name: f.name, size: f.size, type: f.type, at: new Date().toISOString() }); }} />
+                <span className="s3-file-cta mono">{val && typeof val === 'object' && 'name' in (val as object) ? `✓ ${(val as { name: string }).name}` : (b.placeholder || 'Обрати файл (Word · Excel · PDF)…')}</span>
+              </label>
+            </div>
+          )}
           {b.kind === 'single' && (
             <div className="s2-opts">
               {b.options!.map((o, i) => (
