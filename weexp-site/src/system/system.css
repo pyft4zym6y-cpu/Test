@@ -132,6 +132,7 @@
   display: grid; place-items: center; isolation: isolate;
 }
 /* Commerce System — WebGL-об'єкт на весь кадр (світле alpha-полотно) */
+.sysx-obj-wrap { position: absolute; inset: 0; z-index: 1; will-change: opacity; pointer-events: none; }
 .sysx-object3d { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; display: block; }
 /* (SVG-проксі більше не використовується — залишено класи для reduced-motion fallback) */
 .sysx-object { position: absolute; inset: 0; margin: auto; width: min(92vw, 1100px); height: 100%; z-index: 1; }
@@ -1528,9 +1529,11 @@
   /* 2.5D fallback застосовуємо до фільмів БЕЗ opt-in .sysx-scroll-mobile */
   .sysx-film:not(.sysx-scroll-mobile) { height: auto; }
   .sysx-film:not(.sysx-scroll-mobile) .sysx-stage { position: static; height: auto; display: block; padding: 76px 0 40px; background: transparent; }
-  /* Об'єкт-інфографіка лишається — тепер як живе напівпрозоре тло, що анімується
-     від скролу; контент-сцени стекуються поверх нього (читабельно). */
-  .sysx-film:not(.sysx-scroll-mobile) .sysx-object3d { display: block; position: fixed; inset: 0; width: 100%; height: 100dvh; z-index: 0; opacity: .5; pointer-events: none; }
+  /* На мобайлі ХОВАЄМО WebGL-об'єкти вторинних фільмів: раніше вони були
+     position:fixed на весь вьюпорт і «текли» поверх героя й тексту (бруталіст-стиль
+     цього не терпить). Контент-сцени стекуються чисто, без техно-підложки. */
+  .sysx-film:not(.sysx-scroll-mobile) .sysx-object3d,
+  .sysx-film:not(.sysx-scroll-mobile) .sysx-field { display: none; }
   .sysx-film:not(.sysx-scroll-mobile) .sysx-scene { position: relative; z-index: 1; inset: auto; opacity: 1 !important; transform: none !important;
     min-height: auto; margin: 52px 0; padding: 0 22px; }
 
