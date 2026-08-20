@@ -12,7 +12,7 @@ export type Crumb = { label: string; to?: string };
 
 const LABELS: Record<string, string> = {
   '/proof': 'Докази', '/people': 'Команда', '/expansion': 'Експансія',
-  '/diagnose': 'Діагностика', '/contact': 'Контакт', '/systems': 'Системи',
+  '/diagnose': 'Діагностика', '/contact': 'Контакт', '/systems': 'Системи', '/pricing': 'Формати та ціни',
 };
 
 export function Breadcrumbs({ items }: { items: Crumb[] }) {

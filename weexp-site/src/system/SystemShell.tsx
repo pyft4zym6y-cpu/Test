@@ -18,6 +18,7 @@ const LINKS = [
   { to: '/expansion', label: 'Експансія' },
   { to: '/people', label: 'Команда' },
   { to: '/diagnose', label: 'Діагностика' },
+  { to: '/pricing', label: 'Формати' },
   { to: '/contact', label: 'Контакт' },
 ];
 
