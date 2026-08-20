@@ -2,12 +2,12 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { computeLoss, eur, project, localizeSys, sysLabel, leakLabel, actionText, type LossInput, type LossResult, type SysKey } from './lossModel';
 import { saveExpressAudit } from './cabinetData';
+import { sendLead } from '@/lib/leads';
 import { shortOf } from '@/data/xray';
 import { useT, useLp, useLang } from '@/i18n';
 import './system.css';
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
-const Stage2 = lazy(() => import('@/system/Stage2').then((m) => ({ default: m.Stage2 })));
 
 /**
  * Калькулятор витрат — перший крок воронки діагностики (крок 1 з 2). Дає ЧИСЛО:
@@ -44,7 +44,8 @@ export function LossCalculator() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [inp, setInp] = useState<LossInput>({ monthlyRevenue: 0, aov: 0, conversion: 0, repeatRate: 0, returnsRate: 0, grossMargin: 0, cac: 0, symptoms: [] });
   const [res, setRes] = useState<LossResult | null>(null);
-  const [stage2, setStage2] = useState(false);
+  const [leadBusy, setLeadBusy] = useState(false);
+  const [leadSent, setLeadSent] = useState(false);
   const alerts = useRef<number[]>([]);
   const panelRef = useRef<HTMLDivElement>(null);
   // Зміна кроку — підводимо панель до верху вьюпорта (щоб екран не «стрибав» посередині форми)
@@ -58,8 +59,68 @@ export function LossCalculator() {
     setInp((s) => ({ ...s, [k]: parseFloat(e.target.value) || 0 }));
   const toggle = (k: SysKey) => setInp((s) => ({ ...s, symptoms: s.symptoms.includes(k) ? s.symptoms.filter((x) => x !== k) : [...s.symptoms, k] }));
   const compute = () => { const r = computeLoss(inp); setRes(r); alerts.current = r.bottleneckNodes; saveExpressAudit(inp, r); setStep(3); };
-  const restart = () => { alerts.current = []; setRes(null); setStep(1); };
+  const restart = () => { alerts.current = []; setRes(null); setLeadSent(false); setStep(1); };
   const primaryLabel = (k: SysKey) => sysLabel(k, lang);
+
+  // «Замовити аудит» — заявка прямо тут (лід на команду) + інлайн-підтвердження.
+  const orderAudit = async () => {
+    if (!res) return;
+    setLeadBusy(true);
+    await sendLead({
+      source: 'calc-order-audit', role: 'calc',
+      task: t('Заявка на аудит з калькулятора', 'Audit request from calculator'),
+      comment: `${t('Витік', 'Leak')}: ${eur(res.total)}/${t('рік', 'yr')} · bottleneck: ${sysLabel(res.primary, lang)} · Health ${res.overallHealth}/100`,
+    });
+    setLeadBusy(false); setLeadSent(true);
+  };
+
+  // Брендований PDF результату — самодостатня друкована сторінка (нова вкладка → друк/зберегти в PDF).
+  const downloadBrandedPdf = () => {
+    if (!res) return;
+    const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const proj = project(inp, res, lang);
+    const leaks = res.leaks.slice(0, 5).map((l) => `<tr><td>${esc(leakLabel(l, lang))}</td><td class="n">${esc(eur(l.amount))}</td></tr>`).join('');
+    const health = res.health.map((h) => `<div class="hb"><span>${esc(shortOf(h.key, lang))}</span><i><b style="width:${h.score}%"></b></i><em>${h.score}</em></div>`).join('');
+    const actions = res.actions.map((a) => `<li>${esc(actionText(a.key, lang))}</li>`).join('');
+    const projRows = proj.income.map((d) => `<tr><td>${esc(d.label)}</td><td>${esc(d.before)} → <b>${esc(d.after)}</b></td><td class="up">+${d.pct}%</td></tr>`).join('');
+    const doc = `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WEEXP — ${esc(t('Експрес-аудит витоку', 'Express leak audit'))}</title><style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Golos Text',-apple-system,Segoe UI,Roboto,sans-serif;color:#141210;background:#FAF5E9;max-width:760px;margin:0 auto;padding:30px 26px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.bar{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #141210;padding-bottom:12px;margin-bottom:22px}
+.logo{font-weight:900;text-transform:uppercase;font-size:20px;letter-spacing:-.01em}.logo span{color:#F5301C}
+.kick{font-weight:800;text-transform:uppercase;letter-spacing:.14em;font-size:11px;color:#F5301C}
+h1{font-size:30px;font-weight:900;text-transform:uppercase;line-height:.95;margin:14px 0 4px;letter-spacing:-.02em}
+.big{font-size:46px;font-weight:900;color:#F5301C;letter-spacing:-.03em;line-height:1;margin-top:6px}
+.sub{font-size:12px;color:#6B675E;margin-top:4px}
+.card{border:2.5px solid #141210;box-shadow:6px 6px 0 #141210;background:#fff;padding:18px 18px;margin:18px 0}
+.card.red{box-shadow:6px 6px 0 #F5301C}
+h2{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+table{width:100%;border-collapse:collapse;font-size:13px}td{padding:6px 4px;border-bottom:1px solid #e3d9c0}
+td.n{text-align:right;font-weight:800}td.up{color:#1F9D55;font-weight:800;text-align:right}
+.hb{display:flex;align-items:center;gap:10px;font-size:12px;margin:6px 0}.hb span{width:120px;font-weight:700}
+.hb i{flex:1;height:12px;border:2px solid #141210;background:#F1E9D4;position:relative}.hb b{position:absolute;inset:0 auto 0 0;background:#F5301C;display:block}
+.hb em{width:32px;text-align:right;font-weight:800;font-style:normal}
+ol{margin:0 0 0 18px}ol li{font-size:13px;margin:5px 0}
+.foot{margin-top:22px;font-size:11px;color:#6B675E;border-top:1px solid #e3d9c0;padding-top:10px}
+@page{margin:14mm}
+</style></head><body>
+<div class="bar"><span class="logo">WEE<span>X</span>P</span><span class="kick">${esc(t('Експрес-аудит', 'Express audit'))}</span></div>
+<span class="kick">${esc(t('Ваш витік в e-commerce · оцінка', 'Your e-commerce leak · estimate'))}</span>
+<div class="big">${esc(eur(res.total))} <span style="font-size:.4em;color:#6B675E">/ ${esc(t('рік', 'yr'))}</span></div>
+<div class="sub">${esc(t('діапазон', 'range'))} ${esc(eur(res.range[0]))}–${esc(eur(res.range[1]))}</div>
+<div class="card"><h2>${esc(t('Куди тече виторг', 'Where revenue leaks'))}</h2><table>${leaks}</table></div>
+<div class="card red"><h2>${esc(t('Головний bottleneck', 'Main bottleneck'))}</h2><b style="font-size:18px;text-transform:uppercase">${esc(primaryLabel(res.primary))}</b><div class="sub">${esc(t('вторинний', 'secondary'))} — ${esc(primaryLabel(res.secondary))}</div></div>
+<div class="card"><h2>Business Health · ${res.overallHealth}/100</h2>${health}</div>
+<div class="card"><h2>${esc(t('Три перші дії', 'First three actions'))}</h2><ol>${actions}</ol></div>
+${projRows ? `<div class="card"><h2>${esc(t('Зараз → куди можемо прийти', 'Now → where we can get to'))}</h2><table>${projRows}</table></div>` : ''}
+<div class="foot">${esc(t('Оцінка за наданими даними. Не фінансовий аудит. Для точної карти «де саме й чому» — глибокий аудит WEEXP.', 'An estimate based on your data. Not a financial audit. For a precise map of “exactly where and why” — WEEXP deep audit.'))} · weexp.agency</div>
+<scr${''}ipt>window.onload=function(){setTimeout(function(){window.print()},400)}</scr${''}ipt>
+</body></html>`;
+    const w = window.open('', '_blank');
+    if (!w) { alert(t('Дозвольте спливаючі вікна, щоб зберегти PDF.', 'Allow pop-ups to save the PDF.')); return; }
+    w.document.open(); w.document.write(doc); w.document.close();
+  };
 
   return (
     <section className="sysx sysx-calc">
@@ -71,8 +132,8 @@ export function LossCalculator() {
           <header className="sysx-calc-head">
             <div className="sysx-kick">{t('Діагностика e-commerce · крок', 'E-commerce diagnostics · step')} {step} · {t('~5 хвилин', '~5 minutes')}</div>
             <h1 className="sysx-display sysx-calc-h1">{t('Діагностика:', 'Diagnostics:')}<br />{t('почнімо з ', "let's start with ")}<span className="sysx-em">{t('числа', 'a number')}</span></h1>
-            <p className="sysx-lead">{t('Один інструмент від першого числа до плану. Спершу порахуємо, скільки витікає щороку; далі — карта систем, кабінет із вашими даними та поглиблений розбір. Це кроки однієї діагностики, а не окремі інструменти.', 'One tool from the first number to the plan. First we calculate how much leaks each year; then — the systems map, a cabinet with your data, and an in-depth review. These are steps of one diagnostic, not separate tools.')}</p>
-            <div className="sysx-steps mono"><span className={step === 1 ? 'on' : ''}>{t('01 Профіль', '01 Profile')}</span><i>→</i><span className={step === 2 ? 'on' : ''}>{t('02 Симптоми', '02 Symptoms')}</span><i>→</i><span>{t('03 Витік', '03 Leak')}</span><i>→</i><span>{t('04 Карта', '04 Map')}</span><i>→</i><span>{t('05 Кабінет', '05 Cabinet')}</span></div>
+            <p className="sysx-lead">{t('Безкоштовний експрес-аудит за 3 кроки: скільки виторгу витікає щороку, де саме й що робити першим. На виході — число, брендований PDF і можливість замовити повний аудит.', 'A free 3-step express audit: how much revenue leaks each year, where exactly and what to do first. You get a number, a branded PDF and the option to order a full audit.')}</p>
+            <div className="sysx-steps mono"><span className={step === 1 ? 'on' : ''}>{t('01 Профіль', '01 Profile')}</span><i>→</i><span className={step === 2 ? 'on' : ''}>{t('02 Симптоми', '02 Symptoms')}</span><i>→</i><span className={String(step) === '3' ? 'on' : ''}>{t('03 Витік', '03 Leak')}</span></div>
           </header>
         )}
 
@@ -166,7 +227,7 @@ export function LossCalculator() {
                 <div className="s2-project sysx-proj1">
                   <div className="s2-proj-head">
                     <span className="sysx-kick">{t('Зараз → Куди можемо прийти · чорнова ціль', 'Now → Where we can get to · draft target')}</span>
-                    <p className="s2-proj-sub">{t('Перша оцінка за ', 'First estimate over ')}<b>{proj.horizon}</b>{t('. На Кроці 2 і в кабінеті цей діапазон ', '. On Step 2 and in the cabinet this range ')}<b>{t('уточнюється', 'is refined')}</b>{t(' вашими даними — не рахуємо наново.', ' by your data — no recalculation from scratch.')}</p>
+                    <p className="s2-proj-sub">{t('Перша оцінка за ', 'First estimate over ')}<b>{proj.horizon}</b>{t('. У повному аудиті цей діапазон ', '. In the full audit this range ')}<b>{t('уточнюється', 'is refined')}</b>{t(' вашими даними (CRM/ERP/GA4) — не рахуємо наново.', ' by your data (CRM/ERP/GA4) — no recalculation from scratch.')}</p>
                   </div>
                   <div className="s2-proj-income">
                     {proj.income.map((d) => (
@@ -181,30 +242,26 @@ export function LossCalculator() {
               );
             })()}
 
-            {/* Наступний крок тієї ж діагностики: число → карта → кабінет → план */}
+            {/* Що далі: забрати PDF, замовити повний аудит або зберегти в кабінет.
+                Кроки 4–5 прибрані — глибокий аудит тепер окрема гілка (тільки за кодом). */}
             <div className="sysx-next2">
-              <span className="sysx-kick">{t('Крок 4 · Повна карта систем', 'Step 4 · Full systems map')}</span>
-              <p className="sysx-next2-lead">{t('Ви завершили ', 'You completed ')}<b>{t('кроки 1–3', 'steps 1–3')}</b>{t(' — маєте число. Далі, у тій самій діагностиці, підтвердимо його вашими даними (CRM/ERP/GA4) і покажемо, ', ' — you have a number. Next, in the same diagnostic, we confirm it with your data (CRM/ERP/GA4) and show ')}<b>{t('де саме', 'exactly where')}</b>{t(' витікає виторг і ', ' revenue leaks and ')}<b>{t('як його повернути', 'how to recover it')}</b>{t(' — план під Definition of Done.', ' — a plan under Definition of Done.')}</p>
-              <div className="sysx-next2-ladder mono">
-                <span><b>{t('Кроки 1–3', 'Steps 1–3')}</b><i>{t('Число: скільки втрачаєте', 'Number: how much you lose')}</i></span>
-                <em>→</em>
-                <span><b>{t('Крок 4', 'Step 4')}</b><i>{t('Карта: де саме й чому', 'Map: exactly where and why')}</i></span>
-                <em>→</em>
-                <span><b>{t('Крок 5', 'Step 5')}</b><i>{t('Кабінет + план повернення', 'Cabinet + recovery plan')}</i></span>
-              </div>
+              <span className="sysx-kick">{t('Що далі', "What's next")}</span>
+              <p className="sysx-next2-lead">{t('Число у вас є. Заберіть брендований PDF або ', 'You have the number. Take the branded PDF or ')}<b>{t('замовте повний аудит', 'order the full audit')}</b>{t(' — ми підтвердимо цифру вашими даними (CRM/ERP/GA4), знайдемо ', ' — we confirm the figure with your data (CRM/ERP/GA4), find ')}<b>{t('де саме', 'exactly where')}</b>{t(' витікає виторг і складемо план повернення під Definition of Done.', ' revenue leaks and build a recovery plan under a Definition of Done.')}</p>
             </div>
 
             <div className="sysx-calc-actions">
-              <button className="sysx-cta is-primary" onClick={() => setStage2(true)}>{t('Далі: повна карта систем →', 'Next: full systems map →')}</button>
-              <Link className="sysx-cta" to={lp('/cabinet')}>{t('Зберегти в кабінет →', 'Save to cabinet →')}</Link>
+              {leadSent
+                ? <span className="cab-saved mono">{t('✓ Заявку на аудит прийнято — звʼяжемося з вами', '✓ Audit request received — we\'ll be in touch')}</span>
+                : <button className="sysx-cta is-primary" onClick={orderAudit} disabled={leadBusy}>{leadBusy ? t('Надсилаємо…', 'Sending…') : t('Замовити аудит', 'Order the audit')} →</button>}
+              <button className="sysx-cta" onClick={downloadBrandedPdf}>{t('Завантажити PDF', 'Download PDF')} ↓</button>
+              <Link className="sysx-cta" to={lp('/pricing')}>{t('Формати і ціни', 'Formats & pricing')} →</Link>
+              <Link className="sysx-cta" to={lp('/cabinet')}>{t('Зберегти в кабінет', 'Save to cabinet')} →</Link>
               <button className="sysx-cta" onClick={restart}>{t('Перерахувати', 'Recalculate')}</button>
             </div>
-            <span className="sysx-note mono">{t('Оцінка за наданими даними. Не фінансовий аудит. Етап 2 уточнює зріз за логікою Commerce OS.', 'An estimate based on your data. Not a financial audit. Stage 2 refines the cut using Commerce OS logic.')}</span>
+            <span className="sysx-note mono">{t('Оцінка за наданими даними. Не фінансовий аудит. Точну карту «де саме й чому» дає глибокий аудит (за кодом від менеджера).', 'An estimate based on your data. Not a financial audit. A precise map of “exactly where and why” comes from the deep audit (with a code from your manager).')}</span>
           </div>
         )}
       </div>
-
-      {stage2 && res && <Suspense fallback={null}><Stage2 stage1={inp} stage1Result={res} onClose={() => setStage2(false)} /></Suspense>}
     </section>
   );
 }
