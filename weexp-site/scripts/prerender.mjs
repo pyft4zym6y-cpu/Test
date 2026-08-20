@@ -49,9 +49,9 @@ const ROSTER = [
 const CHANNELS = ['Власний сайт', 'Amazon', 'Allegro', 'eBay', 'Kaufland та локальні маркетплейси', 'Etsy'];
 
 const ROUTES = [
-  { path: '/', title: 'WEEXP — Система замість героїзму',
-    desc: 'Операційний партнер з e-commerce для українських виробників і D2C-брендів $0.5–10M: діагноз у грошах, побудова системи, вихід на ринки ЄС і США — і залишаємо все працювати без вас.',
-    content: `<h1>Система замість героїзму</h1><p>Продажі тримаються на людях і ручному режимі, а не на системі. WEEXP — операційний партнер з e-commerce для українських виробників і D2C-брендів $0.5–10M: діагностуємо систему онлайн-продажів, рахуємо розрив у грошах і будуємо систему, щоб бізнес працював без героя.</p><p>${esc(SERVICES)}</p><h2>Вісім систем онлайн-продажів</h2>${ul(SYSTEMS)}` },
+  { path: '/', title: 'WEEXP — Commerce OS: система замість героїзму',
+    desc: 'Commerce OS для D2C та e-commerce брендів $0.5–10M: діагноз у грошах, побудова системи й вихід на ЄС/США — щоб виторг ріс без вас.',
+    content: `<h1>Система замість героїзму</h1><p>Продажі тримаються на людях і ручному режимі, а не на системі. WEEXP — Commerce OS для українських виробників і D2C-брендів $0.5–10M: діагностуємо систему онлайн-продажів, рахуємо розрив у грошах і будуємо систему, щоб бізнес працював без героя.</p><p>${esc(SERVICES)}</p><h2>Вісім систем онлайн-продажів</h2>${ul(SYSTEMS)}` },
   { path: '/proof', title: `Докази — трансформації в цифрах${SUF}`,
     desc: 'Флагманські кейси e-commerce: дельти до→після з CRM/ERP/GA4 — ×18 обороту, +65% продажів, ≥19 млн ₴ розриву. Не обіцянки, а числа.',
     content: `<h1>Систему видно в цифрах</h1><p>Не обіцянки — дельти до→після з CRM, ERP і GA4. Кожен кейс анонімний, але число реальне.</p>${ul(PROOF)}` },
@@ -92,9 +92,15 @@ for (const [slug, title, en] of SERVICE_META) {
 
 const canon = (p) => ORIGIN + (p === '/' ? '/' : p);
 
+// FAQPage і Service лишаємо ТІЛЬКИ на головній (де FAQ/послуга справді на сторінці);
+// на інших сторінках Google вимагає видимий контент під розмітку — тож віддаємо
+// лише Organization + WebSite, щоб не ловити structured-data-невідповідність.
+const MINIMAL_LD = `<script type="application/ld+json">\n{"@context":"https://schema.org","@graph":[{"@type":"ProfessionalService","@id":"${ORIGIN}/#org","name":"WEEXP","url":"${ORIGIN}/","logo":"${ORIGIN}/apple-touch-icon.png","image":"${ORIGIN}/og.png","areaServed":["UA","EU","US"],"email":"hello@weexp.agency","sameAs":["https://www.linkedin.com/company/weexp"]},{"@type":"WebSite","@id":"${ORIGIN}/#site","url":"${ORIGIN}/","name":"WEEXP","inLanguage":"uk","publisher":{"@id":"${ORIGIN}/#org"}}]}\n</script>`;
+
 function build(tpl, r) {
   let h = tpl;
   h = h.replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(r.title)}</title>`);
+  if (r.path !== '/') h = h.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/, MINIMAL_LD);
   h = h.replace(/(<meta name="description" content=")[^"]*(")/, `$1${esc(r.desc)}$2`);
   h = h.replace(/(<link rel="canonical" href=")[^"]*(")/, `$1${canon(r.path)}$2`);
   h = h.replace(/(<meta property="og:url" content=")[^"]*(")/, `$1${canon(r.path)}$2`);

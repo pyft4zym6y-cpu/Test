@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { RouteSeo } from '@/lib/seo';
 import '@/lib/primitives.css';
 
@@ -20,18 +20,11 @@ function ScrollToHash() {
   return null;
 }
 
-// Класичний (темний) Layout тягне framer-motion/lenis/gsap — вантажимо ліниво,
-// щоб цей ваговий чанк не потрапляв у entry світлого v2 (де він не потрібен).
-const Layout = lazy(() => import('@/Layout').then((m) => ({ default: m.Layout })));
-
-// Усі маршрути — ліниво, щоб кожна сторінка тягла лише свій код, а не весь
-// сайт наперед (three.js та важкі блоки головної не потрапляють на інші сторінки).
-const Home = lazy(() => import('@/pages/Home').then((m) => ({ default: m.Home })));
-const SystemPage = lazy(() => import('@/pages/SystemPage').then((m) => ({ default: m.SystemPage })));
-const CaseDetail = lazy(() => import('@/pages/CaseDetail').then((m) => ({ default: m.CaseDetail })));
-const NotFound = lazy(() => import('@/pages/NotFound').then((m) => ({ default: m.NotFound })));
-// Прев'ю нового напряму «The System in Motion» — поза темним Layout, повноекранне.
+// Легасі темний сайт (Layout + Home/CaseDetail/SystemPage/NotFound) виведено з
+// ужитку: усі старі маршрути 301-редиректяться у світлий v2 (див. нижче + root
+// vercel.json), щоб на сайті була ОДНА айдентика. Світла 404 — SystemNotFound.
 const SystemInMotion = lazy(() => import('@/system/SystemInMotion').then((m) => ({ default: m.SystemInMotion })));
+const SystemNotFound = lazy(() => import('@/system/SystemNotFound').then((m) => ({ default: m.SystemNotFound })));
 const CasesFilm = lazy(() => import('@/system/CasesFilm').then((m) => ({ default: m.CasesFilm })));
 const PeopleFilm = lazy(() => import('@/system/PeopleFilm').then((m) => ({ default: m.PeopleFilm })));
 const ExpansionFilm = lazy(() => import('@/system/ExpansionFilm').then((m) => ({ default: m.ExpansionFilm })));
@@ -41,6 +34,13 @@ const LossCalculator = lazy(() => import('@/system/LossCalculator').then((m) => 
 const Cabinet = lazy(() => import('@/system/Cabinet').then((m) => ({ default: m.Cabinet })));
 const ServicePage = lazy(() => import('@/system/ServicePage').then((m) => ({ default: m.ServicePage })));
 
+// /challenges/:slug (легасі) → відповідна світла сторінка системи /systems/:slug
+// (слаги збігаються), щоб зберегти глибокі посилання, а не кидати все на індекс.
+function ChallengeRedirect() {
+  const { slug } = useParams();
+  return <Navigate to={slug ? `/systems/${slug}` : '/#systems'} replace />;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -48,51 +48,43 @@ export default function App() {
       <ScrollToHash />
       <Suspense fallback={null}>
         <Routes>
-          {/* Новий cinematic-напрям — тепер головний вхід сайту, під спільною оболонкою.
-              Попередній (темний) сайт лишається доступним на /classic для порівняння/відкату. */}
+          {/* Реальні сторінки — усі під спільною світлою оболонкою (одна айдентика). */}
           <Route element={<SystemShell />}>
             <Route path="/" element={<SystemInMotion />} />
-            <Route path="/system" element={<Navigate to="/" replace />} />
-            {/* /systems об'єднано з головною — окремої сторінки більше немає (лише
-                скрол-етап на «/»); старі посилання ведемо на якір головної. */}
-            <Route path="/systems" element={<Navigate to="/#systems" replace />} />
             <Route path="/cabinet" element={<Cabinet />} />
             <Route path="/proof" element={<CasesFilm />} />
             <Route path="/people" element={<PeopleFilm />} />
             <Route path="/expansion" element={<ExpansionFilm />} />
-            {/* Єдиний інструмент діагностики: калькулятор → карта → кабінет → Крок 4/5.
-                /loss (стара окрема назва) веде сюди ж, щоб не було двох паралельних. */}
+            {/* Єдиний інструмент діагностики: калькулятор → карта → кабінет → Крок 4/5. */}
             <Route path="/diagnose" element={<LossCalculator />} />
-            <Route path="/loss" element={<Navigate to="/diagnose" replace />} />
             <Route path="/systems/:slug" element={<ServicePage />} />
             <Route path="/contact" element={<ContactFilm />} />
+            {/* Світла 404 у тій же оболонці (шапка/крихти/підвал). */}
+            <Route path="*" element={<SystemNotFound />} />
           </Route>
-          <Route element={<Layout />}>
-            {/* Попередній (темний) головний — доступний для порівняння/відкату */}
-            <Route path="/classic" element={<Home />} />
-            {/* Усі темні входи зведені у світлий v2. Індекси → відповідні фільми,
-                тематичні сторінки → найближчий v2-екран. Глибокі сторінки-деталі
-                (система/кейс) та повна діагностика лишаються за прямим URL. */}
-            <Route path="/challenges" element={<Navigate to="/systems" replace />} />
-            <Route path="/challenges/:slug" element={<SystemPage />} />
-            <Route path="/what-we-build" element={<Navigate to="/systems" replace />} />
-            <Route path="/what-we-build/eu-expansion" element={<Navigate to="/systems" replace />} />
-            <Route path="/how-it-works" element={<Navigate to="/systems" replace />} />
-            <Route path="/how-it-works/business-health" element={<Navigate to="/diagnose" replace />} />
-            <Route path="/how-it-works/independence-score" element={<Navigate to="/diagnose" replace />} />
-            <Route path="/how-it-works/benchmark" element={<Navigate to="/diagnose" replace />} />
-            <Route path="/cases" element={<Navigate to="/proof" replace />} />
-            <Route path="/cases/:slug" element={<CaseDetail />} />
-            <Route path="/intelligence" element={<Navigate to="/proof" replace />} />
-            <Route path="/about" element={<Navigate to="/people" replace />} />
-            <Route path="/about/founder" element={<Navigate to="/people" replace />} />
-            <Route path="/about/team" element={<Navigate to="/people" replace />} />
-            <Route path="/about/standard" element={<Navigate to="/people" replace />} />
-            {/* /diagnose і /contact переїхали у світлий v2 (під SystemShell) */}
-            {/* Business X-Ray виведено з ужитку — уся діагностика веде в єдиний потік /diagnose. */}
-            <Route path="/diagnose/full" element={<Navigate to="/diagnose" replace />} />
-            <Route path="*" element={<NotFound />} />
-          </Route>
+
+          {/* Клієнтські редиректи (дублюють 301 у root vercel.json — для SPA-навігації).
+              Легасі темні маршрути ведуть у світлі аналоги; окремої тёмної айдентики немає. */}
+          <Route path="/system" element={<Navigate to="/" replace />} />
+          <Route path="/systems" element={<Navigate to="/#systems" replace />} />
+          <Route path="/loss" element={<Navigate to="/diagnose" replace />} />
+          <Route path="/classic" element={<Navigate to="/" replace />} />
+          <Route path="/cases" element={<Navigate to="/proof" replace />} />
+          <Route path="/cases/:slug" element={<Navigate to="/proof" replace />} />
+          <Route path="/challenges" element={<Navigate to="/#systems" replace />} />
+          <Route path="/challenges/:slug" element={<ChallengeRedirect />} />
+          <Route path="/what-we-build" element={<Navigate to="/#systems" replace />} />
+          <Route path="/what-we-build/eu-expansion" element={<Navigate to="/expansion" replace />} />
+          <Route path="/how-it-works" element={<Navigate to="/#systems" replace />} />
+          <Route path="/how-it-works/business-health" element={<Navigate to="/diagnose" replace />} />
+          <Route path="/how-it-works/independence-score" element={<Navigate to="/diagnose" replace />} />
+          <Route path="/how-it-works/benchmark" element={<Navigate to="/diagnose" replace />} />
+          <Route path="/intelligence" element={<Navigate to="/proof" replace />} />
+          <Route path="/about" element={<Navigate to="/people" replace />} />
+          <Route path="/about/founder" element={<Navigate to="/people" replace />} />
+          <Route path="/about/team" element={<Navigate to="/people" replace />} />
+          <Route path="/about/standard" element={<Navigate to="/people" replace />} />
+          <Route path="/diagnose/full" element={<Navigate to="/diagnose" replace />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

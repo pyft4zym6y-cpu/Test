@@ -19,7 +19,7 @@ const ROLES = ['Власник / CEO', 'Комерційний директор'
 const TASKS = ['Знайти вузьке місце', 'Зростання виторгу', 'Вихід у ЄС / США', 'Новий сайт / платформа', 'CRM / відділ продажів', 'Аналітика й дані', 'Ще не визначився'];
 const TIMELINE = ['Готовий почати зараз', 'Протягом 1–3 місяців', 'Досліджую ринок'];
 const BUDGET = ['Ще не визначено', 'до €5k', '€5–15k', '€15–40k', '€40k+'];
-const MAIL = 'pashasidorenko18@gmail.com';
+const MAIL = 'hello@weexp.agency';
 type Status = 'idle' | 'sending' | 'ok' | 'fallback';
 
 export function ContactFilm() {
@@ -75,7 +75,7 @@ export function ContactFilm() {
           <div className="sysx-card cf-thanks">
             <div className="sysx-kick">Заявку отримано</div>
             <h2 className="sysx-display">Дякуємо. Ми на звʼязку.</h2>
-            <p className="sysx-lead">Заявка з вашими даними{attach ? ' і результатом X-Ray' : ''} вже у нас. Повернемося протягом робочого дня з планом діагностики у грошах.</p>
+            <p className="sysx-lead">Заявка з вашими даними{attach ? ' і результатом діагностики' : ''} вже у нас. Повернемося протягом робочого дня з планом діагностики у грошах.</p>
             <a className="sysx-cta" href={`mailto:${MAIL}`}>{MAIL}</a>
           </div>
         ) : (
@@ -83,14 +83,14 @@ export function ContactFilm() {
             {diag && keepDiag && (
               <div className="ctf-diag mono">
                 <div className="ctf-diag-top">
-                  <span className="ctf-diag-lab">Додаємо ваш попередній результат X-Ray</span>
+                  <span className="ctf-diag-lab">Додаємо ваш попередній результат діагностики</span>
                   <button type="button" className="ctf-diag-x" onClick={() => setKeepDiag(false)} aria-label="Не додавати результат">✕ не додавати</button>
                 </div>
                 <pre className="ctf-diag-body">{diag}</pre>
               </div>
             )}
             {diag && !keepDiag && (
-              <button type="button" className="ctf-diag-add mono" onClick={() => setKeepDiag(true)}>+ Додати мій результат X-Ray до заявки</button>
+              <button type="button" className="ctf-diag-add mono" onClick={() => setKeepDiag(true)}>+ Додати мій результат діагностики до заявки</button>
             )}
             <form className="ctf-form" onSubmit={submit}>
               <label className="ctf-field"><span className="mono">Ім'я</span><input name="name" required autoComplete="name" /></label>

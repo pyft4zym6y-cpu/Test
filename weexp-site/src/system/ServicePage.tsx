@@ -84,21 +84,29 @@ export function ServicePage() {
           </article>
         </div>
 
-        {proofs.length > 0 && (
-          <div className="svc-proof">
-            <span className="svc-lab mono">07 · Докази — де ця система дала дельту</span>
-            <div className="svc-proof-grid">
-              {proofs.map((c) => (
-                <Link key={c.slug} to="/proof" className="svc-case">
-                  <span className="svc-case-cat mono">{c.cat}</span>
-                  <b className="sysx-display svc-case-hero">{c.hero}</b>
-                  <span className="svc-case-lbl">{c.heroLabel}</span>
-                </Link>
-              ))}
-            </div>
-            <span className="svc-proof-note mono">Кожна дельта звірена з CRM / ERP / GA4 клієнта.</span>
-          </div>
-        )}
+        <div className="svc-proof">
+          <span className="svc-lab mono">07 · Докази — де ця система дала дельту</span>
+          {proofs.length > 0 ? (
+            <>
+              <div className="svc-proof-grid">
+                {proofs.map((c) => (
+                  <Link key={c.slug} to="/proof" className="svc-case">
+                    <span className="svc-case-cat mono">{c.cat}</span>
+                    <b className="sysx-display svc-case-hero">{c.hero}</b>
+                    <span className="svc-case-lbl">{c.heroLabel}</span>
+                  </Link>
+                ))}
+              </div>
+              <span className="svc-proof-note mono">Кожна дельта звірена з CRM / ERP / GA4 клієнта.</span>
+            </>
+          ) : (
+            /* Fallback, щоб секція не зникала на системах без прив'язаних кейсів (консистентність шаблону). */
+            <>
+              <p className="svc-promise">Ця система підсилює результат інших — сумарні дельти по всіх трансформаціях зібрані на сторінці доказів.</p>
+              <Link to="/proof" className="sysx-cta">Дивитись усі докази в цифрах →</Link>
+            </>
+          )}
+        </div>
 
         <div className="svc-next">
           <div className="svc-next-l">

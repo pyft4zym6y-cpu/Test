@@ -18,7 +18,7 @@ const LABELS: Record<string, string> = {
 export function Breadcrumbs({ items }: { items: Crumb[] }) {
   if (items.length < 2) return null;
   return (
-    <nav className="sysx-crumbs" aria-label="Хлібні крихти">
+    <nav className="sysx sysx-crumbs" aria-label="Хлібні крихти">
       <ol className="sysx-crumbs-in">
         {items.map((c, i) => {
           const last = i === items.length - 1;
@@ -60,7 +60,8 @@ export function RouteBreadcrumbs() {
       '@type': 'BreadcrumbList',
       itemListElement: items.map((c, i) => ({
         '@type': 'ListItem', position: i + 1, name: c.label,
-        ...(c.to ? { item: ORIGIN + (c.to === '/' ? '/' : c.to) } : {}),
+        // JSON-LD item має бути реальним індексованим URL — прибираємо фрагмент (#systems).
+        ...(c.to ? { item: ORIGIN + (c.to === '/' ? '/' : (c.to.split('#')[0].replace(/\/$/, '') || '/')) } : {}),
       })),
     };
     const s = document.createElement('script');
