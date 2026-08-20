@@ -58,16 +58,22 @@ export function PeopleFilm() {
 
         {/* FOUNDER — спотлайт */}
         <div ref={founder} className="pf-founder" style={{ opacity: 0 }}>
+          {FOUNDER.photo && (
+            <div className="pf-portrait">
+              <img src={FOUNDER.photo} alt={`${FOUNDER.name ?? 'Засновник'} — засновник WEEXP`} width="900" height="1125" loading="lazy" />
+            </div>
+          )}
           <div className="pf-founder-l">
             <span className="pf-eyebrow mono">Засновник</span>
-            <h2 className="sysx-display pf-role">{FOUNDER.role}</h2>
+            {FOUNDER.name && <h2 className="sysx-display pf-name">{FOUNDER.name}</h2>}
+            <p className="pf-role-sub mono">{FOUNDER.role}</p>
             <div className="pf-owns">{FOUNDER.owns.map((k) => <span key={k} className="pf-chip mono">{SHORT[k]}</span>)}</div>
             <p className="pf-focus">{FOUNDER.focus}</p>
             <p className="pf-exp mono">{FOUNDER.exp}</p>
+            <ul className="pf-exlist">
+              {FOUNDER.expertise.map((e) => <li key={e}><i aria-hidden="true" />{e}</li>)}
+            </ul>
           </div>
-          <ul className="pf-exlist">
-            {FOUNDER.expertise.map((e) => <li key={e}><i aria-hidden="true" />{e}</li>)}
-          </ul>
         </div>
 
         {/* ROSTER — власник у кожної системи */}

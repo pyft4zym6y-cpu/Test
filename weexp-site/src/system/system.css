@@ -1209,13 +1209,18 @@
 /* FOUNDER — спотлайт */
 .pf-founder {
   position: absolute; inset: 0; z-index: 3; display: grid;
-  grid-template-columns: 1.05fr .95fr; align-items: center; gap: clamp(24px, 5vw, 80px);
+  grid-template-columns: minmax(220px, 300px) 1fr; align-items: center; gap: clamp(24px, 5vw, 70px);
   padding: 0 clamp(24px, 7vw, 120px); pointer-events: none; will-change: opacity, transform;
 }
 .pf-founder .mono, .pf-roster .mono { font-family: var(--mono); }
-.pf-founder-l { display: grid; justify-items: start; gap: 12px; }
+.pf-portrait { border-radius: 18px; overflow: hidden; border: 1px solid var(--silver); box-shadow: 0 40px 80px -50px rgba(21,23,26,.6); background: var(--mist); }
+.pf-portrait img { display: block; width: 100%; height: auto; }
+.pf-founder-l { display: grid; justify-items: start; gap: 11px; }
 .pf-eyebrow { font-size: 11px; letter-spacing: .24em; text-transform: uppercase; color: var(--graphite); }
+.pf-name { font-size: clamp(30px, 4vw, 58px); color: var(--deep); line-height: .98; }
+.pf-role-sub { font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--data); margin: -2px 0 2px; }
 .pf-role { font-size: clamp(34px, 5vw, 74px); color: var(--deep); line-height: .95; }
+.pf-founder-l .pf-exlist { padding: 14px 0 0; margin-top: 4px; background: none; backdrop-filter: none; -webkit-backdrop-filter: none; border: 0; border-top: 1px solid var(--line); border-radius: 0; box-shadow: none; gap: 10px; }
 .pf-owns { display: flex; flex-wrap: wrap; gap: 6px; }
 .pf-chip { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--charcoal); border: 1px solid var(--silver); border-radius: 100px; padding: 4px 10px; background: rgba(255, 255, 255, .6); }
 .pf-focus { font-size: clamp(15px, 1.7vw, 20px); line-height: 1.5; color: var(--charcoal); max-width: 34ch; }
@@ -1757,3 +1762,9 @@
 
 /* CTA-рядок у героєві головної (над згином) */
 .sysx-void-cta { margin-top: 24px; }
+
+/* Портрет засновника на мобайлі — не на всю ширину */
+@media (max-width: 860px) {
+  .pf-founder { grid-template-columns: 1fr; justify-items: start; }
+  .pf-portrait { max-width: 240px; }
+}

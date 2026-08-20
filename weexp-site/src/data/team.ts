@@ -7,6 +7,8 @@ import type { SystemKey } from '@/data/xray';
  */
 export type Role = {
   role: string;
+  name?: string;       // ім'я (показуємо для засновника)
+  photo?: string;      // портрет (засновник)
   owns: SystemKey[];   // системи-власності (чипи)
   zone: string;        // бізнес-зона, яку закриває роль
   focus: string;
@@ -17,6 +19,8 @@ export type Role = {
 export const TEAM: Role[] = [
   {
     role: 'Founder & Architect of Commerce',
+    name: 'Павло Сидоренко',
+    photo: '/team/pavlo-sydorenko.jpg',
     owns: ['strategy', 'org'],
     zone: 'Стратегія та операційна модель',
     focus: 'Стратегія, операційна модель, governance — щоб бізнес працював без героя.',
