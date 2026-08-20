@@ -65,7 +65,7 @@ export function About() {
         <div className="about-mv">
           <div className="about-mv-c">
             <span className="sysx-kick">{t('Місія', 'Mission')}</span>
-            <p className="sysx-display about-mv-t">{t('Перетворити e-commerce з героїзму на систему — щоб бізнес ріс і не залежав від засновника.', 'Turn e-commerce from heroics into a system — so the business grows and no longer depends on its founder.')}</p>
+            <p className="sysx-display about-mv-t">{t('Перетворити e-commerce з героїзму на систему — щоб бізнес зростав і не залежав від засновника.', 'Turn e-commerce from heroics into a system — so the business grows and no longer depends on its founder.')}</p>
           </div>
           <div className="about-mv-c about-mv-red">
             <span className="sysx-kick">{t('Візія', 'Vision')}</span>
