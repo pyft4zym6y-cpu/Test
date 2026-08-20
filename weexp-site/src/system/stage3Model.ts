@@ -9,7 +9,13 @@
  */
 import { SYS, eur, type SysKey } from './lossModel';
 
-export type BlockKind = 'single' | 'multi' | 'number' | 'url' | 'urllist' | 'refs';
+export type BlockKind =
+  | 'single' | 'multi' | 'number' | 'url' | 'urllist' | 'refs'
+  // Глибші типи для Кроку 4 (поглиблений аудит):
+  | 'text'      // короткий відкритий (до 1 речення)
+  | 'longtext'  // розгорнутий відкритий (до ~7 речень)
+  | 'file';     // завантаження файлу (Word/Excel/PDF) за шаблоном
+export type Template = { label: string; href: string };
 export type Block = {
   id: string;
   section: string;
@@ -21,6 +27,11 @@ export type Block = {
   placeholder?: string;
   hint?: string;
   addLabel?: string;
+  rows?: number;         // для longtext
+  maxLen?: number;       // мʼякий ліміт символів (text/longtext)
+  accept?: string;       // для file, напр. '.xlsx,.xls,.csv,.pdf,.doc,.docx'
+  template?: Template;   // шаблон для завантаження поруч із питанням (file)
+  optional?: boolean;    // явно необовʼязкове питання
 };
 
 export type RefItem = { url: string; what: number[] };
@@ -75,6 +86,8 @@ export const BLOCKS: Block[] = [
     options: [{ label: 'Немає', score: 0 }, { label: 'Бачимо оборот', score: 1 }, { label: 'Є маржа по групах', score: 2 }, { label: 'Повний P&L + unit economics', score: 3 }, { label: 'Веде бухгалтер, ми не бачимо', score: 1 }, { label: 'Не знаю', score: 0.6 }] },
   { id: 'f_aov', section: 'Фінанси', label: 'Середній чек (AOV)', kind: 'number', unit: '€', hint: 'необовʼязково — якщо знаєте' },
   { id: 'f_ltv', section: 'Фінанси', label: 'Скільки приносить клієнт за рік (LTV)', kind: 'number', unit: '€', hint: 'необовʼязково' },
+  { id: 'f_pricing', section: 'Фінанси', label: 'Як ви встановлюєте ціни?', kind: 'single', system: 'commercial',
+    options: [{ label: 'Інтуїтивно / як вийде', score: 0 }, { label: 'Собівартість + %', score: 1 }, { label: 'Конкуренти ± націнка', score: 1.6 }, { label: 'За юніт-економікою і цінністю', score: 3 }] },
 
   // 5 — Позиціонування і бренд
   { id: 'b_pos', section: 'Позиціонування і бренд', label: 'Чи є у вас чітке позиціонування?', kind: 'single', system: 'strategy',
@@ -85,6 +98,8 @@ export const BLOCKS: Block[] = [
     options: [{ label: 'Майже немає', score: 0 }, { label: 'Опис товарів', score: 1 }, { label: '+ гайди / відео', score: 2 }, { label: 'Контент-система', score: 3 }] },
   { id: 'b_social', section: 'Позиціонування і бренд', label: 'Що з довірою (відгуки, UGC, кейси)?', kind: 'single', system: 'experience',
     options: [{ label: 'Немає', score: 0 }, { label: 'Кілька відгуків', score: 1 }, { label: 'Регулярні відгуки', score: 2 }, { label: 'Система UGC + рейтинги', score: 3 }] },
+  { id: 'b_service', section: 'Позиціонування і бренд', label: 'Що з клієнтським сервісом і швидкістю відповіді?', kind: 'single', system: 'experience',
+    options: [{ label: 'Повільно / нестабільно', score: 0 }, { label: 'Відповідаємо, але без стандартів', score: 1 }, { label: 'Є стандарти й канали', score: 2 }, { label: 'Швидко: стандарти + чат-боти', score: 3 }] },
 
   // 6 — Сайт і технології (нативно веде до нового сайту й розбору)
   { id: 'd_stack', section: 'Сайт і технології', label: 'На чому побудований ваш сайт?', kind: 'single', system: 'data',
@@ -114,7 +129,9 @@ export const BLOCKS: Block[] = [
     options: [{ label: 'Повний аудит e-commerce' }, { label: 'Новий сайт' }, { label: 'Трафік і маркетинг' }, { label: 'Аналітика й дані' }, { label: 'Операції й процеси' }, { label: 'Стратегія росту' }] },
 ];
 
-export type Stage3Answers = Record<string, number | number[] | string | string[] | RefItem[]>;
+/** Метадані завантаженого файлу (бінарник — на бекенді; тут — довідка про файл). */
+export type FileMeta = { name: string; size: number; type: string; at: string };
+export type Stage3Answers = Record<string, number | number[] | string | string[] | RefItem[] | FileMeta>;
 
 export type Reco = { key: 'audit' | 'rebuild'; title: string; reason: string; bullets: string[]; riskReversal: string; cta: string; to: string; strong: boolean };
 export type Pain = { label: string; detail: string };
