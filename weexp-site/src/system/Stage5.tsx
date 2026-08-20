@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useT, useLp } from '@/i18n';
 import { StepOverlay } from './StepOverlay';
 import './system.css';
 
@@ -33,6 +34,8 @@ type Diagnosis = {
 };
 
 export function Stage5({ context, onClose, onSaveHistory }: { context: InterviewContext; onClose: () => void; onSaveHistory?: (h: { q: string; a: string }[]) => void }) {
+  const t = useT();
+  const lp = useLp();
   const [history, setHistory] = useState<{ q: string; a: string }[]>([]);
   const [q, setQ] = useState<QNode | null>(null);
   const [coverage, setCoverage] = useState(12);
@@ -72,30 +75,30 @@ export function Stage5({ context, onClose, onSaveHistory }: { context: Interview
 
   return (
     <StepOverlay>
-      <div className="sysx s2 s3 s5" role="dialog" aria-label="Крок 5 — AI-інтерв'ю">
-        <button className="s2-x mono" onClick={onClose}>✕ Закрити</button>
+      <div className="sysx s2 s3 s5" role="dialog" aria-label={t("Крок 5 — AI-інтерв'ю", 'Step 5 — AI interview')}>
+        <button className="s2-x mono" onClick={onClose}>{t('✕ Закрити', '✕ Close')}</button>
         <div className="s2-report s5-in">
           <header className="s2-rep-head">
-            <div className="sysx-kick">Крок 5 · Поглиблена AI-діагностика</div>
-            <h1 className="sysx-display s2-rep-h">Інтерв'ю під <span className="sysx-em">ваш випадок</span></h1>
-            <p className="s2-rep-line">Кілька підібраних питань — і зведемо докази, корені й напрям руху. Відповідайте вільно, як є.</p>
+            <div className="sysx-kick">{t('Крок 5 · Поглиблена AI-діагностика', 'Step 5 · In-depth AI diagnostics')}</div>
+            <h1 className="sysx-display s2-rep-h">{t('Інтерв\'ю під', 'Interview for')} <span className="sysx-em">{t('ваш випадок', 'your case')}</span></h1>
+            <p className="s2-rep-line">{t('Кілька підібраних питань — і зведемо докази, корені й напрям руху. Відповідайте вільно, як є.', 'A few tailored questions — and we bring together the evidence, root causes and direction. Answer freely, as it is.')}</p>
             {!diag && (
-              <div className="s5-cov mono"><span>Глибина діагностики</span><div className="s3-depth-track"><i style={{ width: `${coverage}%` }} /></div><b>{coverage}%</b></div>
+              <div className="s5-cov mono"><span>{t('Глибина діагностики', 'Diagnostic depth')}</span><div className="s3-depth-track"><i style={{ width: `${coverage}%` }} /></div><b>{coverage}%</b></div>
             )}
           </header>
 
           {/* Помилки / незалаштований бекенд */}
           {err === 'config' && (
             <div className="s2-panel s5-fallback">
-              <span className="sysx-kick">Майже готово</span>
-              <p className="s3-reco-p">Онлайн AI-інтерв'ю ще вмикається на цьому акаунті. Тим часом — призначмо коротку зустріч: пройдемо ці питання разом і одразу складемо план.</p>
-              <Link to="/contact" className="sysx-cta is-primary">Обрати час зустрічі →</Link>
+              <span className="sysx-kick">{t('Майже готово', 'Almost ready')}</span>
+              <p className="s3-reco-p">{t("Онлайн AI-інтерв'ю ще вмикається на цьому акаунті. Тим часом — призначмо коротку зустріч: пройдемо ці питання разом і одразу складемо план.", 'The online AI interview is still being enabled on this account. In the meantime, let\'s set up a short call: we\'ll go through these questions together and draw up a plan right away.')}</p>
+              <Link to={lp('/contact')} className="sysx-cta is-primary">{t('Обрати час зустрічі →', 'Pick a time to meet →')}</Link>
             </div>
           )}
           {err === 'net' && (
             <div className="s2-panel s5-fallback">
-              <p className="s3-reco-p">Звʼязок перервався. Спробуймо ще раз.</p>
-              <button className="sysx-cta is-primary" onClick={() => step(history, q ? 'ask' : 'finish')}>Повторити</button>
+              <p className="s3-reco-p">{t('Звʼязок перервався. Спробуймо ще раз.', 'The connection dropped. Let\'s try again.')}</p>
+              <button className="sysx-cta is-primary" onClick={() => step(history, q ? 'ask' : 'finish')}>{t('Повторити', 'Retry')}</button>
             </div>
           )}
 
@@ -105,7 +108,7 @@ export function Stage5({ context, onClose, onSaveHistory }: { context: Interview
               {history.map((h, i) => (
                 <div key={i} className="s5-turn">
                   <span className="s5-q mono">{h.q}</span>
-                  <span className="s5-a">{h.a || <i className="s5-skip">пропущено</i>}</span>
+                  <span className="s5-a">{h.a || <i className="s5-skip">{t('пропущено', 'skipped')}</i>}</span>
                 </div>
               ))}
             </div>
@@ -115,11 +118,11 @@ export function Stage5({ context, onClose, onSaveHistory }: { context: Interview
           {!diag && !err && (
             <div className="s2-panel s5-ask">
               {busy && !q ? (
-                <div className="s5-think mono">Обмірковуємо наступне питання…</div>
+                <div className="s5-think mono">{t('Обмірковуємо наступне питання…', 'Thinking through the next question…')}</div>
               ) : q ? (
                 <>
                   <b className="sysx-display s5-q-h">{q.text}</b>
-                  {q.why && <span className="s5-why mono">навіщо: {q.why}</span>}
+                  {q.why && <span className="s5-why mono">{t('навіщо:', 'why:')} {q.why}</span>}
                   {q.kind === 'choice' && q.options?.length ? (
                     <div className="s5-opts">
                       {q.options.map((o) => (
@@ -128,18 +131,18 @@ export function Stage5({ context, onClose, onSaveHistory }: { context: Interview
                     </div>
                   ) : (
                     <>
-                      <textarea ref={inputRef} className="s5-ta" rows={3} value={answer} placeholder={q.hint || 'Ваша відповідь…'}
+                      <textarea ref={inputRef} className="s5-ta" rows={3} value={answer} placeholder={q.hint || t('Ваша відповідь…', 'Your answer…')}
                         disabled={busy} onChange={(e) => setAnswer(e.target.value)}
                         onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submit(answer.trim()); }} />
                       {q.hint && <span className="s5-hint mono">{q.hint}</span>}
                     </>
                   )}
                   <div className="s5-actions">
-                    {q.kind !== 'choice' && <button className="sysx-cta is-primary" disabled={busy || !answer.trim()} onClick={() => submit(answer.trim())}>Відповісти →</button>}
-                    <button className="sysx-cta" disabled={busy} onClick={() => submit('')}>Пропустити</button>
-                    {history.length >= 2 && <button className="sysx-cta" disabled={busy} onClick={finish}>Завершити й показати діагноз</button>}
+                    {q.kind !== 'choice' && <button className="sysx-cta is-primary" disabled={busy || !answer.trim()} onClick={() => submit(answer.trim())}>{t('Відповісти →', 'Answer →')}</button>}
+                    <button className="sysx-cta" disabled={busy} onClick={() => submit('')}>{t('Пропустити', 'Skip')}</button>
+                    {history.length >= 2 && <button className="sysx-cta" disabled={busy} onClick={finish}>{t('Завершити й показати діагноз', 'Finish and show diagnosis')}</button>}
                   </div>
-                  <span className="s5-tip mono">Enter — новий рядок · Ctrl/⌘+Enter — відповісти</span>
+                  <span className="s5-tip mono">{t('Enter — новий рядок · Ctrl/⌘+Enter — відповісти', 'Enter — new line · Ctrl/⌘+Enter — answer')}</span>
                 </>
               ) : null}
             </div>
@@ -149,18 +152,18 @@ export function Stage5({ context, onClose, onSaveHistory }: { context: Interview
           {diag && (
             <>
               <div className="s2-panel s3-verdict">
-                <span className="sysx-kick">Поглиблений діагноз</span>
+                <span className="sysx-kick">{t('Поглиблений діагноз', 'In-depth diagnosis')}</span>
                 <p className="s3-epiphany">{diag.summary}</p>
                 {diag.rootCauses.length > 0 && (
-                  <div className="s5-roots"><span className="s3-sub">Кореневі причини</span><ul>{diag.rootCauses.map((r) => <li key={r}>{r}</li>)}</ul></div>
+                  <div className="s5-roots"><span className="s3-sub">{t('Кореневі причини', 'Root causes')}</span><ul>{diag.rootCauses.map((r) => <li key={r}>{r}</li>)}</ul></div>
                 )}
               </div>
 
               {diag.problems.length > 0 && (
                 <div className="s2-panel s3-step4">
-                  <span className="sysx-kick">Ключові проблеми — докази й пріоритет</span>
+                  <span className="sysx-kick">{t('Ключові проблеми — докази й пріоритет', 'Key problems — evidence and priority')}</span>
                   <div className="s3-kp">
-                    <div className="s3-kp-head mono"><span>Проблема</span><span>Докази</span><span>Впевненість</span><span>Пріоритет</span></div>
+                    <div className="s3-kp-head mono"><span>{t('Проблема', 'Problem')}</span><span>{t('Докази', 'Evidence')}</span><span>{t('Впевненість', 'Confidence')}</span><span>{t('Пріоритет', 'Priority')}</span></div>
                     {diag.problems.map((p) => (
                       <div key={p.title} className="s3-kp-row">
                         <b>{p.title}{p.impact && <span className="s5-impact">{p.impact}</span>}</b>
@@ -175,7 +178,7 @@ export function Stage5({ context, onClose, onSaveHistory }: { context: Interview
 
               {diag.roadmap.length > 0 && (
                 <div className="s2-panel s3-roadmap">
-                  <span className="sysx-kick">Дорожня карта</span>
+                  <span className="sysx-kick">{t('Дорожня карта', 'Roadmap')}</span>
                   <div className="s3-road">
                     {diag.roadmap.map((r, i) => (
                       <div key={r.title} className="s3-road-step">
@@ -189,8 +192,8 @@ export function Stage5({ context, onClose, onSaveHistory }: { context: Interview
 
               {diag.connect.length > 0 && (
                 <div className="s2-panel s5-connect">
-                  <span className="sysx-kick">Що підключити для повної картини</span>
-                  <p className="s3-reco-p">Наступний рівень точності — коли діагностика бачить ваші реальні дані, а не лише слова.</p>
+                  <span className="sysx-kick">{t('Що підключити для повної картини', 'What to connect for the full picture')}</span>
+                  <p className="s3-reco-p">{t('Наступний рівень точності — коли діагностика бачить ваші реальні дані, а не лише слова.', 'The next level of accuracy — when diagnostics see your real data, not just words.')}</p>
                   <div className="s5-connect-grid">
                     {diag.connect.map((c) => (
                       <div key={c.what} className="s5-connect-i"><b>{c.what}</b><span>{c.why}</span></div>
@@ -201,12 +204,12 @@ export function Stage5({ context, onClose, onSaveHistory }: { context: Interview
 
               <div className="s2-panel s3-send">
                 <div className="s3-send-l">
-                  <b className="sysx-display">Складемо повний план?</b>
-                  <p className="s3-reco-p">На зустрічі перетворимо цей діагноз на покроковий план під Definition of Done — з термінами й окупністю.</p>
+                  <b className="sysx-display">{t('Складемо повний план?', 'Shall we build the full plan?')}</b>
+                  <p className="s3-reco-p">{t('На зустрічі перетворимо цей діагноз на покроковий план під Definition of Done — з термінами й окупністю.', 'In the meeting we\'ll turn this diagnosis into a step-by-step plan under a Definition of Done — with timelines and payback.')}</p>
                 </div>
                 <div className="s3-send-r">
-                  <Link to="/contact" className="sysx-cta is-primary">Обрати час зустрічі →</Link>
-                  <button className="sysx-cta" onClick={onClose}>Повернутись до звіту</button>
+                  <Link to={lp('/contact')} className="sysx-cta is-primary">{t('Обрати час зустрічі →', 'Pick a time to meet →')}</Link>
+                  <button className="sysx-cta" onClick={onClose}>{t('Повернутись до звіту', 'Back to report')}</button>
                 </div>
               </div>
             </>

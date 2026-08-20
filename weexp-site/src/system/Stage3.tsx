@@ -1,9 +1,10 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { eur, project, computeLoss, type LossInput } from './lossModel';
-import { BLOCKS, SECTIONS, LIKE_WHAT, scoreStage3, type Stage3Answers, type RefItem } from './stage3Model';
+import { BLOCKS, SECTIONS, scoreStage3, localizeBlock, localizeSection, localizeLikeWhat, type Stage3Answers, type RefItem } from './stage3Model';
 import { levelFor } from './stage2Model';
 import { isValidCode } from '@/lib/access';
+import { useT, useLp, useLang } from '@/i18n';
 import { RadarChart, SystemBars, HW } from './charts';
 import { StepOverlay } from './StepOverlay';
 import { FunnelSteps } from './FunnelSteps';
@@ -42,6 +43,7 @@ function Frame({ embedded, children }: { embedded?: boolean; children: ReactNode
 }
 
 export function Stage3({ prior, onClose, standalone, embedded }: { prior?: DiagRecord; onClose: () => void; standalone?: boolean; embedded?: boolean }) {
+  const t = useT(); const lp = useLp(); const lang = useLang();
   const [user, setUser] = useState<DiagUser | null>(null);
   const [checking, setChecking] = useState(true);
   const [email, setEmail] = useState(''); const [pass, setPass] = useState('');
@@ -110,22 +112,22 @@ export function Stage3({ prior, onClose, standalone, embedded }: { prior?: DiagR
   const accountBar = (full: boolean) => (
     <div className="cab-bar">
       <div className="cab-id">
-        <span className="cab-badge mono">● Кабінет</span>
+        <span className="cab-badge mono">● {t('Кабінет', 'Cabinet')}</span>
         <span className="cab-email mono">{user?.email}</span>
       </div>
       <div className="cab-actions">
         {full && <>
-          <button className="cab-nav mono" onClick={() => scrollCab()}>Огляд</button>
-          <button className="cab-nav mono" onClick={() => scrollCab('.s3-docs')}>Документи</button>
-          <button className="cab-nav mono" onClick={() => { setIdx(0); scrollCab(); }}>Дані</button>
+          <button className="cab-nav mono" onClick={() => scrollCab()}>{t('Огляд', 'Overview')}</button>
+          <button className="cab-nav mono" onClick={() => scrollCab('.s3-docs')}>{t('Документи', 'Documents')}</button>
+          <button className="cab-nav mono" onClick={() => { setIdx(0); scrollCab(); }}>{t('Дані', 'Data')}</button>
         </>}
-        <button className="cab-out mono" onClick={logout}>Вийти</button>
-        <button className="cab-site mono" onClick={onClose}>На сайт →</button>
+        <button className="cab-out mono" onClick={logout}>{t('Вийти', 'Sign out')}</button>
+        <button className="cab-site mono" onClick={onClose}>{t('На сайт →', 'To site →')}</button>
       </div>
     </div>
   );
   const unlockStep4 = () => {
-    if (!isValidCode(step4Code)) { setStep4Err('Код недійсний. Попросіть його в менеджера або оберіть оплату.'); return; }
+    if (!isValidCode(step4Code)) { setStep4Err(t('Код недійсний. Попросіть його в менеджера або оберіть оплату.', 'Invalid code. Ask your manager for it or choose to pay.')); return; }
     setStep4Err(''); setStep4Unlocked(true);
     if (user) saveDiag(user, { stage3: { ...ans, __step4: true } as Record<string, unknown> });
   };
@@ -148,7 +150,8 @@ export function Stage3({ prior, onClose, standalone, embedded }: { prior?: DiagR
   const answeredCount = BLOCKS.filter((b) => { const a = ans[b.id]; return a != null && a !== '' && (!Array.isArray(a) || a.length); }).length;
   const moneyStr = money && money[0] > 0 ? `${eur(money[0])}–${eur(money[1])}` : '';
   // Ціль (точка Б) з першого блоку — щоб вести весь розбір саме до неї.
-  const goalBlock = BLOCKS.find((b) => b.id === 'goal_b');
+  const goalBlockRaw = BLOCKS.find((b) => b.id === 'goal_b');
+  const goalBlock = goalBlockRaw ? localizeBlock(goalBlockRaw, lang) : undefined;
   const goalLabels = Array.isArray(ans['goal_b']) && goalBlock?.options
     ? (ans['goal_b'] as number[]).map((i) => goalBlock.options![i]?.label).filter(Boolean) as string[] : [];
 
@@ -157,27 +160,27 @@ export function Stage3({ prior, onClose, standalone, embedded }: { prior?: DiagR
   if (!user) {
     return (
       <Frame embedded={embedded}>
-      <div className={'sysx s2 s3' + (embedded ? ' s3-embedded' : '')} role="dialog" aria-label="Етап 3 — кабінет">
+      <div className={'sysx s2 s3' + (embedded ? ' s3-embedded' : '')} role="dialog" aria-label={t('Етап 3 — кабінет', 'Stage 3 — cabinet')}>
         {embedded ? null : standalone
-          ? <button className="s2-x mono" onClick={onClose}>✕ Закрити</button>
-          : <div className="s2-flowhead"><button className="s2-flowback mono" onClick={onClose}>← Назад до карти</button><FunnelSteps active={5} /></div>}
+          ? <button className="s2-x mono" onClick={onClose}>{t('✕ Закрити', '✕ Close')}</button>
+          : <div className="s2-flowhead"><button className="s2-flowback mono" onClick={onClose}>{t('← Назад до карти', '← Back to map')}</button><FunnelSteps active={5} /></div>}
         <div className="s3-auth">
-          <div className="sysx-kick">{standalone ? 'Особистий кабінет клієнта' : 'Крок 5 з 5 — ваш робочий кабінет'}</div>
-          <h2 className="sysx-display s3-auth-h">{standalone ? <>Вхід у ваш<br />кабінет WEEXP</> : <>Ваш персональний<br />Tier-2 розбір</>}</h2>
+          <div className="sysx-kick">{standalone ? t('Особистий кабінет клієнта', 'Personal client cabinet') : t('Крок 5 з 5 — ваш робочий кабінет', 'Step 5 of 5 — your working cabinet')}</div>
+          <h2 className="sysx-display s3-auth-h">{standalone ? (lang === 'en' ? <>Sign in to your<br />WEEXP cabinet</> : <>Вхід у ваш<br />кабінет WEEXP</>) : (lang === 'en' ? <>Your personal<br />Tier-2 analysis</> : <>Ваш персональний<br />Tier-2 розбір</>)}</h2>
           <p className="s3-auth-lead">{standalone
-            ? 'Увійдіть тим самим email — і побачите свій збережений розбір: дані з калькулятора, профіль зрілості й дорожню карту. Немає кабінету — створимо за 10 секунд.'
-            : (moneyStr ? <>Ми вже оцінили вашу можливість у <b>{moneyStr}/рік</b>. Кабінет доводить аналіз до Tier-2 і показує, де саме вона зосереджена — на ваших даних.</> : 'Кабінет доводить аналіз до рівня Tier-2 — на ваших даних, а не загальних порадах.')}</p>
+            ? t('Увійдіть тим самим email — і побачите свій збережений розбір: дані з калькулятора, профіль зрілості й дорожню карту. Немає кабінету — створимо за 10 секунд.', 'Sign in with the same email and you’ll see your saved analysis: calculator data, maturity profile and roadmap. No cabinet yet — we’ll create one in 10 seconds.')
+            : (moneyStr ? (lang === 'en' ? <>We’ve already estimated your opportunity at <b>{moneyStr}/yr</b>. The cabinet takes the analysis to Tier-2 and shows exactly where it’s concentrated — on your data.</> : <>Ми вже оцінили вашу можливість у <b>{moneyStr}/рік</b>. Кабінет доводить аналіз до Tier-2 і показує, де саме вона зосереджена — на ваших даних.</>) : t('Кабінет доводить аналіз до рівня Tier-2 — на ваших даних, а не загальних порадах.', 'The cabinet takes the analysis to the Tier-2 level — on your data, not generic advice.'))}</p>
           <ul className="s3-auth-gets">
-            <li>Профіль зрілості 8 систем і головний вузол вашого бізнесу</li>
-            <li>Ваші дані з калькулятора — збережені й доступні будь‑коли</li>
-            <li>Персональні наступні кроки під Definition of Done</li>
+            <li>{t('Профіль зрілості 8 систем і головний вузол вашого бізнесу', 'Maturity profile of 8 systems and your business’s main bottleneck')}</li>
+            <li>{t('Ваші дані з калькулятора — збережені й доступні будь‑коли', 'Your calculator data — saved and available anytime')}</li>
+            <li>{t('Персональні наступні кроки під Definition of Done', 'Personalized next steps under Definition of Done')}</li>
           </ul>
           <div className="s3-auth-form">
             <label className="s2-inp"><span className="mono">Email</span><input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" /></label>
-            <label className="s2-inp"><span className="mono">Пароль</span><input type="password" autoComplete="current-password" value={pass} onChange={(e) => setPass(e.target.value)} placeholder="мінімум 6 символів" /></label>
+            <label className="s2-inp"><span className="mono">{t('Пароль', 'Password')}</span><input type="password" autoComplete="current-password" value={pass} onChange={(e) => setPass(e.target.value)} placeholder={t('мінімум 6 символів', 'min. 6 characters')} /></label>
             {err && <span className="s3-err mono">{err}</span>}
-            <button className="sysx-cta is-primary" onClick={doAuth} disabled={busy || !email || pass.length < 6}>{busy ? 'Заходимо…' : (standalone ? 'Увійти / створити кабінет →' : 'Створити кабінет і продовжити →')}</button>
-            <span className="s2-note mono">Той самий email — той самий кабінет із будь‑якого пристрою.{!CONFIGURED ? ' Демо-режим: дані у цьому браузері.' : ''}</span>
+            <button className="sysx-cta is-primary" onClick={doAuth} disabled={busy || !email || pass.length < 6}>{busy ? t('Заходимо…', 'Signing in…') : (standalone ? t('Увійти / створити кабінет →', 'Sign in / create cabinet →') : t('Створити кабінет і продовжити →', 'Create cabinet and continue →'))}</button>
+            <span className="s2-note mono">{t('Той самий email — той самий кабінет із будь‑якого пристрою.', 'The same email — the same cabinet from any device.')}{!CONFIGURED ? t(' Демо-режим: дані у цьому браузері.', ' Demo mode: data stays in this browser.') : ''}</span>
           </div>
         </div>
       </div>
@@ -221,28 +224,28 @@ export function Stage3({ prior, onClose, standalone, embedded }: { prior?: DiagR
     };
     return (
       <Frame embedded={embedded}>
-      <div className={'sysx s2 s3' + (embedded ? ' s3-embedded' : '')} role="dialog" aria-label="Tier-2 звіт">
+      <div className={'sysx s2 s3' + (embedded ? ' s3-embedded' : '')} role="dialog" aria-label={t('Tier-2 звіт', 'Tier-2 report')}>
         {embedded ? null : standalone && user
           ? accountBar(true)
-          : <div className="s2-flowhead"><button className="s2-flowback mono" onClick={onClose}>← Назад до карти</button><FunnelSteps active={5} /></div>}
+          : <div className="s2-flowhead"><button className="s2-flowback mono" onClick={onClose}>{t('← Назад до карти', '← Back to map')}</button><FunnelSteps active={5} /></div>}
         <div className="s2-report">
           <header className="s2-rep-head">
-            <div className="sysx-kick">Tier-2 звіт · {user.email} · заповнено {res.completeness}% даних</div>
-            <h1 className="sysx-display s2-rep-h">Зрілість Tier-2 — <span className="sysx-em">{res.overall}</span><i>/100</i></h1>
+            <div className="sysx-kick">{t('Tier-2 звіт', 'Tier-2 report')} · {user.email} · {t(`заповнено ${res.completeness}% даних`, `${res.completeness}% of data filled`)}</div>
+            <h1 className="sysx-display s2-rep-h">{t('Зрілість Tier-2 — ', 'Tier-2 maturity — ')}<span className="sysx-em">{res.overall}</span><i>/100</i></h1>
             <p className="s2-rep-line"><b>{lvl.title}.</b> {lvl.line}</p>
-            {moneyStr && <p className="s3-rep-money mono">Ваша можливість з Етапу 1: <b>{moneyStr}/рік</b> — тепер видно, де саме вона зосереджена.</p>}
+            {moneyStr && <p className="s3-rep-money mono">{lang === 'en' ? <>Your opportunity from Stage 1: <b>{moneyStr}/yr</b> — now you can see exactly where it’s concentrated.</> : <>Ваша можливість з Етапу 1: <b>{moneyStr}/рік</b> — тепер видно, де саме вона зосереджена.</>}</p>}
           </header>
 
           {/* Вісім систем як «скайлайн»: висота стовпчика = зрілість, колір = здоров'я.
               Зрозуміло з першого погляду — де просідає й що тягне бізнес. */}
           <div className="s2-panel cw-hero">
             <div className="cw-hero-copy">
-              <span className="sysx-kick">Ваша компанія як система</span>
-              <p className="cw-hero-sub">Вісім стовпчиків — вісім систем онлайн-продажів. Висота = зрілість, колір = здоров'я. Найнижчий червоний — ваше вузьке місце, звідки витікають гроші.</p>
+              <span className="sysx-kick">{t('Ваша компанія як система', 'Your company as a system')}</span>
+              <p className="cw-hero-sub">{t("Вісім стовпчиків — вісім систем онлайн-продажів. Висота = зрілість, колір = здоров'я. Найнижчий червоний — ваше вузьке місце, звідки витікають гроші.", 'Eight bars — eight online-sales systems. Height = maturity, color = health. The lowest red one is your bottleneck, where money leaks out.')}</p>
               <div className="cw-legend">
-                <span><i className="cw-dot ok" />зріла (65+)</span>
-                <span><i className="cw-dot warn" />середня (40–64)</span>
-                <span><i className="cw-dot bad" />слабка (&lt;40)</span>
+                <span><i className="cw-dot ok" />{t('зріла (65+)', 'mature (65+)')}</span>
+                <span><i className="cw-dot warn" />{t('середня (40–64)', 'medium (40–64)')}</span>
+                <span><i className="cw-dot bad" />{t('слабка (<40)', 'weak (<40)')}</span>
               </div>
             </div>
             <div className="cw-stage">
@@ -252,26 +255,26 @@ export function Stage3({ prior, onClose, standalone, embedded }: { prior?: DiagR
 
           <div className="s2-grid">
             <div className="s2-panel s2-radar-wrap">
-              <span className="sysx-kick">Профіль зрілості (Tier-2)</span>
+              <span className="sysx-kick">{t('Профіль зрілості (Tier-2)', 'Maturity profile (Tier-2)')}</span>
               <RadarChart systems={res.systems} hover={hover} onHover={setHover} />
-              <span className="s2-hint mono">Наведіть на систему — підсвітиться скрізь</span>
+              <span className="s2-hint mono">{t('Наведіть на систему — підсвітиться скрізь', 'Hover a system — it highlights everywhere')}</span>
             </div>
             <div className="s2-panel">
-              <span className="sysx-kick">Оцінка по системах</span>
+              <span className="sysx-kick">{t('Оцінка по системах', 'Scores by system')}</span>
               <SystemBars systems={res.systems} hover={hover} onHover={setHover} />
             </div>
 
             <div className="s2-panel">
-              <span className="sysx-kick">Конкурентне поле</span>
+              <span className="sysx-kick">{t('Конкурентне поле', 'Competitive field')}</span>
               <div className="s3-cols">
-                <div><b className="s3-sub">Прямі</b>{res.competitors.direct.length ? <ul className="s3-list">{res.competitors.direct.map((u) => <li key={u}>{host(u)}</li>)}</ul> : <span className="s3-empty">—</span>}</div>
-                <div><b className="s3-sub">Непрямі</b>{res.competitors.indirect.length ? <ul className="s3-list">{res.competitors.indirect.map((u) => <li key={u}>{host(u)}</li>)}</ul> : <span className="s3-empty">—</span>}</div>
+                <div><b className="s3-sub">{t('Прямі', 'Direct')}</b>{res.competitors.direct.length ? <ul className="s3-list">{res.competitors.direct.map((u) => <li key={u}>{host(u)}</li>)}</ul> : <span className="s3-empty">—</span>}</div>
+                <div><b className="s3-sub">{t('Непрямі', 'Indirect')}</b>{res.competitors.indirect.length ? <ul className="s3-list">{res.competitors.indirect.map((u) => <li key={u}>{host(u)}</li>)}</ul> : <span className="s3-empty">—</span>}</div>
               </div>
-              {res.likes.length > 0 && <div className="s3-likes"><b className="s3-sub">Орієнтири</b>{res.likes.map((l) => <div key={l.url} className="s3-like"><span className="mono">{host(l.url)}</span><span className="s3-like-w">{l.what.join(' · ') || '—'}</span></div>)}</div>}
+              {res.likes.length > 0 && <div className="s3-likes"><b className="s3-sub">{t('Орієнтири', 'References')}</b>{res.likes.map((l) => <div key={l.url} className="s3-like"><span className="mono">{host(l.url)}</span><span className="s3-like-w">{l.what.join(' · ') || '—'}</span></div>)}</div>}
             </div>
 
             <div className="s2-panel">
-              <span className="sysx-kick">Маркетинг і фінанси (ваші дані)</span>
+              <span className="sysx-kick">{t('Маркетинг і фінанси (ваші дані)', 'Marketing & finance (your data)')}</span>
               <div className="s3-metrics">
                 {[...res.marketing, ...res.finance].map((m) => (
                   <div key={m.label} className="s3-metric"><span>{m.label}</span><b className="mono">{m.value}</b></div>
@@ -281,11 +284,13 @@ export function Stage3({ prior, onClose, standalone, embedded }: { prior?: DiagR
           </div>
 
           <div className="s2-panel s3-verdict">
-            <span className="sysx-kick">Головний висновок</span>
+            <span className="sysx-kick">{t('Головний висновок', 'Key takeaway')}</span>
             <p className="s3-epiphany">{res.epiphany}</p>
-            <p className="s3-verdict-sub">«{res.bottleneck.label}» — {res.bottleneck.score}/100. Саме з цієї ланки почнеться Tier-2-побудова: разом із вашими даними ми зведемо це в план під Definition of Done{res.goals.length ? ` — під вашу ціль` : ''}.</p>
+            <p className="s3-verdict-sub">{lang === 'en'
+              ? <>«{res.bottleneck.label}» — {res.bottleneck.score}/100. This is the link where the Tier-2 build begins: together with your data we’ll turn it into a plan under Definition of Done{res.goals.length ? ' — toward your goal' : ''}.</>
+              : <>«{res.bottleneck.label}» — {res.bottleneck.score}/100. Саме з цієї ланки почнеться Tier-2-побудова: разом із вашими даними ми зведемо це в план під Definition of Done{res.goals.length ? ' — під вашу ціль' : ''}.</>}</p>
             {res.goals.length > 0 && (
-              <div className="s3-goals"><span className="s3-sub">Ваша ціль</span><div className="s3-goal-chips">{res.goals.map((g) => <span key={g} className="s3-goal-chip">{g}</span>)}</div></div>
+              <div className="s3-goals"><span className="s3-sub">{t('Ваша ціль', 'Your goal')}</span><div className="s3-goal-chips">{res.goals.map((g) => <span key={g} className="s3-goal-chip">{g}</span>)}</div></div>
             )}
           </div>
 
@@ -293,8 +298,8 @@ export function Stage3({ prior, onClose, standalone, embedded }: { prior?: DiagR
           {proj && (proj.income.length > 0 || proj.unit.length > 0) && (
             <div className="s2-project">
               <div className="s2-proj-head">
-                <span className="sysx-kick">Зараз → Куди можемо прийти · уточнена ціль (Tier-2)</span>
-                <p className="s2-proj-sub">Та сама модель, що й на Кроках 1–2, але звужена вашими даними кабінету. Приріст доходу обмежено вже порахованою можливістю.</p>
+                <span className="sysx-kick">{t('Зараз → Куди можемо прийти · уточнена ціль (Tier-2)', 'Now → Where we can get · refined goal (Tier-2)')}</span>
+                <p className="s2-proj-sub">{t('Та сама модель, що й на Кроках 1–2, але звужена вашими даними кабінету. Приріст доходу обмежено вже порахованою можливістю.', 'The same model as in Steps 1–2, but narrowed by your cabinet data. Revenue uplift is capped by the already-calculated opportunity.')}</p>
               </div>
               {proj.income.length > 0 && (
                 <div className="s2-proj-income">
@@ -324,7 +329,7 @@ export function Stage3({ prior, onClose, standalone, embedded }: { prior?: DiagR
           {/* Ключові болі — реально з відповідей */}
           {res.pains.length > 0 && (
             <div className="s2-panel s3-pains">
-              <span className="sysx-kick">Ключові болі — що ми побачили у ваших відповідях</span>
+              <span className="sysx-kick">{t('Ключові болі — що ми побачили у ваших відповідях', 'Key pain points — what we saw in your answers')}</span>
               <div className="s3-pain-grid">
                 {res.pains.map((p) => (
                   <div key={p.label} className="s3-pain"><b>{p.label}</b>{p.detail && <span>{p.detail}</span>}</div>
@@ -336,7 +341,7 @@ export function Stage3({ prior, onClose, standalone, embedded }: { prior?: DiagR
           {/* Дорожня карта — розмиті вектори «як прийти до результату» */}
           {res.roadmap.length > 0 && (
             <div className="s2-panel s3-roadmap">
-              <span className="sysx-kick">Вектори дорожньої карти{res.goals.length ? ' — до вашої цілі' : ''}</span>
+              <span className="sysx-kick">{t('Вектори дорожньої карти', 'Roadmap vectors')}{res.goals.length ? t(' — до вашої цілі', ' — toward your goal') : ''}</span>
               <div className="s3-road">
                 {res.roadmap.map((r, i) => (
                   <div key={r.title} className="s3-road-step">
@@ -345,7 +350,7 @@ export function Stage3({ prior, onClose, standalone, embedded }: { prior?: DiagR
                   </div>
                 ))}
               </div>
-              <span className="s3-road-note mono">Точні кроки, терміни й окупність — складемо разом на розборі.</span>
+              <span className="s3-road-note mono">{t('Точні кроки, терміни й окупність — складемо разом на розборі.', 'Exact steps, timelines and payback — we’ll map them out together during the review.')}</span>
             </div>
           )}
 
@@ -354,31 +359,33 @@ export function Stage3({ prior, onClose, standalone, embedded }: { prior?: DiagR
           {!step4Unlocked && (
           <div className="s3-recos">
             <div className="s2-panel s3-reco strong">
-              <span className="s3-reco-tag mono">Рекомендовано</span>
-              <span className="sysx-kick">Наступний крок</span>
+              <span className="s3-reco-tag mono">{t('Рекомендовано', 'Recommended')}</span>
+              <span className="sysx-kick">{t('Наступний крок', 'Next step')}</span>
               <b className="sysx-display s3-reco-h">{audit.title}</b>
               <p className="s3-reco-p">{audit.reason}</p>
               <ul className="s3-reco-bul">{audit.bullets.map((x) => <li key={x}>{x}</li>)}</ul>
               <div className="s3-reco-actions">
-                <Link to={audit.to} className="sysx-cta is-primary">{audit.cta}</Link>
+                <Link to={lp(audit.to)} className="sysx-cta is-primary">{audit.cta}</Link>
                 {sent
-                  ? <span className="s3-sent mono">✓ {sent === 'sent' ? 'Зріз надіслано команді' : 'Зріз збережено — команда його отримає'}</span>
-                  : <button className="sysx-cta" onClick={doSend} disabled={sending}>{sending ? 'Надсилаємо…' : 'Надіслати зріз команді'}</button>}
+                  ? <span className="s3-sent mono">✓ {sent === 'sent' ? t('Зріз надіслано команді', 'Snapshot sent to the team') : t('Зріз збережено — команда його отримає', 'Snapshot saved — the team will receive it')}</span>
+                  : <button className="sysx-cta" onClick={doSend} disabled={sending}>{sending ? t('Надсилаємо…', 'Sending…') : t('Надіслати зріз команді', 'Send snapshot to the team')}</button>}
               </div>
-              <span className="s3-reco-rr mono">{audit.riskReversal} · зустріч почнемо з вашого контексту, не з нуля</span>
+              <span className="s3-reco-rr mono">{audit.riskReversal} · {t('зустріч почнемо з вашого контексту, не з нуля', 'we start the meeting from your context, not from scratch')}</span>
             </div>
             <div className="s2-panel s3-reco">
-              <span className="sysx-kick">Крок 4 · Поглиблена діагностика</span>
-              <b className="sysx-display s3-reco-h">Продовжуємо дослідження</b>
-              <p className="s3-reco-p">Ми майже готові скласти ваш план. Крок 4 звіряє попередні відповіді, знаходить <b>ключові болі, докази й причини</b> та формує <b>первинну дорожню карту</b>. Глибина зростає, але діагностика ще не завершена.</p>
+              <span className="sysx-kick">{t('Крок 4 · Поглиблена діагностика', 'Step 4 · Deep diagnostics')}</span>
+              <b className="sysx-display s3-reco-h">{t('Продовжуємо дослідження', 'We continue the research')}</b>
+              <p className="s3-reco-p">{lang === 'en'
+                ? <>We’re almost ready to build your plan. Step 4 cross-checks earlier answers, finds <b>key pain points, evidence and causes</b> and forms an <b>initial roadmap</b>. Depth grows, but the diagnosis isn’t complete yet.</>
+                : <>Ми майже готові скласти ваш план. Крок 4 звіряє попередні відповіді, знаходить <b>ключові болі, докази й причини</b> та формує <b>первинну дорожню карту</b>. Глибина зростає, але діагностика ще не завершена.</>}</p>
               {(() => { const cov = Math.min(72, 30 + Math.round(res.completeness * 0.35)); return (
-                <div className="s3-depth"><span className="mono">Diagnostic Coverage зараз ~{cov}%</span>
+                <div className="s3-depth"><span className="mono">{t(`Diagnostic Coverage зараз ~${cov}%`, `Diagnostic Coverage now ~${cov}%`)}</span>
                   <div className="s3-depth-track"><i style={{ width: `${cov}%` }} /><i className="s3-depth-goal" /></div>
-                  <span className="mono">Крок 4 → 75%+ · Крок 5 закриває решту</span>
+                  <span className="mono">{t('Крок 4 → 75%+ · Крок 5 закриває решту', 'Step 4 → 75%+ · Step 5 closes the rest')}</span>
                 </div>
               ); })()}
               {!step4Unlocked && !step4On && (
-                <button className="sysx-cta is-primary" onClick={() => setStep4On(true)}>Продовжити діагностику (Крок 4) →</button>
+                <button className="sysx-cta is-primary" onClick={() => setStep4On(true)}>{t('Продовжити діагностику (Крок 4) →', 'Continue diagnostics (Step 4) →')}</button>
               )}
               {!step4Unlocked && step4On && (
                 <div className="s3-gate">
@@ -386,8 +393,10 @@ export function Stage3({ prior, onClose, standalone, embedded }: { prior?: DiagR
                     <input value={step4Code} onChange={(e) => setStep4Code(e.target.value)} placeholder="WEEXP-XXXX" autoFocus />
                   </label>
                   {step4Err && <span className="s3-err mono">{step4Err}</span>}
-                  <button className="sysx-cta is-primary" onClick={unlockStep4} disabled={!step4Code.trim()}>Активувати Крок 4 →</button>
-                  <span className="s3-gate-note mono">Код видає WEEXP після короткого дзвінка — так у глибоку роботу беремо лише готові проєкти. Немає коду? Натисніть «{audit.cta.replace(' →', '')}» вище — призначимо дзвінок.</span>
+                  <button className="sysx-cta is-primary" onClick={unlockStep4} disabled={!step4Code.trim()}>{t('Активувати Крок 4 →', 'Activate Step 4 →')}</button>
+                  <span className="s3-gate-note mono">{lang === 'en'
+                    ? <>WEEXP issues the code after a short call — that way we take only ready projects into deep work. No code? Click «{audit.cta.replace(' →', '')}» above — we’ll set up a call.</>
+                    : <>Код видає WEEXP після короткого дзвінка — так у глибоку роботу беремо лише готові проєкти. Немає коду? Натисніть «{audit.cta.replace(' →', '')}» вище — призначимо дзвінок.</>}</span>
                 </div>
               )}
             </div>
@@ -397,9 +406,11 @@ export function Stage3({ prior, onClose, standalone, embedded }: { prior?: DiagR
           {/* Крок 4 · результат — Key Problems + Evidence + Diagnosis + Roadmap (за кодом) */}
           {step4Unlocked && (
             <div className="s2-panel s3-step4">
-              <span className="sysx-kick">Крок 4 · Поглиблений аудит</span>
-              <p className="s3-step4-intro">Ми <b>продовжуємо анкетування</b> — тепер у глибину: відкриті відповіді, вивантаження даних і файли за шаблонами. На виході — зведення всіх 4 кроків у документ і вибір: зустріч, Крок 5 або PDF. Вузьке місце за Кроками 1–3 — «{res.bottleneck.label}» ({res.bottleneck.score}/100), його й підтверджуємо доказами.</p>
-              <Suspense fallback={<div className="s3-boot mono">Відкриваємо Крок 4…</div>}>
+              <span className="sysx-kick">{t('Крок 4 · Поглиблений аудит', 'Step 4 · In-depth audit')}</span>
+              <p className="s3-step4-intro">{lang === 'en'
+                ? <>We <b>continue the questionnaire</b> — now in depth: open answers, data exports and files from templates. The output is a summary of all 4 steps into a document and a choice: a meeting, Step 5 or a PDF. The bottleneck from Steps 1–3 is «{res.bottleneck.label}» ({res.bottleneck.score}/100) — and we confirm it with evidence.</>
+                : <>Ми <b>продовжуємо анкетування</b> — тепер у глибину: відкриті відповіді, вивантаження даних і файли за шаблонами. На виході — зведення всіх 4 кроків у документ і вибір: зустріч, Крок 5 або PDF. Вузьке місце за Кроками 1–3 — «{res.bottleneck.label}» ({res.bottleneck.score}/100), його й підтверджуємо доказами.</>}</p>
+              <Suspense fallback={<div className="s3-boot mono">{t('Відкриваємо Крок 4…', 'Opening Step 4…')}</div>}>
                 <Stage4 user={user} onGoStep5={() => setStep5On(true)} />
               </Suspense>
             </div>
@@ -408,30 +419,30 @@ export function Stage3({ prior, onClose, standalone, embedded }: { prior?: DiagR
           {/* Забрати з собою — один блок, надійні завантаження (ТЗ §19) */}
           <div className="s2-panel s3-docs">
             <div className="s3-docs-l">
-              <span className="sysx-kick">Забрати з собою</span>
-              <b className="sysx-display s3-docs-h">Документи діагностики</b>
-              <p className="s3-reco-p">Фірмовий звіт — вашими даними. PDF відкриється окремою вкладкою (звідти «Поділитися → Зберегти в файли» або друк у PDF). Excel-таблиця — для розрахунків.</p>
+              <span className="sysx-kick">{t('Забрати з собою', 'Take with you')}</span>
+              <b className="sysx-display s3-docs-h">{t('Документи діагностики', 'Diagnostic documents')}</b>
+              <p className="s3-reco-p">{t('Фірмовий звіт — вашими даними. PDF відкриється окремою вкладкою (звідти «Поділитися → Зберегти в файли» або друк у PDF). Excel-таблиця — для розрахунків.', 'A branded report — with your data. The PDF opens in a new tab (from there «Share → Save to files» or print to PDF). The Excel sheet — for calculations.')}</p>
             </div>
             <div className="s3-docs-r">
-              <button className="sysx-cta is-primary" onClick={() => openReportPage(docData)}>Завантажити звіт (PDF) ↓</button>
-              <button className="sysx-cta" onClick={() => downloadWorksheetXls(docData)}>Excel-таблиця ↓</button>
+              <button className="sysx-cta is-primary" onClick={() => openReportPage(docData)}>{t('Завантажити звіт (PDF) ↓', 'Download report (PDF) ↓')}</button>
+              <button className="sysx-cta" onClick={() => downloadWorksheetXls(docData)}>{t('Excel-таблиця ↓', 'Excel sheet ↓')}</button>
             </div>
           </div>
 
           {/* Тиха довіра + розбірливість (без тиску) */}
           <div className="s3-trust mono">
-            <span>Ваш зріз особисто перегляне хтось із команди — не бот.</span>
-            <span>Беремо обмежену кількість проєктів на місяць: розбір допоможе зрозуміти, чи підходимо одне одному.</span>
+            <span>{t('Ваш зріз особисто перегляне хтось із команди — не бот.', 'Someone from the team reviews your snapshot personally — not a bot.')}</span>
+            <span>{t('Беремо обмежену кількість проєктів на місяць: розбір допоможе зрозуміти, чи підходимо одне одному.', 'We take a limited number of projects per month: the review helps decide whether we’re a fit.')}</span>
           </div>
 
           <div className="s2-rep-foot">
             <div className="s2-foot-l">
               <img src="/qr.svg" alt="QR — weexp.agency" className="s2-qr" width={72} height={72} />
-              <div className="s2-foot-c"><b>WEEXP — Система замість героїзму</b><span className="mono">weexp.agency · {MAIL}</span><span className="s2-note mono">{cloud ? `Дані збережено у вашому кабінеті (${user.email}).` : `Збережено локально в цьому браузері (${user.email}). Хмарний кабінет підключиться після налаштування.`}</span></div>
+              <div className="s2-foot-c"><b>{t('WEEXP — Система замість героїзму', 'WEEXP — A system instead of heroics')}</b><span className="mono">weexp.agency · {MAIL}</span><span className="s2-note mono">{cloud ? t(`Дані збережено у вашому кабінеті (${user.email}).`, `Data saved in your cabinet (${user.email}).`) : t(`Збережено локально в цьому браузері (${user.email}). Хмарний кабінет підключиться після налаштування.`, `Saved locally in this browser (${user.email}). A cloud cabinet will connect after setup.`)}</span></div>
             </div>
             <div className="s2-foot-cta">
-              <button className="sysx-cta" onClick={() => setIdx(0)}>Редагувати дані</button>
-              <button className="sysx-cta" onClick={logout}>Вийти</button>
+              <button className="sysx-cta" onClick={() => setIdx(0)}>{t('Редагувати дані', 'Edit data')}</button>
+              <button className="sysx-cta" onClick={logout}>{t('Вийти', 'Sign out')}</button>
             </div>
           </div>
         </div>
@@ -443,6 +454,8 @@ export function Stage3({ prior, onClose, standalone, embedded }: { prior?: DiagR
 
   /* ── Questionnaire (один блок на екран — кінематографічно) ── */
   const b = BLOCKS[idx];
+  const lb = localizeBlock(b, lang);
+  const likeWhat = localizeLikeWhat(lang);
   const secOf = b.section;
   const secIndex = (SECTIONS as readonly string[]).indexOf(secOf);
   const progress = Math.round((idx / BLOCKS.length) * 100);
@@ -465,75 +478,75 @@ export function Stage3({ prior, onClose, standalone, embedded }: { prior?: DiagR
 
   return (
     <Frame embedded={embedded}>
-    <div ref={quizRef} className={'sysx s2 s3' + (embedded ? ' s3-embedded' : '')} role="dialog" aria-label="Етап 3 — питання">
+    <div ref={quizRef} className={'sysx s2 s3' + (embedded ? ' s3-embedded' : '')} role="dialog" aria-label={t('Етап 3 — питання', 'Stage 3 — questions')}>
       {embedded ? null : standalone && user
         ? accountBar(false)
-        : <div className="s2-flowhead"><button className="s2-flowback mono" onClick={onClose}>← Назад до карти</button><FunnelSteps active={5} /></div>}
+        : <div className="s2-flowhead"><button className="s2-flowback mono" onClick={onClose}>{t('← Назад до карти', '← Back to map')}</button><FunnelSteps active={5} /></div>}
       <div className="s2-quiz s3-flow">
         <div className="s2-quiz-head">
           <div className="s3-flow-top">
-            <span className="sysx-kick">Етап 3 · Tier-2 · {secOf}</span>
+            <span className="sysx-kick">{t('Етап 3', 'Stage 3')} · Tier-2 · {localizeSection(secOf, lang)}</span>
             <span className="s3-flow-right-top">
-              {moneyStr && <span className="s3-money-pill mono">Можливість: {moneyStr}/рік · уточнюємо…</span>}
-              <span className={`s3-save mono${saved ? ' on' : ''}`}>{cloud ? 'збережено в кабінеті' : 'збережено'}</span>
+              {moneyStr && <span className="s3-money-pill mono">{t(`Можливість: ${moneyStr}/рік · уточнюємо…`, `Opportunity: ${moneyStr}/yr · refining…`)}</span>}
+              <span className={`s3-save mono${saved ? ' on' : ''}`}>{cloud ? t('збережено в кабінеті', 'saved in cabinet') : t('збережено', 'saved')}</span>
             </span>
           </div>
           <div className="s2-bar"><i style={{ width: `${progress}%` }} /></div>
           {/* Навігатор секцій — стрибай у будь-яку секцію й редагуй; праворуч — звіт. */}
-          <div className="s3-sections" role="tablist" aria-label="Секції кабінету — перейти й редагувати">
+          <div className="s3-sections" role="tablist" aria-label={t('Секції кабінету — перейти й редагувати', 'Cabinet sections — jump and edit')}>
             {sections.map((s, si) => (
               <button key={s.name} role="tab" aria-selected={s.name === secOf}
                 className={'s3-sec-chip' + (s.name === secOf ? ' is-on' : '') + (s.total > 0 && s.answered === s.total ? ' is-done' : '')}
                 onClick={() => go(s.start)}>
-                <b className="mono">{String(si + 1).padStart(2, '0')}</b> {s.name} <i className="mono">{s.answered}/{s.total}</i>
+                <b className="mono">{String(si + 1).padStart(2, '0')}</b> {localizeSection(s.name, lang)} <i className="mono">{s.answered}/{s.total}</i>
               </button>
             ))}
-            <button className="s3-sec-chip s3-sec-report" role="tab" onClick={() => go(BLOCKS.length)} aria-label="Показати звіт">Звіт →</button>
+            <button className="s3-sec-chip s3-sec-report" role="tab" onClick={() => go(BLOCKS.length)} aria-label={t('Показати звіт', 'Show report')}>{t('Звіт →', 'Report →')}</button>
           </div>
         </div>
 
         {firstOfSection && (
-          <div className="s3-milestone mono" key={`m-${idx}`}>✓ Секцію «{prevSection}» пройдено · профіль на {progress}%</div>
+          <div className="s3-milestone mono" key={`m-${idx}`}>{lang === 'en' ? `✓ Section «${localizeSection(prevSection, lang)}» done · profile at ${progress}%` : `✓ Секцію «${prevSection}» пройдено · профіль на ${progress}%`}</div>
         )}
 
         <div className="s2-card s3-one" key={b.id}>
-          <div className="s2-step mono">Блок {idx + 1} / {BLOCKS.length} · секція {secIndex + 1}/{SECTIONS.length} · відповіли {answeredCount}</div>
-          <h2 className="sysx-display s2-q">{b.label}</h2>
-          {b.hint && <p className="s2-lead">{b.hint}</p>}
-          {goalLabels.length > 0 && idx > 0 && <p className="s3-goal-thread mono">Крок до вашої цілі: {goalLabels.slice(0, 2).join(' · ')}</p>}
+          <div className="s2-step mono">{t('Блок', 'Block')} {idx + 1} / {BLOCKS.length} · {t('секція', 'section')} {secIndex + 1}/{SECTIONS.length} · {t('відповіли', 'answered')} {answeredCount}</div>
+          <h2 className="sysx-display s2-q">{lb.label}</h2>
+          {lb.hint && <p className="s2-lead">{lb.hint}</p>}
+          {goalLabels.length > 0 && idx > 0 && <p className="s3-goal-thread mono">{t('Крок до вашої цілі', 'Step toward your goal')}: {goalLabels.slice(0, 2).join(' · ')}</p>}
 
           {b.kind === 'url' && (
-            <label className="s2-inp s3-one-inp"><span className="mono">Посилання</span>
-              <input type="url" inputMode="url" placeholder={b.placeholder || 'https://'} value={(val as string) || ''} onChange={(e) => set(b.id, e.target.value)} />
+            <label className="s2-inp s3-one-inp"><span className="mono">{t('Посилання', 'Link')}</span>
+              <input type="url" inputMode="url" placeholder={lb.placeholder || 'https://'} value={(val as string) || ''} onChange={(e) => set(b.id, e.target.value)} />
             </label>
           )}
           {b.kind === 'number' && (
-            <label className="s2-inp s3-one-inp"><span className="mono">{b.unit || 'Значення'}</span>
+            <label className="s2-inp s3-one-inp"><span className="mono">{lb.unit || t('Значення', 'Value')}</span>
               <input type="number" inputMode="decimal" placeholder="0" value={(val as string) ?? ''} onChange={(e) => set(b.id, e.target.value)} />
             </label>
           )}
           {b.kind === 'text' && (
-            <label className="s2-inp s3-one-inp"><span className="mono">Ваша відповідь{b.optional ? ' · необовʼязково' : ''}</span>
-              <input type="text" maxLength={b.maxLen || 160} placeholder={b.placeholder || 'Коротко, одним реченням…'} value={(val as string) || ''} onChange={(e) => set(b.id, e.target.value)} />
+            <label className="s2-inp s3-one-inp"><span className="mono">{t('Ваша відповідь', 'Your answer')}{b.optional ? t(' · необовʼязково', ' · optional') : ''}</span>
+              <input type="text" maxLength={b.maxLen || 160} placeholder={lb.placeholder || t('Коротко, одним реченням…', 'Briefly, in one sentence…')} value={(val as string) || ''} onChange={(e) => set(b.id, e.target.value)} />
             </label>
           )}
           {b.kind === 'longtext' && (
-            <label className="s2-inp s3-one-inp s3-longtext"><span className="mono">Розгорніть{b.optional ? ' · необовʼязково' : ''}</span>
-              <textarea rows={b.rows || 5} maxLength={b.maxLen || 900} placeholder={b.placeholder || 'До кількох речень — що важливо, те й пишіть.'} value={(val as string) || ''} onChange={(e) => set(b.id, e.target.value)} />
+            <label className="s2-inp s3-one-inp s3-longtext"><span className="mono">{t('Розгорніть', 'Expand')}{b.optional ? t(' · необовʼязково', ' · optional') : ''}</span>
+              <textarea rows={b.rows || 5} maxLength={b.maxLen || 900} placeholder={lb.placeholder || t('До кількох речень — що важливо, те й пишіть.', 'A few sentences — write what matters.')} value={(val as string) || ''} onChange={(e) => set(b.id, e.target.value)} />
             </label>
           )}
           {b.kind === 'file' && (
             <div className="s3-file">
-              {b.template && <a className="s3-file-tpl mono" href={b.template.href} download>↓ Шаблон: {b.template.label}</a>}
+              {lb.template && <a className="s3-file-tpl mono" href={lb.template.href} download>↓ {t('Шаблон', 'Template')}: {lb.template.label}</a>}
               <label className="s3-file-drop">
                 <input type="file" accept={b.accept} onChange={(e) => { const f = e.target.files?.[0]; if (f) set(b.id, { name: f.name, size: f.size, type: f.type, at: new Date().toISOString() }); }} />
-                <span className="s3-file-cta mono">{val && typeof val === 'object' && 'name' in (val as object) ? `✓ ${(val as { name: string }).name}` : (b.placeholder || 'Обрати файл (Word · Excel · PDF)…')}</span>
+                <span className="s3-file-cta mono">{val && typeof val === 'object' && 'name' in (val as object) ? `✓ ${(val as { name: string }).name}` : (lb.placeholder || t('Обрати файл (Word · Excel · PDF)…', 'Choose a file (Word · Excel · PDF)…'))}</span>
               </label>
             </div>
           )}
           {b.kind === 'single' && (
             <div className="s2-opts">
-              {b.options!.map((o, i) => (
+              {lb.options!.map((o, i) => (
                 <button key={o.label} className={`s2-opt${val === i ? ' on' : ''}`} onClick={() => pickSingle(i)}>
                   <span className="s2-opt-mark" aria-hidden="true" />{o.label}
                 </button>
@@ -542,7 +555,7 @@ export function Stage3({ prior, onClose, standalone, embedded }: { prior?: DiagR
           )}
           {b.kind === 'multi' && (
             <div className="s2-opts">
-              {b.options!.map((o, i) => (
+              {lb.options!.map((o, i) => (
                 <button key={o.label} className={`s2-opt${Array.isArray(val) && (val as number[]).includes(i) ? ' on' : ''}`} onClick={() => toggle(b.id, i)}>
                   <span className="s2-opt-mark" aria-hidden="true" />{o.label}
                 </button>
@@ -554,13 +567,13 @@ export function Stage3({ prior, onClose, standalone, embedded }: { prior?: DiagR
             <div className="s3-list-in">
               {urls.map((u, i) => (
                 <div key={i} className="s3-row">
-                  <input type="url" inputMode="url" placeholder={b.placeholder || 'https://'} value={u}
+                  <input type="url" inputMode="url" placeholder={lb.placeholder || 'https://'} value={u}
                     autoFocus={i === urls.length - 1}
                     onChange={(e) => setUrls(urls.map((x, j) => (j === i ? e.target.value : x)))} />
-                  {urls.length > 1 && <button className="s3-del" aria-label="Прибрати" onClick={() => setUrls(urls.filter((_, j) => j !== i))}>✕</button>}
+                  {urls.length > 1 && <button className="s3-del" aria-label={t('Прибрати', 'Remove')} onClick={() => setUrls(urls.filter((_, j) => j !== i))}>✕</button>}
                 </div>
               ))}
-              <button className="s3-add" onClick={() => setUrls([...urls, ''])}>{b.addLabel || '+ Додати ще'}</button>
+              <button className="s3-add" onClick={() => setUrls([...urls, ''])}>{lb.addLabel || t('+ Додати ще', '+ Add more')}</button>
             </div>
           )}
 
@@ -572,12 +585,12 @@ export function Stage3({ prior, onClose, standalone, embedded }: { prior?: DiagR
                     <input type="url" inputMode="url" placeholder="https://" value={r.url}
                       autoFocus={i === refs.length - 1}
                       onChange={(e) => setRefs(refs.map((x, j) => (j === i ? { ...x, url: e.target.value } : x)))} />
-                    {refs.length > 1 && <button className="s3-del" aria-label="Прибрати" onClick={() => setRefs(refs.filter((_, j) => j !== i))}>✕</button>}
+                    {refs.length > 1 && <button className="s3-del" aria-label={t('Прибрати', 'Remove')} onClick={() => setRefs(refs.filter((_, j) => j !== i))}>✕</button>}
                   </div>
                   <div className="s3-ref-what">
-                    <span className="s3-ref-lab mono">Що саме подобається?</span>
+                    <span className="s3-ref-lab mono">{t('Що саме подобається?', 'What exactly do you like?')}</span>
                     <div className="s2-opts s3-chips">
-                      {LIKE_WHAT.map((o, k) => {
+                      {likeWhat.map((o, k) => {
                         const on = (r.what || []).includes(k);
                         return (
                           <button key={o.label} className={`s2-opt s2-opt-chip${on ? ' on' : ''}`}
@@ -592,20 +605,20 @@ export function Stage3({ prior, onClose, standalone, embedded }: { prior?: DiagR
                   </div>
                 </div>
               ))}
-              <button className="s3-add" onClick={() => setRefs([...refs, { url: '', what: [] }])}>{b.addLabel || '+ Ще сайт'}</button>
+              <button className="s3-add" onClick={() => setRefs([...refs, { url: '', what: [] }])}>{lb.addLabel || t('+ Ще сайт', '+ Another site')}</button>
             </div>
           )}
 
           <div className="s2-quiz-actions s3-flow-actions">
             <span className="s3-flow-left">
-              {idx > 0 && <button className="s2-back mono" onClick={() => go(idx - 1)}>← Назад</button>}
-              <button className="s2-back mono" onClick={onClose}>Призупинити</button>
+              {idx > 0 && <button className="s2-back mono" onClick={() => go(idx - 1)}>{t('← Назад', '← Back')}</button>}
+              <button className="s2-back mono" onClick={onClose}>{t('Призупинити', 'Pause')}</button>
             </span>
             <span className="s3-flow-right">
-              {b.kind === 'single' && !lastBlock && <button className="s2-back mono" onClick={() => go(idx + 1)}>Пропустити →</button>}
+              {b.kind === 'single' && !lastBlock && <button className="s2-back mono" onClick={() => go(idx + 1)}>{t('Пропустити →', 'Skip →')}</button>}
               {(b.kind !== 'single' || lastBlock) && (
                 <button className="sysx-cta is-primary" onClick={() => go(idx + 1)}>
-                  {lastBlock ? 'Показати Tier-2 звіт →' : filled ? 'Далі →' : 'Пропустити →'}
+                  {lastBlock ? t('Показати Tier-2 звіт →', 'Show Tier-2 report →') : filled ? t('Далі →', 'Next →') : t('Пропустити →', 'Skip →')}
                 </button>
               )}
             </span>
@@ -615,8 +628,8 @@ export function Stage3({ prior, onClose, standalone, embedded }: { prior?: DiagR
         {/* Живий профіль 8 систем — під опитувальником: спершу питання, потім видно, як росте профіль. */}
         <div className="cw-quiz cw-quiz-below">
           <div className="cw-quiz-cap mono">
-            <span>Ваш профіль збирається — вісім систем</span>
-            <b>{answeredCount} відповідей</b>
+            <span>{t('Ваш профіль збирається — вісім систем', 'Your profile is taking shape — eight systems')}</span>
+            <b>{answeredCount} {t('відповідей', 'answers')}</b>
           </div>
           <SystemOrbit systems={live.systems} completeness={live.completeness} activeKey={live.systems.find((s) => s.label.split(/\s|\//)[0] === secOf.split(/\s|\//)[0])?.key} compact />
         </div>

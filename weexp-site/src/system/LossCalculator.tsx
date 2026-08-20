@@ -1,8 +1,9 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { computeLoss, eur, project, SYS, type LossInput, type LossResult, type SysKey } from './lossModel';
+import { computeLoss, eur, project, localizeSys, sysLabel, leakLabel, actionText, type LossInput, type LossResult, type SysKey } from './lossModel';
 import { saveExpressAudit } from './cabinetData';
-import { useT, useLp } from '@/i18n';
+import { shortOf } from '@/data/xray';
+import { useT, useLp, useLang } from '@/i18n';
 import './system.css';
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
@@ -20,6 +21,7 @@ const HW = (s: number) => (s >= 65 ? 'ok' : s >= 40 ? 'warn' : 'bad');
 export function LossCalculator() {
   const t = useT();
   const lp = useLp();
+  const lang = useLang();
   const FIELDS: { k: keyof Omit<LossInput, 'symptoms'>; label: string; unit: string; hint?: string }[] = [
     { k: 'monthlyRevenue', label: t('Онлайн-виторг', 'Online revenue'), unit: t('€ / міс', '€ / mo') },
     { k: 'aov', label: t('Середній чек', 'Average order value (AOV)'), unit: '€' },
@@ -57,7 +59,7 @@ export function LossCalculator() {
   const toggle = (k: SysKey) => setInp((s) => ({ ...s, symptoms: s.symptoms.includes(k) ? s.symptoms.filter((x) => x !== k) : [...s.symptoms, k] }));
   const compute = () => { const r = computeLoss(inp); setRes(r); alerts.current = r.bottleneckNodes; saveExpressAudit(inp, r); setStep(3); };
   const restart = () => { alerts.current = []; setRes(null); setStep(1); };
-  const primaryLabel = (k: SysKey) => SYS.find((s) => s.key === k)!.label;
+  const primaryLabel = (k: SysKey) => sysLabel(k, lang);
 
   return (
     <section className="sysx sysx-calc">
@@ -98,7 +100,7 @@ export function LossCalculator() {
           <div className="sysx-card">
             <p className="sysx-lead">{t('Де відчуваєте проблему? Позначте все, що відгукується — кожен симптом перебудовує вашу систему.', 'Where do you feel the problem? Check everything that resonates — each symptom reshapes your system.')}</p>
             <div className="sysx-sym">
-              {SYS.map((s) => (
+              {localizeSys(lang).map((s) => (
                 <button key={s.key} className={`sysx-sym-b${inp.symptoms.includes(s.key) ? ' on' : ''}`} onClick={() => toggle(s.key)}>
                   <b>{s.label}</b><span>«{PAIN[s.key]}»</span>
                 </button>
@@ -124,7 +126,7 @@ export function LossCalculator() {
                 const max = res.leaks[0].amount || 1;
                 return (
                   <div key={l.label + i} className="sysx-leak">
-                    <span className="sysx-leak-l">{l.label}</span>
+                    <span className="sysx-leak-l">{leakLabel(l, lang)}</span>
                     <span className="sysx-leak-bar"><i style={{ width: `${Math.round((l.amount / max) * 100)}%` }} /></span>
                     <span className="sysx-leak-v mono">{eur(l.amount)}</span>
                   </div>
@@ -143,7 +145,7 @@ export function LossCalculator() {
               <div className="sysx-health-grid">
                 {res.health.map((h) => (
                   <div key={h.key} className="sysx-hbar">
-                    <span className="sysx-hbar-l mono">{h.label.split(' ')[0]}</span>
+                    <span className="sysx-hbar-l mono">{shortOf(h.key, lang)}</span>
                     <span className={`sysx-hbar-t ${HW(h.score)}`}><i style={{ width: `${h.score}%` }} /></span>
                     <span className="sysx-hbar-v mono">{h.score}</span>
                   </div>
@@ -153,12 +155,12 @@ export function LossCalculator() {
 
             <div className="sysx-actions">
               <span className="sysx-kick">{t('Три перші дії', 'First three actions')}</span>
-              <ol>{res.actions.map((a) => <li key={a.key}>{a.text}</li>)}</ol>
+              <ol>{res.actions.map((a) => <li key={a.key}>{actionText(a.key, lang)}</li>)}</ol>
             </div>
 
             {/* «Зараз → Куди можемо прийти» — чорнова ціль (уточнимо на наступних кроках) */}
             {(() => {
-              const proj = project(inp, res);
+              const proj = project(inp, res, lang);
               if (!proj.income.length) return null;
               return (
                 <div className="s2-project sysx-proj1">

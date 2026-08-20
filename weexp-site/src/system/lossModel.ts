@@ -6,6 +6,8 @@
  */
 export type SysKey = 'strategy' | 'commercial' | 'customer' | 'experience' | 'operations' | 'data' | 'org' | 'expansion';
 
+export type Lang = 'uk' | 'en';
+
 export const SYS: { key: SysKey; label: string; node: number }[] = [
   { key: 'strategy', label: 'Стратегія та управління', node: 0 },
   { key: 'commercial', label: 'Комерційна ефективність', node: 1 },
@@ -17,12 +19,31 @@ export const SYS: { key: SysKey; label: string; node: number }[] = [
   { key: 'expansion', label: 'Експансія та ринки', node: 7 },
 ];
 
+/** Англійські підписи систем (порядок і ключі — як у SYS). */
+export const SYS_LABEL_EN: Record<SysKey, string> = {
+  strategy: 'Strategy & Management',
+  commercial: 'Commercial Performance',
+  customer: 'Demand & Customer',
+  experience: 'Experience & Conversion',
+  operations: 'Operations & Fulfillment',
+  data: 'Data & Technology',
+  org: 'Organization',
+  expansion: 'Expansion & Markets',
+};
+
+/** Локалізований підпис однієї системи за ключем. */
+export const sysLabel = (key: SysKey, lang: Lang): string =>
+  lang === 'en' ? SYS_LABEL_EN[key] : SYS.find((s) => s.key === key)!.label;
+
+/** Локалізований масив SYS (той самий порядок/ключі/node, лише label мовою). */
+export const localizeSys = (lang: Lang) => SYS.map((s) => ({ ...s, label: sysLabel(s.key, lang) }));
+
 export type LossInput = {
   monthlyRevenue: number; aov: number; conversion: number; repeatRate: number;
   returnsRate: number; grossMargin: number; cac: number; symptoms: SysKey[];
 };
 
-export type Leak = { key: SysKey; label: string; amount: number };
+export type Leak = { key: SysKey; label: string; labelEn: string; amount: number };
 export type Health = { key: SysKey; label: string; score: number };
 export type LossResult = {
   annualRevenue: number;
@@ -45,6 +66,23 @@ const ACTION: Record<SysKey, string> = {
   org: 'Операційна модель: ролі, RACI, KPI, SOP — щоб бізнес працював без героя.',
   expansion: 'Вихід у ЄС/США як окремий контур: Allegro, Amazon і локальні майданчики.',
 };
+
+const ACTION_EN: Record<SysKey, string> = {
+  strategy: 'Set the growth model and management cycle: goals → breakdown → actuals → actions.',
+  commercial: 'Manage conversion, order value and margin by unit economics, not turnover.',
+  customer: 'Build retention and attribution: RFM, win-back, abandoned cart, LTV/CAC.',
+  experience: 'Close conversion leaks: catalog, product card, checkout, mobile, CRO/A-B.',
+  operations: 'Set processing SLAs, buy-out/delivery and returns control — from cart to returns.',
+  data: 'End-to-end analytics + a single master data: one set of numbers for every decision.',
+  org: 'Operating model: roles, RACI, KPIs, SOPs — so the business runs without a hero.',
+  expansion: 'Enter the EU/US as a separate track: Allegro, Amazon and local marketplaces.',
+};
+
+/** Локалізований текст пріоритетної дії за ключем системи. */
+export const actionText = (key: SysKey, lang: Lang): string => (lang === 'en' ? ACTION_EN : ACTION)[key];
+
+/** Локалізований підпис витоку (Leak несе обидві мови). */
+export const leakLabel = (l: Leak, lang: Lang): string => (lang === 'en' ? l.labelEn : l.label);
 
 export function computeLoss(inp: LossInput): LossResult {
   const annual = Math.max(0, inp.monthlyRevenue) * 12;
@@ -86,11 +124,11 @@ export function computeLoss(inp: LossInput): LossResult {
   );
 
   const rawAll: Leak[] = [
-    { key: 'commercial', label: 'Витік у комерції', amount: Math.round(commercial) },
-    { key: 'customer', label: 'Витік у залученні', amount: Math.round(marketing) },
-    { key: 'operations', label: 'Витік в операціях', amount: Math.round(operational) },
-    { key: 'customer', label: 'Витік в утриманні', amount: Math.round(retention) },
-    { key: 'experience', label: 'Витік на конверсії', amount: Math.round(experience) },
+    { key: 'commercial', label: 'Витік у комерції', labelEn: 'Commerce leak', amount: Math.round(commercial) },
+    { key: 'customer', label: 'Витік у залученні', labelEn: 'Acquisition leak', amount: Math.round(marketing) },
+    { key: 'operations', label: 'Витік в операціях', labelEn: 'Operations leak', amount: Math.round(operational) },
+    { key: 'customer', label: 'Витік в утриманні', labelEn: 'Retention leak', amount: Math.round(retention) },
+    { key: 'experience', label: 'Витік на конверсії', labelEn: 'Conversion leak', amount: Math.round(experience) },
   ];
   const raw: Leak[] = rawAll.filter((l) => l.amount > 0).sort((a, b) => b.amount - a.amount);
 
@@ -141,7 +179,8 @@ const r1 = (n: number) => Math.round(n * 10) / 10;
 const pctUp = (a: number, b: number) => (a > 0 ? Math.round((b / a - 1) * 100) : 0);
 const pctDown = (a: number, b: number) => (a > 0 ? Math.round((1 - b / a) * 100) : 0);
 
-export function project(inp: LossInput, res: LossResult): Projection {
+export function project(inp: LossInput, res: LossResult, lang: Lang = 'uk'): Projection {
+  const L = (uk: string, en: string) => (lang === 'en' ? en : uk);
   const nowM = Math.max(0, inp.monthlyRevenue);
   const nowA = nowM * 12;
 
@@ -165,28 +204,28 @@ export function project(inp: LossInput, res: LossResult): Projection {
   const upliftPct = pctUp(nowA, afterA);
 
   const income: Delta[] = nowM > 0 ? [
-    { label: 'Дохід / день', before: eur(nowM / 30), after: eur(afterM / 30), pct: upliftPct, dir: 'up' },
-    { label: 'Дохід / місяць', before: eur(nowM), after: eur(afterM), pct: upliftPct, dir: 'up', hero: true },
-    { label: 'Дохід / рік', before: eur(nowA), after: eur(afterA), pct: upliftPct, dir: 'up' },
+    { label: L('Дохід / день', 'Revenue / day'), before: eur(nowM / 30), after: eur(afterM / 30), pct: upliftPct, dir: 'up' },
+    { label: L('Дохід / місяць', 'Revenue / month'), before: eur(nowM), after: eur(afterM), pct: upliftPct, dir: 'up', hero: true },
+    { label: L('Дохід / рік', 'Revenue / year'), before: eur(nowA), after: eur(afterA), pct: upliftPct, dir: 'up' },
   ] : [];
 
   const profitNow = nowM * (marNow || B.margin) / 100;
   const profitAfter = afterM * marTgt / 100;
 
   const unit: Delta[] = [];
-  if (crNow > 0) unit.push({ label: 'Конверсія', before: crNow + '%', after: crTgt + '%', pct: pctUp(crNow, crTgt), dir: 'up' });
-  if (repNow > 0) unit.push({ label: 'Повторні продажі', before: repNow + '%', after: repTgt + '%', pct: pctUp(repNow, repTgt), dir: 'up' });
-  if (cacNow > 0) unit.push({ label: 'Вартість клієнта (CAC)', before: eur(cacNow), after: eur(cacTgt), pct: pctDown(cacNow, cacTgt), dir: 'down' });
-  if (marNow > 0) unit.push({ label: 'Валова маржа', before: marNow + '%', after: marTgt + '%', pct: pctUp(marNow, marTgt), dir: 'up' });
-  if (nowM > 0) unit.push({ label: 'Прибуток / місяць', before: eur(profitNow), after: eur(profitAfter), pct: pctUp(profitNow, profitAfter), dir: 'up' });
+  if (crNow > 0) unit.push({ label: L('Конверсія', 'Conversion'), before: crNow + '%', after: crTgt + '%', pct: pctUp(crNow, crTgt), dir: 'up' });
+  if (repNow > 0) unit.push({ label: L('Повторні продажі', 'Repeat sales'), before: repNow + '%', after: repTgt + '%', pct: pctUp(repNow, repTgt), dir: 'up' });
+  if (cacNow > 0) unit.push({ label: L('Вартість клієнта (CAC)', 'Customer cost (CAC)'), before: eur(cacNow), after: eur(cacTgt), pct: pctDown(cacNow, cacTgt), dir: 'down' });
+  if (marNow > 0) unit.push({ label: L('Валова маржа', 'Gross margin'), before: marNow + '%', after: marTgt + '%', pct: pctUp(marNow, marTgt), dir: 'up' });
+  if (nowM > 0) unit.push({ label: L('Прибуток / місяць', 'Profit / month'), before: eur(profitNow), after: eur(profitAfter), pct: pctUp(profitNow, profitAfter), dir: 'up' });
 
   // Операції: час обробки замовлення — оцінка за зрілістю операцій (health).
   const ops = res.health.find((h) => h.key === 'operations')?.score ?? 55;
   const procNow = Math.round(clamp((100 - ops) / 100 * 40 + 6, 6, 42));
   const procAfter = Math.max(2, Math.round(procNow * 0.35));
   const opsRows: Delta[] = [
-    { label: 'Час обробки замовлення', before: procNow + ' год', after: procAfter + ' год', pct: pctDown(procNow, procAfter), dir: 'down' },
+    { label: L('Час обробки замовлення', 'Order processing time'), before: procNow + L(' год', ' h'), after: procAfter + L(' год', ' h'), pct: pctDown(procNow, procAfter), dir: 'down' },
   ];
 
-  return { income, unit, ops: opsRows, upliftPct, horizon: '6–9 місяців системної роботи' };
+  return { income, unit, ops: opsRows, upliftPct, horizon: L('6–9 місяців системної роботи', '6–9 months of systematic work') };
 }
