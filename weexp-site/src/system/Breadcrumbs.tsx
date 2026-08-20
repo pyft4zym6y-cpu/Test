@@ -2,18 +2,22 @@ import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { SYSTEMS } from '@/data/xray';
 import { ORIGIN } from '@/lib/seo';
+import { langOf, lpFor, stripLang, type Lang } from '@/i18n';
 import './system.css';
 
 /**
  * Хлібні крихти: видима навігація «де я» + JSON-LD BreadcrumbList для пошуку.
- * Будуються з маршруту. На головній і в кабінеті не показуються (там своя логіка).
+ * Двомовні: підписи через словник, посилання префіксуються /en у EN-режимі.
  */
 export type Crumb = { label: string; to?: string };
 
-const LABELS: Record<string, string> = {
-  '/proof': 'Докази', '/people': 'Команда', '/expansion': 'Експансія',
-  '/diagnose': 'Діагностика', '/contact': 'Контакт', '/systems': 'Системи', '/pricing': 'Формати та ціни',
+const L2: Record<string, [string, string]> = {
+  '/proof': ['Докази', 'Proof'], '/people': ['Команда', 'Team'], '/expansion': ['Експансія', 'Expansion'],
+  '/diagnose': ['Діагностика', 'Diagnostics'], '/contact': ['Контакт', 'Contact'],
+  '/systems': ['Системи', 'Systems'], '/pricing': ['Формати та ціни', 'Pricing & formats'],
 };
+const HOME: [string, string] = ['Головна', 'Home'];
+const CASE: [string, string] = ['Кейс', 'Case'];
 
 export function Breadcrumbs({ items }: { items: Crumb[] }) {
   if (items.length < 2) return null;
@@ -35,15 +39,19 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
 }
 
 function crumbsFor(pathname: string): Crumb[] {
-  const home: Crumb = { label: 'Головна', to: '/' };
-  const svc = pathname.match(/^\/systems\/(.+)$/);
+  const lang: Lang = langOf(pathname);
+  const lp = lpFor(lang);
+  const pick = (p: [string, string]) => p[lang === 'en' ? 1 : 0];
+  const base = stripLang(pathname);
+  const home: Crumb = { label: pick(HOME), to: lp('/') };
+  const svc = base.match(/^\/systems\/(.+)$/);
   if (svc) {
     const sys = SYSTEMS.find((s) => s.slug === svc[1]);
-    return [home, { label: 'Системи', to: '/#systems' }, { label: sys?.title ?? 'Система' }];
+    return [home, { label: pick(L2['/systems']), to: lp('/#systems') }, { label: sys?.title ?? 'System' }];
   }
-  if (/^\/cases\/.+$/.test(pathname)) return [home, { label: 'Докази', to: '/proof' }, { label: 'Кейс' }];
-  const label = LABELS[pathname];
-  return label ? [home, { label, to: pathname }] : [];
+  if (/^\/cases\/.+$/.test(base)) return [home, { label: pick(L2['/proof']), to: lp('/proof') }, { label: pick(CASE) }];
+  const l = L2[base];
+  return l ? [home, { label: pick(l), to: lp(base) }] : [];
 }
 
 /** Витягує крихти з поточного маршруту, малює їх і додає JSON-LD у <head>. */
