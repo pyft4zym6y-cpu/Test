@@ -9,6 +9,7 @@ import './system.css';
 const NAV = [
   { to: '/', label: 'Система' },
   { to: '/diagnose', label: 'Діагностика' },
+  { to: '/pricing', label: 'Формати та ціни' },
   { to: '/proof', label: 'Докази' },
   { to: '/expansion', label: 'Експансія' },
   { to: '/people', label: 'Команда' },

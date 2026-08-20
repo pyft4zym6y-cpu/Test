@@ -1669,3 +1669,83 @@
   .cmap-cta { flex-direction: column; align-items: stretch; text-align: left; }
   .cmap-cta .sysx-cta { justify-content: center; }
 }
+
+/* ============================================================
+   Формати та ціни (Pricing) — світла сторінка, монохром + синій акцент
+   ============================================================ */
+.pric { position: relative; background: var(--warm-white); }
+.pric-in { max-width: 1160px; margin: 0 auto;
+  padding: calc(96px + env(safe-area-inset-top)) clamp(18px, 5vw, 44px) clamp(60px, 9vw, 110px); }
+.pric-head { max-width: 760px; margin-bottom: clamp(28px, 4vw, 48px); }
+.pric-h1 { font-size: clamp(32px, 5.5vw, 60px); margin: 12px 0 14px; }
+.pric-head .sysx-lead { max-width: 62ch; }
+
+/* Картки форматів */
+.pric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(14px, 1.6vw, 20px); align-items: stretch; }
+.pric-card { position: relative; display: flex; flex-direction: column; background: var(--pure-white);
+  border: 1px solid var(--silver); border-radius: 18px; padding: clamp(20px, 2vw, 28px);
+  box-shadow: 0 24px 60px -46px rgba(21,23,26,.4); }
+.pric-card.is-featured { border-color: var(--deep); box-shadow: 0 30px 70px -40px rgba(21,23,26,.5);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--data) 6%, var(--pure-white)), var(--pure-white)); }
+.pric-badge { position: absolute; top: -11px; left: 24px; background: var(--deep); color: #fff;
+  font-size: 10px; letter-spacing: .14em; text-transform: uppercase; padding: 5px 11px; border-radius: 100px; }
+.pric-tag { font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--data); }
+.pric-name { font-family: var(--display); font-weight: 800; font-size: clamp(22px, 2.2vw, 27px); letter-spacing: -.02em; margin: 6px 0 0; color: var(--deep); }
+.pric-price-row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.pric-price { font-family: var(--display); font-weight: 800; font-size: clamp(20px, 2vw, 24px); color: var(--deep); }
+.pric-period { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--graphite); }
+.pric-note { font-size: 12px; line-height: 1.45; color: var(--graphite); margin: 6px 0 0; }
+.pric-lab { display: block; font-size: 9.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--graphite); margin: 18px 0 7px; }
+.pric-txt { font-size: 13.5px; line-height: 1.5; color: var(--charcoal); margin: 0; }
+.pric-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.pric-list li { display: flex; gap: 9px; font-size: 13.5px; line-height: 1.45; color: var(--charcoal); }
+.pric-list li span { color: var(--data); flex: 0 0 auto; }
+.pric-resp { margin: 18px 0 16px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 12.5px; font-weight: 600; color: var(--deep); line-height: 1.4; }
+.pric-cta { margin-top: auto; justify-content: center; }
+
+/* Порівняльна таблиця */
+.pric-compare { margin-top: clamp(28px, 4vw, 52px); }
+.pric-table { width: 100%; border-collapse: collapse; border: 1px solid var(--silver); border-radius: 16px; overflow: hidden; background: var(--pure-white); font-size: 13.5px; }
+.pric-table th, .pric-table td { text-align: left; padding: 13px 16px; vertical-align: top; border-bottom: 1px solid var(--line-soft); }
+.pric-table thead th { font-family: var(--display); font-weight: 800; color: var(--deep); font-size: 13px; background: var(--mist); }
+.pric-table thead th:first-child { background: var(--mist); }
+.pric-table tbody tr:last-child td { border-bottom: 0; }
+.pric-table-k { color: var(--graphite); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+.pric-table td { color: var(--charcoal); }
+.pric-compare-m { display: none; }
+
+/* Завжди — вхід через діагностику */
+.pric-always { margin-top: clamp(24px, 3vw, 40px); display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px;
+  background: var(--pure-white); border: 1px solid var(--silver); border-radius: 16px; padding: clamp(18px, 2.4vw, 26px); }
+.pric-always-lab { flex: 0 0 auto; font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--alert); }
+.pric-always p { flex: 1 1 320px; margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--charcoal); }
+.pric-always .sysx-cta { flex: 0 0 auto; }
+
+/* FAQ + обмежена доступність */
+.pric-faqwrap { margin-top: clamp(30px, 4vw, 56px); display: grid; grid-template-columns: 1.6fr 1fr; gap: clamp(16px, 2vw, 28px); align-items: start; }
+.pric-faq-list { margin-top: 16px; display: grid; gap: 10px; }
+.pric-faq-item { border: 1px solid var(--silver); border-radius: 12px; background: var(--pure-white); overflow: hidden; }
+.pric-faq-item.is-open { border-color: var(--graphite); }
+.pric-faq-q { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: none; border: 0; cursor: pointer; padding: 15px 18px; font: inherit; font-weight: 600; color: var(--deep); text-align: left; }
+.pric-faq-q i { font-style: normal; font-size: 18px; color: var(--graphite); flex: 0 0 auto; }
+.pric-faq-a { margin: 0; padding: 0 18px 16px; font-size: 13.5px; line-height: 1.55; color: var(--charcoal); }
+.pric-avail { background: var(--deep); color: #cfd4da; border-radius: 16px; padding: clamp(22px, 2.6vw, 30px); }
+.pric-avail .pric-always-lab { color: var(--data-soft); }
+.pric-avail-h { display: block; font-family: var(--display); font-weight: 800; font-size: 22px; color: #fff; margin: 12px 0 8px; }
+.pric-avail p { margin: 0; font-size: 13px; line-height: 1.55; color: #b9c0c8; }
+.pric-avail-ratio { display: flex; align-items: center; gap: 16px; margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.14); }
+.pric-avail-ratio b { font-family: var(--display); font-weight: 800; font-size: 34px; color: var(--data); }
+.pric-avail-ratio span { font-size: 11.5px; line-height: 1.4; color: #9aa2ab; }
+
+@media (max-width: 900px) {
+  .pric-grid { grid-template-columns: 1fr; }
+  .pric-card.is-featured { order: -1; }
+  .pric-table { display: none; }
+  .pric-compare-m { display: grid; gap: 10px; }
+  .pric-compare-card { border: 1px solid var(--silver); border-radius: 12px; background: var(--pure-white); padding: 14px 16px; }
+  .pric-compare-card .pric-table-k { display: block; margin-bottom: 8px; }
+  .pric-compare-card p { margin: 4px 0; font-size: 13.5px; color: var(--charcoal); display: flex; gap: 10px; }
+  .pric-compare-card p b { color: var(--data); flex: 0 0 auto; }
+  .pric-faqwrap { grid-template-columns: 1fr; }
+}

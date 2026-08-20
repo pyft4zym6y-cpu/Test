@@ -33,6 +33,7 @@ const SystemShell = lazy(() => import('@/system/SystemShell').then((m) => ({ def
 const LossCalculator = lazy(() => import('@/system/LossCalculator').then((m) => ({ default: m.LossCalculator })));
 const Cabinet = lazy(() => import('@/system/Cabinet').then((m) => ({ default: m.Cabinet })));
 const ServicePage = lazy(() => import('@/system/ServicePage').then((m) => ({ default: m.ServicePage })));
+const Pricing = lazy(() => import('@/system/Pricing').then((m) => ({ default: m.Pricing })));
 
 // /challenges/:slug (легасі) → відповідна світла сторінка системи /systems/:slug
 // (слаги збігаються), щоб зберегти глибокі посилання, а не кидати все на індекс.
@@ -57,6 +58,7 @@ export default function App() {
             <Route path="/expansion" element={<ExpansionFilm />} />
             {/* Єдиний інструмент діагностики: калькулятор → карта → кабінет → Крок 4/5. */}
             <Route path="/diagnose" element={<LossCalculator />} />
+            <Route path="/pricing" element={<Pricing />} />
             <Route path="/systems/:slug" element={<ServicePage />} />
             <Route path="/contact" element={<ContactFilm />} />
             {/* Світла 404 у тій же оболонці (шапка/крихти/підвал). */}
