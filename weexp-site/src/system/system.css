@@ -1870,3 +1870,68 @@
 
 /* — Секції з тёмним тлом лишаються тёмними, але отримують крапкову текстуру — */
 .sysx :where(.cred, .svc-next, .cab-site){ border-radius: 0; }
+
+/* ═══ Хаб «Експансія» + підсторінки експертиз (бруталіст) ═══ */
+.xhub, .xp2 { position: relative; min-height: 80vh; padding: calc(90px + env(safe-area-inset-top)) clamp(18px,5vw,64px) clamp(60px,8vw,110px); }
+.xhub-in, .xp2-in { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; }
+.xhub-head { max-width: 46ch; }
+.xhub-h1 { font-size: clamp(40px,7vw,88px); margin-top: 14px; }
+.xhub-head .sysx-lead { margin-top: 20px; }
+
+.xhub-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: clamp(18px,2.2vw,26px); margin-top: clamp(34px,5vw,56px); }
+@media (max-width: 760px) { .xhub-grid { grid-template-columns: 1fr; } }
+.xhub-card { position: relative; display: flex; flex-direction: column; gap: 10px; text-decoration: none;
+  background: var(--pure-white); border: var(--bd); border-radius: 0; box-shadow: var(--sh); padding: clamp(24px,2.4vw,32px);
+  transition: transform .14s var(--ease-cine), box-shadow .14s var(--ease-cine); }
+.xhub-card:hover { transform: translate(-4px,-4px); box-shadow: var(--sh-lg); }
+.xhub-n { font-family: var(--display); font-weight: 900; font-size: 20px; color: var(--red); }
+.xhub-tag { font-family: var(--sans); font-weight: 800; text-transform: uppercase; letter-spacing: .12em; font-size: 11.5px; color: var(--graphite); }
+.xhub-card-h { font-size: clamp(26px,3vw,38px); }
+.xhub-script { font-size: clamp(22px,2.4vw,30px); }
+.xhub-card-p { font-size: 15px; line-height: 1.5; color: var(--charcoal); margin: 2px 0 4px; }
+.xhub-more { margin-top: auto; font-family: var(--sans); font-weight: 800; text-transform: uppercase; letter-spacing: .06em; font-size: 12.5px; color: var(--red); }
+
+.xhub-cta { margin-top: clamp(34px,5vw,56px); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 22px;
+  background: var(--ink); color: var(--cream); border: var(--bd); box-shadow: var(--sh-red); padding: clamp(26px,3vw,40px);
+  background-image: radial-gradient(rgba(255,255,255,.06) 1.2px, transparent 1.3px); background-size: 22px 22px; }
+.xhub-cta-h { color: #fff; font-size: clamp(24px,3vw,38px); margin-top: 8px; }
+.xhub-cta .sysx-kick { color: var(--red); }
+
+/* ── Підсторінка експертизи ── */
+.xp2-back { display: inline-block; font-weight: 700; color: var(--graphite); text-decoration: none; margin-bottom: 22px; }
+.xp2-back:hover { color: var(--red); }
+.xp2-head { max-width: 52ch; }
+.xp2-h1 { font-size: clamp(38px,6.4vw,80px); margin-top: 12px; }
+.xp2-script { display: block; font-size: clamp(24px,3vw,38px); margin-top: 10px; }
+.xp2-intro { margin: 20px 0 26px; max-width: 54ch; }
+.xp2-sec { margin-top: clamp(34px,4.5vw,56px); }
+.xp2-sec > .sysx-kick { display: block; margin-bottom: 18px; }
+.xp2-serv { display: grid; grid-template-columns: repeat(3,1fr); gap: 0; border: var(--bd); box-shadow: var(--sh-lg); background: var(--pure-white); }
+@media (max-width: 860px) { .xp2-serv { grid-template-columns: 1fr; } }
+.xp2-serv-i { padding: 22px 22px; border-right: var(--bd); border-bottom: var(--bd); display: flex; flex-direction: column; gap: 7px; }
+.xp2-serv-i b { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: 17px; letter-spacing: -.01em; color: var(--deep); }
+.xp2-serv-i span { font-size: 14px; line-height: 1.45; color: var(--charcoal); }
+.xp2-serv-i:nth-child(3n) { border-right: 0; }
+@media (max-width: 860px) { .xp2-serv-i { border-right: 0; } }
+
+.xp2-two { display: grid; grid-template-columns: 1.2fr 1fr; gap: clamp(18px,2.4vw,28px); align-items: stretch; }
+@media (max-width: 760px) { .xp2-two { grid-template-columns: 1fr; } }
+.xp2-two .xp2-sec { margin-top: clamp(34px,4.5vw,56px); }
+.xp2-deliv { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.xp2-deliv li { position: relative; padding-left: 26px; font-size: 15.5px; line-height: 1.45; color: var(--charcoal); }
+.xp2-deliv li::before { content: '—'; position: absolute; left: 0; color: var(--red); font-weight: 900; }
+.xp2-outcome { background: var(--pure-white); border: var(--bd); box-shadow: var(--sh-red); padding: clamp(22px,2.6vw,30px); align-self: start; }
+.xp2-outcome > .sysx-kick { color: var(--red); }
+.xp2-outcome-t { font-size: clamp(18px,2vw,24px); line-height: 1.15; text-transform: none; letter-spacing: -.01em; color: var(--deep); }
+
+.xp2-proc { display: grid; grid-template-columns: repeat(5,1fr); gap: 14px; }
+@media (max-width: 900px) { .xp2-proc { grid-template-columns: 1fr 1fr; } }
+.xp2-proc-i { border: var(--bd); box-shadow: var(--sh); background: var(--pure-white); padding: 16px 16px; display: flex; flex-direction: column; gap: 6px; }
+.xp2-proc-n { font-family: var(--display); font-weight: 900; font-size: 22px; color: var(--red); }
+.xp2-proc-i b { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: 15px; color: var(--deep); }
+.xp2-proc-i span { font-size: 13px; line-height: 1.4; color: var(--charcoal); }
+
+.xp2-nav { margin-top: clamp(36px,5vw,60px); display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; border-top: var(--bd); padding-top: 22px; }
+.xp2-sib { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: clamp(15px,1.8vw,20px); color: var(--deep); text-decoration: none; letter-spacing: -.01em; }
+.xp2-sib:hover { color: var(--red); }
+.xp2-sib-r { text-align: right; margin-left: auto; }

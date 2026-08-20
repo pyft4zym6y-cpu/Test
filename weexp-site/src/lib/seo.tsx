@@ -92,8 +92,8 @@ const META: Record<string, Meta2> = {
     en: [`About — mission, values & team${ES}`, 'Who WEEXP is: mission, vision and values. Systems are built by owners, not heroes — every system has its owner.'],
   },
   '/expansion': {
-    uk: [`Міжнародна експансія — ЄС і США${SUFFIX}`, 'Системний вивід брендів на ЄС і США: власний сайт, Amazon, Allegro та локальні маркетплейси — з локалізацією, логістикою й юніт-економікою ринку.'],
-    en: [`International expansion — EU & US${ES}`, 'Systematic brand launch into the EU & US: own site, Amazon, Allegro and local marketplaces — with localization, logistics and market unit economics.'],
+    uk: [`Експертизи WEEXP — напрями роботи${SUFFIX}`, 'Фокусні експертизи WEEXP: міжнародна експансія, автоматизація процесів, веб розробка й маркетинг. Кожен напрям — зі своєю командою й результатом.'],
+    en: [`WEEXP expertise — practices${ES}`, 'WEEXP focused expertise: international expansion, process automation, web development and marketing. Each practice with its own team and outcome.'],
   },
   '/diagnose': {
     uk: [`Express Audit — витік виторгу за 3 кроки${SUFFIX}`, 'Безкоштовний експрес-аудит e-commerce: за 3 кроки порахуйте втрати, отримайте головний bottleneck, Business Health і брендований PDF. Точну карту дає глибокий аудит.'],
