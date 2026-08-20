@@ -18,7 +18,14 @@ export function SystemExplorer() {
   const hoverRef = useRef<number | null>(null);
   const subLabels = useRef(Array.from({ length: MAX_SUB }, () => ({ x: 50, y: 50, vis: 0 })));
   const labelEls = useRef<(HTMLDivElement | null)[]>([]);
+  const panelRef = useRef<HTMLDivElement>(null);
   focusedRef.current = focused;
+
+  // Коли обрано систему — підводимо панель деталей у поле зору (важливо на мобілі,
+  // де панель зʼявляється в потоці одразу під чіпами). block:'nearest' не смикає, якщо вже видно.
+  useEffect(() => {
+    if (focused !== null) panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, [focused]);
 
   // rAF: вішаємо лейбли підпроцесів на спроєктовані позиції.
   useEffect(() => {
@@ -65,7 +72,7 @@ export function SystemExplorer() {
           {/* Доступна з клавіатури альтернатива клікам по canvas (WCAG 2.1.1) */}
           <div className="sxp-picker" role="group" aria-label="Оберіть одну із восьми систем">
             {SYSTEMS.map((s, i) => (
-              <button key={s.key} type="button" className="sxp-pick mono" onClick={() => setFocused(i)}>
+              <button key={s.key} type="button" className={`sxp-pick mono${focused === i ? ' is-on' : ''}`} onClick={() => setFocused(i)}>
                 <b>{s.num}</b> {SHORT[s.key]}
               </button>
             ))}
@@ -74,7 +81,7 @@ export function SystemExplorer() {
 
         {/* Панель сфокусованої системи */}
         {sys && (
-          <div className="sxp-panel">
+          <div className="sxp-panel" ref={panelRef}>
             <button className="sxp-close mono" onClick={() => setFocused(null)} aria-label="Назад до огляду">← усі системи</button>
             <span className="sxp-panel-en mono">{sys.en} · {sys.num}/08</span>
             <h3 className="sysx-display sxp-panel-h">{sys.title}</h3>
