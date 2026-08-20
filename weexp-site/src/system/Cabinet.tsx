@@ -7,6 +7,7 @@ import {
 import { getExpressAudit, buildJourney, type ExpressAudit } from './cabinetData';
 import { eur } from './lossModel';
 import { sendLead } from '@/lib/leads';
+import { isValidCode } from '@/lib/access';
 import { useT, useLp } from '@/i18n';
 import './system.css';
 import './cabinet.css';
@@ -74,18 +75,28 @@ export function Cabinet() {
     return (
       <div className="sysx cab cab-gate">
         <div className="cab-gate-card">
-          <Link to={lp('/')} className="cab-gate-back mono">{t('← на сайт', '← to site')}</Link>
-          <div className="sysx-kick">{t('Особистий кабінет WEEXP', 'WEEXP client cabinet')}</div>
-          <h1 className="sysx-display cab-gate-h">{t('Ваш кабінет', 'Your diagnostics')}<br />{t('діагностики', 'cabinet')}</h1>
-          <p className="sysx-lead">{t('Один вхід — усі ваші дані в одному місці: експрес-витік із калькулятора, профіль компанії, глибокий аудит і план. Повторний вхід відкриває збережений розбір.', 'One sign-in — all your data in one place: express leak from the calculator, company profile, deep audit and plan. Signing back in opens your saved analysis.')}</p>
-          <div className="cab-form">
-            <label className="sysx-inp"><span className="sysx-inp-l">Email</span>
-              <input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@shop.com" /></label>
-            <label className="sysx-inp"><span className="sysx-inp-l">{t('Пароль · мін. 6 символів', 'Password · min. 6 characters')}</span>
-              <input type="password" autoComplete="current-password" value={pass} onChange={(e) => setPass(e.target.value)} placeholder="••••••" onKeyDown={(e) => e.key === 'Enter' && email && pass.length >= 6 && doAuth()} /></label>
-            {authErr && <p className="cab-auth-err mono">{authErr}</p>}
-            <button className="sysx-cta is-primary" onClick={doAuth} disabled={busy || !email || pass.length < 6}>{busy ? t('Заходимо…', 'Signing in…') : t('Увійти / створити кабінет →', 'Sign in / create cabinet →')}</button>
-            <p className="sysx-note mono">{CONFIGURED ? t('Захищений вхід. Дані синхронізуються між пристроями.', 'Secure sign-in. Data syncs across your devices.') : t('Демо-режим: дані зберігаються локально в цьому браузері.', 'Demo mode: data is stored locally in this browser.')}</p>
+          <div className="cab-gate-left">
+            <Link to={lp('/')} className="cab-gate-back mono">← {t('на сайт', 'to site')}</Link>
+            <span className="cab-gate-badge">{t('Особистий кабінет WEEXP', 'WEEXP client cabinet')}</span>
+            <h1 className="sysx-display cab-gate-h">{t('Вхід у ваш', 'Sign in to your')}<br /><span className="hl">{t('кабінет', 'cabinet')}</span></h1>
+            <p className="sysx-lead">{t('Один вхід — усі дані в одному місці. Повторний вхід тим самим email відкриває збережений розбір.', 'One sign-in — all your data in one place. Signing back in with the same email opens your saved analysis.')}</p>
+            <ul className="cab-gate-gets">
+              <li>{t('Експрес-витік із калькулятора — збережений', 'Express leak from the calculator — saved')}</li>
+              <li>{t('Профіль компанії та безпечні доступи', 'Company profile and secure access')}</li>
+              <li>{t('Глибокий аудит за кодом і план під DoD', 'Deep audit by code and a plan under DoD')}</li>
+            </ul>
+          </div>
+          <div className="cab-gate-right">
+            <div className="cab-form">
+              <span className="sysx-kick">{t('Вхід / реєстрація', 'Sign in / sign up')}</span>
+              <label className="sysx-inp"><span className="sysx-inp-l">Email</span>
+                <input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@shop.com" /></label>
+              <label className="sysx-inp"><span className="sysx-inp-l">{t('Пароль · мін. 6 символів', 'Password · min. 6 characters')}</span>
+                <input type="password" autoComplete="current-password" value={pass} onChange={(e) => setPass(e.target.value)} placeholder="••••••" onKeyDown={(e) => e.key === 'Enter' && email && pass.length >= 6 && doAuth()} /></label>
+              {authErr && <p className="cab-auth-err mono">{authErr}</p>}
+              <button className="sysx-cta is-primary" onClick={doAuth} disabled={busy || !email || pass.length < 6}>{busy ? t('Заходимо…', 'Signing in…') : t('Увійти / створити кабінет →', 'Sign in / create cabinet →')}</button>
+              <p className="sysx-note mono">{CONFIGURED ? t('Захищений вхід. Дані синхронізуються між пристроями.', 'Secure sign-in. Data syncs across your devices.') : t('Демо-режим: дані зберігаються локально в цьому браузері.', 'Demo mode: data is stored locally in this browser.')}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -124,16 +135,7 @@ export function Cabinet() {
         {section === 'audits' && <Audits express={express} rec={rec} go={setSection} />}
         {section === 'company' && <CompanyForm user={user} rec={rec} onSaved={refreshRec} />}
         {section === 'access' && <Access user={user} rec={rec} onDone={refreshRec} />}
-        {section === 'deep' && (
-          <section className="cab-sec cab-deep-wrap">
-            <SecHead kick={t('Глибокий аудит · Tier-2', 'Deep audit · Tier-2')} title={t('Розбір систем магазину', 'Analysis of your store systems')} lead={t('Реєстрація вже пройдена — заповнюйте блоки по секціях. На виході інтерактивний Tier-2 звіт: зрілість, конкурентне поле, маркетинг/фінанси, позиціонування. Прогрес зберігається автоматично.', 'Registration is already done — fill in the blocks section by section. The output is an interactive Tier-2 report: maturity, competitive field, marketing/finance, positioning. Progress is saved automatically.')} />
-            <Suspense fallback={<div className="cab-boot mono">{t('Відкриваємо розбір…', 'Opening analysis…')}</div>}>
-              {/* embedded — рендеримо inline в кабінеті (без повноекранного оверлея),
-                  щоб клієнт лишався в кабінеті, а не «перекидався» на окрему сторінку. */}
-              <Stage3 embedded onClose={() => setSection('overview')} />
-            </Suspense>
-          </section>
-        )}
+        {section === 'deep' && <DeepAudit user={user} express={express} onClose={() => setSection('overview')} go={setSection} />}
         {section === 'findings' && <Soon title={t('Знахідки та дорожня карта', 'Findings & roadmap')} lead={t('Тут зʼявляться підтверджені знахідки глибокого аудиту й план під Definition of Done: що робити, у якому порядку і який ефект. Розділ вмикається після завершення Tier-2 розбору.', 'Confirmed findings from the deep audit and a plan under a Definition of Done will appear here: what to do, in what order and what the effect is. The section unlocks after the Tier-2 analysis is complete.')} />}
         {section === 'docs' && <Soon title={t('Документи', 'Documents')} lead={t('PDF-звіти, робочі аркуші й матеріали розбору складатимуться сюди — щоб усе було в одному місці й доступне команді.', 'PDF reports, worksheets and analysis materials will gather here — so everything is in one place and available to the team.')} />}
         {section === 'collab' && <Collab user={user} rec={rec} express={express} onDone={refreshRec} />}
@@ -286,6 +288,73 @@ function Access({ user, rec, onDone }: { user: DiagUser; rec: DiagRecord | null;
         {sent
           ? <span className="cab-saved mono">{t(`✓ Запит на доступи (${depth}) надіслано. Ми напишемо інструкції на ${user.email}.`, `✓ Access request (${depth}) sent. We'll send instructions to ${user.email}.`)}</span>
           : <button className="sysx-cta is-primary" onClick={request} disabled={busy}>{busy ? t('Надсилаємо…', 'Sending…') : t(`Запросити інструкції для ${depth} →`, `Request instructions for ${depth} →`)}</button>}
+      </div>
+    </section>
+  );
+}
+
+/* ── Глибокий аудит: ОКРЕМА гілка, доступна лише за кодом (від входу).
+   Без коду — інфо-вікно (що це + дані безкоштовного експрес-аудиту, якщо є) і поле коду.
+   За кодом — повний Stage3-розбір (свої кроки: питання → доступи → файли). ── */
+function deepKey(email: string) { return `weexp:deep-unlocked:${(email || '').toLowerCase()}`; }
+
+function DeepAudit({ user, express, onClose, go }: { user: DiagUser; express: ExpressAudit | null; onClose: () => void; go: (s: SectionId) => void }) {
+  const t = useT();
+  const [unlocked, setUnlocked] = useState<boolean>(() => { try { return localStorage.getItem(deepKey(user.email)) === '1'; } catch { return false; } });
+  const [code, setCode] = useState('');
+  const [err, setErr] = useState('');
+  const unlock = () => {
+    if (!isValidCode(code)) { setErr(t('Код недійсний. Попросіть його в менеджера або замовте аудит.', 'Invalid code. Ask your manager for it or order the audit.')); return; }
+    setErr(''); try { localStorage.setItem(deepKey(user.email), '1'); } catch { /* ignore */ }
+    setUnlocked(true);
+  };
+
+  if (unlocked) {
+    return (
+      <section className="cab-sec cab-deep-wrap">
+        <SecHead kick={t('Глибокий аудит · Tier-2', 'Deep audit · Tier-2')} title={t('Розбір систем магазину', 'Analysis of your store systems')} lead={t('Доступ відкрито. Заповнюйте блоки по секціях: питання → доступи → файли. На виході — інтерактивний Tier-2 звіт: зрілість, конкурентне поле, маркетинг/фінанси, позиціонування. Прогрес зберігається автоматично.', 'Access unlocked. Fill in the blocks section by section: questions → access → files. The output is an interactive Tier-2 report: maturity, competitive field, marketing/finance, positioning. Progress is saved automatically.')} />
+        <Suspense fallback={<div className="cab-boot mono">{t('Відкриваємо розбір…', 'Opening analysis…')}</div>}>
+          <Stage3 embedded onClose={onClose} />
+        </Suspense>
+      </section>
+    );
+  }
+
+  return (
+    <section className="cab-sec">
+      <SecHead kick={t('Глибокий аудит · за кодом', 'Deep audit · code-gated')} title={t('Окрема гілка глибокого розбору', 'A separate deep-analysis branch')} lead={t('Глибокий аудит — це окремий, платний рівень: свої питання, безпечні доступи (GA4/CRM/ERP/реклама) і файли. Він дає карту «де саме й чому» та план повернення виторгу під Definition of Done. Розділ відкривається за кодом від менеджера.', 'The deep audit is a separate, paid level: its own questions, secure access (GA4/CRM/ERP/ads) and files. It gives a map of “exactly where and why” and a revenue-recovery plan under a Definition of Done. The section unlocks with a code from your manager.')} />
+
+      {/* Інфо-вікно про безкоштовний експрес-аудит (якщо клієнт уже його пройшов) */}
+      {express ? (
+        <div className="cab-card cab-deep-info">
+          <span className="sysx-kick">{t('У вас уже є безкоштовний експрес-аудит', 'You already have a free express audit')}</span>
+          <div className="cab-deep-info-row">
+            <div><b className="sysx-display cab-big">{eur(express.total)}<i>{t('/ рік', '/ year')}</i></b>
+              <span className="mono cab-sub">{t('діапазон', 'range')} {eur(express.range[0])}–{eur(express.range[1])} · Health {express.overallHealth}/100</span></div>
+            <button className="sysx-cta" onClick={() => go('audits')}>{t('Дивитись у «Мої аудити» →', 'View in “My audits” →')}</button>
+          </div>
+          <p className="cab-next-d">{t('Глибокий аудит стартує не з нуля — він підтвердить це число вашими даними й покаже, де саме витікає виторг.', 'The deep audit does not start from scratch — it will confirm this number with your data and show exactly where revenue leaks.')}</p>
+        </div>
+      ) : (
+        <div className="cab-card cab-deep-info">
+          <span className="sysx-kick">{t('Спершу — безкоштовний експрес-аудит', 'First — the free express audit')}</span>
+          <p className="cab-next-d">{t('Ще не рахували витік? Пройдіть безкоштовний калькулятор — він дасть число за 3 кроки, а глибокий аудит потім стартує вже з ваших даних.', 'Haven’t measured the leak yet? Take the free calculator — it gives a number in 3 steps, and the deep audit then starts from your data.')}</p>
+          <div className="cab-actions"><button className="sysx-cta" onClick={() => go('audits')}>{t('До «Мої аудити» →', 'To “My audits” →')}</button></div>
+        </div>
+      )}
+
+      {/* Ворота коду */}
+      <div className="cab-card cab-deep-gate">
+        <span className="sysx-kick">{t('Активувати глибокий аудит', 'Activate the deep audit')}</span>
+        <p className="cab-next-d">{t('Введіть код від менеджера, щоб відкрити гілку глибокого аудиту з питаннями, доступами й файлами.', 'Enter the code from your manager to open the deep-audit branch with questions, access and files.')}</p>
+        <div className="cab-deep-gate-row">
+          <label className="sysx-inp"><span className="sysx-inp-l">Access Code</span>
+            <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="WEEXP-XXXX" autoComplete="off"
+              onKeyDown={(e) => e.key === 'Enter' && code.trim() && unlock()} /></label>
+          <button className="sysx-cta is-primary" onClick={unlock} disabled={!code.trim()}>{t('Активувати →', 'Activate →')}</button>
+        </div>
+        {err && <p className="cab-auth-err mono">{err}</p>}
+        <p className="sysx-note mono">{t('Немає коду? Замовте аудит на «Формати і ціни» або в розділі «Співпраця».', 'No code? Order the audit on “Formats & pricing” or in the “Work with us” section.')}</p>
       </div>
     </section>
   );
