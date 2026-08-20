@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CASES } from '@/data/cases';
+import { CASES, localizeCase } from '@/data/cases';
 import { SHORT } from '@/data/xray';
 import { band, seg, setLayer as set, useScrollScene } from '@/lib/scene';
+import { useT, useLp, useLang } from '@/i18n';
 import './system.css';
 
 /**
@@ -18,6 +19,9 @@ const N = REEL.length;
 const A0 = 0.09, A1 = 0.90, W = (A1 - A0) / N;
 
 export function CasesFilm() {
+  const t = useT();
+  const lp = useLp();
+  const lang = useLang();
   const sec = useRef<HTMLElement>(null);
   const intro = useRef<HTMLDivElement>(null);
   const outro = useRef<HTMLDivElement>(null);
@@ -46,7 +50,7 @@ export function CasesFilm() {
   });
 
   return (
-    <section ref={sec} className="sysx sysx-film sysx-proof" aria-label="WEEXP — докази: трансформації в цифрах">
+    <section ref={sec} className="sysx sysx-film sysx-proof" aria-label={t('WEEXP — докази: трансформації в цифрах', 'WEEXP — proof: transformations in numbers')}>
       <div className="sysx-stage">
         <span className="sysx-field" aria-hidden="true" />
         <span ref={ghost} className="cf-ghost sysx-display" aria-hidden="true">{REEL[0].hero}</span>
@@ -60,51 +64,54 @@ export function CasesFilm() {
 
         {/* INTRO */}
         <div ref={intro} className="sysx-scene sysx-void">
-          <div className="sysx-kick">WEEXP — The Evidence · 17 трансформацій</div>
-          <h1 className="sysx-display sysx-h1">Систему видно<br />в <span className="sysx-em">цифрах</span></h1>
-          <p className="sysx-lead">Не обіцянки — дельти до→після з CRM, ERP і GA4. Кожен кейс анонімний, але число реальне. Гортайте — сім флагманських кейсів.</p>
-          <span className="sysx-scrollhint mono">↓ до→після</span>
+          <div className="sysx-kick">{t('WEEXP — The Evidence · 17 трансформацій', 'WEEXP — The Evidence · 17 transformations')}</div>
+          <h1 className="sysx-display sysx-h1">{t('Систему видно', 'You see the system')}<br />{t('в ', 'in the ')}<span className="sysx-em">{t('цифрах', 'numbers')}</span></h1>
+          <p className="sysx-lead">{t('Не обіцянки — дельти до→після з CRM, ERP і GA4. Кожен кейс анонімний, але число реальне. Гортайте — сім флагманських кейсів.', 'Not promises — before→after deltas from CRM, ERP and GA4. Every case is anonymized, but the number is real. Scroll — seven flagship cases.')}</p>
+          <span className="sysx-scrollhint mono">{t('↓ до→після', '↓ before→after')}</span>
         </div>
 
         {/* КЕЙС-АКТИ */}
-        {REEL.map((c, i) => (
+        {REEL.map((c, i) => {
+          const lc = localizeCase(c, lang);
+          return (
           <div key={c.slug} ref={(el) => { acts.current[i] = el; }} className="cf-act" style={{ opacity: 0 }}>
             <div className="cf-hero">
-              <span className="cf-cat mono">{c.cat}</span>
+              <span className="cf-cat mono">{lc.cat}</span>
               <span className="cf-num sysx-display">{c.hero}</span>
-              <span className="cf-heroLabel">{c.heroLabel}</span>
-              <span className="cf-window mono">{c.window}</span>
-              <p className="cf-money">{c.money}</p>
-              <div className="cf-chips">{c.systems.map((k) => <span key={k} className="cf-chip mono">{SHORT[k]}</span>)}</div>
+              <span className="cf-heroLabel">{lc.heroLabel}</span>
+              <span className="cf-window mono">{lc.window}</span>
+              <p className="cf-money">{lc.money}</p>
+              <div className="cf-chips">{lc.systems.map((k) => <span key={k} className="cf-chip mono">{SHORT[k]}</span>)}</div>
             </div>
             <div className="cf-deltas">
-              <span className="cf-deltas-h mono">До → після</span>
-              {c.metrics.slice(0, 5).map((m, k) => (
+              <span className="cf-deltas-h mono">{t('До → після', 'Before → After')}</span>
+              {lc.metrics.slice(0, 5).map((m, k) => (
                 <div key={m.label} className="cf-row" style={{ '--k': k } as React.CSSProperties}>
                   <span className="cf-row-l">{m.label}</span>
                   <span className="cf-row-v"><i className="cf-before">{m.before}</i><em className="cf-arrow mono">→</em><b className="cf-after">{m.after}</b>{m.note && <span className="cf-note mono">{m.note}</span>}</span>
                 </div>
               ))}
-              <p className="cf-learn"><b className="mono">Урок:</b> {c.learning}</p>
-              <div className="cf-verified mono"><span aria-hidden="true">✓</span> {c.verified || 'Кожна дельта звірена з CRM / ERP / GA4 клієнта'}</div>
-              {c.testimonial && (
+              <p className="cf-learn"><b className="mono">{t('Урок:', 'Lesson:')}</b> {lc.learning}</p>
+              <div className="cf-verified mono"><span aria-hidden="true">✓</span> {lc.verified || t('Кожна дельта звірена з CRM / ERP / GA4 клієнта', 'Every delta verified against the client\'s CRM / ERP / GA4')}</div>
+              {lc.testimonial && (
                 <blockquote className="cf-quote">
-                  <p>«{c.testimonial.quote}»</p>
-                  <cite className="mono">{c.testimonial.name ? `${c.testimonial.name}, ` : ''}{c.testimonial.role}</cite>
+                  <p>«{lc.testimonial.quote}»</p>
+                  <cite className="mono">{lc.testimonial.name ? `${lc.testimonial.name}, ` : ''}{lc.testimonial.role}</cite>
                 </blockquote>
               )}
             </div>
           </div>
-        ))}
+          );
+        })}
 
         {/* OUTRO CTA */}
         <div ref={outro} className="sysx-scene sysx-ctaScene">
-          <div className="sysx-kick">Ваша трансформація</div>
-          <h2 className="sysx-display sysx-h2">Наступне число<br />у стрічці — <span className="sysx-em">ваше</span>.</h2>
-          <p className="sysx-lead">Почніть із діагнозу: за 2 хвилини побачите, яка система дасть найбільшу дельту саме вам.</p>
+          <div className="sysx-kick">{t('Ваша трансформація', 'Your transformation')}</div>
+          <h2 className="sysx-display sysx-h2">{t('Наступне число', 'The next number')}<br />{t('у стрічці — ', 'in the reel is ')}<span className="sysx-em">{t('ваше', 'yours')}</span>.</h2>
+          <p className="sysx-lead">{t('Почніть із діагнозу: за 2 хвилини побачите, яка система дасть найбільшу дельту саме вам.', 'Start with the diagnosis: in 2 minutes you\'ll see which system delivers the biggest delta for you.')}</p>
           <div className="sysx-cta-row">
-            <Link to="/diagnose" className="sysx-cta is-primary">Знайти свою дельту →</Link>
-            <Link to="/systems" className="sysx-cta">8 систем</Link>
+            <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Знайти свою дельту →', 'Find your delta →')}</Link>
+            <Link to={lp('/systems')} className="sysx-cta">{t('8 систем', '8 systems')}</Link>
           </div>
         </div>
       </div>

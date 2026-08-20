@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { SYSTEMS, SHORT } from '@/data/xray';
+import { SYSTEMS, localizeSystem, shortOf } from '@/data/xray';
+import { useT, useLang } from '@/i18n';
 import './system.css';
 
 const ExplorerCanvas = lazy(() => import('@/system/ExplorerCanvas').then((m) => ({ default: m.ExplorerCanvas })));
@@ -13,6 +14,8 @@ const ExplorerCanvas = lazy(() => import('@/system/ExplorerCanvas').then((m) => 
 const MAX_SUB = 5;
 
 export function SystemExplorer() {
+  const t = useT();
+  const lang = useLang();
   const [focused, setFocused] = useState<number | null>(null);
   const focusedRef = useRef<number | null>(null);
   const hoverRef = useRef<number | null>(null);
@@ -45,9 +48,10 @@ export function SystemExplorer() {
   }, []);
 
   const sys = focused !== null ? SYSTEMS[focused] : null;
+  const sl = sys ? localizeSystem(sys, lang) : null;
 
   return (
-    <section className="sysx sysx-explorer" aria-label="Досліди систему">
+    <section className="sysx sysx-explorer" aria-label={t('Досліди систему', 'Explore the system')}>
       <span className="sysx-field" aria-hidden="true" />
       <div className="sxp-stage">
         <Suspense fallback={null}>
@@ -58,40 +62,40 @@ export function SystemExplorer() {
         <div className="sxp-labels" aria-hidden={focused === null}>
           {Array.from({ length: MAX_SUB }, (_, k) => (
             <div key={k} ref={(el) => { labelEls.current[k] = el; }} className="sxp-label">
-              <span className="sxp-label-dot" /><span className="sxp-label-t">{sys?.domains[k] ?? ''}</span>
+              <span className="sxp-label-dot" /><span className="sxp-label-t">{sl?.domains[k] ?? ''}</span>
             </div>
           ))}
         </div>
 
         {/* Заголовок / підказка */}
         <div className={'sxp-intro' + (focused !== null ? ' is-hidden' : '')}>
-          <span className="sysx-kick">Досліди систему · інтерактив</span>
-          <h2 className="sysx-display sxp-h">Клікни будь-яку<br />із <span className="sysx-em">восьми систем</span>.</h2>
-          <p className="sxp-lead">Категорія наблизиться, а від неї розійдуться процеси всередині. Ось як влаштована система, якою ми керуємо.</p>
-          <span className="sxp-hint mono">↑ наведіть і клікніть вузол</span>
+          <span className="sysx-kick">{t('Досліди систему · інтерактив', 'Explore the system · interactive')}</span>
+          <h2 className="sysx-display sxp-h">{t('Клікни будь-яку', 'Click any')}<br />{t('із ', 'of the ')}<span className="sysx-em">{t('восьми систем', 'eight systems')}</span>.</h2>
+          <p className="sxp-lead">{t('Категорія наблизиться, а від неї розійдуться процеси всередині. Ось як влаштована система, якою ми керуємо.', 'The category moves closer, and the processes inside fan out from it. This is how the system we run is built.')}</p>
+          <span className="sxp-hint mono">{t('↑ наведіть і клікніть вузол', '↑ hover and click a node')}</span>
           {/* Доступна з клавіатури альтернатива клікам по canvas (WCAG 2.1.1) */}
-          <div className="sxp-picker" role="group" aria-label="Оберіть одну із восьми систем">
+          <div className="sxp-picker" role="group" aria-label={t('Оберіть одну із восьми систем', 'Pick one of the eight systems')}>
             {SYSTEMS.map((s, i) => (
               <button key={s.key} type="button" className={`sxp-pick mono${focused === i ? ' is-on' : ''}`} onClick={() => setFocused(i)}>
-                <b>{s.num}</b> {SHORT[s.key]}
+                <b>{s.num}</b> {shortOf(s.key, lang)}
               </button>
             ))}
           </div>
         </div>
 
         {/* Панель сфокусованої системи */}
-        {sys && (
+        {sl && (
           <div className="sxp-panel" ref={panelRef}>
-            <button className="sxp-close mono" onClick={() => setFocused(null)} aria-label="Назад до огляду">← усі системи</button>
-            <span className="sxp-panel-en mono">{sys.en} · {sys.num}/08</span>
-            <h3 className="sysx-display sxp-panel-h">{sys.title}</h3>
-            <p className="sxp-panel-feel">«{sys.feel}»</p>
+            <button className="sxp-close mono" onClick={() => setFocused(null)} aria-label={t('Назад до огляду', 'Back to overview')}>{t('← усі системи', '← all systems')}</button>
+            <span className="sxp-panel-en mono">{sl.en} · {sl.num}/08</span>
+            <h3 className="sysx-display sxp-panel-h">{sl.title}</h3>
+            <p className="sxp-panel-feel">«{sl.feel}»</p>
             <div className="sxp-flow">
-              {sys.flow.map((f, k) => (
-                <span key={f} className="sxp-flow-node">{f}{k < sys.flow.length - 1 && <i className="sxp-flow-link" />}</span>
+              {sl.flow.map((f, k) => (
+                <span key={f} className="sxp-flow-node">{f}{k < sl.flow.length - 1 && <i className="sxp-flow-link" />}</span>
               ))}
             </div>
-            <p className="sxp-panel-sell"><b className="mono">Будуємо:</b> {sys.sell}</p>
+            <p className="sxp-panel-sell"><b className="mono">{t('Будуємо:', 'We build:')}</b> {sl.sell}</p>
           </div>
         )}
       </div>

@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { useT, useLp } from '@/i18n';
 import { band, seg, setLayer as set, useScrollScene } from '@/lib/scene';
 import { PartnerMarquee } from '@/system/PartnerMarquee';
 import './system.css';
@@ -29,37 +30,40 @@ const UA = NODES[0];
 const EDGES = NODES.slice(1); // промені Україна → ринок (у порядку §8)
 
 type Act = { n: string; tag: string; title: string; lead: string; upto: number; points?: string[]; layers?: string[] };
-const ACTS: Act[] = [
-  { n: '01', tag: 'Старт', title: 'Україна', upto: 0,
-    lead: 'Вихідний стан: traction вдома, готовий продукт, операції, що витримають другий контур.',
-    points: ['Оборот і маржа на домашньому ринку', 'Готовність продукту до експорту', 'Запас операцій і ресурсу на 6–12 міс'] },
-  { n: '02', tag: 'Вибір ринку', title: 'Куди йти', upto: 0,
-    lead: 'Оцінюємо привабливість ринку за даними, а не «подобається».',
-    points: ['Попит і розмір категорії', 'Конкуренція й насиченість', 'CAC і юніт-економіка ринку', 'Логістика й penetration marketplaces', 'Legal і payment-середовище'] },
-  { n: '03', tag: 'Перший ринок', title: 'Україна → Польща', upto: 1,
-    lead: 'Перший ринок ЄС — часто Польща: Allegro, близькість, хаб CEE. Далі — DE, CZ.',
-    points: ['Точка входу в ЄС через регіон CEE', 'Allegro як швидкий канал попиту', 'База для сусідніх ринків'] },
-  { n: '04', tag: 'Інфраструктура', title: 'Будуємо контур', upto: 1,
-    lead: 'Міжнародний бізнес — це інфраструктура, а не «залити товар на маркетплейс».',
-    layers: ['Юрособа', 'Податки · VAT/OSS', 'Склад', 'Logistics', 'Fulfillment', 'Payments', 'Marketplaces', 'Website', 'Локалізація', 'Customer support', 'Marketing', 'CRM', 'Analytics'] },
-  { n: '05', tag: 'Запуск', title: 'Запуск продажів', upto: 1,
-    lead: 'Вмикаємо канали й отримуємо перші результати ринку.',
-    points: ['Лістинги, контент, ціни', 'Перший платний і органічний трафік', 'Перші замовлення й зворотний звʼязок'] },
-  { n: '06', tag: 'Оптимізація', title: 'Доводимо до економіки', upto: 1,
-    lead: 'Робимо ринок прибутковим, а не просто «присутнім».',
-    points: ['Конверсія й реклама', 'Асортимент і ціни', 'Логістика й повернення', 'CRM · retention', 'Юніт-економіка ринку'] },
-  { n: '07', tag: 'Масштаб', title: 'Один ринок → система', upto: 3,
-    lead: 'Відпрацьований плейбук переносимо на наступні ринки — спільна інфраструктура.',
-    points: ['Повторюваний запуск', 'Єдина інфраструктура на кілька ринків', 'Керований міжнародний P&L'] },
-  { n: '08', tag: 'Наступні країни', title: 'Європа як система', upto: 7,
-    lead: 'Україна → Польща → Німеччина → Чехія → Румунія → Франція → Італія → Іспанія → ЄС.',
-    points: ['Мультиринковий контур', 'Єдині дані й бренд', 'Міжнародна e-commerce система'] },
-];
 
 // Скрол-банди актів (частка прогресу секції).
-const A_START = 0.10, A_END = 0.92, A_W = (A_END - A_START) / ACTS.length;
+const A_START = 0.10, A_END = 0.92, ACTS_LEN = 8, A_W = (A_END - A_START) / ACTS_LEN;
 
 export function ExpansionFilm() {
+  const t = useT();
+  const lp = useLp();
+  const ACTS: Act[] = [
+    { n: '01', tag: t('Старт', 'Start'), title: t('Україна', 'Ukraine'), upto: 0,
+      lead: t('Вихідний стан: traction вдома, готовий продукт, операції, що витримають другий контур.', 'Starting point: traction at home, a ready product, operations that can carry a second front.'),
+      points: [t('Оборот і маржа на домашньому ринку', 'Turnover and margin on the home market'), t('Готовність продукту до експорту', 'Product readiness for export'), t('Запас операцій і ресурсу на 6–12 міс', 'Operational and resource runway for 6–12 months')] },
+    { n: '02', tag: t('Вибір ринку', 'Market selection'), title: t('Куди йти', 'Where to go'), upto: 0,
+      lead: t('Оцінюємо привабливість ринку за даними, а не «подобається».', 'We assess market attractiveness by data, not by “gut feel”.'),
+      points: [t('Попит і розмір категорії', 'Demand and category size'), t('Конкуренція й насиченість', 'Competition and saturation'), t('CAC і юніт-економіка ринку', 'CAC and market unit economics'), t('Логістика й penetration marketplaces', 'Logistics and marketplace penetration'), t('Legal і payment-середовище', 'Legal and payment environment')] },
+    { n: '03', tag: t('Перший ринок', 'First market'), title: t('Україна → Польща', 'Ukraine → Poland'), upto: 1,
+      lead: t('Перший ринок ЄС — часто Польща: Allegro, близькість, хаб CEE. Далі — DE, CZ.', 'The first EU market is often Poland: Allegro, proximity, the CEE hub. Then DE, CZ.'),
+      points: [t('Точка входу в ЄС через регіон CEE', 'Entry point into the EU via the CEE region'), t('Allegro як швидкий канал попиту', 'Allegro as a fast demand channel'), t('База для сусідніх ринків', 'A base for neighbouring markets')] },
+    { n: '04', tag: t('Інфраструктура', 'Infrastructure'), title: t('Будуємо контур', 'We build the setup'), upto: 1,
+      lead: t('Міжнародний бізнес — це інфраструктура, а не «залити товар на маркетплейс».', 'International business is infrastructure, not “dumping product onto a marketplace”.'),
+      layers: [t('Юрособа', 'Legal entity'), t('Податки · VAT/OSS', 'Taxes · VAT/OSS'), t('Склад', 'Warehouse'), 'Logistics', 'Fulfillment', 'Payments', 'Marketplaces', 'Website', t('Локалізація', 'Localization'), 'Customer support', 'Marketing', 'CRM', 'Analytics'] },
+    { n: '05', tag: t('Запуск', 'Launch'), title: t('Запуск продажів', 'Sales launch'), upto: 1,
+      lead: t('Вмикаємо канали й отримуємо перші результати ринку.', 'We switch on the channels and get the market’s first results.'),
+      points: [t('Лістинги, контент, ціни', 'Listings, content, pricing'), t('Перший платний і органічний трафік', 'First paid and organic traffic'), t('Перші замовлення й зворотний звʼязок', 'First orders and feedback')] },
+    { n: '06', tag: t('Оптимізація', 'Optimization'), title: t('Доводимо до економіки', 'We drive it to profitability'), upto: 1,
+      lead: t('Робимо ринок прибутковим, а не просто «присутнім».', 'We make the market profitable, not merely “present”.'),
+      points: [t('Конверсія й реклама', 'Conversion and advertising'), t('Асортимент і ціни', 'Assortment and pricing'), t('Логістика й повернення', 'Logistics and returns'), 'CRM · retention', t('Юніт-економіка ринку', 'Market unit economics')] },
+    { n: '07', tag: t('Масштаб', 'Scale'), title: t('Один ринок → система', 'One market → a system'), upto: 3,
+      lead: t('Відпрацьований плейбук переносимо на наступні ринки — спільна інфраструктура.', 'We carry the proven playbook to the next markets — shared infrastructure.'),
+      points: [t('Повторюваний запуск', 'A repeatable launch'), t('Єдина інфраструктура на кілька ринків', 'One infrastructure across several markets'), t('Керований міжнародний P&L', 'A managed international P&L')] },
+    { n: '08', tag: t('Наступні країни', 'Next countries'), title: t('Європа як система', 'Europe as a system'), upto: 7,
+      lead: t('Україна → Польща → Німеччина → Чехія → Румунія → Франція → Італія → Іспанія → ЄС.', 'Ukraine → Poland → Germany → Czechia → Romania → France → Italy → Spain → EU.'),
+      points: [t('Мультиринковий контур', 'A multi-market setup'), t('Єдині дані й бренд', 'Unified data and brand'), t('Міжнародна e-commerce система', 'An international e-commerce system')] },
+  ];
+
   const sec = useRef<HTMLElement>(null);
   const actEls = useRef<(HTMLDivElement | null)[]>([]);
   const edgeEls = useRef<(SVGLineElement | null)[]>([]);
@@ -127,11 +131,11 @@ export function ExpansionFilm() {
               </g>
             ))}
           </svg>
-          <span className="xpe-map-cap mono">Україна → ЄС · один контур</span>
+          <span className="xpe-map-cap mono">{t('Україна → ЄС · один контур', 'Ukraine → EU · one setup')}</span>
         </div>
 
         {/* Рейка актів (навігація) */}
-        <div className="xpe-rail" role="tablist" aria-label="Кроки Expansion Engine">
+        <div className="xpe-rail" role="tablist" aria-label={t('Кроки Expansion Engine', 'Expansion Engine steps')}>
           {ACTS.map((a, i) => (
             <button key={a.n} ref={(el) => { railEls.current[i] = el; }} className="xpe-tick" onClick={() => jump(i)} title={a.title}>
               <b className="mono">{a.n}</b><span>{a.tag}</span>
@@ -141,8 +145,8 @@ export function ExpansionFilm() {
 
         {/* Інтро-заголовок Engine (перший акт) */}
         <div className="xpe-title">
-          <div className="sysx-kick">WEEXP · Expansion Engine · ЄС + США</div>
-          <h1 className="sysx-display xpe-h1">Не вихід на ринок —<br /><span className="sysx-em">двигун експансії</span></h1>
+          <div className="sysx-kick">{t('WEEXP · Expansion Engine · ЄС + США', 'WEEXP · Expansion Engine · EU + US')}</div>
+          <h1 className="sysx-display xpe-h1">{t('Не вихід на ринок —', 'Not a market entry —')}<br /><span className="sysx-em">{t('двигун експансії', 'an expansion engine')}</span></h1>
         </div>
 
         {/* АКТИ */}
@@ -165,11 +169,11 @@ export function ExpansionFilm() {
         {/* OUTRO CTA */}
         <div ref={outro} className="sysx-scene sysx-ctaScene">
           <div className="sysx-kick">Expansion Engine</div>
-          <h2 className="sysx-display sysx-h2">Наступний ринок<br />запускаємо як <span className="sysx-em">систему</span>.</h2>
-          <p className="sysx-lead">Почнімо з оцінки готовності: чи витримує ваша економіка вихід у ЄС/США — і з якого ринку та вітрини стартувати.</p>
+          <h2 className="sysx-display sysx-h2">{t('Наступний ринок', 'The next market')}<br />{t('запускаємо як ', 'we launch as a ')}<span className="sysx-em">{t('систему', 'system')}</span>.</h2>
+          <p className="sysx-lead">{t('Почнімо з оцінки готовності: чи витримує ваша економіка вихід у ЄС/США — і з якого ринку та вітрини стартувати.', 'Let’s start with a readiness check: whether your economics can carry a launch into the EU/US — and which market and storefront to start from.')}</p>
           <div className="sysx-cta-row">
-            <Link to="/diagnose" className="sysx-cta is-primary">Оцінити готовність до експансії →</Link>
-            <Link to="/proof" className="sysx-cta">Кейси експансії</Link>
+            <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Оцінити готовність до експансії →', 'Assess expansion readiness →')}</Link>
+            <Link to={lp('/proof')} className="sysx-cta">{t('Кейси експансії', 'Expansion cases')}</Link>
           </div>
         </div>
 

@@ -182,6 +182,151 @@ export const SHORT: Record<SystemKey, string> = {
   strategy: 'Стратегія', commercial: 'Комерція', customer: 'Клієнт',
   experience: 'Досвід', operations: 'Операції', data: 'Дані', org: 'Організація', expansion: 'Експансія',
 };
+export const SHORT_EN: Record<SystemKey, string> = {
+  strategy: 'Strategy', commercial: 'Commerce', customer: 'Customer',
+  experience: 'Experience', operations: 'Operations', data: 'Data', org: 'Organization', expansion: 'Expansion',
+};
+export const shortOf = (k: SystemKey, lang: 'uk' | 'en') => (lang === 'en' ? SHORT_EN : SHORT)[k];
+
+/** Англійський оверлей для System (title EN = поле `en`). localizeSystem накладає його. */
+type SystemEn = Pick<System, 'feel' | 'when' | 'bigIdea' | 'flow' | 'sell' | 'pains' | 'domains'>;
+const SYS_EN: Record<SystemKey, SystemEn> = {
+  strategy: {
+    feel: 'We keep growing, but I do not understand where to or why.',
+    when: 'When the business does not know where to grow',
+    bigIdea: 'A sales strategy you can actually manage.',
+    flow: ['Strategy', 'Goals', 'Economics', 'Growth model', 'Management cycle'],
+    sell: 'We build the strategy, goals, growth model and a regular plan → actual → causes → actions cycle.',
+    pains: [
+      'No clear online-sales strategy or annual goals',
+      'Department goals are not tied to business goals',
+      'No growth model: traffic → conversion → order value → repeat',
+      'Focus on turnover without understanding margin',
+      'Decisions are made ad hoc, not from data',
+      'No regular management cycle',
+      'Brand and positioning are not built — you compete on price, not value',
+    ],
+    domains: ['Strategy', 'Brand & positioning', 'Goals & decomposition', 'Growth model', 'Management cycle'],
+  },
+  commercial: {
+    feel: 'We sell, but we do not manage the economics of our sales.',
+    when: 'When there is turnover but no profit',
+    bigIdea: 'More revenue is not enough. Make commerce profitable.',
+    flow: ['Traffic', 'Conversion', 'Order value', 'Repeat', 'Margin', 'Contribution'],
+    sell: 'We manage conversion, order value, repeat rate, assortment and promo — by margin, not turnover.',
+    pains: [
+      'Low conversion, average order value and repeat share',
+      'High bounce, unpaid orders and returns',
+      'No upsell / cross-sell or personalized offers',
+      'Assortment is not managed by profitability (no ABC/XYZ)',
+      'Low-margin products get promoted; promo eats contribution',
+      'Excess SKUs freeze cash',
+    ],
+    domains: ['Conversion / order value / repeat', 'Assortment & SKUs', 'Promo & margin', 'Unit economics'],
+  },
+  customer: {
+    feel: 'We acquire people expensively and turn them into loyal customers poorly.',
+    when: 'When the customer is expensive and does not return',
+    bigIdea: 'Turn traffic into customers, and customers into value.',
+    flow: ['Acquisition', 'Conversion', 'Retention', 'Reactivation', 'LTV growth'],
+    sell: 'We build attribution, retention and lifecycle: RFM, win-back, abandoned cart, post-purchase.',
+    pains: [
+      'High CAC and dependence on one paid channel',
+      'No end-to-end analytics or proper attribution',
+      'SEO and content are disconnected from commerce',
+      'No systematic retention: RFM, lifecycle, win-back',
+      'CRM channels (email/SMS/push) work in silos',
+      'Customer complaints never return to product and marketing',
+    ],
+    domains: ['Acquisition & CAC', 'Attribution', 'Retention & CRM', 'Customer service & chatbots'],
+  },
+  experience: {
+    feel: 'People come in, but they do not buy.',
+    when: 'When the site does not work as a selling mechanism',
+    bigIdea: 'Make every step of the customer journey work.',
+    flow: ['Discover', 'Understand', 'Trust', 'Buy', 'Repeat'],
+    sell: 'We rebuild the catalog, product page, checkout and mobile; we set up a CRO process and A/B testing.',
+    pains: [
+      'Complex navigation, weak catalog, filters and search',
+      'Unclear product page, little content and social proof',
+      'Complicated checkout, too many required fields',
+      'No convenient mobile version',
+      'No CRO process or A/B testing',
+      'Unknown points where users drop off',
+    ],
+    domains: ['Navigation & catalog', 'Product page & content', 'Checkout & mobile', 'CRO & A/B'],
+  },
+  operations: {
+    feel: 'Marketing brings orders, and the warehouse and delivery break everything.',
+    when: 'When the sale happens but we cannot fulfill it',
+    bigIdea: 'Selling is pointless if you cannot deliver.',
+    flow: ['Order', 'Warehouse', 'Fulfillment', 'Delivery', 'Returns', 'Customer'],
+    sell: 'We set SLAs, statuses, reservation and delivery-acceptance control — from cart to return.',
+    pains: [
+      'Orders are processed manually and get lost between systems',
+      'No processing SLA; picking and address errors',
+      'The customer cannot see the status — does not know where the order is',
+      'High non-redemption rate; returns take long to close',
+      'No SLA between e-commerce ↔ warehouse ↔ logistics',
+      'Stock on the site does not match reality',
+    ],
+    domains: ['Order processing', 'Delivery acceptance', 'Returns', 'Warehouse & stock', 'SLAs at the seams'],
+  },
+  data: {
+    feel: 'Everyone has their own numbers, and none of them can be trusted.',
+    when: 'When the systems do not let you manage the process',
+    bigIdea: 'One business. One source of truth.',
+    flow: ['Sources', 'Integrations', 'Master data', 'Analytics', 'P&L'],
+    sell: 'We build the digital infrastructure: integrations, master data, end-to-end analytics and a P&L.',
+    pains: [
+      'Different numbers; GA4 misconfigured, transactions lost',
+      'No e-commerce P&L, contribution margin or unit economics',
+      'CMS / CRM / ERP / WMS / marketing are not integrated',
+      'Data is passed manually; API errors go unnoticed',
+      'No single master data: prices, stock, statuses diverge',
+      'Technical debt blocks growth',
+    ],
+    domains: ['Analytics & GA4', 'P&L & unit economics', 'CMS/CRM/ERP/WMS integrations', 'Master data'],
+  },
+  org: {
+    feel: 'Everything rests on me and a few people.',
+    when: 'When there are no owners, processes or accountability',
+    bigIdea: 'Build a business that does not need heroes.',
+    flow: ['Roles', 'RACI', 'KPIs', 'SOPs', 'Owner journey', 'Independence'],
+    sell: 'We build the operating model: roles, RACI, non-conflicting KPIs, SOPs and a customer-journey owner.',
+    pains: [
+      'Unclear who is responsible for what; duplication and ownerless zones',
+      'No RACI; KPIs conflict with each other',
+      'E-commerce owns sales but does not control the warehouse',
+      'No single owner of the customer journey',
+      'Firefighting instead of growth; critical processes on one person',
+      'No SOPs, knowledge base or roadmap; everything is “urgent”',
+    ],
+    domains: ['Owner & RACI', 'KPIs by role', 'SOPs & knowledge base', 'Cross-team interaction', 'Roadmap & change'],
+  },
+  expansion: {
+    feel: 'Our market is nearly exhausted, and new ones feel scary and unclear.',
+    when: 'When growth hits the ceiling of a single market',
+    bigIdea: 'A new market is not “one more channel” — it is a separate business circuit.',
+    flow: ['Market choice', 'Localization', 'Marketplaces', 'Logistics', 'Legal', 'Scaling'],
+    sell: 'We launch into the EU & US systematically: own site, Amazon, Allegro, eBay and local platforms, logistics and taxes.',
+    pains: [
+      'Sales rest on one market — and it is running out',
+      'No localized site, languages or currencies',
+      'No accounts or rating on marketplaces (Amazon, Allegro)',
+      'Cross-border logistics and fulfillment are not set up',
+      'Legal and tax issues block the launch',
+      'Past launches were chaotic, without new-market unit economics',
+    ],
+    domains: ['Market choice', 'Localization', 'Marketplaces', 'Logistics & taxes'],
+  },
+};
+
+/** Локалізований вигляд системи: для EN накладає SYS_EN (title = поле en). */
+export function localizeSystem(s: System, lang: 'uk' | 'en'): System {
+  if (lang !== 'en') return s;
+  return { ...s, title: s.en, ...SYS_EN[s.key] };
+}
 
 /** Питання X-Ray — по 2 на систему. answer 0..3 (Ні / Радше ні / Радше так / Так). */
 export type Question = { id: string; text: string; system: SystemKey };
