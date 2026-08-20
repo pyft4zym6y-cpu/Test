@@ -1,7 +1,16 @@
-Канал,Частка виручки %,Витрати %,ROAS,Коментар
-Сайт,,,,
-Маркетплейси,,,,
-Опт,,,,
-Роздріб,,,,
-Соцмережі,,,,
-Email / CRM,,,,
+ІНСТРУКЦІЯ: додайте СТІЛЬКИ РЯДКІВ скільки треба — окремий рядок на КОЖЕН сайт / маркетплейс / ринок. Приклади нижче замініть своїми.
+Канал / майданчик,Ринок,Тип,Виручка за міс,Частка виручки %,Витрати на канал за міс,ROAS або ДРР %,Коментар
+Власний сайт — UA,UA,Own site,,,,,
+Власний сайт — PL,PL,Own site,,,,,
+Власний сайт — DE (EU),DE,Own site,,,,,
+Amazon,DE,Marketplace,,,,,
+Amazon,US,Marketplace,,,,,
+Allegro,PL,Marketplace,,,,,
+eBay,EU,Marketplace,,,,,
+Kaufland,DE,Marketplace,,,,,
+Rozetka / Prom,UA,Marketplace,,,,,
+Опт / B2B,UA,Wholesale,,,,,
+Роздріб / офлайн,UA,Retail,,,,,
+Соцмережі (Instagram/Facebook Shop),—,Social commerce,,,,,
+Email / CRM,—,Owned / retention,,,,,
+Інший майданчик (додайте свій рядок),,,,,,,
