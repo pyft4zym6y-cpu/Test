@@ -35,7 +35,7 @@ export function About() {
           <span className="sysx-kick">{t('Про нас', 'About us')}</span>
           <h1 className="sysx-display about-h1">{t('Ми будуємо ', 'We build a ')}<span className="hl">{t('систему', 'system')}</span>,<br />{t('а не залежність', 'not dependency')}</h1>
           <span className="script about-script">{t('Система замість героїзму.', 'A system instead of heroics.')}</span>
-          <p className="sysx-lead about-lead">{t('WEEXP — це Commerce OS для e-commerce і D2C-брендів. Ми перетворюємо онлайн-продажі з ручного режиму на керовану систему з восьми частин — щоб виторг ріс, а бізнес не тримався на власнику в операційці.', 'WEEXP is a Commerce OS for e-commerce and D2C brands. We turn online sales from manual mode into a managed system of eight parts — so revenue grows and the business doesn’t rest on the owner’s daily grind.')}</p>
+          <p className="sysx-lead about-lead">{t('WEEXP — це Commerce OS для e-commerce і D2C-брендів. Ми перетворюємо онлайн-продажі з ручного режиму на керовану систему з восьми частин — щоб виторг зростав, а бізнес не тримався на власнику в операційці.', 'WEEXP is a Commerce OS for e-commerce and D2C brands. We turn online sales from manual mode into a managed system of eight parts — so revenue grows and the business doesn’t rest on the owner’s daily grind.')}</p>
           <div className="sysx-cta-row">
             <Link to={lp('/diagnose')} className="sysx-cta is-primary">Express Audit →</Link>
             <Link to={lp('/contact')} className="sysx-cta">{t('Залишити заявку', 'Leave a request')} →</Link>
