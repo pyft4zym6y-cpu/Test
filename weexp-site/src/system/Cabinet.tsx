@@ -7,6 +7,7 @@ import {
 import { getExpressAudit, buildJourney, type ExpressAudit } from './cabinetData';
 import { eur } from './lossModel';
 import { sendLead } from '@/lib/leads';
+import { useT, useLp } from '@/i18n';
 import './system.css';
 import './cabinet.css';
 
@@ -22,24 +23,19 @@ const Stage3 = lazy(() => import('@/system/Stage3').then((m) => ({ default: m.St
  */
 type SectionId = 'overview' | 'company' | 'audits' | 'deep' | 'findings' | 'access' | 'docs' | 'collab' | 'settings';
 type NavItem = { id: SectionId; label: string; soon?: boolean };
-const NAV: { group: string; items: NavItem[] }[] = [
-  { group: 'Огляд', items: [{ id: 'overview', label: 'Огляд і шлях' }, { id: 'audits', label: 'Мої аудити' }] },
-  { group: 'Дані', items: [{ id: 'company', label: 'Дані компанії' }, { id: 'access', label: 'Доступи · T1–T4' }] },
-  { group: 'Розбір', items: [{ id: 'deep', label: 'Глибокий аудит' }, { id: 'findings', label: 'Знахідки та план', soon: true }, { id: 'docs', label: 'Документи', soon: true }] },
-  { group: 'Робота разом', items: [{ id: 'collab', label: 'Співпраця' }, { id: 'settings', label: 'Налаштування' }] },
-];
 
 const EMPTY_COMPANY: CompanyProfile = { name: '', site: '', niche: '', revenue: '', channels: [], contactName: '', contactPhone: '', notes: '' };
-const CHANNELS = ['Instagram', 'Сайт / магазин', 'Розетка / marketplace', 'Google Ads', 'Meta Ads', 'Email / CRM', 'Офлайн'];
-const DEPTHS = [
-  { id: 'T1', title: 'T1 · Зовнішній обхід', cap: 'до 35%', desc: 'Тільки публічні дані: сайт, ціни, канали. Без ваших доступів.' },
-  { id: 'T2', title: 'T2 · + Аналітика', cap: 'до 55%', desc: 'GA4/GSC read-only: реальний трафік, конверсії, джерела.' },
-  { id: 'T3', title: 'T3 · + Бізнес-дані', cap: 'до 78%', desc: 'Вивантаження CRM/ERP: когорти, повторні, юніт-економіка.' },
-  { id: 'T4', title: 'T4 · Живі доступи', cap: 'до 92%', desc: 'Рекламні кабінети, CMS: максимальна достовірність і план.' },
-];
 
 export function Cabinet() {
+  const t = useT();
+  const lp = useLp();
   const nav = useNavigate();
+  const NAV: { group: string; items: NavItem[] }[] = [
+    { group: t('Огляд', 'Overview'), items: [{ id: 'overview', label: t('Огляд і шлях', 'Overview & path') }, { id: 'audits', label: t('Мої аудити', 'My audits') }] },
+    { group: t('Дані', 'Data'), items: [{ id: 'company', label: t('Дані компанії', 'Company data') }, { id: 'access', label: t('Доступи · T1–T4', 'Access · T1–T4') }] },
+    { group: t('Розбір', 'Analysis'), items: [{ id: 'deep', label: t('Глибокий аудит', 'Deep audit') }, { id: 'findings', label: t('Знахідки та план', 'Findings & plan'), soon: true }, { id: 'docs', label: t('Документи', 'Documents'), soon: true }] },
+    { group: t('Робота разом', 'Work with us'), items: [{ id: 'collab', label: t('Співпраця', 'Work with us') }, { id: 'settings', label: t('Налаштування', 'Settings') }] },
+  ];
   const [user, setUser] = useState<DiagUser | null>(null);
   const [checking, setChecking] = useState(true);
   const [rec, setRec] = useState<DiagRecord | null>(null);
@@ -67,29 +63,29 @@ export function Cabinet() {
     const r = await authenticate(email.trim(), pass);
     setBusy(false);
     if (r.user) { setUser(r.user); loadDiag(r.user).then(setRec); if (r.notice) setAuthErr(r.notice); }
-    else setAuthErr(r.error || 'Не вдалося увійти. Спробуйте ще раз.');
+    else setAuthErr(r.error || t('Не вдалося увійти. Спробуйте ще раз.', 'Could not sign in. Please try again.'));
   };
   const doSignOut = async () => { await signOut(); setUser(null); setRec(null); setSection('overview'); };
   const refreshRec = () => { if (user) loadDiag(user).then(setRec); };
 
   /* ── Ворота входу ── */
-  if (checking) return <div className="sysx cab"><div className="cab-boot mono">Завантаження кабінету…</div></div>;
+  if (checking) return <div className="sysx cab"><div className="cab-boot mono">{t('Завантаження кабінету…', 'Loading cabinet…')}</div></div>;
   if (!user) {
     return (
       <div className="sysx cab cab-gate">
         <div className="cab-gate-card">
-          <Link to="/" className="cab-gate-back mono">← на сайт</Link>
-          <div className="sysx-kick">Особистий кабінет WEEXP</div>
-          <h1 className="sysx-display cab-gate-h">Ваш кабінет<br />діагностики</h1>
-          <p className="sysx-lead">Один вхід — усі ваші дані в одному місці: експрес-витік із калькулятора, профіль компанії, глибокий аудит і план. Повторний вхід відкриває збережений розбір.</p>
+          <Link to={lp('/')} className="cab-gate-back mono">{t('← на сайт', '← to site')}</Link>
+          <div className="sysx-kick">{t('Особистий кабінет WEEXP', 'WEEXP client cabinet')}</div>
+          <h1 className="sysx-display cab-gate-h">{t('Ваш кабінет', 'Your diagnostics')}<br />{t('діагностики', 'cabinet')}</h1>
+          <p className="sysx-lead">{t('Один вхід — усі ваші дані в одному місці: експрес-витік із калькулятора, профіль компанії, глибокий аудит і план. Повторний вхід відкриває збережений розбір.', 'One sign-in — all your data in one place: express leak from the calculator, company profile, deep audit and plan. Signing back in opens your saved analysis.')}</p>
           <div className="cab-form">
             <label className="sysx-inp"><span className="sysx-inp-l">Email</span>
               <input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@shop.com" /></label>
-            <label className="sysx-inp"><span className="sysx-inp-l">Пароль · мін. 6 символів</span>
+            <label className="sysx-inp"><span className="sysx-inp-l">{t('Пароль · мін. 6 символів', 'Password · min. 6 characters')}</span>
               <input type="password" autoComplete="current-password" value={pass} onChange={(e) => setPass(e.target.value)} placeholder="••••••" onKeyDown={(e) => e.key === 'Enter' && email && pass.length >= 6 && doAuth()} /></label>
             {authErr && <p className="cab-auth-err mono">{authErr}</p>}
-            <button className="sysx-cta is-primary" onClick={doAuth} disabled={busy || !email || pass.length < 6}>{busy ? 'Заходимо…' : 'Увійти / створити кабінет →'}</button>
-            <p className="sysx-note mono">{CONFIGURED ? 'Захищений вхід. Дані синхронізуються між пристроями.' : 'Демо-режим: дані зберігаються локально в цьому браузері.'}</p>
+            <button className="sysx-cta is-primary" onClick={doAuth} disabled={busy || !email || pass.length < 6}>{busy ? t('Заходимо…', 'Signing in…') : t('Увійти / створити кабінет →', 'Sign in / create cabinet →')}</button>
+            <p className="sysx-note mono">{CONFIGURED ? t('Захищений вхід. Дані синхронізуються між пристроями.', 'Secure sign-in. Data syncs across your devices.') : t('Демо-режим: дані зберігаються локально в цьому браузері.', 'Demo mode: data is stored locally in this browser.')}</p>
           </div>
         </div>
       </div>
@@ -102,14 +98,14 @@ export function Cabinet() {
     <div className="sysx cab">
       {/* Сайдбар */}
       <aside className="cab-side">
-        <Link to="/" className="cab-brand"><b>WEEXP</b><span className="mono">кабінет</span></Link>
+        <Link to={lp('/')} className="cab-brand"><b>WEEXP</b><span className="mono">{t('кабінет', 'cabinet')}</span></Link>
         <nav className="cab-nav">
           {NAV.map((g) => (
             <div key={g.group} className="cab-nav-g">
               <span className="cab-nav-gl mono">{g.group}</span>
               {g.items.map((it) => (
                 <button key={it.id} className={`cab-nav-i${section === it.id ? ' on' : ''}`} onClick={() => setSection(it.id)}>
-                  {it.label}{it.soon && <i className="cab-soon mono">скоро</i>}
+                  {it.label}{it.soon && <i className="cab-soon mono">{t('скоро', 'soon')}</i>}
                 </button>
               ))}
             </div>
@@ -117,8 +113,8 @@ export function Cabinet() {
         </nav>
         <div className="cab-side-foot">
           <span className="cab-user mono" title={user.email}>{user.email}</span>
-          <span className="cab-user-mode mono">{isCloudUser(user) ? '☁ хмара' : '● локально'}</span>
-          <button className="cab-signout mono" onClick={doSignOut}>Вийти</button>
+          <span className="cab-user-mode mono">{isCloudUser(user) ? t('☁ хмара', '☁ cloud') : t('● локально', '● local')}</span>
+          <button className="cab-signout mono" onClick={doSignOut}>{t('Вийти', 'Sign out')}</button>
         </div>
       </aside>
 
@@ -130,16 +126,16 @@ export function Cabinet() {
         {section === 'access' && <Access user={user} rec={rec} onDone={refreshRec} />}
         {section === 'deep' && (
           <section className="cab-sec cab-deep-wrap">
-            <SecHead kick="Глибокий аудит · Tier-2" title="Розбір систем магазину" lead="Реєстрація вже пройдена — заповнюйте блоки по секціях. На виході інтерактивний Tier-2 звіт: зрілість, конкурентне поле, маркетинг/фінанси, позиціонування. Прогрес зберігається автоматично." />
-            <Suspense fallback={<div className="cab-boot mono">Відкриваємо розбір…</div>}>
+            <SecHead kick={t('Глибокий аудит · Tier-2', 'Deep audit · Tier-2')} title={t('Розбір систем магазину', 'Analysis of your store systems')} lead={t('Реєстрація вже пройдена — заповнюйте блоки по секціях. На виході інтерактивний Tier-2 звіт: зрілість, конкурентне поле, маркетинг/фінанси, позиціонування. Прогрес зберігається автоматично.', 'Registration is already done — fill in the blocks section by section. The output is an interactive Tier-2 report: maturity, competitive field, marketing/finance, positioning. Progress is saved automatically.')} />
+            <Suspense fallback={<div className="cab-boot mono">{t('Відкриваємо розбір…', 'Opening analysis…')}</div>}>
               {/* embedded — рендеримо inline в кабінеті (без повноекранного оверлея),
                   щоб клієнт лишався в кабінеті, а не «перекидався» на окрему сторінку. */}
               <Stage3 embedded onClose={() => setSection('overview')} />
             </Suspense>
           </section>
         )}
-        {section === 'findings' && <Soon title="Знахідки та дорожня карта" lead="Тут зʼявляться підтверджені знахідки глибокого аудиту й план під Definition of Done: що робити, у якому порядку і який ефект. Розділ вмикається після завершення Tier-2 розбору." />}
-        {section === 'docs' && <Soon title="Документи" lead="PDF-звіти, робочі аркуші й матеріали розбору складатимуться сюди — щоб усе було в одному місці й доступне команді." />}
+        {section === 'findings' && <Soon title={t('Знахідки та дорожня карта', 'Findings & roadmap')} lead={t('Тут зʼявляться підтверджені знахідки глибокого аудиту й план під Definition of Done: що робити, у якому порядку і який ефект. Розділ вмикається після завершення Tier-2 розбору.', 'Confirmed findings from the deep audit and a plan under a Definition of Done will appear here: what to do, in what order and what the effect is. The section unlocks after the Tier-2 analysis is complete.')} />}
+        {section === 'docs' && <Soon title={t('Документи', 'Documents')} lead={t('PDF-звіти, робочі аркуші й матеріали розбору складатимуться сюди — щоб усе було в одному місці й доступне команді.', 'PDF reports, worksheets and analysis materials will gather here — so everything is in one place and available to the team.')} />}
         {section === 'collab' && <Collab user={user} rec={rec} express={express} onDone={refreshRec} />}
         {section === 'settings' && <Settings user={user} onSignOut={doSignOut} />}
       </main>
@@ -159,30 +155,32 @@ function SecHead({ kick, title, lead }: { kick: string; title: string; lead?: st
 }
 
 function Overview({ journey, express, cur, go }: { journey: ReturnType<typeof buildJourney>; express: ExpressAudit | null; cur?: string; go: (s: SectionId) => void }) {
+  const t = useT();
+  const lp = useLp();
   return (
     <section className="cab-sec">
-      <SecHead kick="Огляд" title="Ваш шлях у WEEXP" lead={cur ? `Ви зараз на кроці «${cur}». Кабінет веде вас від першого числа до плану — крок за кроком.` : 'Усі кроки пройдено — час до співпраці та зростання.'} />
+      <SecHead kick={t('Огляд', 'Overview')} title={t('Ваш шлях у WEEXP', 'Your path in WEEXP')} lead={cur ? t(`Ви зараз на кроці «${cur}». Кабінет веде вас від першого числа до плану — крок за кроком.`, `You are on the “${cur}” step. The cabinet guides you from the first number to the plan — step by step.`) : t('Усі кроки пройдено — час до співпраці та зростання.', 'All steps complete — time to work together and grow.')} />
       <div className="cab-cards">
         <div className="cab-card cab-card-hero">
-          <span className="sysx-kick">Ваш експрес-витік</span>
+          <span className="sysx-kick">{t('Ваш експрес-витік', 'Your express leak')}</span>
           {express
-            ? <><b className="sysx-display cab-big">{eur(express.total)}<i>/ рік</i></b>
-                <span className="mono cab-sub">діапазон {eur(express.range[0])}–{eur(express.range[1])} · Health {express.overallHealth}/100</span>
-                <button className="sysx-cta" onClick={() => go('audits')}>Розбір числа →</button></>
+            ? <><b className="sysx-display cab-big">{eur(express.total)}<i>{t('/ рік', '/ year')}</i></b>
+                <span className="mono cab-sub">{t('діапазон', 'range')} {eur(express.range[0])}–{eur(express.range[1])} · Health {express.overallHealth}/100</span>
+                <button className="sysx-cta" onClick={() => go('audits')}>{t('Розбір числа →', 'Break down the number →')}</button></>
             : <><b className="sysx-display cab-big cab-big-empty">— €</b>
-                <span className="mono cab-sub">калькулятор ще не рахував ваш витік</span>
-                <Link className="sysx-cta is-primary" to="/diagnose">Порахувати витік →</Link></>}
+                <span className="mono cab-sub">{t('калькулятор ще не рахував ваш витік', 'the calculator has not measured your leak yet')}</span>
+                <Link className="sysx-cta is-primary" to={lp('/diagnose')}>{t('Порахувати витік →', 'Measure the leak →')}</Link></>}
         </div>
         <div className="cab-card">
-          <span className="sysx-kick">Наступна дія</span>
-          <b className="cab-next-t">{cur || 'Співпраця'}</b>
-          <p className="cab-next-d">{cur === 'Профіль компанії' ? 'Заповніть дані магазину — вони уточнюють оцінку та готують глибокий аудит.' : cur === 'Глибокий аудит' ? 'Пройдіть Tier-2 розбір систем — від числа до карти «де саме й чому».' : 'Продовжуйте по шляху нижче — кожен крок годує наступний.'}</p>
-          <button className="sysx-cta is-primary" onClick={() => go(cur === 'Профіль компанії' ? 'company' : cur === 'Глибокий аудит' ? 'deep' : 'audits')}>Перейти →</button>
+          <span className="sysx-kick">{t('Наступна дія', 'Next action')}</span>
+          <b className="cab-next-t">{cur || t('Співпраця', 'Work with us')}</b>
+          <p className="cab-next-d">{cur === 'Профіль компанії' ? t('Заповніть дані магазину — вони уточнюють оцінку та готують глибокий аудит.', 'Fill in your store data — it refines the estimate and prepares the deep audit.') : cur === 'Глибокий аудит' ? t('Пройдіть Tier-2 розбір систем — від числа до карти «де саме й чому».', 'Go through the Tier-2 systems analysis — from a number to a map of “exactly where and why”.') : t('Продовжуйте по шляху нижче — кожен крок годує наступний.', 'Continue along the path below — each step feeds the next.')}</p>
+          <button className="sysx-cta is-primary" onClick={() => go(cur === 'Профіль компанії' ? 'company' : cur === 'Глибокий аудит' ? 'deep' : 'audits')}>{t('Перейти →', 'Go →')}</button>
         </div>
       </div>
 
       <div className="cab-journey">
-        <span className="sysx-kick">Наскрізний шлях</span>
+        <span className="sysx-kick">{t('Наскрізний шлях', 'End-to-end path')}</span>
         <ol className="cab-steps">
           {journey.map((s, i) => (
             <li key={s.id} className={`cab-step${s.done ? ' done' : ''}${s.current ? ' current' : ''}`}>
@@ -197,23 +195,25 @@ function Overview({ journey, express, cur, go }: { journey: ReturnType<typeof bu
 }
 
 function Audits({ express, rec, go }: { express: ExpressAudit | null; rec: DiagRecord | null; go: (s: SectionId) => void }) {
+  const t = useT();
+  const lp = useLp();
   const deepDone = Boolean(rec?.stage3 && Object.keys(rec.stage3).length > 0);
   return (
     <section className="cab-sec">
-      <SecHead kick="Мої аудити" title="Ваші розбори" lead="Тут зібрані ваші аудити — від швидкого експрес-витоку до глибокого Tier-2 розбору. Кожен наступний рівень уточнює попередній, а не рахує наново." />
+      <SecHead kick={t('Мої аудити', 'My audits')} title={t('Ваші розбори', 'Your analyses')} lead={t('Тут зібрані ваші аудити — від швидкого експрес-витоку до глибокого Tier-2 розбору. Кожен наступний рівень уточнює попередній, а не рахує наново.', 'Your audits gathered here — from the quick express leak to the deep Tier-2 analysis. Each next level refines the previous one rather than starting over.')} />
       <div className="cab-audits">
         <div className="cab-audit">
-          <div className="cab-audit-top"><b>Експрес-витік</b><span className="cab-badge mono">{express ? 'готово' : 'не запускали'}</span></div>
+          <div className="cab-audit-top"><b>{t('Експрес-витік', 'Express leak')}</b><span className="cab-badge mono">{express ? t('готово', 'ready') : t('не запускали', 'not run')}</span></div>
           {express
-            ? <><span className="sysx-display cab-audit-v">{eur(express.total)}<i>/ рік</i></span>
-                <span className="mono cab-sub">від {new Date(express.at).toLocaleDateString('uk-UA')} · Health {express.overallHealth}/100 · діапазон {eur(express.range[0])}–{eur(express.range[1])}</span>
-                <Link className="sysx-cta" to="/diagnose">Перерахувати →</Link></>
-            : <><p className="cab-sub">Швидка оцінка втрат за 7 показниками — ~2 хвилини.</p><Link className="sysx-cta is-primary" to="/diagnose">Порахувати витік →</Link></>}
+            ? <><span className="sysx-display cab-audit-v">{eur(express.total)}<i>{t('/ рік', '/ year')}</i></span>
+                <span className="mono cab-sub">{t('від', 'from')} {new Date(express.at).toLocaleDateString(t('uk-UA', 'en-GB'))} · Health {express.overallHealth}/100 · {t('діапазон', 'range')} {eur(express.range[0])}–{eur(express.range[1])}</span>
+                <Link className="sysx-cta" to={lp('/diagnose')}>{t('Перерахувати →', 'Recalculate →')}</Link></>
+            : <><p className="cab-sub">{t('Швидка оцінка втрат за 7 показниками — ~2 хвилини.', 'A quick loss estimate across 7 metrics — ~2 minutes.')}</p><Link className="sysx-cta is-primary" to={lp('/diagnose')}>{t('Порахувати витік →', 'Measure the leak →')}</Link></>}
         </div>
         <div className="cab-audit">
-          <div className="cab-audit-top"><b>Глибокий аудит · Tier-2</b><span className="cab-badge mono">{deepDone ? 'у роботі' : 'не почато'}</span></div>
-          <p className="cab-sub">Розбір 8 систем магазину, конкурентне поле, юніт-економіка, план під DoD.</p>
-          <button className="sysx-cta is-primary" onClick={() => go('deep')}>{deepDone ? 'Продовжити розбір →' : 'Почати глибокий аудит →'}</button>
+          <div className="cab-audit-top"><b>{t('Глибокий аудит · Tier-2', 'Deep audit · Tier-2')}</b><span className="cab-badge mono">{deepDone ? t('у роботі', 'in progress') : t('не почато', 'not started')}</span></div>
+          <p className="cab-sub">{t('Розбір 8 систем магазину, конкурентне поле, юніт-економіка, план під DoD.', 'Analysis of 8 store systems, competitive field, unit economics, plan under DoD.')}</p>
+          <button className="sysx-cta is-primary" onClick={() => go('deep')}>{deepDone ? t('Продовжити розбір →', 'Continue analysis →') : t('Почати глибокий аудит →', 'Start deep audit →')}</button>
         </div>
       </div>
     </section>
@@ -221,6 +221,8 @@ function Audits({ express, rec, go }: { express: ExpressAudit | null; rec: DiagR
 }
 
 function CompanyForm({ user, rec, onSaved }: { user: DiagUser; rec: DiagRecord | null; onSaved: () => void }) {
+  const t = useT();
+  const CHANNELS = ['Instagram', t('Сайт / магазин', 'Site / store'), t('Розетка / marketplace', 'Marketplace'), 'Google Ads', 'Meta Ads', 'Email / CRM', t('Офлайн', 'Offline')];
   const [c, setC] = useState<CompanyProfile>({ ...EMPTY_COMPANY, ...(rec?.company || {}) });
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -230,29 +232,36 @@ function CompanyForm({ user, rec, onSaved }: { user: DiagUser; rec: DiagRecord |
   const save = async () => { setSaving(true); await saveDiag(user, { company: c }); setSaving(false); setSaved(true); onSaved(); setTimeout(() => setSaved(false), 1800); };
   return (
     <section className="cab-sec">
-      <SecHead kick="Дані компанії" title="Профіль магазину" lead="Базові дані про бізнес. Вони уточнюють оцінку витоку й готують ґрунт для глибокого аудиту — щоб не питати те саме двічі." />
+      <SecHead kick={t('Дані компанії', 'Company data')} title={t('Профіль магазину', 'Store profile')} lead={t('Базові дані про бізнес. Вони уточнюють оцінку витоку й готують ґрунт для глибокого аудиту — щоб не питати те саме двічі.', 'Basic data about the business. It refines the leak estimate and prepares the ground for the deep audit — so we don\'t ask the same thing twice.')} />
       <div className="cab-grid2">
-        <label className="sysx-inp"><span className="sysx-inp-l">Назва компанії</span><input value={c.name || ''} onChange={set('name')} placeholder="Ваш бренд" /></label>
-        <label className="sysx-inp"><span className="sysx-inp-l">Сайт</span><input value={c.site || ''} onChange={set('site')} placeholder="shop.com" /></label>
-        <label className="sysx-inp"><span className="sysx-inp-l">Ніша</span><input value={c.niche || ''} onChange={set('niche')} placeholder="одяг · косметика · електроніка…" /></label>
-        <label className="sysx-inp"><span className="sysx-inp-l">Онлайн-виторг · € / міс</span><input value={c.revenue || ''} onChange={set('revenue')} placeholder="напр. 25000" /></label>
-        <label className="sysx-inp"><span className="sysx-inp-l">Контактна особа</span><input value={c.contactName || ''} onChange={set('contactName')} placeholder="Імʼя" /></label>
-        <label className="sysx-inp"><span className="sysx-inp-l">Телефон</span><input value={c.contactPhone || ''} onChange={set('contactPhone')} placeholder="+380…" /></label>
+        <label className="sysx-inp"><span className="sysx-inp-l">{t('Назва компанії', 'Company name')}</span><input value={c.name || ''} onChange={set('name')} placeholder={t('Ваш бренд', 'Your brand')} /></label>
+        <label className="sysx-inp"><span className="sysx-inp-l">{t('Сайт', 'Site')}</span><input value={c.site || ''} onChange={set('site')} placeholder="shop.com" /></label>
+        <label className="sysx-inp"><span className="sysx-inp-l">{t('Ніша', 'Niche')}</span><input value={c.niche || ''} onChange={set('niche')} placeholder={t('одяг · косметика · електроніка…', 'apparel · cosmetics · electronics…')} /></label>
+        <label className="sysx-inp"><span className="sysx-inp-l">{t('Онлайн-виторг · € / міс', 'Online revenue · € / mo')}</span><input value={c.revenue || ''} onChange={set('revenue')} placeholder={t('напр. 25000', 'e.g. 25000')} /></label>
+        <label className="sysx-inp"><span className="sysx-inp-l">{t('Контактна особа', 'Contact person')}</span><input value={c.contactName || ''} onChange={set('contactName')} placeholder={t('Імʼя', 'Name')} /></label>
+        <label className="sysx-inp"><span className="sysx-inp-l">{t('Телефон', 'Phone')}</span><input value={c.contactPhone || ''} onChange={set('contactPhone')} placeholder="+380…" /></label>
       </div>
       <div className="cab-ch">
-        <span className="sysx-inp-l">Канали продажів</span>
+        <span className="sysx-inp-l">{t('Канали продажів', 'Sales channels')}</span>
         <div className="cab-ch-row">{CHANNELS.map((ch) => <button key={ch} className={`cab-chip${(c.channels || []).includes(ch) ? ' on' : ''}`} onClick={() => toggleCh(ch)}>{ch}</button>)}</div>
       </div>
-      <label className="sysx-inp"><span className="sysx-inp-l">Нотатки · що болить найбільше</span><textarea rows={3} value={c.notes || ''} onChange={set('notes')} placeholder="Коротко про головну задачу…" /></label>
+      <label className="sysx-inp"><span className="sysx-inp-l">{t('Нотатки · що болить найбільше', 'Notes · what hurts most')}</span><textarea rows={3} value={c.notes || ''} onChange={set('notes')} placeholder={t('Коротко про головну задачу…', 'Briefly about the main task…')} /></label>
       <div className="cab-actions">
-        <button className="sysx-cta is-primary" onClick={save} disabled={saving}>{saving ? 'Зберігаємо…' : 'Зберегти профіль'}</button>
-        {saved && <span className="cab-saved mono">✓ збережено</span>}
+        <button className="sysx-cta is-primary" onClick={save} disabled={saving}>{saving ? t('Зберігаємо…', 'Saving…') : t('Зберегти профіль', 'Save profile')}</button>
+        {saved && <span className="cab-saved mono">{t('✓ збережено', '✓ saved')}</span>}
       </div>
     </section>
   );
 }
 
 function Access({ user, rec, onDone }: { user: DiagUser; rec: DiagRecord | null; onDone: () => void }) {
+  const t = useT();
+  const DEPTHS = [
+    { id: 'T1', title: t('T1 · Зовнішній обхід', 'T1 · External sweep'), cap: t('до 35%', 'up to 35%'), desc: t('Тільки публічні дані: сайт, ціни, канали. Без ваших доступів.', 'Public data only: site, prices, channels. Without your access.') },
+    { id: 'T2', title: t('T2 · + Аналітика', 'T2 · + Analytics'), cap: t('до 55%', 'up to 55%'), desc: t('GA4/GSC read-only: реальний трафік, конверсії, джерела.', 'GA4/GSC read-only: real traffic, conversions, sources.') },
+    { id: 'T3', title: t('T3 · + Бізнес-дані', 'T3 · + Business data'), cap: t('до 78%', 'up to 78%'), desc: t('Вивантаження CRM/ERP: когорти, повторні, юніт-економіка.', 'CRM/ERP exports: cohorts, repeats, unit economics.') },
+    { id: 'T4', title: t('T4 · Живі доступи', 'T4 · Live access'), cap: t('до 92%', 'up to 92%'), desc: t('Рекламні кабінети, CMS: максимальна достовірність і план.', 'Ad accounts, CMS: maximum confidence and a plan.') },
+  ];
   const [depth, setDepth] = useState(rec?.funnel?.deepDepth || 'T2');
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -264,7 +273,7 @@ function Access({ user, rec, onDone }: { user: DiagUser; rec: DiagRecord | null;
   };
   return (
     <section className="cab-sec">
-      <SecHead kick="Доступи · T1–T4" title="Глибина розбору = достовірність" lead="Одна змінна визначає точність аудиту — обсяг доступів. Більше даних НЕ роздуває суму втрат, а підвищує впевненість висновку. Оберіть рівень — ми надішлемо інструкції з безпечного надання доступів (read-only, за потреби — з обмеженим строком)." />
+      <SecHead kick={t('Доступи · T1–T4', 'Access · T1–T4')} title={t('Глибина розбору = достовірність', 'Depth of analysis = confidence')} lead={t('Одна змінна визначає точність аудиту — обсяг доступів. Більше даних НЕ роздуває суму втрат, а підвищує впевненість висновку. Оберіть рівень — ми надішлемо інструкції з безпечного надання доступів (read-only, за потреби — з обмеженим строком).', 'One variable determines the accuracy of the audit — the scope of access. More data does NOT inflate the loss figure, it raises the confidence of the conclusion. Choose a level — we\'ll send instructions for granting access safely (read-only, time-limited if needed).')} />
       <div className="cab-depths">
         {DEPTHS.map((d) => (
           <button key={d.id} className={`cab-depth${depth === d.id ? ' on' : ''}`} onClick={() => setDepth(d.id)}>
@@ -275,14 +284,15 @@ function Access({ user, rec, onDone }: { user: DiagUser; rec: DiagRecord | null;
       </div>
       <div className="cab-actions">
         {sent
-          ? <span className="cab-saved mono">✓ Запит на доступи ({depth}) надіслано. Ми напишемо інструкції на {user.email}.</span>
-          : <button className="sysx-cta is-primary" onClick={request} disabled={busy}>{busy ? 'Надсилаємо…' : `Запросити інструкції для ${depth} →`}</button>}
+          ? <span className="cab-saved mono">{t(`✓ Запит на доступи (${depth}) надіслано. Ми напишемо інструкції на ${user.email}.`, `✓ Access request (${depth}) sent. We'll send instructions to ${user.email}.`)}</span>
+          : <button className="sysx-cta is-primary" onClick={request} disabled={busy}>{busy ? t('Надсилаємо…', 'Sending…') : t(`Запросити інструкції для ${depth} →`, `Request instructions for ${depth} →`)}</button>}
       </div>
     </section>
   );
 }
 
 function Collab({ user, rec, express, onDone }: { user: DiagUser; rec: DiagRecord | null; express: ExpressAudit | null; onDone: () => void }) {
+  const t = useT();
   const [phone, setPhone] = useState(rec?.company?.contactPhone || '');
   const [comment, setComment] = useState('');
   const [sent, setSent] = useState(Boolean(rec?.funnel?.leadAt));
@@ -296,37 +306,39 @@ function Collab({ user, rec, express, onDone }: { user: DiagUser; rec: DiagRecor
   };
   return (
     <section className="cab-sec">
-      <SecHead kick="Робота разом" title="Співпраця та зростання" lead="Готові перетворити знахідки на результат? Залиште заявку — ми підготуємо розбір під вашу ситуацію й покажемо, з чого почати, щоб повернути витік найшвидше." />
+      <SecHead kick={t('Робота разом', 'Work with us')} title={t('Співпраця та зростання', 'Working together & growth')} lead={t('Готові перетворити знахідки на результат? Залиште заявку — ми підготуємо розбір під вашу ситуацію й покажемо, з чого почати, щоб повернути витік найшвидше.', 'Ready to turn findings into results? Leave a request — we\'ll prepare an analysis for your situation and show you where to start to recover the leak fastest.')} />
       {sent
-        ? <div className="cab-card"><span className="sysx-kick">Дякуємо</span><b className="cab-next-t">Заявку прийнято</b><p className="cab-next-d">Ми звʼяжемося з вами на {user.email}{rec?.funnel?.leadContact && rec.funnel.leadContact !== user.email ? ` / ${rec.funnel.leadContact}` : ''}. Тим часом можна пройти глибокий аудит — це прискорить розбір.</p></div>
+        ? <div className="cab-card"><span className="sysx-kick">{t('Дякуємо', 'Thank you')}</span><b className="cab-next-t">{t('Заявку прийнято', 'Request received')}</b><p className="cab-next-d">{t(`Ми звʼяжемося з вами на ${user.email}`, `We'll get in touch with you at ${user.email}`)}{rec?.funnel?.leadContact && rec.funnel.leadContact !== user.email ? ` / ${rec.funnel.leadContact}` : ''}. {t('Тим часом можна пройти глибокий аудит — це прискорить розбір.', 'In the meantime you can take the deep audit — it speeds up the analysis.')}</p></div>
         : <div className="cab-collab">
             <label className="sysx-inp"><span className="sysx-inp-l">Email</span><input value={user.email} readOnly /></label>
-            <label className="sysx-inp"><span className="sysx-inp-l">Телефон · необовʼязково</span><input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+380…" /></label>
-            <label className="sysx-inp"><span className="sysx-inp-l">Коментар</span><textarea rows={3} value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Що хочете вирішити насамперед?" /></label>
-            <div className="cab-actions"><button className="sysx-cta is-primary" onClick={send} disabled={busy}>{busy ? 'Надсилаємо…' : 'Залишити заявку →'}</button></div>
+            <label className="sysx-inp"><span className="sysx-inp-l">{t('Телефон · необовʼязково', 'Phone · optional')}</span><input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+380…" /></label>
+            <label className="sysx-inp"><span className="sysx-inp-l">{t('Коментар', 'Comment')}</span><textarea rows={3} value={comment} onChange={(e) => setComment(e.target.value)} placeholder={t('Що хочете вирішити насамперед?', 'What do you want to solve first?')} /></label>
+            <div className="cab-actions"><button className="sysx-cta is-primary" onClick={send} disabled={busy}>{busy ? t('Надсилаємо…', 'Sending…') : t('Залишити заявку →', 'Leave a request →')}</button></div>
           </div>}
     </section>
   );
 }
 
 function Settings({ user, onSignOut }: { user: DiagUser; onSignOut: () => void }) {
+  const t = useT();
   return (
     <section className="cab-sec">
-      <SecHead kick="Налаштування" title="Акаунт" />
+      <SecHead kick={t('Налаштування', 'Settings')} title={t('Акаунт', 'Account')} />
       <div className="cab-card">
-        <span className="sysx-kick">Email входу</span><b className="cab-next-t">{user.email}</b>
-        <span className="mono cab-sub">{isCloudUser(user) ? 'Хмарний акаунт — дані синхронізуються між пристроями.' : 'Локальний режим — дані в цьому браузері. Додайте ключі Supabase для синхронізації.'}</span>
-        <div className="cab-actions"><button className="sysx-cta" onClick={onSignOut}>Вийти з акаунта</button></div>
+        <span className="sysx-kick">{t('Email входу', 'Sign-in email')}</span><b className="cab-next-t">{user.email}</b>
+        <span className="mono cab-sub">{isCloudUser(user) ? t('Хмарний акаунт — дані синхронізуються між пристроями.', 'Cloud account — data syncs across your devices.') : t('Локальний режим — дані в цьому браузері. Додайте ключі Supabase для синхронізації.', 'Local mode — data in this browser. Add Supabase keys to sync.')}</span>
+        <div className="cab-actions"><button className="sysx-cta" onClick={onSignOut}>{t('Вийти з акаунта', 'Sign out of account')}</button></div>
       </div>
     </section>
   );
 }
 
 function Soon({ title, lead }: { title: string; lead: string }) {
+  const t = useT();
   return (
     <section className="cab-sec">
-      <SecHead kick="Скоро" title={title} lead={lead} />
-      <div className="cab-soon-box"><span className="mono">Розділ у розробці — вмикається на наступному кроці воронки.</span></div>
+      <SecHead kick={t('Скоро', 'Soon')} title={title} lead={lead} />
+      <div className="cab-soon-box"><span className="mono">{t('Розділ у розробці — вмикається на наступному кроці воронки.', 'Section in development — unlocks at the next funnel step.')}</span></div>
     </section>
   );
 }

@@ -1,3 +1,4 @@
+import { useT } from '@/i18n';
 import './system.css';
 
 /**
@@ -5,11 +6,11 @@ import './system.css';
  * карта, кабінет), щоб клієнт бачив ОДИН безперервний шлях, а не окремі попапи.
  * active: 1..5. Пройдені кроки позначені ✓, поточний підсвічений.
  */
-const STEPS = ['Профіль', 'Симптоми', 'Витік', 'Карта', 'Кабінет'];
-
 export function FunnelSteps({ active }: { active: number }) {
+  const t = useT();
+  const STEPS = [t('Профіль', 'Profile'), t('Симптоми', 'Symptoms'), t('Витік', 'Leak'), t('Карта', 'Map'), t('Кабінет', 'Cabinet')];
   return (
-    <div className="fsteps mono" role="list" aria-label={`Крок ${active} з ${STEPS.length}`}>
+    <div className="fsteps mono" role="list" aria-label={t(`Крок ${active} з ${STEPS.length}`, `Step ${active} of ${STEPS.length}`)}>
       {STEPS.map((s, i) => {
         const n = i + 1;
         const done = n < active;
