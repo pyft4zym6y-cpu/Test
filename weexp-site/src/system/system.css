@@ -1715,13 +1715,15 @@
 /* Картки форматів */
 .pric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(14px, 1.6vw, 20px); align-items: stretch; }
 .pric-card { position: relative; display: flex; flex-direction: column; background: var(--pure-white);
-  border: 1px solid var(--silver); border-radius: 18px; padding: clamp(20px, 2vw, 28px);
-  box-shadow: 0 24px 60px -46px rgba(21,23,26,.4); }
-.pric-card.is-featured { border-color: var(--deep); box-shadow: 0 30px 70px -40px rgba(21,23,26,.5);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--data) 6%, var(--pure-white)), var(--pure-white)); }
-.pric-badge { position: absolute; top: -11px; left: 24px; background: var(--deep); color: #fff;
-  font-size: 10px; letter-spacing: .14em; text-transform: uppercase; padding: 5px 11px; border-radius: 100px; }
-.pric-tag { font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--data); }
+  border: var(--bd); border-radius: 0; padding: clamp(22px, 2vw, 30px);
+  box-shadow: var(--sh); transition: transform .14s var(--ease-cine), box-shadow .14s var(--ease-cine); }
+.pric-card:hover { transform: translate(-3px, -3px); box-shadow: var(--sh-lg); }
+.pric-card.is-featured { border-color: var(--deep); box-shadow: var(--sh-red); background: var(--pure-white); }
+.pric-card.is-featured:hover { box-shadow: 9px 9px 0 var(--red); }
+.pric-badge { position: absolute; top: -14px; left: 22px; background: var(--yellow); color: var(--deep);
+  font-family: var(--sans); font-weight: 800; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
+  padding: 6px 12px; border-radius: 0; border: 2.5px solid var(--deep); box-shadow: 3px 3px 0 var(--deep); }
+.pric-tag { font-family: var(--sans); font-weight: 800; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--red); }
 .pric-name { font-family: var(--display); font-weight: 800; font-size: clamp(22px, 2.2vw, 27px); letter-spacing: -.02em; margin: 6px 0 0; color: var(--deep); }
 .pric-price-row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
 .pric-price { font-family: var(--display); font-weight: 800; font-size: clamp(20px, 2vw, 24px); color: var(--deep); }
@@ -1772,7 +1774,8 @@
 
 @media (max-width: 900px) {
   .pric-grid { grid-template-columns: 1fr; }
-  .pric-card.is-featured { order: -1; }
+  /* НЕ переставляємо featured-картку вгору на мобайлі — послуги мають іти
+     логічним порядком: Аудит → Консалтинг → Управління. */
   .pric-table { display: none; }
   .pric-compare-m { display: grid; gap: 10px; }
   .pric-compare-card { border: 1px solid var(--silver); border-radius: 12px; background: var(--pure-white); padding: 14px 16px; }
