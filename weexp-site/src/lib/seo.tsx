@@ -84,28 +84,28 @@ const META: Record<string, Meta2> = {
     en: [`8 systems where your business leaks money${ES}`, 'Eight online-sales systems — from strategy to expansion, under one roof. Find exactly where revenue leaks.'],
   },
   '/proof': {
-    uk: [`Докази — трансформації в цифрах${SUFFIX}`, 'Флагманські кейси e-commerce: дельти до→після з CRM/ERP/GA4 — ×18 обороту, +65% продажів, ≥19 млн ₴ розриву. Не обіцянки, а числа.'],
-    en: [`Proof — transformations in numbers${ES}`, 'Flagship e-commerce cases: before→after deltas verified with CRM/ERP/GA4 — ×18 revenue, +65% sales. Not promises — numbers.'],
+    uk: [`Наші перемоги — трансформації в цифрах${SUFFIX}`, 'Флагманські кейси e-commerce: дельти до→після з CRM/ERP/GA4 — ×18 обороту, +65% продажів, ≥19 млн ₴ розриву. Не обіцянки, а числа.'],
+    en: [`Our wins — transformations in numbers${ES}`, 'Flagship e-commerce cases: before→after deltas verified with CRM/ERP/GA4 — ×18 revenue, +65% sales. Not promises — numbers.'],
   },
   '/people': {
-    uk: [`Люди — власник у кожної системи${SUFFIX}`, 'Команда WEEXP структурована за системами: у кожної системи — свій власник. Систему будують власники, а не герої.'],
-    en: [`Team — an owner for every system${ES}`, 'WEEXP is structured by systems: every system has its owner. Systems are built by owners, not heroes.'],
+    uk: [`Про нас — місія, цінності й команда${SUFFIX}`, 'Хто такий WEEXP: місія, візія та цінності. Систему будують власники, а не герої — у кожної системи свій відповідальний.'],
+    en: [`About — mission, values & team${ES}`, 'Who WEEXP is: mission, vision and values. Systems are built by owners, not heroes — every system has its owner.'],
   },
   '/expansion': {
     uk: [`Міжнародна експансія — ЄС і США${SUFFIX}`, 'Системний вивід брендів на ЄС і США: власний сайт, Amazon, Allegro та локальні маркетплейси — з локалізацією, логістикою й юніт-економікою ринку.'],
     en: [`International expansion — EU & US${ES}`, 'Systematic brand launch into the EU & US: own site, Amazon, Allegro and local marketplaces — with localization, logistics and market unit economics.'],
   },
   '/diagnose': {
-    uk: [`Діагностика e-commerce — від числа до плану${SUFFIX}`, 'Єдина діагностика онлайн-продажів: за 5 хвилин порахуйте втрати, отримайте карту 8 систем, головний bottleneck і кабінет із планом повернення виторгу.'],
-    en: [`E-commerce diagnostics — from a number to a plan${ES}`, 'One diagnostic for online sales: in 5 minutes estimate your losses, get the 8-system map, your main bottleneck and a cabinet with a plan to recover revenue.'],
+    uk: [`Express Audit — витік виторгу за 3 кроки${SUFFIX}`, 'Безкоштовний експрес-аудит e-commerce: за 3 кроки порахуйте втрати, отримайте головний bottleneck, Business Health і брендований PDF. Точну карту дає глибокий аудит.'],
+    en: [`Express Audit — revenue leak in 3 steps${ES}`, 'Free e-commerce express audit: in 3 steps estimate your losses, get your main bottleneck, Business Health and a branded PDF. The precise map comes from the deep audit.'],
   },
   '/contact': {
     uk: [`Контакт — запит на діагноз${SUFFIX}`, 'Залиште контакт — повернемося з планом діагностики у грошах. Для e-commerce виробників і D2C-брендів $0.5–10M.'],
     en: [`Contact — request a diagnosis${ES}`, 'Leave your contact — we come back with a diagnosis plan in money. For e-commerce makers and D2C brands $0.5–10M.'],
   },
   '/pricing': {
-    uk: [`Формати та ціни${SUFFIX}`, 'Три формати співпраці WEEXP — аудит, консалтинг і супровід, управління під ключ. Відкриті ціни; різниця — у тому, хто відповідає за результат.'],
-    en: [`Pricing & formats${ES}`, 'Three ways to work with WEEXP — audit, consulting & advisory, managed delivery. Open prices; the difference is who owns the result.'],
+    uk: [`Початок співпраці — формати та ціни${SUFFIX}`, 'Три формати співпраці WEEXP — аудит, консалтинг і супровід, управління під ключ. Відкриті ціни; різниця — у тому, хто відповідає за результат.'],
+    en: [`Get started — formats & pricing${ES}`, 'Three ways to work with WEEXP — audit, consulting & advisory, managed delivery. Open prices; the difference is who owns the result.'],
   },
 };
 const UK_ONLY: Record<string, [string, string]> = {

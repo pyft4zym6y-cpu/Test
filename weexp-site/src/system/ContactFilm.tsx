@@ -1,8 +1,11 @@
 import { lazy, Suspense, useEffect, useState, type FormEvent } from 'react';
-import { useT } from '@/i18n';
+import { Link } from 'react-router-dom';
+import { useT, useLp } from '@/i18n';
 import { sendLead } from '@/lib/leads';
 import { track } from '@/lib/analytics';
 import { DIAG_SUMMARY_KEY } from '@/data/xray';
+import { getExpressAudit } from '@/system/cabinetData';
+import { eur } from '@/system/lossModel';
 import './system.css';
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
@@ -18,6 +21,7 @@ type Status = 'idle' | 'sending' | 'ok' | 'fallback';
 
 export function ContactFilm() {
   const t = useT();
+  const lp = useLp();
   const TURNOVER = [t('до $0.5M', 'up to $0.5M'), '$0.5–1M', '$1–3M', '$3–10M', '> $10M'];
   // Кваліфікація ліда (ТЗ §9): роль ЛПР, головна задача, терміни, бюджет —
   // щоб відділ продажів одразу бачив, з ким і про що говорити.
@@ -27,11 +31,19 @@ export function ContactFilm() {
   const BUDGET = [t('Ще не визначено', 'Not decided yet'), t('до €5k', 'up to €5k'), '€5–15k', '€15–40k', '€40k+'];
   const [status, setStatus] = useState<Status>('idle');
   const [diag, setDiag] = useState('');
-  const [keepDiag, setKeepDiag] = useState(true);   // чи додавати попередній результат X-Ray
+  const [keepDiag, setKeepDiag] = useState(false);   // ЗА ЗАМОВЧУВАННЯМ не додаємо — клієнт вирішує чекбоксом
   const [fallbackUrl, setFallbackUrl] = useState('');
 
-  useEffect(() => { try { setDiag(localStorage.getItem(DIAG_SUMMARY_KEY) || ''); } catch { /* ignore */ } }, []);
-  const attach = keepDiag ? diag : '';   // реально додаємо лише якщо клієнт не прибрав
+  // Підсумок аудиту: спершу текстовий X-Ray, інакше — будуємо з експрес-аудиту калькулятора.
+  useEffect(() => {
+    try {
+      const x = localStorage.getItem(DIAG_SUMMARY_KEY) || '';
+      if (x) { setDiag(x); return; }
+      const ex = getExpressAudit();
+      if (ex) setDiag(`${t('Експрес-аудит', 'Express audit')}: ${eur(ex.total)}${t('/рік', '/yr')} (${t('діапазон', 'range')} ${eur(ex.range[0])}–${eur(ex.range[1])}), Health ${ex.overallHealth}/100`);
+    } catch { /* ignore */ }
+  }, [t]);
+  const attach = keepDiag ? diag : '';   // додаємо лише якщо клієнт увімкнув чекбокс
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -82,17 +94,20 @@ export function ContactFilm() {
           </div>
         ) : (
           <div className="sysx-card">
-            {diag && keepDiag && (
-              <div className="ctf-diag mono">
-                <div className="ctf-diag-top">
-                  <span className="ctf-diag-lab">{t('Додаємо ваш попередній результат діагностики', 'Attaching your previous diagnostics result')}</span>
-                  <button type="button" className="ctf-diag-x" onClick={() => setKeepDiag(false)} aria-label={t('Не додавати результат', 'Don’t attach the result')}>{t('✕ не додавати', '✕ don’t attach')}</button>
-                </div>
-                <pre className="ctf-diag-body">{diag}</pre>
+            {diag ? (
+              <div className="ctf-attach">
+                <label className="ctf-attach-check">
+                  <input type="checkbox" checked={keepDiag} onChange={(e) => setKeepDiag(e.target.checked)} />
+                  <span>{t('Додати підсумок мого аудиту до заявки', 'Attach my audit summary to the request')}</span>
+                </label>
+                {keepDiag && <pre className="ctf-diag-body mono">{diag}</pre>}
               </div>
-            )}
-            {diag && !keepDiag && (
-              <button type="button" className="ctf-diag-add mono" onClick={() => setKeepDiag(true)}>{t('+ Додати мій результат діагностики до заявки', '+ Attach my diagnostics result to the request')}</button>
+            ) : (
+              <div className="ctf-attach ctf-attach-none">
+                <span className="ctf-attach-lab">{t('Аудит ще не пройдено', 'No audit yet')}</span>
+                <p>{t('Хочете, щоб ми відштовхувались від цифр? Пройдіть безкоштовний Express Audit — і його підсумок можна буде додати сюди.', 'Want us to start from numbers? Take the free Express Audit — its summary can then be attached here.')}</p>
+                <Link to={lp('/diagnose')} className="sysx-cta">{t('Пройти Express Audit', 'Take the Express Audit')} →</Link>
+              </div>
             )}
             <form className="ctf-form" onSubmit={submit}>
               <label className="ctf-field"><span className="mono">{t("Ім'я", 'Name')}</span><input name="name" required autoComplete="name" /></label>
