@@ -62,7 +62,7 @@ export function CasesFilm() {
         <div ref={intro} className="sysx-scene sysx-void">
           <div className="sysx-kick">WEEXP — The Evidence · 17 трансформацій</div>
           <h1 className="sysx-display sysx-h1">Систему видно<br />в <span className="sysx-em">цифрах</span></h1>
-          <p className="sysx-lead">Не обіцянки — дельти до→після з CRM, ERP і GA4. Кожен кейс анонімний, але число реальне. Гортайте — сім трансформацій.</p>
+          <p className="sysx-lead">Не обіцянки — дельти до→після з CRM, ERP і GA4. Кожен кейс анонімний, але число реальне. Гортайте — сім флагманських кейсів.</p>
           <span className="sysx-scrollhint mono">↓ до→після</span>
         </div>
 

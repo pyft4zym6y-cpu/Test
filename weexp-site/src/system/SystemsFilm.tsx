@@ -115,7 +115,7 @@ export function SystemsFilm() {
         {/* INTRO */}
         <div ref={intro} className="sysx-scene sysx-void">
           <div className="sysx-kick">WEEXP — The Eight Systems</div>
-          <h1 className="sysx-display sysx-h1">Де ваш бізнес<br />втрачає <span className="sysx-em sysx-em-alert">гроші</span>?</h1>
+          <h2 className="sysx-display sysx-h1">Де ваш бізнес<br />втрачає <span className="sysx-em sysx-em-alert">гроші</span>?</h2>
           <p className="sysx-lead">Не сайт і не канал — уся система онлайн-продажів. Веб-розробка, ERP-автоматизація, UX/UI та CRO, аналітика та експансія — усі вісім систем ми закриваємо самі, під одним дахом. Пройдемо крізь кожну.</p>
           <span className="sysx-scrollhint mono">↓ крізь 8 систем</span>
         </div>

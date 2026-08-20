@@ -20,6 +20,12 @@
   --data: #7E9DFF;         /* DATA / TECHNOLOGY */
   --data-soft: #B7C8FF;
   --alert: #D6362B;        /* GAP / ALERT / CRITICAL */
+  /* — Семантика статусів (ok / warn / bad) — єдині токени замість розкиданих хексів — */
+  --ok: #1F9D55;
+  --ok-strong: #177A43;    /* AA для дрібного тексту на білому */
+  --warn: #C0851E;
+  --warn-strong: #9A6A12;
+  --bad: #D6362B;
   /* — Хейрлайни інфраструктури — */
   --line: rgba(58, 61, 66, .12);
   --line-soft: rgba(58, 61, 66, .06);
@@ -179,8 +185,8 @@
   transition: background .4s cubic-bezier(.22,1,.36,1), border-color .4s, backdrop-filter .4s;
 }
 .sysh-nav.is-solid {
-  background: rgba(247, 247, 245, .72); backdrop-filter: blur(12px) saturate(1.1); -webkit-backdrop-filter: blur(12px) saturate(1.1);
-  border-bottom-color: rgba(58, 61, 66, .1);
+  background: rgba(247, 247, 245, .95); backdrop-filter: blur(14px) saturate(1.1); -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  border-bottom-color: rgba(58, 61, 66, .12);
 }
 .sysh-brand { display: inline-flex; align-items: baseline; gap: 8px; text-decoration: none; }
 .sysh-brand b { font-family: 'Bricolage Grotesque Variable', system-ui, sans-serif; font-weight: 800; letter-spacing: -.03em; font-size: 18px; color: var(--sh-deep); }
@@ -220,6 +226,13 @@
 .sysx-crumb span[aria-current="page"] { color: var(--deep); font-weight: 600; }
 .sysx-crumb-sep { color: var(--silver); font-style: normal; }
 @media (max-width: 860px) { .sysx-crumbs { padding-top: calc(54px + env(safe-area-inset-top)); } }
+
+/* Світла 404 (SystemNotFound) — у тій же оболонці/шапці, з відступом під фіксовану шапку. */
+.sysx-404 { min-height: 76vh; display: grid; place-items: center; text-align: center;
+  padding: calc(104px + env(safe-area-inset-top)) clamp(20px, 5vw, 40px) calc(96px + env(safe-area-inset-bottom)); }
+.sysx-404-in { max-width: 640px; display: grid; gap: 16px; justify-items: center; }
+.sysx-404-h { font-size: clamp(32px, 6vw, 64px); }
+.sysx-404 .sysx-cta-row { margin-top: 6px; }
 
 @media (max-width: 720px) {
   .sysh-brand span { display: none; }
@@ -371,9 +384,11 @@
 .cf-row {
   display: grid; grid-template-columns: minmax(96px, 1fr) auto; align-items: baseline; gap: 12px;
   padding: 9px 0; border-top: 1px solid var(--line-soft);
-  opacity: 0; transform: translateY(8px); transition: opacity .5s var(--ease-cine), transform .5s var(--ease-cine);
+  /* Ряди видимі одразу, коли акт на екрані (акт сам плавно з'являється через inline-opacity).
+     Раніше вони чекали вузького стану .is-live → картка виглядала порожньою поза hold-точкою. */
+  opacity: 1; transform: none; transition: opacity .5s var(--ease-cine), transform .5s var(--ease-cine);
 }
-.cf-act.is-live .cf-row { opacity: 1; transform: none; transition-delay: calc(var(--k) * .06s + .05s); }
+.cf-act.is-live .cf-row { transition-delay: calc(var(--k) * .06s + .05s); }
 .cf-row-l { font-size: 13px; color: var(--charcoal); }
 .cf-row-v { display: inline-flex; align-items: baseline; gap: 8px; white-space: nowrap; }
 .cf-before { font-style: normal; font-size: 13px; color: var(--graphite); }
@@ -414,7 +429,7 @@
 .ctf-opt { font-style: normal; font-size: 10px; color: var(--graphite); font-weight: 400; }
 
 /* Доказовість кейсів: провенанс цифр + (за наявності) реальний відгук */
-.cf-verified { margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; letter-spacing: .02em; color: #1f9d55; background: rgba(31,157,85,.08); border: 1px solid rgba(31,157,85,.22); border-radius: 100px; padding: 5px 11px; }
+.cf-verified { margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; letter-spacing: .02em; color: var(--ok-strong); background: rgba(23,122,67,.08); border: 1px solid rgba(23,122,67,.24); border-radius: 100px; padding: 5px 11px; }
 .cf-verified span { font-weight: 700; }
 .cf-quote { margin: 12px 0 0; padding: 12px 16px; border-left: 3px solid var(--data); background: color-mix(in srgb, var(--pure-white) 60%, transparent); border-radius: 0 10px 10px 0; }
 .cf-quote p { margin: 0 0 6px; font-size: 14px; line-height: 1.45; font-style: italic; color: var(--deep); }
@@ -1548,7 +1563,11 @@
 .sysx-sym-b.on { border-color: var(--deep); box-shadow: inset 3px 0 0 var(--data); }
 
 .sysx-calc-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-.sysx-cta[disabled] { opacity: .4; pointer-events: none; }
+/* Вимкнений стан — суцільний «неактивний», а не привид на .4 (щоб не читався як зламана кнопка). */
+.sysx-cta[disabled], .sysx-cta:disabled { opacity: 1; cursor: not-allowed; pointer-events: none;
+  background: var(--mist); color: var(--graphite); border-color: var(--silver); box-shadow: none; transform: none; }
+.sysx-cta.is-primary[disabled], .sysx-cta.is-primary:disabled {
+  background: var(--silver); color: var(--charcoal); border-color: var(--silver); }
 .sysx-note { font-size: 10.5px; color: var(--graphite); letter-spacing: .02em; }
 
 /* Result */

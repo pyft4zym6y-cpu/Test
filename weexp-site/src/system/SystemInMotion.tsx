@@ -109,7 +109,7 @@ export function SystemInMotion() {
         {/* CONNECT */}
         <div ref={sConnect} className="sysx-scene sysx-connect" style={{ opacity: 0 }}>
           <h2 className="sysx-display sysx-h2">Частини мають<br />працювати як <span className="sysx-em">одне</span>.</h2>
-          <p className="sysx-lead">Не сім інструментів окремо — одна зв'язана система, де кожна дія підсилює наступну.</p>
+          <p className="sysx-lead">Не вісім інструментів окремо — одна зв'язана система, де кожна дія підсилює наступну.</p>
         </div>
 
         {/* ACTIVATION */}

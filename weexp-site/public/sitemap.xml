@@ -5,7 +5,6 @@
   <url><loc>https://weexp.agency/people</loc><priority>0.8</priority></url>
   <url><loc>https://weexp.agency/expansion</loc><priority>0.8</priority></url>
   <url><loc>https://weexp.agency/diagnose</loc><priority>0.8</priority></url>
-  <url><loc>https://weexp.agency/diagnose/full</loc><priority>0.6</priority></url>
   <url><loc>https://weexp.agency/systems/strategy-management</loc><priority>0.7</priority></url>
   <url><loc>https://weexp.agency/systems/commercial-performance</loc><priority>0.7</priority></url>
   <url><loc>https://weexp.agency/systems/demand-customer</loc><priority>0.7</priority></url>
@@ -15,30 +14,6 @@
   <url><loc>https://weexp.agency/systems/organization-operating-model</loc><priority>0.7</priority></url>
   <url><loc>https://weexp.agency/systems/expansion-markets</loc><priority>0.7</priority></url>
   <url><loc>https://weexp.agency/contact</loc><priority>0.7</priority></url>
-  <url><loc>https://weexp.agency/challenges/strategy-management</loc><priority>0.6</priority></url>
-  <url><loc>https://weexp.agency/challenges/commercial-performance</loc><priority>0.6</priority></url>
-  <url><loc>https://weexp.agency/challenges/demand-customer</loc><priority>0.6</priority></url>
-  <url><loc>https://weexp.agency/challenges/experience-conversion</loc><priority>0.6</priority></url>
-  <url><loc>https://weexp.agency/challenges/operations-fulfillment</loc><priority>0.6</priority></url>
-  <url><loc>https://weexp.agency/challenges/data-technology</loc><priority>0.6</priority></url>
-  <url><loc>https://weexp.agency/challenges/organization-operating-model</loc><priority>0.6</priority></url>
-  <url><loc>https://weexp.agency/cases/premium-textile</loc><priority>0.6</priority></url>
-  <url><loc>https://weexp.agency/cases/consumer-dtc</loc><priority>0.6</priority></url>
-  <url><loc>https://weexp.agency/cases/fashion-apparel</loc><priority>0.6</priority></url>
-  <url><loc>https://weexp.agency/cases/fmcg-distribution</loc><priority>0.5</priority></url>
-  <url><loc>https://weexp.agency/cases/cosmetics-holding</loc><priority>0.5</priority></url>
-  <url><loc>https://weexp.agency/cases/electronics-marketplace</loc><priority>0.5</priority></url>
-  <url><loc>https://weexp.agency/cases/kids-goods</loc><priority>0.5</priority></url>
-  <url><loc>https://weexp.agency/cases/supplements-health</loc><priority>0.5</priority></url>
-  <url><loc>https://weexp.agency/cases/pharmacy-omnichannel</loc><priority>0.5</priority></url>
-  <url><loc>https://weexp.agency/cases/grocery-qcommerce</loc><priority>0.5</priority></url>
-  <url><loc>https://weexp.agency/cases/auto-parts</loc><priority>0.5</priority></url>
-  <url><loc>https://weexp.agency/cases/jewelry-brand</loc><priority>0.5</priority></url>
-  <url><loc>https://weexp.agency/cases/sportswear-brand</loc><priority>0.5</priority></url>
-  <url><loc>https://weexp.agency/cases/b2b-industrial</loc><priority>0.5</priority></url>
-  <url><loc>https://weexp.agency/cases/pet-supplies</loc><priority>0.5</priority></url>
-  <url><loc>https://weexp.agency/cases/furniture-eu</loc><priority>0.5</priority></url>
-  <url><loc>https://weexp.agency/cases/marketplace-fashion</loc><priority>0.5</priority></url>
   <url><loc>https://weexp.agency/privacy.html</loc><priority>0.3</priority></url>
   <url><loc>https://weexp.agency/oferta.html</loc><priority>0.3</priority></url>
 </urlset>

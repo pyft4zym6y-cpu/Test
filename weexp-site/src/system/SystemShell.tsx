@@ -47,16 +47,20 @@ export function SystemShell() {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
 
-  // Тінь шапки — через IntersectionObserver на верхньому сентінелі (без scroll-лісенера).
+  // Шапка: на головній (кінематографічний герой) — прозора вгорі, суцільна на скролі
+  // (через IntersectionObserver). На всіх інших сторінках — ЗАВЖДИ суцільна, інакше
+  // charcoal-лінки нечитабельні на тлі контенту (контраст ~1.5:1).
   useEffect(() => {
-    const el = sentinel.current; if (!el) return;
+    const el = sentinel.current, navEl = nav.current; if (!el || !navEl) return;
+    if (pathname !== '/') { navEl.classList.add('is-solid'); return; }
+    navEl.classList.remove('is-solid');
     const io = new IntersectionObserver(
-      ([e]) => nav.current?.classList.toggle('is-solid', !e.isIntersecting),
+      ([e]) => navEl.classList.toggle('is-solid', !e.isIntersecting),
       { rootMargin: '-12px 0px 0px 0px', threshold: 0 },
     );
     io.observe(el);
     return () => io.disconnect();
-  }, []);
+  }, [pathname]);
   useEffect(() => { setOpen(false); }, [pathname]);   // закриваємо меню при переході
   const isActive = (to: string) => (to === '/' ? pathname === '/' : pathname.startsWith(to));
 
