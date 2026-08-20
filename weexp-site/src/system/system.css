@@ -1768,3 +1768,10 @@
   .pf-founder { grid-template-columns: 1fr; justify-items: start; }
   .pf-portrait { max-width: 240px; }
 }
+
+/* Перемикач мов UA / EN */
+.sysh-lang { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; letter-spacing: .06em; color: var(--sh-graphite, #61686F); flex: 0 0 auto; }
+.sysh-lang-o { color: var(--sh-graphite, #61686F); text-decoration: none; padding: 2px 2px; transition: color .2s; }
+.sysh-lang-o:hover { color: var(--sh-deep, #15171A); }
+.sysh-lang-o.is-on { color: var(--sh-deep, #15171A); font-weight: 700; }
+.sysh-sheet-lang { margin: 12px 0 4px; }

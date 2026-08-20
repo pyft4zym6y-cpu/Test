@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { CERTIFICATIONS, PARTNERSHIPS, PUBLICATIONS, PLATFORMS, type Credential } from '@/data/credentials';
+import { useT, useLp } from '@/i18n';
 import './system.css';
 
 /**
@@ -7,18 +8,6 @@ import './system.css';
  * метод, прозорий процес і реальні платформи. Сертифікати / партнерства /
  * публікації рендеримо лише коли заповнено (data/credentials) — без фейків.
  */
-const METHOD = [
-  { t: 'Commerce OS', d: 'Вісім систем онлайн-продажів як єдине ціле, а не набір послуг.' },
-  { t: 'Рішення за даними', d: 'Кожен висновок звірено з CRM / ERP / GA4, а не «на око».' },
-  { t: 'Definition of Done', d: 'Чіткий критерій готовності кожної роботи — без «зробили і зникли».' },
-  { t: 'Власник у кожної системи', d: 'Не універсали — відповідальний за результат у кожній частині.' },
-];
-const PROCESS = [
-  { n: '01', t: 'Діагноз у грошах', d: 'Знаходимо, де саме витікає виторг і що дасть найбільшу дельту.' },
-  { n: '02', t: 'Побудова хвилями', d: 'За пріоритетом віддачі, під Definition of Done.' },
-  { n: '03', t: 'Доведення до економіки', d: 'Не «присутність», а прибуток і керована юніт-економіка.' },
-  { n: '04', t: 'Передача', d: 'Власники, SOP, Independence Score — працює без нас.' },
-];
 
 function CredRow({ title, items }: { title: string; items: Credential[] }) {
   if (!items.length) return null;
@@ -39,13 +28,29 @@ function CredRow({ title, items }: { title: string; items: Credential[] }) {
 }
 
 export function Credibility() {
+  const t = useT();
+  const lp = useLp();
+
+  const METHOD = [
+    { t: 'Commerce OS', d: t('Вісім систем онлайн-продажів як єдине ціле, а не набір послуг.', 'Eight online-sales systems as a single whole, not a set of services.') },
+    { t: t('Рішення за даними', 'Data-driven decisions'), d: t('Кожен висновок звірено з CRM / ERP / GA4, а не «на око».', 'Every conclusion is checked against CRM / ERP / GA4, not by gut feel.') },
+    { t: 'Definition of Done', d: t('Чіткий критерій готовності кожної роботи — без «зробили і зникли».', 'A clear completion criterion for every piece of work — no “did it and vanished”.') },
+    { t: t('Власник у кожної системи', 'An owner for every system'), d: t('Не універсали — відповідальний за результат у кожній частині.', 'No generalists — someone accountable for the result in each part.') },
+  ];
+  const PROCESS = [
+    { n: '01', t: t('Діагноз у грошах', 'Diagnosis in money'), d: t('Знаходимо, де саме витікає виторг і що дасть найбільшу дельту.', 'We find exactly where revenue leaks and what delivers the biggest delta.') },
+    { n: '02', t: t('Побудова хвилями', 'Building in waves'), d: t('За пріоритетом віддачі, під Definition of Done.', 'By return priority, under Definition of Done.') },
+    { n: '03', t: t('Доведення до економіки', 'Driving to economics'), d: t('Не «присутність», а прибуток і керована юніт-економіка.', 'Not “presence”, but profit and managed unit economics.') },
+    { n: '04', t: t('Передача', 'Handover'), d: t('Власники, SOP, Independence Score — працює без нас.', 'Owners, SOPs, Independence Score — it runs without us.') },
+  ];
+
   return (
-    <section className="cred sysx" aria-label="Чому нам можна довіряти">
+    <section className="cred sysx" aria-label={t('Чому нам можна довіряти', 'Why you can trust us')}>
       <div className="cred-in">
         <div className="cred-head">
-          <span className="sysx-kick">Чому нам можна довіряти</span>
-          <h2 className="sysx-display cred-h">Не «10 років досвіду» —<br /><span className="sysx-em">метод і прозорий процес</span></h2>
-          <p className="cred-lead">Довіра будується не на гаслах, а на тому, як ми думаємо, за чим ухвалюємо рішення і що лишається у вас після роботи.</p>
+          <span className="sysx-kick">{t('Чому нам можна довіряти', 'Why you can trust us')}</span>
+          <h2 className="sysx-display cred-h">{t('Не «10 років досвіду» —', 'Not “10 years of experience” —')}<br /><span className="sysx-em">{t('метод і прозорий процес', 'method and a transparent process')}</span></h2>
+          <p className="cred-lead">{t('Довіра будується не на гаслах, а на тому, як ми думаємо, за чим ухвалюємо рішення і що лишається у вас після роботи.', 'Trust is built not on slogans, but on how we think, what we base decisions on and what stays with you after the work.')}</p>
         </div>
 
         <div className="cred-method">
@@ -58,7 +63,7 @@ export function Credibility() {
         </div>
 
         <div className="cred-process">
-          <span className="cred-lab mono">Прозорий процес — від діагнозу до незалежності</span>
+          <span className="cred-lab mono">{t('Прозорий процес — від діагнозу до незалежності', 'Transparent process — from diagnosis to independence')}</span>
           <div className="cred-steps">
             {PROCESS.map((p) => (
               <div key={p.n} className="cred-step">
@@ -71,21 +76,21 @@ export function Credibility() {
         </div>
 
         <div className="cred-platforms">
-          <span className="cred-lab mono">Будуємо на платформах, які ви вже знаєте</span>
+          <span className="cred-lab mono">{t('Будуємо на платформах, які ви вже знаєте', 'Built on the platforms you already know')}</span>
           <div className="cred-plat-list">
             {PLATFORMS.map((p) => <span key={p} className="cred-plat">{p}</span>)}
           </div>
         </div>
 
         {/* Реальні сигнали — показуємо, лише коли заповнено (data/credentials.ts) */}
-        <CredRow title="Сертифікати та статуси" items={CERTIFICATIONS} />
-        <CredRow title="Партнерства" items={PARTNERSHIPS} />
-        <CredRow title="Публікації та виступи" items={PUBLICATIONS} />
+        <CredRow title={t('Сертифікати та статуси', 'Certifications & statuses')} items={CERTIFICATIONS} />
+        <CredRow title={t('Партнерства', 'Partnerships')} items={PARTNERSHIPS} />
+        <CredRow title={t('Публікації та виступи', 'Publications & talks')} items={PUBLICATIONS} />
 
         <div className="cred-cta">
-          <span className="cred-cta-note mono">Найкращий доказ — на ваших даних. Діагностика покаже дельту саме для вас.</span>
-          <Link to="/diagnose" className="sysx-cta is-primary">Пройти діагностику →</Link>
-          <Link to="/proof" className="sysx-cta">Дивитись кейси</Link>
+          <span className="cred-cta-note mono">{t('Найкращий доказ — на ваших даних. Діагностика покаже дельту саме для вас.', 'The best proof is on your data. Diagnostics will show the delta specifically for you.')}</span>
+          <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Пройти діагностику →', 'Run diagnostics →')}</Link>
+          <Link to={lp('/proof')} className="sysx-cta">{t('Дивитись кейси', 'View cases')}</Link>
         </div>
       </div>
     </section>

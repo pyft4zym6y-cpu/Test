@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { eur, project, computeLoss, type LossInput } from './lossModel';
 import { BLOCKS, SECTIONS, LIKE_WHAT, scoreStage3, type Stage3Answers, type RefItem } from './stage3Model';
 import { levelFor } from './stage2Model';
+import { isValidCode } from '@/lib/access';
 import { RadarChart, SystemBars, HW } from './charts';
 import { StepOverlay } from './StepOverlay';
 import { FunnelSteps } from './FunnelSteps';
@@ -26,16 +27,8 @@ import './system.css';
 const MAIL = 'hello@weexp.agency';
 const host = (u: string) => u.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
 
-// Крок 4 відкривається Access Code від менеджера (або оплатою). Реальні коди —
-// через env VITE_ACCESS_CODES (через кому); поки не налаштовано, приймаємо
-// демо-формат WEEXP-XXXX, щоб потік був робочим.
-const ACCESS_CODES = ((import.meta.env.VITE_ACCESS_CODES as string | undefined) || '')
-  .split(',').map((s) => s.trim().toUpperCase()).filter(Boolean);
-const isValidCode = (c: string) => {
-  const u = c.trim().toUpperCase();
-  if (!u) return false;
-  return ACCESS_CODES.length ? ACCESS_CODES.includes(u) : /^WEEXP-[A-Z0-9]{3,}$/.test(u);
-};
+// Крок 4 відкривається лише Access Code зі списку (env VITE_ACCESS_CODES або
+// вбудований DEFAULT) — не будь-яким WEEXP-XXX. Джерело: @/lib/access.
 // Впевненість висновку за повнотою даних (Evidence → Confidence).
 const confLabel = (completeness: number) => (completeness >= 70 ? 'висока' : completeness >= 45 ? 'середня' : 'попередня');
 

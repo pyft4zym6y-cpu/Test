@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { SYSTEMS, type SystemKey } from '@/data/xray';
+import { SYSTEMS, localizeSystem, type SystemKey } from '@/data/xray';
+import { useT, useLp, useLang } from '@/i18n';
 import { band, seg, setLayer as set, useScrollScene } from '@/lib/scene';
 import './system.css';
 
@@ -15,6 +16,18 @@ const SERVICES: Record<SystemKey, string[]> = {
   data: ['Аналітика / BI', 'Наскрізна аналітика', 'Master data', 'Інтеграції'],
   org: ['Операційна модель', 'RACI та KPI', 'SOP і база знань'],
   expansion: ['Вихід у ЄС/США', 'Маркетплейси', 'Локалізація й логістика'],
+};
+
+// EN-паралель до SERVICES (той самий порядок) — для рендеру в англомовному режимі.
+const SERVICES_EN: Record<SystemKey, string[]> = {
+  strategy: ['Growth strategy', 'Unit economics', 'Management cycle'],
+  commercial: ['Assortment & promo', 'Pricing', 'Merchandising'],
+  customer: ['SEO', 'Performance traffic', 'Retention / CRM', 'Attribution'],
+  experience: ['UX/UI design', 'CRO & A/B', 'Web development', 'Mobile'],
+  operations: ['ERP automation', 'Fulfillment / SLA', 'Integrations'],
+  data: ['Analytics / BI', 'End-to-end analytics', 'Master data', 'Integrations'],
+  org: ['Operating model', 'RACI & KPI', 'SOPs & knowledge base'],
+  expansion: ['EU/US market entry', 'Marketplaces', 'Localization & logistics'],
 };
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
@@ -36,6 +49,9 @@ const A1 = 0.90;                         // кінець band-у систем
 const W = (A1 - A0) / N;                 // ширина одного акту ≈ 0.117
 
 export function SystemsFilm() {
+  const t = useT();
+  const lp = useLp();
+  const lang = useLang();
   const sec = useRef<HTMLElement>(null);
   const progress = useRef(0);                                   // прогрес для WebGL-об'єкта
   const alerts = useRef<number[]>([]);                          // активна система → червоний вузол
@@ -94,7 +110,7 @@ export function SystemsFilm() {
   }, []);
 
   return (
-    <section ref={sec} className="sysx sysx-film sysx-seven" aria-label="WEEXP — вісім систем, у яких бізнес втрачає гроші">
+    <section ref={sec} className="sysx sysx-film sysx-seven" aria-label={t('WEEXP — вісім систем, у яких бізнес втрачає гроші', 'WEEXP — eight systems where business leaks money')}>
       <div className="sysx-stage">
         <span className="sysx-field" aria-hidden="true" />
         <Suspense fallback={null}><CommerceSystem3D progress={progress} alerts={alerts} labels={labels} /></Suspense>
@@ -115,41 +131,44 @@ export function SystemsFilm() {
         {/* INTRO */}
         <div ref={intro} className="sysx-scene sysx-void">
           <div className="sysx-kick">WEEXP — The Eight Systems</div>
-          <h2 className="sysx-display sysx-h1">Де ваш бізнес<br />втрачає <span className="sysx-em sysx-em-alert">гроші</span>?</h2>
-          <p className="sysx-lead">Не сайт і не канал — уся система онлайн-продажів. Веб-розробка, ERP-автоматизація, UX/UI та CRO, аналітика та експансія — усі вісім систем ми закриваємо самі, під одним дахом. Пройдемо крізь кожну.</p>
-          <span className="sysx-scrollhint mono">↓ крізь 8 систем</span>
+          <h2 className="sysx-display sysx-h1">{t('Де ваш бізнес', 'Where is your business')}<br />{t('втрачає ', 'leaking ')}<span className="sysx-em sysx-em-alert">{t('гроші', 'money')}</span>?</h2>
+          <p className="sysx-lead">{t('Не сайт і не канал — уся система онлайн-продажів. Веб-розробка, ERP-автоматизація, UX/UI та CRO, аналітика та експансія — усі вісім систем ми закриваємо самі, під одним дахом. Пройдемо крізь кожну.', 'Not a site or a channel — the whole online-sales system. Web development, ERP automation, UX/UI and CRO, analytics and expansion — we cover all eight systems ourselves, under one roof. Let\'s walk through each.')}</p>
+          <span className="sysx-scrollhint mono">{t('↓ крізь 8 систем', '↓ through the 8 systems')}</span>
         </div>
 
         {/* 7 актів — плашки-експонати біля об'єкта */}
-        {SYSTEMS.map((s, i) => (
+        {SYSTEMS.map((s, i) => {
+          const sl = localizeSystem(s, lang);
+          return (
           <div key={s.key} ref={(el) => { panels.current[i] = el; }} className="sysf-panel" style={{ opacity: 0 }}>
-            <span className="sysf-ghost mono" aria-hidden="true">{s.num}</span>
+            <span className="sysf-ghost mono" aria-hidden="true">{sl.num}</span>
             <div className="sysf-panel-in">
-              <span className="sysf-en mono">{s.en} · Система {s.num}/08</span>
-              <h2 className="sysx-display sysf-title">{s.title}</h2>
-              <p className="sysf-feel">«{s.feel}»</p>
+              <span className="sysf-en mono">{sl.en} · {t('Система', 'System')} {sl.num}/08</span>
+              <h2 className="sysx-display sysf-title">{sl.title}</h2>
+              <p className="sysf-feel">«{sl.feel}»</p>
               <div className="sysf-pains">
-                {s.pains.slice(0, 3).map((pn) => (
+                {sl.pains.slice(0, 3).map((pn) => (
                   <span key={pn} className="sysf-pain"><i aria-hidden="true" />{pn}</span>
                 ))}
               </div>
-              <p className="sysf-sell"><b className="mono">Будуємо:</b> {s.sell}</p>
+              <p className="sysf-sell"><b className="mono">{t('Будуємо:', 'We build:')}</b> {sl.sell}</p>
               <div className="sysf-services">
-                <span className="sysf-services-lab mono">Робимо самі →</span>
-                {SERVICES[s.key].map((sv) => <span key={sv} className="sysf-service mono">{sv}</span>)}
+                <span className="sysf-services-lab mono">{t('Робимо самі →', 'We do it in-house →')}</span>
+                {SERVICES[s.key].map((sv, j) => <span key={sv} className="sysf-service mono">{t(sv, SERVICES_EN[s.key][j])}</span>)}
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
 
         {/* ACTIVATION → CTA */}
         <div ref={outro} className="sysx-scene sysx-ctaScene">
-          <div className="sysx-kick">Знайдіть свою слабку ланку</div>
-          <h2 className="sysx-display sysx-h2">Не вгадуйте систему —<br />знайдіть <span className="sysx-em">bottleneck</span>.</h2>
-          <p className="sysx-lead">Діагностика за кілька хвилин покаже, яка з восьми систем зараз стримує ваш зріст найсильніше — і скільки це коштує.</p>
+          <div className="sysx-kick">{t('Знайдіть свою слабку ланку', 'Find your weakest link')}</div>
+          <h2 className="sysx-display sysx-h2">{t('Не вгадуйте систему —', "Don't guess the system —")}<br />{t('знайдіть ', 'find the ')}<span className="sysx-em">bottleneck</span>.</h2>
+          <p className="sysx-lead">{t('Діагностика за кілька хвилин покаже, яка з восьми систем зараз стримує ваш зріст найсильніше — і скільки це коштує.', 'A few-minute diagnostic shows which of the eight systems is holding your growth back the most right now — and what it costs you.')}</p>
           <div className="sysx-cta-row">
-            <Link to="/diagnose" className="sysx-cta is-primary">Пройти діагностику →</Link>
-            <Link to="/proof" className="sysx-cta">Кейси</Link>
+            <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Пройти діагностику →', 'Run the diagnostic →')}</Link>
+            <Link to={lp('/proof')} className="sysx-cta">{t('Кейси', 'Case studies')}</Link>
           </div>
         </div>
       </div>

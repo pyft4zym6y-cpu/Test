@@ -3,6 +3,7 @@ import { STAGE4_SECTIONS, STAGE4_BLOCKS } from './stage4Model';
 import type { Block, Stage3Answers, RefItem, FileMeta } from './stage3Model';
 import { saveDiag, loadDiag, type DiagUser } from '@/lib/supa';
 import { sendLead } from '@/lib/leads';
+import { isValidCode } from '@/lib/access';
 
 /**
  * КРОК 4 — поглиблене анкетування (після Access Code). Продовжуємо збирати дані:
@@ -10,7 +11,6 @@ import { sendLead } from '@/lib/leads';
  * екран завершення: запланувати зустріч · Крок 5 (за кодом) · PDF поглибленого аудиту.
  * Разом Кроки 1–4 закривають ~85% повної анкети клієнта.
  */
-const isValidCode = (v: string) => /^WEEXP-[A-Z0-9]{3,}$/.test(v.trim().toUpperCase());
 const sectionOf = (i: number) => STAGE4_BLOCKS[i]?.section ?? '';
 const filledVal = (b: Block, v: unknown) =>
   b.kind === 'urllist' ? Array.isArray(v) && (v as string[]).some((u) => u && u.trim())
@@ -161,12 +161,29 @@ function Stage4Done({ user, answered, total, ans, onGoStep5, onBack }:
     if (!isValidCode(code)) { setCodeErr('Код недійсний. Попросіть його в менеджера.'); return; }
     setCodeErr(''); onGoStep5?.('T4');
   };
+  // Формуємо самодостатню друковану сторінку у новій вкладці й друкуємо ЇЇ.
+  // Надійніше за print головного вікна (особливо на iOS, де visibility-трюк давав
+  // порожній PDF): нова вкладка містить лише звіт, browser коректно зберігає у PDF.
+  const answerText = (b: Block): string => {
+    const v = ans[b.id];
+    if (b.kind === 'single' && typeof v === 'number') return b.options?.[v]?.label ?? '—';
+    if (b.kind === 'multi' && Array.isArray(v)) return (v as number[]).map((i) => b.options?.[i]?.label).filter(Boolean).join(', ') || '—';
+    if (b.kind === 'file' && v && typeof v === 'object' && 'name' in (v as object)) return `файл: ${(v as { name: string }).name}`;
+    if (b.kind === 'urllist' && Array.isArray(v)) return (v as string[]).filter(Boolean).join(', ') || '—';
+    if (typeof v === 'string') return v || '—';
+    return '—';
+  };
   const downloadPdf = () => {
-    document.body.classList.add('printing-s4');
-    const after = () => { document.body.classList.remove('printing-s4'); window.removeEventListener('afterprint', after); };
-    window.addEventListener('afterprint', after);
-    window.print();
-    window.setTimeout(after, 1500);
+    const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const body = STAGE4_SECTIONS.map((sec) => {
+      const rows = STAGE4_BLOCKS.filter((b) => b.section === sec)
+        .map((b) => `<p><b>${esc(b.label)}</b><br>${esc(answerText(b))}</p>`).join('');
+      return `<section><h2>${esc(sec)}</h2>${rows}</section>`;
+    }).join('');
+    const doc = `<!doctype html><html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>WEEXP — поглиблений аудит</title><style>*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#15171A;max-width:760px;margin:0 auto;padding:28px 22px;-webkit-print-color-adjust:exact}h1{font-size:20px;margin:0 0 4px}.sub{color:#61686F;font-size:12px;margin:0 0 18px}h2{font-size:14px;margin:18px 0 6px;border-bottom:1px solid #ccc;padding-bottom:3px}section{break-inside:avoid}p{font-size:12px;margin:0 0 7px;line-height:1.45}b{color:#15171A}@page{margin:14mm}</style></head><body><h1>WEEXP — поглиблений аудит (робочий зріз)</h1><p class="sub">Клієнт: ${esc(user?.email || '—')} · заповнено ${answered}/${total} блоків Кроку 4 · файлів: ${files}</p>${body}<scr` + `ipt>window.onload=function(){setTimeout(function(){window.print()},400)}</scr` + `ipt></body></html>`;
+    const w = window.open('', '_blank');
+    if (!w) { alert('Дозвольте спливаючі вікна, щоб зберегти PDF.'); return; }
+    w.document.open(); w.document.write(doc); w.document.close();
   };
 
   return (

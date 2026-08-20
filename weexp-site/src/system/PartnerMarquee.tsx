@@ -1,3 +1,4 @@
+import { useT } from '@/i18n';
 import './system.css';
 
 /**
@@ -12,9 +13,10 @@ const ITEMS = [
 ];
 
 export function PartnerMarquee() {
+  const t = useT();
   return (
-    <div className="sysx-marquee" aria-label="Технологічний стек і партнери">
-      <span className="sysx-marquee-lab mono" aria-hidden="true">Працюємо зі стеком лідерів</span>
+    <div className="sysx-marquee" aria-label={t('Технологічний стек і партнери', 'Technology stack & partners')}>
+      <span className="sysx-marquee-lab mono" aria-hidden="true">{t('Працюємо зі стеком лідерів', "We work with the leaders' stack")}</span>
       <div className="sysx-marquee-view" aria-hidden="true">
         <div className="sysx-marquee-track">
           {[0, 1].map((dup) => (

@@ -42,6 +42,19 @@ function ChallengeRedirect() {
   return <Navigate to={slug ? `/systems/${slug}` : '/#systems'} replace />;
 }
 
+// Єдиний перелік сторінок — рендериться двічі (UK на «/», EN на «/en»).
+const PAGES: { path: string; el: JSX.Element }[] = [
+  { path: '/', el: <SystemInMotion /> },
+  { path: '/cabinet', el: <Cabinet /> },
+  { path: '/proof', el: <CasesFilm /> },
+  { path: '/people', el: <PeopleFilm /> },
+  { path: '/expansion', el: <ExpansionFilm /> },
+  { path: '/diagnose', el: <LossCalculator /> },
+  { path: '/pricing', el: <Pricing /> },
+  { path: '/systems/:slug', el: <ServicePage /> },
+  { path: '/contact', el: <ContactFilm /> },
+];
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -49,18 +62,12 @@ export default function App() {
       <ScrollToHash />
       <Suspense fallback={null}>
         <Routes>
-          {/* Реальні сторінки — усі під спільною світлою оболонкою (одна айдентика). */}
+          {/* Реальні сторінки — усі під спільною світлою оболонкою (одна айдентика).
+              Кожна сторінка монтується двічі: українською (типово) і англійською
+              під префіксом /en — та сама React-сторінка, мова читається з URL (i18n). */}
           <Route element={<SystemShell />}>
-            <Route path="/" element={<SystemInMotion />} />
-            <Route path="/cabinet" element={<Cabinet />} />
-            <Route path="/proof" element={<CasesFilm />} />
-            <Route path="/people" element={<PeopleFilm />} />
-            <Route path="/expansion" element={<ExpansionFilm />} />
-            {/* Єдиний інструмент діагностики: калькулятор → карта → кабінет → Крок 4/5. */}
-            <Route path="/diagnose" element={<LossCalculator />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/systems/:slug" element={<ServicePage />} />
-            <Route path="/contact" element={<ContactFilm />} />
+            {PAGES.map((p) => <Route key={p.path} path={p.path} element={p.el} />)}
+            {PAGES.map((p) => <Route key={'en' + p.path} path={p.path === '/' ? '/en' : '/en' + p.path} element={p.el} />)}
             {/* Світла 404 у тій же оболонці (шапка/крихти/підвал). */}
             <Route path="*" element={<SystemNotFound />} />
           </Route>

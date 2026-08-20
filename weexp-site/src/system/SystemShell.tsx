@@ -2,24 +2,22 @@ import { useEffect, useRef, useState } from 'react';
 import { NavLink, Link, Outlet, useLocation } from 'react-router-dom';
 import { SiteFooter } from '@/system/SiteFooter';
 import { RouteBreadcrumbs } from '@/system/Breadcrumbs';
+import { useT, useLp, useLang, stripLang } from '@/i18n';
 import './system.css';
 
 /**
  * Оболонка cinematic-напряму: тонка світла шапка (десктоп) + app-подібна
- * навігація на мобільному — напівпрозора нижня панель із ключовими сторінками
- * (іконки) та класичний бургер, що відкриває повне меню. Fixed-overlay, аби
- * липкі WebGL-сцени під нею жили як є.
+ * навігація на мобільному. Двомовна: посилання префіксуються /en у EN-режимі,
+ * підписи — через t(). Перемикач мов веде на той самий маршрут іншою мовою.
  */
-// «Кабінет» свідомо не в меню: він представлений іконкою-акаунтом у шапці,
-// щоб не дублювати вхід. LINKS — і для десктоп-навігації, і для мобільного меню.
 const LINKS = [
-  { to: '/', label: 'Система' },
-  { to: '/proof', label: 'Докази' },
-  { to: '/expansion', label: 'Експансія' },
-  { to: '/people', label: 'Команда' },
-  { to: '/diagnose', label: 'Діагностика' },
-  { to: '/pricing', label: 'Формати' },
-  { to: '/contact', label: 'Контакт' },
+  { to: '/', uk: 'Система', en: 'System' },
+  { to: '/proof', uk: 'Докази', en: 'Proof' },
+  { to: '/expansion', uk: 'Експансія', en: 'Expansion' },
+  { to: '/people', uk: 'Команда', en: 'Team' },
+  { to: '/diagnose', uk: 'Діагностика', en: 'Diagnostics' },
+  { to: '/pricing', uk: 'Формати', en: 'Pricing' },
+  { to: '/contact', uk: 'Контакт', en: 'Contact' },
 ];
 
 const I = {
@@ -34,12 +32,11 @@ const Icon = ({ d }: { d: string }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>
 );
 
-// Ключові сторінки для нижньої панелі (як таб-бар у застосунку).
 const TABS = [
-  { to: '/', label: 'Система', icon: I.home },
-  { to: '/people', label: 'Команда', icon: I.people },
-  { to: '/diagnose', label: 'Діагностика', icon: I.calc },
-  { to: '/contact', label: 'Контакт', icon: I.chat },
+  { to: '/', uk: 'Система', en: 'System', icon: I.home },
+  { to: '/people', uk: 'Команда', en: 'Team', icon: I.people },
+  { to: '/diagnose', uk: 'Діагностика', en: 'Diagnostics', icon: I.calc },
+  { to: '/contact', uk: 'Контакт', en: 'Contact', icon: I.chat },
 ];
 
 export function SystemShell() {
@@ -47,13 +44,15 @@ export function SystemShell() {
   const sentinel = useRef<HTMLSpanElement>(null);
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
+  const t = useT();
+  const lp = useLp();
+  const lang = useLang();
+  const base = stripLang(pathname);           // маршрут без /en — для активного стану/перемикача
+  const enHref = base === '/' ? '/en' : '/en' + base;
 
-  // Шапка: на головній (кінематографічний герой) — прозора вгорі, суцільна на скролі
-  // (через IntersectionObserver). На всіх інших сторінках — ЗАВЖДИ суцільна, інакше
-  // charcoal-лінки нечитабельні на тлі контенту (контраст ~1.5:1).
   useEffect(() => {
     const el = sentinel.current, navEl = nav.current; if (!el || !navEl) return;
-    if (pathname !== '/') { navEl.classList.add('is-solid'); return; }
+    if (base !== '/') { navEl.classList.add('is-solid'); return; }
     navEl.classList.remove('is-solid');
     const io = new IntersectionObserver(
       ([e]) => navEl.classList.toggle('is-solid', !e.isIntersecting),
@@ -61,54 +60,64 @@ export function SystemShell() {
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [pathname]);
-  useEffect(() => { setOpen(false); }, [pathname]);   // закриваємо меню при переході
-  const isActive = (to: string) => (to === '/' ? pathname === '/' : pathname.startsWith(to));
+  }, [base]);
+  useEffect(() => { setOpen(false); }, [pathname]);
+  const isActive = (to: string) => (to === '/' ? base === '/' : base.startsWith(to));
+
+  const LangToggle = ({ className = '' }: { className?: string }) => (
+    <div className={'sysh-lang mono ' + className} role="group" aria-label="Мова / Language">
+      <Link to={base} className={'sysh-lang-o' + (lang === 'uk' ? ' is-on' : '')} aria-current={lang === 'uk'} hrefLang="uk">UA</Link>
+      <span aria-hidden="true">/</span>
+      <Link to={enHref} className={'sysh-lang-o' + (lang === 'en' ? ' is-on' : '')} aria-current={lang === 'en'} hrefLang="en">EN</Link>
+    </div>
+  );
 
   return (
     <div className="sysh">
       <span ref={sentinel} className="sysh-sentinel" aria-hidden="true" />
       <header ref={nav} className="sysh-nav">
-        <Link to="/" className="sysh-brand"><b>WEEXP</b><span className="mono">system</span></Link>
+        <Link to={lp('/')} className="sysh-brand"><b>WEEXP</b><span className="mono">system</span></Link>
         <nav className="sysh-links">
           {LINKS.map((l) => (
-            <NavLink key={l.to} to={l.to} end={l.to === '/'} className={({ isActive }) => 'sysh-link mono' + (isActive ? ' is-on' : '')}>{l.label}</NavLink>
+            <NavLink key={l.to} to={lp(l.to)} end={l.to === '/'} className={({ isActive }) => 'sysh-link mono' + (isActive ? ' is-on' : '')}>{t(l.uk, l.en)}</NavLink>
           ))}
         </nav>
         <div className="sysh-right">
-          <Link to="/cabinet" className={'sysh-account' + (isActive('/cabinet') ? ' is-on' : '')} aria-label="Особистий кабінет" title="Кабінет"><Icon d={I.user} /></Link>
-          <Link to="/diagnose" className="sysh-cta mono">Діагностика →</Link>
+          <LangToggle />
+          <Link to={lp('/cabinet')} className={'sysh-account' + (isActive('/cabinet') ? ' is-on' : '')} aria-label={t('Особистий кабінет', 'Client cabinet')} title={t('Кабінет', 'Cabinet')}><Icon d={I.user} /></Link>
+          <Link to={lp('/diagnose')} className="sysh-cta mono">{t('Діагностика', 'Diagnostics')} →</Link>
         </div>
-        <button className="sysh-burger" aria-label="Меню" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+        <button className="sysh-burger" aria-label={t('Меню', 'Menu')} aria-expanded={open} onClick={() => setOpen((v) => !v)}>
           <Icon d={I.menu} />
         </button>
       </header>
 
-      {/* Повне меню (мобільне) — напівпрозорий оверлей */}
-      <div className={`sysh-sheet${open ? ' is-open' : ''}`} role="dialog" aria-label="Меню" aria-hidden={!open}>
+      {/* Повне меню (мобільне) */}
+      <div className={`sysh-sheet${open ? ' is-open' : ''}`} role="dialog" aria-label={t('Меню', 'Menu')} aria-hidden={!open}>
         <div className="sysh-sheet-in">
           <div className="sysh-sheet-head">
-            <span className="mono">Меню</span>
-            <button className="sysh-sheet-x mono" onClick={() => setOpen(false)} aria-label="Закрити">✕</button>
+            <span className="mono">{t('Меню', 'Menu')}</span>
+            <button className="sysh-sheet-x mono" onClick={() => setOpen(false)} aria-label={t('Закрити', 'Close')}>✕</button>
           </div>
           <nav className="sysh-sheet-links">
             {LINKS.map((l) => (
-              <Link key={l.to} to={l.to} className={`sysh-sheet-link${isActive(l.to) ? ' is-on' : ''}`}>{l.label}</Link>
+              <Link key={l.to} to={lp(l.to)} className={`sysh-sheet-link${isActive(l.to) ? ' is-on' : ''}`}>{t(l.uk, l.en)}</Link>
             ))}
           </nav>
-          <Link to="/diagnose" className="sysx-cta is-primary sysh-sheet-cta">Безкоштовна діагностика →</Link>
+          <LangToggle className="sysh-sheet-lang" />
+          <Link to={lp('/diagnose')} className="sysx-cta is-primary sysh-sheet-cta">{t('Безкоштовна діагностика', 'Free diagnostics')} →</Link>
         </div>
       </div>
 
-      {/* App-подібна нижня панель (мобільна) — ключові сторінки іконками + бургер */}
-      <nav className="sysh-tabs" aria-label="Швидка навігація">
-        {TABS.map((t) => (
-          <Link key={t.to} to={t.to} className={`sysh-tab${isActive(t.to) ? ' is-on' : ''}`}>
-            <Icon d={t.icon} /><span>{t.label}</span>
+      {/* Нижня панель (мобільна) */}
+      <nav className="sysh-tabs" aria-label={t('Швидка навігація', 'Quick navigation')}>
+        {TABS.map((tb) => (
+          <Link key={tb.to} to={lp(tb.to)} className={`sysh-tab${isActive(tb.to) ? ' is-on' : ''}`}>
+            <Icon d={tb.icon} /><span>{t(tb.uk, tb.en)}</span>
           </Link>
         ))}
-        <button className={`sysh-tab sysh-tab-more${open ? ' is-on' : ''}`} onClick={() => setOpen((v) => !v)} aria-label="Ще">
-          <Icon d={I.menu} /><span>Меню</span>
+        <button className={`sysh-tab sysh-tab-more${open ? ' is-on' : ''}`} onClick={() => setOpen((v) => !v)} aria-label={t('Ще', 'More')}>
+          <Icon d={I.menu} /><span>{t('Меню', 'Menu')}</span>
         </button>
       </nav>
 

@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { band, seg, setLayer as set, useScrollScene } from '@/lib/scene';
+import { useT, useLp, useLang } from '@/i18n';
 import './system.css';
 
 import { PartnerMarquee } from '@/system/PartnerMarquee';
@@ -24,14 +25,19 @@ const Credibility = lazy(() => import('@/system/Credibility').then((m) => ({ def
  */
 // Канонічні 8 систем — ті самі, що в діагностиці/радарі (lossModel.SYS), щоб сайт
 // був узгоджений: головна, калькулятор і звіти говорять про одні й ті ж системи.
-const SYSTEMS = ['Стратегія', 'Комерція', 'Попит і клієнт', 'Досвід', 'Операції', 'Дані', 'Організація', 'Експансія'];
+const SYSTEMS_UK = ['Стратегія', 'Комерція', 'Попит і клієнт', 'Досвід', 'Операції', 'Дані', 'Організація', 'Експансія'];
+const SYSTEMS_EN = ['Strategy', 'Commerce', 'Demand & Customer', 'Experience', 'Operations', 'Data', 'Organization', 'Expansion'];
 const BOTTLENECK = 2; // «Попит і клієнт» — слабка ланка у сцені кореневої причини
 
 export function SystemInMotion() {
+  const t = useT();
+  const lp = useLp();
+  const lang = useLang();
+  const SYSTEMS = lang === 'en' ? SYSTEMS_EN : SYSTEMS_UK;
   const sec = useRef<HTMLElement>(null);
   const progress = useRef(0);                        // спільний прогрес для WebGL-об'єкта
   const alerts = useRef<number[]>([]);               // системи, що світяться червоним
-  const labels = useRef(SYSTEMS.map(() => ({ x: 50, y: 50, vis: 0 }))); // спроєктовані позиції вузлів
+  const labels = useRef(Array.from({ length: 8 }, () => ({ x: 50, y: 50, vis: 0 }))); // спроєктовані позиції вузлів
   const labelEls = useRef<(HTMLDivElement | null)[]>([]);
   const sVoid = useRef<HTMLDivElement>(null);
   const sForm = useRef<HTMLDivElement>(null);
@@ -88,56 +94,56 @@ export function SystemInMotion() {
 
         {/* SYMPTOM / VOID */}
         <div ref={sVoid} className="sysx-scene sysx-void">
-          <div className="sysx-kick">Commerce OS для e-commerce і D2C-брендів $0.5–10M</div>
-          <h1 className="sysx-display sysx-h1">Система<br />замість <span className="sysx-em">героїзму</span></h1>
-          <p className="sysx-lead">Продажі тримаються на людях і ручному режимі, а не на системі. Збираємо вісім систем в одну керовану — щоб виторг ріс, а бізнес не залежав від вас.</p>
+          <div className="sysx-kick">{t('Commerce OS для e-commerce і D2C-брендів $0.5–10M', 'Commerce OS for e-commerce & D2C brands $0.5–10M')}</div>
+          <h1 className="sysx-display sysx-h1">{t('Система', 'A system')}<br />{t('замість ', 'instead of ')}<span className="sysx-em">{t('героїзму', 'heroics')}</span></h1>
+          <p className="sysx-lead">{t('Продажі тримаються на людях і ручному режимі, а не на системі. Збираємо вісім систем в одну керовану — щоб виторг ріс, а бізнес не залежав від вас.', 'Sales rest on people and manual effort, not on a system. We assemble eight systems into one managed system — so revenue grows and the business no longer depends on you.')}</p>
           <div className="sysx-cta-row sysx-void-cta">
-            <Link to="/diagnose" className="sysx-cta is-primary">Порахувати мій витік →</Link>
-            <Link to="/pricing" className="sysx-cta">Формати і ціни</Link>
+            <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати мій витік', 'Calculate my leak')} →</Link>
+            <Link to={lp('/pricing')} className="sysx-cta">{t('Формати і ціни', 'Pricing')}</Link>
           </div>
-          <span className="sysx-scrollhint mono">↓ або погортайте, як це працює</span>
+          <span className="sysx-scrollhint mono">{t('↓ або погортайте, як це працює', '↓ or scroll to see how it works')}</span>
         </div>
 
         {/* FORM — 7 систем збираються */}
         <div ref={sForm} className="sysx-scene sysx-form" style={{ opacity: 0 }}>
-          <h2 className="sysx-display sysx-h2">E-commerce — це <span className="sysx-em">система</span><br />із восьми частин.</h2>
-          <p className="sysx-lead">Стратегія, комерція, попит і клієнт, досвід, операції, дані, організація й експансія — вони працюють лише разом.</p>
+          <h2 className="sysx-display sysx-h2">{t('E-commerce — це ', 'E-commerce is a ')}<span className="sysx-em">{t('система', 'system')}</span><br />{t('із восьми частин.', 'of eight parts.')}</h2>
+          <p className="sysx-lead">{t('Стратегія, комерція, попит і клієнт, досвід, операції, дані, організація й експансія — вони працюють лише разом.', 'Strategy, commerce, demand & customer, experience, operations, data, organization and expansion — they only work together.')}</p>
         </div>
 
         {/* ROOT CAUSE — слабка ланка */}
         <div ref={sRoot} className="sysx-scene sysx-root" style={{ opacity: 0 }}>
-          <h2 className="sysx-display sysx-h2">Одна слабка ланка<br /><span className="sysx-em sysx-em-alert">коштує грошей</span>.</h2>
-          <p className="sysx-lead">Система сильна настільки, наскільки сильна її найслабша частина. Саме там витікає виторг.</p>
+          <h2 className="sysx-display sysx-h2">{t('Одна слабка ланка', 'One weak link')}<br /><span className="sysx-em sysx-em-alert">{t('коштує грошей', 'costs money')}</span>.</h2>
+          <p className="sysx-lead">{t('Система сильна настільки, наскільки сильна її найслабша частина. Саме там витікає виторг.', 'A system is only as strong as its weakest part. That is exactly where revenue leaks.')}</p>
         </div>
 
         {/* CONNECT */}
         <div ref={sConnect} className="sysx-scene sysx-connect" style={{ opacity: 0 }}>
-          <h2 className="sysx-display sysx-h2">Частини мають<br />працювати як <span className="sysx-em">одне</span>.</h2>
-          <p className="sysx-lead">Не вісім інструментів окремо — одна зв'язана система, де кожна дія підсилює наступну.</p>
+          <h2 className="sysx-display sysx-h2">{t('Частини мають', 'The parts must')}<br />{t('працювати як ', 'work as ')}<span className="sysx-em">{t('одне', 'one')}</span>.</h2>
+          <p className="sysx-lead">{t("Не вісім інструментів окремо — одна зв'язана система, де кожна дія підсилює наступну.", 'Not eight separate tools — one connected system where each action reinforces the next.')}</p>
         </div>
 
         {/* ACTIVATION */}
         <div ref={sActivate} className="sysx-scene sysx-activate" style={{ opacity: 0 }}>
-          <h2 className="sysx-display sysx-h2">Коли система працює —<br />гроші течуть <span className="sysx-em">самі</span>.</h2>
-          <p className="sysx-lead">Менша вартість клієнта, органіка, повторні продажі. Вітрина стає активом, а не статтею витрат.</p>
+          <h2 className="sysx-display sysx-h2">{t('Коли система працює —', 'When the system works —')}<br />{t('гроші течуть ', 'money flows ')}<span className="sysx-em">{t('самі', 'on its own')}</span>.</h2>
+          <p className="sysx-lead">{t('Менша вартість клієнта, органіка, повторні продажі. Вітрина стає активом, а не статтею витрат.', 'Lower customer cost, organic traffic, repeat sales. The storefront becomes an asset, not a cost line.')}</p>
         </div>
 
-        {/* CTA — INDEPENDENCE (+ позиціонування, докази й прямий контакт при першому знайомстві) */}
+        {/* CTA — INDEPENDENCE */}
         <div ref={sCta} className="sysx-scene sysx-ctaScene" style={{ opacity: 0 }}>
           <div className="sysx-kick">Independence Score</div>
-          <h2 className="sysx-display sysx-h2">Наскільки незалежний<br />ваш <span className="sysx-em">e-commerce</span>?</h2>
-          <p className="sysx-lead">Ми вирішуємо одну дорогу проблему: продажі, що тримаються на ручному режимі й людях, а не на системі. Збираємо вісім систем в одну керовану — щоб виторг ріс, а бізнес не залежав від вас.</p>
+          <h2 className="sysx-display sysx-h2">{t('Наскільки незалежний', 'How independent')}<br />{t('ваш ', 'is your ')}<span className="sysx-em">e-commerce</span>?</h2>
+          <p className="sysx-lead">{t('Ми вирішуємо одну дорогу проблему: продажі, що тримаються на ручному режимі й людях, а не на системі. Збираємо вісім систем в одну керовану — щоб виторг ріс, а бізнес не залежав від вас.', 'We solve one expensive problem: sales that rest on manual effort and people rather than a system. We assemble eight systems into one managed system — so revenue grows and the business no longer depends on you.')}</p>
           <div className="sysx-proofbar">
-            <span><b>17</b> трансформацій</span>
+            <span><b>17</b> {t('трансформацій', 'transformations')}</span>
             <i aria-hidden="true" />
-            <span><b>8</b> систем під дахом</span>
+            <span><b>8</b> {t('систем під дахом', 'systems under one roof')}</span>
             <i aria-hidden="true" />
-            <span>D2C-бренди <b>$0.5–10M</b></span>
+            <span>{t('D2C-бренди ', 'D2C brands ')}<b>$0.5–10M</b></span>
           </div>
           <div className="sysx-cta-row">
-            <Link to="/diagnose" className="sysx-cta is-primary">Знайти вузьке місце →</Link>
-            <Link to="/proof" className="sysx-cta">Дивитись докази</Link>
-            <Link to="/contact" className="sysx-cta">Написати нам</Link>
+            <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Знайти вузьке місце', 'Find the bottleneck')} →</Link>
+            <Link to={lp('/proof')} className="sysx-cta">{t('Дивитись докази', 'See proof')}</Link>
+            <Link to={lp('/contact')} className="sysx-cta">{t('Написати нам', 'Contact us')}</Link>
           </div>
         </div>
 

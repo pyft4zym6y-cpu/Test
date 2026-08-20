@@ -159,3 +159,19 @@
   .cab-signout { padding: 0; }
   .cab-cards, .cab-audits, .cab-grid2, .cab-depths { grid-template-columns: 1fr; }
 }
+
+/* ── Глибокий аудит у кабінеті: жорстко тримаємо ширину (без горизонтального зсуву)
+      + компактніші відступи на мобайлі ── */
+.cab-deep-wrap { max-width: 100%; overflow-x: clip; }
+.s2.s3-embedded { width: 100%; max-width: 100%; overflow-x: clip; }
+.s3-embedded .s2-report, .s3-embedded .s2-quiz, .s3-embedded .s3-quiz,
+.s3-embedded .s2-quiz-head, .s3-embedded .s2-panel { max-width: 100%; width: 100%; }
+.s3-embedded .s2-quiz, .s3-embedded .s3-quiz { min-height: 0; padding: 0; align-content: start; gap: 16px; }
+.s3-embedded .cw-hero { grid-template-columns: 1fr; }          /* район під копією, а не збоку */
+.s3-embedded .rdr { width: min(320px, 78vw); }                 /* радар у межах екрана */
+.s3-embedded .s3-money-pill { white-space: normal; }           /* «Можливість…» переноситься, не ріжеться */
+.s3-embedded .s2-report { gap: 18px; }                         /* менше пустого простору між блоками */
+@media (max-width: 560px) {
+  .s3-embedded .s2-panel { padding: 16px 14px; }
+  .s3-embedded .s2-report { gap: 14px; }
+}
