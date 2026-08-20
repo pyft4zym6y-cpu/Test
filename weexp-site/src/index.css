@@ -10,6 +10,14 @@
 @import '@fontsource/ibm-plex-serif/400-italic.css';
 /* Premium-grade дисплейний шрифт (variable) — характерніший за Unbounded */
 @import '@fontsource-variable/bricolage-grotesque';
+/* Neo-brutalist redesign (стиль school.weexp.agency): важкий Golos Text + рукописний Caveat */
+@import '@fontsource/golos-text/400.css';
+@import '@fontsource/golos-text/500.css';
+@import '@fontsource/golos-text/600.css';
+@import '@fontsource/golos-text/700.css';
+@import '@fontsource/golos-text/800.css';
+@import '@fontsource/golos-text/900.css';
+@import '@fontsource/caveat/700.css';
 
 :root {
   --ink-950:#070d12;
