@@ -98,6 +98,17 @@ export function Cabinet() {
   };
   const doSignOut = async () => { await signOut(); setUser(null); setRec(null); setSection('overview'); };
   const refreshRec = () => { if (user) loadDiag(user).then(setRec); };
+  // Видалення експрес-аудиту має бути повним: локальний знімок + похідні поля у
+  // записі (stage1Money/stage1 — саме вони тримали крок «Експрес-витік» активним
+  // після видалення). Так «Наскрізний шлях» відображає актуальний стан, не історію.
+  const deleteExpress = async () => {
+    clearExpressAudit();
+    setExpress(null);
+    if (user && (rec?.stage1Money || rec?.stage1 !== undefined)) {
+      await saveDiag(user, { stage1Money: undefined, stage1: undefined });
+      loadDiag(user).then(setRec);
+    }
+  };
 
   /* ── Ворота входу ── */
   if (checking) return <div className="sysx cab"><div className="cab-boot mono">{t('Завантаження кабінету…', 'Loading cabinet…')}</div></div>;
@@ -189,7 +200,7 @@ export function Cabinet() {
       {/* Контент */}
       <main className="cab-main">
         {section === 'overview' && <Overview journey={journey} express={express} cur={cur?.label} go={setSection} />}
-        {section === 'audits' && <Audits express={express} rec={rec} go={setSection} onDelete={() => setExpress(getExpressAudit())} />}
+        {section === 'audits' && <Audits express={express} rec={rec} go={setSection} onDelete={deleteExpress} />}
         {section === 'company' && <CompanyForm user={user} rec={rec} onSaved={refreshRec} />}
         {section === 'access' && <Access user={user} rec={rec} onDone={refreshRec} go={setSection} />}
         {section === 'deep' && <DeepAudit user={user} express={express} onClose={() => setSection('overview')} go={setSection} />}
@@ -257,7 +268,7 @@ function Audits({ express, rec, go, onDelete }: { express: ExpressAudit | null; 
   const t = useT();
   const lp = useLp();
   const deepDone = Boolean(rec?.stage3 && Object.keys(rec.stage3).length > 0);
-  const del = () => { if (typeof window !== 'undefined' && !window.confirm(t('Видалити збережений експрес-аудит?', 'Delete the saved express audit?'))) return; clearExpressAudit(); onDelete(); };
+  const del = () => { if (typeof window !== 'undefined' && !window.confirm(t('Видалити збережений експрес-аудит?', 'Delete the saved express audit?'))) return; onDelete(); };
   return (
     <section className="cab-sec">
       <SecHead kick={t('Мої аудити', 'My audits')} title={t('Ваші розбори', 'Your analyses')} lead={t('Тут зібрані ваші аудити — від швидкого експрес-витоку до глибокого Tier-2 розбору. Кожен наступний рівень уточнює попередній, а не рахує наново.', 'Your audits gathered here — from the quick express leak to the deep Tier-2 analysis. Each next level refines the previous one rather than starting over.')} />
