@@ -2018,3 +2018,33 @@
 .calc-ordered-next li { font-size: 14.5px; line-height: 1.45; color: var(--charcoal); }
 .calc-ordered-next li::marker { color: var(--red); font-weight: 800; }
 .calc-ordered .sysx-calc-actions { margin-top: 8px; }
+
+/* Партнерська модель на сторінці експертизи */
+.xp2-partner-h { font-size: clamp(24px,3.4vw,44px); }
+.xp2-partner-list { list-style: none; margin: 18px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px 28px; }
+@media (max-width: 720px) { .xp2-partner-list { grid-template-columns: 1fr; } }
+.xp2-partner-list li { position: relative; padding-left: 28px; font-size: 15px; line-height: 1.45; color: var(--charcoal); }
+.xp2-partner-list li::before { content: '✓'; position: absolute; left: 0; top: -1px; color: var(--red); font-weight: 900; }
+.xp2-partner-key { margin-top: 22px; padding: 20px 22px; border: var(--bd); box-shadow: var(--sh-red); background: var(--pure-white); font-weight: 600; font-size: clamp(15px,1.7vw,18px); line-height: 1.5; color: var(--deep); max-width: 68ch; }
+
+/* «Про нас» — розгорнутий блок «Хто ми» + декластеризований ростер */
+.about-who-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(18px,2.4vw,32px); }
+@media (max-width: 760px) { .about-who-grid { grid-template-columns: 1fr; } }
+.about-who-p { font-size: clamp(15px,1.6vw,18px); line-height: 1.6; color: var(--charcoal); }
+.about-diff { display: grid; grid-template-columns: repeat(4,1fr); gap: 0; margin-top: 26px; border: var(--bd); box-shadow: var(--sh-lg); background: var(--pure-white); }
+@media (max-width: 860px) { .about-diff { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 520px) { .about-diff { grid-template-columns: 1fr; } }
+.about-diff-c { padding: 20px 20px; border-right: var(--bd); border-bottom: var(--bd); display: flex; flex-direction: column; gap: 7px; }
+.about-diff-c:nth-child(4n) { border-right: 0; }
+@media (max-width: 860px) { .about-diff-c:nth-child(2n) { border-right: 0; } .about-diff-c:nth-child(4n) { border-right: var(--bd); } }
+@media (max-width: 520px) { .about-diff-c { border-right: 0 !important; } }
+.about-diff-c b { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: 15px; letter-spacing: -.01em; color: var(--deep); line-height: 1.05; }
+.about-diff-c span { font-size: 13.5px; line-height: 1.4; color: var(--charcoal); }
+.about-roster-lab { display: block; margin: 4px 0 14px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--graphite); font-weight: 700; }
+/* Ростер: тільки роль + зона (без щільного focus-абзацу) — читабельно, в межах блоку */
+.about-roster { grid-template-columns: repeat(4,1fr); }
+@media (max-width: 1000px) { .about-roster { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 560px) { .about-roster { grid-template-columns: 1fr; } }
+.about-role-c { padding: 15px 16px; gap: 4px; }
+.about-role-c b { font-size: 13.5px; }
+.about-role-zone { font-size: 12.5px; line-height: 1.35; color: var(--graphite); text-transform: none; letter-spacing: 0; font-weight: 500; }

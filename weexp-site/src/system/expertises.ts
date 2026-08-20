@@ -58,11 +58,11 @@ export const EXPERTISES: Expertise[] = [
   {
     slug: 'automation',
     tag: ['Операції без ручного режиму', 'Operations without manual mode'],
-    title: ['Автоматизація процесів', 'Process automation'],
+    title: ['Бізнес-процеси', 'Business processes'],
     tagline: ['Щоб бізнес працював без героїзму.', 'So the business runs without heroics.'],
     intro: [
-      'Прибираємо ручну роботу, з якої витікають час і гроші: CRM і воронка продажів, інтеграції ERP / склад / доставка, автоматичні сценарії та звітність у реальному часі.',
-      'We remove the manual work that leaks time and money: CRM and sales pipeline, ERP / warehouse / delivery integrations, automated scenarios and real-time reporting.',
+      'Вибудовуємо й автоматизуємо бізнес-процеси, з яких витікають час і гроші: CRM і воронка продажів, інтеграції ERP / склад / доставка, ролі та регламенти, автоматичні сценарії й звітність у реальному часі.',
+      'We design and automate the business processes that leak time and money: CRM and sales pipeline, ERP / warehouse / delivery integrations, roles and playbooks, automated scenarios and real-time reporting.',
     ],
     services: [
       { name: ['CRM і pipeline', 'CRM & pipeline'], desc: ['Єдина воронка продажів зі статусами й відповідальними.', 'One sales pipeline with statuses and owners.'] },

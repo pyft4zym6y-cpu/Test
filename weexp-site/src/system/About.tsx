@@ -42,6 +42,25 @@ export function About() {
           </div>
         </header>
 
+        {/* Хто ми — розгорнутий блок про агентство */}
+        <div className="about-sec about-who">
+          <span className="sysx-kick">{t('Хто ми', 'Who we are')}</span>
+          <div className="about-who-grid">
+            <p className="about-who-p">{t('WEEXP — це Commerce OS: команда й методологія, що будують онлайн-продажі як керовану систему. Ми працюємо з e-commerce і D2C-брендами $0.5–10M — від виробників до відомих брендів на ринках України, ЄС і США.', 'WEEXP is a Commerce OS: a team and methodology that build online sales as a managed system. We work with e-commerce and D2C brands $0.5–10M — from manufacturers to well-known brands across Ukraine, the EU and the US.')}</p>
+            <p className="about-who-p">{t('Ми не «агентство окремих послуг». Ми діагностуємо бізнес у грошах, знаходимо, де саме витікає виторг, і збираємо вісім систем комерції в одну — стратегію, комерцію, попит, досвід, операції, дані, організацію й експансію. Там, де потрібна вузька експертиза, залучаємо перевірених партнерів і лідерів ринку — але відповідальність за результат тримаємо системно.', 'We are not an “agency of separate services”. We diagnose the business in money, find exactly where revenue leaks, and assemble eight commerce systems into one — strategy, commerce, demand, experience, operations, data, organization and expansion. Where narrow expertise is needed, we bring in vetted partners and market leaders — but we hold accountability for the result systemically.')}</p>
+          </div>
+          <div className="about-diff">
+            {[
+              { t: t('Діагноз у грошах, не «аудит на 80 сторінок»', 'A diagnosis in money, not an “80-page audit”'), d: t('Починаємо з числа: скільки втрачаєте й де саме.', 'We start with a number: how much you lose and where.') },
+              { t: t('Система, а не набір послуг', 'A system, not a set of services'), d: t('Вісім систем працюють разом — ми не «латаємо» окремі діри.', 'Eight systems work together — we don’t “patch” isolated holes.') },
+              { t: t('Незалежність як мета', 'Independence as the goal'), d: t('Будуємо так, щоб працювало й росло без нас.', 'We build so it runs and grows without us.') },
+              { t: t('Мережа партнерів під задачу', 'A partner network for the task'), d: t('Вузьку експертизу закриваємо перевіреними професіоналами.', 'Narrow expertise is delivered by vetted professionals.') },
+            ].map((x) => (
+              <div key={x.t} className="about-diff-c"><b>{x.t}</b><span>{x.d}</span></div>
+            ))}
+          </div>
+        </div>
+
         {/* Місія / Візія */}
         <div className="about-mv">
           <div className="about-mv-c">
@@ -79,23 +98,24 @@ export function About() {
               <div className="about-founder-ph"><img src={FOUNDER.photo} alt={`${FOUNDER.name ?? 'Founder'} — ${t('засновник WEEXP', 'founder of WEEXP')}`} width="900" height="1125" loading="lazy" /></div>
             )}
             <div className="about-founder-l">
-              <span className="about-eyebrow mono">{t('Засновник', 'Founder')}</span>
+              <span className="about-eyebrow mono">{t('Засновник і архітектор', 'Founder & architect')}</span>
               {FOUNDER.name && <h3 className="sysx-display about-name">{FOUNDER.name}</h3>}
               <span className="about-role">{fnd.role}</span>
               <p className="about-focus">{fnd.focus}</p>
+              <p className="about-focus">{t('Саме власник бізнесу найбільше виграє від системи: коли продажі перестають триматися на ручному режимі, звільняється головний ресурс — увага й час засновника. Наша роль — зняти з власника операційний героїзм і дати керований актив, а не ще одного підрядника, якого треба контролювати.', 'It’s the business owner who benefits most from a system: once sales stop resting on manual mode, the main resource is freed — the founder’s attention and time. Our role is to take operational heroics off the owner and hand over a managed asset, not one more contractor to supervise.')}</p>
               <div className="about-chips">{FOUNDER.owns.map((k) => <span key={k} className="about-chip mono">{shortOf(k, lang)}</span>)}</div>
               <span className="about-exp mono">{fnd.exp}</span>
             </div>
           </div>
 
+          <span className="about-roster-lab mono">{t('Хто працює над вашим проєктом — власники за системами:', 'Who works on your project — owners by system:')}</span>
           <div className="about-roster">
             {ROSTER.map((r) => {
               const lr = localizeRole(r, lang);
               return (
                 <div key={r.role} className="about-role-c">
                   <b>{lr.role}</b>
-                  <span className="about-role-zone mono">{t('Закриває:', 'Covers:')} {lr.zone}</span>
-                  <span className="about-role-focus">{lr.focus}</span>
+                  <span className="about-role-zone">{lr.zone}</span>
                 </div>
               );
             })}
