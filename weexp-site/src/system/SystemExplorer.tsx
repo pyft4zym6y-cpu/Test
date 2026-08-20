@@ -67,8 +67,9 @@ export function SystemExplorer() {
           ))}
         </div>
 
-        {/* Заголовок / підказка */}
-        <div className={'sxp-intro' + (focused !== null ? ' is-hidden' : '')}>
+        {/* Заголовок / підказка — лишається видимим і коли обрано систему (майстер-деталь):
+            зліва заголовок + активні кнопки, справа деталі обраної системи. */}
+        <div className={'sxp-intro' + (focused !== null ? ' is-focused' : '')}>
           <span className="sysx-kick">{t('Досліди систему · інтерактив', 'Explore the system · interactive')}</span>
           <h2 className="sysx-display sxp-h">{t('Клікни будь-яку', 'Click any')}<br />{t('із ', 'of the ')}<span className="sysx-em">{t('восьми систем', 'eight systems')}</span>.</h2>
           <p className="sxp-lead">{t('Категорія наблизиться, а від неї розійдуться процеси всередині. Ось як влаштована система, якою ми керуємо.', 'The category moves closer, and the processes inside fan out from it. This is how the system we run is built.')}</p>

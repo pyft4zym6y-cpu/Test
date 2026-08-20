@@ -33,6 +33,11 @@ export function getExpressAudit(): ExpressAudit | null {
   try { const r = localStorage.getItem(EXPRESS_KEY); return r ? (JSON.parse(r) as ExpressAudit) : null; } catch { return null; }
 }
 
+/** Видалити збережений експрес-аудит (кнопка «Видалити» в кабінеті). */
+export function clearExpressAudit(): void {
+  try { localStorage.removeItem(EXPRESS_KEY); } catch { /* noop */ }
+}
+
 export type JourneyStep = { id: string; label: string; hint: string; done: boolean; current: boolean };
 
 /**

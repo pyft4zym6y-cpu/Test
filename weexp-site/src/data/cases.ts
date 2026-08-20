@@ -501,7 +501,7 @@ export const CASES: CaseStudy[] = [
     slug: 'pharmacy-omnichannel',
     cat: 'Pharmacy · Омніканальний рітейл',
     name: 'Аптечна мережа',
-    hero: '24 год', heroLabel: 'SLA доставки замовлення', window: '11 місяців',
+    hero: '×3', heroLabel: 'швидша доставка замовлення (SLA 72 → 24 год)', window: '11 місяців',
     lead: 'Онлайн приймав замовлення, які офлайн-мережа фізично не встигала зібрати й видати.',
     systems: ['operations', 'experience', 'org'], stage: 'Build',
     before: 'SLA доставки 72 год, залишки на сайті розходились із реальністю, невикуп 22%.',
@@ -527,7 +527,7 @@ export const CASES: CaseStudy[] = [
     en: {
       cat: 'Pharmacy · Omnichannel retail',
       name: 'Pharmacy chain',
-      heroLabel: 'order delivery SLA',
+      heroLabel: 'faster order delivery (SLA 72 → 24 h)',
       window: '11 months',
       lead: 'Online took orders the offline chain physically couldn’t pick and hand over in time.',
       before: 'Delivery SLA 72 h, on-site stock diverged from reality, non-redemption 22%.',
