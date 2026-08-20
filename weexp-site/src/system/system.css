@@ -1075,6 +1075,36 @@
 .s3-road-pri { color: var(--data); font-size: 10px; letter-spacing: .04em; margin-left: 6px; }
 .s3-step4-cta { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; border-top: 1px solid var(--line); padding-top: 14px; }
 .s3-step4-note { flex-basis: 100%; font-size: 10.5px; color: var(--graphite); line-height: 1.5; }
+
+/* Крок 4 — потік анкети + екран завершення */
+.s4-flow { display: grid; gap: 14px; }
+.s4-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.s4-progress { font-size: 11px; color: var(--graphite); }
+.s4-card { margin-top: 2px; }
+.s3-boot { padding: 18px; color: var(--graphite); }
+.s4-done { display: grid; gap: 14px; }
+.s4-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 4px; }
+.s4-act { display: grid; gap: 8px; align-content: start; padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--pure-white); }
+.s4-act b { font-size: 15px; color: var(--deep); }
+.s4-act > span { font-size: 13px; color: var(--charcoal); line-height: 1.5; }
+.s4-act .sysx-cta { justify-self: start; margin-top: 2px; }
+.s4-code { display: grid; gap: 8px; }
+.s4-code input { border: 1px solid var(--silver); border-radius: 10px; padding: 10px 12px; font-size: 16px; color: var(--deep); background: var(--pure-white); outline: 0; }
+.s4-code input:focus { border-color: var(--data); }
+.s4-back { justify-self: start; }
+@media (max-width: 760px) { .s4-actions { grid-template-columns: 1fr; } }
+
+/* Друк PDF Кроку 4 */
+#s4-report { display: none; }
+@media print {
+  body.printing-s4 * { visibility: hidden; }
+  body.printing-s4 #s4-report, body.printing-s4 #s4-report * { visibility: visible; }
+  body.printing-s4 #s4-report { display: block; position: absolute; left: 0; top: 0; width: 100%; padding: 22px; color: #111; }
+  #s4-report h1 { font-size: 19px; margin: 0 0 4px; }
+  #s4-report h2 { font-size: 13px; margin: 14px 0 5px; border-bottom: 1px solid #ccc; padding-bottom: 3px; }
+  #s4-report p { font-size: 11px; margin: 0 0 6px; line-height: 1.4; }
+  #s4-report section { break-inside: avoid; }
+}
 @media (max-width: 640px) {
   .s3-kp-head { display: none; }
   .s3-kp-row { grid-template-columns: 1fr auto; gap: 4px 10px; }

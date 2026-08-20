@@ -10,6 +10,7 @@ import { FunnelSteps } from './FunnelSteps';
 // «Жива» констеляція 8 систем (SVG, без WebGL) — ефектно, зрозуміло, без jank.
 import { SystemOrbit } from '@/system/SystemOrbit';
 const Stage5 = lazy(() => import('@/system/Stage5').then((m) => ({ default: m.Stage5 })));
+const Stage4 = lazy(() => import('@/system/Stage4').then((m) => ({ default: m.Stage4 })));
 import { CONFIGURED, authenticate, currentUser, isCloudUser, loadDiag, saveDiag, signOut, type DiagUser, type DiagRecord } from '@/lib/supa';
 import { sendReport } from '@/lib/report';
 import { openReportPage, downloadWorksheetXls, type DocData } from '@/lib/docs';
@@ -403,49 +404,11 @@ export function Stage3({ prior, onClose, standalone, embedded }: { prior?: DiagR
           {/* Крок 4 · результат — Key Problems + Evidence + Diagnosis + Roadmap (за кодом) */}
           {step4Unlocked && (
             <div className="s2-panel s3-step4">
-              <span className="sysx-kick">Крок 4 · Поглиблений розбір</span>
-              <h3 className="sysx-display s3-step4-h">Ключові проблеми, докази й напрям руху</h3>
-              <p className="s3-step4-intro">Ми <b>не питаємо заново</b> — зводимо ваші відповіді з Кроків 1–3 у докази, впевненість і пріоритети. Нові питання під ваш конкретний випадок з'являться на <b>Кроці 5 (AI-інтерв'ю)</b>.</p>
-
-              {res.pains.length > 0 && (
-                <div className="s3-kp">
-                  <div className="s3-kp-head mono"><span>Проблема</span><span>Докази</span><span>Впевненість</span><span>Пріоритет</span></div>
-                  {res.pains.slice(0, 6).map((p, i) => (
-                    <div key={p.label} className="s3-kp-row">
-                      <b>{p.label}</b>
-                      <span className="s3-kp-ev">{p.detail || 'за вашими відповідями'}</span>
-                      <span className="s3-kp-conf">{confLabel(res.completeness)}</span>
-                      <span className="s3-kp-pri mono">P{i + 1}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="s3-step4-diag">
-                <span className="sysx-kick">Попередній діагноз</span>
-                <p className="s3-epiphany">{res.epiphany}</p>
-                <p className="s3-verdict-sub">Вузьке місце — «{res.bottleneck.label}» ({res.bottleneck.score}/100). Це не вирок «потрібен новий сайт» чи «винен відділ»: спершу перевіряємо дані (UX, аналітику, конверсію, процеси), і лише тоді — рішення. Логіка: <b>Проблема → Докази → Впевненість → Вплив → Пріоритет</b>.</p>
-              </div>
-
-              {res.roadmap.length > 0 && (
-                <div className="s3-step4-road">
-                  <span className="sysx-kick">Первинна дорожня карта</span>
-                  <div className="s3-road">
-                    {res.roadmap.map((r, i) => (
-                      <div key={r.title} className="s3-road-step">
-                        <i className="s3-road-n mono">{String(i + 1).padStart(2, '0')}</i>
-                        <div className="s3-road-c"><b>{r.title} <span className="s3-road-pri mono">P{i + 1} · {i === 0 ? 'висока віддача' : i === 1 ? 'середня складність' : 'фонова'}</span></b><span>{r.detail}</span></div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="s3-step4-cta">
-                <button className="sysx-cta is-primary" onClick={() => setStep5On(true)}>Крок 5 — глибока AI-діагностика →</button>
-                <Link to="/contact" className="sysx-cta">Запланувати зустріч</Link>
-                <span className="s3-step4-note mono">Крок 5 динамічно ставить питання під ваш випадок і зводить докази, корені й дорожню карту. Відповіді зберігаються у вашому кабінеті.</span>
-              </div>
+              <span className="sysx-kick">Крок 4 · Поглиблений аудит</span>
+              <p className="s3-step4-intro">Ми <b>продовжуємо анкетування</b> — тепер у глибину: відкриті відповіді, вивантаження даних і файли за шаблонами. На виході — зведення всіх 4 кроків у документ і вибір: зустріч, Крок 5 або PDF. Вузьке місце за Кроками 1–3 — «{res.bottleneck.label}» ({res.bottleneck.score}/100), його й підтверджуємо доказами.</p>
+              <Suspense fallback={<div className="s3-boot mono">Відкриваємо Крок 4…</div>}>
+                <Stage4 user={user} onGoStep5={() => setStep5On(true)} />
+              </Suspense>
             </div>
           )}
 
