@@ -75,7 +75,7 @@ const ES = ' · WEEXP';
 const META: Record<string, Meta2> = {
   '/': {
     uk: ['WEEXP — Commerce OS: система замість героїзму',
-      'Commerce OS для D2C та e-commerce брендів $0.5–10M: діагноз у грошах, побудова системи й вихід на ЄС/США — щоб виторг ріс без вас.'],
+      'Commerce OS для D2C та e-commerce брендів $0.5–10M: діагноз у грошах, побудова системи й вихід на ЄС/США — щоб виторг зростав без вас.'],
     en: ['WEEXP — Commerce OS: a system instead of heroics',
       'Commerce OS for D2C & e-commerce brands $0.5–10M: a diagnosis in money, building the system and expansion to the EU/US — so revenue grows without you.'],
   },

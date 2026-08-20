@@ -101,7 +101,7 @@ export function SystemInMotion() {
         <div ref={sVoid} className="sysx-scene sysx-void">
           <div className="sysx-kick">{t('Commerce OS для e-commerce і D2C-брендів $0.5–10M', 'Commerce OS for e-commerce & D2C brands $0.5–10M')}</div>
           <h1 className="sysx-display sysx-h1">{t('Система', 'A system')}<br />{t('замість ', 'instead of ')}<span className="sysx-em">{t('героїзму', 'heroics')}</span></h1>
-          <p className="sysx-lead">{t('Продажі тримаються на людях і ручному режимі, а не на системі. Збираємо вісім систем в одну керовану — щоб виторг ріс, а бізнес не залежав від вас.', 'Sales rest on people and manual effort, not on a system. We assemble eight systems into one managed system — so revenue grows and the business no longer depends on you.')}</p>
+          <p className="sysx-lead">{t('Продажі тримаються на людях і ручному режимі, а не на системі. Збираємо вісім систем в одну керовану — щоб виторг зростав, а бізнес не залежав від вас.', 'Sales rest on people and manual effort, not on a system. We assemble eight systems into one managed system — so revenue grows and the business no longer depends on you.')}</p>
           <div className="sysx-cta-row sysx-void-cta">
             <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати мій витік', 'Calculate my leak')} →</Link>
             <Link to={lp('/contact')} className="sysx-cta">{t('Залишити заявку', 'Leave a request')} →</Link>
@@ -137,7 +137,7 @@ export function SystemInMotion() {
         <div ref={sCta} className="sysx-scene sysx-ctaScene" style={{ opacity: 0 }}>
           <div className="sysx-kick">Independence Score</div>
           <h2 className="sysx-display sysx-h2">{t('Наскільки незалежний', 'How independent')}<br />{t('ваш ', 'is your ')}<span className="sysx-em">e-commerce</span>?</h2>
-          <p className="sysx-lead">{t('Ми вирішуємо одну дорогу проблему: продажі, що тримаються на ручному режимі й людях, а не на системі. Збираємо вісім систем в одну керовану — щоб виторг ріс, а бізнес не залежав від вас.', 'We solve one expensive problem: sales that rest on manual effort and people rather than a system. We assemble eight systems into one managed system — so revenue grows and the business no longer depends on you.')}</p>
+          <p className="sysx-lead">{t('Ми вирішуємо одну дорогу проблему: продажі, що тримаються на ручному режимі й людях, а не на системі. Збираємо вісім систем в одну керовану — щоб виторг зростав, а бізнес не залежав від вас.', 'We solve one expensive problem: sales that rest on manual effort and people rather than a system. We assemble eight systems into one managed system — so revenue grows and the business no longer depends on you.')}</p>
           <div className="sysx-proofbar">
             <span><b>17</b> {t('трансформацій', 'transformations')}</span>
             <i aria-hidden="true" />
