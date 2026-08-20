@@ -104,6 +104,60 @@ export async function signOut(): Promise<void> {
   if (CONFIGURED) await supabase.auth.signOut();
 }
 
+/* ─── Повноцінна реєстрація/вхід (email-підтвердження + Google OAuth) ───
+   Потребує налаштувань у Supabase: увімкнений Confirm email, провайдер Google
+   (client id/secret з Google Cloud), Site URL + Redirect URLs = адреса сайту. */
+const REDIRECT = () => (typeof window !== 'undefined' ? `${window.location.origin}/cabinet` : undefined);
+export type AuthOutcome = { user?: DiagUser; error?: string; confirm?: string; local?: boolean };
+
+/** Реєстрація через email+пароль. Увімкнено Confirm email → повертає confirm (лист надіслано);
+ *  інакше — одразу user із сесією. Без Supabase — локальний демо-режим. */
+export async function registerWithEmail(email: string, password: string): Promise<AuthOutcome> {
+  if (CONFIGURED) {
+    try {
+      const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: REDIRECT() } });
+      if (error) return { error: error.message };
+      if (data.session && data.user) { try { localStorage.removeItem(LS_SESSION); } catch { /* ignore */ } return { user: { id: data.user.id, email: data.user.email ?? email } }; }
+      return { confirm: email };   // сесії нема → лист підтвердження надіслано
+    } catch { /* мережа — падаємо на локальний режим */ }
+  }
+  const user = { id: 'local:' + email.toLowerCase(), email };
+  try { localStorage.setItem(LS_SESSION, JSON.stringify(user)); } catch { /* ignore */ }
+  return { user, local: true };
+}
+
+/** Вхід через email+пароль. Розрізняє «email ще не підтверджено» (confirm). */
+export async function signInWithEmail(email: string, password: string): Promise<AuthOutcome> {
+  if (CONFIGURED) {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        if (/confirm|not confirmed|verify/i.test(error.message)) return { confirm: email, error: error.message };
+        return { error: error.message };
+      }
+      if (data.user && data.session) { try { localStorage.removeItem(LS_SESSION); } catch { /* ignore */ } return { user: { id: data.user.id, email: data.user.email ?? email } }; }
+    } catch { /* fallback */ }
+  }
+  const user = { id: 'local:' + email.toLowerCase(), email };
+  try { localStorage.setItem(LS_SESSION, JSON.stringify(user)); } catch { /* ignore */ }
+  return { user, local: true };
+}
+
+/** Повторно надіслати лист підтвердження реєстрації. */
+export async function resendConfirmation(email: string): Promise<{ ok: boolean; error?: string }> {
+  if (!CONFIGURED) return { ok: true };
+  try { const { error } = await supabase.auth.resend({ type: 'signup', email, options: { emailRedirectTo: REDIRECT() } }); return error ? { ok: false, error: error.message } : { ok: true }; }
+  catch (e) { return { ok: false, error: String(e) }; }
+}
+
+/** Вхід/реєстрація через Google (OAuth). Після редіректу сесію підхоплює
+ *  detectSessionInUrl; акаунти з тим самим підтвердженим email лінкуються Supabase. */
+export async function signInWithGoogle(): Promise<{ error?: string }> {
+  if (!CONFIGURED) return { error: 'not_configured' };
+  try { const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: REDIRECT() } }); return error ? { error: error.message } : {}; }
+  catch (e) { return { error: String(e) }; }
+}
+
 export function onAuth(cb: (u: DiagUser | null) => void): () => void {
   if (!CONFIGURED) return () => {};
   const { data } = supabase.auth.onAuthStateChange((_e: string, s: Session | null) =>
