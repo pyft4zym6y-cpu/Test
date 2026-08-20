@@ -10,7 +10,6 @@ const SystemExplorer = lazy(() => import('@/system/SystemExplorer').then((m) => 
 // Розбір 8 систем (колишня окрема /systems) тепер — глибший скрол-етап головної.
 const SystemsFilm = lazy(() => import('@/system/SystemsFilm').then((m) => ({ default: m.SystemsFilm })));
 // Сканована повна карта Commerce OS: 8 систем + вкладені домени (акордеон).
-const CommerceMap = lazy(() => import('@/system/CommerceMap').then((m) => ({ default: m.CommerceMap })));
 // Меседжинг за роллю ЛПР (§8): одна система — різні виграші.
 const AudienceByRole = lazy(() => import('@/system/AudienceByRole').then((m) => ({ default: m.AudienceByRole })));
 // Механіка довіри (§6): метод, прозорий процес, платформи, реальні сигнали.
@@ -146,8 +145,7 @@ export function SystemInMotion() {
     <Suspense fallback={null}><SystemExplorer /></Suspense>
     {/* Глибший скрол-етап: покадровий розбір 8 систем (об'єднано з колишньою /systems) */}
     <div id="systems"><Suspense fallback={null}><SystemsFilm /></Suspense></div>
-    {/* Сканована повна карта: 8 систем як верхній рівень, домени вкладено (акордеон) */}
-    <Suspense fallback={null}><CommerceMap /></Suspense>
+    {/* CommerceMap прибрано — дублював заголовок «Де ваш бізнес втрачає гроші» одразу після SystemsFilm. */}
     {/* Меседжинг за роллю ЛПР: одна система — різні виграші */}
     <Suspense fallback={null}><AudienceByRole /></Suspense>
     {/* Механіка довіри: метод, прозорий процес, платформи */}
