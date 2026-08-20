@@ -1394,38 +1394,33 @@
 
 /* Мобайл: той самий інтерактив і анімація — повноекранна сцена, тап-фокус,
    лейбли підпроцесів увімкнені, панель — нижній шит. */
+/* Мобайл: компактний блок «Досліди систему» — БЕЗ повноекранної 3D-сцени й порожнечі.
+   Заголовок → чіпи → деталь одразу ПІД чіпами (єдиний блок, усе в полі зору). */
 @media (max-width: 860px) {
-  .sysx-explorer, .sxp-stage { min-height: 100vh; min-height: 100svh; }
-  .sysx-explorer .sysx-object3d { display: block; position: absolute; inset: 0; touch-action: pan-y; }
-  /* Інтро на весь екран: текст зверху, а «значки»-систем — акуратною стрічкою знизу */
-  .sxp-intro { position: absolute; inset: 0; left: 0; right: 0; top: 0; max-width: none; transform: none;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px;
-    padding: calc(150px + env(safe-area-inset-top)) 22px calc(64px + env(safe-area-inset-bottom)); }
-  /* Обрано систему: ховаємо ЛИШЕ текст інтро; стрічка вибору лишається вгорі й завжди доступна. */
+  .sysx-explorer { min-height: auto; background: var(--warm-white); position: relative; z-index: 1; }
+  .sxp-stage { position: relative; min-height: auto; display: block; background: var(--warm-white);
+    padding: clamp(34px, 6vh, 56px) 20px calc(36px + env(safe-area-inset-bottom)); }
+  .sysx-explorer .sysx-object3d, .sxp-labels, .sysx-explorer .sysx-field { display: none; }   /* прибираємо 3D і порожнечу */
+  .sxp-intro { position: static; inset: auto; transform: none; max-width: none; z-index: auto;
+    display: grid; gap: 12px; text-align: left; padding: 0; pointer-events: auto; }
   .sxp-intro.is-hidden { opacity: 1; transform: none; }
-  .sxp-intro.is-hidden > .sysx-kick,
-  .sxp-intro.is-hidden > .sxp-h,
-  .sxp-intro.is-hidden > .sxp-lead,
-  .sxp-intro.is-hidden > .sxp-hint { opacity: 0; transform: translateY(-8px); pointer-events: none;
-    transition: opacity .35s var(--ease-cine), transform .35s var(--ease-cine); }
-  .sxp-h { font-size: clamp(28px, 8vw, 46px); }
-  .sxp-lead { max-width: 34ch; }
-  /* Стрічка систем: 2 ряди (перенос замість скролу), закріплена ВГОРІ — над нижнім
-     шитом-панеллю, тож і чіпи, і панель завжди доступні одночасно. */
-  .sxp-picker { position: absolute; top: calc(62px + env(safe-area-inset-top)); left: 0; right: 0; margin: 0;
-    width: auto; max-width: none; flex-wrap: wrap; overflow: visible; justify-content: center; gap: 8px;
-    padding: 10px 14px; z-index: 6; pointer-events: auto; -webkit-mask-image: none; mask-image: none; }
-  .sxp-pick { flex: 0 0 auto; font-size: 12px; padding: 8px 13px; background: rgba(255,255,255,.92);
-    box-shadow: 0 6px 18px -12px rgba(21,23,26,.45); }
-  /* Деталь-панель — суцільний нижній шит (не просвічує обʼєкт) */
-  .sxp-panel { top: auto; bottom: 0; left: 0; right: 0; transform: none; width: auto; border-radius: 20px 20px 0 0;
-    background: color-mix(in srgb, var(--pure-white) 97%, transparent); backdrop-filter: blur(6px);
-    max-height: 72svh; overflow-y: auto; animation: sxpUp .4s var(--ease-cine);
-    padding: 22px 22px calc(88px + env(safe-area-inset-bottom)); box-shadow: 0 -30px 60px -40px rgba(21,23,26,.45); }
-  /* Плаваючі підпис-процеси ховаємо на телефоні (клипаються за край; є у панелі) */
-  .sxp-labels { display: none; }
+  .sxp-intro.is-hidden > * { opacity: 1; transform: none; pointer-events: auto; }   /* нічого не ховаємо */
+  .sxp-h { font-size: clamp(28px, 8vw, 44px); }
+  .sxp-lead { max-width: 42ch; }
+  .sxp-hint { display: none; }   /* без 3D підказка «клікніть вузол» зайва */
+  .sxp-picker { position: static; margin-top: 4px; width: auto; max-width: none; flex-wrap: wrap; overflow: visible;
+    justify-content: flex-start; gap: 8px; padding: 0; -webkit-mask-image: none; mask-image: none; }
+  .sxp-pick { flex: 0 0 auto; font-size: 12.5px; padding: 8px 13px; background: var(--pure-white);
+    box-shadow: 0 6px 18px -14px rgba(21,23,26,.4); }
+  .sxp-pick.is-on { background: var(--deep); color: #fff; border-color: var(--deep); }
+  .sxp-pick.is-on b { color: var(--data-soft); }
+  /* Деталь — у потоці, одразу під чіпами: клієнт бачить, що зʼявився блок категорії. */
+  .sxp-panel { position: static; inset: auto; transform: none; width: auto; margin-top: 14px; z-index: auto;
+    border-radius: 16px; max-height: none; overflow: visible; animation: sxpFade .35s var(--ease-cine);
+    background: var(--pure-white); backdrop-filter: none; -webkit-backdrop-filter: none;
+    box-shadow: 0 24px 60px -44px rgba(21,23,26,.4); padding: 20px; scroll-margin-top: 80px; }
 }
-@keyframes sxpUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes sxpFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) {
   .sysx-explorer .sysx-object3d { height: 56vh; position: relative; }
   .sxp-labels { display: none; }
