@@ -4,6 +4,8 @@
 // Env: RESEND_API_KEY — обязателен для email (тот же ключ, что у сайта);
 //      NOTIFY_EMAIL / NOTIFY_FROM — опционально;
 //      TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID — опционально, для Telegram.
+// Куда фактически доставляются заявки (server-side, посетителям не видно).
+// Публичный адрес школы — school@weexp.agency (пересылка на этот же ящик).
 const DEFAULT_NOTIFY_EMAIL = 'pashasidorenko18@gmail.com';
 
 export default async function handler(req, res) {

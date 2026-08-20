@@ -42,7 +42,7 @@ export const SCHOOL = {
   },
 
   contacts: {
-    email: 'pashasidorenko18@gmail.com',
+    email: 'school@weexp.agency',
     phone: '+38 099 918 82 60',
     phoneHref: 'tel:+380999188260',
     linkedin: 'https://linkedin.com/in/pvsidorenko',

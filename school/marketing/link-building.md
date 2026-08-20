@@ -74,7 +74,7 @@ Commerce Architecture — школа, що вчить будувати інте�
 **NAP-данные (одинаковые везде — это важно для entity):**
 - Name: Commerce Architecture
 - Site: https://school.weexp.agency
-- Email: pashasidorenko18@gmail.com
+- Email: school@weexp.agency
 - Phone: +38 099 918 82 60
 - Founder: Павло Сидоренко / Pavlo Sydorenko
 
