@@ -202,7 +202,7 @@ export async function saveDiag(user: DiagUser, patch: DiagRecord): Promise<void>
    Consoleа /manage бачить лише емейли зі списку MANAGER_EMAILS (звіряється з
    акаунтом, а не «просто кнопка»). Читання/запис чужих рядків дозволяє RLS-політика
    у Supabase (SQL — в інструкції), тож ключ лишається публічним. */
-export const MANAGER_EMAILS = ['hello@weexp.agency'];
+export const MANAGER_EMAILS = ['pashasidorenko18@gmail.com', 'hello@weexp.agency'];
 export function isManager(u: DiagUser | null): boolean {
   return !!u && MANAGER_EMAILS.map((e) => e.toLowerCase()).includes((u.email || '').toLowerCase());
 }

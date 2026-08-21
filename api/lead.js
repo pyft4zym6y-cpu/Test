@@ -4,6 +4,25 @@
 // Env: RESEND_API_KEY (обязателен); NOTIFY_EMAIL / NOTIFY_FROM — опционально.
 const DEFAULT_NOTIFY_EMAIL = 'pashasidorenko18@gmail.com';
 
+// Best-effort запись лида в Supabase (REST, service-role). Требует env
+// SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY. Тихо no-op, если их нет.
+async function saveLeadToDb(row) {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return;
+  const base = url.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
+  await fetch(`${base}/rest/v1/leads`, {
+    method: 'POST',
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal',
+    },
+    body: JSON.stringify(row),
+  });
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'POST only' });
@@ -30,6 +49,15 @@ export default async function handler(req, res) {
     res.status(400).json({ error: 'Потрібен email або телефон' });
     return;
   }
+
+  // Best-effort: пишем лид и в Supabase (таблица `leads`), чтобы он был виден в
+  // админке /admin. Не блокирует письмо: любая ошибка БД — тихо игнорируется.
+  await saveLeadToDb({
+    source, email: email || null, phone: phone || null,
+    name: b.name ? String(b.name).slice(0, 120) : null,
+    task: b.task ? String(b.task).slice(0, 200) : null,
+    comment: b.comment ? String(b.comment).slice(0, 2000) : null,
+  }).catch(() => {});
 
   const lines = [
     `Джерело: ${source}`,
