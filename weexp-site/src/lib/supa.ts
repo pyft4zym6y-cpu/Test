@@ -206,8 +206,11 @@ export const MANAGER_EMAILS = ['hello@weexp.agency'];
 export function isManager(u: DiagUser | null): boolean {
   return !!u && MANAGER_EMAILS.map((e) => e.toLowerCase()).includes((u.email || '').toLowerCase());
 }
-export type AdminRow = { userId: string; email: string; company?: string; funnel?: FunnelState; updatedAt?: string };
-/** Усі клієнтські записи для консолі менеджера (потрібна RLS-політика для менеджерів). */
+export type AdminRow = {
+  userId: string; email: string; company?: string; funnel?: FunnelState; updatedAt?: string;
+  hasExpress?: boolean; hasDeep?: boolean; record?: DiagRecord;
+};
+/** Усі клієнтські записи для адмінки/консолі (потрібна RLS-політика для адмінів). */
 export async function listAllDiagnostics(): Promise<AdminRow[]> {
   if (!CONFIGURED) return [];
   try {
@@ -215,8 +218,26 @@ export async function listAllDiagnostics(): Promise<AdminRow[]> {
     if (error || !data) return [];
     const rows: AdminRow[] = data.map((r: { user_id: string; email: string; data: DiagRecord }) => ({
       userId: r.user_id, email: r.email, company: r.data?.company?.name, funnel: r.data?.funnel, updatedAt: r.data?.updatedAt,
+      hasExpress: Boolean(r.data?.stage1Money || r.data?.stage1),
+      hasDeep: Boolean(r.data?.stage3 && Object.keys(r.data.stage3).length > 0),
+      record: r.data,
     }));
     return rows.sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
+  } catch { return []; }
+}
+
+/** Лід (заявка з форм). Пишеться в таблицю `leads` (див. INFRA/SQL); для адмінки. */
+export type LeadRow = { id?: string; at?: string; source?: string; email?: string; name?: string; phone?: string; task?: string; comment?: string };
+export async function listLeads(): Promise<LeadRow[]> {
+  if (!CONFIGURED) return [];
+  try {
+    const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: false }).limit(500);
+    if (error || !data) return [];
+    return (data as Array<Record<string, unknown>>).map((r) => ({
+      id: String(r.id ?? ''), at: (r.created_at as string) || undefined, source: (r.source as string) || undefined,
+      email: (r.email as string) || undefined, name: (r.name as string) || undefined, phone: (r.phone as string) || undefined,
+      task: (r.task as string) || undefined, comment: (r.comment as string) || undefined,
+    }));
   } catch { return []; }
 }
 /** Менеджер проставляє статус рівня клієнту (+ причину); подія лягає в таймлайн. */
