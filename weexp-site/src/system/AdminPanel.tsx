@@ -33,6 +33,19 @@ const ST: Record<TierStatus | 'none', { txt: string; cls: string }> = {
   data: { txt: 'Потрібні дані', cls: 'wait' }, granted: { txt: 'Надано', cls: 'ok' }, rejected: { txt: 'Відхилено', cls: 'bad' },
 };
 
+/** Відносна дата: «щойно», «5 хв», «3 год», «2 дн», далі — дата. */
+function rel(iso?: string): string {
+  if (!iso) return '';
+  const d = new Date(iso).getTime();
+  if (Number.isNaN(d)) return '';
+  const s = Math.max(0, Math.floor((Date.now() - d) / 1000));
+  if (s < 60) return 'щойно';
+  if (s < 3600) return `${Math.floor(s / 60)} хв`;
+  if (s < 86400) return `${Math.floor(s / 3600)} год`;
+  if (s < 604800) return `${Math.floor(s / 86400)} дн`;
+  try { return new Date(iso).toLocaleDateString('uk-UA', { day: '2-digit', month: 'short' }); } catch { return ''; }
+}
+
 export function AdminPanel() {
   const [user, setUser] = useState<DiagUser | null>(null);
   const [checking, setChecking] = useState(true);
@@ -62,6 +75,32 @@ export function AdminPanel() {
       leadsN: (r.filter((x) => x.funnel?.leadAt).length), tierReq, granted, pending, leadsTable: (leads || []).length,
     };
   }, [rows, leads]);
+
+  // Аналітика дашборда: воронка, розподіл статусів, стрічка останніх подій.
+  const analytics = useMemo(() => {
+    const r = rows || [];
+    const funnel = [
+      { k: 'Реєстрації', n: metrics.users },
+      { k: 'Експрес-аудит', n: metrics.express },
+      { k: 'Профіль компанії', n: metrics.company },
+      { k: 'Глибокий аудит', n: metrics.deep },
+      { k: 'Заявка', n: Math.max(metrics.leadsN, metrics.leadsTable) },
+    ];
+    const statusDist = (['requested', 'data', 'granted', 'rejected'] as TierStatus[]).map((s) => ({
+      s, n: r.reduce((n, x) => n + Object.values(x.funnel?.tierStatus || {}).filter((v) => v === s).length, 0),
+    }));
+    type Ev = { at: string; kind: 'user' | 'tier' | 'lead'; label: string; sub?: string };
+    const ev: Ev[] = [];
+    r.forEach((x) => {
+      if (x.updatedAt) ev.push({ at: x.updatedAt, kind: 'user', label: x.email, sub: x.company || 'оновлення профілю' });
+      Object.entries(x.funnel?.tierHistory || {}).forEach(([tid, list]) => (list || []).forEach((e) => {
+        ev.push({ at: e.at, kind: 'tier', label: x.email, sub: `${tid} → ${ST[e.st].txt}${e.by === 'manager' ? ' · менеджер' : ''}` });
+      }));
+    });
+    (leads || []).forEach((l) => { if (l.at) ev.push({ at: l.at, kind: 'lead', label: l.email || l.phone || 'заявка', sub: l.source }); });
+    ev.sort((a, b) => (b.at || '').localeCompare(a.at || ''));
+    return { funnel, statusDist, recent: ev.slice(0, 12) };
+  }, [rows, leads, metrics]);
 
   if (checking) return <div className="adm"><div className="adm-boot mono">Завантаження…</div></div>;
   if (!CONFIGURED) return <Shell><p className="mc-msg">Supabase не налаштовано — адмінка недоступна.</p></Shell>;
@@ -114,6 +153,57 @@ export function AdminPanel() {
               <Tile n={metrics.leadsTable || metrics.leadsN} l="Заявок" />
             </div>
             {rows !== null && rows.length === 0 && <p className="mc-msg mono">Продуктових даних поки немає (або порожній результат — перевірте RLS-політику для адмінів у Supabase).</p>}
+
+            {rows !== null && rows.length > 0 && (
+              <div className="adm-grid2">
+                <div className="adm-panel">
+                  <span className="adm-col-h mono">Воронка</span>
+                  <div className="adm-funnel">
+                    {analytics.funnel.map((f) => {
+                      const max = analytics.funnel[0].n || 1;
+                      const pct = Math.round((f.n / max) * 100);
+                      return (
+                        <div key={f.k} className="adm-fn-row">
+                          <span className="adm-fn-l">{f.k}</span>
+                          <div className="adm-fn-bar"><span className="adm-fn-fill" style={{ width: `${Math.max(pct, 3)}%` }} /></div>
+                          <span className="adm-fn-n mono">{f.n}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="adm-panel">
+                  <span className="adm-col-h mono">Статуси T1–T4</span>
+                  <div className="adm-dist">
+                    {analytics.statusDist.map((d) => (
+                      <div key={d.s} className="adm-dist-row">
+                        <span className={`cab-badge mono tst-${ST[d.s].cls}`}>{ST[d.s].txt}</span>
+                        <span className="adm-dist-n mono">{d.n}</span>
+                      </div>
+                    ))}
+                    {analytics.statusDist.every((d) => d.n === 0) && <p className="mono adm-empty">запитів ще немає</p>}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {rows !== null && rows.length > 0 && (
+              <div className="adm-panel">
+                <span className="adm-col-h mono">Останні події</span>
+                {analytics.recent.length === 0 ? <p className="mono adm-empty">подій ще немає</p> : (
+                  <ul className="adm-feed">
+                    {analytics.recent.map((e, i) => (
+                      <li key={i} className={`adm-feed-i k-${e.kind}`}>
+                        <span className="adm-feed-dot" />
+                        <span className="adm-feed-b"><b>{e.label}</b>{e.sub && <i>{e.sub}</i>}</span>
+                        <span className="adm-feed-at mono">{rel(e.at)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+
             <TrafficBlock t={traffic} />
           </section>
         )}
