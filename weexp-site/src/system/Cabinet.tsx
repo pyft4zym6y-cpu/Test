@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   currentUser, signOut, loadDiag, saveDiag, CONFIGURED, isCloudUser,
   registerWithEmail, signInWithEmail, resendConfirmation, signInWithGoogle, onAuth,
-  type DiagUser, type DiagRecord, type CompanyProfile, type TierStatus, type TierEvent,
+  uploadTierFile, signTierFile,
+  type DiagUser, type DiagRecord, type CompanyProfile, type TierStatus, type TierEvent, type TierFile,
 } from '@/lib/supa';
 import { getExpressAudit, clearExpressAudit, buildJourney, type ExpressAudit } from './cabinetData';
 import { eur } from './lossModel';
@@ -337,7 +338,7 @@ type AccessStep = { key: string; label: string; hint?: string; copy?: string };
 function Access({ user, rec, onDone, go }: { user: DiagUser; rec: DiagRecord | null; onDone: () => void; go: (s: SectionId) => void }) {
   const t = useT();
   const AUDIT_EMAIL = 'audit@weexp.agency';
-  const DEPTHS: { id: string; title: string; cap: string; desc: string; steps: AccessStep[] }[] = [
+  const DEPTHS: { id: string; title: string; cap: string; desc: string; steps: AccessStep[]; files?: boolean }[] = [
     { id: 'T1', title: t('T1 · Зовнішній обхід', 'T1 · External sweep'), cap: t('до 35%', 'up to 35%'), desc: t('Тільки публічні дані: сайт, ціни, канали. Без ваших доступів.', 'Public data only: site, prices, channels. Without your access.'),
       steps: [] },
     { id: 'T2', title: t('T2 · + Аналітика', 'T2 · + Analytics'), cap: t('до 55%', 'up to 55%'), desc: t('GA4/GSC read-only: реальний трафік, конверсії, джерела.', 'GA4/GSC read-only: real traffic, conversions, sources.'),
@@ -350,7 +351,7 @@ function Access({ user, rec, onDone, go }: { user: DiagUser; rec: DiagRecord | n
         { key: 't3-orders', label: t('Вивантаження замовлень за 12 міс (CSV/Excel)', 'Orders export for 12 months (CSV/Excel)'), hint: t('дата, сума, ідентифікатор клієнта (можна хеш), товар/категорія', 'date, amount, customer id (hashed ok), product/category') },
         { key: 't3-repeat', label: t('Дані про повторні покупки / когорти — якщо є', 'Repeat purchases / cohorts data — if available'), hint: t('щоб порахувати LTV і утримання', 'to compute LTV and retention') },
         { key: 't3-unit', label: t('Юніт-економіка: собівартість, логістика, комісії', 'Unit economics: COGS, logistics, fees'), hint: t('навіть приблизні цифри дадуть точнішу картину', 'even rough figures sharpen the picture') },
-      ] },
+      ], files: true },
     { id: 'T4', title: t('T4 · Живі доступи', 'T4 · Live access'), cap: t('до 92%', 'up to 92%'), desc: t('Рекламні кабінети, CMS: максимальна достовірність і план.', 'Ad accounts, CMS: maximum confidence and a plan.'),
       steps: [
         { key: 't4-meta', label: t('Meta Business: додайте нас як «Аналітик»', 'Meta Business: add us as “Analyst”'), hint: t('Business Settings → People/Partners → додати email', 'Business Settings → People/Partners → add email'), copy: AUDIT_EMAIL },
@@ -371,6 +372,9 @@ function Access({ user, rec, onDone, go }: { user: DiagUser; rec: DiagRecord | n
   const [depth, setDepth] = useState(rec?.funnel?.deepDepth || 'T2');
   const [busy, setBusy] = useState('');
   const [copied, setCopied] = useState('');
+  const [files, setFiles] = useState<Record<string, TierFile[]>>(() => ({ ...(rec?.funnel?.tierFiles || {}) }));
+  const [uploading, setUploading] = useState(false);
+  const [uploadErr, setUploadErr] = useState('');
   const st = (id: string): St => status[id] || 'none';
   const STLABEL: Record<St, { txt: string; cls: string }> = {
     none: { txt: t('Не запрошено', 'Not requested'), cls: 'none' },
@@ -399,9 +403,33 @@ function Access({ user, rec, onDone, go }: { user: DiagUser; rec: DiagRecord | n
     await saveDiag(user, { funnel: {
       ...(rec?.funnel || {}), deepRequested: true, deepAt: new Date().toISOString(), deepDepth: depth,
       deepTiers: Object.keys(nextStatus), tierStatus: nextStatus, tierChecklist: nextChecklist, tierHistory: history,
+      tierFiles: files,
     } });
     onDone();
   };
+
+  // Завантаження файлу під рівень (B): Supabase Storage → метадані у funnel.tierFiles.
+  const onUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]; e.target.value = '';
+    if (!f) return;
+    setUploadErr('');
+    if (f.size > 25 * 1024 * 1024) { setUploadErr(t('Файл більший за 25 МБ.', 'File is larger than 25 MB.')); return; }
+    setUploading(true);
+    const r = await uploadTierFile(user, depth, f);
+    setUploading(false);
+    if (!r.ok || !r.path) {
+      setUploadErr(r.error === 'not_configured'
+        ? t('Завантаження доступне у хмарному кабінеті. Поки що надішліть файл на audit@weexp.agency.', 'Upload is available in the cloud cabinet. For now, send the file to audit@weexp.agency.')
+        : t('Не вдалося завантажити файл.', 'Could not upload the file.'));
+      return;
+    }
+    const entry: TierFile = { name: f.name, path: r.path, at: new Date().toISOString(), size: f.size };
+    const nextFiles = { ...files, [depth]: [...(files[depth] || []), entry] };
+    setFiles(nextFiles);
+    await saveDiag(user, { funnel: { ...(rec?.funnel || {}), tierFiles: nextFiles } });
+    onDone();
+  };
+  const openFile = async (path: string) => { const url = await signTierFile(path); if (url) window.open(url, '_blank'); };
 
   // Перемикання пункту чек-листа — зберігаємо одразу (прогрес не втрачається).
   const toggleStep = async (k: string) => {
@@ -471,6 +499,31 @@ function Access({ user, rec, onDone, go }: { user: DiagUser; rec: DiagRecord | n
           </div>
         ) : (
           <p className="cab-sub cab-tier-nostep">{t('Цей рівень працює лише з публічними даними — нічого надавати не потрібно, просто надішліть запит.', 'This level uses public data only — nothing to provide, just send the request.')}</p>
+        )}
+
+        {cur.files && (
+          <div className="cab-upl">
+            <div className="cab-clist-head">
+              <span className="sysx-kick">{t('Файли для рівня', 'Files for this level')}</span>
+              {(files[depth] || []).length > 0 && <span className="cab-clist-count mono">{(files[depth] || []).length}</span>}
+            </div>
+            {(files[depth] || []).length > 0 && (
+              <ul className="cab-upl-list">
+                {(files[depth] || []).map((f, i) => (
+                  <li key={i} className="cab-upl-i">
+                    <button className="cab-upl-name mono" onClick={() => openFile(f.path)} title={t('Відкрити', 'Open')}>📎 {f.name}</button>
+                    <span className="cab-upl-meta mono">{f.size ? `${Math.round(f.size / 1024)} КБ` : ''}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <label className={`cab-drop${uploading ? ' busy' : ''}`}>
+              <input type="file" onChange={onUpload} disabled={uploading} accept=".csv,.xlsx,.xls,.pdf,.zip,.json,.txt" hidden />
+              <span className="cab-drop-t">{uploading ? t('Завантаження…', 'Uploading…') : t('＋ Додати файл (CSV, Excel, PDF…)', '＋ Add a file (CSV, Excel, PDF…)')}</span>
+              <span className="cab-drop-h mono">{t('до 25 МБ · приватно, бачить лише ваш менеджер', 'up to 25 MB · private, only your manager sees it')}</span>
+            </label>
+            {uploadErr && <p className="cab-auth-err mono">{uploadErr}</p>}
+          </div>
         )}
 
         <div className="cab-actions cab-access-act">

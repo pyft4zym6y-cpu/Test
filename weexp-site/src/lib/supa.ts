@@ -197,3 +197,59 @@ export async function saveDiag(user: DiagUser, patch: DiagRecord): Promise<void>
   }
   try { await supabase.from('diagnostics').upsert({ user_id: user.id, email: user.email, data: merged }, { onConflict: 'user_id' }); } catch { /* ignore */ }
 }
+
+/* ─── Керування доступами менеджером (Етап D) ───
+   Consoleа /manage бачить лише емейли зі списку MANAGER_EMAILS (звіряється з
+   акаунтом, а не «просто кнопка»). Читання/запис чужих рядків дозволяє RLS-політика
+   у Supabase (SQL — в інструкції), тож ключ лишається публічним. */
+export const MANAGER_EMAILS = ['hello@weexp.agency'];
+export function isManager(u: DiagUser | null): boolean {
+  return !!u && MANAGER_EMAILS.map((e) => e.toLowerCase()).includes((u.email || '').toLowerCase());
+}
+export type AdminRow = { userId: string; email: string; company?: string; funnel?: FunnelState; updatedAt?: string };
+/** Усі клієнтські записи для консолі менеджера (потрібна RLS-політика для менеджерів). */
+export async function listAllDiagnostics(): Promise<AdminRow[]> {
+  if (!CONFIGURED) return [];
+  try {
+    const { data, error } = await supabase.from('diagnostics').select('user_id,email,data');
+    if (error || !data) return [];
+    const rows: AdminRow[] = data.map((r: { user_id: string; email: string; data: DiagRecord }) => ({
+      userId: r.user_id, email: r.email, company: r.data?.company?.name, funnel: r.data?.funnel, updatedAt: r.data?.updatedAt,
+    }));
+    return rows.sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
+  } catch { return []; }
+}
+/** Менеджер проставляє статус рівня клієнту (+ причину); подія лягає в таймлайн. */
+export async function setTierStatusFor(userId: string, tier: string, status: TierStatus, reason?: string): Promise<{ ok: boolean; error?: string }> {
+  if (!CONFIGURED) return { ok: false, error: 'not_configured' };
+  try {
+    const { data } = await supabase.from('diagnostics').select('data').eq('user_id', userId).maybeSingle();
+    const rec = (data?.data as DiagRecord) || {};
+    const funnel: FunnelState = { ...(rec.funnel || {}) };
+    funnel.tierStatus = { ...(funnel.tierStatus || {}), [tier]: status };
+    if (reason !== undefined) funnel.tierReason = { ...(funnel.tierReason || {}), [tier]: reason };
+    const history = { ...(funnel.tierHistory || {}) };
+    history[tier] = [...(history[tier] || []), { st: status, at: new Date().toISOString(), by: 'manager' }];
+    funnel.tierHistory = history;
+    const merged: DiagRecord = { ...rec, funnel, updatedAt: new Date().toISOString() };
+    const { error } = await supabase.from('diagnostics').update({ data: merged }).eq('user_id', userId);
+    return error ? { ok: false, error: error.message } : { ok: true };
+  } catch (e) { return { ok: false, error: String(e) }; }
+}
+
+/* ─── Файли рівня (Етап B) — приватний бакет Supabase Storage «tier-files» ─── */
+const TIER_BUCKET = 'tier-files';
+export async function uploadTierFile(user: DiagUser, tier: string, file: File): Promise<{ ok: boolean; path?: string; error?: string }> {
+  if (!CONFIGURED || isLocal(user)) return { ok: false, error: 'not_configured' };
+  try {
+    const safe = file.name.replace(/[^\w.\-]+/g, '_').slice(-80);
+    const path = `${user.id}/${tier}/${Date.now()}_${safe}`;
+    const { error } = await supabase.storage.from(TIER_BUCKET).upload(path, file, { upsert: false, contentType: file.type || undefined });
+    return error ? { ok: false, error: error.message } : { ok: true, path };
+  } catch (e) { return { ok: false, error: String(e) }; }
+}
+/** Тимчасове посилання на файл (для завантаження менеджером або клієнтом). */
+export async function signTierFile(path: string): Promise<string | null> {
+  if (!CONFIGURED) return null;
+  try { const { data } = await supabase.storage.from(TIER_BUCKET).createSignedUrl(path, 3600); return data?.signedUrl ?? null; } catch { return null; }
+}
