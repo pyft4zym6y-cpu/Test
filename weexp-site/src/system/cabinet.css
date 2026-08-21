@@ -392,6 +392,17 @@
 .adm-hint { color: var(--graphite); }
 .adm-list { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; }
 
+/* Трафік GA4 */
+.adm-traffic { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; padding-top: 20px; border-top: 2.5px solid var(--deep); }
+.adm-traffic-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.adm-traffic-col { background: var(--pure-white); border: var(--bd); box-shadow: var(--sh); padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.adm-col-h { font-weight: 800; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--red); }
+.adm-bar-row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--cream-2); padding-bottom: 5px; }
+.adm-bar-row:last-child { border-bottom: 0; }
+.adm-bar-l { font-size: 13px; color: var(--charcoal); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.adm-bar-v { font-weight: 800; color: var(--deep); font-size: 13px; }
+@media (max-width: 860px) { .adm-traffic-cols { grid-template-columns: 1fr; } }
+
 .adm-table { border: var(--bd); background: var(--pure-white); box-shadow: var(--sh); }
 .adm-tr { display: grid; grid-template-columns: 2fr 1.4fr .8fr 1fr auto; gap: 12px; align-items: center; padding: 11px 16px; border-bottom: 1px solid var(--cream-2); }
 .adm-tr-4 { grid-template-columns: 2fr 1.4fr 1fr 1.4fr; }

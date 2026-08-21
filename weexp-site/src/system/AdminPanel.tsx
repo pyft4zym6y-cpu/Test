@@ -14,6 +14,10 @@ import './cabinet.css';
  * `leads`). Доступ — лише акаунтам зі списку MANAGER_EMAILS (+ RLS-політика).
  * Контент сайту редагується окремо (зовнішня CMS) — тут операції, не тексти.
  */
+type SiteTraffic = {
+  period?: string; sessions?: number; users?: number; pageviews?: number; bounceRate?: number;
+  sources?: { name: string; sessions: number }[]; pages?: { path: string; views: number }[]; error?: string;
+};
 type Tab = 'overview' | 'users' | 'audits' | 'access' | 'leads' | 'settings';
 const TABS: { id: Tab; label: string }[] = [
   { id: 'overview', label: 'Дашборд' },
@@ -38,8 +42,13 @@ export function AdminPanel() {
   const [q, setQ] = useState('');
   const [openUser, setOpenUser] = useState<string | null>(null);
   const [busy, setBusy] = useState('');
+  const [traffic, setTraffic] = useState<SiteTraffic | null | undefined>(undefined);
 
-  const load = () => { listAllDiagnostics().then(setRows); listLeads().then(setLeads); };
+  const load = () => {
+    listAllDiagnostics().then(setRows);
+    listLeads().then(setLeads);
+    fetch('/api/ga4-site').then((r) => r.json()).then((j: SiteTraffic) => setTraffic(j)).catch(() => setTraffic(null));
+  };
   useEffect(() => { currentUser().then((u) => { setUser(u); setChecking(false); if (u && isManager(u)) load(); }); }, []);
 
   const metrics = useMemo(() => {
@@ -104,9 +113,8 @@ export function AdminPanel() {
               <Tile n={metrics.granted} l="Доступів надано" />
               <Tile n={metrics.leadsTable || metrics.leadsN} l="Заявок" />
             </div>
-            {rows === null ? <p className="mc-msg mono">Завантаження…</p>
-              : rows.length === 0 ? <p className="mc-msg mono">Даних поки немає (або порожній результат — перевірте RLS-політику для адмінів у Supabase).</p>
-              : <p className="adm-hint mono">Продуктова аналітика рахується з Supabase. Трафік сайту (відвідування/джерела) підключимо окремим інструментом.</p>}
+            {rows !== null && rows.length === 0 && <p className="mc-msg mono">Продуктових даних поки немає (або порожній результат — перевірте RLS-політику для адмінів у Supabase).</p>}
+            <TrafficBlock t={traffic} />
           </section>
         )}
 
@@ -236,6 +244,42 @@ export function AdminPanel() {
 
 function Tile({ n, l, accent }: { n: number; l: string; accent?: boolean }) {
   return <div className={`adm-tile${accent ? ' accent' : ''}`}><b className="adm-tile-n">{n}</b><span className="adm-tile-l">{l}</span></div>;
+}
+
+function TrafficBlock({ t }: { t: SiteTraffic | null | undefined }) {
+  if (t === undefined) return <div className="adm-traffic"><span className="sysx-kick">Трафік сайту · GA4</span><p className="mono adm-hint">Завантаження…</p></div>;
+  if (t === null || t.error) return (
+    <div className="adm-traffic">
+      <span className="sysx-kick">Трафік сайту · GA4</span>
+      <p className="mono adm-hint">{t?.error || 'Дані трафіку недоступні тут (працює на проді). Потрібні env GA4_SITE_PROPERTY_ID / GA4_SA_EMAIL / GA4_SA_KEY у Vercel.'}</p>
+    </div>
+  );
+  const nf = (n?: number) => (n ?? 0).toLocaleString('uk-UA');
+  return (
+    <div className="adm-traffic">
+      <span className="sysx-kick">Трафік сайту · GA4 · {t.period || '30 днів'}</span>
+      <div className="adm-tiles">
+        <Tile n={t.sessions ?? 0} l="Сесій" />
+        <Tile n={t.users ?? 0} l="Користувачів" />
+        <Tile n={t.pageviews ?? 0} l="Переглядів" />
+        <div className="adm-tile"><b className="adm-tile-n">{t.bounceRate ?? 0}%</b><span className="adm-tile-l">Показник відмов</span></div>
+      </div>
+      <div className="adm-traffic-cols">
+        <div className="adm-traffic-col">
+          <span className="adm-col-h mono">Джерела</span>
+          {(t.sources || []).length === 0 ? <p className="mono adm-empty">—</p> : (t.sources || []).map((s) => (
+            <div key={s.name} className="adm-bar-row"><span className="adm-bar-l">{s.name}</span><span className="adm-bar-v mono">{nf(s.sessions)}</span></div>
+          ))}
+        </div>
+        <div className="adm-traffic-col">
+          <span className="adm-col-h mono">Топ сторінок</span>
+          {(t.pages || []).length === 0 ? <p className="mono adm-empty">—</p> : (t.pages || []).map((p) => (
+            <div key={p.path} className="adm-bar-row"><span className="adm-bar-l mono">{p.path}</span><span className="adm-bar-v mono">{nf(p.views)}</span></div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function UserDetail({ row, onClose, openFile }: { row: AdminRow; onClose: () => void; openFile: (p: string) => void }) {
