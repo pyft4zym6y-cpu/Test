@@ -204,7 +204,7 @@ export function Cabinet() {
         {section === 'audits' && <Audits express={express} rec={rec} go={setSection} onDelete={deleteExpress} />}
         {section === 'company' && <CompanyForm user={user} rec={rec} onSaved={refreshRec} />}
         {section === 'access' && <Access user={user} rec={rec} onDone={refreshRec} go={setSection} />}
-        {section === 'deep' && <DeepAudit user={user} express={express} onClose={() => setSection('overview')} go={setSection} />}
+        {section === 'deep' && <DeepAudit user={user} express={express} accessCode={rec?.funnel?.accessCode} onClose={() => setSection('overview')} go={setSection} />}
         {section === 'findings' && <Soon title={t('Знахідки та дорожня карта', 'Findings & roadmap')} lead={t('Тут зʼявляться підтверджені знахідки глибокого аудиту й план під Definition of Done: що робити, у якому порядку і який ефект. Розділ вмикається після завершення Tier-2 розбору.', 'Confirmed findings from the deep audit and a plan under a Definition of Done will appear here: what to do, in what order and what the effect is. The section unlocks after the Tier-2 analysis is complete.')} />}
         {section === 'docs' && <Soon title={t('Документи', 'Documents')} lead={t('PDF-звіти, робочі аркуші й матеріали розбору складатимуться сюди — щоб усе було в одному місці й доступне команді.', 'PDF reports, worksheets and analysis materials will gather here — so everything is in one place and available to the team.')} />}
         {section === 'collab' && <Collab user={user} rec={rec} express={express} onDone={refreshRec} />}
@@ -541,7 +541,20 @@ function Access({ user, rec, onDone, go }: { user: DiagUser; rec: DiagRecord | n
               {!allStepsDone && cur.steps.length > 0 && <span className="cab-sub mono">{t('Ще не всі доступи відмічені — можна додати їх вище будь-коли.', 'Not all access is marked yet — you can add it above anytime.')}</span>}
             </div>
           )}
-          {curSt === 'granted' && <button className="sysx-cta is-primary" onClick={() => go('deep')}>{t(`Перейти до глибокого аудиту →`, `Go to the deep audit →`)}</button>}
+          {curSt === 'granted' && (
+            <div className="cab-granted">
+              {rec?.funnel?.accessCode && (
+                <div className="cab-code">
+                  <span className="cab-code-l mono">{t('Ваш код доступу', 'Your access code')}</span>
+                  <button className="cab-code-v mono" onClick={() => copy(rec!.funnel!.accessCode!, 'code')} title={t('Скопіювати', 'Copy')}>
+                    {copied === 'code' ? t('✓ скопійовано', '✓ copied') : rec.funnel.accessCode}
+                  </button>
+                  <span className="cab-code-h mono">{t('введіть його у «Глибокому аудиті», щоб відкрити розбір', 'enter it in “Deep audit” to unlock the analysis')}</span>
+                </div>
+              )}
+              <button className="sysx-cta is-primary" onClick={() => go('deep')}>{t('Перейти до глибокого аудиту →', 'Go to the deep audit →')}</button>
+            </div>
+          )}
           {curSt === 'rejected' && <button className="sysx-cta" onClick={() => request(depth)} disabled={busy === depth}>{t('Надіслати повторно →', 'Resubmit →')}</button>}
         </div>
       </div>
@@ -591,13 +604,15 @@ function TierTimeline({ status, history, rejectedReason }: { status: TierStatus 
    За кодом — повний Stage3-розбір (свої кроки: питання → доступи → файли). ── */
 function deepKey(email: string) { return `weexp:deep-unlocked:${(email || '').toLowerCase()}`; }
 
-function DeepAudit({ user, express, onClose, go }: { user: DiagUser; express: ExpressAudit | null; onClose: () => void; go: (s: SectionId) => void }) {
+function DeepAudit({ user, express, accessCode, onClose, go }: { user: DiagUser; express: ExpressAudit | null; accessCode?: string; onClose: () => void; go: (s: SectionId) => void }) {
   const t = useT();
   const [unlocked, setUnlocked] = useState<boolean>(() => { try { return localStorage.getItem(deepKey(user.email)) === '1'; } catch { return false; } });
   const [code, setCode] = useState('');
   const [err, setErr] = useState('');
+  // Приймаємо код зі списку (env/DEFAULT) АБО персональний код клієнта, виданий менеджером при «Надати».
+  const matchesPersonal = (v: string) => !!accessCode && v.trim().toUpperCase() === accessCode.trim().toUpperCase();
   const unlock = () => {
-    if (!isValidCode(code)) { setErr(t('Код недійсний. Попросіть його в менеджера або замовте аудит.', 'Invalid code. Ask your manager for it or order the audit.')); return; }
+    if (!isValidCode(code) && !matchesPersonal(code)) { setErr(t('Код недійсний. Попросіть його в менеджера або замовте аудит.', 'Invalid code. Ask your manager for it or order the audit.')); return; }
     setErr(''); try { localStorage.setItem(deepKey(user.email), '1'); } catch { /* ignore */ }
     setUnlocked(true);
   };

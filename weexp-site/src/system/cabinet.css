@@ -320,6 +320,16 @@
 .cab-drop-t { font-weight: 800; font-size: 14px; color: var(--deep); }
 .cab-drop-h { font-size: 11px; color: var(--graphite); }
 
+/* Код доступу (виданий менеджером при «Надати») */
+.cab-granted { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.cab-code { display: flex; flex-direction: column; gap: 5px; align-items: flex-start; }
+.cab-code-l { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--graphite); }
+.cab-code-v { font-family: var(--display); font-weight: 900; font-size: clamp(20px, 2.6vw, 28px); letter-spacing: .04em;
+  color: var(--deep); background: var(--yellow); border: var(--bd); box-shadow: var(--sh); padding: 8px 16px; cursor: pointer;
+  transition: transform .1s, box-shadow .1s; }
+.cab-code-v:hover { transform: translate(-1px, -1px); box-shadow: var(--sh-lg); }
+.cab-code-h { font-size: 11.5px; color: var(--graphite); }
+
 @media (max-width: 560px) {
   .cab-tl-l { font-size: 10.5px; }
   .cab-tl-steps { gap: 3px; }
@@ -422,6 +432,44 @@
 .adm-feed-b b { font-weight: 700; font-size: 13.5px; color: var(--deep); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .adm-feed-b i { font-style: normal; font-size: 11.5px; color: var(--graphite); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .adm-feed-at { font-size: 11px; color: var(--graphite); white-space: nowrap; }
+
+/* Селектор періоду */
+.adm-period { display: flex; gap: 0; border: 2.5px solid var(--deep); }
+.adm-period-b { background: var(--pure-white); border: 0; border-left: 2.5px solid var(--deep); cursor: pointer;
+  font: inherit; font-weight: 800; font-size: 12px; padding: 8px 12px; color: var(--graphite); }
+.adm-period-b:first-child { border-left: 0; }
+.adm-period-b.on { background: var(--deep); color: var(--cream); }
+
+/* Тренд активності */
+.adm-trend-bars { display: flex; align-items: flex-end; gap: 3px; height: 70px; }
+.adm-trend-bar { flex: 1; background: var(--cream-2); border: 1px solid var(--deep); min-height: 2px; align-self: flex-end; }
+.adm-trend-bar.has { background: var(--red); }
+
+/* Сортовані заголовки + користувачі */
+.adm-tr-users { grid-template-columns: 2.2fr 1.4fr .7fr .7fr .9fr auto; }
+.adm-sort { background: none; border: 0; cursor: pointer; font: inherit; font-weight: 800; font-size: 11px;
+  letter-spacing: .04em; text-transform: uppercase; color: var(--graphite); padding: 0; text-align: left; }
+.adm-sort:hover { color: var(--red); }
+.adm-mail { color: var(--deep); text-decoration: none; }
+.adm-mail:hover { color: var(--red); text-decoration: underline; }
+.adm-tr-btn { width: 100%; background: var(--pure-white); border: 0; border-bottom: 1px solid var(--cream-2); cursor: pointer; text-align: left; font: inherit; }
+.adm-tr-btn:hover { background: var(--cream); }
+
+/* Код доступу в адмінці */
+.adm-code { background: var(--yellow); border: 2px solid var(--deep); box-shadow: 2px 2px 0 var(--deep); cursor: pointer;
+  font-family: var(--mono, monospace); font-weight: 800; font-size: 12px; color: var(--deep); padding: 5px 10px; white-space: nowrap; }
+.adm-code:hover { box-shadow: 3px 3px 0 var(--red); }
+.adm-code-lg { font-size: 15px; padding: 8px 14px; align-self: flex-start; }
+
+/* Дії по рівнях у панелі деталей */
+.adm-drawer-tiers { display: flex; flex-direction: column; gap: 10px; }
+.adm-dtier { display: flex; flex-direction: column; gap: 8px; border: 2px solid var(--deep); background: var(--cream); padding: 10px 12px; }
+.adm-dtier-l { display: flex; align-items: center; gap: 8px; }
+
+/* Порожні стани */
+.adm-empty-box { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;
+  background: var(--pure-white); border: 2.5px dashed var(--deep); padding: 40px 24px; color: var(--graphite); }
+.adm-empty-ic { font-size: 34px; }
 
 /* Трафік GA4 */
 .adm-traffic { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; padding-top: 20px; border-top: 2.5px solid var(--deep); }

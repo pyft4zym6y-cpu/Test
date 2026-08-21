@@ -44,7 +44,15 @@ export type FunnelState = {
   tierChecklist?: Record<string, string[]>;   // ключі виконаних пунктів чек-листа доступів, по рівнях
   tierHistory?: Record<string, TierEvent[]>;   // таймлайн змін статусу, по рівнях
   tierFiles?: Record<string, TierFile[]>;      // завантажені файли, по рівнях
+  accessCode?: string;                         // унікальний код відкриття глибокого аудиту (видає менеджер при «Надати»)
 };
+
+/** Унікальний код доступу до глибокого аудиту (видається клієнту при наданні рівня). */
+export function genAccessCode(): string {
+  const s = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const part = () => Array.from({ length: 4 }, () => s[Math.floor(Math.random() * s.length)]).join('');
+  return `WEEXP-${part()}-${part()}`;
+}
 
 /** Дані діагностики, що зберігаються між сесіями (усі етапи). */
 export type DiagRecord = {
@@ -249,6 +257,8 @@ export async function setTierStatusFor(userId: string, tier: string, status: Tie
     const funnel: FunnelState = { ...(rec.funnel || {}) };
     funnel.tierStatus = { ...(funnel.tierStatus || {}), [tier]: status };
     if (reason !== undefined) funnel.tierReason = { ...(funnel.tierReason || {}), [tier]: reason };
+    // При наданні доступу — видаємо унікальний код входу в глибокий аудит (один на клієнта).
+    if (status === 'granted' && !funnel.accessCode) funnel.accessCode = genAccessCode();
     const history = { ...(funnel.tierHistory || {}) };
     history[tier] = [...(history[tier] || []), { st: status, at: new Date().toISOString(), by: 'manager' }];
     funnel.tierHistory = history;

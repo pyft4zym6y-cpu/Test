@@ -56,6 +56,9 @@ export function AdminPanel() {
   const [openUser, setOpenUser] = useState<string | null>(null);
   const [busy, setBusy] = useState('');
   const [traffic, setTraffic] = useState<SiteTraffic | null | undefined>(undefined);
+  const [sortKey, setSortKey] = useState<'email' | 'company' | 'tiers' | 'updated'>('updated');
+  const [sortDir, setSortDir] = useState<1 | -1>(-1);
+  const [period, setPeriod] = useState<7 | 30 | 90 | 0>(30);
 
   const load = () => {
     listAllDiagnostics().then(setRows);
@@ -99,8 +102,19 @@ export function AdminPanel() {
     });
     (leads || []).forEach((l) => { if (l.at) ev.push({ at: l.at, kind: 'lead', label: l.email || l.phone || 'заявка', sub: l.source }); });
     ev.sort((a, b) => (b.at || '').localeCompare(a.at || ''));
-    return { funnel, statusDist, recent: ev.slice(0, 12) };
-  }, [rows, leads, metrics]);
+    // Фільтр за періодом (для стрічки й тренду); period=0 → усі.
+    const since = period ? Date.now() - period * 86400000 : 0;
+    const inPeriod = ev.filter((e) => !since || new Date(e.at).getTime() >= since);
+    // Тренд подій по днях за обраний період (макс 30 стовпчиків).
+    const days = period || 30;
+    const trend = Array.from({ length: Math.min(days, 30) }, (_, i) => {
+      const dayStart = new Date(); dayStart.setHours(0, 0, 0, 0);
+      const t0 = dayStart.getTime() - (Math.min(days, 30) - 1 - i) * 86400000;
+      const t1 = t0 + 86400000;
+      return { t0, n: ev.filter((e) => { const x = new Date(e.at).getTime(); return x >= t0 && x < t1; }).length };
+    });
+    return { funnel, statusDist, recent: inPeriod.slice(0, 14), trend };
+  }, [rows, leads, metrics, period]);
 
   if (checking) return <div className="adm"><div className="adm-boot mono">Завантаження…</div></div>;
   if (!CONFIGURED) return <Shell><p className="mc-msg">Supabase не налаштовано — адмінка недоступна.</p></Shell>;
@@ -120,6 +134,27 @@ export function AdminPanel() {
   const openFile = async (path: string) => { const url = await signTierFile(path); if (url) window.open(url, '_blank'); };
 
   const filtered = (rows || []).filter((r) => !q || r.email.toLowerCase().includes(q.toLowerCase()) || (r.company || '').toLowerCase().includes(q.toLowerCase()));
+  const tierCount = (r: AdminRow) => Object.keys(r.funnel?.tierStatus || {}).length;
+  const sorted = [...filtered].sort((a, b) => {
+    let av: string | number = '', bv: string | number = '';
+    if (sortKey === 'email') { av = a.email; bv = b.email; }
+    else if (sortKey === 'company') { av = a.company || ''; bv = b.company || ''; }
+    else if (sortKey === 'tiers') { av = tierCount(a); bv = tierCount(b); }
+    else { av = a.updatedAt || ''; bv = b.updatedAt || ''; }
+    return (av < bv ? -1 : av > bv ? 1 : 0) * sortDir;
+  });
+  const toggleSort = (k: typeof sortKey) => { if (sortKey === k) setSortDir((d) => (d === 1 ? -1 : 1)); else { setSortKey(k); setSortDir(1); } };
+  const sortMark = (k: typeof sortKey) => (sortKey === k ? (sortDir === 1 ? ' ▲' : ' ▼') : '');
+  const exportUsersCsv = () => {
+    const head = ['email', 'company', 'express', 'deep', 'tiers', 'accessCode', 'updatedAt'];
+    const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const lines = [head.join(',')].concat(sorted.map((r) => [
+      r.email, r.company || '', r.hasExpress ? 'yes' : '', r.hasDeep ? 'yes' : '',
+      tierCount(r), r.funnel?.accessCode || '', r.updatedAt || '',
+    ].map(esc).join(',')));
+    const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'weexp-users.csv'; a.click(); URL.revokeObjectURL(a.href);
+  };
   const detail = openUser ? (rows || []).find((r) => r.userId === openUser) : null;
 
   return (
@@ -141,7 +176,14 @@ export function AdminPanel() {
         {/* ── Дашборд ── */}
         {tab === 'overview' && (
           <section className="adm-sec">
-            <h1 className="sysx-display adm-h1">Дашборд</h1>
+            <div className="adm-sec-head">
+              <h1 className="sysx-display adm-h1">Дашборд</h1>
+              <div className="adm-period">
+                {([7, 30, 90, 0] as const).map((p) => (
+                  <button key={p} className={`adm-period-b${period === p ? ' on' : ''}`} onClick={() => setPeriod(p)}>{p === 0 ? 'усі' : `${p}д`}</button>
+                ))}
+              </div>
+            </div>
             <div className="adm-tiles">
               <Tile n={metrics.users} l="Користувачів" />
               <Tile n={metrics.company} l="З профілем компанії" />
@@ -187,10 +229,12 @@ export function AdminPanel() {
               </div>
             )}
 
+            {rows !== null && rows.length > 0 && <Trend data={analytics.trend} />}
+
             {rows !== null && rows.length > 0 && (
               <div className="adm-panel">
-                <span className="adm-col-h mono">Останні події</span>
-                {analytics.recent.length === 0 ? <p className="mono adm-empty">подій ще немає</p> : (
+                <span className="adm-col-h mono">Останні події · {period === 0 ? 'усі' : `${period} днів`}</span>
+                {analytics.recent.length === 0 ? <p className="mono adm-empty">за період подій немає</p> : (
                   <ul className="adm-feed">
                     {analytics.recent.map((e, i) => (
                       <li key={i} className={`adm-feed-i k-${e.kind}`}>
@@ -212,20 +256,31 @@ export function AdminPanel() {
         {tab === 'users' && (
           <section className="adm-sec">
             <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Користувачі</h1>
-              <input className="mc-search" placeholder="Пошук: email / компанія" value={q} onChange={(e) => setQ(e.target.value)} /></div>
-            {rows === null ? <p className="mc-msg mono">Завантаження…</p> : (
-              <div className="adm-table">
-                <div className="adm-tr adm-th"><span>Email</span><span>Компанія</span><span>Аудити</span><span>Оновлено</span><span></span></div>
-                {filtered.map((r) => (
-                  <div key={r.userId} className="adm-tr">
-                    <span className="adm-c-email">{r.email}</span>
+              <div className="adm-head-r">
+                <input className="mc-search" placeholder="Пошук: email / компанія" value={q} onChange={(e) => setQ(e.target.value)} />
+                <button className="sysx-cta" onClick={exportUsersCsv} disabled={sorted.length === 0}>↓ CSV</button>
+              </div>
+            </div>
+            {rows === null ? <p className="mc-msg mono">Завантаження…</p> : sorted.length === 0 ? <EmptyState icon="👥" text={q ? 'Нічого не знайдено за запитом.' : 'Зареєстрованих користувачів поки немає.'} /> : (
+              <div className="adm-table adm-tr-users">
+                <div className="adm-tr adm-th adm-tr-users">
+                  <button className="adm-sort" onClick={() => toggleSort('email')}>Email{sortMark('email')}</button>
+                  <button className="adm-sort" onClick={() => toggleSort('company')}>Компанія{sortMark('company')}</button>
+                  <span>Аудити</span>
+                  <button className="adm-sort" onClick={() => toggleSort('tiers')}>T1–T4{sortMark('tiers')}</button>
+                  <button className="adm-sort" onClick={() => toggleSort('updated')}>Активність{sortMark('updated')}</button>
+                  <span></span>
+                </div>
+                {sorted.map((r) => (
+                  <div key={r.userId} className="adm-tr adm-tr-users">
+                    <a className="adm-c-email adm-mail" href={`mailto:${r.email}`} title="Написати">{r.email}</a>
                     <span className="mono">{r.company || '—'}</span>
                     <span className="mono">{r.hasExpress ? 'E' : '·'} {r.hasDeep ? 'D' : '·'}</span>
-                    <span className="mono adm-c-date">{r.updatedAt ? new Date(r.updatedAt).toLocaleDateString('uk-UA') : '—'}</span>
+                    <span className="mono">{tierCount(r) || '—'}{r.funnel?.accessCode ? ' 🔑' : ''}</span>
+                    <span className="mono adm-c-date">{rel(r.updatedAt)}</span>
                     <button className="adm-open" onClick={() => setOpenUser(r.userId)}>Відкрити →</button>
                   </div>
                 ))}
-                {filtered.length === 0 && <p className="mc-msg mono">Нічого не знайдено.</p>}
               </div>
             )}
           </section>
@@ -235,19 +290,19 @@ export function AdminPanel() {
         {tab === 'audits' && (
           <section className="adm-sec">
             <h1 className="sysx-display adm-h1">Аудити</h1>
-            {rows === null ? <p className="mc-msg mono">Завантаження…</p> : (
+            {rows === null ? <p className="mc-msg mono">Завантаження…</p> : (rows || []).length === 0 ? <EmptyState icon="📊" text="Аудитів поки немає." /> : (
               <div className="adm-table">
                 <div className="adm-tr adm-th adm-tr-4"><span>Email</span><span>Експрес-витік</span><span>Глибокий</span><span>Рівні</span></div>
                 {(rows || []).map((r) => {
                   const money = r.record?.stage1Money;
                   const tiers = Object.entries(r.funnel?.tierStatus || {});
                   return (
-                    <div key={r.userId} className="adm-tr adm-tr-4">
+                    <button key={r.userId} className="adm-tr adm-tr-4 adm-tr-btn" onClick={() => setOpenUser(r.userId)}>
                       <span className="adm-c-email">{r.email}</span>
                       <span className="mono">{money ? `${eur(money[0])}–${eur(money[1])}` : r.hasExpress ? 'є' : '—'}</span>
                       <span className="mono">{r.hasDeep ? 'у роботі' : '—'}</span>
                       <span className="adm-c-tiers">{tiers.length === 0 ? <i className="mono">—</i> : tiers.map(([tid, s]) => <span key={tid} className={`cab-badge mono tst-${ST[s].cls}`}>{tid}</span>)}</span>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
@@ -264,7 +319,10 @@ export function AdminPanel() {
               <div className="mc-list">
                 {filtered.filter((r) => TIERS.some((t) => (r.funnel?.tierStatus?.[t] || 'none') !== 'none')).map((r) => (
                   <div key={r.userId} className="mc-card">
-                    <div className="mc-card-top"><div><b className="mc-email">{r.email}</b>{r.company && <span className="mc-company mono"> · {r.company}</span>}</div></div>
+                    <div className="mc-card-top">
+                      <div><b className="mc-email">{r.email}</b>{r.company && <span className="mc-company mono"> · {r.company}</span>}</div>
+                      {r.funnel?.accessCode && <button className="adm-code" onClick={() => { navigator.clipboard?.writeText(r.funnel!.accessCode!); setBusy('copied:' + r.userId); setTimeout(() => setBusy(''), 1200); }} title="Скопіювати код">{busy === 'copied:' + r.userId ? '✓ скопійовано' : `🔑 ${r.funnel.accessCode}`}</button>}
+                    </div>
                     <div className="mc-tiers">
                       {TIERS.filter((tid) => (r.funnel?.tierStatus?.[tid] || 'none') !== 'none').map((tid) => {
                         const cur = (r.funnel?.tierStatus?.[tid] || 'none') as TierStatus | 'none';
@@ -296,7 +354,7 @@ export function AdminPanel() {
           <section className="adm-sec">
             <h1 className="sysx-display adm-h1">Заявки</h1>
             {leads === null ? <p className="mc-msg mono">Завантаження…</p>
-              : leads.length === 0 ? <p className="mc-msg mono">Заявок немає. Щоб вони збиралися сюди, потрібна таблиця <code>leads</code> у Supabase і запис із форм (див. INFRA.md). Зараз ліди йдуть лише поштою.</p>
+              : leads.length === 0 ? <EmptyState icon="✉" text="Заявок ще немає. Вони зʼявляться тут автоматично з форм сайту (і продовжать дублюватися на пошту)." />
               : (
               <div className="adm-table">
                 <div className="adm-tr adm-th adm-tr-4"><span>Дата</span><span>Контакт</span><span>Джерело</span><span>Задача</span></div>
@@ -327,13 +385,33 @@ export function AdminPanel() {
       </main>
 
       {/* Панель деталей користувача */}
-      {detail && <UserDetail row={detail} onClose={() => setOpenUser(null)} openFile={openFile} />}
+      {detail && <UserDetail row={detail} onClose={() => setOpenUser(null)} openFile={openFile} onStatus={setStatus} busy={busy} />}
     </div>
   );
 }
 
 function Tile({ n, l, accent }: { n: number; l: string; accent?: boolean }) {
   return <div className={`adm-tile${accent ? ' accent' : ''}`}><b className="adm-tile-n">{n}</b><span className="adm-tile-l">{l}</span></div>;
+}
+
+function EmptyState({ icon, text }: { icon: string; text: string }) {
+  return <div className="adm-empty-box"><span className="adm-empty-ic" aria-hidden="true">{icon}</span><p className="mono">{text}</p></div>;
+}
+
+function Trend({ data }: { data: { t0: number; n: number }[] }) {
+  const max = Math.max(1, ...data.map((d) => d.n));
+  const total = data.reduce((s, d) => s + d.n, 0);
+  return (
+    <div className="adm-panel adm-trend">
+      <span className="adm-col-h mono">Активність по днях · {total} подій</span>
+      <div className="adm-trend-bars">
+        {data.map((d, i) => (
+          <span key={i} className={`adm-trend-bar${d.n > 0 ? ' has' : ''}`} style={{ height: `${d.n ? Math.max(Math.round((d.n / max) * 100), 6) : 2}%` }}
+            title={`${new Date(d.t0).toLocaleDateString('uk-UA')}: ${d.n}`} />
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function TrafficBlock({ t }: { t: SiteTraffic | null | undefined }) {
@@ -372,17 +450,27 @@ function TrafficBlock({ t }: { t: SiteTraffic | null | undefined }) {
   );
 }
 
-function UserDetail({ row, onClose, openFile }: { row: AdminRow; onClose: () => void; openFile: (p: string) => void }) {
+function UserDetail({ row, onClose, openFile, onStatus, busy }: { row: AdminRow; onClose: () => void; openFile: (p: string) => void; onStatus: (userId: string, tier: string, status: TierStatus) => void; busy: string }) {
   const rec = row.record || {};
   const company = rec.company;
   const money = rec.stage1Money;
   const tiers = Object.entries(row.funnel?.tierStatus || {});
   const files = Object.entries(row.funnel?.tierFiles || {});
+  const code = row.funnel?.accessCode;
   return (
     <div className="adm-drawer-wrap" onClick={onClose}>
       <aside className="adm-drawer" onClick={(e) => e.stopPropagation()}>
-        <div className="adm-drawer-head"><b className="adm-email">{row.email}</b><button className="adm-x" onClick={onClose}>✕</button></div>
+        <div className="adm-drawer-head">
+          <a className="adm-email adm-mail" href={`mailto:${row.email}`}>{row.email}</a>
+          <button className="adm-x" onClick={onClose}>✕</button>
+        </div>
         <div className="adm-drawer-body">
+          {code && (
+            <Block title="Код доступу">
+              <button className="adm-code adm-code-lg" onClick={() => navigator.clipboard?.writeText(code)} title="Скопіювати">🔑 {code}</button>
+              <span className="mono adm-empty">клієнт вводить його у «Глибокому аудиті»</span>
+            </Block>
+          )}
           <Block title="Компанія">{company?.name ? (
             <ul className="adm-kv">
               <li><i>Назва</i><span>{company.name}</span></li>
@@ -398,7 +486,21 @@ function UserDetail({ row, onClose, openFile }: { row: AdminRow; onClose: () => 
           <Block title="Глибокий аудит">{row.hasDeep ? <p className="mono">у роботі</p> : <p className="mono adm-empty">не почато</p>}</Block>
 
           <Block title="Доступи T1–T4">{tiers.length ? (
-            <div className="adm-tiers-row">{tiers.map(([tid, s]) => <span key={tid} className={`cab-badge mono tst-${ST[s].cls}`}>{tid} · {ST[s].txt}</span>)}</div>
+            <div className="adm-drawer-tiers">
+              {tiers.map(([tid, s]) => {
+                const b = `${row.userId}:${tid}`;
+                return (
+                  <div key={tid} className="adm-dtier">
+                    <div className="adm-dtier-l"><b className="mc-tid">{tid}</b><span className={`cab-badge mono tst-${ST[s].cls}`}>{ST[s].txt}</span></div>
+                    <div className="mc-tier-act">
+                      <button className="mc-btn ok" disabled={busy === b} onClick={() => onStatus(row.userId, tid, 'granted')}>Надати</button>
+                      <button className="mc-btn wait" disabled={busy === b} onClick={() => onStatus(row.userId, tid, 'data')}>Дані</button>
+                      <button className="mc-btn bad" disabled={busy === b} onClick={() => onStatus(row.userId, tid, 'rejected')}>Відхилити</button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           ) : <p className="mono adm-empty">немає запитів</p>}</Block>
 
           {files.length > 0 && (
