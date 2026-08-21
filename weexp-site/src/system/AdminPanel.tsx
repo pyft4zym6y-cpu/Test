@@ -54,11 +54,14 @@ export function AdminPanel() {
   const [tab, setTab] = useState<Tab>('overview');
   const [q, setQ] = useState('');
   const [openUser, setOpenUser] = useState<string | null>(null);
+  const [openLead, setOpenLead] = useState<string | null>(null);
   const [busy, setBusy] = useState('');
   const [traffic, setTraffic] = useState<SiteTraffic | null | undefined>(undefined);
   const [sortKey, setSortKey] = useState<'email' | 'company' | 'tiers' | 'updated'>('updated');
   const [sortDir, setSortDir] = useState<1 | -1>(-1);
   const [period, setPeriod] = useState<7 | 30 | 90 | 0>(30);
+  const [ask, setAsk] = useState<{ userId: string; tier: string; status: TierStatus } | null>(null);
+  const [askReason, setAskReason] = useState('');
 
   const load = () => {
     listAllDiagnostics().then(setRows);
@@ -121,15 +124,17 @@ export function AdminPanel() {
   if (!user) return <Shell><p className="mc-msg">Увійдіть акаунтом адміністратора. <Link to="/cabinet" className="mc-link">Вхід →</Link></p></Shell>;
   if (!isManager(user)) return <Shell><p className="mc-msg">Акаунт <b>{user.email}</b> не має прав адміністратора. Додайте його в <code>MANAGER_EMAILS</code> і застосуйте RLS-політику.</p></Shell>;
 
-  const setStatus = async (userId: string, tier: string, status: TierStatus) => {
-    let reason: string | undefined;
-    if ((status === 'rejected' || status === 'data') && typeof window !== 'undefined')
-      reason = window.prompt(status === 'rejected' ? 'Причина відмови (побачить клієнт):' : 'Які дані потрібні (побачить клієнт):') || undefined;
+  const applyStatus = async (userId: string, tier: string, status: TierStatus, reason?: string) => {
     setBusy(`${userId}:${tier}`);
     const res = await setTierStatusFor(userId, tier, status, reason);
     setBusy('');
     if (!res.ok) { alert('Не вдалося: ' + (res.error || '')); return; }
     load();
+  };
+  // «Надати» — одразу; «Потрібні дані» / «Відхилити» — через модалку з причиною.
+  const setStatus = (userId: string, tier: string, status: TierStatus) => {
+    if (status === 'granted') applyStatus(userId, tier, status);
+    else { setAsk({ userId, tier, status }); setAskReason(''); }
   };
   const openFile = async (path: string) => { const url = await signTierFile(path); if (url) window.open(url, '_blank'); };
 
@@ -321,8 +326,18 @@ export function AdminPanel() {
                   <div key={r.userId} className="mc-card">
                     <div className="mc-card-top">
                       <div><b className="mc-email">{r.email}</b>{r.company && <span className="mc-company mono"> · {r.company}</span>}</div>
-                      {r.funnel?.accessCode && <button className="adm-code" onClick={() => { navigator.clipboard?.writeText(r.funnel!.accessCode!); setBusy('copied:' + r.userId); setTimeout(() => setBusy(''), 1200); }} title="Скопіювати код">{busy === 'copied:' + r.userId ? '✓ скопійовано' : `🔑 ${r.funnel.accessCode}`}</button>}
                     </div>
+                    {r.funnel?.accessCode ? (
+                      <div className="adm-code-banner">
+                        <span className="adm-code-banner-l mono">Код доступу видано клієнту</span>
+                        <button className="adm-code adm-code-lg" onClick={() => { navigator.clipboard?.writeText(r.funnel!.accessCode!); setBusy('copied:' + r.userId); setTimeout(() => setBusy(''), 1200); }} title="Скопіювати код">
+                          {busy === 'copied:' + r.userId ? '✓ скопійовано' : `🔑 ${r.funnel.accessCode}`}
+                        </button>
+                        <span className="adm-code-banner-h mono">клієнт вводить його у «Глибокому аудиті»</span>
+                      </div>
+                    ) : (
+                      <p className="adm-code-hint mono">Код доступу зʼявиться тут після «Надати» на будь-якому рівні.</p>
+                    )}
                     <div className="mc-tiers">
                       {TIERS.filter((tid) => (r.funnel?.tierStatus?.[tid] || 'none') !== 'none').map((tid) => {
                         const cur = (r.funnel?.tierStatus?.[tid] || 'none') as TierStatus | 'none';
@@ -359,12 +374,12 @@ export function AdminPanel() {
               <div className="adm-table">
                 <div className="adm-tr adm-th adm-tr-4"><span>Дата</span><span>Контакт</span><span>Джерело</span><span>Задача</span></div>
                 {leads.map((l) => (
-                  <div key={l.id} className="adm-tr adm-tr-4">
+                  <button key={l.id} className="adm-tr adm-tr-4 adm-tr-btn" onClick={() => setOpenLead(l.id || '')}>
                     <span className="mono adm-c-date">{l.at ? new Date(l.at).toLocaleString('uk-UA') : '—'}</span>
                     <span className="mono">{l.email || l.phone || l.name || '—'}</span>
                     <span className="mono">{l.source || '—'}</span>
-                    <span>{l.task || l.comment || '—'}</span>
-                  </div>
+                    <span className="adm-c-task">{l.task || l.comment || '—'}</span>
+                  </button>
                 ))}
               </div>
             )}
@@ -386,6 +401,63 @@ export function AdminPanel() {
 
       {/* Панель деталей користувача */}
       {detail && <UserDetail row={detail} onClose={() => setOpenUser(null)} openFile={openFile} onStatus={setStatus} busy={busy} />}
+      {/* Панель деталей заявки */}
+      {openLead && leads && <LeadDetail lead={leads.find((l) => l.id === openLead)} onClose={() => setOpenLead(null)} />}
+
+      {/* Модалка причини (замість browser prompt) */}
+      {ask && (
+        <div className="adm-modal-wrap" onClick={() => setAsk(null)}>
+          <div className="adm-modal" onClick={(e) => e.stopPropagation()}>
+            <b className="adm-modal-h">{ask.status === 'rejected' ? `Відхилити ${ask.tier}` : `${ask.tier}: запит даних`}</b>
+            <p className="adm-modal-p mono">{ask.status === 'rejected' ? 'Причина відмови — її побачить клієнт у кабінеті.' : 'Що саме потрібно від клієнта — він побачить це у кабінеті.'}</p>
+            <textarea className="adm-modal-ta" autoFocus rows={3} value={askReason} onChange={(e) => setAskReason(e.target.value)}
+              placeholder={ask.status === 'rejected' ? 'Напр.: недостатньо даних для рівня' : 'Напр.: надайте доступ до GA4 та вивантаження замовлень'} />
+            <div className="adm-modal-act">
+              <button className="mc-btn" onClick={() => setAsk(null)}>Скасувати</button>
+              <button className={`mc-btn ${ask.status === 'rejected' ? 'bad' : 'wait'}`} onClick={() => { applyStatus(ask.userId, ask.tier, ask.status, askReason.trim() || undefined); setAsk(null); }}>
+                {ask.status === 'rejected' ? 'Відхилити' : 'Запросити дані'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LeadDetail({ lead, onClose }: { lead?: LeadRow; onClose: () => void }) {
+  if (!lead) return null;
+  const rows: [string, string | undefined][] = [
+    ['Дата', lead.at ? new Date(lead.at).toLocaleString('uk-UA') : undefined],
+    ['Джерело', lead.source],
+    ['Email', lead.email],
+    ['Телефон', lead.phone],
+    ['Імʼя', lead.name],
+    ['Роль', lead.role],
+    ['Магазин / сайт', lead.store],
+    ['Оборот / міс', lead.turnover],
+    ['Задача', lead.task],
+    ['Терміни', lead.timeline],
+    ['Бюджет', lead.budget],
+  ];
+  return (
+    <div className="adm-drawer-wrap" onClick={onClose}>
+      <aside className="adm-drawer" onClick={(e) => e.stopPropagation()}>
+        <div className="adm-drawer-head">
+          <a className="adm-email adm-mail" href={`mailto:${lead.email || ''}`}>{lead.email || lead.phone || 'Заявка'}</a>
+          <button className="adm-x" onClick={onClose}>✕</button>
+        </div>
+        <div className="adm-drawer-body">
+          <Block title="Заявка">
+            <ul className="adm-kv">
+              {rows.filter(([, v]) => v).map(([k, v]) => <li key={k}><i>{k}</i><span>{v}</span></li>)}
+            </ul>
+          </Block>
+          {lead.comment && <Block title="Коментар / проблема"><p className="adm-longtext">{lead.comment}</p></Block>}
+          {lead.diag && <Block title="Результат діагностики (X-Ray)"><pre className="adm-pre">{lead.diag}</pre></Block>}
+          {lead.calc && <Block title="Розрахунок калькулятора"><pre className="adm-pre">{lead.calc}</pre></Block>}
+        </div>
+      </aside>
     </div>
   );
 }

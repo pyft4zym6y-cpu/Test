@@ -52,11 +52,13 @@ export default async function handler(req, res) {
 
   // Best-effort: пишем лид и в Supabase (таблица `leads`), чтобы он был виден в
   // админке /admin. Не блокирует письмо: любая ошибка БД — тихо игнорируется.
+  const clip = (v, n) => (v ? String(v).slice(0, n) : null);
   await saveLeadToDb({
     source, email: email || null, phone: phone || null,
-    name: b.name ? String(b.name).slice(0, 120) : null,
-    task: b.task ? String(b.task).slice(0, 200) : null,
-    comment: b.comment ? String(b.comment).slice(0, 2000) : null,
+    name: clip(b.name, 120), role: clip(b.role, 80), store: clip(b.store, 200),
+    turnover: clip(b.turnover, 60), task: clip(b.task, 200), timeline: clip(b.timeline, 80),
+    budget: clip(b.budget, 60), comment: clip(b.comment, 2000),
+    diag: clip(b.diag, 4000), calc: clip(b.calc, 3000),
   }).catch(() => {});
 
   const lines = [

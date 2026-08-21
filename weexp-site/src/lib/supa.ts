@@ -235,16 +235,21 @@ export async function listAllDiagnostics(): Promise<AdminRow[]> {
 }
 
 /** Лід (заявка з форм). Пишеться в таблицю `leads` (див. INFRA/SQL); для адмінки. */
-export type LeadRow = { id?: string; at?: string; source?: string; email?: string; name?: string; phone?: string; task?: string; comment?: string };
+export type LeadRow = {
+  id?: string; at?: string; source?: string; email?: string; name?: string; phone?: string;
+  role?: string; store?: string; turnover?: string; task?: string; timeline?: string; budget?: string;
+  comment?: string; diag?: string; calc?: string;
+};
 export async function listLeads(): Promise<LeadRow[]> {
   if (!CONFIGURED) return [];
   try {
     const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: false }).limit(500);
     if (error || !data) return [];
+    const s = (v: unknown) => (v ? String(v) : undefined);
     return (data as Array<Record<string, unknown>>).map((r) => ({
-      id: String(r.id ?? ''), at: (r.created_at as string) || undefined, source: (r.source as string) || undefined,
-      email: (r.email as string) || undefined, name: (r.name as string) || undefined, phone: (r.phone as string) || undefined,
-      task: (r.task as string) || undefined, comment: (r.comment as string) || undefined,
+      id: String(r.id ?? ''), at: s(r.created_at), source: s(r.source), email: s(r.email), name: s(r.name), phone: s(r.phone),
+      role: s(r.role), store: s(r.store), turnover: s(r.turnover), task: s(r.task), timeline: s(r.timeline), budget: s(r.budget),
+      comment: s(r.comment), diag: s(r.diag), calc: s(r.calc),
     }));
   } catch { return []; }
 }
