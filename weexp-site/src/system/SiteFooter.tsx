@@ -3,15 +3,16 @@ import { useT, useLp } from '@/i18n';
 import './system.css';
 
 /** Мікропідвал сайту — на всіх сторінках (під контентом у SystemShell). Двомовний. */
+// Тримаємо в синхроні з головним меню (SystemShell): ті самі назви й порядок.
 const NAV = [
   { to: '/', uk: 'Система', en: 'System' },
-  { to: '/diagnose', uk: 'Діагностика', en: 'Diagnostics' },
-  { to: '/pricing', uk: 'Формати та ціни', en: 'Pricing' },
-  { to: '/proof', uk: 'Докази', en: 'Proof' },
+  { to: '/proof', uk: 'Наші перемоги', en: 'Our wins' },
   { to: '/expansion', uk: 'Експансія', en: 'Expansion' },
-  { to: '/people', uk: 'Команда', en: 'Team' },
-  { to: '/cabinet', uk: 'Кабінет', en: 'Cabinet' },
+  { to: '/people', uk: 'Про нас', en: 'About' },
+  { to: '/diagnose', uk: 'Express audit', en: 'Express audit' },
+  { to: '/pricing', uk: 'Початок співпраці', en: 'Get started' },
   { to: '/contact', uk: 'Контакт', en: 'Contact' },
+  { to: '/cabinet', uk: 'Кабінет', en: 'Cabinet' },
 ];
 const MAIL = 'hello@weexp.agency';
 
