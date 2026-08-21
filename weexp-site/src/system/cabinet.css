@@ -361,3 +361,76 @@
 .mc-btn.wait:hover:not(:disabled) { background: var(--warn, #C0851E); color: #fff; }
 .mc-btn.bad:hover:not(:disabled) { background: var(--red); color: #fff; }
 .mc-btn:disabled { opacity: .5; cursor: default; }
+
+/* ═══ Адмінка /admin ═══ */
+.adm { min-height: 100vh; background: var(--cream); color: var(--charcoal); display: grid; grid-template-columns: 240px 1fr; }
+.adm-boot { padding: 22vh 6vw; color: var(--graphite); font-weight: 700; }
+.adm-in { max-width: 900px; margin: 0 auto; padding: clamp(24px,5vw,56px) 24px; display: flex; flex-direction: column; gap: 16px; }
+.adm-side { position: sticky; top: 0; align-self: start; height: 100vh; display: flex; flex-direction: column;
+  background: var(--deep); color: var(--cream); padding: 24px 14px; }
+.adm-brand { display: flex; align-items: baseline; gap: 8px; text-decoration: none; color: var(--cream); padding: 0 6px 22px; }
+.adm-brand b { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: 20px; }
+.adm-brand span { color: var(--yellow); font-weight: 800; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; }
+.adm-nav { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+.adm-nav-i { text-align: left; background: none; border: 0; cursor: pointer; color: rgba(250,245,233,.7);
+  font: inherit; font-weight: 700; font-size: 14.5px; padding: 10px 12px; border-radius: 0; transition: background .12s, color .12s; }
+.adm-nav-i:hover { color: var(--cream); background: rgba(255,255,255,.06); }
+.adm-nav-i.on { background: var(--red); color: #fff; }
+.adm-foot { display: flex; flex-direction: column; gap: 6px; padding: 14px 8px 0; border-top: 1px solid rgba(255,255,255,.15); color: rgba(250,245,233,.6); font-size: 11px; }
+.adm-foot span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.adm-refresh { align-self: flex-start; background: none; border: 0; color: var(--yellow); cursor: pointer; font: inherit; font-size: 11px; padding: 0; }
+.adm-main { padding: clamp(24px,4vw,48px); max-width: 1100px; }
+.adm-sec { display: flex; flex-direction: column; gap: 20px; animation: cab-in var(--dur-mid) var(--ease-cine); }
+.adm-sec-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.adm-h1 { font-size: clamp(26px,3.4vw,40px); color: var(--deep); line-height: 1; }
+
+.adm-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.adm-tile { background: var(--pure-white); border: var(--bd); box-shadow: var(--sh); padding: 18px; display: flex; flex-direction: column; gap: 4px; }
+.adm-tile.accent { box-shadow: var(--sh-red); }
+.adm-tile-n { font-family: var(--display); font-weight: 900; font-size: clamp(28px,3.4vw,40px); color: var(--deep); line-height: .95; }
+.adm-tile-l { font-size: 12px; font-weight: 600; color: var(--graphite); }
+.adm-hint { color: var(--graphite); }
+.adm-list { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; }
+
+.adm-table { border: var(--bd); background: var(--pure-white); box-shadow: var(--sh); }
+.adm-tr { display: grid; grid-template-columns: 2fr 1.4fr .8fr 1fr auto; gap: 12px; align-items: center; padding: 11px 16px; border-bottom: 1px solid var(--cream-2); }
+.adm-tr-4 { grid-template-columns: 2fr 1.4fr 1fr 1.4fr; }
+.adm-tr:last-child { border-bottom: 0; }
+.adm-th { background: var(--cream-2); font-weight: 800; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--graphite); }
+.adm-c-email { font-weight: 700; color: var(--deep); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.adm-c-date { font-size: 12px; color: var(--graphite); }
+.adm-c-tiers { display: flex; gap: 4px; flex-wrap: wrap; }
+.adm-open { background: none; border: 0; color: var(--red); font: inherit; font-weight: 800; font-size: 12.5px; cursor: pointer; padding: 0; white-space: nowrap; }
+
+/* Панель деталей користувача */
+.adm-drawer-wrap { position: fixed; inset: 0; background: rgba(20,18,16,.4); display: flex; justify-content: flex-end; z-index: 60; }
+.adm-drawer { width: min(460px, 94vw); height: 100%; background: var(--cream); border-left: var(--bd); overflow-y: auto; animation: adm-slide var(--dur-mid) var(--ease-cine); }
+@keyframes adm-slide { from { transform: translateX(30px); opacity: .4; } to { transform: none; opacity: 1; } }
+.adm-drawer-head { position: sticky; top: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: var(--deep); color: var(--cream); padding: 16px 20px; }
+.adm-drawer-head .adm-email { font-family: var(--display); font-weight: 900; font-size: 16px; }
+.adm-x { background: none; border: 0; color: var(--cream); font-size: 18px; cursor: pointer; }
+.adm-drawer-body { padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+.adm-block { display: flex; flex-direction: column; gap: 8px; }
+.adm-kv { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.adm-kv li { display: grid; grid-template-columns: 90px 1fr; gap: 10px; font-size: 13.5px; }
+.adm-kv i { color: var(--graphite); font-style: normal; font-weight: 700; }
+.adm-kv span { color: var(--deep); font-weight: 500; }
+.adm-money { font-family: var(--display); font-weight: 900; font-size: 22px; color: var(--deep); }
+.adm-money i { font-style: normal; font-size: .5em; color: var(--graphite); }
+.adm-empty { color: var(--graphite); }
+.adm-tiers-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.adm-files { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.adm-file { background: none; border: 0; color: var(--red); font-weight: 700; font-size: 13px; cursor: pointer; padding: 0; text-align: left; }
+
+@media (max-width: 860px) {
+  .adm { grid-template-columns: 1fr; }
+  .adm-side { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 14px; }
+  .adm-brand { display: none; }
+  .adm-nav { flex-direction: row; flex-wrap: wrap; flex: 1; gap: 6px; }
+  .adm-nav-i { font-size: 13px; padding: 7px 11px; border: 1px solid rgba(255,255,255,.2); }
+  .adm-foot { flex-direction: row; align-items: center; border-top: 0; padding: 0; gap: 12px; }
+  .adm-tiles { grid-template-columns: repeat(2, 1fr); }
+  .adm-tr, .adm-tr-4 { grid-template-columns: 1fr 1fr; gap: 6px; font-size: 12.5px; }
+  .adm-th { display: none; }
+}
