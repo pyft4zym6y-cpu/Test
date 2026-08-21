@@ -99,6 +99,8 @@ export default function App() {
           <Route path="/challenges/:slug" element={<ChallengeRedirect />} />
           <Route path="/what-we-build" element={<Navigate to="/#systems" replace />} />
           <Route path="/what-we-build/eu-expansion" element={<Navigate to="/expansion" replace />} />
+          <Route path="/expansion/web" element={<Navigate to="/expansion/technology" replace />} />
+          <Route path="/en/expansion/web" element={<Navigate to="/en/expansion/technology" replace />} />
           <Route path="/how-it-works" element={<Navigate to="/#systems" replace />} />
           <Route path="/how-it-works/business-health" element={<Navigate to="/diagnose" replace />} />
           <Route path="/how-it-works/independence-score" element={<Navigate to="/diagnose" replace />} />
