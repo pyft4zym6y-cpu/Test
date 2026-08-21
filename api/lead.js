@@ -58,7 +58,7 @@ export default async function handler(req, res) {
     name: clip(b.name, 120), role: clip(b.role, 80), store: clip(b.store, 200),
     turnover: clip(b.turnover, 60), task: clip(b.task, 200), timeline: clip(b.timeline, 80),
     budget: clip(b.budget, 60), comment: clip(b.comment, 2000),
-    diag: clip(b.diag, 4000), calc: clip(b.calc, 3000),
+    diag: clip(b.diag, 4000), calc: clip(b.calc, 3000), status: 'new',
   }).catch(() => {});
 
   const lines = [

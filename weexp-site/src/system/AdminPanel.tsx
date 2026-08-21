@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, signTierFile, CONFIGURED,
-  MANAGER_EMAILS, type DiagUser, type AdminRow, type LeadRow, type TierStatus,
+  currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, signTierFile, CONFIGURED,
+  MANAGER_EMAILS, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus,
 } from '@/lib/supa';
 import { eur } from './lossModel';
 import './system.css';
@@ -32,6 +32,17 @@ const ST: Record<TierStatus | 'none', { txt: string; cls: string }> = {
   none: { txt: 'Не запрошено', cls: 'none' }, requested: { txt: 'Очікує', cls: 'wait' },
   data: { txt: 'Потрібні дані', cls: 'wait' }, granted: { txt: 'Надано', cls: 'ok' }, rejected: { txt: 'Відхилено', cls: 'bad' },
 };
+
+// Стадії воронки міні-CRM
+const LEAD_STAGES: { k: LeadStatus; l: string; cls: string }[] = [
+  { k: 'new', l: 'Новий', cls: 'wait' },
+  { k: 'progress', l: 'У роботі', cls: 'wait' },
+  { k: 'qualified', l: 'Кваліфікований', cls: 'ok' },
+  { k: 'proposal', l: 'Пропозиція', cls: 'ok' },
+  { k: 'won', l: 'Виграно', cls: 'ok' },
+  { k: 'lost', l: 'Втрачено', cls: 'bad' },
+];
+const stageOf = (l: LeadRow): LeadStatus => l.status || 'new';
 
 /** Відносна дата: «щойно», «5 хв», «3 год», «2 дн», далі — дата. */
 function rel(iso?: string): string {
@@ -136,7 +147,22 @@ export function AdminPanel() {
     if (status === 'granted') applyStatus(userId, tier, status);
     else { setAsk({ userId, tier, status }); setAskReason(''); }
   };
+  const clearTier = async (userId: string, tier: string) => {
+    if (typeof window !== 'undefined' && !window.confirm(`Скинути ${tier} до «не запрошено»?`)) return;
+    setBusy(`${userId}:${tier}`);
+    const res = await clearTierStatusFor(userId, tier);
+    setBusy('');
+    if (!res.ok) { alert('Не вдалося: ' + (res.error || '')); return; }
+    load();
+  };
   const openFile = async (path: string) => { const url = await signTierFile(path); if (url) window.open(url, '_blank'); };
+  const moveLead = async (id: string, status: LeadStatus) => {
+    setBusy('lead:' + id);
+    const res = await setLeadStatus(id, status);
+    setBusy('');
+    if (!res.ok) { alert('Не вдалося: ' + (res.error || '')); return; }
+    listLeads().then(setLeads);
+  };
 
   const filtered = (rows || []).filter((r) => !q || r.email.toLowerCase().includes(q.toLowerCase()) || (r.company || '').toLowerCase().includes(q.toLowerCase()));
   const tierCount = (r: AdminRow) => Object.keys(r.funnel?.tierStatus || {}).length;
@@ -351,6 +377,7 @@ export function AdminPanel() {
                               <button className="mc-btn ok" disabled={busy === b} onClick={() => setStatus(r.userId, tid, 'granted')}>Надати</button>
                               <button className="mc-btn wait" disabled={busy === b} onClick={() => setStatus(r.userId, tid, 'data')}>Потрібні дані</button>
                               <button className="mc-btn bad" disabled={busy === b} onClick={() => setStatus(r.userId, tid, 'rejected')}>Відхилити</button>
+                              <button className="mc-btn ghost" disabled={busy === b} onClick={() => clearTier(r.userId, tid)} title="Скинути до «не запрошено»">✕</button>
                             </div>
                           </div>
                         );
@@ -364,25 +391,60 @@ export function AdminPanel() {
           </section>
         )}
 
-        {/* ── Заявки ── */}
+        {/* ── Заявки · міні-CRM ── */}
         {tab === 'leads' && (
           <section className="adm-sec">
-            <h1 className="sysx-display adm-h1">Заявки</h1>
+            <h1 className="sysx-display adm-h1">Заявки · CRM</h1>
             {leads === null ? <p className="mc-msg mono">Завантаження…</p>
-              : leads.length === 0 ? <EmptyState icon="✉" text="Заявок ще немає. Вони зʼявляться тут автоматично з форм сайту (і продовжать дублюватися на пошту)." />
-              : (
-              <div className="adm-table">
-                <div className="adm-tr adm-th adm-tr-4"><span>Дата</span><span>Контакт</span><span>Джерело</span><span>Задача</span></div>
-                {leads.map((l) => (
-                  <button key={l.id} className="adm-tr adm-tr-4 adm-tr-btn" onClick={() => setOpenLead(l.id || '')}>
-                    <span className="mono adm-c-date">{l.at ? new Date(l.at).toLocaleString('uk-UA') : '—'}</span>
-                    <span className="mono">{l.email || l.phone || l.name || '—'}</span>
-                    <span className="mono">{l.source || '—'}</span>
-                    <span className="adm-c-task">{l.task || l.comment || '—'}</span>
-                  </button>
-                ))}
-              </div>
-            )}
+              : leads.length === 0 ? <EmptyState icon="✉" text="Заявок ще немає. Вони зʼявляться тут автоматично з форм сайту (і дублюються на пошту)." />
+              : (() => {
+                const count = (k: LeadStatus) => leads.filter((l) => stageOf(l) === k).length;
+                const won = count('won'), total = leads.length, lost = count('lost');
+                const conv = total ? Math.round((won / total) * 100) : 0;
+                return (
+                  <>
+                    {/* Воронка */}
+                    <div className="adm-panel">
+                      <span className="adm-col-h mono">Воронка продажів · {total} заявок · {conv}% виграно</span>
+                      <div className="adm-crmfunnel">
+                        {LEAD_STAGES.map((s) => {
+                          const n = count(s.k); const pct = total ? Math.round((n / total) * 100) : 0;
+                          return (
+                            <div key={s.k} className="adm-cf-row">
+                              <span className={`cab-badge mono tst-${s.cls}`}>{s.l}</span>
+                              <div className="adm-fn-bar"><span className={`adm-fn-fill tst-fill-${s.cls}`} style={{ width: `${Math.max(pct, n ? 4 : 0)}%` }} /></div>
+                              <span className="adm-fn-n mono">{n}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Пайплайн-дошка */}
+                    <div className="adm-board">
+                      {LEAD_STAGES.map((s) => {
+                        const col = leads.filter((l) => stageOf(l) === s.k);
+                        return (
+                          <div key={s.k} className="adm-col">
+                            <div className="adm-col-head"><span className={`cab-badge mono tst-${s.cls}`}>{s.l}</span><span className="adm-col-n mono">{col.length}</span></div>
+                            <div className="adm-col-body">
+                              {col.map((l) => (
+                                <button key={l.id} className="adm-lead-card" onClick={() => setOpenLead(l.id || '')}>
+                                  <b>{l.name || l.email || l.phone || 'Заявка'}</b>
+                                  <span className="mono adm-lead-sub">{l.task || l.comment || l.source || '—'}</span>
+                                  <span className="mono adm-lead-at">{rel(l.at)}{l.source ? ` · ${l.source}` : ''}</span>
+                                </button>
+                              ))}
+                              {col.length === 0 && <span className="mono adm-col-empty">—</span>}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <p className="adm-hint mono">Виграно: {won} · Втрачено: {lost}. Клік по картці — картка заявки й зміна стадії.</p>
+                  </>
+                );
+              })()}
           </section>
         )}
 
@@ -402,7 +464,7 @@ export function AdminPanel() {
       {/* Панель деталей користувача */}
       {detail && <UserDetail row={detail} onClose={() => setOpenUser(null)} openFile={openFile} onStatus={setStatus} busy={busy} />}
       {/* Панель деталей заявки */}
-      {openLead && leads && <LeadDetail lead={leads.find((l) => l.id === openLead)} onClose={() => setOpenLead(null)} />}
+      {openLead && leads && <LeadDetail lead={leads.find((l) => l.id === openLead)} onClose={() => setOpenLead(null)} onStatus={moveLead} busy={busy} />}
 
       {/* Модалка причини (замість browser prompt) */}
       {ask && (
@@ -425,8 +487,9 @@ export function AdminPanel() {
   );
 }
 
-function LeadDetail({ lead, onClose }: { lead?: LeadRow; onClose: () => void }) {
+function LeadDetail({ lead, onClose, onStatus, busy }: { lead?: LeadRow; onClose: () => void; onStatus: (id: string, s: LeadStatus) => void; busy: string }) {
   if (!lead) return null;
+  const cur = lead.status || 'new';
   const rows: [string, string | undefined][] = [
     ['Дата', lead.at ? new Date(lead.at).toLocaleString('uk-UA') : undefined],
     ['Джерело', lead.source],
@@ -448,6 +511,14 @@ function LeadDetail({ lead, onClose }: { lead?: LeadRow; onClose: () => void }) 
           <button className="adm-x" onClick={onClose}>✕</button>
         </div>
         <div className="adm-drawer-body">
+          <Block title="Стадія CRM">
+            <div className="adm-stage-pick">
+              {LEAD_STAGES.map((s) => (
+                <button key={s.k} className={`adm-stage-b tst-${s.cls}${cur === s.k ? ' on' : ''}`} disabled={busy === 'lead:' + lead.id}
+                  onClick={() => cur !== s.k && onStatus(lead.id || '', s.k)}>{s.l}</button>
+              ))}
+            </div>
+          </Block>
           <Block title="Заявка">
             <ul className="adm-kv">
               {rows.filter(([, v]) => v).map(([k, v]) => <li key={k}><i>{k}</i><span>{v}</span></li>)}

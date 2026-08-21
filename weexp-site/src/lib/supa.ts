@@ -234,11 +234,13 @@ export async function listAllDiagnostics(): Promise<AdminRow[]> {
   } catch { return []; }
 }
 
+/** Стадія ліда в міні-CRM (воронка продажів). */
+export type LeadStatus = 'new' | 'progress' | 'qualified' | 'proposal' | 'won' | 'lost';
 /** Лід (заявка з форм). Пишеться в таблицю `leads` (див. INFRA/SQL); для адмінки. */
 export type LeadRow = {
   id?: string; at?: string; source?: string; email?: string; name?: string; phone?: string;
   role?: string; store?: string; turnover?: string; task?: string; timeline?: string; budget?: string;
-  comment?: string; diag?: string; calc?: string;
+  comment?: string; diag?: string; calc?: string; status?: LeadStatus;
 };
 export async function listLeads(): Promise<LeadRow[]> {
   if (!CONFIGURED) return [];
@@ -249,9 +251,16 @@ export async function listLeads(): Promise<LeadRow[]> {
     return (data as Array<Record<string, unknown>>).map((r) => ({
       id: String(r.id ?? ''), at: s(r.created_at), source: s(r.source), email: s(r.email), name: s(r.name), phone: s(r.phone),
       role: s(r.role), store: s(r.store), turnover: s(r.turnover), task: s(r.task), timeline: s(r.timeline), budget: s(r.budget),
-      comment: s(r.comment), diag: s(r.diag), calc: s(r.calc),
+      comment: s(r.comment), diag: s(r.diag), calc: s(r.calc), status: (s(r.status) as LeadStatus) || 'new',
     }));
   } catch { return []; }
+}
+
+/** Змінити стадію ліда в CRM. */
+export async function setLeadStatus(id: string, status: LeadStatus): Promise<{ ok: boolean; error?: string }> {
+  if (!CONFIGURED) return { ok: false, error: 'not_configured' };
+  try { const { error } = await supabase.from('leads').update({ status }).eq('id', id); return error ? { ok: false, error: error.message } : { ok: true }; }
+  catch (e) { return { ok: false, error: String(e) }; }
 }
 /** Менеджер проставляє статус рівня клієнту (+ причину); подія лягає в таймлайн. */
 export async function setTierStatusFor(userId: string, tier: string, status: TierStatus, reason?: string): Promise<{ ok: boolean; error?: string }> {
@@ -267,6 +276,22 @@ export async function setTierStatusFor(userId: string, tier: string, status: Tie
     const history = { ...(funnel.tierHistory || {}) };
     history[tier] = [...(history[tier] || []), { st: status, at: new Date().toISOString(), by: 'manager' }];
     funnel.tierHistory = history;
+    const merged: DiagRecord = { ...rec, funnel, updatedAt: new Date().toISOString() };
+    const { error } = await supabase.from('diagnostics').update({ data: merged }).eq('user_id', userId);
+    return error ? { ok: false, error: error.message } : { ok: true };
+  } catch (e) { return { ok: false, error: String(e) }; }
+}
+
+/** Скинути рівень до «не запрошено» (прибрати запис) — прибирання тестових/помилкових статусів. */
+export async function clearTierStatusFor(userId: string, tier: string): Promise<{ ok: boolean; error?: string }> {
+  if (!CONFIGURED) return { ok: false, error: 'not_configured' };
+  try {
+    const { data } = await supabase.from('diagnostics').select('data').eq('user_id', userId).maybeSingle();
+    const rec = (data?.data as DiagRecord) || {};
+    const funnel: FunnelState = { ...(rec.funnel || {}) };
+    const ts = { ...(funnel.tierStatus || {}) }; delete ts[tier]; funnel.tierStatus = ts;
+    const tr = { ...(funnel.tierReason || {}) }; delete tr[tier]; funnel.tierReason = tr;
+    const th = { ...(funnel.tierHistory || {}) }; delete th[tier]; funnel.tierHistory = th;
     const merged: DiagRecord = { ...rec, funnel, updatedAt: new Date().toISOString() };
     const { error } = await supabase.from('diagnostics').update({ data: merged }).eq('user_id', userId);
     return error ? { ok: false, error: error.message } : { ok: true };

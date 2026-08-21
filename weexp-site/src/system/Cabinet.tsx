@@ -200,7 +200,7 @@ export function Cabinet() {
 
       {/* Контент */}
       <main className="cab-main">
-        {section === 'overview' && <Overview journey={journey} express={express} cur={cur?.label} go={setSection} />}
+        {section === 'overview' && <Overview journey={journey} express={express} rec={rec} cur={cur?.label} go={setSection} />}
         {section === 'audits' && <Audits express={express} rec={rec} go={setSection} onDelete={deleteExpress} />}
         {section === 'company' && <CompanyForm user={user} rec={rec} onSaved={refreshRec} />}
         {section === 'access' && <Access user={user} rec={rec} onDone={refreshRec} go={setSection} />}
@@ -225,9 +225,17 @@ function SecHead({ kick, title, lead }: { kick: string; title: string; lead?: st
   );
 }
 
-function Overview({ journey, express, cur, go }: { journey: ReturnType<typeof buildJourney>; express: ExpressAudit | null; cur?: string; go: (s: SectionId) => void }) {
+function Overview({ journey, express, rec, cur, go }: { journey: ReturnType<typeof buildJourney>; express: ExpressAudit | null; rec: DiagRecord | null; cur?: string; go: (s: SectionId) => void }) {
   const t = useT();
   const lp = useLp();
+  const tierStatus = rec?.funnel?.tierStatus || {};
+  const tierEntries = Object.entries(tierStatus) as [string, TierStatus][];
+  const TSTAT: Record<TierStatus, { txt: string; cls: string }> = {
+    requested: { txt: t('Очікує підтвердження', 'Awaiting confirmation'), cls: 'wait' },
+    data: { txt: t('Потрібні ваші дані', 'Your data needed'), cls: 'wait' },
+    granted: { txt: t('Доступ надано', 'Access granted'), cls: 'ok' },
+    rejected: { txt: t('Відхилено', 'Declined'), cls: 'bad' },
+  };
   return (
     <section className="cab-sec">
       <SecHead kick={t('Огляд', 'Overview')} title={t('Ваш шлях у WEEXP', 'Your path in WEEXP')} lead={cur ? t(`Ви зараз на кроці «${cur}». Кабінет веде вас від першого числа до плану — крок за кроком.`, `You are on the “${cur}” step. The cabinet guides you from the first number to the plan — step by step.`) : t('Усі кроки пройдено — час до співпраці та зростання.', 'All steps complete — time to work together and grow.')} />
@@ -249,6 +257,26 @@ function Overview({ journey, express, cur, go }: { journey: ReturnType<typeof bu
           <button className="sysx-cta is-primary" onClick={() => go(cur === 'Профіль компанії' ? 'company' : cur === 'Глибокий аудит' ? 'deep' : 'audits')}>{t('Перейти →', 'Go →')}</button>
         </div>
       </div>
+
+      {tierEntries.length > 0 && (
+        <div className="cab-accban">
+          <div className="cab-accban-head">
+            <span className="sysx-kick">{t('Ваші запити доступу T1–T4', 'Your T1–T4 access requests')}</span>
+            <button className="cab-accban-go mono" onClick={() => go('access')}>{t('Відкрити розділ', 'Open section')} →</button>
+          </div>
+          <ul className="cab-accban-list">
+            {tierEntries.map(([tid, s]) => (
+              <li key={tid} className="cab-accban-i">
+                <b className="cab-accban-t">{tid}</b>
+                <span className={`cab-badge mono tst-${TSTAT[s].cls}`}>{TSTAT[s].txt}</span>
+                {s === 'data' && rec?.funnel?.tierReason?.[tid] && <span className="cab-accban-r">{rec.funnel.tierReason[tid]}</span>}
+                {s === 'rejected' && rec?.funnel?.tierReason?.[tid] && <span className="cab-accban-r">{rec.funnel.tierReason[tid]}</span>}
+                {s === 'granted' && rec?.funnel?.accessCode && <span className="cab-accban-code mono">{t('код', 'code')}: {rec.funnel.accessCode}</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="cab-journey">
         <span className="sysx-kick">{t('Наскрізний шлях', 'End-to-end path')}</span>

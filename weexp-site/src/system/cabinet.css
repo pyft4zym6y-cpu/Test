@@ -330,6 +330,16 @@
 .cab-code-v:hover { transform: translate(-1px, -1px); box-shadow: var(--sh-lg); }
 .cab-code-h { font-size: 11.5px; color: var(--graphite); }
 
+/* Банер статусу доступів у Огляді (клієнт бачить відповідь менеджера) */
+.cab-accban { background: var(--pure-white); border: var(--bd); box-shadow: var(--sh); padding: 20px 22px; display: flex; flex-direction: column; gap: 12px; }
+.cab-accban-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.cab-accban-go { background: none; border: 0; cursor: pointer; color: var(--red); font-weight: 800; font-size: 12px; padding: 0; }
+.cab-accban-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.cab-accban-i { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border: 2px solid var(--deep); background: var(--cream); padding: 9px 12px; }
+.cab-accban-t { font-family: var(--display); font-weight: 900; font-size: 15px; color: var(--deep); }
+.cab-accban-r { font-size: 12.5px; color: var(--charcoal); }
+.cab-accban-code { font-weight: 800; color: var(--deep); background: var(--yellow); border: 2px solid var(--deep); padding: 2px 8px; font-size: 12px; }
+
 @media (max-width: 560px) {
   .cab-tl-l { font-size: 10.5px; }
   .cab-tl-steps { gap: 3px; }
@@ -370,6 +380,8 @@
 .mc-btn.ok:hover:not(:disabled) { background: var(--ok, #1F9D55); color: #fff; }
 .mc-btn.wait:hover:not(:disabled) { background: var(--warn, #C0851E); color: #fff; }
 .mc-btn.bad:hover:not(:disabled) { background: var(--red); color: #fff; }
+.mc-btn.ghost { border-color: var(--silver, #E3D9C0); color: var(--graphite); }
+.mc-btn.ghost:hover:not(:disabled) { border-color: var(--deep); color: var(--deep); }
 .mc-btn:disabled { opacity: .5; cursor: default; }
 
 /* ═══ Адмінка /admin ═══ */
@@ -483,6 +495,36 @@
 .adm-longtext { font-size: 14px; line-height: 1.55; color: var(--charcoal); white-space: pre-wrap; }
 .adm-pre { font-family: var(--mono, monospace); font-size: 11.5px; line-height: 1.5; color: var(--charcoal);
   background: var(--cream-2); border: 2px solid var(--deep); padding: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; max-height: 320px; overflow-y: auto; }
+
+/* ── Міні-CRM: воронка + пайплайн ── */
+.adm-crmfunnel { display: flex; flex-direction: column; gap: 9px; }
+.adm-cf-row { display: grid; grid-template-columns: 150px 1fr 34px; align-items: center; gap: 10px; }
+.adm-fn-fill.tst-fill-wait { background: var(--warn, #C0851E); }
+.adm-fn-fill.tst-fill-ok { background: var(--ok, #1F9D55); }
+.adm-fn-fill.tst-fill-bad { background: var(--red); }
+
+.adm-board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(190px, 1fr); gap: 12px; overflow-x: auto; padding-bottom: 8px; }
+.adm-col { background: var(--cream-2); border: 2.5px solid var(--deep); display: flex; flex-direction: column; min-height: 120px; }
+.adm-col-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px; border-bottom: 2.5px solid var(--deep); }
+.adm-col-n { font-weight: 900; font-size: 15px; color: var(--deep); }
+.adm-col-body { display: flex; flex-direction: column; gap: 8px; padding: 10px; flex: 1; }
+.adm-col-empty { color: var(--silver); text-align: center; padding: 12px 0; }
+.adm-lead-card { display: flex; flex-direction: column; gap: 3px; text-align: left; background: var(--pure-white); border: 2px solid var(--deep);
+  box-shadow: 2px 2px 0 var(--deep); padding: 10px 11px; cursor: pointer; font: inherit; transition: transform .1s, box-shadow .1s; }
+.adm-lead-card:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--red); }
+.adm-lead-card b { font-size: 13px; color: var(--deep); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.adm-lead-sub { font-size: 11.5px; color: var(--charcoal); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.adm-lead-at { font-size: 10.5px; color: var(--graphite); }
+
+/* Вибір стадії в картці заявки */
+.adm-stage-pick { display: flex; flex-wrap: wrap; gap: 6px; }
+.adm-stage-b { border: 2px solid var(--deep); background: var(--pure-white); color: var(--graphite); cursor: pointer;
+  font: inherit; font-weight: 700; font-size: 12px; padding: 6px 10px; transition: background .12s, color .12s; }
+.adm-stage-b:hover:not(:disabled):not(.on) { box-shadow: 2px 2px 0 var(--deep); }
+.adm-stage-b.on.tst-wait { background: var(--warn, #C0851E); color: #fff; }
+.adm-stage-b.on.tst-ok { background: var(--ok, #1F9D55); color: #fff; }
+.adm-stage-b.on.tst-bad { background: var(--red); color: #fff; }
+.adm-stage-b:disabled { opacity: .6; cursor: default; }
 
 /* Модалка адмінки */
 .adm-modal-wrap { position: fixed; inset: 0; background: rgba(20,18,16,.5); display: grid; place-items: center; z-index: 70; padding: 20px; }
