@@ -16,9 +16,10 @@ export function ExpansionHub() {
       <div className="sysx-field" aria-hidden="true" />
       <div className="xhub-in">
         <header className="xhub-head">
-          <span className="sysx-kick">{t('Експертизи WEEXP', 'WEEXP expertise')}</span>
-          <h1 className="sysx-display xhub-h1">{t('Фокусні ', 'Focused ')}<span className="hl">{t('експертизи', 'expertise')}</span></h1>
-          <p className="sysx-lead">{t('Вам не потрібно самостійно шукати, перевіряти й порівнювати десятки виконавців. Ми вже сформували перевірену мережу лідерів ринку в ключових експертизах — і під конкретну задачу підбираємо найсильніших, синхронізуючи їхню роботу з вашими цілями в єдиній системі. Ви отримуєте доступ до перевіреної експертизи, а не ще одну рекомендацію підрядника.', 'You don\'t need to search for, vet and compare dozens of contractors yourself. We\'ve already built a trusted network of market leaders across key expertise areas — and for each task we pick the strongest, syncing their work to your goals within one system. You get access to proven expertise, not just another contractor referral.')}</p>
+          <span className="sysx-kick">{t('Екосистема партнерів WEEXP', 'WEEXP partner ecosystem')}</span>
+          <h1 className="sysx-display xhub-h1">{t('Екосистема ', 'Partner ')}<span className="hl">{t('партнерів', 'ecosystem')}</span></h1>
+          <p className="sysx-lead">{t('Вам не потрібно самостійно шукати, перевіряти й порівнювати десятки виконавців. Ми вже сформували перевірену мережу лідерів ринку в ключових напрямах — і під конкретну задачу підбираємо найсильніших, синхронізуючи їхню роботу з вашими цілями в єдиній системі. Ви отримуєте доступ до перевіреної експертизи, а не ще одну рекомендацію підрядника.', 'You don\'t need to search for, vet and compare dozens of contractors yourself. We\'ve already built a trusted network of market leaders across the key areas — and for each task we pick the strongest, syncing their work to your goals within one system. You get access to proven expertise, not just another contractor referral.')}</p>
+          <p className="xhub-arch">{t('Зверху екосистеми — WEEXP: ', 'On top of the ecosystem — WEEXP: ')}<b>E-commerce Architecture &amp; Management</b>. {t('Ми визначаємо, що, навіщо, у якій послідовності та з яким партнером робити, — а перевірена мережа закриває конкретні компетенції.', 'We define what, why, in what order and with which partner to do it — while the vetted network closes the specific competencies.')}</p>
         </header>
 
         <div className="xhub-grid">

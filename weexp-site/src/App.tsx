@@ -41,6 +41,7 @@ const ContactFilm = lazy(() => import('@/system/ContactFilm').then((m) => ({ def
 const SystemShell = lazy(() => import('@/system/SystemShell').then((m) => ({ default: m.SystemShell })));
 const LossCalculator = lazy(() => import('@/system/LossCalculator').then((m) => ({ default: m.LossCalculator })));
 const Cabinet = lazy(() => import('@/system/Cabinet').then((m) => ({ default: m.Cabinet })));
+const ManagerConsole = lazy(() => import('@/system/ManagerConsole').then((m) => ({ default: m.ManagerConsole })));
 const ServicePage = lazy(() => import('@/system/ServicePage').then((m) => ({ default: m.ServicePage })));
 const Pricing = lazy(() => import('@/system/Pricing').then((m) => ({ default: m.Pricing })));
 
@@ -83,6 +84,9 @@ export default function App() {
             <Route path="*" element={<SystemNotFound />} />
           </Route>
 
+          {/* Консоль менеджера доступів — окремий маршрут поза оболонкою сайту. */}
+          <Route path="/manage" element={<ManagerConsole />} />
+
           {/* Клієнтські редиректи (дублюють 301 у root vercel.json — для SPA-навігації).
               Легасі темні маршрути ведуть у світлі аналоги; окремої тёмної айдентики немає. */}
           <Route path="/system" element={<Navigate to="/" replace />} />
@@ -95,6 +99,8 @@ export default function App() {
           <Route path="/challenges/:slug" element={<ChallengeRedirect />} />
           <Route path="/what-we-build" element={<Navigate to="/#systems" replace />} />
           <Route path="/what-we-build/eu-expansion" element={<Navigate to="/expansion" replace />} />
+          <Route path="/expansion/web" element={<Navigate to="/expansion/technology" replace />} />
+          <Route path="/en/expansion/web" element={<Navigate to="/en/expansion/technology" replace />} />
           <Route path="/how-it-works" element={<Navigate to="/#systems" replace />} />
           <Route path="/how-it-works/business-health" element={<Navigate to="/diagnose" replace />} />
           <Route path="/how-it-works/independence-score" element={<Navigate to="/diagnose" replace />} />
