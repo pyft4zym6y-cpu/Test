@@ -32,7 +32,19 @@ export type CompanyProfile = {
 /** Стан воронки клієнта (наскрізна логіка кабінету). */
 /** Статус доступу до кожного рівня аудиту (керована воронка): відсутній ключ = «не запрошено». */
 export type TierStatus = 'requested' | 'data' | 'granted' | 'rejected';
-export type FunnelState = { leadAt?: string; leadContact?: string; deepRequested?: boolean; deepAt?: string; deepDepth?: string; deepTiers?: string[]; tierStatus?: Record<string, TierStatus>; tierReason?: Record<string, string> };
+/** Подія зміни статусу рівня — для таймлайну прогресу (хто/коли перевів). */
+export type TierEvent = { st: TierStatus | 'none'; at: string; by?: 'client' | 'manager' };
+/** Файл, доданий клієнтом під рівень (Supabase Storage або локально). */
+export type TierFile = { name: string; path: string; at: string; size?: number };
+export type FunnelState = {
+  leadAt?: string; leadContact?: string;
+  deepRequested?: boolean; deepAt?: string; deepDepth?: string; deepTiers?: string[];
+  tierStatus?: Record<string, TierStatus>;
+  tierReason?: Record<string, string>;
+  tierChecklist?: Record<string, string[]>;   // ключі виконаних пунктів чек-листа доступів, по рівнях
+  tierHistory?: Record<string, TierEvent[]>;   // таймлайн змін статусу, по рівнях
+  tierFiles?: Record<string, TierFile[]>;      // завантажені файли, по рівнях
+};
 
 /** Дані діагностики, що зберігаються між сесіями (усі етапи). */
 export type DiagRecord = {

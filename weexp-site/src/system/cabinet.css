@@ -255,3 +255,59 @@
 .cab-access-act { flex-direction: column; align-items: flex-start; gap: 10px; }
 /* Обрана картка завжди має чорну рамку — перекриваємо статусний акцент */
 .cab-depth.on { border-color: var(--deep); }
+
+/* ── Панель обраного рівня: таймлайн + чек-лист доступів ── */
+.cab-tier { margin-top: 18px; background: var(--pure-white); border: var(--bd); box-shadow: var(--sh);
+  padding: clamp(18px, 2.6vw, 26px); display: flex; flex-direction: column; gap: 18px; }
+.cab-tier-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.cab-tier-h { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: clamp(17px, 2vw, 22px); color: var(--deep); }
+.cab-tier-nostep { margin: 0; }
+.cab-tier-note { display: flex; flex-direction: column; gap: 6px; }
+
+/* Таймлайн статусу (C) */
+.cab-tl { display: flex; flex-direction: column; gap: 10px; border-top: 2px solid var(--deep); border-bottom: 2px solid var(--deep); padding: 16px 0; }
+.cab-tl-idle { color: var(--graphite); padding: 4px 0; }
+.cab-tl-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; position: relative; }
+.cab-tl-step { display: flex; flex-direction: column; gap: 6px; position: relative; padding-top: 20px; }
+/* лінія-конектор */
+.cab-tl-step::before { content: ''; position: absolute; top: 6px; left: 0; right: 0; height: 2.5px; background: var(--silver, #E3D9C0); }
+.cab-tl-step:first-child::before { left: 50%; }
+.cab-tl-step:last-child::before { right: 50%; }
+.cab-tl-step.on::before { background: var(--deep); }
+.cab-tl-dot { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 14px; height: 14px;
+  border: 2.5px solid var(--deep); background: var(--pure-white); border-radius: 0; }
+.cab-tl-step.on .cab-tl-dot { background: var(--deep); }
+.cab-tl-step.cur .cab-tl-dot { background: var(--red); border-color: var(--red); box-shadow: 0 0 0 3px rgba(245,48,28,.18); }
+.cab-tl-step.bad .cab-tl-dot { background: var(--red); border-color: var(--red); }
+.cab-tl-l { font-weight: 800; font-size: 12px; letter-spacing: .01em; color: var(--charcoal); text-align: center; line-height: 1.2; }
+.cab-tl-step.on .cab-tl-l { color: var(--deep); }
+.cab-tl-at { text-align: center; font-size: 10.5px; color: var(--graphite); }
+.cab-tl-sla { font-size: 12px; font-weight: 600; color: var(--graphite); }
+.cab-tl-sla.ok { color: var(--ok, #1F9D55); font-weight: 700; }
+.cab-tl-sla.bad { color: var(--red); font-weight: 700; }
+
+/* Чек-лист доступів (A) */
+.cab-clist { display: flex; flex-direction: column; gap: 12px; }
+.cab-clist-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.cab-clist-count { font-weight: 800; color: var(--deep); background: var(--yellow); border: 2px solid var(--deep); padding: 1px 8px; font-size: 12px; }
+.cab-clist-items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.cab-clist-i { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  border: 2px solid var(--deep); background: var(--cream); padding: 12px 14px; }
+.cab-clist-i.done { background: var(--cream-2); }
+.cab-check { flex: 1 1 320px; display: flex; align-items: flex-start; gap: 12px; background: none; border: 0; cursor: pointer; text-align: left; padding: 0; font: inherit; }
+.cab-check-box { flex: 0 0 auto; width: 24px; height: 24px; display: grid; place-items: center; border: 2.5px solid var(--deep);
+  background: var(--pure-white); font-weight: 900; color: var(--deep); font-size: 14px; line-height: 1; margin-top: 1px; }
+.cab-clist-i.done .cab-check-box { background: var(--ok, #1F9D55); color: #fff; border-color: var(--deep); }
+.cab-check-b { display: flex; flex-direction: column; gap: 3px; }
+.cab-check-l { font-weight: 700; font-size: 14px; color: var(--deep); line-height: 1.35; }
+.cab-check-h { font-size: 11.5px; color: var(--graphite); line-height: 1.4; }
+.cab-copy { flex: 0 0 auto; align-self: center; border: 2px solid var(--deep); background: var(--pure-white); color: var(--deep);
+  font-size: 12px; font-weight: 700; padding: 6px 10px; cursor: pointer; border-radius: 0; box-shadow: 2px 2px 0 var(--deep);
+  transition: transform .1s, box-shadow .1s; white-space: nowrap; }
+.cab-copy:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--red); }
+
+@media (max-width: 560px) {
+  .cab-tl-l { font-size: 10.5px; }
+  .cab-tl-steps { gap: 3px; }
+  .cab-copy { width: 100%; text-align: center; }
+}

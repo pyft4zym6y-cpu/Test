@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   currentUser, signOut, loadDiag, saveDiag, CONFIGURED, isCloudUser,
   registerWithEmail, signInWithEmail, resendConfirmation, signInWithGoogle, onAuth,
-  type DiagUser, type DiagRecord, type CompanyProfile, type TierStatus,
+  type DiagUser, type DiagRecord, type CompanyProfile, type TierStatus, type TierEvent,
 } from '@/lib/supa';
 import { getExpressAudit, clearExpressAudit, buildJourney, type ExpressAudit } from './cabinetData';
 import { eur } from './lossModel';
@@ -331,47 +331,105 @@ function CompanyForm({ user, rec, onSaved }: { user: DiagUser; rec: DiagRecord |
   );
 }
 
+/** Крок чек-листа доступів: що саме має зробити клієнт, щоб рівень можна було підготувати. */
+type AccessStep = { key: string; label: string; hint?: string; copy?: string };
+
 function Access({ user, rec, onDone, go }: { user: DiagUser; rec: DiagRecord | null; onDone: () => void; go: (s: SectionId) => void }) {
   const t = useT();
-  const DEPTHS = [
-    { id: 'T1', title: t('T1 · Зовнішній обхід', 'T1 · External sweep'), cap: t('до 35%', 'up to 35%'), desc: t('Тільки публічні дані: сайт, ціни, канали. Без ваших доступів.', 'Public data only: site, prices, channels. Without your access.') },
-    { id: 'T2', title: t('T2 · + Аналітика', 'T2 · + Analytics'), cap: t('до 55%', 'up to 55%'), desc: t('GA4/GSC read-only: реальний трафік, конверсії, джерела.', 'GA4/GSC read-only: real traffic, conversions, sources.') },
-    { id: 'T3', title: t('T3 · + Бізнес-дані', 'T3 · + Business data'), cap: t('до 78%', 'up to 78%'), desc: t('Вивантаження CRM/ERP: когорти, повторні, юніт-економіка.', 'CRM/ERP exports: cohorts, repeats, unit economics.') },
-    { id: 'T4', title: t('T4 · Живі доступи', 'T4 · Live access'), cap: t('до 92%', 'up to 92%'), desc: t('Рекламні кабінети, CMS: максимальна достовірність і план.', 'Ad accounts, CMS: maximum confidence and a plan.') },
+  const AUDIT_EMAIL = 'audit@weexp.agency';
+  const DEPTHS: { id: string; title: string; cap: string; desc: string; steps: AccessStep[] }[] = [
+    { id: 'T1', title: t('T1 · Зовнішній обхід', 'T1 · External sweep'), cap: t('до 35%', 'up to 35%'), desc: t('Тільки публічні дані: сайт, ціни, канали. Без ваших доступів.', 'Public data only: site, prices, channels. Without your access.'),
+      steps: [] },
+    { id: 'T2', title: t('T2 · + Аналітика', 'T2 · + Analytics'), cap: t('до 55%', 'up to 55%'), desc: t('GA4/GSC read-only: реальний трафік, конверсії, джерела.', 'GA4/GSC read-only: real traffic, conversions, sources.'),
+      steps: [
+        { key: 't2-ga4', label: t('Додайте нас у Google Analytics 4 як «Переглядач» (Viewer)', 'Add us to Google Analytics 4 as “Viewer”'), hint: t('Admin → Property access management → додати email', 'Admin → Property access management → add email'), copy: AUDIT_EMAIL },
+        { key: 't2-gsc', label: t('Надайте доступ до Google Search Console (Full або Restricted)', 'Grant Google Search Console access (Full or Restricted)'), hint: t('Settings → Users and permissions → Add user', 'Settings → Users and permissions → Add user'), copy: AUDIT_EMAIL },
+      ] },
+    { id: 'T3', title: t('T3 · + Бізнес-дані', 'T3 · + Business data'), cap: t('до 78%', 'up to 78%'), desc: t('Вивантаження CRM/ERP: когорти, повторні, юніт-економіка.', 'CRM/ERP exports: cohorts, repeats, unit economics.'),
+      steps: [
+        { key: 't3-orders', label: t('Вивантаження замовлень за 12 міс (CSV/Excel)', 'Orders export for 12 months (CSV/Excel)'), hint: t('дата, сума, ідентифікатор клієнта (можна хеш), товар/категорія', 'date, amount, customer id (hashed ok), product/category') },
+        { key: 't3-repeat', label: t('Дані про повторні покупки / когорти — якщо є', 'Repeat purchases / cohorts data — if available'), hint: t('щоб порахувати LTV і утримання', 'to compute LTV and retention') },
+        { key: 't3-unit', label: t('Юніт-економіка: собівартість, логістика, комісії', 'Unit economics: COGS, logistics, fees'), hint: t('навіть приблизні цифри дадуть точнішу картину', 'even rough figures sharpen the picture') },
+      ] },
+    { id: 'T4', title: t('T4 · Живі доступи', 'T4 · Live access'), cap: t('до 92%', 'up to 92%'), desc: t('Рекламні кабінети, CMS: максимальна достовірність і план.', 'Ad accounts, CMS: maximum confidence and a plan.'),
+      steps: [
+        { key: 't4-meta', label: t('Meta Business: додайте нас як «Аналітик»', 'Meta Business: add us as “Analyst”'), hint: t('Business Settings → People/Partners → додати email', 'Business Settings → People/Partners → add email'), copy: AUDIT_EMAIL },
+        { key: 't4-gads', label: t('Google Ads: надайте доступ на читання', 'Google Ads: grant read access'), hint: t('Tools → Access and security → додати email', 'Tools → Access and security → add email'), copy: AUDIT_EMAIL },
+        { key: 't4-cms', label: t('CMS / адмінка магазину: read-only доступ', 'CMS / store admin: read-only access'), hint: t('окремий обмежений акаунт або експорт налаштувань', 'a separate limited account or a settings export') },
+      ] },
   ];
   // Статус кожного рівня — окремий і зберігається незалежно (керована воронка доступу).
   type St = TierStatus | 'none';
   const initStatus = (): Record<string, TierStatus> => {
     if (rec?.funnel?.tierStatus) return { ...rec.funnel.tierStatus };
-    // міграція зі старого списку запитів
     const legacy: Record<string, TierStatus> = {};
     (rec?.funnel?.deepTiers || []).forEach((id) => { legacy[id] = 'requested'; });
     return legacy;
   };
   const [status, setStatus] = useState<Record<string, TierStatus>>(initStatus);
+  const [checklist, setChecklist] = useState<Record<string, string[]>>(() => ({ ...(rec?.funnel?.tierChecklist || {}) }));
   const [depth, setDepth] = useState(rec?.funnel?.deepDepth || 'T2');
   const [busy, setBusy] = useState('');
+  const [copied, setCopied] = useState('');
   const st = (id: string): St => status[id] || 'none';
   const STLABEL: Record<St, { txt: string; cls: string }> = {
     none: { txt: t('Не запрошено', 'Not requested'), cls: 'none' },
     requested: { txt: t('Очікує підтвердження', 'Awaiting confirmation'), cls: 'wait' },
-    data: { txt: t('Очікує даних', 'Awaiting data'), cls: 'wait' },
+    data: { txt: t('Потрібні дані', 'Data needed'), cls: 'wait' },
     granted: { txt: t('Доступ надано', 'Access granted'), cls: 'ok' },
     rejected: { txt: t('Відхилено', 'Rejected'), cls: 'bad' },
   };
+
+  const cur = DEPTHS.find((d) => d.id === depth)!;
+  const curSt = st(depth);
+  const doneKeys = checklist[depth] || [];
+  const stepDone = (k: string) => doneKeys.includes(k);
+  const allStepsDone = cur.steps.length > 0 && cur.steps.every((s) => doneKeys.includes(s.key));
+
+  const copy = (val: string, key: string) => {
+    try { navigator.clipboard?.writeText(val); setCopied(key); setTimeout(() => setCopied(''), 1400); } catch { /* ignore */ }
+  };
+
+  const persist = async (nextStatus: Record<string, TierStatus>, nextChecklist: Record<string, string[]>, pushEvent?: { id: string; st: St }) => {
+    const history = { ...(rec?.funnel?.tierHistory || {}) };
+    if (pushEvent) {
+      const ev: TierEvent = { st: pushEvent.st, at: new Date().toISOString(), by: 'client' };
+      history[pushEvent.id] = [...(history[pushEvent.id] || []), ev];
+    }
+    await saveDiag(user, { funnel: {
+      ...(rec?.funnel || {}), deepRequested: true, deepAt: new Date().toISOString(), deepDepth: depth,
+      deepTiers: Object.keys(nextStatus), tierStatus: nextStatus, tierChecklist: nextChecklist, tierHistory: history,
+    } });
+    onDone();
+  };
+
+  // Перемикання пункту чек-листа — зберігаємо одразу (прогрес не втрачається).
+  const toggleStep = async (k: string) => {
+    const has = doneKeys.includes(k);
+    const nextList = has ? doneKeys.filter((x) => x !== k) : [...doneKeys, k];
+    const nextChecklist = { ...checklist, [depth]: nextList };
+    setChecklist(nextChecklist);
+    await persist(status, nextChecklist);
+  };
+
+  // Надіслати рівень на перевірку (A): фіксуємо статус requested + подію в таймлайн + лист.
   const request = async (id: string) => {
-    if (st(id) !== 'none' && st(id) !== 'rejected') return;
+    if (st(id) === 'requested' || st(id) === 'granted') return;
     setBusy(id);
     const next: Record<string, TierStatus> = { ...status, [id]: 'requested' };
-    const tiers = Object.keys(next);
-    await sendLead({ source: 'cabinet-access', email: user.email, role: 'cabinet', task: `Запит доступу до рівня аудиту ${id}`, comment: rec?.company?.name ? `Компанія: ${rec.company.name} · ${rec.company.site || ''}` : undefined });
-    await saveDiag(user, { funnel: { ...(rec?.funnel || {}), deepRequested: true, deepAt: new Date().toISOString(), deepDepth: id, deepTiers: tiers, tierStatus: next } });
-    setStatus(next); setBusy(''); onDone();
+    const done = (checklist[id] || []);
+    const tier = DEPTHS.find((d) => d.id === id)!;
+    const provided = tier.steps.length ? `${done.length}/${tier.steps.length} ${t('пунктів доступу відмічено', 'access items marked')}` : t('без доступів (публічні дані)', 'no access needed (public data)');
+    await sendLead({ source: 'cabinet-access', email: user.email, role: 'cabinet', task: `Запит доступу до рівня аудиту ${id}`,
+      comment: `${provided}. ${rec?.company?.name ? `Компанія: ${rec.company.name} · ${rec.company.site || ''}` : ''}` });
+    setStatus(next); setBusy('');
+    await persist(next, checklist, { id, st: 'requested' });
   };
-  const curSt = st(depth);
+
   return (
     <section className="cab-sec">
-      <SecHead kick={t('Доступи до рівнів T1–T4', 'Access to levels T1–T4')} title={t('Запросіть доступ до глибших рівнів', 'Request access to deeper levels')} lead={t('Тут ви запитуєте доступ до додаткових рівнів аудиту й надаєте дані для їх підготовки. Кожен рівень додає джерело даних і підвищує достовірність висновку. Статус кожного рівня — окремий: «не запрошено» → «очікує підтвердження» → «доступ надано».', 'Here you request access to additional audit levels and provide the data to prepare them. Each level adds a data source and raises the confidence of the conclusion. Each level has its own status: “not requested” → “awaiting confirmation” → “access granted”.')} />
+      <SecHead kick={t('Доступи до рівнів T1–T4', 'Access to levels T1–T4')} title={t('Глибші рівні аудиту', 'Deeper audit levels')} lead={t('Кожен рівень додає джерело даних і піднімає достовірність висновку. Оберіть рівень, надайте потрібні доступи за чек-листом — і надішліть на перевірку. Статус кожного рівня рухається окремо, у реальному часі.', 'Each level adds a data source and raises the confidence of the conclusion. Pick a level, grant the required access from the checklist — and send it for review. Each level moves through its own status, in real time.')} />
+
       <div className="cab-depths">
         {DEPTHS.map((d) => { const s = st(d.id); return (
           <button key={d.id} className={`cab-depth${depth === d.id ? ' on' : ''} tier-${STLABEL[s].cls}`} onClick={() => setDepth(d.id)}>
@@ -380,14 +438,98 @@ function Access({ user, rec, onDone, go }: { user: DiagUser; rec: DiagRecord | n
           </button>
         ); })}
       </div>
-      <div className="cab-actions cab-access-act">
-        {curSt === 'none' && <button className="sysx-cta is-primary" onClick={() => request(depth)} disabled={busy === depth}>{busy === depth ? t('Надсилаємо…', 'Sending…') : t(`Запросити доступ до ${depth} →`, `Request access to ${depth} →`)}</button>}
-        {curSt === 'requested' && <span className="cab-saved mono">{t(`✓ Запит на доступ до ${depth} надіслано · статус: очікує підтвердження. Менеджер звʼяжеться на ${user.email}; за потреби запросить дані чи документи для рівня.`, `✓ Access request for ${depth} sent · status: awaiting confirmation. A manager will contact ${user.email}; if needed, we'll request data or documents for the level.`)}</span>}
-        {curSt === 'data' && <span className="cab-saved mono">{t(`⏳ ${depth}: очікуємо ваші дані/документи для підготовки рівня. Перевірте пошту ${user.email}.`, `⏳ ${depth}: awaiting your data/documents to prepare the level. Check ${user.email}.`)}</span>}
-        {curSt === 'granted' && <button className="sysx-cta is-primary" onClick={() => go('deep')}>{t(`Перейти до ${depth} →`, `Go to ${depth} →`)}</button>}
-        {curSt === 'rejected' && <><span className="cab-sub mono">{t(`${depth}: доступ відхилено.`, `${depth}: access declined.`)}{rec?.funnel?.tierReason?.[depth] ? ` ${rec.funnel.tierReason[depth]}` : ''}</span><button className="sysx-cta" onClick={() => request(depth)} disabled={busy === depth}>{t('Запросити повторно →', 'Request again →')}</button></>}
+
+      {/* Панель обраного рівня: таймлайн (C) + чек-лист доступів (A) + дія */}
+      <div className="cab-tier">
+        <div className="cab-tier-head">
+          <b className="cab-tier-h">{cur.title}</b>
+          <span className={`cab-badge mono tst-${STLABEL[curSt].cls}`}>{STLABEL[curSt].txt}</span>
+        </div>
+
+        <TierTimeline status={curSt} history={rec?.funnel?.tierHistory?.[depth]} rejectedReason={rec?.funnel?.tierReason?.[depth]} />
+
+        {cur.steps.length > 0 ? (
+          <div className="cab-clist">
+            <div className="cab-clist-head">
+              <span className="sysx-kick">{t('Що надати для цього рівня', 'What to provide for this level')}</span>
+              <span className="cab-clist-count mono">{doneKeys.filter((k) => cur.steps.some((s) => s.key === k)).length}/{cur.steps.length}</span>
+            </div>
+            <ul className="cab-clist-items">
+              {cur.steps.map((s) => (
+                <li key={s.key} className={`cab-clist-i${stepDone(s.key) ? ' done' : ''}`}>
+                  <button className="cab-check" role="checkbox" aria-checked={stepDone(s.key)} onClick={() => toggleStep(s.key)}>
+                    <span className="cab-check-box">{stepDone(s.key) ? '✓' : ''}</span>
+                    <span className="cab-check-b">
+                      <span className="cab-check-l">{s.label}</span>
+                      {s.hint && <span className="cab-check-h mono">{s.hint}</span>}
+                    </span>
+                  </button>
+                  {s.copy && <button className="cab-copy mono" onClick={() => copy(s.copy!, s.key)} title={t('Скопіювати', 'Copy')}>{copied === s.key ? t('✓ скопійовано', '✓ copied') : s.copy}</button>}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <p className="cab-sub cab-tier-nostep">{t('Цей рівень працює лише з публічними даними — нічого надавати не потрібно, просто надішліть запит.', 'This level uses public data only — nothing to provide, just send the request.')}</p>
+        )}
+
+        <div className="cab-actions cab-access-act">
+          {(curSt === 'none' || curSt === 'data') && (
+            <button className="sysx-cta is-primary" onClick={() => request(depth)} disabled={busy === depth}>
+              {busy === depth ? t('Надсилаємо…', 'Sending…')
+                : cur.steps.length === 0 ? t(`Запросити ${depth} →`, `Request ${depth} →`)
+                : allStepsDone ? t(`Надіслати ${depth} на перевірку →`, `Send ${depth} for review →`)
+                : t(`Надіслати запит (доступи можна додати згодом) →`, `Send request (add access later) →`)}
+            </button>
+          )}
+          {curSt === 'requested' && (
+            <div className="cab-tier-note">
+              <span className="cab-saved mono">{t(`✓ ${depth} на перевірці. Менеджер підтвердить доступи й відповість на ${user.email} — зазвичай протягом 1 робочого дня.`, `✓ ${depth} under review. A manager will confirm access and reply to ${user.email} — usually within 1 business day.`)}</span>
+              {!allStepsDone && cur.steps.length > 0 && <span className="cab-sub mono">{t('Ще не всі доступи відмічені — можна додати їх вище будь-коли.', 'Not all access is marked yet — you can add it above anytime.')}</span>}
+            </div>
+          )}
+          {curSt === 'granted' && <button className="sysx-cta is-primary" onClick={() => go('deep')}>{t(`Перейти до глибокого аудиту →`, `Go to the deep audit →`)}</button>}
+          {curSt === 'rejected' && <button className="sysx-cta" onClick={() => request(depth)} disabled={busy === depth}>{t('Надіслати повторно →', 'Resubmit →')}</button>}
+        </div>
       </div>
     </section>
+  );
+}
+
+/** Таймлайн статусу рівня (C): 4 стадії з датами + SLA/причина. */
+function TierTimeline({ status, history, rejectedReason }: { status: TierStatus | 'none'; history?: TierEvent[]; rejectedReason?: string }) {
+  const t = useT();
+  const STAGES = [
+    { key: 'req', label: t('Запит', 'Request') },
+    { key: 'check', label: t('Перевірка доступів', 'Access review') },
+    { key: 'audit', label: t('Аудит', 'Audit') },
+    { key: 'done', label: t('Готово', 'Done') },
+  ];
+  // мапа статус → активна стадія
+  const activeIdx = status === 'none' ? -1 : status === 'requested' || status === 'data' ? 1 : status === 'granted' ? 3 : 1;
+  const fmt = (iso?: string) => { if (!iso) return ''; try { const d = new Date(iso); return d.toLocaleDateString(t('uk-UA', 'en-GB'), { day: '2-digit', month: 'short' }); } catch { return ''; } };
+  const firstAt = history && history[0]?.at;
+  const lastAt = history && history[history.length - 1]?.at;
+  if (status === 'none') {
+    return <p className="cab-tl-idle mono">{t('Рівень ще не запитано. Надайте доступи нижче та надішліть запит.', 'Level not requested yet. Grant access below and send the request.')}</p>;
+  }
+  return (
+    <div className="cab-tl">
+      <ol className="cab-tl-steps">
+        {STAGES.map((s, i) => (
+          <li key={s.key} className={`cab-tl-step${i <= activeIdx ? ' on' : ''}${i === activeIdx ? ' cur' : ''}${status === 'rejected' && i === 1 ? ' bad' : ''}`}>
+            <span className="cab-tl-dot" />
+            <span className="cab-tl-l">{s.label}</span>
+            {i === 0 && firstAt && <span className="cab-tl-at mono">{fmt(firstAt)}</span>}
+            {i === activeIdx && lastAt && <span className="cab-tl-at mono">{fmt(lastAt)}</span>}
+          </li>
+        ))}
+      </ol>
+      {status === 'requested' && <span className="cab-tl-sla mono">{t('SLA: підтверджуємо доступи протягом 1 робочого дня.', 'SLA: we confirm access within 1 business day.')}</span>}
+      {status === 'data' && <span className="cab-tl-sla mono">{t('Менеджер попросив додаткові дані — доповніть чек-лист і надішліть знову.', 'The manager requested more data — complete the checklist and resend.')}</span>}
+      {status === 'granted' && <span className="cab-tl-sla ok mono">{t('Доступ підтверджено — рівень у роботі.', 'Access confirmed — the level is in progress.')}</span>}
+      {status === 'rejected' && <span className="cab-tl-sla bad mono">{t('Відхилено.', 'Rejected.')}{rejectedReason ? ` ${rejectedReason}` : ''}</span>}
+    </div>
   );
 }
 
