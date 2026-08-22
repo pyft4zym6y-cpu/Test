@@ -815,6 +815,65 @@ function TrafficBlock({ t }: { t: SiteTraffic | null | undefined }) {
   );
 }
 
+/** Брендоване PDF-досьє клієнта — самодостатня друкована сторінка (нова вкладка → друк/зберегти в PDF). */
+function openClientDossier(row: AdminRow) {
+  const esc = (s: unknown) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const rec = row.record || {};
+  const c = rec.company || {};
+  const ex = rec.express;
+  const tiers = Object.entries(row.funnel?.tierStatus || {});
+  const code = row.funnel?.accessCode;
+  const now = new Date().toLocaleString('uk-UA');
+  const kv = (rows: [string, unknown][]) => rows.filter(([, v]) => v != null && v !== '').map(([k, v]) => `<tr><td class="k">${esc(k)}</td><td>${esc(v)}</td></tr>`).join('');
+  const companyRows: [string, unknown][] = [
+    ['Назва', c.name], ['Сфера', c.industry], ['Тип', c.bizType], ['Напрям', c.model],
+    ['Категорії', c.categories], ['Ніша', c.niche], ['Ринки', c.markets], ['Країни', c.countries],
+    ['Оборот (діапазон)', c.sizeRange], ['Виторг €/міс', c.revenue], ['Команда', c.teamSize],
+    ['Точки продажу', c.outlets], ['Канали продажів', (c.channels || []).join(', ')],
+    ['Канали залучення', (c.acqChannels || []).join(', ')], ['Сайт', c.site], ['Платформа', c.platform],
+    ['CRM / ERP', c.crmErp], ['Контакт', c.contactName ? `${c.contactName} ${c.contactPhone || ''}` : ''], ['Коментар', c.notes],
+  ];
+  const inp = ex?.input || {};
+  const exRows: [string, unknown][] = ex ? [
+    ['Пройдено', new Date(ex.at).toLocaleString('uk-UA')],
+    ['Витік / рік', eur(ex.total)], ['Діапазон', `${eur(ex.range[0])}–${eur(ex.range[1])}`],
+    ['Business Health', `${ex.overallHealth}/100`],
+    ['Ключова проблема', sysLabel(ex.primary as SysKey, 'uk')],
+    ['Друга проблема', ex.secondary ? sysLabel(ex.secondary as SysKey, 'uk') : ''],
+    ['Оборот / міс', inp.monthlyRevenue ? eur(inp.monthlyRevenue) : ''],
+    ['Середній чек', inp.aov ? eur(inp.aov) : ''],
+    ['Конверсія', inp.conversion != null ? `${inp.conversion}%` : ''],
+    ['Повторні покупки', inp.repeatRate != null ? `${inp.repeatRate}%` : ''],
+    ['Валова маржа', inp.grossMargin != null ? `${inp.grossMargin}%` : ''],
+    ['CAC', inp.cac ? eur(inp.cac) : ''], ['Джерело', ex.source],
+  ] : [];
+  const tierRows = tiers.map(([tid, st]) => `<tr><td class="k">${esc(tid)}</td><td>${esc(ST[st as TierStatus]?.txt || st)}</td></tr>`).join('');
+  const html = `<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>Досьє — ${esc(row.email)}</title><style>
+@page{margin:16mm}*{box-sizing:border-box}body{font-family:"IBM Plex Sans","Segoe UI",system-ui,Arial,sans-serif;color:#141210;margin:0;font-size:13px;line-height:1.5}
+.bar{height:8px;background:#F5301C}.wrap{padding:26px 30px}
+.top{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #141210;padding-bottom:12px;margin-bottom:18px}
+.logo{font-weight:800;font-size:22px}.logo span{color:#F5301C}.meta{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#6B675E;text-align:right}
+h1{font-size:18px;margin:2px 0 2px}.sub{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B675E}
+h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#F5301C;margin:22px 0 8px;border-bottom:1px solid #E3D9C0;padding-bottom:4px}
+table{border-collapse:collapse;width:100%}td{border-bottom:1px solid #EEE7D6;padding:6px 8px;vertical-align:top}td.k{width:210px;color:#6B675E;font-weight:600}
+.money{font-size:26px;font-weight:800;margin:4px 0}.money i{font-size:13px;color:#6B675E;font-weight:500;font-style:normal}
+.empty{color:#9a9488;font-style:italic}.code{font-family:"IBM Plex Mono",monospace;font-weight:700;background:#FFF6C2;padding:3px 8px;border:1px solid #E3D9C0}
+.foot{margin-top:26px;padding-top:12px;border-top:1px solid #E3D9C0;color:#9a9488;font-size:10.5px}
+@media print{.noprint{display:none}}
+</style></head><body><div class="bar"></div><div class="wrap">
+<div class="top"><div><div class="logo">WEEXP<span>.</span></div><div class="sub">Досьє клієнта · конфіденційно</div></div>
+<div class="meta">${esc(row.email)}<br>сформовано ${esc(now)}${code ? `<br>код: <span class="code">${esc(code)}</span>` : ''}</div></div>
+<button class="noprint" onclick="window.print()" style="margin-bottom:14px;background:#F5301C;color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer">🖨 Друк / зберегти в PDF</button>
+<h2>Профіль компанії</h2>${companyRows.some(([, v]) => v) ? `<table>${kv(companyRows)}</table>` : '<p class="empty">Профіль не заповнено.</p>'}
+<h2>Експрес-аудит</h2>${ex ? `<p class="money">${esc(eur(ex.total))} <i>/ рік · витік</i></p><table>${kv(exRows)}</table>` : '<p class="empty">Експрес-аудит не проходив.</p>'}
+<h2>Статуси доступів T1–T4</h2>${tierRows ? `<table>${tierRows}</table>` : '<p class="empty">Запитів не було.</p>'}
+<div class="foot">WEEXP — Commerce OS · weexp.agency · hello@weexp.agency · Документ містить конфіденційні дані клієнта. Не для розповсюдження.</div>
+</div></body></html>`;
+  const w = window.open('', '_blank');
+  if (w) { w.document.write(html); w.document.close(); }
+  else toast('Дозвольте спливаючі вікна, щоб відкрити досьє', 'err');
+}
+
 function UserDetail({ row, onClose, openFile, onStatus, onDelete, busy }: { row: AdminRow; onClose: () => void; openFile: (p: string) => void; onStatus: (userId: string, tier: string, status: TierStatus) => void; onDelete: (userId: string, email: string) => void; busy: string }) {
   const rec = row.record || {};
   const company = rec.company;
@@ -827,7 +886,10 @@ function UserDetail({ row, onClose, openFile, onStatus, onDelete, busy }: { row:
       <aside className="adm-drawer" onClick={(e) => e.stopPropagation()}>
         <div className="adm-drawer-head">
           <a className="adm-email adm-mail" href={`mailto:${row.email}`}>{row.email}</a>
-          <button className="adm-x" onClick={onClose} aria-label="Закрити" title="Закрити">✕</button>
+          <div className="adm-drawer-head-act">
+            <button className="mc-btn" onClick={() => openClientDossier(row)} title="Сформувати PDF-досьє клієнта">📄 Досьє PDF</button>
+            <button className="adm-x" onClick={onClose} aria-label="Закрити" title="Закрити">✕</button>
+          </div>
         </div>
         <div className="adm-drawer-body">
           {code && (

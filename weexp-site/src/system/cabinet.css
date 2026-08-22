@@ -22,6 +22,7 @@
 
 .cab-side-foot-row { display: flex; align-items: center; gap: 8px; }
 .cab-side-foot-row .cab-signout { flex: 1 1 auto; }
+.adm-drawer-head-act { display: flex; align-items: center; gap: 8px; }
 
 /* ═══ Темна тема кабінету/адмінки (клас .is-dark на корені) ═══
    Інвертуємо семантичні токени: поверхні → темні, чорнило → світле. Токени
