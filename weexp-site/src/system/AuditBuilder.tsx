@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  loadTemplate, saveTemplate, uid, Q_TYPES, CLIENT_ROLES, FRAMEWORK_PRESETS, frameworkFor,
+  loadTemplate, saveTemplate, uid, Q_TYPES, CLIENT_ROLES, FRAMEWORK_PRESETS, frameworkFor, customerArchetypeBlock,
   type AuditTemplate, type Block, type Question, type QType,
 } from './auditTemplate';
 
@@ -25,6 +25,7 @@ export function AuditBuilder() {
   const move = <T,>(arr: T[], i: number, dir: -1 | 1) => { const j = i + dir; if (j < 0 || j >= arr.length) return arr; [arr[i], arr[j]] = [arr[j], arr[i]]; return arr; };
 
   const addBlock = () => patch((t) => { t.blocks.push({ key: uid('b'), title: 'Новий блок', questions: [] }); return t; });
+  const addArchetype = () => patch((t) => { const n = t.blocks.filter((b) => /Клієнт — CA/.test(b.title)).length + 1; t.blocks.push(customerArchetypeBlock(n)); return t; });
   const delBlock = (bi: number) => patch((t) => { t.blocks.splice(bi, 1); return t; });
   const moveBlock = (bi: number, d: -1 | 1) => patch((t) => { move(t.blocks, bi, d); return t; });
   const setBlock = (bi: number, k: keyof Block, v: unknown) => patch((t) => { (t.blocks[bi] as Record<string, unknown>)[k] = v; return t; });
@@ -119,7 +120,10 @@ export function AuditBuilder() {
             </div>
           </div>
         ))}
-        <button className="sysx-cta" onClick={addBlock}>+ Додати блок</button>
+        <div className="adm-head-r">
+          <button className="sysx-cta" onClick={addArchetype} title="Додати портрет аудиторії (Customer Archetype) зі своїм набором питань">+ Архетип клієнта (CA)</button>
+          <button className="sysx-cta" onClick={addBlock}>+ Додати блок</button>
+        </div>
       </div>
     </section>
   );

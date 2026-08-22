@@ -209,6 +209,22 @@ export const FRAMEWORK_PRESETS: { id: string; label: string; modules: string[] }
   { id: 'omnichannel', label: 'Omnichannel retail', modules: ['company', 'finance', 'commercial', 'customer', 'brand', 'marketing', 'seo', 'ux', 'ops', 'crm', 'analytics', 'tech', 'people', 'processes', 'strategy', 'competition'] },
   { id: 'saas', label: 'SaaS / послуги', modules: ['company', 'strategy', 'finance', 'customer', 'brand', 'marketing', 'seo', 'ux', 'crm', 'analytics', 'tech', 'people', 'processes', 'competition'] },
 ];
+/** Свіжий блок «Customer Archetype» (CA1…CAn) — окремий набір питань під портрет аудиторії. */
+export function customerArchetypeBlock(n: number): Block {
+  const key = uid('ca');
+  const items: [string, string, QType, (Partial<Question> | undefined)?][] = [
+    ['who', `Хто цей клієнт (CA${n}): demographics / business profile`, 'longtext', { required: true }],
+    ['geo', 'Географія, дохід / розмір бізнесу', 'text'],
+    ['jtbd', 'Потреби та jobs-to-be-done', 'longtext'],
+    ['pains', 'Болі, мотивація, барʼєри, заперечення', 'longtext'],
+    ['criteria', 'Критерії вибору та тригери покупки', 'text'],
+    ['value', 'Частота покупки, середній чек, LTV', 'text'],
+    ['retention', 'Retention / churn / preferred channels', 'text'],
+    ['journey', 'Customer journey і post-purchase поведінка', 'longtext'],
+  ];
+  return { key, cat: 'D', title: `Клієнт — CA${n}`, role: 'Маркетинг', questions: items.map(([k, label, type, extra]) => ({ key: `${key}_${k}`, label, type, ...(extra || {}) })) };
+}
+
 /** Побудувати шаблон під пресет: модулі AUDIT_FRAMEWORK у порядку пресету. */
 export function frameworkFor(presetId: string): AuditTemplate {
   const preset = FRAMEWORK_PRESETS.find((p) => p.id === presetId) || FRAMEWORK_PRESETS[0];
