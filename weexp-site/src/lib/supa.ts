@@ -259,8 +259,13 @@ export async function listLeads(): Promise<LeadRow[]> {
 /** Змінити стадію ліда в CRM. */
 export async function setLeadStatus(id: string, status: LeadStatus): Promise<{ ok: boolean; error?: string }> {
   if (!CONFIGURED) return { ok: false, error: 'not_configured' };
-  try { const { error } = await supabase.from('leads').update({ status }).eq('id', id); return error ? { ok: false, error: error.message } : { ok: true }; }
-  catch (e) { return { ok: false, error: String(e) }; }
+  try {
+    // .select() повертає оновлені рядки: якщо порожньо — RLS відхилив запис (немає UPDATE-політики).
+    const { data, error } = await supabase.from('leads').update({ status }).eq('id', id).select('id');
+    if (error) return { ok: false, error: error.message };
+    if (!data || data.length === 0) return { ok: false, error: 'Оновлення не застосовано — додайте UPDATE-політику для адмінів на таблицю leads (RLS). Див. чат/INFRA.' };
+    return { ok: true };
+  } catch (e) { return { ok: false, error: String(e) }; }
 }
 /** Менеджер проставляє статус рівня клієнту (+ причину); подія лягає в таймлайн. */
 export async function setTierStatusFor(userId: string, tier: string, status: TierStatus, reason?: string): Promise<{ ok: boolean; error?: string }> {
