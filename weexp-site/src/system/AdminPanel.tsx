@@ -9,6 +9,7 @@ import {
   type PmDirectory, type PmSpecialist, type PmRoleRate,
 } from '@/lib/supa';
 import { eur, sysLabel, actionText, type SysKey } from './lossModel';
+import { toast } from '@/lib/toast';
 import { AuditBuilder } from './AuditBuilder';
 import { loadTemplate, uid, Q_TYPES, type AuditTemplate, type Question } from './auditTemplate';
 import './system.css';
@@ -151,8 +152,8 @@ export function AdminPanel() {
     setBusy(`${userId}:${tier}`);
     const res = await setTierStatusFor(userId, tier, status, reason);
     setBusy('');
-    if (!res.ok) { alert('Не вдалося: ' + (res.error || '')); return; }
-    load();
+    if (!res.ok) { toast('Не вдалося: ' + (res.error || ''), 'err'); return; }
+    toast('✓ Статус оновлено'); load();
   };
   // «Надати» — одразу; «Потрібні дані» / «Відхилити» — через модалку з причиною.
   const setStatus = (userId: string, tier: string, status: TierStatus) => {
@@ -164,24 +165,24 @@ export function AdminPanel() {
     setBusy(`${userId}:${tier}`);
     const res = await clearTierStatusFor(userId, tier);
     setBusy('');
-    if (!res.ok) { alert('Не вдалося: ' + (res.error || '')); return; }
-    load();
+    if (!res.ok) { toast('Не вдалося: ' + (res.error || ''), 'err'); return; }
+    toast('✓ Статус оновлено'); load();
   };
   const openFile = async (path: string) => { const url = await signTierFile(path); if (url) window.open(url, '_blank'); };
   const moveLead = async (id: string, status: LeadStatus) => {
     setBusy('lead:' + id);
     const res = await setLeadStatus(id, status);
     setBusy('');
-    if (!res.ok) { alert('Не вдалося: ' + (res.error || '')); return; }
-    listLeads().then(setLeads);
+    if (!res.ok) { toast('Не вдалося: ' + (res.error || ''), 'err'); return; }
+    toast('✓ Стадію змінено'); listLeads().then(setLeads);
   };
   const removeLead = async (id: string) => {
     if (!window.confirm('Видалити цю заявку назавжди? Дію не можна скасувати.')) return;
     setBusy('del:' + id);
     const res = await deleteLead(id);
     setBusy('');
-    if (!res.ok) { alert('Не вдалося видалити: ' + (res.error || '')); return; }
-    setLeads((ls) => (ls || []).filter((l) => l.id !== id));
+    if (!res.ok) { toast('Не вдалося видалити: ' + (res.error || ''), 'err'); return; }
+    toast('✓ Заявку видалено'); setLeads((ls) => (ls || []).filter((l) => l.id !== id));
     setOpenLead(null);
   };
   const removeUser = async (userId: string, email: string) => {
@@ -189,8 +190,8 @@ export function AdminPanel() {
     setBusy('del:' + userId);
     const res = await deleteDiagnostics(userId);
     setBusy('');
-    if (!res.ok) { alert('Не вдалося видалити: ' + (res.error || '')); return; }
-    setRows((rs) => (rs || []).filter((x) => x.userId !== userId));
+    if (!res.ok) { toast('Не вдалося видалити: ' + (res.error || ''), 'err'); return; }
+    toast('✓ Клієнта видалено'); setRows((rs) => (rs || []).filter((x) => x.userId !== userId));
     setOpenUser(null);
   };
 

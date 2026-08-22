@@ -13,6 +13,7 @@ import { getExpressAudit, clearExpressAudit, buildJourney, syncExpressToAccount,
 import { eur } from './lossModel';
 import { sendLead } from '@/lib/leads';
 import { isValidCode } from '@/lib/access';
+import { toast } from '@/lib/toast';
 import { useT, useLp } from '@/i18n';
 import './system.css';
 import './cabinet.css';
@@ -427,7 +428,7 @@ function CompanyForm({ user, rec, onSaved }: { user: DiagUser; rec: DiagRecord |
   useEffect(() => { setC({ ...EMPTY_COMPANY, ...(rec?.company || {}) }); }, [rec]);
   const set = (k: keyof CompanyProfile) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setC((s) => ({ ...s, [k]: e.target.value }));
   const toggle = (k: 'channels' | 'acqChannels', v: string) => setC((s) => { const a = s[k] || []; return { ...s, [k]: a.includes(v) ? a.filter((x) => x !== v) : [...a, v] }; });
-  const save = async () => { setSaving(true); await saveDiag(user, { company: c }); setSaving(false); setSaved(true); onSaved(); setTimeout(() => setSaved(false), 1800); };
+  const save = async () => { setSaving(true); await saveDiag(user, { company: c }); setSaving(false); setSaved(true); onSaved(); toast(t('✓ Профіль компанії збережено', '✓ Company profile saved')); setTimeout(() => setSaved(false), 1800); };
   const filled = [c.name, c.industry, c.bizType, c.markets, c.categories, c.sizeRange, c.teamSize, c.platform, c.crmErp].filter(Boolean).length;
 
   return (
