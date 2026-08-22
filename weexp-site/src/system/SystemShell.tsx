@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, Link, Outlet, useLocation } from 'react-router-dom';
 import { SiteFooter } from '@/system/SiteFooter';
+import { CookieConsent } from '@/system/CookieConsent';
 import { RouteBreadcrumbs } from '@/system/Breadcrumbs';
 import { useT, useLp, useLang, stripLang } from '@/i18n';
 import './system.css';
@@ -124,6 +125,7 @@ export function SystemShell() {
       <RouteBreadcrumbs />
       <Outlet />
       <SiteFooter />
+      <CookieConsent />
     </div>
   );
 }

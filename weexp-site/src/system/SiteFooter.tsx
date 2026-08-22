@@ -55,6 +55,11 @@ export function SiteFooter() {
           </span>
         </div>
       </div>
+      <div className="sfoot-trust mono">
+        <span className="sfoot-trust-i">🔒 {t('SSL / захищене зʼєднання', 'SSL / secure connection')}</span>
+        <span className="sfoot-trust-i">🇪🇺 GDPR-ready</span>
+        <a className="sfoot-trust-i sfoot-trust-a" href="https://securityheaders.com/?q=https%3A%2F%2Fweexp.agency&followRedirects=on" target="_blank" rel="noopener noreferrer" title="Security Headers scan">🛡 {t('Security Headers', 'Security Headers')} <i aria-hidden="true">↗</i></a>
+      </div>
       <div className="sfoot-bottom mono">
         <span>© {year} WEEXP</span>
         {DMCA_ID && (
