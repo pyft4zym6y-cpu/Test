@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  loadTemplate, saveTemplate, uid, Q_TYPES, CLIENT_ROLES,
+  loadTemplate, saveTemplate, uid, Q_TYPES, CLIENT_ROLES, AUDIT_FRAMEWORK,
   type AuditTemplate, type Block, type Question, type QType,
 } from './auditTemplate';
 
@@ -33,6 +33,12 @@ export function AuditBuilder() {
   const moveQ = (bi: number, qi: number, d: -1 | 1) => patch((t) => { move(t.blocks[bi].questions, qi, d); return t; });
   const setQ = (bi: number, qi: number, k: keyof Question, v: unknown) => patch((t) => { (t.blocks[bi].questions[qi] as Record<string, unknown>)[k] = v; return t; });
 
+  const loadFramework = () => {
+    if (!confirm('Замінити поточні блоки повним фреймворком (16 модулів A–P)? Поточні незбережені блоки буде втрачено. Зберегти зміни треба окремо кнопкою «Зберегти нову версію».')) return;
+    setTpl((t) => ({ version: t?.version || 1, blocks: structuredClone(AUDIT_FRAMEWORK.blocks) }));
+    setMsg('Завантажено фреймворк (16 модулів). Перевірте й натисніть «Зберегти нову версію».');
+  };
+
   const save = async () => {
     setBusy(true); setMsg('');
     const next = { ...tpl, version: (tpl.version || 1) + 1 };
@@ -46,7 +52,10 @@ export function AuditBuilder() {
     <section className="adm-sec">
       <div className="adm-sec-head">
         <div><h1 className="sysx-display adm-h1">Конструктор аудиту</h1><span className="mono adm-hint">Активна версія v{tpl.version} · {tpl.blocks.length} блоків</span></div>
-        <button className="sysx-cta is-primary" onClick={save} disabled={busy}>{busy ? 'Зберігаємо…' : 'Зберегти нову версію →'}</button>
+        <div className="adm-head-r">
+          <button className="sysx-cta" onClick={loadFramework} title="Замінити блоки повним C-level фреймворком (16 модулів A–P)">↺ Завантажити фреймворк</button>
+          <button className="sysx-cta is-primary" onClick={save} disabled={busy}>{busy ? 'Зберігаємо…' : 'Зберегти нову версію →'}</button>
+        </div>
       </div>
       {msg && <p className="adm-code-banner-l mono" style={{ color: 'var(--ok,#1F9D55)' }}>{msg}</p>}
       <p className="adm-hint mono">Клієнт бачить це як єдину послугу «Глибокий аудит». Роль на блоці обмежує, хто з команди заказника може його заповнювати. Умовна логіка ховає питання, поки відповідь на інше не збіжиться.</p>
@@ -55,6 +64,7 @@ export function AuditBuilder() {
         {tpl.blocks.map((b, bi) => (
           <div key={b.key} className="ab-block">
             <div className="ab-block-head">
+              {b.cat && <span className="ab-cat mono" title="Модуль">{b.cat}</span>}
               <input className="ab-inp ab-title" value={b.title} onChange={(e) => setBlock(bi, 'title', e.target.value)} placeholder="Назва блоку" />
               <label className="ab-role mono">роль
                 <select value={b.role || ''} onChange={(e) => setBlock(bi, 'role', e.target.value || undefined)}>

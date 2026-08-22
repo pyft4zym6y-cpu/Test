@@ -57,6 +57,7 @@
 .adm-team-row2 { display: grid; grid-template-columns: 2fr 1.3fr 1.2fr auto; gap: 12px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
 .adm-team-acts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 .ab-sel.sm { padding: 4px 8px; font-size: 12px; }
+.ab-cat { flex: 0 0 auto; display: inline-grid; place-items: center; width: 28px; height: 28px; background: var(--deep); color: var(--cream); font-weight: 800; font-size: 13px; border-radius: 6px; }
 @media (max-width: 640px) { .adm-team-row2 { grid-template-columns: 1fr auto; } .adm-team-row2 > :nth-child(3) { display: none; } }
 
 /* ═══ Темна тема кабінету/адмінки (клас .is-dark на корені) ═══
