@@ -459,9 +459,29 @@
 /* Доказовість кейсів: провенанс цифр + (за наявності) реальний відгук */
 .cf-verified { margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; letter-spacing: .02em; color: var(--ok-strong); background: rgba(23,122,67,.08); border: 1px solid rgba(23,122,67,.24); border-radius: 100px; padding: 5px 11px; }
 .cf-verified span { font-weight: 700; }
+.cf-team { margin-top: 12px; }
+.cf-team-h { display: block; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--graphite); margin-bottom: 7px; }
+.cf-team-roles { display: flex; flex-wrap: wrap; gap: 6px; }
+.cf-team-role { font-size: 11px; letter-spacing: .01em; color: var(--deep); background: color-mix(in srgb, var(--pure-white) 55%, transparent); border: 1px solid var(--line); border-radius: 100px; padding: 4px 10px; }
 .cf-quote { margin: 12px 0 0; padding: 12px 16px; border-left: 3px solid var(--data); background: color-mix(in srgb, var(--pure-white) 60%, transparent); border-radius: 0 10px 10px 0; }
 .cf-quote p { margin: 0 0 6px; font-size: 14px; line-height: 1.45; font-style: italic; color: var(--deep); }
 .cf-quote cite { font-size: 11px; font-style: normal; color: var(--graphite); }
+
+/* ── Прозорість під стрічкою доказів (/proof) ── */
+.proof-trust { background: var(--warm-white, #FAF5E9); border-top: 1px solid var(--line); padding: clamp(56px, 8vw, 104px) 0; }
+.proof-trust-in { max-width: 900px; margin: 0 auto; padding: 0 clamp(18px, 5vw, 40px); }
+.proof-trust-h { font-size: clamp(28px, 4.6vw, 52px); margin: 12px 0 12px; }
+.proof-trust-lead { max-width: 60ch; margin-bottom: clamp(28px, 4vw, 44px); }
+.proof-method { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: clamp(28px, 4vw, 44px); }
+.proof-method-item { background: var(--pure-white); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+.proof-method-k { display: block; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--data); margin-bottom: 8px; }
+.proof-method-v { font-size: 14px; line-height: 1.5; color: var(--deep); margin: 0; }
+.proof-trust-faq { margin-bottom: clamp(28px, 4vw, 44px); }
+.proof-ref { background: var(--deep); color: #e7eae7; border-radius: 16px; padding: clamp(22px, 3.5vw, 34px); }
+.proof-ref-t { font-size: clamp(18px, 2.6vw, 24px); font-weight: 700; color: #fff; margin: 0 0 6px; }
+.proof-ref-s { font-size: 14px; line-height: 1.5; color: #b7c0c6; margin: 0 0 18px; max-width: 56ch; }
+.proof-ref .sysx-cta:not(.is-primary) { color: #e7eae7; border-color: rgba(231,234,231,.34); }
+@media (max-width: 640px) { .proof-method { grid-template-columns: 1fr; } }
 
 /* ── Механіка довіри (метод · процес · платформи · реальні сигнали) ── */
 .cred { background: var(--deep); color: #cdd2d9; padding: clamp(56px, 8vw, 110px) 0; }

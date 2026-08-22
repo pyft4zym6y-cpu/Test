@@ -1006,3 +1006,40 @@ export const STAGES: Stage[] = ['Diagnose', 'Build', 'Scale', 'Independence'];
 export function localizeCase(c: CaseStudy, lang: Lang): CaseStudy {
   return lang === 'en' && c.en ? { ...c, ...c.en } : c;
 }
+
+/**
+ * Ролевий склад команди кейсу — детермінований, виводиться зі списку систем
+ * (`systems`), яких торкнувся кейс. Не вигадуємо конкретних людей (кейси
+ * анонімні): показуємо, які ролі/компетенції були задіяні. Кожен кейс веде
+ * Head of E-commerce (лід доставки результату). Закриває зауваження «незрозуміло,
+ * хто працює над проєктом» без розкриття персональних даних.
+ */
+const ROLE_UK: Record<SystemKey, string> = {
+  strategy: 'E-commerce стратег',
+  commercial: 'Performance / комерція',
+  customer: 'Retention / CRM',
+  experience: 'UX / CRO',
+  operations: 'Операції та процеси',
+  data: 'Аналітика та BI',
+  org: 'Оргдизайн і команда',
+  expansion: 'Вихід на ринки',
+};
+const ROLE_EN: Record<SystemKey, string> = {
+  strategy: 'E-commerce Strategist',
+  commercial: 'Performance / Commerce',
+  customer: 'Retention / CRM',
+  experience: 'UX / CRO',
+  operations: 'Operations & Process',
+  data: 'Analytics & BI',
+  org: 'Org Design & Team',
+  expansion: 'Market Expansion',
+};
+
+export function caseTeam(c: CaseStudy, lang: Lang): string[] {
+  const map = lang === 'en' ? ROLE_EN : ROLE_UK;
+  const lead = lang === 'en' ? 'Head of E-commerce (delivery lead)' : 'Head of E-commerce (лід проєкту)';
+  const seen = new Set<string>();
+  const roles: string[] = [];
+  for (const k of c.systems) { const r = map[k]; if (r && !seen.has(r)) { seen.add(r); roles.push(r); } }
+  return [lead, ...roles];
+}
