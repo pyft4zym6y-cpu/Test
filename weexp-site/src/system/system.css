@@ -2117,9 +2117,11 @@
 /* Над мобільною таб-панеллю (.sysh-tabs), щоб не перекривати навігацію */
 @media (max-width: 860px) {
   .ckc { bottom: calc(62px + env(safe-area-inset-bottom)); padding: 10px; }
-  .ckc-in { flex-direction: column; align-items: stretch; gap: 12px; padding: 14px; }
-  .ckc-actions { justify-content: stretch; }
-  .ckc-btn { flex: 1; }
+  .ckc-in { flex-wrap: wrap; align-items: center; gap: 10px 10px; padding: 13px 14px; }
+  .ckc-ic { font-size: 18px; }
+  .ckc-text { flex: 1 1 auto; font-size: 12.5px; }
+  .ckc-actions { flex: 0 0 100%; order: 3; justify-content: stretch; }
+  .ckc-btn { flex: 1; padding: 10px 12px; }
 }
 
 /* Trust-строка у підвалі */
