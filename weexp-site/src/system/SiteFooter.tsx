@@ -65,6 +65,8 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="sfoot-trust mono">
+        <span className="sfoot-trust-i">🇺🇦 {t('Зроблено в Україні', 'Made in Ukraine')}</span>
+        <span className="sfoot-trust-i">⚡ {t('Відповідь ≤ 1 робочого дня', 'Reply ≤ 1 business day')}</span>
         <span className="sfoot-trust-i">🔒 {t('SSL / захищене зʼєднання', 'SSL / secure connection')}</span>
         <span className="sfoot-trust-i">🇪🇺 GDPR-ready</span>
         {SHOPIFY_PARTNER && <a className="sfoot-trust-i sfoot-trust-a" href="https://www.shopify.com/partners" target="_blank" rel="noopener noreferrer" title="Shopify Partner">🛍 Shopify Partner <i aria-hidden="true">↗</i></a>}

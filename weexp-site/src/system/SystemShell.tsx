@@ -75,6 +75,8 @@ export function SystemShell() {
 
   return (
     <div className="sysh">
+      <a href="#main-content" className="skip-link">{t('Перейти до вмісту', 'Skip to content')}</a>
+      <ReadingProgress />
       <span ref={sentinel} className="sysh-sentinel" aria-hidden="true" />
       <header ref={nav} className="sysh-nav">
         <Link to={lp('/')} className="sysh-brand"><b>WEEXP</b><span className="mono">system</span></Link>
@@ -123,9 +125,29 @@ export function SystemShell() {
       </nav>
 
       <RouteBreadcrumbs />
-      <Outlet />
+      <div id="main-content" tabIndex={-1}><Outlet /></div>
       <SiteFooter />
       <CookieConsent />
     </div>
   );
+}
+
+/** Тонка смуга прогресу читання зверху сторінки (оновлюється на скролі). */
+function ReadingProgress() {
+  const [p, setP] = useState(0);
+  useEffect(() => {
+    let raf = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const h = document.documentElement.scrollHeight - window.innerHeight;
+        setP(h > 0 ? Math.min(100, Math.max(0, (window.scrollY / h) * 100)) : 0);
+      });
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); };
+  }, []);
+  return <div className="read-prog" aria-hidden="true"><span style={{ transform: `scaleX(${p / 100})` }} /></div>;
 }

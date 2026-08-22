@@ -2129,3 +2129,13 @@
 .sfoot-trust-i { display: inline-flex; align-items: center; gap: 4px; }
 .sfoot-trust-a { text-decoration: none; color: inherit; transition: opacity .15s; }
 .sfoot-trust-a:hover { opacity: .7; }
+
+/* Skip-to-content (доступність) */
+.skip-link { position: fixed; top: -60px; left: 12px; z-index: 200; background: #141210; color: #FAF5E9; padding: 10px 16px; border: 2.5px solid #FFD200; font-weight: 700; font-size: 13px; text-decoration: none; transition: top .15s; }
+.skip-link:focus { top: 12px; outline: none; }
+
+/* Прогрес читання */
+.read-prog { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 100; pointer-events: none; background: transparent; }
+.read-prog span { display: block; height: 100%; width: 100%; transform-origin: left; transform: scaleX(0); background: #F5301C; transition: transform .08s linear; }
+@media print { .read-prog, .skip-link { display: none; } }
+#main-content:focus { outline: none; }
