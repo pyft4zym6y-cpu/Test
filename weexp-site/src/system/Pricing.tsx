@@ -100,6 +100,27 @@ export function Pricing() {
     '@context': 'https://schema.org', '@type': 'FAQPage',
     mainEntity: FAQ.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
   });
+  // Offer-каталог трьох форматів співпраці (реальні, відкриті ціни — без вигадок).
+  useJsonLd('pricing-offers', {
+    '@context': 'https://schema.org', '@type': 'Service',
+    name: 'WEEXP — Commerce OS', serviceType: 'E-commerce operations & growth',
+    provider: { '@type': 'Organization', '@id': 'https://weexp.agency/#org', name: 'WEEXP' },
+    areaServed: ['UA', 'EU', 'US'],
+    hasOfferCatalog: {
+      '@type': 'OfferCatalog', name: t('Формати співпраці', 'Cooperation formats'),
+      itemListElement: [
+        { '@type': 'Offer', name: t('Аудит', 'Audit'), priceCurrency: 'USD', price: '2900',
+          priceSpecification: { '@type': 'PriceSpecification', minPrice: '2900', maxPrice: '4900', priceCurrency: 'USD' },
+          description: t('Аудит інтернет-магазину або відділу e-commerce, 4–6 тижнів.', 'Online-store or e-commerce department audit, 4–6 weeks.') },
+        { '@type': 'Offer', name: t('Консалтинг і супровід', 'Consulting & advisory'), priceCurrency: 'USD', price: '50',
+          priceSpecification: { '@type': 'UnitPriceSpecification', price: '50', priceCurrency: 'USD', unitCode: 'HUR', referenceQuantity: { '@type': 'QuantitativeValue', value: '30', unitCode: 'HUR' } },
+          description: t('Погодинно, мінімум 30 год/міс ($1,500/міс).', 'Hourly, minimum 30 hrs/mo ($1,500/mo).') },
+        { '@type': 'Offer', name: t('Управління під ключ', 'Managed delivery'), priceCurrency: 'USD', price: '4900',
+          priceSpecification: { '@type': 'PriceSpecification', minPrice: '4900', priceCurrency: 'USD' },
+          description: t('Трансформація під ключ, 6–12 місяців, від $4,900/міс.', 'Turnkey transformation, 6–12 months, from $4,900/mo.') },
+      ],
+    },
+  });
 
   return (
     <section className="sysx pric" aria-label={t('Формати та ціни', 'Pricing & formats')}>
