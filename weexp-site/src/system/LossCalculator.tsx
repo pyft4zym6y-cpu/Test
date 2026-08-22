@@ -82,6 +82,7 @@ export function LossCalculator() {
   const [oEmail, setOEmail] = useState('');
   const [oPhone, setOPhone] = useState('');
   const [oMsg, setOMsg] = useState('');
+  const [oHp, setOHp] = useState(''); // honeypot — у людей завжди порожнє
   const [oErr, setOErr] = useState('');
   // Заявка йде саме за результатом експрес-аудиту — тип фіксований, без «вибору послуги».
   const REQUEST_LABEL = t('Заявка за експрес-аудитом', 'Request from express audit');
@@ -114,6 +115,7 @@ export function LossCalculator() {
     setLeadBusy(true);
     await sendLead({
       source: 'calc-order-audit', role: 'calc', name: oName.trim() || undefined, email: oEmail.trim(), phone: oPhone.trim() || undefined,
+      company_website: oHp,
       task: REQUEST_LABEL,
       comment: `${oMsg.trim() ? oMsg.trim() + ' · ' : ''}${t('Витік', 'Leak')}: ${eur(res.total)}/${t('рік', 'yr')} · bottleneck: ${sysLabel(res.primary, lang)} · Health ${res.overallHealth}/100`,
       calc: `total=${res.total};range=${res.range[0]}-${res.range[1]};bottleneck=${res.primary};health=${res.overallHealth}`,
@@ -344,6 +346,7 @@ ${projRows ? `<div class="card"><h2>${esc(t('Зараз → куди можем�
                   <label className="sysx-inp"><span className="sysx-inp-l">{t('Телефон', 'Phone')}</span><input type="tel" value={oPhone} onChange={(e) => setOPhone(e.target.value)} placeholder="+380…" /></label>
                 </div>
                 <label className="sysx-inp"><span className="sysx-inp-l">{t('Коментар (необовʼязково)', 'Note (optional)')}</span><input value={oMsg} onChange={(e) => setOMsg(e.target.value)} placeholder={t('Що для вас важливо?', 'What matters most to you?')} /></label>
+                <input name="company_website" tabIndex={-1} autoComplete="off" aria-hidden="true" value={oHp} onChange={(e) => setOHp(e.target.value)} style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }} />
                 <HumanSummary res={res} lang={lang} t={t} />
                 {oErr && <span className="s3-err mono">{oErr}</span>}
                 <div className="sysx-calc-actions">
