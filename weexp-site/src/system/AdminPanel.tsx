@@ -1205,8 +1205,10 @@ function TeamManager({ selfEmail }: { selfEmail: string }) {
     setMsg('✓ Готово'); toast('✓ Готово'); load(); return true;
   };
   const create = async () => {
-    if (!nEmail.trim() || nPass.length < 8) { setMsg('Вкажіть email і пароль (мін. 8 символів)'); return; }
-    if (await run('create', { email: nEmail.trim(), password: nPass, role: nRole }, 'create')) { setNEmail(''); setNPass(''); }
+    if (!nEmail.trim()) { setMsg('Вкажіть email'); return; }
+    if (nPass && nPass.length < 8) { setMsg('Пароль — мінімум 8 символів (або залиште порожнім, щоб призначити роль існуючому)'); return; }
+    // Порожній пароль → призначити роль існуючому акаунту; з паролем → створити новий.
+    if (await run('create', { email: nEmail.trim(), password: nPass || undefined, role: nRole }, 'create')) { setNEmail(''); setNPass(''); }
   };
   const invite = async () => {
     if (!nEmail.trim()) { setMsg('Вкажіть email'); return; }
@@ -1223,8 +1225,8 @@ function TeamManager({ selfEmail }: { selfEmail: string }) {
         <select className="ab-sel" value={nRole} onChange={(e) => setNRole(e.target.value as Role)}>
           {ALL_ROLES.map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
         </select>
-        <input className="ab-inp" type="text" placeholder="пароль (мін. 8) — або інвайт" value={nPass} onChange={(e) => setNPass(e.target.value)} />
-        <button className="mc-btn ok" disabled={busy === 'create'} onClick={create}>{busy === 'create' ? '…' : '+ Створити'}</button>
+        <input className="ab-inp" type="text" placeholder="пароль (мін. 8) — порожньо = призначити роль існуючому" value={nPass} onChange={(e) => setNPass(e.target.value)} />
+        <button className="mc-btn ok" disabled={busy === 'create'} onClick={create}>{busy === 'create' ? '…' : (nPass ? '+ Створити' : '+ Призначити роль')}</button>
         <button className="mc-btn" disabled={busy === 'invite'} onClick={invite} title="Надіслати інвайт-лист (потрібен SMTP у Supabase)">✉ Інвайт</button>
       </div>
 

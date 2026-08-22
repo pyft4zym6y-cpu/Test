@@ -50,12 +50,32 @@ export default async function handler(req, res) {
       return;
     }
 
-    if (a === 'create') {
-      if (!b.email || !b.password || String(b.password).length < 8) { res.status(200).json({ error: 'Потрібні email і пароль (мін. 8 символів)' }); return; }
+    if (a === 'create' || a === 'promote') {
+      if (!b.email) { res.status(200).json({ error: 'Вкажіть email' }); return; }
       const role = valid(b.role) ? b.role : 'manager';
+      const findByEmail = async () => {
+        const want = String(b.email).toLowerCase();
+        const j = await admin('/users?per_page=200').then((r) => r.json());
+        return (j.users || j || []).find((u) => String(u.email || '').toLowerCase() === want) || null;
+      };
+      // Явне «промоут» або створення без пароля → одразу шукаємо існуючого й ставимо роль.
+      if (a === 'promote' || !b.password) {
+        const ex = await findByEmail();
+        if (!ex) { res.status(200).json({ error: a === 'promote' ? 'Користувача з таким email не знайдено' : 'Немає такого користувача — вкажіть пароль, щоб створити новий акаунт' }); return; }
+        await setRole(ex.id, role);
+        res.status(200).json({ ok: true, promoted: true, user: { id: ex.id, email: ex.email, role } });
+        return;
+      }
+      if (String(b.password).length < 8) { res.status(200).json({ error: 'Пароль — мінімум 8 символів' }); return; }
       const j = await admin('/users', { method: 'POST', body: JSON.stringify({ email: b.email, password: b.password, email_confirm: true, app_metadata: { role } }) }).then((r) => r.json());
-      if (j.id) res.status(200).json({ ok: true, user: { id: j.id, email: j.email, role } });
-      else res.status(200).json({ error: j.msg || j.error_description || j.error || 'create_failed' });
+      if (j.id) { res.status(200).json({ ok: true, user: { id: j.id, email: j.email, role } }); return; }
+      // Якщо email вже зайнятий — не помилка, а промоут існуючого акаунта до ролі.
+      const errText = String(j.msg || j.error_description || j.error || '').toLowerCase();
+      if (/already|registered|exist/.test(errText)) {
+        const ex = await findByEmail();
+        if (ex) { await setRole(ex.id, role); res.status(200).json({ ok: true, promoted: true, user: { id: ex.id, email: ex.email, role } }); return; }
+      }
+      res.status(200).json({ error: j.msg || j.error_description || j.error || 'create_failed' });
       return;
     }
 

@@ -23,7 +23,7 @@ export type Question = {
   required?: boolean; hint?: string; options?: string[];
   condQKey?: string; condValue?: string;   // показати, якщо відповідь на condQKey === condValue
 };
-export type Block = { key: string; title: string; role?: string; questions: Question[] };
+export type Block = { key: string; title: string; role?: string; cat?: string; questions: Question[] };
 export type AuditTemplate = { version: number; blocks: Block[] };
 
 /** Ролі всередині заказника — обмежують, хто які блоки заповнює. */
@@ -57,6 +57,145 @@ export const DEFAULT_TEMPLATE: AuditTemplate = {
       { key: 'pains', label: 'Головні болі в процесах', type: 'longtext' },
       { key: 'cms', label: 'Доступ до CMS/адмінки (read-only)', type: 'access' },
     ]},
+  ],
+};
+
+/* ── Повний C-level фреймворк аудиту (16 модулів A–P) ──
+   Кожен модуль = блок із питаннями (Q), доступами (access) і файлами (file).
+   Це стартовий каркас: адмін розширює/скорочує під тип бізнесу в конструкторі.
+   Завантажується кнопкою «Завантажити фреймворк» (не перетирає збережене без згоди). */
+type QI = [string, string, QType, (Partial<Question> | undefined)?];
+const mod = (cat: string, key: string, title: string, role: string, items: QI[]): Block => ({
+  key, cat, title, role,
+  questions: items.map(([k, label, type, extra]) => ({ key: `${key}_${k}`, label, type, ...(extra || {}) })),
+});
+export const AUDIT_FRAMEWORK: AuditTemplate = {
+  version: 1,
+  blocks: [
+    mod('A', 'company', 'Компанія та бізнес', 'Власник', [
+      ['legal', 'Юридична структура, географія, ринки', 'longtext', { required: true }],
+      ['model', 'Бізнес-модель', 'multi', { options: ['B2C', 'B2B', 'D2C', 'B2B2C', 'Marketplace'] }],
+      ['revenue_src', 'Основні джерела виручки та продукти', 'longtext'],
+      ['stage', 'Стадія розвитку', 'single', { options: ['Startup', 'Scale-up', 'Established', 'Enterprise'] }],
+      ['goals', 'Цілі та стратегічні пріоритети на 12–36 міс', 'longtext', { required: true }],
+      ['constraints', 'Ключові обмеження та проблеми', 'longtext'],
+    ]),
+    mod('B', 'finance', 'Фінанси та економіка', 'Фінанси', [
+      ['turnover', 'Оборот на місяць (€)', 'number', { required: true }],
+      ['margin', 'Валова маржа / contribution margin (%)', 'number'],
+      ['aov', 'Середній чек (€)', 'number'],
+      ['ltv_cac', 'LTV та CAC', 'text'],
+      ['unit', 'Юніт-економіка / P&L (вивантаження)', 'file'],
+      ['profit_by', 'Прибутковість за категоріями / каналами / ринками', 'longtext'],
+    ]),
+    mod('C', 'commercial', 'Комерція', 'Маркетинг', [
+      ['assortment', 'Асортимент, SKU, hero-products', 'longtext'],
+      ['abc', 'ABC/XYZ, прибуткові й збиткові категорії', 'longtext'],
+      ['pricing', 'Pricing, discounting, promo-стратегія', 'longtext'],
+      ['crosssell', 'Cross-sell / up-sell / bundles', 'text'],
+      ['calendar', 'Комерційний календар і sales targets', 'text'],
+      ['skus', 'Вивантаження каталогу / SKU', 'file'],
+    ]),
+    mod('D', 'customer', 'Клієнт / Customer Archetypes', 'Маркетинг', [
+      ['ca_main', 'Основний клієнт (CA1): хто, потреби, болі, тригери', 'longtext', { required: true }],
+      ['ca_second', 'Вторинний клієнт (CA2)', 'longtext'],
+      ['jtbd', 'Jobs-to-be-done і критерії вибору', 'longtext'],
+      ['journey', 'Customer journey і post-purchase поведінка', 'longtext'],
+      ['retention', 'Retention / churn / частота покупки', 'text'],
+      ['research', 'Дослідження аудиторії (файл)', 'file'],
+    ]),
+    mod('E', 'brand', 'Бренд', 'Маркетинг', [
+      ['positioning', 'Позиціонування, місія, візія, цінності', 'longtext'],
+      ['diff', 'Differentiation та brand promise', 'longtext'],
+      ['awareness', 'Awareness / consideration / preference', 'text'],
+      ['nps', 'NPS та репутація', 'text'],
+      ['competitors', 'Ключові конкуренти бренду', 'longtext'],
+      ['brandbook', 'Brand book / гайдлайни', 'file'],
+    ]),
+    mod('F', 'marketing', 'Маркетинг', 'Маркетинг', [
+      ['strategy', 'Маркетинг-стратегія і channel mix', 'longtext'],
+      ['budget', 'Бюджет, CAC, ROAS/ROMI', 'text'],
+      ['paid', 'Google Ads / Meta / TikTok (доступ)', 'access'],
+      ['channels', 'Активні канали', 'multi', { options: ['Paid search', 'Paid social', 'SEO', 'Email', 'Push/SMS', 'Influencer', 'Affiliate', 'PR', 'Маркетплейси'] }],
+      ['attribution', 'Атрибуція та медіа-планування', 'longtext'],
+      ['reports', 'Рекламні звіти (файл)', 'file'],
+    ]),
+    mod('G', 'seo', 'SEO / GEO / AEO / AI-visibility', 'Маркетинг', [
+      ['gsc', 'Google Search Console (доступ)', 'access', { required: true }],
+      ['organic', 'Органічний трафік: branded / non-branded', 'text'],
+      ['tech_seo', 'Технічне SEO, індексація, crawlability', 'longtext'],
+      ['backlinks', 'Backlinks / referring domains', 'text'],
+      ['ai_visibility', 'AI-видимість: Google AI Overviews, ChatGPT/LLM citations', 'longtext'],
+      ['seo_tools', 'Доступ до Ahrefs / Semrush', 'access'],
+    ]),
+    mod('H', 'ux', 'Сайт / UX / CRO', 'Технічний', [
+      ['ia', 'Інформаційна архітектура, навігація, пошук', 'longtext'],
+      ['pdp', 'Категорії, PDP, кошик, checkout, mobile UX', 'longtext'],
+      ['funnel', 'Воронка конверсії та abandonment', 'text'],
+      ['testing', 'A/B-тести, heatmaps, session recordings', 'text'],
+      ['cms', 'Доступ до CMS/адмінки (read-only)', 'access'],
+      ['cro_impact', 'Звʼязок UX із revenue / margin / conversion', 'longtext'],
+    ]),
+    mod('I', 'ops', 'E-commerce операції', 'Операції', [
+      ['oms', 'Order management, fulfillment, склад', 'longtext'],
+      ['inventory', 'Inventory, stock accuracy, forecasting', 'text'],
+      ['delivery', 'Доставка, повернення, SLA', 'text'],
+      ['support', 'Customer support і логістика', 'text'],
+      ['suppliers', 'Постачальники / procurement / supply chain', 'longtext'],
+      ['wms_access', 'Доступ до WMS / ERP операцій', 'access'],
+    ]),
+    mod('J', 'crm', 'CRM / Retention', 'Маркетинг', [
+      ['crm_access', 'Доступ до CRM (Klaviyo/HubSpot/eSputnik...)', 'access', { required: true }],
+      ['segmentation', 'Сегментація, RFM, lifecycle', 'longtext'],
+      ['loyalty', 'Loyalty, cashback, referral, subscriptions', 'text'],
+      ['flows', 'Abandoned cart, win-back, reactivation', 'text'],
+      ['cohort', 'Cohort analysis, CLV', 'text'],
+      ['crm_export', 'Вивантаження клієнтів / CRM (файл)', 'file'],
+    ]),
+    mod('K', 'analytics', 'Аналітика та BI', 'Аналітика', [
+      ['ga4', 'Google Analytics 4 (доступ)', 'access', { required: true }],
+      ['gtm', 'GTM та event tracking', 'access'],
+      ['dwh', 'Data warehouse / dashboards / Power BI / Looker', 'longtext'],
+      ['quality', 'Якість даних, data governance, source of truth', 'longtext'],
+      ['kpi', 'KPI framework і forecasting', 'text'],
+      ['seams', 'Розбіжності між платформою / аналітикою / рекламою / CRM', 'longtext'],
+    ]),
+    mod('L', 'tech', 'Технології', 'Технічний', [
+      ['platform', 'Платформа магазину', 'single', { options: ['Shopify', 'WooCommerce', 'Magento', 'OpenCart', 'Custom', 'Інше'] }],
+      ['stack', 'CRM / ERP / WMS / PIM / CDP', 'longtext'],
+      ['integrations', 'Інтеграції, API, архітектура', 'longtext'],
+      ['debt', 'Технічний борг, performance, security', 'longtext'],
+      ['scalability', 'Scalability і monitoring', 'text'],
+      ['arch', 'Схема архітектури / тех-документація (файл)', 'file'],
+    ]),
+    mod('M', 'people', 'Люди та організація', 'Власник', [
+      ['team', 'Структура команди, ролі, headcount', 'longtext'],
+      ['competencies', 'Компетенції, вакансії, аутсорс', 'text'],
+      ['accountability', 'Accountability, KPI/OKR', 'text'],
+      ['bottlenecks', 'Організаційні вузькі місця', 'longtext'],
+      ['orgchart', 'Оргструктура (файл)', 'file'],
+    ]),
+    mod('N', 'processes', 'Процеси', 'Операції', [
+      ['sales_proc', 'Sales / marketing / merchandising процеси', 'longtext'],
+      ['fulfillment_proc', 'Procurement / fulfillment / customer service', 'longtext'],
+      ['finance_proc', 'Finance / analytics / product management', 'text'],
+      ['approvals', 'Approval / release / incident management', 'text'],
+      ['maps', 'Process maps (файл)', 'file'],
+    ]),
+    mod('O', 'strategy', 'Стратегія', 'Власник', [
+      ['vision', 'Стратегічна візія та growth-модель', 'longtext'],
+      ['advantage', 'Конкурентна перевага і позиція на ринку', 'longtext'],
+      ['expansion', 'Нові ринки / канали / продукти', 'longtext'],
+      ['invest', 'Інвестиційні пріоритети та ризики', 'text'],
+      ['roadmap', 'Roadmap 12/24/36 міс', 'longtext'],
+    ]),
+    mod('P', 'competition', 'Конкуренти', 'Маркетинг', [
+      ['direct', 'Прямі та непрямі конкуренти, лідери ринку', 'longtext'],
+      ['compare', 'Порівняння: ціни, асортимент, позиціонування', 'longtext'],
+      ['channels_comp', 'Конкуренти: трафік, SEO, paid, UX, retention', 'longtext'],
+      ['share', 'Частка ринку / share of voice', 'text'],
+      ['research_comp', 'Конкурентний аналіз (файл)', 'file'],
+    ]),
   ],
 };
 
