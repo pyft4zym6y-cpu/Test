@@ -18,6 +18,9 @@ const NAV = [
 const MAIL = 'hello@weexp.agency';
 // DMCA Protection Badge — ID з dmca.com (статичний бейдж, без зовнішнього helper-скрипта → CSP не чіпаємо).
 const DMCA_ID = '715d145d-fa76-4b19-a69c-9143c8af7f20';
+// Shopify Partner — вмикається ПІСЛЯ реєстрації в partners.shopify.com (безкоштовно, миттєво).
+// Текстовий бейдж «Shopify Partner» за бренд-гайдами дозволено партнерам. Не заявляти до факту.
+const SHOPIFY_PARTNER = false;
 
 export function SiteFooter() {
   const year = 2026;
@@ -58,6 +61,7 @@ export function SiteFooter() {
       <div className="sfoot-trust mono">
         <span className="sfoot-trust-i">🔒 {t('SSL / захищене зʼєднання', 'SSL / secure connection')}</span>
         <span className="sfoot-trust-i">🇪🇺 GDPR-ready</span>
+        {SHOPIFY_PARTNER && <a className="sfoot-trust-i sfoot-trust-a" href="https://www.shopify.com/partners" target="_blank" rel="noopener noreferrer" title="Shopify Partner">🛍 Shopify Partner <i aria-hidden="true">↗</i></a>}
         <a className="sfoot-trust-i sfoot-trust-a" href="https://securityheaders.com/?q=https%3A%2F%2Fweexp.agency&followRedirects=on" target="_blank" rel="noopener noreferrer" title="Security Headers scan">🛡 {t('Security Headers', 'Security Headers')} <i aria-hidden="true">↗</i></a>
       </div>
       <div className="sfoot-bottom mono">
