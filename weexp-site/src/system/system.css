@@ -1795,6 +1795,18 @@
 .pric-always p { flex: 1 1 320px; margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--charcoal); }
 .pric-always .sysx-cta { flex: 0 0 auto; }
 
+/* Як влаштована співпраця — прозорий процес */
+.pric-flow { margin-top: clamp(34px, 5vw, 64px); }
+.pric-flow-h { font-size: clamp(24px, 3.4vw, 40px); margin: 10px 0 clamp(20px, 3vw, 34px); }
+.pric-flow-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.pric-flow-step { background: var(--pure-white); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; position: relative; }
+.pric-flow-step::before { content: ''; position: absolute; left: 0; top: 18px; bottom: 18px; width: 3px; background: var(--data); border-radius: 3px; }
+.pric-flow-n { display: block; font-size: 12px; letter-spacing: .1em; color: var(--data); margin-bottom: 8px; }
+.pric-flow-t { display: block; font-size: 16px; letter-spacing: -.01em; color: var(--deep); margin-bottom: 6px; }
+.pric-flow-d { margin: 0; font-size: 13px; line-height: 1.5; color: var(--charcoal, #3a352f); }
+@media (max-width: 860px) { .pric-flow-steps { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .pric-flow-steps { grid-template-columns: 1fr; } }
+
 /* FAQ + обмежена доступність */
 .pric-faqwrap { margin-top: clamp(30px, 4vw, 56px); display: grid; grid-template-columns: 1.6fr 1fr; gap: clamp(16px, 2vw, 28px); align-items: start; }
 .pric-faq-list { margin-top: 16px; display: grid; gap: 10px; }

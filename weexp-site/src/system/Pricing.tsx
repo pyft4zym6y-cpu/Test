@@ -183,6 +183,28 @@ export function Pricing() {
           <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Почати з діагностики', 'Start with diagnostics')} →</Link>
         </div>
 
+        {/* Як влаштована співпраця — прозорий процес від контакту до передачі */}
+        <div className="pric-flow">
+          <span className="sysx-kick">{t('Як влаштована співпраця', 'How the engagement works')}</span>
+          <h2 className="sysx-display pric-flow-h">{t('Від контакту до передачі — ', 'From first contact to handover — ')}<span className="sysx-em">{t('прозоро', 'transparently')}</span></h2>
+          <div className="pric-flow-steps">
+            {[
+              { n: '01', t: [t('Діагноз', 'Diagnosis'), t('Експрес-аудит → глибокий аудит: розрив у грошах за CRM/ERP/GA4 і головні вузькі місця.', 'Express audit → deep audit: the revenue gap from CRM/ERP/GA4 and the main bottlenecks.')] },
+              { n: '02', t: [t('Договір', 'Contract'), t('Офіційно від ФОП (Україна): предмет, строки, обсяг і KPI — письмово, до старту.', 'Officially as a sole proprietor (Ukraine): scope, timelines and KPIs — in writing, before kickoff.')] },
+              { n: '03', t: [t('Команда й доступи', 'Team & access'), t('Фіксуємо склад: Head of E-commerce + профільні ролі. Доступи відкриваєте контрольовано.', 'We fix the team: Head of E-commerce + specialist roles. You grant access in a controlled way.')] },
+              { n: '04', t: [t('Робота хвилями', 'Delivery in waves'), t('Дорожня карта під Definition of Done; транші під результат, а не «за години».', 'A roadmap under a Definition of Done; tranches tied to results, not "by the hour".')] },
+              { n: '05', t: [t('Приймання', 'Acceptance'), t('Кожен етап приймається за DoD і вимірюваним ефектом — ви бачите, за що платите.', 'Each stage is accepted against the DoD and a measurable effect — you see what you pay for.')] },
+              { n: '06', t: [t('Передача', 'Handover'), t('Система лишається у вас: процеси, доступи й знання — щоб працювало без нас.', 'The system stays with you: processes, access and knowledge — so it runs without us.')] },
+            ].map((s) => (
+              <div key={s.n} className="pric-flow-step">
+                <i className="pric-flow-n mono">{s.n}</i>
+                <b className="pric-flow-t">{s.t[0]}</b>
+                <p className="pric-flow-d">{s.t[1]}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* FAQ + обмежена доступність */}
         <div className="pric-faqwrap">
           <div className="pric-faq">
