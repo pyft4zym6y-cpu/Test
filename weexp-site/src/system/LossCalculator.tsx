@@ -301,7 +301,7 @@ ${projRows ? `<div class="card"><h2>${esc(t('Зараз → куди можем�
                 <button className="sysx-cta" onClick={restart}>{t('Перерахувати', 'Recalculate')}</button>
               </div>
             )}
-            <span className="sysx-note mono">{t('Оцінка за наданими даними. Не фінансовий аудит. Точну карту «де саме й чому» дає глибокий аудит (за кодом від менеджера).', 'An estimate based on your data. Not a financial audit. A precise map of “exactly where and why” comes from the deep audit (with a code from your manager).')}</span>
+            <span className="sysx-note mono">{t('Оцінка за наданими даними. Не фінансовий аудит. Точну карту «де саме й чому» дає глибокий аудит — окрема послуга: запросіть доступ у кабінеті, менеджер підтвердить і відкриє розбір.', 'An estimate based on your data. Not a financial audit. A precise map of “exactly where and why” comes from the deep audit — a separate service: request access in your cabinet, the manager confirms and opens the analysis.')}</span>
           </div>
         )}
       </div>
