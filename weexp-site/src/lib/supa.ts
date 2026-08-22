@@ -225,10 +225,10 @@ export type AuthOutcome = { user?: DiagUser; error?: string; confirm?: string; l
 
 /** Реєстрація через email+пароль. Увімкнено Confirm email → повертає confirm (лист надіслано);
  *  інакше — одразу user із сесією. Без Supabase — локальний демо-режим. */
-export async function registerWithEmail(email: string, password: string): Promise<AuthOutcome> {
+export async function registerWithEmail(email: string, password: string, captchaToken?: string): Promise<AuthOutcome> {
   if (CONFIGURED) {
     try {
-      const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: REDIRECT() } });
+      const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: REDIRECT(), captchaToken } });
       if (error) return { error: error.message };
       if (data.session && data.user) { try { localStorage.removeItem(LS_SESSION); } catch { /* ignore */ } return { user: { id: data.user.id, email: data.user.email ?? email } }; }
       return { confirm: email };   // сесії нема → лист підтвердження надіслано
@@ -240,10 +240,10 @@ export async function registerWithEmail(email: string, password: string): Promis
 }
 
 /** Вхід через email+пароль. Розрізняє «email ще не підтверджено» (confirm). */
-export async function signInWithEmail(email: string, password: string): Promise<AuthOutcome> {
+export async function signInWithEmail(email: string, password: string, captchaToken?: string): Promise<AuthOutcome> {
   if (CONFIGURED) {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password, options: { captchaToken } });
       if (error) {
         if (/confirm|not confirmed|verify/i.test(error.message)) return { confirm: email, error: error.message };
         return { error: error.message };

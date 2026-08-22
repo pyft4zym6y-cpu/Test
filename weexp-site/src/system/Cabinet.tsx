@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   currentUser, signOut, loadDiag, saveDiag, CONFIGURED, isCloudUser,
@@ -28,6 +28,35 @@ type NavItem = { id: SectionId; label: string; soon?: boolean };
 
 const EMPTY_COMPANY: CompanyProfile = { name: '', site: '', niche: '', revenue: '', channels: [], contactName: '', contactPhone: '', notes: '' };
 
+// Cloudflare Turnstile (капча). Вмикається лише за наявності ключа (env), інакше — no-op.
+const TURNSTILE_SITE_KEY = (import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined) || '';
+declare global {
+  interface Window { turnstile?: { render: (el: HTMLElement, o: Record<string, unknown>) => string; reset: (id?: string) => void } }
+}
+function Turnstile({ siteKey, resetKey, onToken }: { siteKey: string; resetKey: number; onToken: (t: string) => void }) {
+  const box = useRef<HTMLDivElement>(null);
+  const widget = useRef<string>('');
+  useEffect(() => {
+    const SID = 'cf-turnstile-js';
+    const mount = () => {
+      if (!window.turnstile || !box.current || widget.current) return;
+      widget.current = window.turnstile.render(box.current, {
+        sitekey: siteKey, theme: 'light',
+        callback: (t: string) => onToken(t),
+        'expired-callback': () => onToken(''),
+        'error-callback': () => onToken(''),
+      });
+    };
+    if (!document.getElementById(SID)) {
+      const s = document.createElement('script');
+      s.id = SID; s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'; s.async = true; s.defer = true;
+      s.onload = mount; document.head.appendChild(s);
+    } else { mount(); }
+  }, [siteKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (resetKey && window.turnstile && widget.current) { window.turnstile.reset(widget.current); onToken(''); } }, [resetKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  return <div ref={box} className="cab-captcha" />;
+}
+
 export function Cabinet() {
   const t = useT();
   const lp = useLp();
@@ -53,6 +82,10 @@ export function Cabinet() {
   const [authErr, setAuthErr] = useState('');
   const [confirmSent, setConfirmSent] = useState('');   // email, на який надіслано лист підтвердження
   const [resendMsg, setResendMsg] = useState('');
+  const [captcha, setCaptcha] = useState('');           // токен Turnstile (якщо капча увімкнена)
+  const [captchaReset, setCaptchaReset] = useState(0);  // лічильник для скидання віджета після спроби
+  const captchaOn = Boolean(TURNSTILE_SITE_KEY);
+  const bumpCaptcha = () => { setCaptcha(''); setCaptchaReset((n) => n + 1); };
 
   useEffect(() => { setExpress(getExpressAudit()); }, []);
   // Прив'язати локальний експрес-аудит до акаунту й перечитати запис.
@@ -71,16 +104,16 @@ export function Cabinet() {
   const enter = (u: DiagUser) => { setUser(u); hydrate(u); };
   const doLogin = async () => {
     setBusy(true); setAuthErr(''); setResendMsg('');
-    const r = await signInWithEmail(email.trim(), pass);
-    setBusy(false);
+    const r = await signInWithEmail(email.trim(), pass, captcha || undefined);
+    setBusy(false); bumpCaptcha();
     if (r.user) enter(r.user);
     else if (r.confirm) { setConfirmSent(r.confirm); }
     else setAuthErr(r.error || t('Не вдалося увійти. Перевірте email і пароль.', 'Could not sign in. Check your email and password.'));
   };
   const doRegister = async () => {
     setBusy(true); setAuthErr(''); setResendMsg('');
-    const r = await registerWithEmail(email.trim(), pass);
-    setBusy(false);
+    const r = await registerWithEmail(email.trim(), pass, captcha || undefined);
+    setBusy(false); bumpCaptcha();
     if (r.confirm) setConfirmSent(r.confirm);          // увімкнено підтвердження email → лист надіслано
     else if (r.user) enter(r.user);                     // сесія одразу (демо або без Confirm email)
     else if (r.error && /sending confirmation|confirmation email|error sending|smtp/i.test(r.error))
@@ -173,7 +206,8 @@ export function Cabinet() {
                 <label className="sysx-inp"><span className="sysx-inp-l">{t('Пароль · мін. 6 символів', 'Password · min. 6 characters')}</span>
                   <input type="password" autoComplete={mode === 'register' ? 'new-password' : 'current-password'} value={pass} onChange={(e) => setPass(e.target.value)} placeholder="••••••" onKeyDown={(e) => e.key === 'Enter' && email && pass.length >= 6 && doAuth()} /></label>
                 {authErr && <p className="cab-auth-err mono">{authErr}</p>}
-                <button className="sysx-cta is-primary" onClick={doAuth} disabled={busy || !email || pass.length < 6}>
+                {captchaOn && <Turnstile siteKey={TURNSTILE_SITE_KEY} resetKey={captchaReset} onToken={setCaptcha} />}
+                <button className="sysx-cta is-primary" onClick={doAuth} disabled={busy || !email || pass.length < 6 || (captchaOn && !captcha)}>
                   {busy ? (mode === 'register' ? t('Реєструємо…', 'Signing up…') : t('Заходимо…', 'Signing in…')) : (mode === 'register' ? t('Створити кабінет →', 'Create cabinet →') : t('Увійти →', 'Sign in →'))}
                 </button>
                 <p className="sysx-note mono">{CONFIGURED ? t('Захищений вхід. Дані синхронізуються між пристроями.', 'Secure sign-in. Data syncs across your devices.') : t('Демо-режим: дані зберігаються локально в цьому браузері.', 'Demo mode: data is stored locally in this browser.')}</p>
