@@ -421,6 +421,27 @@ export async function setLeadStatus(id: string, status: LeadStatus): Promise<{ o
     return { ok: true };
   } catch (e) { return { ok: false, error: String(e) }; }
 }
+/** Видалити заявку (лід) назавжди — прибирання тестових/неактуальних даних. */
+export async function deleteLead(id: string): Promise<{ ok: boolean; error?: string }> {
+  if (!CONFIGURED) return { ok: false, error: 'not_configured' };
+  try {
+    const { data, error } = await supabase.from('leads').delete().eq('id', id).select('id');
+    if (error) return { ok: false, error: error.message };
+    if (!data || data.length === 0) return { ok: false, error: 'Не видалено — додайте DELETE-політику для адмінів на таблицю leads (RLS).' };
+    return { ok: true };
+  } catch (e) { return { ok: false, error: String(e) }; }
+}
+/** Видалити запис клієнта (профіль, експрес/глибокий аудит, воронку, проекти) — тестові дані. */
+export async function deleteDiagnostics(userId: string): Promise<{ ok: boolean; error?: string }> {
+  if (!CONFIGURED) return { ok: false, error: 'not_configured' };
+  try {
+    const { data, error } = await supabase.from('diagnostics').delete().eq('user_id', userId).select('user_id');
+    if (error) return { ok: false, error: error.message };
+    if (!data || data.length === 0) return { ok: false, error: 'Не видалено — додайте DELETE-політику для адмінів на diagnostics (RLS).' };
+    return { ok: true };
+  } catch (e) { return { ok: false, error: String(e) }; }
+}
+
 /** Менеджер проставляє статус рівня клієнту (+ причину); подія лягає в таймлайн. */
 export async function setTierStatusFor(userId: string, tier: string, status: TierStatus, reason?: string): Promise<{ ok: boolean; error?: string }> {
   if (!CONFIGURED) return { ok: false, error: 'not_configured' };

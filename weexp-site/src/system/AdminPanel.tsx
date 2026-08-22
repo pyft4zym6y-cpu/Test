@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, signTierFile, CONFIGURED,
+  currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, deleteLead, deleteDiagnostics, signTierFile, CONFIGURED,
   findAuditIdByCode, loadAuditAnswers, loadAuditExtra, saveAuditExtra,
   saveProjectsFor, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject,
   MANAGER_EMAILS, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
@@ -174,6 +174,24 @@ export function AdminPanel() {
     setBusy('');
     if (!res.ok) { alert('Не вдалося: ' + (res.error || '')); return; }
     listLeads().then(setLeads);
+  };
+  const removeLead = async (id: string) => {
+    if (!window.confirm('Видалити цю заявку назавжди? Дію не можна скасувати.')) return;
+    setBusy('del:' + id);
+    const res = await deleteLead(id);
+    setBusy('');
+    if (!res.ok) { alert('Не вдалося видалити: ' + (res.error || '')); return; }
+    setLeads((ls) => (ls || []).filter((l) => l.id !== id));
+    setOpenLead(null);
+  };
+  const removeUser = async (userId: string, email: string) => {
+    if (!window.confirm(`Видалити клієнта ${email} та всі його дані (профіль, експрес/глибокий аудит, воронку, проекти)? Обліковий запис входу лишиться в Supabase Auth, але з панелі зникне. Дію не можна скасувати.`)) return;
+    setBusy('del:' + userId);
+    const res = await deleteDiagnostics(userId);
+    setBusy('');
+    if (!res.ok) { alert('Не вдалося видалити: ' + (res.error || '')); return; }
+    setRows((rs) => (rs || []).filter((x) => x.userId !== userId));
+    setOpenUser(null);
   };
 
   const filtered = (rows || []).filter((r) => !q || r.email.toLowerCase().includes(q.toLowerCase()) || (r.company || '').toLowerCase().includes(q.toLowerCase()));
@@ -484,9 +502,9 @@ export function AdminPanel() {
       </main>
 
       {/* Панель деталей користувача */}
-      {detail && <UserDetail row={detail} onClose={() => setOpenUser(null)} openFile={openFile} onStatus={setStatus} busy={busy} />}
+      {detail && <UserDetail row={detail} onClose={() => setOpenUser(null)} openFile={openFile} onStatus={setStatus} onDelete={removeUser} busy={busy} />}
       {/* Панель деталей заявки */}
-      {openLead && leads && <LeadDetail lead={leads.find((l) => l.id === openLead)} allRows={rows || []} onClose={() => setOpenLead(null)} onStatus={moveLead} busy={busy} onOpenClient={(uid) => { setOpenLead(null); setTab('users'); setOpenUser(uid); }} />}
+      {openLead && leads && <LeadDetail lead={leads.find((l) => l.id === openLead)} allRows={rows || []} onClose={() => setOpenLead(null)} onStatus={moveLead} onDelete={removeLead} busy={busy} onOpenClient={(uid) => { setOpenLead(null); setTab('users'); setOpenUser(uid); }} />}
 
       {/* Модалка причини (замість browser prompt) */}
       {ask && (
@@ -509,7 +527,7 @@ export function AdminPanel() {
   );
 }
 
-function LeadDetail({ lead, allRows, onClose, onStatus, onOpenClient, busy }: { lead?: LeadRow; allRows: AdminRow[]; onClose: () => void; onStatus: (id: string, s: LeadStatus) => void; onOpenClient: (userId: string) => void; busy: string }) {
+function LeadDetail({ lead, allRows, onClose, onStatus, onOpenClient, onDelete, busy }: { lead?: LeadRow; allRows: AdminRow[]; onClose: () => void; onStatus: (id: string, s: LeadStatus) => void; onOpenClient: (userId: string) => void; onDelete: (id: string) => void; busy: string }) {
   if (!lead) return null;
   const cur = lead.status || 'new';
   // Звʼязок «заявка → клієнт»: шукаємо зареєстрований акаунт за email заявки.
@@ -575,6 +593,12 @@ function LeadDetail({ lead, allRows, onClose, onStatus, onOpenClient, busy }: { 
 
           {lead.diag && <Block title="Результат діагностики (X-Ray)"><pre className="adm-pre">{lead.diag}</pre></Block>}
           {lead.calc && <Block title="Розрахунок калькулятора"><pre className="adm-pre">{lead.calc}</pre></Block>}
+
+          <div className="adm-danger">
+            <button className="mc-btn bad" disabled={busy === 'del:' + lead.id} onClick={() => lead.id && onDelete(lead.id)}>
+              {busy === 'del:' + lead.id ? 'Видаляємо…' : 'Видалити заявку'}
+            </button>
+          </div>
         </div>
       </aside>
     </div>
@@ -704,7 +728,7 @@ function TrafficBlock({ t }: { t: SiteTraffic | null | undefined }) {
   );
 }
 
-function UserDetail({ row, onClose, openFile, onStatus, busy }: { row: AdminRow; onClose: () => void; openFile: (p: string) => void; onStatus: (userId: string, tier: string, status: TierStatus) => void; busy: string }) {
+function UserDetail({ row, onClose, openFile, onStatus, onDelete, busy }: { row: AdminRow; onClose: () => void; openFile: (p: string) => void; onStatus: (userId: string, tier: string, status: TierStatus) => void; onDelete: (userId: string, email: string) => void; busy: string }) {
   const rec = row.record || {};
   const company = rec.company;
   const money = rec.stage1Money;
@@ -853,6 +877,13 @@ function UserDetail({ row, onClose, openFile, onStatus, busy }: { row: AdminRow;
               )))}</ul>
             </Block>
           )}
+
+          <div className="adm-danger">
+            <span className="mono adm-empty">Небезпечна зона — прибирання тестових даних:</span>
+            <button className="mc-btn bad" disabled={busy === 'del:' + row.userId} onClick={() => onDelete(row.userId, row.email)}>
+              {busy === 'del:' + row.userId ? 'Видаляємо…' : 'Видалити клієнта та всі його дані'}
+            </button>
+          </div>
         </div>
       </aside>
     </div>

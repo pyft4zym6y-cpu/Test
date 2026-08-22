@@ -829,3 +829,6 @@
 .adm-lead-client { display: grid; gap: 10px; }
 .adm-lead-ex { display: flex; flex-direction: column; gap: 2px; }
 .adm-lead-client .adm-money { font-size: 20px; }
+
+/* Небезпечна зона (видалення) у шухлядах адмінки */
+.adm-danger { margin-top: 22px; padding-top: 14px; border-top: 2.5px dashed var(--red); display: grid; gap: 8px; }
