@@ -41,7 +41,7 @@ function Turnstile({ siteKey, resetKey, onToken }: { siteKey: string; resetKey: 
     const mount = () => {
       if (!window.turnstile || !box.current || widget.current) return;
       widget.current = window.turnstile.render(box.current, {
-        sitekey: siteKey, theme: 'light',
+        sitekey: siteKey, theme: 'light', language: 'uk', appearance: 'interaction-only',
         callback: (t: string) => onToken(t),
         'expired-callback': () => onToken(''),
         'error-callback': () => onToken(''),
