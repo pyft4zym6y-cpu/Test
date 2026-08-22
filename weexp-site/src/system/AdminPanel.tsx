@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, deleteLead, deleteDiagnostics, signTierFile, CONFIGURED,
@@ -1084,9 +1084,37 @@ function gMonthLabel(startMonth: string | undefined, i: number): string {
 /** Проект-офіс: глобальний довідник команди та ставок (переиспользується в проектах). */
 function PmOffice() {
   const [dir, setDir] = useState<PmDirectory | null>(null);
-  const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
+  const [state, setState] = useState<SaveState>('idle');
+  const [savedAt, setSavedAt] = useState('');
+  const latest = useRef<PmDirectory | null>(dir); latest.current = dir;
+  const dirtyRef = useRef(false);
+  const loaded = useRef(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => { loadPmDirectory().then(setDir); }, []);
+  const persist = (d: PmDirectory) => savePmDirectory({
+    specialists: (d.specialists || []).filter((s) => s.name.trim() || s.role.trim()),
+    roleRates: (d.roleRates || []).filter((s) => s.role.trim()),
+    knowledge: d.knowledge || '', presets: d.presets || [],
+  });
+  const doSave = async () => {
+    const d = latest.current; if (!d) return;
+    setState('saving'); setMsg('');
+    const r = await persist(d);
+    if (r.ok) { dirtyRef.current = false; setState('saved'); setSavedAt(new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })); }
+    else { setState('error'); setMsg(r.error || 'Помилка збереження'); }
+  };
+  // Автозбереження довідника: дебаунс 1.2с; перший стан після завантаження не зберігаємо.
+  useEffect(() => {
+    if (!dir) return;
+    if (!loaded.current) { loaded.current = true; return; }
+    dirtyRef.current = true; setState('dirty');
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => { void doSave(); }, 1200);
+    return () => { if (timer.current) clearTimeout(timer.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dir]);
+  useEffect(() => () => { if (dirtyRef.current && latest.current) void persist(latest.current); }, []);
   if (!dir) return <section className="adm-sec"><h1 className="sysx-display adm-h1">Проект-офіс</h1><p className="mono adm-empty">Завантаження…</p></section>;
 
   const specs = dir.specialists || [], roles = dir.roleRates || [];
@@ -1094,17 +1122,10 @@ function PmOffice() {
   const setSpec = (i: number, k: keyof PmSpecialist, v: unknown) => setDir({ ...dir, specialists: specs.map((s, j) => (j === i ? { ...s, [k]: v } : s)) });
   const setRole = (i: number, k: keyof PmRoleRate, v: unknown) => setDir({ ...dir, roleRates: roles.map((s, j) => (j === i ? { ...s, [k]: v } : s)) });
   const presets = dir.presets || [];
-  const save = async () => {
-    setBusy(true); setMsg('');
-    const r = await savePmDirectory({
-      specialists: specs.filter((s) => s.name.trim() || s.role.trim()),
-      roleRates: roles.filter((s) => s.role.trim()),
-      knowledge: dir.knowledge || '',
-      presets,
-    });
-    setBusy(false);
-    setMsg(r.ok ? '✓ Довідник збережено.' : (r.error || 'Помилка'));
-  };
+  const stateLabel = state === 'saving' ? '💾 Збереження…'
+    : state === 'dirty' ? '● Є незбережені зміни'
+    : state === 'saved' ? `✓ Збережено ${savedAt}`
+    : state === 'error' ? `✕ ${msg}` : '';
 
   return (
     <section className="adm-sec">
@@ -1160,32 +1181,58 @@ function PmOffice() {
       </div>
 
       <div className="pj-ed-foot" style={{ marginTop: 16 }}>
-        {msg && <span className="mono adm-fill-au">{msg}</span>}
-        <button className="mc-btn ok" onClick={save} disabled={busy}>{busy ? 'Зберігаємо…' : 'Зберегти довідник'}</button>
+        {stateLabel && <span className={`mono pj-save-state pj-save-${state}`}>{stateLabel}</span>}
+        <button className="mc-btn ok" onClick={() => { if (timer.current) clearTimeout(timer.current); void doSave(); }} disabled={state === 'saving'}>{state === 'saving' ? 'Зберігаємо…' : 'Зберегти зараз'}</button>
       </div>
     </section>
   );
 }
 
 /** Менеджер керує кількома проектами клієнта: селектор + додати/видалити + збереження. */
+type SaveState = 'idle' | 'dirty' | 'saving' | 'saved' | 'error';
 function ProjectsManager({ userId, initial, code, company }: { userId: string; initial: Project[]; code?: string; company?: string }) {
   const [list, setList] = useState<Project[]>(initial.length ? initial : []);
   const [active, setActive] = useState(0);
-  const [busy, setBusy] = useState(false);
+  const [state, setState] = useState<SaveState>('idle');
+  const [savedAt, setSavedAt] = useState('');
   const [msg, setMsg] = useState('');
   const idx = Math.min(active, Math.max(0, list.length - 1));
   const cur = list[idx];
 
-  const patchCur = (p: Project) => setList((l) => l.map((x, i) => (i === idx ? p : x)));
-  const addProject = () => { const np = emptyProject(); np.title = `Проект ${list.length + 1}`; setList([...list, np]); setActive(list.length); setMsg(''); };
-  const delProject = () => { if (!cur) return; if (!confirm('Видалити цей проект?')) return; const nl = list.filter((_, i) => i !== idx); setList(nl); setActive(0); setMsg(''); };
-  const save = async () => {
-    setBusy(true); setMsg('');
-    const r = await saveProjectsFor(userId, list);
-    setBusy(false);
-    const pubN = list.filter((x) => x.published).length;
-    setMsg(r.ok ? `✓ Збережено (${list.length} проект(и), ${pubN} видно клієнту).` : (r.error || 'Помилка'));
+  // Автозбереження: рефи тримають найсвіжіший стан для дебаунса й флешу при демонтажі.
+  const latest = useRef(list); latest.current = list;
+  const dirty = useRef(false);
+  const first = useRef(true);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  const doSave = async () => {
+    setState('saving'); setMsg('');
+    const r = await saveProjectsFor(userId, latest.current);
+    if (r.ok) { dirty.current = false; setState('saved'); setSavedAt(new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })); }
+    else { setState('error'); setMsg(r.error || 'Помилка збереження'); }
   };
+
+  // При кожній зміні list — позначаємо «незбережено» і плануємо автозбереження (дебаунс 1.2с).
+  useEffect(() => {
+    if (first.current) { first.current = false; return; }
+    dirty.current = true; setState('dirty');
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => { void doSave(); }, 1200);
+    return () => { if (timer.current) clearTimeout(timer.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [list]);
+  // Флеш при демонтажі (перехід між клієнтами/розділами) — щоб зміни не губилися.
+  useEffect(() => () => { if (dirty.current) void saveProjectsFor(userId, latest.current); }, [userId]);
+
+  const patchCur = (p: Project) => setList((l) => l.map((x, i) => (i === idx ? p : x)));
+  const addProject = () => { const np = emptyProject(); np.title = `Проект ${list.length + 1}`; setList([...list, np]); setActive(list.length); };
+  const delProject = () => { if (!cur) return; if (!confirm('Видалити цей проект?')) return; const nl = list.filter((_, i) => i !== idx); setList(nl); setActive(0); };
+
+  const pubN = list.filter((x) => x.published).length;
+  const stateLabel = state === 'saving' ? '💾 Збереження…'
+    : state === 'dirty' ? '● Є незбережені зміни'
+    : state === 'saved' ? `✓ Збережено ${savedAt} · ${list.length} проект(и), ${pubN} видно клієнту`
+    : state === 'error' ? `✕ ${msg}` : '';
 
   return (
     <div className="pj-mgr">
@@ -1203,8 +1250,8 @@ function ProjectsManager({ userId, initial, code, company }: { userId: string; i
           <div className="pj-ed-foot">
             <button className="mc-btn bad" onClick={delProject}>Видалити проект</button>
             <div className="pj-mgr-save">
-              {msg && <span className="mono adm-fill-au">{msg}</span>}
-              <button className="mc-btn ok" onClick={save} disabled={busy}>{busy ? 'Зберігаємо…' : 'Зберегти всі проекти'}</button>
+              {stateLabel && <span className={`mono pj-save-state pj-save-${state}`}>{stateLabel}</span>}
+              <button className="mc-btn ok" onClick={() => { if (timer.current) clearTimeout(timer.current); void doSave(); }} disabled={state === 'saving'}>{state === 'saving' ? 'Зберігаємо…' : 'Зберегти зараз'}</button>
             </div>
           </div>
         </>

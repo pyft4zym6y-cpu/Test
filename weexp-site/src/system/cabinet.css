@@ -23,6 +23,11 @@
 .cab-side-foot-row { display: flex; align-items: center; gap: 8px; }
 .cab-side-foot-row .cab-signout { flex: 1 1 auto; }
 .adm-drawer-head-act { display: flex; align-items: center; gap: 8px; }
+.pj-save-state { font-size: 11.5px; letter-spacing: .01em; padding: 4px 9px; border-radius: 100px; }
+.pj-save-dirty { color: var(--warn); background: color-mix(in srgb, var(--warn) 12%, transparent); }
+.pj-save-saving { color: var(--graphite); }
+.pj-save-saved { color: var(--ok-strong); background: color-mix(in srgb, var(--ok) 12%, transparent); }
+.pj-save-error { color: var(--red); background: color-mix(in srgb, var(--red) 10%, transparent); }
 
 /* ═══ Темна тема кабінету/адмінки (клас .is-dark на корені) ═══
    Інвертуємо семантичні токени: поверхні → темні, чорнило → світле. Токени
