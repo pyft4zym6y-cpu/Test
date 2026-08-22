@@ -82,7 +82,7 @@ export default async function handler(req, res) {
       method: 'POST',
       headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from: NOTIFY_FROM || 'weexp.agency <onboarding@resend.dev>',
+        from: NOTIFY_FROM || 'WEEXP <no-reply@weexp.agency>',
         to: [NOTIFY_EMAIL],
         ...(email ? { reply_to: email } : {}),
         subject: `Лід із сайту · ${source}${b.name ? ` · ${String(b.name).slice(0, 60)}` : ''}`,

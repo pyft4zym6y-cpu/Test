@@ -28,7 +28,7 @@ export default async function handler(req, res) {
       method: 'POST',
       headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from: NOTIFY_FROM || 'Discovery Portal <onboarding@resend.dev>',
+        from: NOTIFY_FROM || 'WEEXP <no-reply@weexp.agency>',
         to: [NOTIFY_EMAIL],
         subject: String(subject).slice(0, 150),
         text: String(text).slice(0, 4000),
