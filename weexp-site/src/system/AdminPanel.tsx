@@ -896,7 +896,10 @@ function TrafficBlock({ t }: { t: SiteTraffic | null | undefined }) {
 }
 
 /** Брендоване PDF-досьє клієнта — самодостатня друкована сторінка (нова вкладка → друк/зберегти в PDF). */
-function openClientDossier(row: AdminRow) {
+async function openClientDossier(row: AdminRow) {
+  const w = window.open('', '_blank');
+  if (!w) { toast('Дозвольте спливаючі вікна, щоб відкрити досьє', 'err'); return; }
+  w.document.write('<!doctype html><meta charset="utf-8"><body style="font-family:system-ui,sans-serif;padding:28px;color:#6B675E">Формуємо досьє…</body>');
   const esc = (s: unknown) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const rec = row.record || {};
   const c = rec.company || {};
@@ -928,6 +931,14 @@ function openClientDossier(row: AdminRow) {
     ['CAC', inp.cac ? eur(inp.cac) : ''], ['Джерело', ex.source],
   ] : [];
   const tierRows = tiers.map(([tid, st]) => `<tr><td class="k">${esc(tid)}</td><td>${esc(ST[st as TierStatus]?.txt || st)}</td></tr>`).join('');
+  // C-level оцінка модулів (з активного шаблону — для назв модулів).
+  const asm = rec.assessment || {};
+  let tpl: AuditTemplate | null = null; try { tpl = await loadTemplate(); } catch { /* ignore */ }
+  const modTitle = (k: string) => tpl?.blocks.find((bl) => bl.key === k)?.title || k;
+  const asmKeys = Object.keys(asm).filter((k) => { const s = asm[k]; return s && (s.score != null || s.state || s.gap || s.rec || s.priority); });
+  const asmScores = asmKeys.map((k) => asm[k].score).filter((n): n is number => typeof n === 'number');
+  const asmAvg = asmScores.length ? Math.round(asmScores.reduce((a, b) => a + b, 0) / asmScores.length) : null;
+  const asmRows = asmKeys.map((k) => { const s = asm[k]; return `<tr><td>${esc(modTitle(k))}</td><td class="c">${s.score != null ? esc(s.score) : '—'}</td><td class="c">${esc(s.priority || '—')}</td><td>${esc(s.gap || s.rec || s.state || '')}</td></tr>`; }).join('');
   const html = `<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>Досьє — ${esc(row.email)}</title><style>
 @page{margin:16mm}*{box-sizing:border-box}body{font-family:"IBM Plex Sans","Segoe UI",system-ui,Arial,sans-serif;color:#141210;margin:0;font-size:13px;line-height:1.5}
 .bar{height:8px;background:#F5301C}.wrap{padding:26px 30px}
@@ -938,6 +949,7 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#F5301C;ma
 table{border-collapse:collapse;width:100%}td{border-bottom:1px solid #EEE7D6;padding:6px 8px;vertical-align:top}td.k{width:210px;color:#6B675E;font-weight:600}
 .money{font-size:26px;font-weight:800;margin:4px 0}.money i{font-size:13px;color:#6B675E;font-weight:500;font-style:normal}
 .empty{color:#9a9488;font-style:italic}.code{font-family:"IBM Plex Mono",monospace;font-weight:700;background:#FFF6C2;padding:3px 8px;border:1px solid #E3D9C0}
+td.c{text-align:center;width:56px;font-weight:600}
 .foot{margin-top:26px;padding-top:12px;border-top:1px solid #E3D9C0;color:#9a9488;font-size:10.5px}
 @media print{.noprint{display:none}}
 </style></head><body><div class="bar"></div><div class="wrap">
@@ -946,12 +958,11 @@ table{border-collapse:collapse;width:100%}td{border-bottom:1px solid #EEE7D6;pad
 <button class="noprint" onclick="window.print()" style="margin-bottom:14px;background:#F5301C;color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer">🖨 Друк / зберегти в PDF</button>
 <h2>Профіль компанії</h2>${companyRows.some(([, v]) => v) ? `<table>${kv(companyRows)}</table>` : '<p class="empty">Профіль не заповнено.</p>'}
 <h2>Експрес-аудит</h2>${ex ? `<p class="money">${esc(eur(ex.total))} <i>/ рік · витік</i></p><table>${kv(exRows)}</table>` : '<p class="empty">Експрес-аудит не проходив.</p>'}
+${asmKeys.length ? `<h2>C-level оцінка модулів${asmAvg != null ? ` · зрілість ${asmAvg}/100` : ''}</h2><table><tr><td class="k">Модуль</td><td class="c">Score</td><td class="c">Prio</td><td>Розрив / рекомендація</td></tr>${asmRows}</table>` : ''}
 <h2>Статуси доступів T1–T4</h2>${tierRows ? `<table>${tierRows}</table>` : '<p class="empty">Запитів не було.</p>'}
 <div class="foot">WEEXP — Commerce OS · weexp.agency · hello@weexp.agency · Документ містить конфіденційні дані клієнта. Не для розповсюдження.</div>
 </div></body></html>`;
-  const w = window.open('', '_blank');
-  if (w) { w.document.write(html); w.document.close(); }
-  else toast('Дозвольте спливаючі вікна, щоб відкрити досьє', 'err');
+  w.document.open(); w.document.write(html); w.document.close();
 }
 
 function UserDetail({ row, leads, canDelete, onClose, openFile, onStatus, onDelete, busy }: { row: AdminRow; leads: LeadRow[] | null; canDelete: boolean; onClose: () => void; openFile: (p: string) => void; onStatus: (userId: string, tier: string, status: TierStatus) => void; onDelete: (userId: string, email: string) => void; busy: string }) {
