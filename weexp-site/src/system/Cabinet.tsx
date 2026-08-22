@@ -83,6 +83,8 @@ export function Cabinet() {
     setBusy(false);
     if (r.confirm) setConfirmSent(r.confirm);          // увімкнено підтвердження email → лист надіслано
     else if (r.user) enter(r.user);                     // сесія одразу (демо або без Confirm email)
+    else if (r.error && /sending confirmation|confirmation email|error sending|smtp/i.test(r.error))
+      setAuthErr(t('Не вдалося надіслати лист підтвердження. Скористайтесь швидким входом через Google — ваш експрес-аудит підтягнеться автоматично.', 'Could not send the confirmation email. Use quick Google sign-in — your express audit will be linked automatically.'));
     else setAuthErr(r.error || t('Не вдалося зареєструватися. Спробуйте ще раз.', 'Could not sign up. Please try again.'));
   };
   const doAuth = () => (mode === 'register' ? doRegister() : doLogin());
