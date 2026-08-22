@@ -31,6 +31,8 @@
     { "source": "/how-it-works/benchmark", "destination": "/diagnose", "permanent": true },
     { "source": "/intelligence", "destination": "/proof", "permanent": true },
     { "source": "/privacy", "destination": "/privacy.html", "permanent": false },
+    { "source": "/cookies", "destination": "/cookies.html", "permanent": false },
+    { "source": "/cookie-policy", "destination": "/cookies.html", "permanent": false },
     { "source": "/en/privacy", "destination": "/privacy.html", "permanent": false },
     { "source": "/terms", "destination": "/oferta.html", "permanent": false },
     { "source": "/oferta", "destination": "/oferta.html", "permanent": false },

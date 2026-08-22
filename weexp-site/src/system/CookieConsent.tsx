@@ -25,7 +25,7 @@ export function CookieConsent() {
         <span className="ckc-ic" aria-hidden="true">🍪</span>
         <p className="ckc-text">
           {t('Ми використовуємо cookie, щоб сайт працював коректно й ставав кращим. ', 'We use cookies to keep the site working and make it better. ')}
-          <a href="/privacy.html" target="_blank" rel="noopener noreferrer" className="ckc-link">{t('Політика конфіденційності', 'Privacy policy')}</a>.
+          <a href="/cookies.html" target="_blank" rel="noopener noreferrer" className="ckc-link">{t('Політика cookie', 'Cookie policy')}</a>.
         </p>
         <div className="ckc-actions">
           <button className="ckc-btn ghost" onClick={() => decide('necessary')}>{t('Лише необхідні', 'Necessary only')}</button>

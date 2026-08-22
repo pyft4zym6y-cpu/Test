@@ -60,6 +60,7 @@ export function SiteFooter() {
           <a href={`mailto:${MAIL}`} className="sfoot-mail">{MAIL}</a>
           <span className="sfoot-legal">
             <a href="/privacy.html">{t('Політика', 'Privacy')}</a>
+            <a href="/cookies.html">{t('Cookie', 'Cookies')}</a>
             <a href="/oferta.html">{t('Оферта', 'Terms')}</a>
           </span>
         </div>
