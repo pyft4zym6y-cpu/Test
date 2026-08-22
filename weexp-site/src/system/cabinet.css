@@ -586,6 +586,9 @@
 
 /* Сортовані заголовки + користувачі */
 .adm-tr-users { grid-template-columns: 2.2fr 1.4fr .7fr .7fr .9fr auto; }
+.adm-tr-funnel { grid-template-columns: 2.4fr 1.5fr 1.1fr .8fr auto; }
+.adm-c-co { color: var(--graphite); font-weight: 400; }
+@media (max-width: 720px) { .adm-tr-funnel { grid-template-columns: 1fr auto; } .adm-tr-funnel > :nth-child(3), .adm-tr-funnel > :nth-child(4) { display: none; } }
 .adm-sort { background: none; border: 0; cursor: pointer; font: inherit; font-weight: 800; font-size: 11px;
   letter-spacing: .04em; text-transform: uppercase; color: var(--graphite); padding: 0; text-align: left; }
 .adm-sort:hover { color: var(--red); }

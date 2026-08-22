@@ -32,7 +32,6 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'users', label: 'Користувачі' },
   { id: 'audits', label: 'Аудити' },
   { id: 'template', label: 'Конструктор аудиту' },
-  { id: 'access', label: 'Запити доступів' },
   { id: 'leads', label: 'Первинна комунікація' },
   { id: 'pm', label: 'Проект-офіс' },
   { id: 'settings', label: 'Налаштування' },
@@ -56,6 +55,26 @@ const LEAD_STAGES: { k: LeadStatus; l: string; cls: string }[] = [
 const stageOf = (l: LeadRow): LeadStatus => l.status || 'new';
 // Клієнту показуємо єдину послугу «Глибокий аудит» (ключ DEEP). Старі T1–T4 — легасі.
 const tierLabel = (tid: string) => (tid === 'DEEP' ? 'Глибокий аудит' : tid);
+
+// ── Єдина клієнтська воронка (Аудити): стадія виводиться з даних клієнта ──
+type FunnelStage = 'registered' | 'express' | 'requested' | 'awaiting_data' | 'in_work' | 'project';
+const FUNNEL: { k: FunnelStage; l: string; cls: string }[] = [
+  { k: 'registered', l: 'Зареєстрований', cls: 'none' },
+  { k: 'express', l: 'Експрес пройдено', cls: 'ok' },
+  { k: 'requested', l: 'Запит на глибокий', cls: 'wait' },
+  { k: 'awaiting_data', l: 'Очікуються дані', cls: 'wait' },
+  { k: 'in_work', l: 'Аудит у роботі', cls: 'ok' },
+  { k: 'project', l: 'Проект', cls: 'ok' },
+];
+const funnelStage = (r: AdminRow): FunnelStage => {
+  const ts = Object.values(r.funnel?.tierStatus || {});
+  if (getProjects(r.record).length) return 'project';
+  if (r.hasDeep || ts.includes('granted')) return 'in_work';
+  if (ts.includes('data')) return 'awaiting_data';
+  if (ts.includes('requested')) return 'requested';
+  if (r.hasExpress) return 'express';
+  return 'registered';
+};
 
 /** Відносна дата: «щойно», «5 хв», «3 год», «2 дн», далі — дата. */
 function rel(iso?: string): string {
@@ -89,6 +108,7 @@ export function AdminPanel() {
   const [askReason, setAskReason] = useState('');
   const [selLeads, setSelLeads] = useState<Set<string>>(new Set()); // мультивибір заявок (має бути ДО ранніх return — правило хуків)
   const [userSeg, setUserSeg] = useState<'clients' | 'admins' | 'all'>('clients'); // підрозділ «Користувачі»
+  const [auditFilter, setAuditFilter] = useState<FunnelStage | 'all'>('all'); // фільтр воронки «Аудити»
 
   const load = () => {
     listAllDiagnostics().then(setRows);
@@ -429,29 +449,45 @@ export function AdminPanel() {
           );
         })()}
 
-        {/* ── Аудити ── */}
-        {tab === 'audits' && (
+        {/* ── Аудити: єдина клієнтська воронка ── */}
+        {tab === 'audits' && (() => {
+          const base = (rows || []).filter((r) => !q || r.email.toLowerCase().includes(q.toLowerCase()) || (r.company || '').toLowerCase().includes(q.toLowerCase()));
+          const withStage = base.map((r) => ({ r, stage: funnelStage(r) }));
+          const counts = FUNNEL.reduce((m, s) => { m[s.k] = withStage.filter((x) => x.stage === s.k).length; return m; }, {} as Record<FunnelStage, number>);
+          const shown = auditFilter === 'all' ? withStage : withStage.filter((x) => x.stage === auditFilter);
+          return (
           <section className="adm-sec">
-            <h1 className="sysx-display adm-h1">Аудити</h1>
-            {rows === null ? <p className="mc-msg mono">Завантаження…</p> : (rows || []).length === 0 ? <EmptyState icon="📊" text="Аудитів поки немає." /> : (
-              <div className="adm-table">
-                <div className="adm-tr adm-th adm-tr-4"><span>Email</span><span>Експрес-витік</span><span>Глибокий</span><span>Рівні</span></div>
-                {(rows || []).map((r) => {
+            <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Аудити</h1>
+              <input className="mc-search" placeholder="Пошук: email / компанія" value={q} onChange={(e) => setQ(e.target.value)} />
+            </div>
+            <p className="adm-hint mono">Єдина воронка: Лід → Користувач → Експрес → Запит на глибокий → Доступ → Аудит → Проект. Клацніть клієнта — доступи, дані й проект керуються в його картці.</p>
+            <div className="adm-seg mono" role="tablist">
+              <button role="tab" className={auditFilter === 'all' ? 'on' : ''} onClick={() => setAuditFilter('all')}>Всі <b>{withStage.length}</b></button>
+              {FUNNEL.map((s) => (
+                <button key={s.k} role="tab" className={auditFilter === s.k ? 'on' : ''} onClick={() => setAuditFilter(s.k)}>{s.l} <b>{counts[s.k]}</b></button>
+              ))}
+            </div>
+            {rows === null ? <p className="mc-msg mono">Завантаження…</p> : shown.length === 0 ? <EmptyState icon="📊" text={auditFilter === 'all' ? 'Аудитів поки немає.' : 'На цій стадії немає клієнтів.'} /> : (
+              <div className="adm-table adm-tr-funnel">
+                <div className="adm-tr adm-th adm-tr-funnel"><span>Email / компанія</span><span>Стадія</span><span>Витік/рік</span><span>Доступ</span><span></span></div>
+                {shown.map(({ r, stage }) => {
                   const money = r.record?.stage1Money;
-                  const tiers = Object.entries(r.funnel?.tierStatus || {});
+                  const st = FUNNEL.find((x) => x.k === stage)!;
                   return (
-                    <button key={r.userId} className="adm-tr adm-tr-4 adm-tr-btn" onClick={() => setOpenUser(r.userId)}>
-                      <span className="adm-c-email">{r.email}</span>
-                      <span className="mono">{money ? `${eur(money[0])}–${eur(money[1])}` : r.hasExpress ? 'є' : '—'}</span>
-                      <span className="mono">{r.hasDeep ? 'у роботі' : '—'}</span>
-                      <span className="adm-c-tiers">{tiers.length === 0 ? <i className="mono">—</i> : tiers.map(([tid, s]) => <span key={tid} className={`cab-badge mono tst-${ST[s]?.cls ?? 'muted'}`}>{tid}</span>)}</span>
-                    </button>
+                    <div key={r.userId} className="adm-tr adm-tr-funnel">
+                      <span className="adm-c-email"><b>{r.email}</b>{r.company && <i className="mono adm-c-co"> · {r.company}</i>}</span>
+                      <span><span className={`cab-badge mono tst-${st.cls}`}>{st.l}</span></span>
+                      <span className="mono">{money ? `${eur(money[0])}–${eur(money[1])}` : r.record?.express ? eur(r.record.express.total) : '—'}</span>
+                      <span className="mono">{r.funnel?.accessCode ? '🔑 видано' : '—'}</span>
+                      <button className="adm-open" onClick={() => setOpenUser(r.userId)}>Картка →</button>
+                    </div>
                   );
                 })}
               </div>
             )}
           </section>
-        )}
+          );
+        })()}
 
         {/* ── Конструктор шаблону аудиту ── */}
         {tab === 'template' && <AuditBuilder />}
