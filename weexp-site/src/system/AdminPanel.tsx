@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, deleteLead, deleteDiagnostics, signTierFile, CONFIGURED,
   findAuditIdByCode, loadAuditAnswers, loadAuditExtra, saveAuditExtra,
-  saveProjectsFor, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject,
+  saveProjectsFor, saveAssessmentFor, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject, type ModuleScore,
   MANAGER_EMAILS, TEAM_ROLES, ROLE_LABEL, roleOf, can, teamApi, type Role, type TeamMember, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
   type Project, type ProjTask, type ProjMember, type ProjPayment, type ProjMonth, type ProjTariffItem,
   type PmDirectory, type PmSpecialist, type PmRoleRate,
@@ -12,7 +12,7 @@ import { eur, sysLabel, actionText, type SysKey } from './lossModel';
 import { toast } from '@/lib/toast';
 import { useCabTheme, ThemeToggle } from '@/lib/cabTheme';
 import { AuditBuilder } from './AuditBuilder';
-import { loadTemplate, uid, Q_TYPES, type AuditTemplate, type Question } from './auditTemplate';
+import { loadTemplate, uid, Q_TYPES, type AuditTemplate, type Question, type Block } from './auditTemplate';
 import './system.css';
 import './cabinet.css';
 
@@ -1075,6 +1075,8 @@ function UserDetail({ row, leads, canDelete, onClose, openFile, onStatus, onDele
 
           <Block title="Глибокий аудит">{row.hasDeep ? <p className="mono">у роботі</p> : <p className="mono adm-empty">не почато</p>}</Block>
 
+          <Block title="Оцінка модулів (C-level) — внутрішнє"><ModuleScoring userId={row.userId} initial={rec.assessment || {}} /></Block>
+
           <Block title="Запити доступів">{tiers.length ? (
             <div className="adm-drawer-tiers">
               {tiers.map(([tid, s]) => {
@@ -1188,6 +1190,79 @@ function gMonthLabel(startMonth: string | undefined, i: number): string {
 }
 
 /** Проект-офіс: глобальний довідник команди та ставок (переиспользується в проектах). */
+/** Адмінський шар: C-level оцінка кожного модуля аудиту клієнта. Автозбереження. */
+function ModuleScoring({ userId, initial }: { userId: string; initial: Record<string, ModuleScore> }) {
+  const [mods, setMods] = useState<Block[] | null>(null);
+  const [map, setMap] = useState<Record<string, ModuleScore>>(initial || {});
+  const [open, setOpen] = useState<string | null>(null);
+  const [state, setState] = useState<SaveState>('idle');
+  const [savedAt, setSavedAt] = useState('');
+  const latest = useRef(map); latest.current = map;
+  const dirty = useRef(false); const first = useRef(true);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => { loadTemplate().then((t) => setMods(t.blocks)); }, []);
+  const doSave = async () => { setState('saving'); const r = await saveAssessmentFor(userId, latest.current); if (r.ok) { dirty.current = false; setState('saved'); setSavedAt(new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })); } else { setState('error'); } };
+  useEffect(() => {
+    if (first.current) { first.current = false; return; }
+    dirty.current = true; setState('dirty');
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => { void doSave(); }, 1200);
+    return () => { if (timer.current) clearTimeout(timer.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map]);
+  useEffect(() => () => { if (dirty.current) void saveAssessmentFor(userId, latest.current); }, [userId]);
+
+  if (!mods) return <p className="mono adm-empty">Завантаження модулів…</p>;
+  const set = (k: string, patch: Partial<ModuleScore>) => setMap((m) => ({ ...m, [k]: { ...m[k], ...patch } }));
+  const scored = mods.filter((b) => (map[b.key]?.score ?? null) !== null && map[b.key]?.score !== undefined);
+  const avg = scored.length ? Math.round(scored.reduce((n, b) => n + (map[b.key]!.score || 0), 0) / scored.length) : null;
+  const p1 = mods.filter((b) => map[b.key]?.priority === 'P1').length;
+  const label = state === 'saving' ? '💾 Збереження…' : state === 'dirty' ? '● Незбережено' : state === 'saved' ? `✓ ${savedAt}` : state === 'error' ? '✕ помилка' : '';
+
+  return (
+    <div className="adm-score">
+      <div className="adm-score-sum mono">
+        <span>Загальна зрілість: <b>{avg != null ? `${avg}/100` : '—'}</b></span>
+        <span>Оцінено: <b>{scored.length}/{mods.length}</b></span>
+        <span>P1: <b>{p1}</b></span>
+        {label && <span className={`pj-save-state pj-save-${state}`}>{label}</span>}
+      </div>
+      {mods.map((b) => {
+        const s = map[b.key] || {};
+        const isOpen = open === b.key;
+        return (
+          <div key={b.key} className="adm-score-mod">
+            <button className="adm-score-head" onClick={() => setOpen(isOpen ? null : b.key)}>
+              {b.cat && <span className="ab-cat mono">{b.cat}</span>}
+              <b>{b.title}</b>
+              <span className="adm-score-badges mono">
+                {s.score != null && <span className={`cab-badge tst-${s.score >= 65 ? 'ok' : s.score >= 40 ? 'wait' : 'bad'}`}>{s.score}</span>}
+                {s.priority && <span className={`cab-badge tst-${s.priority === 'P1' ? 'bad' : s.priority === 'P2' ? 'wait' : 'none'}`}>{s.priority}</span>}
+              </span>
+              <i aria-hidden="true">{isOpen ? '−' : '+'}</i>
+            </button>
+            {isOpen && (
+              <div className="adm-score-body">
+                <div className="adm-score-row3">
+                  <label className="pj-ed-f sm"><i>Score 0–100</i><input className="ab-inp" type="number" min={0} max={100} value={s.score ?? ''} onChange={(e) => set(b.key, { score: e.target.value === '' ? undefined : Math.max(0, Math.min(100, Number(e.target.value))) })} /></label>
+                  <label className="pj-ed-f sm"><i>Impact</i><select className="ab-sel" value={s.impact || ''} onChange={(e) => set(b.key, { impact: (e.target.value || undefined) as ModuleScore['impact'] })}><option value="">—</option><option value="low">Низький</option><option value="med">Середній</option><option value="high">Високий</option></select></label>
+                  <label className="pj-ed-f sm"><i>Priority</i><select className="ab-sel" value={s.priority || ''} onChange={(e) => set(b.key, { priority: (e.target.value || undefined) as ModuleScore['priority'] })}><option value="">—</option><option value="P1">P1</option><option value="P2">P2</option><option value="P3">P3</option></select></label>
+                  <label className="pj-ed-f sm"><i>Owner</i><input className="ab-inp" value={s.owner || ''} onChange={(e) => set(b.key, { owner: e.target.value })} placeholder="хто" /></label>
+                </div>
+                <label className="pj-ed-f"><i>Current state</i><textarea className="ab-inp" rows={2} value={s.state || ''} onChange={(e) => set(b.key, { state: e.target.value })} /></label>
+                <label className="pj-ed-f"><i>Evidence (джерело даних)</i><input className="ab-inp" value={s.evidence || ''} onChange={(e) => set(b.key, { evidence: e.target.value })} placeholder="напр.: GA4 + вивантаження CRM" /></label>
+                <label className="pj-ed-f"><i>Gap (розрив)</i><textarea className="ab-inp" rows={2} value={s.gap || ''} onChange={(e) => set(b.key, { gap: e.target.value })} /></label>
+                <label className="pj-ed-f"><i>Рекомендація</i><textarea className="ab-inp" rows={2} value={s.rec || ''} onChange={(e) => set(b.key, { rec: e.target.value })} /></label>
+                <label className="pj-ed-f"><i>Очікуваний ефект</i><input className="ab-inp" value={s.expected || ''} onChange={(e) => set(b.key, { expected: e.target.value })} placeholder="напр.: +retention / +LTV" /></label>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 const ALL_ROLES: Role[] = ['super', 'admin', 'manager', 'auditor'];
 /** Керування командою через серверний /api/team (лише Super Admin). */
 function TeamManager({ selfEmail }: { selfEmail: string }) {

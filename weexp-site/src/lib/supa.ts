@@ -94,7 +94,21 @@ export type DiagRecord = {
   project?: Project;                // (legacy) один проект — мігрує в projects[]
   projects?: Project[];             // розділ «Мій проект»: кілька проектів на клієнта (веде менеджер)
   pmDir?: PmDirectory;              // проект-офіс: довідник команди та ставок (лише в записі менеджера)
+  assessment?: Record<string, ModuleScore>; // C-level оцінка модулів аудиту (адмін-шар, ключ = block.key)
   updatedAt?: string;
+};
+
+/** C-level оцінка одного модуля аудиту (адмінський шар: Current State → … → Owner). */
+export type ModuleScore = {
+  state?: string;        // current state
+  evidence?: string;     // джерело/докази
+  score?: number;        // 0–100 (maturity)
+  gap?: string;          // розрив
+  impact?: 'low' | 'med' | 'high';
+  rec?: string;          // рекомендація
+  priority?: 'P1' | 'P2' | 'P3';
+  owner?: string;        // відповідальний
+  expected?: string;     // очікуваний ефект
 };
 
 /* ─── «Мій проект»: план ведення (Гант, команда, фінкалендар, тарифікація) ─── */
@@ -529,6 +543,24 @@ export async function clearTierStatusFor(userId: string, tier: string): Promise<
 }
 
 /** Менеджер зберігає/оновлює проекти клієнта (в diagnostics.data.projects). Клієнт лише переглядає. */
+/** Зберегти C-level оцінку модулів для клієнта (адмінський шар). */
+export async function saveAssessmentFor(userId: string, assessment: Record<string, ModuleScore>): Promise<{ ok: boolean; error?: string }> {
+  const stamp = new Date().toISOString();
+  if (!CONFIGURED || userId.startsWith('local:') || userId.startsWith('demo:')) {
+    try { const k = LS_DATA(userId); const prev = JSON.parse(localStorage.getItem(k) || '{}'); localStorage.setItem(k, JSON.stringify({ ...prev, assessment })); } catch { /* ignore */ }
+    return { ok: true };
+  }
+  try {
+    const { data } = await supabase.from('diagnostics').select('data').eq('user_id', userId).maybeSingle();
+    const rec = (data?.data as DiagRecord) || {};
+    const merged: DiagRecord = { ...rec, assessment, updatedAt: stamp };
+    const { data: upd, error } = await supabase.from('diagnostics').update({ data: merged }).eq('user_id', userId).select('user_id');
+    if (error) return { ok: false, error: error.message };
+    if (!upd || upd.length === 0) return { ok: false, error: 'Оновлення не застосовано — перевірте UPDATE-політику адміна на diagnostics (RLS).' };
+    return { ok: true };
+  } catch (e) { return { ok: false, error: String(e) }; }
+}
+
 export async function saveProjectsFor(userId: string, projects: Project[]): Promise<{ ok: boolean; error?: string }> {
   const stamp = new Date().toISOString();
   const list: Project[] = projects.map((p) => ({ ...p, id: p.id || 'pr_' + Math.random().toString(36).slice(2, 9), updatedAt: stamp }));

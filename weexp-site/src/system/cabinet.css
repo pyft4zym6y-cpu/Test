@@ -58,6 +58,16 @@
 .adm-team-acts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 .ab-sel.sm { padding: 4px 8px; font-size: 12px; }
 .ab-cat { flex: 0 0 auto; display: inline-grid; place-items: center; width: 28px; height: 28px; background: var(--deep); color: var(--cream); font-weight: 800; font-size: 13px; border-radius: 6px; }
+/* C-level оцінка модулів */
+.adm-score-sum { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; padding: 10px 0; font-size: 12.5px; margin-bottom: 8px; border-bottom: 1px solid var(--line); }
+.adm-score-sum b { font-size: 14px; }
+.adm-score-mod { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
+.adm-score-head { width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--pure-white); border: 0; cursor: pointer; text-align: left; font: inherit; color: var(--deep); }
+.adm-score-head b { flex: 1 1 auto; font-size: 13.5px; }
+.adm-score-badges { display: flex; gap: 6px; flex: 0 0 auto; }
+.adm-score-body { padding: 12px; background: var(--cream-2); display: flex; flex-direction: column; gap: 8px; }
+.adm-score-row3 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+@media (max-width: 640px) { .adm-score-row3 { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 640px) { .adm-team-row2 { grid-template-columns: 1fr auto; } .adm-team-row2 > :nth-child(3) { display: none; } }
 
 /* ═══ Темна тема кабінету/адмінки (клас .is-dark на корені) ═══
