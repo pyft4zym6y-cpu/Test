@@ -4,7 +4,7 @@ import {
   currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, deleteLead, deleteDiagnostics, signTierFile, CONFIGURED,
   findAuditIdByCode, loadAuditAnswers, loadAuditExtra, saveAuditExtra,
   saveProjectsFor, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject,
-  MANAGER_EMAILS, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
+  MANAGER_EMAILS, TEAM_ROLES, ROLE_LABEL, roleOf, can, type Role, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
   type Project, type ProjTask, type ProjMember, type ProjPayment, type ProjMonth, type ProjTariffItem,
   type PmDirectory, type PmSpecialist, type PmRoleRate,
 } from '@/lib/supa';
@@ -27,17 +27,24 @@ type SiteTraffic = {
   sources?: { name: string; sessions: number }[]; pages?: { path: string; views: number }[]; error?: string;
 };
 type Tab = 'overview' | 'users' | 'audits' | 'template' | 'access' | 'leads' | 'pm' | 'settings';
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'overview', label: 'Дашборд' },
-  { id: 'users', label: 'Користувачі' },
-  { id: 'audits', label: 'Аудити' },
-  { id: 'template', label: 'Конструктор аудиту' },
-  { id: 'leads', label: 'Первинна комунікація' },
-  { id: 'pm', label: 'Проект-офіс' },
-  { id: 'settings', label: 'Налаштування' },
+type Cap = Parameters<typeof can>[1];
+const TABS: { id: Tab; label: string; cap: Cap }[] = [
+  { id: 'overview', label: 'Дашборд', cap: 'view_dashboard' },
+  { id: 'users', label: 'Користувачі', cap: 'view_users' },
+  { id: 'audits', label: 'Аудити', cap: 'view_audits' },
+  { id: 'template', label: 'Конструктор аудиту', cap: 'edit_template' },
+  { id: 'leads', label: 'Первинна комунікація', cap: 'view_leads' },
+  { id: 'pm', label: 'Проект-офіс', cap: 'manage_pm' },
+  { id: 'settings', label: 'Налаштування', cap: 'manage_settings' },
 ];
 // Джерела заявок, що є запитами доступу (не первинна комунікація).
 const ACCESS_SOURCES = ['cabinet-access', 'cabinet-deep'];
+const CAP_SUMMARY: Record<Role, string> = {
+  super: 'усе + команда',
+  admin: 'клієнти · аудити · заявки · проекти · конструктор',
+  manager: 'клієнти · аудити · заявки',
+  auditor: 'лише аудити',
+};
 const ST: Record<TierStatus | 'none', { txt: string; cls: string }> = {
   none: { txt: 'Не запрошено', cls: 'none' }, requested: { txt: 'Очікує', cls: 'wait' },
   data: { txt: 'Потрібні дані', cls: 'wait' }, granted: { txt: 'Надано', cls: 'ok' }, rejected: { txt: 'Відхилено', cls: 'bad' },
@@ -185,7 +192,12 @@ export function AdminPanel() {
   if (checking) return <div className="adm"><div className="adm-boot mono">Завантаження…</div></div>;
   if (!CONFIGURED) return <Shell><p className="mc-msg">Supabase не налаштовано — адмінка недоступна.</p></Shell>;
   if (!user) return <Shell><p className="mc-msg">Увійдіть акаунтом адміністратора. <Link to="/cabinet" className="mc-link">Вхід →</Link></p></Shell>;
-  if (!isManager(user)) return <Shell><p className="mc-msg">Акаунт <b>{user.email}</b> не має прав адміністратора. Додайте його в <code>MANAGER_EMAILS</code> і застосуйте RLS-політику.</p></Shell>;
+  if (!isManager(user)) return <Shell><p className="mc-msg">Акаунт <b>{user.email}</b> не має прав адміністратора. Додайте його в <code>TEAM_ROLES</code> і застосуйте RLS-політику.</p></Shell>;
+
+  // Роль і дозволи поточного адміна — гейтимо вкладки й дії.
+  const role = roleOf(user);
+  const allowedTabs = TABS.filter((tb) => can(user, tb.cap));
+  const curTab = allowedTabs.some((tb) => tb.id === tab) ? tab : (allowedTabs[0]?.id ?? 'overview');
 
   const applyStatus = async (userId: string, tier: string, status: TierStatus, reason?: string) => {
     setBusy(`${userId}:${tier}`);
@@ -292,8 +304,8 @@ export function AdminPanel() {
       <aside className="adm-side">
         <Link to="/" className="adm-brand"><b>WEEXP</b><span className="mono">admin</span></Link>
         <nav className="adm-nav">
-          {TABS.map((tb) => (
-            <button key={tb.id} className={`adm-nav-i${tab === tb.id ? ' on' : ''}`} onClick={() => { setTab(tb.id); setOpenUser(null); }}>{tb.label}</button>
+          {allowedTabs.map((tb) => (
+            <button key={tb.id} className={`adm-nav-i${curTab === tb.id ? ' on' : ''}`} onClick={() => { setTab(tb.id); setOpenUser(null); }}>{tb.label}</button>
           ))}
         </nav>
         <div className="adm-foot mono">
@@ -307,7 +319,7 @@ export function AdminPanel() {
 
       <main className="adm-main">
         {/* ── Дашборд ── */}
-        {tab === 'overview' && (
+        {curTab === 'overview' && (
           <section className="adm-sec">
             <div className="adm-sec-head">
               <h1 className="sysx-display adm-h1">Дашборд</h1>
@@ -404,7 +416,7 @@ export function AdminPanel() {
         )}
 
         {/* ── Користувачі ── */}
-        {tab === 'users' && (() => {
+        {curTab === 'users' && (() => {
           const isAdm = (email: string) => MANAGER_EMAILS.map((e) => e.toLowerCase()).includes((email || '').toLowerCase());
           const nAdmins = sorted.filter((r) => isAdm(r.email)).length;
           const nClients = sorted.length - nAdmins;
@@ -450,7 +462,7 @@ export function AdminPanel() {
         })()}
 
         {/* ── Аудити: єдина клієнтська воронка ── */}
-        {tab === 'audits' && (() => {
+        {curTab === 'audits' && (() => {
           const base = (rows || []).filter((r) => !q || r.email.toLowerCase().includes(q.toLowerCase()) || (r.company || '').toLowerCase().includes(q.toLowerCase()));
           const withStage = base.map((r) => ({ r, stage: funnelStage(r) }));
           const counts = FUNNEL.reduce((m, s) => { m[s.k] = withStage.filter((x) => x.stage === s.k).length; return m; }, {} as Record<FunnelStage, number>);
@@ -490,7 +502,7 @@ export function AdminPanel() {
         })()}
 
         {/* ── Конструктор шаблону аудиту ── */}
-        {tab === 'template' && <AuditBuilder />}
+        {curTab === 'template' && <AuditBuilder />}
 
         {/* ── Запити доступів (глибокий аудит) ── */}
         {tab === 'access' && (
@@ -544,7 +556,7 @@ export function AdminPanel() {
         )}
 
         {/* ── Заявки · міні-CRM ── */}
-        {tab === 'leads' && (
+        {curTab === 'leads' && (
           <section className="adm-sec">
             <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Первинна комунікація</h1>
               {(leads || []).some((l) => !ACCESS_SOURCES.includes(l.source || '')) && (
@@ -622,23 +634,40 @@ export function AdminPanel() {
         )}
 
         {/* ── Проект-офіс: довідник команди та ставок ── */}
-        {tab === 'pm' && <PmOffice />}
+        {curTab === 'pm' && <PmOffice />}
 
         {/* ── Налаштування ── */}
-        {tab === 'settings' && (
+        {curTab === 'settings' && (
           <section className="adm-sec">
             <h1 className="sysx-display adm-h1">Налаштування</h1>
-            <div className="mc-msg">
-              <p><b>Адміністратори</b> (список у коді <code>MANAGER_EMAILS</code>):</p>
-              <ul className="adm-list">{MANAGER_EMAILS.map((e) => <li key={e} className="mono">{e}</li>)}</ul>
-              <p className="adm-hint mono">Щоб додати адміна — впиши email у <code>src/lib/supa.ts → MANAGER_EMAILS</code> і додай його у RLS-політики Supabase (SELECT/UPDATE на <code>diagnostics</code>). Контент сайту редагується в окремій CMS (фаза 2).</p>
+
+            <div className="pj-card">
+              <h2 className="pj-h2">Команда та ролі</h2>
+              <p className="pj-sub mono">Рольова модель доступу. Ваша роль: <b>{role ? ROLE_LABEL[role] : '—'}</b>.</p>
+              <div className="adm-team-tbl">
+                <div className="adm-team-row adm-team-th"><span>Email</span><span>Роль</span><span>Доступ</span></div>
+                {Object.entries(TEAM_ROLES).map(([email, r]) => (
+                  <div key={email} className="adm-team-row">
+                    <span className="mono">{email}{email === (user.email || '').toLowerCase() ? ' (ви)' : ''}</span>
+                    <span><span className={`cab-badge mono tst-${r === 'super' ? 'ok' : r === 'admin' ? 'ok' : r === 'manager' ? 'wait' : 'none'}`}>{ROLE_LABEL[r]}</span></span>
+                    <span className="mono adm-team-caps">{CAP_SUMMARY[r]}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="adm-roles-legend">
+                <p className="mono"><b>Super Admin</b> — повний доступ до всієї системи.</p>
+                <p className="mono"><b>Admin</b> — користувачі, аудити, заявки, проекти, конструктор (без керування командою).</p>
+                <p className="mono"><b>Manager</b> — робота з клієнтами, заявками й аудитами; без системних налаштувань.</p>
+                <p className="mono"><b>Auditor / Specialist</b> — лише аудити й робочі дані.</p>
+              </div>
+              <p className="adm-hint mono">Ролі задаються в <code>src/lib/supa.ts → TEAM_ROLES</code>. Керування командою з інтерфейсу (створення адміна, пароль, інвайт, блокування) підключається наступним кроком через серверний Supabase Auth Admin API. Нового адміна також треба додати в RLS-політики Supabase (SELECT/UPDATE на <code>diagnostics</code>).</p>
             </div>
           </section>
         )}
       </main>
 
       {/* Панель деталей користувача */}
-      {detail && <UserDetail row={detail} leads={leads} onClose={() => setOpenUser(null)} openFile={openFile} onStatus={setStatus} onDelete={removeUser} busy={busy} />}
+      {detail && <UserDetail row={detail} leads={leads} canDelete={can(user, 'delete_data')} onClose={() => setOpenUser(null)} openFile={openFile} onStatus={setStatus} onDelete={removeUser} busy={busy} />}
       {/* Панель деталей заявки */}
       {openLead && leads && <LeadDetail lead={leads.find((l) => l.id === openLead)} allRows={rows || []} onClose={() => setOpenLead(null)} onStatus={moveLead} onDelete={removeLead} busy={busy} onOpenClient={(uid) => { setOpenLead(null); setTab('users'); setOpenUser(uid); }} />}
 
@@ -923,7 +952,7 @@ table{border-collapse:collapse;width:100%}td{border-bottom:1px solid #EEE7D6;pad
   else toast('Дозвольте спливаючі вікна, щоб відкрити досьє', 'err');
 }
 
-function UserDetail({ row, leads, onClose, openFile, onStatus, onDelete, busy }: { row: AdminRow; leads: LeadRow[] | null; onClose: () => void; openFile: (p: string) => void; onStatus: (userId: string, tier: string, status: TierStatus) => void; onDelete: (userId: string, email: string) => void; busy: string }) {
+function UserDetail({ row, leads, canDelete, onClose, openFile, onStatus, onDelete, busy }: { row: AdminRow; leads: LeadRow[] | null; canDelete: boolean; onClose: () => void; openFile: (p: string) => void; onStatus: (userId: string, tier: string, status: TierStatus) => void; onDelete: (userId: string, email: string) => void; busy: string }) {
   const rec = row.record || {};
   const company = rec.company;
   const money = rec.stage1Money;
@@ -1100,12 +1129,14 @@ function UserDetail({ row, leads, onClose, openFile, onStatus, onDelete, busy }:
             ))}</ul>;
           })()}</Block>
 
-          <div className="adm-danger">
-            <span className="mono adm-empty">Небезпечна зона — прибирання тестових даних:</span>
-            <button className="mc-btn bad" disabled={busy === 'del:' + row.userId} onClick={() => onDelete(row.userId, row.email)}>
-              {busy === 'del:' + row.userId ? 'Видаляємо…' : 'Видалити клієнта та всі його дані'}
-            </button>
-          </div>
+          {canDelete && (
+            <div className="adm-danger">
+              <span className="mono adm-empty">Небезпечна зона — прибирання тестових даних:</span>
+              <button className="mc-btn bad" disabled={busy === 'del:' + row.userId} onClick={() => onDelete(row.userId, row.email)}>
+                {busy === 'del:' + row.userId ? 'Видаляємо…' : 'Видалити клієнта та всі його дані'}
+              </button>
+            </div>
+          )}
         </div>
       </aside>
     </div>

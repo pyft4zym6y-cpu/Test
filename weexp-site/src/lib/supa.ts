@@ -303,9 +303,42 @@ export async function saveDiag(user: DiagUser, patch: DiagRecord): Promise<void>
    Consoleа /manage бачить лише емейли зі списку MANAGER_EMAILS (звіряється з
    акаунтом, а не «просто кнопка»). Читання/запис чужих рядків дозволяє RLS-політика
    у Supabase (SQL — в інструкції), тож ключ лишається публічним. */
-export const MANAGER_EMAILS = ['pashasidorenko18@gmail.com', 'hello@weexp.agency'];
+/* ─── Ролі команди ───
+   Рольова модель доступу. Бутстрап-конфіг у коді (TEAM_ROLES) — надійне джерело,
+   яке не можна зламати з UI. Динамічне керування (створення адміна, інвайти,
+   паролі) додається окремим кроком через серверний Auth Admin API. */
+export type Role = 'super' | 'admin' | 'manager' | 'auditor';
+export const TEAM_ROLES: Record<string, Role> = {
+  'pashasidorenko18@gmail.com': 'super',
+  'hello@weexp.agency': 'super',
+};
+/** Капабіліті (що дозволено). Розділ = вкладка адмінки; дії — окремо. */
+export type Capability =
+  | 'view_dashboard' | 'view_users' | 'view_audits' | 'view_leads'
+  | 'edit_template' | 'manage_pm' | 'manage_access' | 'delete_data'
+  | 'manage_settings' | 'manage_team';
+const ROLE_CAPS: Record<Role, Capability[]> = {
+  super: ['view_dashboard', 'view_users', 'view_audits', 'view_leads', 'edit_template', 'manage_pm', 'manage_access', 'delete_data', 'manage_settings', 'manage_team'],
+  admin: ['view_dashboard', 'view_users', 'view_audits', 'view_leads', 'edit_template', 'manage_pm', 'manage_access', 'delete_data'],
+  manager: ['view_dashboard', 'view_users', 'view_audits', 'view_leads', 'manage_access'],
+  auditor: ['view_audits'],
+};
+export const ROLE_LABEL: Record<Role, string> = {
+  super: 'Super Admin', admin: 'Admin', manager: 'Manager', auditor: 'Auditor / Specialist',
+};
+export function roleOf(u: DiagUser | null): Role | null {
+  if (!u) return null;
+  return TEAM_ROLES[(u.email || '').toLowerCase()] ?? null;
+}
+/** Чи має користувач право на дію. */
+export function can(u: DiagUser | null, cap: Capability): boolean {
+  const r = roleOf(u);
+  return !!r && ROLE_CAPS[r].includes(cap);
+}
+// Бек-сумісність: будь-яка роль = доступ у адмінку.
+export const MANAGER_EMAILS = Object.keys(TEAM_ROLES);
 export function isManager(u: DiagUser | null): boolean {
-  return !!u && MANAGER_EMAILS.map((e) => e.toLowerCase()).includes((u.email || '').toLowerCase());
+  return roleOf(u) !== null;
 }
 export type AdminRow = {
   userId: string; email: string; company?: string; funnel?: FunnelState; updatedAt?: string;
