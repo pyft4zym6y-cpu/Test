@@ -45,6 +45,8 @@ export type FunnelState = {
   tierHistory?: Record<string, TierEvent[]>;   // таймлайн змін статусу, по рівнях
   tierFiles?: Record<string, TierFile[]>;      // завантажені файли, по рівнях
   accessCode?: string;                         // унікальний код відкриття глибокого аудиту (видає менеджер при «Надати»)
+  auditRole?: string;                          // роль спеціаліста у спільному аудиті (обмежує блоки)
+  auditId?: string;                            // id спільного аудиту компанії, до якого приєднаний акаунт
 };
 
 /** Унікальний код доступу до глибокого аудиту (видається клієнту при наданні рівня). */
@@ -232,6 +234,48 @@ export async function listAllDiagnostics(): Promise<AdminRow[]> {
     }));
     return rows.sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
   } catch { return []; }
+}
+
+/* ─── Спільний аудит компанії (Фаза B) ─── */
+export type AuditAnswer = { value: unknown; by?: string; at?: string };
+
+/** Забезпечити рядок аудиту компанії за кодом (один спільний для всіх спеціалістів). */
+export async function ensureAudit(company: string, code: string, version: number): Promise<string | null> {
+  const fallback = 'local:' + (code || 'audit');
+  if (!CONFIGURED) return fallback;
+  try {
+    const { data: found } = await supabase.from('audits').select('id').eq('access_code', code).maybeSingle();
+    if (found?.id) return found.id as string;
+    const { data, error } = await supabase.from('audits').insert({ company, access_code: code, template_version: version }).select('id').maybeSingle();
+    return error ? fallback : ((data?.id as string) ?? fallback);   // мережа/налаштування впали — не блокуємо власника
+  } catch { return fallback; }
+}
+/** Знайти id аудиту за кодом (для приєднання зі стороннього акаунта). */
+export async function findAuditIdByCode(code: string): Promise<string | null> {
+  if (!CONFIGURED) return 'local:' + code.trim().toUpperCase();
+  try { const { data } = await supabase.from('audits').select('id').eq('access_code', code.trim().toUpperCase()).maybeSingle(); return (data?.id as string) ?? null; } catch { return null; }
+}
+export async function loadAuditAnswers(auditId: string): Promise<Record<string, AuditAnswer>> {
+  if (!CONFIGURED || auditId.startsWith('local:')) { try { return JSON.parse(localStorage.getItem('weexp:aud:' + auditId) || '{}'); } catch { return {}; } }
+  try {
+    const { data } = await supabase.from('audit_answers').select('qkey,value,updated_by,updated_at').eq('audit_id', auditId);
+    const m: Record<string, AuditAnswer> = {};
+    (data as Array<Record<string, unknown>> || []).forEach((r) => { m[String(r.qkey)] = { value: r.value, by: r.updated_by as string, at: r.updated_at as string }; });
+    return m;
+  } catch { return {}; }
+}
+export async function saveAuditAnswer(auditId: string, qkey: string, value: unknown, by: string): Promise<{ ok: boolean; error?: string; at?: string }> {
+  const at = new Date().toISOString();
+  if (!CONFIGURED || auditId.startsWith('local:')) {
+    try { const k = 'weexp:aud:' + auditId; const m = JSON.parse(localStorage.getItem(k) || '{}'); m[qkey] = { value, by, at }; localStorage.setItem(k, JSON.stringify(m)); } catch { /* ignore */ }
+    return { ok: true, at };
+  }
+  try {
+    const { error } = await supabase.from('audit_answers').upsert({ audit_id: auditId, qkey, value, updated_by: by, updated_at: at }, { onConflict: 'audit_id,qkey' });
+    if (error) return { ok: false, error: error.message };
+    supabase.from('audit_answer_log').insert({ audit_id: auditId, qkey, value, updated_by: by }).then(() => {}, () => {});   // історія, best-effort
+    return { ok: true, at };
+  } catch (e) { return { ok: false, error: String(e) }; }
 }
 
 /** Стадія ліда в міні-CRM (воронка продажів). */

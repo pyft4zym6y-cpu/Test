@@ -330,6 +330,42 @@
 .cab-code-v:hover { transform: translate(-1px, -1px); box-shadow: var(--sh-lg); }
 .cab-code-h { font-size: 11.5px; color: var(--graphite); }
 
+/* ── Спільна форма аудиту (Фаза B) ── */
+.cab-roles { display: flex; flex-wrap: wrap; gap: 8px; }
+.af { display: flex; flex-direction: column; gap: 16px; }
+.af-prog { display: flex; align-items: center; gap: 12px; position: sticky; top: 66px; z-index: 3; background: var(--cream);
+  border: var(--bd); box-shadow: var(--sh); padding: 10px 14px; }
+.af-prog-bar { flex: 1; height: 12px; background: var(--cream-2); border: 2px solid var(--deep); overflow: hidden; }
+.af-prog-bar span { display: block; height: 100%; background: var(--red); transition: width .3s; }
+.af-block { background: var(--pure-white); border: var(--bd); box-shadow: var(--sh); padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.af-block.locked { opacity: .72; }
+.af-block-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 2px solid var(--deep); padding-bottom: 10px; }
+.af-block-t { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: 16px; color: var(--deep); }
+.af-role { font-size: 10.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--graphite);
+  background: var(--yellow); border: 2px solid var(--deep); padding: 2px 8px; }
+.af-q { display: flex; flex-direction: column; gap: 5px; }
+.af-lbl { font-weight: 700; font-size: 14.5px; color: var(--deep); }
+.af-req { color: var(--red); font-style: normal; margin-left: 3px; }
+.af-hint { font-size: 11.5px; color: var(--graphite); }
+.af-inp { border: 2.5px solid var(--deep); background: var(--cream); color: var(--deep); font: inherit; font-size: 14px; padding: 9px 12px; }
+.af-inp:focus { outline: 0; box-shadow: 3px 3px 0 var(--red); }
+.af-inp:disabled { background: var(--cream-2); color: var(--graphite); }
+.af-by { font-size: 11px; color: var(--graphite); }
+.af-empty { color: var(--silver); }
+.af-opts { display: flex; flex-wrap: wrap; gap: 6px; }
+.af-opt { border: 2px solid var(--deep); background: var(--pure-white); color: var(--deep); font: inherit; font-weight: 700;
+  font-size: 13px; padding: 7px 12px; cursor: pointer; }
+.af-opt.on { background: var(--deep); color: var(--cream); }
+.af-opt:disabled { opacity: .5; cursor: default; }
+.af-scale { display: flex; gap: 4px; flex-wrap: wrap; }
+.af-scale-b { width: 34px; height: 34px; border: 2px solid var(--deep); background: var(--pure-white); color: var(--deep);
+  font: inherit; font-weight: 800; cursor: pointer; }
+.af-scale-b.on { background: var(--red); color: #fff; border-color: var(--red); }
+.af-scale-b:disabled { opacity: .5; }
+.af-file { display: inline-flex; align-items: center; gap: 8px; border: 2.5px dashed var(--deep); background: var(--cream);
+  padding: 10px 14px; cursor: pointer; font-weight: 700; font-size: 13px; color: var(--deep); }
+.af-file.dis { opacity: .5; cursor: default; }
+
 /* Банер статусу доступів у Огляді (клієнт бачить відповідь менеджера) */
 .cab-accban { background: var(--pure-white); border: var(--bd); box-shadow: var(--sh); padding: 20px 22px; display: flex; flex-direction: column; gap: 12px; }
 .cab-accban-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }

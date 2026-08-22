@@ -1,10 +1,13 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   currentUser, signOut, loadDiag, saveDiag, CONFIGURED, isCloudUser,
   registerWithEmail, signInWithEmail, resendConfirmation, signInWithGoogle, onAuth,
-  type DiagUser, type DiagRecord, type CompanyProfile, type TierStatus, type TierEvent,
+  ensureAudit, findAuditIdByCode, loadAuditAnswers,
+  type DiagUser, type DiagRecord, type CompanyProfile, type TierStatus, type TierEvent, type AuditAnswer,
 } from '@/lib/supa';
+import { AuditForm } from './AuditForm';
+import { loadTemplate, CLIENT_ROLES, type AuditTemplate } from './auditTemplate';
 import { getExpressAudit, clearExpressAudit, buildJourney, type ExpressAudit } from './cabinetData';
 import { eur } from './lossModel';
 import { sendLead } from '@/lib/leads';
@@ -12,10 +15,6 @@ import { isValidCode } from '@/lib/access';
 import { useT, useLp } from '@/i18n';
 import './system.css';
 import './cabinet.css';
-
-// Глибокий аудит (Tier-2) — окремий зрілий інструмент; кабінет його ВБУДОВУЄ як
-// розділ, а не дублює. Ліниво, щоб важкий чанк не тягнувся на вхід у кабінет.
-const Stage3 = lazy(() => import('@/system/Stage3').then((m) => ({ default: m.Stage3 })));
 
 /**
  * /cabinet — персональний кабінет клієнта як ХАБ однієї воронки. Зліва — розділи,
@@ -412,6 +411,39 @@ function DeepAudit({ user, rec, express, onDone, onClose, go }: { user: DiagUser
   const [code, setCode] = useState('');
   const [err, setErr] = useState('');
   const [showCode, setShowCode] = useState(false);
+  // Спільний аудит компанії (Фаза B)
+  const [joinCode, setJoinCode] = useState('');
+  const [auditId, setAuditId] = useState<string | null>(null);
+  const [tpl, setTpl] = useState<AuditTemplate | null>(null);
+  const [answers, setAnswers] = useState<Record<string, AuditAnswer>>({});
+  const [loadingWork, setLoadingWork] = useState(false);
+  const [role, setRole] = useState<string>(rec?.funnel?.auditRole || '');
+
+  useEffect(() => {
+    if (!granted) return;
+    let alive = true; setLoadingWork(true);
+    (async () => {
+      const template = await loadTemplate();
+      const c = (accessCode || joinCode || '').trim().toUpperCase();
+      let id: string | null = null;
+      if (status === 'granted') {
+        const company = rec?.company?.name || (user.email.split('@')[1] || user.email);
+        id = await ensureAudit(company, c, template.version);
+      } else if (c) {
+        id = await findAuditIdByCode(c);
+      }
+      const ans = id ? await loadAuditAnswers(id) : {};
+      if (!alive) return;
+      setTpl(template); setAuditId(id); setAnswers(ans); setLoadingWork(false);
+    })();
+    return () => { alive = false; };
+  }, [granted, status, accessCode, joinCode]);
+
+  const pickRole = async (r: string) => {
+    setRole(r);
+    await saveDiag(user, { funnel: { ...(rec?.funnel || {}), auditRole: r } });
+    onDone();
+  };
 
   const request = async () => {
     if (status === 'requested' || status === 'granted') return;
@@ -424,20 +456,31 @@ function DeepAudit({ user, rec, express, onDone, onClose, go }: { user: DiagUser
     setBusy(false); onDone();
   };
   const matchesPersonal = (v: string) => !!accessCode && v.trim().toUpperCase() === accessCode.trim().toUpperCase();
-  const unlock = () => {
-    if (!isValidCode(code) && !matchesPersonal(code)) { setErr(t('Код недійсний. Попросіть його в менеджера або запросіть доступ вище.', 'Invalid code. Ask your manager for it or request access above.')); return; }
-    setErr(''); try { localStorage.setItem(deepKey(user.email), '1'); } catch { /* ignore */ }
-    setLocalUnlocked(true);
+  const doUnlock = (c: string) => { setJoinCode(c); setErr(''); try { localStorage.setItem(deepKey(user.email), '1'); } catch { /* ignore */ } setLocalUnlocked(true); };
+  const unlock = async () => {
+    const c = code.trim().toUpperCase();
+    if (isValidCode(code) || matchesPersonal(code)) { doUnlock(c); return; }
+    // Код компанії від колеги — приєднуємось до спільного аудиту.
+    const id = await findAuditIdByCode(c);
+    if (id) { doUnlock(c); return; }
+    setErr(t('Код недійсний. Попросіть його в менеджера або запросіть доступ вище.', 'Invalid code. Ask your manager for it or request access above.'));
   };
 
-  // Доступ надано → робочий розділ (опитувальник → доступи → документи/файли)
+  // Доступ надано → спільний робочий розділ аудиту компанії
   if (granted) {
     return (
       <section className="cab-sec cab-deep-wrap">
-        <SecHead kick={t('Глибокий аудит', 'Deep audit')} title={t('Розбір систем магазину', 'Analysis of your store systems')} lead={t('Доступ відкрито. Проходьте по секціях: опитувальник → доступи → документи й файли. На виході — інтерактивний звіт: зрілість, конкурентне поле, маркетинг/фінанси, позиціонування. Прогрес зберігається автоматично.', 'Access unlocked. Go section by section: questionnaire → access → documents and files. The output is an interactive report: maturity, competitive field, marketing/finance, positioning. Progress is saved automatically.')} />
-        <Suspense fallback={<div className="cab-boot mono">{t('Відкриваємо розбір…', 'Opening analysis…')}</div>}>
-          <Stage3 embedded onClose={onClose} />
-        </Suspense>
+        <SecHead kick={t('Глибокий аудит', 'Deep audit')} title={t('Заповнення аудиту', 'Filling in the audit')} lead={t('Спільний аудит компанії: над ним можуть працювати кілька ваших спеціалістів за одним кодом. Кожна відповідь підписується автором і зберігається автоматично.', 'A shared company audit: several of your specialists can work on it with one code. Every answer is signed by its author and saved automatically.')} />
+        {loadingWork || !tpl ? <div className="cab-boot mono">{t('Відкриваємо аудит…', 'Opening the audit…')}</div>
+          : !auditId ? <p className="cab-auth-err mono">{t('Не вдалося відкрити аудит. Перевірте код або зверніться до менеджера.', 'Could not open the audit. Check the code or contact your manager.')}</p>
+          : !role ? (
+            <div className="cab-card cab-deep-gate">
+              <span className="sysx-kick">{t('Ваша роль у проекті', 'Your role in the project')}</span>
+              <p className="cab-next-d">{t('Оберіть роль — від неї залежить, які блоки ви заповнюєте.', 'Pick your role — it defines which blocks you fill in.')}</p>
+              <div className="cab-roles">{CLIENT_ROLES.map((r) => <button key={r} className="sysx-cta" onClick={() => pickRole(r)}>{r}</button>)}</div>
+            </div>
+          )
+          : <AuditForm user={user} auditId={auditId} template={tpl} initial={answers} role={role} isOwner={status === 'granted'} />}
       </section>
     );
   }
