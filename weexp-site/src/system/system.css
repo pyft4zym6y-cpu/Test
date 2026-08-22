@@ -2102,18 +2102,25 @@
 .sfoot-dmca:hover { opacity: 1; }
 .sfoot-bottom { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 
-/* Cookie-consent банер */
-.ckc { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1000; padding: 12px; display: flex; justify-content: center; pointer-events: none; }
-.ckc-in { pointer-events: auto; max-width: 900px; width: 100%; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
-  background: var(--pure-white); border: 2.5px solid var(--deep); box-shadow: 6px 6px 0 var(--deep); padding: 14px 18px; }
-.ckc-text { flex: 1 1 320px; font-size: 13px; color: var(--deep); line-height: 1.5; margin: 0; }
-.ckc-link { color: var(--deep); text-decoration: underline; text-underline-offset: 2px; }
+/* Cookie-consent банер — фірмовий нео-брутал (явні кольори, щоб не залежати від скоупу токенів) */
+.ckc { position: fixed; left: 0; right: 0; bottom: 0; z-index: 90; padding: 14px; display: flex; justify-content: center; pointer-events: none; }
+.ckc-in { pointer-events: auto; max-width: 860px; width: 100%; display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  background: #141210; color: #F1E9D4; border: 2.5px solid #141210; box-shadow: 6px 6px 0 rgba(20,18,16,.22); padding: 14px 18px; }
+.ckc-ic { flex: 0 0 auto; font-size: 20px; line-height: 1; }
+.ckc-text { flex: 1 1 300px; font-size: 13px; color: #F1E9D4; line-height: 1.5; margin: 0; }
+.ckc-link { color: #FFD200; text-decoration: underline; text-underline-offset: 2px; font-weight: 600; }
 .ckc-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-.ckc-btn { border: 2.5px solid var(--deep); padding: 9px 16px; font-weight: 700; font-size: 13px; cursor: pointer; background: var(--pure-white); transition: transform .08s, box-shadow .08s; }
-.ckc-btn.primary { background: var(--deep); color: var(--pure-white); }
-.ckc-btn:hover { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 var(--deep); }
-.ckc-btn.primary:hover { box-shadow: 3px 3px 0 var(--red); }
-@media (max-width: 560px) { .ckc-in { flex-direction: column; align-items: stretch; } .ckc-actions { justify-content: stretch; } .ckc-btn { flex: 1; } }
+.ckc-btn { border: 2.5px solid #FAF5E9; background: transparent; color: #FAF5E9; padding: 9px 16px; font-weight: 700; font-size: 13px; cursor: pointer; transition: transform .08s, box-shadow .08s, background .12s; white-space: nowrap; }
+.ckc-btn.primary { background: #FFD200; color: #141210; border-color: #FFD200; }
+.ckc-btn.ghost:hover { background: rgba(250,245,233,.12); }
+.ckc-btn.primary:hover { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 #F5301C; }
+/* Над мобільною таб-панеллю (.sysh-tabs), щоб не перекривати навігацію */
+@media (max-width: 860px) {
+  .ckc { bottom: calc(62px + env(safe-area-inset-bottom)); padding: 10px; }
+  .ckc-in { flex-direction: column; align-items: stretch; gap: 12px; padding: 14px; }
+  .ckc-actions { justify-content: stretch; }
+  .ckc-btn { flex: 1; }
+}
 
 /* Trust-строка у підвалі */
 .sfoot-trust { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; justify-content: center; padding: 12px 0; border-top: 1px solid rgba(255,255,255,.12); font-size: 12px; opacity: .9; }

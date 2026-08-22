@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useT, useLp } from '@/i18n';
-import { Link } from 'react-router-dom';
+import { useT } from '@/i18n';
 import './system.css';
 
 /**
@@ -11,7 +10,6 @@ const KEY = 'weexp:cookie-consent-v1';
 
 export function CookieConsent() {
   const t = useT();
-  const lp = useLp();
   const [show, setShow] = useState(false);
   useEffect(() => {
     try { if (!localStorage.getItem(KEY)) setShow(true); } catch { /* ignore */ }
@@ -24,9 +22,10 @@ export function CookieConsent() {
   return (
     <div className="ckc" role="dialog" aria-live="polite" aria-label={t('Згода на cookie', 'Cookie consent')}>
       <div className="ckc-in">
+        <span className="ckc-ic" aria-hidden="true">🍪</span>
         <p className="ckc-text">
           {t('Ми використовуємо cookie, щоб сайт працював коректно й ставав кращим. ', 'We use cookies to keep the site working and make it better. ')}
-          <Link to={lp('/privacy.html')} className="ckc-link" onClick={(e) => { e.preventDefault(); window.open('/privacy.html', '_blank'); }}>{t('Політика конфіденційності', 'Privacy policy')}</Link>.
+          <a href="/privacy.html" target="_blank" rel="noopener noreferrer" className="ckc-link">{t('Політика конфіденційності', 'Privacy policy')}</a>.
         </p>
         <div className="ckc-actions">
           <button className="ckc-btn ghost" onClick={() => decide('necessary')}>{t('Лише необхідні', 'Necessary only')}</button>
