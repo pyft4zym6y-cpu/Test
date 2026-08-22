@@ -146,7 +146,16 @@ export function AdminPanel() {
       const t1 = t0 + 86400000;
       return { t0, n: ev.filter((e) => { const x = new Date(e.at).getTime(); return x >= t0 && x < t1; }).length };
     });
-    return { funnel, statusDist, recent: inPeriod.slice(0, 14), trend };
+    // Джерела заявок (по l.source) за період — без службових access-джерел.
+    const srcMap = new Map<string, number>();
+    (leads || []).forEach((l) => {
+      if (ACCESS_SOURCES.includes(l.source || '')) return;
+      if (since && l.at && new Date(l.at).getTime() < since) return;
+      const key = (l.source || 'без мітки').trim() || 'без мітки';
+      srcMap.set(key, (srcMap.get(key) || 0) + 1);
+    });
+    const leadSources = [...srcMap.entries()].map(([k, n]) => ({ k, n })).sort((a, b) => b.n - a.n).slice(0, 8);
+    return { funnel, statusDist, recent: inPeriod.slice(0, 14), trend, leadSources };
   }, [rows, leads, metrics, period]);
 
   if (checking) return <div className="adm"><div className="adm-boot mono">Завантаження…</div></div>;
@@ -326,6 +335,24 @@ export function AdminPanel() {
                 </div>
               </div>
             )}
+
+            <div className="adm-panel">
+              <span className="adm-col-h mono">Джерела заявок · {period === 0 ? 'усі' : `${period} днів`}</span>
+              {analytics.leadSources.length === 0 ? <p className="mono adm-empty">заявок за період немає</p> : (
+                <div className="adm-dist">
+                  {analytics.leadSources.map((d) => {
+                    const max = analytics.leadSources[0].n || 1;
+                    return (
+                      <div key={d.k} className="adm-fn-row">
+                        <span className="adm-fn-l" title={d.k}>{d.k}</span>
+                        <div className="adm-fn-bar"><span className="adm-fn-fill" style={{ width: `${Math.max(Math.round((d.n / max) * 100), 3)}%` }} /></div>
+                        <span className="adm-fn-n mono">{d.n}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
             {rows !== null && rows.length > 0 && <Trend data={analytics.trend} />}
 
@@ -606,7 +633,7 @@ function LeadDetail({ lead, allRows, onClose, onStatus, onOpenClient, onDelete, 
       <aside className="adm-drawer" onClick={(e) => e.stopPropagation()}>
         <div className="adm-drawer-head">
           <a className="adm-email adm-mail" href={`mailto:${lead.email || ''}`}>{lead.email || lead.phone || 'Заявка'}</a>
-          <button className="adm-x" onClick={onClose}>✕</button>
+          <button className="adm-x" onClick={onClose} aria-label="Закрити" title="Закрити">✕</button>
         </div>
         <div className="adm-drawer-body">
           <Block title="Стадія CRM">
@@ -795,7 +822,7 @@ function UserDetail({ row, onClose, openFile, onStatus, onDelete, busy }: { row:
       <aside className="adm-drawer" onClick={(e) => e.stopPropagation()}>
         <div className="adm-drawer-head">
           <a className="adm-email adm-mail" href={`mailto:${row.email}`}>{row.email}</a>
-          <button className="adm-x" onClick={onClose}>✕</button>
+          <button className="adm-x" onClick={onClose} aria-label="Закрити" title="Закрити">✕</button>
         </div>
         <div className="adm-drawer-body">
           {code && (
