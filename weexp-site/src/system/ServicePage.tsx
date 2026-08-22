@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Link, Navigate, useParams, useLocation } from 'react-router-dom';
 import { SYSTEMS, localizeSystem } from '@/data/xray';
 import { CASES } from '@/data/cases';
-import { applySeo } from '@/lib/seo';
+import { applySeo, useJsonLd, ORIGIN } from '@/lib/seo';
 import { useT, useLp, useLang } from '@/i18n';
 import './system.css';
 
@@ -28,6 +28,19 @@ export function ServicePage() {
     applySeo(`${s.title} — ${t('послуга WEEXP', 'WEEXP service')} · Commerce OS`,
       `${s.title}: ${s.bigIdea}`, pathname);
   }, [rawSys, lang, pathname, t]);
+
+  // Service-схема (schema.org) — Google краще розуміє послугу.
+  const svcLd = rawSys ? (() => {
+    const s = localizeSystem(rawSys, lang);
+    return {
+      '@context': 'https://schema.org', '@type': 'Service',
+      name: s.title, description: s.bigIdea, serviceType: s.en,
+      url: ORIGIN + (pathname === '/' ? '/' : pathname.replace(/\/$/, '')),
+      provider: { '@type': 'Organization', name: 'WEEXP', url: ORIGIN },
+      areaServed: [{ '@type': 'Country', name: 'Ukraine' }, { '@type': 'AdministrativeArea', name: 'EU' }, { '@type': 'Country', name: 'US' }],
+    };
+  })() : null;
+  useJsonLd('service', svcLd);
 
   if (!rawSys) return <Navigate to="/#systems" replace />;
 

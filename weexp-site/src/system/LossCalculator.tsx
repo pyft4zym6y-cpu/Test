@@ -66,7 +66,13 @@ export function LossCalculator() {
     expansion: t('Уперлися в стелю ринку', 'Hit the market ceiling'),
   };
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [inp, setInp] = useState<LossInput>({ monthlyRevenue: 0, aov: 0, conversion: 0, repeatRate: 0, returnsRate: 0, grossMargin: 0, cac: 0, symptoms: [] });
+  const CALC_KEY = 'weexp:calc-inp-v1';
+  const [inp, setInp] = useState<LossInput>(() => {
+    // Відновлюємо введені цифри, щоб оновлення сторінки не скидало прогрес.
+    try { const r = localStorage.getItem(CALC_KEY); if (r) return { monthlyRevenue: 0, aov: 0, conversion: 0, repeatRate: 0, returnsRate: 0, grossMargin: 0, cac: 0, symptoms: [], ...JSON.parse(r) }; } catch { /* ignore */ }
+    return { monthlyRevenue: 0, aov: 0, conversion: 0, repeatRate: 0, returnsRate: 0, grossMargin: 0, cac: 0, symptoms: [] };
+  });
+  useEffect(() => { try { localStorage.setItem(CALC_KEY, JSON.stringify(inp)); } catch { /* ignore */ } }, [inp]);
   const [res, setRes] = useState<LossResult | null>(null);
   const [leadBusy, setLeadBusy] = useState(false);
   const [orderStep, setOrderStep] = useState<null | 'form' | 'review' | 'sent'>(null);

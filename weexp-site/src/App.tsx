@@ -1,6 +1,7 @@
 import { Component, lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { RouteSeo } from '@/lib/seo';
+import { Engagement } from '@/lib/engagement';
 import { Toaster } from '@/lib/toast';
 import '@/lib/primitives.css';
 
@@ -111,6 +112,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <RouteSeo />
+      <Engagement />
       <ScrollToTop />
       <ScrollToHash />
       <ErrorBoundary>

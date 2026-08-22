@@ -2154,3 +2154,10 @@
 .home-faq-item[open] .home-faq-mark { transform: rotate(45deg); background: #FFD200; }
 .home-faq-a { margin: 0; padding: 0 18px 18px; color: var(--sh-graphite, #5b5750); line-height: 1.6; font-size: clamp(14px, 2vw, 15.5px); }
 @media (prefers-reduced-motion: reduce) { .home-faq-mark { transition: none; } }
+
+/* Кнопка «нагору» */
+.back-top { position: fixed; right: 16px; bottom: 20px; z-index: 70; width: 46px; height: 46px; border: 2.5px solid #141210; background: #FFD200; color: #141210; font-size: 20px; font-weight: 800; cursor: pointer; box-shadow: 4px 4px 0 #141210; transition: transform .1s, box-shadow .1s; }
+.back-top:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 #141210; }
+.back-top:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 #141210; }
+@media (max-width: 860px) { .back-top { bottom: calc(74px + env(safe-area-inset-bottom)); right: 12px; width: 42px; height: 42px; } }
+@media print { .back-top { display: none; } }

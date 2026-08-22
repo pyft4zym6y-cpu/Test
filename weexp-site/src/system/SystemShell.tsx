@@ -128,7 +128,23 @@ export function SystemShell() {
       <div id="main-content" tabIndex={-1}><Outlet /></div>
       <SiteFooter />
       <CookieConsent />
+      <BackToTop />
     </div>
+  );
+}
+
+/** Кнопка «нагору» — зʼявляється після прокрутки, над мобільною таб-панеллю. */
+function BackToTop() {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setShow(window.scrollY > 700);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  if (!show) return null;
+  return (
+    <button className="back-top" aria-label="Нагору" title="Нагору" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>↑</button>
   );
 }
 
