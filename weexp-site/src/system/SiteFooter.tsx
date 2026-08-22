@@ -15,9 +15,8 @@ const NAV = [
   { to: '/cabinet', uk: 'Кабінет', en: 'Cabinet' },
 ];
 const MAIL = 'hello@weexp.agency';
-// DMCA Protection Badge — встав сюди свій ID з dmca.com (безкоштовна реєстрація).
-// Поки порожньо — бейдж не показується. Приклад: '1a2b3c4d-...' або числовий ID.
-const DMCA_ID = '';
+// DMCA Protection Badge — ID з dmca.com (статичний бейдж, без зовнішнього helper-скрипта → CSP не чіпаємо).
+const DMCA_ID = '715d145d-fa76-4b19-a69c-9143c8af7f20';
 
 export function SiteFooter() {
   const year = 2026;
@@ -53,7 +52,7 @@ export function SiteFooter() {
         {DMCA_ID && (
           <a href={`https://www.dmca.com/Protection/Status.aspx?ID=${DMCA_ID}`} target="_blank" rel="noopener noreferrer"
             title="DMCA.com Protection Status" className="sfoot-dmca">
-            <img src={`https://images.dmca.com/Badges/dmca_protected_sml_120n.png?ID=${DMCA_ID}`} alt="DMCA.com Protection Status" height="20" loading="lazy" />
+            <img src={`https://images.dmca.com/Badges/dmca_protected_sml_120m.png?ID=${DMCA_ID}`} alt="DMCA.com Protection Status" height="20" loading="lazy" />
           </a>
         )}
       </div>
