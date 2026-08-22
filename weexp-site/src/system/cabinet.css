@@ -795,3 +795,24 @@
 .cab-gate-saved b { display: block; font-size: 15px; margin-bottom: 2px; }
 .cab-gate-saved b i { font-style: normal; font-size: 12px; color: var(--graphite); }
 .cab-gate-saved .mono { font-size: 11.5px; color: var(--deep); line-height: 1.4; }
+
+/* Повний експрес-аудит у картці клієнта (адмінка) */
+.adm-express-sec { margin-top: 12px; }
+.adm-inp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 6px; margin-top: 6px; }
+.adm-inp-cell { border: 2px solid var(--deep); background: var(--cream); padding: 6px 9px; display: flex; flex-direction: column; gap: 1px; }
+.adm-inp-cell i { font-size: 10px; color: var(--graphite); font-style: normal; }
+.adm-inp-cell b { font-size: 14px; }
+.adm-hp { display: grid; gap: 5px; margin-top: 6px; }
+.adm-hp-row { display: grid; grid-template-columns: 130px 1fr 28px; gap: 8px; align-items: center; }
+.adm-hp-l { font-size: 12px; }
+.adm-hp-bar { height: 12px; border: 2px solid var(--deep); background: var(--cream-2); position: relative; }
+.adm-hp-bar i { position: absolute; inset: 0 auto 0 0; display: block; }
+.adm-hp-row b { font-size: 11px; text-align: right; }
+.adm-leaks { list-style: none; padding: 0; margin: 6px 0 0; display: grid; gap: 4px; }
+.adm-leaks li { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; border-bottom: 1.5px solid var(--silver); padding-bottom: 3px; }
+.adm-recs { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; font-size: 13px; }
+
+/* Звʼязок заявки з клієнтом у «Первинна комунікація» */
+.adm-lead-client { display: grid; gap: 10px; }
+.adm-lead-ex { display: flex; flex-direction: column; gap: 2px; }
+.adm-lead-client .adm-money { font-size: 20px; }

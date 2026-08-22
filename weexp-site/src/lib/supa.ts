@@ -58,8 +58,12 @@ export function genAccessCode(): string {
 
 /** Знімок експрес-аудиту, закріплений за акаунтом (щоб бачив і клієнт, і адмін). */
 export type ExpressSnapshot = {
-  at: string; total: number; range: [number, number]; primary: string; overallHealth: number;
+  at: string; total: number; range: [number, number]; primary: string; secondary?: string; overallHealth: number;
   symptoms?: string[]; source?: string;
+  input?: { monthlyRevenue?: number; aov?: number; conversion?: number; repeatRate?: number; returnsRate?: number; grossMargin?: number; cac?: number };
+  health?: { key: string; score: number }[];
+  leaks?: { key: string; amount: number }[];
+  actions?: string[];
 };
 
 /** Дані діагностики, що зберігаються між сесіями (усі етапи). */

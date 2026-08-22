@@ -8,7 +8,7 @@ import {
   type Project, type ProjTask, type ProjMember, type ProjPayment, type ProjMonth, type ProjTariffItem,
   type PmDirectory, type PmSpecialist, type PmRoleRate,
 } from '@/lib/supa';
-import { eur, sysLabel, type SysKey } from './lossModel';
+import { eur, sysLabel, actionText, type SysKey } from './lossModel';
 import { AuditBuilder } from './AuditBuilder';
 import { loadTemplate, uid, Q_TYPES, type AuditTemplate, type Question } from './auditTemplate';
 import './system.css';
@@ -486,7 +486,7 @@ export function AdminPanel() {
       {/* Панель деталей користувача */}
       {detail && <UserDetail row={detail} onClose={() => setOpenUser(null)} openFile={openFile} onStatus={setStatus} busy={busy} />}
       {/* Панель деталей заявки */}
-      {openLead && leads && <LeadDetail lead={leads.find((l) => l.id === openLead)} onClose={() => setOpenLead(null)} onStatus={moveLead} busy={busy} />}
+      {openLead && leads && <LeadDetail lead={leads.find((l) => l.id === openLead)} allRows={rows || []} onClose={() => setOpenLead(null)} onStatus={moveLead} busy={busy} onOpenClient={(uid) => { setOpenLead(null); setTab('users'); setOpenUser(uid); }} />}
 
       {/* Модалка причини (замість browser prompt) */}
       {ask && (
@@ -509,9 +509,12 @@ export function AdminPanel() {
   );
 }
 
-function LeadDetail({ lead, onClose, onStatus, busy }: { lead?: LeadRow; onClose: () => void; onStatus: (id: string, s: LeadStatus) => void; busy: string }) {
+function LeadDetail({ lead, allRows, onClose, onStatus, onOpenClient, busy }: { lead?: LeadRow; allRows: AdminRow[]; onClose: () => void; onStatus: (id: string, s: LeadStatus) => void; onOpenClient: (userId: string) => void; busy: string }) {
   if (!lead) return null;
   const cur = lead.status || 'new';
+  // Звʼязок «заявка → клієнт»: шукаємо зареєстрований акаунт за email заявки.
+  const client = lead.email ? allRows.find((r) => (r.email || '').toLowerCase() === lead.email!.toLowerCase()) : undefined;
+  const ex = client?.record?.express;
   const rows: [string, string | undefined][] = [
     ['Дата', lead.at ? new Date(lead.at).toLocaleString('uk-UA') : undefined],
     ['Джерело', lead.source],
@@ -547,6 +550,29 @@ function LeadDetail({ lead, onClose, onStatus, busy }: { lead?: LeadRow; onClose
             </ul>
           </Block>
           {lead.comment && <Block title="Коментар / проблема"><p className="adm-longtext">{lead.comment}</p></Block>}
+
+          {client ? (
+            <Block title="Профіль клієнта">
+              {ex ? (
+                <div className="adm-lead-client">
+                  <div className="adm-lead-ex">
+                    <b className="adm-money">{eur(ex.total)}<i> / рік</i></b>
+                    <span className="mono adm-express-sub">{sysLabel(ex.primary as SysKey, 'uk')} · Health {ex.overallHealth}/100 · {new Date(ex.at).toLocaleDateString('uk-UA')}</span>
+                  </div>
+                  {ex.symptoms && ex.symptoms.length > 0 && <div className="adm-sym-tags">{ex.symptoms.slice(0, 6).map((s) => <span key={s} className="adm-sym">{sysLabel(s as SysKey, 'uk')}</span>)}</div>}
+                  <button className="mc-btn ok" onClick={() => onOpenClient(client.userId)}>Відкрити повну картку клієнта →</button>
+                </div>
+              ) : (
+                <div className="adm-lead-client">
+                  <p className="mono adm-empty">Клієнт зареєстрований, але експрес-аудит ще не привʼязаний.</p>
+                  <button className="mc-btn" onClick={() => onOpenClient(client.userId)}>Відкрити картку клієнта →</button>
+                </div>
+              )}
+            </Block>
+          ) : (
+            <Block title="Профіль клієнта"><p className="mono adm-empty">Немає зареєстрованого акаунту з цим email (клієнт не заводив кабінет).</p></Block>
+          )}
+
           {lead.diag && <Block title="Результат діагностики (X-Ray)"><pre className="adm-pre">{lead.diag}</pre></Block>}
           {lead.calc && <Block title="Розрахунок калькулятора"><pre className="adm-pre">{lead.calc}</pre></Block>}
         </div>
@@ -711,22 +737,67 @@ function UserDetail({ row, onClose, openFile, onStatus, busy }: { row: AdminRow;
 
           <Block title="Експрес-аудит">{(() => {
             const ex = rec.express;
-            if (ex) return (
-              <div className="adm-express">
-                <p className="adm-money">{eur(ex.total)} <i>/ рік</i> <span className="mono adm-express-sub">діапазон {eur(ex.range[0])}–{eur(ex.range[1])} · Health {ex.overallHealth}/100</span></p>
-                <ul className="adm-kv">
-                  <li><i>Пройдено</i><span className="mono">{new Date(ex.at).toLocaleString('uk-UA')}</span></li>
-                  <li><i>Головний вузол</i><span>{sysLabel(ex.primary as SysKey, 'uk')}</span></li>
-                  {ex.source && <li><i>Джерело</i><span className="mono">{ex.source}</span></li>}
-                </ul>
-                {ex.symptoms && ex.symptoms.length > 0 && (
-                  <div className="adm-syms">
-                    <span className="mono adm-empty">Обрані симптоми:</span>
-                    <div className="adm-sym-tags">{ex.symptoms.map((s) => <span key={s} className="adm-sym">{sysLabel(s as SysKey, 'uk')}</span>)}</div>
-                  </div>
-                )}
-              </div>
-            );
+            if (ex) {
+              const inp = ex.input || {};
+              const rows: { l: string; v: string }[] = [
+                { l: 'Оборот / міс', v: inp.monthlyRevenue ? eur(inp.monthlyRevenue) : '—' },
+                { l: 'Середній чек', v: inp.aov ? eur(inp.aov) : '—' },
+                { l: 'Конверсія', v: inp.conversion != null ? `${inp.conversion}%` : '—' },
+                { l: 'Повторні покупки', v: inp.repeatRate != null ? `${inp.repeatRate}%` : '—' },
+                { l: 'Повернення+скасув.', v: inp.returnsRate != null ? `${inp.returnsRate}%` : '—' },
+                { l: 'Валова маржа', v: inp.grossMargin != null ? `${inp.grossMargin}%` : '—' },
+                { l: 'CAC', v: inp.cac ? eur(inp.cac) : '—' },
+              ];
+              return (
+                <div className="adm-express">
+                  <p className="adm-money">{eur(ex.total)} <i>/ рік</i> <span className="mono adm-express-sub">діапазон {eur(ex.range[0])}–{eur(ex.range[1])} · Health {ex.overallHealth}/100</span></p>
+                  <ul className="adm-kv">
+                    <li><i>Пройдено</i><span className="mono">{new Date(ex.at).toLocaleString('uk-UA')}</span></li>
+                    <li><i>Ключова проблема</i><span>{sysLabel(ex.primary as SysKey, 'uk')}</span></li>
+                    {ex.secondary && <li><i>Друга проблема</i><span>{sysLabel(ex.secondary as SysKey, 'uk')}</span></li>}
+                    <li><i>Клієнт</i><span className="mono">{row.email}</span></li>
+                    {ex.source && <li><i>Джерело</i><span className="mono">{ex.source}</span></li>}
+                  </ul>
+
+                  {ex.input && (
+                    <div className="adm-express-sec">
+                      <span className="mono adm-empty">Вхідні дані клієнта:</span>
+                      <div className="adm-inp-grid">{rows.map((r) => <div key={r.l} className="adm-inp-cell"><i>{r.l}</i><b>{r.v}</b></div>)}</div>
+                    </div>
+                  )}
+
+                  {ex.symptoms && ex.symptoms.length > 0 && (
+                    <div className="adm-express-sec">
+                      <span className="mono adm-empty">Обрані симптоми:</span>
+                      <div className="adm-sym-tags">{ex.symptoms.map((s) => <span key={s} className="adm-sym">{sysLabel(s as SysKey, 'uk')}</span>)}</div>
+                    </div>
+                  )}
+
+                  {ex.health && ex.health.length > 0 && (
+                    <div className="adm-express-sec">
+                      <span className="mono adm-empty">Здоровʼя систем:</span>
+                      <div className="adm-hp">{ex.health.map((h) => (
+                        <div key={h.key} className="adm-hp-row"><span className="adm-hp-l">{sysLabel(h.key as SysKey, 'uk')}</span><span className="adm-hp-bar"><i style={{ width: `${h.score}%`, background: h.score >= 65 ? 'var(--ok)' : h.score >= 40 ? 'var(--warn)' : 'var(--red)' }} /></span><b className="mono">{h.score}</b></div>
+                      ))}</div>
+                    </div>
+                  )}
+
+                  {ex.leaks && ex.leaks.length > 0 && (
+                    <div className="adm-express-sec">
+                      <span className="mono adm-empty">Джерела витоку:</span>
+                      <ul className="adm-leaks">{ex.leaks.slice(0, 5).map((l) => <li key={l.key}><span>{sysLabel(l.key as SysKey, 'uk')}</span><b className="mono">{eur(l.amount)}/рік</b></li>)}</ul>
+                    </div>
+                  )}
+
+                  {ex.actions && ex.actions.length > 0 && (
+                    <div className="adm-express-sec">
+                      <span className="mono adm-empty">Рекомендації:</span>
+                      <ol className="adm-recs">{ex.actions.slice(0, 5).map((a) => <li key={a}>{actionText(a as SysKey, 'uk')}</li>)}</ol>
+                    </div>
+                  )}
+                </div>
+              );
+            }
             if (money) return <p className="adm-money">{eur(money[0])} – {eur(money[1])} <i>/ рік</i></p>;
             return <p className="mono adm-empty">{row.hasExpress ? 'є' : 'не рахували'}</p>;
           })()}</Block>
