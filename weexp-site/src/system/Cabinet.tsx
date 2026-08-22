@@ -3,8 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   currentUser, signOut, loadDiag, saveDiag, CONFIGURED, isCloudUser,
   registerWithEmail, signInWithEmail, resendConfirmation, signInWithGoogle, onAuth,
-  uploadTierFile, signTierFile,
-  type DiagUser, type DiagRecord, type CompanyProfile, type TierStatus, type TierEvent, type TierFile,
+  type DiagUser, type DiagRecord, type CompanyProfile, type TierStatus, type TierEvent,
 } from '@/lib/supa';
 import { getExpressAudit, clearExpressAudit, buildJourney, type ExpressAudit } from './cabinetData';
 import { eur } from './lossModel';
@@ -35,7 +34,7 @@ export function Cabinet() {
   const nav = useNavigate();
   const NAV: { group: string; items: NavItem[] }[] = [
     { group: t('Огляд', 'Overview'), items: [{ id: 'overview', label: t('Огляд та шлях', 'Overview & path') }, { id: 'audits', label: t('Мої аудити', 'My audits') }] },
-    { group: t('Дані', 'Data'), items: [{ id: 'company', label: t('Дані компанії', 'Company data') }, { id: 'access', label: t('Доступи · T1–T4', 'Access · T1–T4') }] },
+    { group: t('Дані', 'Data'), items: [{ id: 'company', label: t('Дані компанії', 'Company data') }] },
     { group: t('Розбір', 'Analysis'), items: [{ id: 'deep', label: t('Глибокий аудит', 'Deep audit') }, { id: 'findings', label: t('Знахідки та план', 'Findings & plan'), soon: true }, { id: 'docs', label: t('Документи', 'Documents'), soon: true }] },
     { group: t('Робота разом', 'Work with us'), items: [{ id: 'collab', label: t('Співпраця', 'Work with us') }, { id: 'settings', label: t('Налаштування', 'Settings') }] },
   ];
@@ -203,8 +202,7 @@ export function Cabinet() {
         {section === 'overview' && <Overview journey={journey} express={express} rec={rec} cur={cur?.label} go={setSection} />}
         {section === 'audits' && <Audits express={express} rec={rec} go={setSection} onDelete={deleteExpress} />}
         {section === 'company' && <CompanyForm user={user} rec={rec} onSaved={refreshRec} />}
-        {section === 'access' && <Access user={user} rec={rec} onDone={refreshRec} go={setSection} />}
-        {section === 'deep' && <DeepAudit user={user} express={express} accessCode={rec?.funnel?.accessCode} onClose={() => setSection('overview')} go={setSection} />}
+        {section === 'deep' && <DeepAudit user={user} rec={rec} express={express} onDone={refreshRec} onClose={() => setSection('overview')} go={setSection} />}
         {section === 'findings' && <Soon title={t('Знахідки та дорожня карта', 'Findings & roadmap')} lead={t('Тут зʼявляться підтверджені знахідки глибокого аудиту й план під Definition of Done: що робити, у якому порядку і який ефект. Розділ вмикається після завершення Tier-2 розбору.', 'Confirmed findings from the deep audit and a plan under a Definition of Done will appear here: what to do, in what order and what the effect is. The section unlocks after the Tier-2 analysis is complete.')} />}
         {section === 'docs' && <Soon title={t('Документи', 'Documents')} lead={t('PDF-звіти, робочі аркуші й матеріали розбору складатимуться сюди — щоб усе було в одному місці й доступне команді.', 'PDF reports, worksheets and analysis materials will gather here — so everything is in one place and available to the team.')} />}
         {section === 'collab' && <Collab user={user} rec={rec} express={express} onDone={refreshRec} />}
@@ -261,13 +259,13 @@ function Overview({ journey, express, rec, cur, go }: { journey: ReturnType<type
       {tierEntries.length > 0 && (
         <div className="cab-accban">
           <div className="cab-accban-head">
-            <span className="sysx-kick">{t('Ваші запити доступу T1–T4', 'Your T1–T4 access requests')}</span>
-            <button className="cab-accban-go mono" onClick={() => go('access')}>{t('Відкрити розділ', 'Open section')} →</button>
+            <span className="sysx-kick">{t('Ваш запит на глибокий аудит', 'Your deep-audit request')}</span>
+            <button className="cab-accban-go mono" onClick={() => go('deep')}>{t('Відкрити розділ', 'Open section')} →</button>
           </div>
           <ul className="cab-accban-list">
             {tierEntries.map(([tid, s]) => (
               <li key={tid} className="cab-accban-i">
-                <b className="cab-accban-t">{tid}</b>
+                <b className="cab-accban-t">{tid === 'DEEP' ? t('Глибокий аудит', 'Deep audit') : tid}</b>
                 <span className={`cab-badge mono tst-${TSTAT[s].cls}`}>{TSTAT[s].txt}</span>
                 {s === 'data' && rec?.funnel?.tierReason?.[tid] && <span className="cab-accban-r">{rec.funnel.tierReason[tid]}</span>}
                 {s === 'rejected' && rec?.funnel?.tierReason?.[tid] && <span className="cab-accban-r">{rec.funnel.tierReason[tid]}</span>}
@@ -359,237 +357,6 @@ function CompanyForm({ user, rec, onSaved }: { user: DiagUser; rec: DiagRecord |
     </section>
   );
 }
-
-/** Крок чек-листа доступів: що саме має зробити клієнт, щоб рівень можна було підготувати. */
-type AccessStep = { key: string; label: string; hint?: string; copy?: string };
-
-function Access({ user, rec, onDone, go }: { user: DiagUser; rec: DiagRecord | null; onDone: () => void; go: (s: SectionId) => void }) {
-  const t = useT();
-  const AUDIT_EMAIL = 'audit@weexp.agency';
-  const DEPTHS: { id: string; title: string; cap: string; desc: string; steps: AccessStep[]; files?: boolean }[] = [
-    { id: 'T1', title: t('T1 · Зовнішній обхід', 'T1 · External sweep'), cap: t('до 35%', 'up to 35%'), desc: t('Тільки публічні дані: сайт, ціни, канали. Без ваших доступів.', 'Public data only: site, prices, channels. Without your access.'),
-      steps: [] },
-    { id: 'T2', title: t('T2 · + Аналітика', 'T2 · + Analytics'), cap: t('до 55%', 'up to 55%'), desc: t('GA4/GSC read-only: реальний трафік, конверсії, джерела.', 'GA4/GSC read-only: real traffic, conversions, sources.'),
-      steps: [
-        { key: 't2-ga4', label: t('Додайте нас у Google Analytics 4 як «Переглядач» (Viewer)', 'Add us to Google Analytics 4 as “Viewer”'), hint: t('Admin → Property access management → додати email', 'Admin → Property access management → add email'), copy: AUDIT_EMAIL },
-        { key: 't2-gsc', label: t('Надайте доступ до Google Search Console (Full або Restricted)', 'Grant Google Search Console access (Full or Restricted)'), hint: t('Settings → Users and permissions → Add user', 'Settings → Users and permissions → Add user'), copy: AUDIT_EMAIL },
-      ] },
-    { id: 'T3', title: t('T3 · + Бізнес-дані', 'T3 · + Business data'), cap: t('до 78%', 'up to 78%'), desc: t('Вивантаження CRM/ERP: когорти, повторні, юніт-економіка.', 'CRM/ERP exports: cohorts, repeats, unit economics.'),
-      steps: [
-        { key: 't3-orders', label: t('Вивантаження замовлень за 12 міс (CSV/Excel)', 'Orders export for 12 months (CSV/Excel)'), hint: t('дата, сума, ідентифікатор клієнта (можна хеш), товар/категорія', 'date, amount, customer id (hashed ok), product/category') },
-        { key: 't3-repeat', label: t('Дані про повторні покупки / когорти — якщо є', 'Repeat purchases / cohorts data — if available'), hint: t('щоб порахувати LTV і утримання', 'to compute LTV and retention') },
-        { key: 't3-unit', label: t('Юніт-економіка: собівартість, логістика, комісії', 'Unit economics: COGS, logistics, fees'), hint: t('навіть приблизні цифри дадуть точнішу картину', 'even rough figures sharpen the picture') },
-      ], files: true },
-    { id: 'T4', title: t('T4 · Живі доступи', 'T4 · Live access'), cap: t('до 92%', 'up to 92%'), desc: t('Рекламні кабінети, CMS: максимальна достовірність і план.', 'Ad accounts, CMS: maximum confidence and a plan.'),
-      steps: [
-        { key: 't4-meta', label: t('Meta Business: додайте нас як «Аналітик»', 'Meta Business: add us as “Analyst”'), hint: t('Business Settings → People/Partners → додати email', 'Business Settings → People/Partners → add email'), copy: AUDIT_EMAIL },
-        { key: 't4-gads', label: t('Google Ads: надайте доступ на читання', 'Google Ads: grant read access'), hint: t('Tools → Access and security → додати email', 'Tools → Access and security → add email'), copy: AUDIT_EMAIL },
-        { key: 't4-cms', label: t('CMS / адмінка магазину: read-only доступ', 'CMS / store admin: read-only access'), hint: t('окремий обмежений акаунт або експорт налаштувань', 'a separate limited account or a settings export') },
-      ] },
-  ];
-  // Статус кожного рівня — окремий і зберігається незалежно (керована воронка доступу).
-  type St = TierStatus | 'none';
-  const initStatus = (): Record<string, TierStatus> => {
-    if (rec?.funnel?.tierStatus) return { ...rec.funnel.tierStatus };
-    const legacy: Record<string, TierStatus> = {};
-    (rec?.funnel?.deepTiers || []).forEach((id) => { legacy[id] = 'requested'; });
-    return legacy;
-  };
-  const [status, setStatus] = useState<Record<string, TierStatus>>(initStatus);
-  const [checklist, setChecklist] = useState<Record<string, string[]>>(() => ({ ...(rec?.funnel?.tierChecklist || {}) }));
-  const [depth, setDepth] = useState(rec?.funnel?.deepDepth || 'T2');
-  const [busy, setBusy] = useState('');
-  const [copied, setCopied] = useState('');
-  const [files, setFiles] = useState<Record<string, TierFile[]>>(() => ({ ...(rec?.funnel?.tierFiles || {}) }));
-  const [uploading, setUploading] = useState(false);
-  const [uploadErr, setUploadErr] = useState('');
-  const st = (id: string): St => status[id] || 'none';
-  const STLABEL: Record<St, { txt: string; cls: string }> = {
-    none: { txt: t('Не запрошено', 'Not requested'), cls: 'none' },
-    requested: { txt: t('Очікує підтвердження', 'Awaiting confirmation'), cls: 'wait' },
-    data: { txt: t('Потрібні дані', 'Data needed'), cls: 'wait' },
-    granted: { txt: t('Доступ надано', 'Access granted'), cls: 'ok' },
-    rejected: { txt: t('Відхилено', 'Rejected'), cls: 'bad' },
-  };
-
-  const cur = DEPTHS.find((d) => d.id === depth)!;
-  const curSt = st(depth);
-  const doneKeys = checklist[depth] || [];
-  const stepDone = (k: string) => doneKeys.includes(k);
-  const allStepsDone = cur.steps.length > 0 && cur.steps.every((s) => doneKeys.includes(s.key));
-
-  const copy = (val: string, key: string) => {
-    try { navigator.clipboard?.writeText(val); setCopied(key); setTimeout(() => setCopied(''), 1400); } catch { /* ignore */ }
-  };
-
-  const persist = async (nextStatus: Record<string, TierStatus>, nextChecklist: Record<string, string[]>, pushEvent?: { id: string; st: St }) => {
-    const history = { ...(rec?.funnel?.tierHistory || {}) };
-    if (pushEvent) {
-      const ev: TierEvent = { st: pushEvent.st, at: new Date().toISOString(), by: 'client' };
-      history[pushEvent.id] = [...(history[pushEvent.id] || []), ev];
-    }
-    await saveDiag(user, { funnel: {
-      ...(rec?.funnel || {}), deepRequested: true, deepAt: new Date().toISOString(), deepDepth: depth,
-      deepTiers: Object.keys(nextStatus), tierStatus: nextStatus, tierChecklist: nextChecklist, tierHistory: history,
-      tierFiles: files,
-    } });
-    onDone();
-  };
-
-  // Завантаження файлу під рівень (B): Supabase Storage → метадані у funnel.tierFiles.
-  const onUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]; e.target.value = '';
-    if (!f) return;
-    setUploadErr('');
-    if (f.size > 25 * 1024 * 1024) { setUploadErr(t('Файл більший за 25 МБ.', 'File is larger than 25 MB.')); return; }
-    setUploading(true);
-    const r = await uploadTierFile(user, depth, f);
-    setUploading(false);
-    if (!r.ok || !r.path) {
-      setUploadErr(r.error === 'not_configured'
-        ? t('Завантаження доступне у хмарному кабінеті. Поки що надішліть файл на audit@weexp.agency.', 'Upload is available in the cloud cabinet. For now, send the file to audit@weexp.agency.')
-        : t('Не вдалося завантажити файл.', 'Could not upload the file.'));
-      return;
-    }
-    const entry: TierFile = { name: f.name, path: r.path, at: new Date().toISOString(), size: f.size };
-    const nextFiles = { ...files, [depth]: [...(files[depth] || []), entry] };
-    setFiles(nextFiles);
-    await saveDiag(user, { funnel: { ...(rec?.funnel || {}), tierFiles: nextFiles } });
-    onDone();
-  };
-  const openFile = async (path: string) => { const url = await signTierFile(path); if (url) window.open(url, '_blank'); };
-
-  // Перемикання пункту чек-листа — зберігаємо одразу (прогрес не втрачається).
-  const toggleStep = async (k: string) => {
-    const has = doneKeys.includes(k);
-    const nextList = has ? doneKeys.filter((x) => x !== k) : [...doneKeys, k];
-    const nextChecklist = { ...checklist, [depth]: nextList };
-    setChecklist(nextChecklist);
-    await persist(status, nextChecklist);
-  };
-
-  // Надіслати рівень на перевірку (A): фіксуємо статус requested + подію в таймлайн + лист.
-  const request = async (id: string) => {
-    if (st(id) === 'requested' || st(id) === 'granted') return;
-    setBusy(id);
-    const next: Record<string, TierStatus> = { ...status, [id]: 'requested' };
-    const done = (checklist[id] || []);
-    const tier = DEPTHS.find((d) => d.id === id)!;
-    const provided = tier.steps.length ? `${done.length}/${tier.steps.length} ${t('пунктів доступу відмічено', 'access items marked')}` : t('без доступів (публічні дані)', 'no access needed (public data)');
-    await sendLead({ source: 'cabinet-access', email: user.email, role: 'cabinet', task: `Запит доступу до рівня аудиту ${id}`,
-      comment: `${provided}. ${rec?.company?.name ? `Компанія: ${rec.company.name} · ${rec.company.site || ''}` : ''}` });
-    setStatus(next); setBusy('');
-    await persist(next, checklist, { id, st: 'requested' });
-  };
-
-  return (
-    <section className="cab-sec">
-      <SecHead kick={t('Доступи до рівнів T1–T4', 'Access to levels T1–T4')} title={t('Глибші рівні аудиту', 'Deeper audit levels')} lead={t('Кожен рівень додає джерело даних і піднімає достовірність висновку. Оберіть рівень, надайте потрібні доступи за чек-листом — і надішліть на перевірку. Статус кожного рівня рухається окремо, у реальному часі.', 'Each level adds a data source and raises the confidence of the conclusion. Pick a level, grant the required access from the checklist — and send it for review. Each level moves through its own status, in real time.')} />
-
-      <div className="cab-depths">
-        {DEPTHS.map((d) => { const s = st(d.id); return (
-          <button key={d.id} className={`cab-depth${depth === d.id ? ' on' : ''} tier-${STLABEL[s].cls}`} onClick={() => setDepth(d.id)}>
-            <div className="cab-depth-top"><b>{d.title}</b>{s === 'none' ? <span className="cab-badge mono">{d.cap}</span> : <span className={`cab-badge mono tst-${STLABEL[s].cls}`}>{STLABEL[s].txt}</span>}</div>
-            <span className="cab-sub">{d.desc}</span>
-          </button>
-        ); })}
-      </div>
-
-      {/* Панель обраного рівня: таймлайн (C) + чек-лист доступів (A) + дія */}
-      <div className="cab-tier">
-        <div className="cab-tier-head">
-          <b className="cab-tier-h">{cur.title}</b>
-          <span className={`cab-badge mono tst-${STLABEL[curSt].cls}`}>{STLABEL[curSt].txt}</span>
-        </div>
-
-        <TierTimeline status={curSt} history={rec?.funnel?.tierHistory?.[depth]} rejectedReason={rec?.funnel?.tierReason?.[depth]} />
-
-        {cur.steps.length > 0 ? (
-          <div className="cab-clist">
-            <div className="cab-clist-head">
-              <span className="sysx-kick">{t('Що надати для цього рівня', 'What to provide for this level')}</span>
-              <span className="cab-clist-count mono">{doneKeys.filter((k) => cur.steps.some((s) => s.key === k)).length}/{cur.steps.length}</span>
-            </div>
-            <ul className="cab-clist-items">
-              {cur.steps.map((s) => (
-                <li key={s.key} className={`cab-clist-i${stepDone(s.key) ? ' done' : ''}`}>
-                  <button className="cab-check" role="checkbox" aria-checked={stepDone(s.key)} onClick={() => toggleStep(s.key)}>
-                    <span className="cab-check-box">{stepDone(s.key) ? '✓' : ''}</span>
-                    <span className="cab-check-b">
-                      <span className="cab-check-l">{s.label}</span>
-                      {s.hint && <span className="cab-check-h mono">{s.hint}</span>}
-                    </span>
-                  </button>
-                  {s.copy && <button className="cab-copy mono" onClick={() => copy(s.copy!, s.key)} title={t('Скопіювати', 'Copy')}>{copied === s.key ? t('✓ скопійовано', '✓ copied') : s.copy}</button>}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : (
-          <p className="cab-sub cab-tier-nostep">{t('Цей рівень працює лише з публічними даними — нічого надавати не потрібно, просто надішліть запит.', 'This level uses public data only — nothing to provide, just send the request.')}</p>
-        )}
-
-        {cur.files && (
-          <div className="cab-upl">
-            <div className="cab-clist-head">
-              <span className="sysx-kick">{t('Файли для рівня', 'Files for this level')}</span>
-              {(files[depth] || []).length > 0 && <span className="cab-clist-count mono">{(files[depth] || []).length}</span>}
-            </div>
-            {(files[depth] || []).length > 0 && (
-              <ul className="cab-upl-list">
-                {(files[depth] || []).map((f, i) => (
-                  <li key={i} className="cab-upl-i">
-                    <button className="cab-upl-name mono" onClick={() => openFile(f.path)} title={t('Відкрити', 'Open')}>📎 {f.name}</button>
-                    <span className="cab-upl-meta mono">{f.size ? `${Math.round(f.size / 1024)} КБ` : ''}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <label className={`cab-drop${uploading ? ' busy' : ''}`}>
-              <input type="file" onChange={onUpload} disabled={uploading} accept=".csv,.xlsx,.xls,.pdf,.zip,.json,.txt" hidden />
-              <span className="cab-drop-t">{uploading ? t('Завантаження…', 'Uploading…') : t('＋ Додати файл (CSV, Excel, PDF…)', '＋ Add a file (CSV, Excel, PDF…)')}</span>
-              <span className="cab-drop-h mono">{t('до 25 МБ · приватно, бачить лише ваш менеджер', 'up to 25 MB · private, only your manager sees it')}</span>
-            </label>
-            {uploadErr && <p className="cab-auth-err mono">{uploadErr}</p>}
-          </div>
-        )}
-
-        <div className="cab-actions cab-access-act">
-          {(curSt === 'none' || curSt === 'data') && (
-            <button className="sysx-cta is-primary" onClick={() => request(depth)} disabled={busy === depth}>
-              {busy === depth ? t('Надсилаємо…', 'Sending…')
-                : cur.steps.length === 0 ? t(`Запросити ${depth} →`, `Request ${depth} →`)
-                : allStepsDone ? t(`Надіслати ${depth} на перевірку →`, `Send ${depth} for review →`)
-                : t(`Надіслати запит (доступи можна додати згодом) →`, `Send request (add access later) →`)}
-            </button>
-          )}
-          {curSt === 'requested' && (
-            <div className="cab-tier-note">
-              <span className="cab-saved mono">{t(`✓ ${depth} на перевірці. Менеджер підтвердить доступи й відповість на ${user.email} — зазвичай протягом 1 робочого дня.`, `✓ ${depth} under review. A manager will confirm access and reply to ${user.email} — usually within 1 business day.`)}</span>
-              {!allStepsDone && cur.steps.length > 0 && <span className="cab-sub mono">{t('Ще не всі доступи відмічені — можна додати їх вище будь-коли.', 'Not all access is marked yet — you can add it above anytime.')}</span>}
-            </div>
-          )}
-          {curSt === 'granted' && (
-            <div className="cab-granted">
-              {rec?.funnel?.accessCode && (
-                <div className="cab-code">
-                  <span className="cab-code-l mono">{t('Ваш код доступу', 'Your access code')}</span>
-                  <button className="cab-code-v mono" onClick={() => copy(rec!.funnel!.accessCode!, 'code')} title={t('Скопіювати', 'Copy')}>
-                    {copied === 'code' ? t('✓ скопійовано', '✓ copied') : rec.funnel.accessCode}
-                  </button>
-                  <span className="cab-code-h mono">{t('введіть його у «Глибокому аудиті», щоб відкрити розбір', 'enter it in “Deep audit” to unlock the analysis')}</span>
-                </div>
-              )}
-              <button className="sysx-cta is-primary" onClick={() => go('deep')}>{t('Перейти до глибокого аудиту →', 'Go to the deep audit →')}</button>
-            </div>
-          )}
-          {curSt === 'rejected' && <button className="sysx-cta" onClick={() => request(depth)} disabled={busy === depth}>{t('Надіслати повторно →', 'Resubmit →')}</button>}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 /** Таймлайн статусу рівня (C): 4 стадії з датами + SLA/причина. */
 function TierTimeline({ status, history, rejectedReason }: { status: TierStatus | 'none'; history?: TierEvent[]; rejectedReason?: string }) {
   const t = useT();
@@ -627,28 +394,47 @@ function TierTimeline({ status, history, rejectedReason }: { status: TierStatus 
   );
 }
 
-/* ── Глибокий аудит: ОКРЕМА гілка, доступна лише за кодом (від входу).
-   Без коду — інфо-вікно (що це + дані безкоштовного експрес-аудиту, якщо є) і поле коду.
-   За кодом — повний Stage3-розбір (свої кроки: питання → доступи → файли). ── */
+
+/* ── Глибокий аудит: ЄДИНА клієнтська послуга. Клієнт запитує доступ; менеджер
+   надає (статус DEEP=granted + код). Після надання відкривається робочий розділ
+   (опитувальник → доступи → документи/файли) — Stage3. Tier-и лишаються
+   внутрішньою методологією агентства і клієнту НЕ показуються. ── */
+const DEEP = 'DEEP';
 function deepKey(email: string) { return `weexp:deep-unlocked:${(email || '').toLowerCase()}`; }
 
-function DeepAudit({ user, express, accessCode, onClose, go }: { user: DiagUser; express: ExpressAudit | null; accessCode?: string; onClose: () => void; go: (s: SectionId) => void }) {
+function DeepAudit({ user, rec, express, onDone, onClose, go }: { user: DiagUser; rec: DiagRecord | null; express: ExpressAudit | null; onDone: () => void; onClose: () => void; go: (s: SectionId) => void }) {
   const t = useT();
-  const [unlocked, setUnlocked] = useState<boolean>(() => { try { return localStorage.getItem(deepKey(user.email)) === '1'; } catch { return false; } });
+  const status = (rec?.funnel?.tierStatus?.[DEEP] || 'none') as TierStatus | 'none';
+  const accessCode = rec?.funnel?.accessCode;
+  const [localUnlocked, setLocalUnlocked] = useState<boolean>(() => { try { return localStorage.getItem(deepKey(user.email)) === '1'; } catch { return false; } });
+  const granted = status === 'granted' || localUnlocked;
+  const [busy, setBusy] = useState(false);
   const [code, setCode] = useState('');
   const [err, setErr] = useState('');
-  // Приймаємо код зі списку (env/DEFAULT) АБО персональний код клієнта, виданий менеджером при «Надати».
+  const [showCode, setShowCode] = useState(false);
+
+  const request = async () => {
+    if (status === 'requested' || status === 'granted') return;
+    setBusy(true);
+    const nextStatus = { ...(rec?.funnel?.tierStatus || {}), [DEEP]: 'requested' as TierStatus };
+    const history = { ...(rec?.funnel?.tierHistory || {}) };
+    history[DEEP] = [...(history[DEEP] || []), { st: 'requested' as TierStatus, at: new Date().toISOString(), by: 'client' as const }];
+    await sendLead({ source: 'cabinet-deep', email: user.email, role: 'cabinet', task: 'Запит на глибокий аудит', comment: rec?.company?.name ? `Компанія: ${rec.company.name} · ${rec.company.site || ''}` : undefined });
+    await saveDiag(user, { funnel: { ...(rec?.funnel || {}), deepRequested: true, deepAt: new Date().toISOString(), tierStatus: nextStatus, tierHistory: history } });
+    setBusy(false); onDone();
+  };
   const matchesPersonal = (v: string) => !!accessCode && v.trim().toUpperCase() === accessCode.trim().toUpperCase();
   const unlock = () => {
-    if (!isValidCode(code) && !matchesPersonal(code)) { setErr(t('Код недійсний. Попросіть його в менеджера або замовте аудит.', 'Invalid code. Ask your manager for it or order the audit.')); return; }
+    if (!isValidCode(code) && !matchesPersonal(code)) { setErr(t('Код недійсний. Попросіть його в менеджера або запросіть доступ вище.', 'Invalid code. Ask your manager for it or request access above.')); return; }
     setErr(''); try { localStorage.setItem(deepKey(user.email), '1'); } catch { /* ignore */ }
-    setUnlocked(true);
+    setLocalUnlocked(true);
   };
 
-  if (unlocked) {
+  // Доступ надано → робочий розділ (опитувальник → доступи → документи/файли)
+  if (granted) {
     return (
       <section className="cab-sec cab-deep-wrap">
-        <SecHead kick={t('Глибокий аудит · Tier-2', 'Deep audit · Tier-2')} title={t('Розбір систем магазину', 'Analysis of your store systems')} lead={t('Доступ відкрито. Заповнюйте блоки по секціях: питання → доступи → файли. На виході — інтерактивний Tier-2 звіт: зрілість, конкурентне поле, маркетинг/фінанси, позиціонування. Прогрес зберігається автоматично.', 'Access unlocked. Fill in the blocks section by section: questions → access → files. The output is an interactive Tier-2 report: maturity, competitive field, marketing/finance, positioning. Progress is saved automatically.')} />
+        <SecHead kick={t('Глибокий аудит', 'Deep audit')} title={t('Розбір систем магазину', 'Analysis of your store systems')} lead={t('Доступ відкрито. Проходьте по секціях: опитувальник → доступи → документи й файли. На виході — інтерактивний звіт: зрілість, конкурентне поле, маркетинг/фінанси, позиціонування. Прогрес зберігається автоматично.', 'Access unlocked. Go section by section: questionnaire → access → documents and files. The output is an interactive report: maturity, competitive field, marketing/finance, positioning. Progress is saved automatically.')} />
         <Suspense fallback={<div className="cab-boot mono">{t('Відкриваємо розбір…', 'Opening analysis…')}</div>}>
           <Stage3 embedded onClose={onClose} />
         </Suspense>
@@ -656,11 +442,11 @@ function DeepAudit({ user, express, accessCode, onClose, go }: { user: DiagUser;
     );
   }
 
+  // До надання доступу — запит + статус
   return (
     <section className="cab-sec">
-      <SecHead kick={t('Глибокий аудит · за кодом', 'Deep audit · code-gated')} title={t('Окрема гілка глибокого розбору', 'A separate deep-analysis branch')} lead={t('Глибокий аудит — це окремий, платний рівень: свої питання, безпечні доступи (GA4/CRM/ERP/реклама) і файли. Він дає карту «де саме й чому» та план повернення виторгу під Definition of Done. Розділ відкривається за кодом від менеджера.', 'The deep audit is a separate, paid level: its own questions, secure access (GA4/CRM/ERP/ads) and files. It gives a map of “exactly where and why” and a revenue-recovery plan under a Definition of Done. The section unlocks with a code from your manager.')} />
+      <SecHead kick={t('Глибокий аудит', 'Deep audit')} title={t('Повний розбір вашого магазину', 'A full analysis of your store')} lead={t('Глибокий аудит — окрема послуга: опитувальник, безпечні доступи (GA4/CRM/ERP/реклама), документи й файли. Він дає карту «де саме й чому» та план повернення виторгу під Definition of Done. Запросіть доступ — менеджер підтвердить, і тут відкриється робочий розділ.', 'The deep audit is a separate service: a questionnaire, secure access (GA4/CRM/ERP/ads), documents and files. It gives a map of “exactly where and why” and a revenue-recovery plan under a Definition of Done. Request access — the manager confirms it and the working section opens here.')} />
 
-      {/* Інфо-вікно про безкоштовний експрес-аудит (якщо клієнт уже його пройшов) */}
       {express ? (
         <div className="cab-card cab-deep-info">
           <span className="sysx-kick">{t('У вас уже є безкоштовний експрес-аудит', 'You already have a free express audit')}</span>
@@ -679,18 +465,38 @@ function DeepAudit({ user, express, accessCode, onClose, go }: { user: DiagUser;
         </div>
       )}
 
-      {/* Ворота коду */}
-      <div className="cab-card cab-deep-gate">
-        <span className="sysx-kick">{t('Активувати глибокий аудит', 'Activate the deep audit')}</span>
-        <p className="cab-next-d">{t('Введіть код від менеджера, щоб відкрити гілку глибокого аудиту з питаннями, доступами й файлами.', 'Enter the code from your manager to open the deep-audit branch with questions, access and files.')}</p>
-        <div className="cab-deep-gate-row">
-          <label className="sysx-inp"><span className="sysx-inp-l">Access Code</span>
-            <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="WEEXP-XXXX" autoComplete="off"
-              onKeyDown={(e) => e.key === 'Enter' && code.trim() && unlock()} /></label>
-          <button className="sysx-cta is-primary" onClick={unlock} disabled={!code.trim()}>{t('Активувати →', 'Activate →')}</button>
+      {status === 'none' && (
+        <div className="cab-card cab-deep-gate">
+          <span className="sysx-kick">{t('Крок 1 — запит доступу', 'Step 1 — request access')}</span>
+          <p className="cab-next-d">{t('Далі за кроками: отримання доступу → опитувальник → доступи → документи й файли → аудит → результат.', 'Then step by step: get access → questionnaire → access → documents and files → audit → result.')}</p>
+          <div className="cab-actions"><button className="sysx-cta is-primary" onClick={request} disabled={busy}>{busy ? t('Надсилаємо…', 'Sending…') : t('Запросити глибокий аудит →', 'Request the deep audit →')}</button></div>
         </div>
+      )}
+      {(status === 'requested' || status === 'data') && (
+        <div className="cab-card cab-deep-gate">
+          <span className="sysx-kick">{status === 'data' ? t('Потрібні ваші дані', 'Your data is needed') : t('Запит на розгляді', 'Request under review')}</span>
+          <TierTimeline status={status} history={rec?.funnel?.tierHistory?.[DEEP]} rejectedReason={rec?.funnel?.tierReason?.[DEEP]} />
+          <p className="cab-next-d">{status === 'data' ? (rec?.funnel?.tierReason?.[DEEP] || t('Менеджер попросив додаткові дані — перевірте пошту.', 'The manager requested more data — check your email.')) : t('Менеджер підтвердить доступ — зазвичай протягом 1 робочого дня. Після цього тут відкриється робочий розділ глибокого аудиту.', 'The manager will confirm access — usually within 1 business day. After that the deep-audit working section opens here.')}</p>
+        </div>
+      )}
+      {status === 'rejected' && (
+        <div className="cab-card cab-deep-gate">
+          <span className="sysx-kick">{t('Запит відхилено', 'Request declined')}</span>
+          {rec?.funnel?.tierReason?.[DEEP] && <p className="cab-next-d">{rec.funnel.tierReason[DEEP]}</p>}
+          <div className="cab-actions"><button className="sysx-cta" onClick={request} disabled={busy}>{t('Запросити повторно →', 'Request again →')}</button></div>
+        </div>
+      )}
+
+      <div className="cab-deep-hascode">
+        <button className="cab-linkbtn mono" onClick={() => setShowCode((v) => !v)}>{showCode ? '−' : '+'} {t('Маю код від менеджера', 'I have a code from the manager')}</button>
+        {showCode && (
+          <div className="cab-deep-gate-row">
+            <label className="sysx-inp"><span className="sysx-inp-l">Access Code</span>
+              <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="WEEXP-XXXX" autoComplete="off" onKeyDown={(e) => e.key === 'Enter' && code.trim() && unlock()} /></label>
+            <button className="sysx-cta is-primary" onClick={unlock} disabled={!code.trim()}>{t('Активувати →', 'Activate →')}</button>
+          </div>
+        )}
         {err && <p className="cab-auth-err mono">{err}</p>}
-        <p className="sysx-note mono">{t('Немає коду? Замовте аудит на «Формати і ціни» або в розділі «Співпраця».', 'No code? Order the audit on “Formats & pricing” or in the “Work with us” section.')}</p>
       </div>
     </section>
   );

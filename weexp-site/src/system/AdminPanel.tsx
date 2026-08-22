@@ -23,11 +23,12 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'overview', label: 'Дашборд' },
   { id: 'users', label: 'Користувачі' },
   { id: 'audits', label: 'Аудити' },
-  { id: 'access', label: 'Доступи T1–T4' },
-  { id: 'leads', label: 'Заявки' },
+  { id: 'access', label: 'Запити доступів' },
+  { id: 'leads', label: 'Первинна комунікація' },
   { id: 'settings', label: 'Налаштування' },
 ];
-const TIERS = ['T1', 'T2', 'T3', 'T4'];
+// Джерела заявок, що є запитами доступу (не первинна комунікація).
+const ACCESS_SOURCES = ['cabinet-access', 'cabinet-deep'];
 const ST: Record<TierStatus | 'none', { txt: string; cls: string }> = {
   none: { txt: 'Не запрошено', cls: 'none' }, requested: { txt: 'Очікує', cls: 'wait' },
   data: { txt: 'Потрібні дані', cls: 'wait' }, granted: { txt: 'Надано', cls: 'ok' }, rejected: { txt: 'Відхилено', cls: 'bad' },
@@ -43,6 +44,8 @@ const LEAD_STAGES: { k: LeadStatus; l: string; cls: string }[] = [
   { k: 'lost', l: 'Втрачено', cls: 'bad' },
 ];
 const stageOf = (l: LeadRow): LeadStatus => l.status || 'new';
+// Клієнту показуємо єдину послугу «Глибокий аудит» (ключ DEEP). Старі T1–T4 — легасі.
+const tierLabel = (tid: string) => (tid === 'DEEP' ? 'Глибокий аудит' : tid);
 
 /** Відносна дата: «щойно», «5 хв», «3 год», «2 дн», далі — дата. */
 function rel(iso?: string): string {
@@ -341,14 +344,15 @@ export function AdminPanel() {
           </section>
         )}
 
-        {/* ── Доступи T1–T4 (керування) ── */}
+        {/* ── Запити доступів (глибокий аудит) ── */}
         {tab === 'access' && (
           <section className="adm-sec">
-            <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Доступи T1–T4</h1>
+            <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Запити доступів</h1>
               <input className="mc-search" placeholder="Пошук: email / компанія" value={q} onChange={(e) => setQ(e.target.value)} /></div>
+            <p className="adm-hint mono">Запити на глибокий аудит від клієнтів. Надаєте доступ — клієнту генерується код і відкривається робочий розділ. (T1–T4 = внутрішня методологія.)</p>
             {rows === null ? <p className="mc-msg mono">Завантаження…</p> : (
               <div className="mc-list">
-                {filtered.filter((r) => TIERS.some((t) => (r.funnel?.tierStatus?.[t] || 'none') !== 'none')).map((r) => (
+                {filtered.filter((r) => Object.keys(r.funnel?.tierStatus || {}).length > 0).map((r) => (
                   <div key={r.userId} className="mc-card">
                     <div className="mc-card-top">
                       <div><b className="mc-email">{r.email}</b>{r.company && <span className="mc-company mono"> · {r.company}</span>}</div>
@@ -362,16 +366,16 @@ export function AdminPanel() {
                         <span className="adm-code-banner-h mono">клієнт вводить його у «Глибокому аудиті»</span>
                       </div>
                     ) : (
-                      <p className="adm-code-hint mono">Код доступу зʼявиться тут після «Надати» на будь-якому рівні.</p>
+                      <p className="adm-code-hint mono">Код доступу зʼявиться тут після «Надати».</p>
                     )}
                     <div className="mc-tiers">
-                      {TIERS.filter((tid) => (r.funnel?.tierStatus?.[tid] || 'none') !== 'none').map((tid) => {
+                      {Object.keys(r.funnel?.tierStatus || {}).map((tid) => {
                         const cur = (r.funnel?.tierStatus?.[tid] || 'none') as TierStatus | 'none';
                         const files = r.funnel?.tierFiles?.[tid] || [];
                         const b = `${r.userId}:${tid}`;
                         return (
                           <div key={tid} className="mc-tier">
-                            <div className="mc-tier-l"><b className="mc-tid">{tid}</b><span className={`cab-badge mono tst-${ST[cur].cls}`}>{ST[cur].txt}</span>
+                            <div className="mc-tier-l"><b className="mc-tid">{tierLabel(tid)}</b><span className={`cab-badge mono tst-${ST[cur].cls}`}>{ST[cur].txt}</span>
                               {files.map((f, i) => <button key={i} className="mc-file mono" onClick={() => openFile(f.path)}>📎 {f.name}</button>)}</div>
                             <div className="mc-tier-act">
                               <button className="mc-btn ok" disabled={busy === b} onClick={() => setStatus(r.userId, tid, 'granted')}>Надати</button>
@@ -385,7 +389,7 @@ export function AdminPanel() {
                     </div>
                   </div>
                 ))}
-                {filtered.filter((r) => TIERS.some((t) => (r.funnel?.tierStatus?.[t] || 'none') !== 'none')).length === 0 && <p className="mc-msg mono">Активних запитів на рівні немає.</p>}
+                {filtered.filter((r) => Object.keys(r.funnel?.tierStatus || {}).length > 0).length === 0 && <EmptyState icon="🔐" text="Запитів доступу поки немає." />}
               </div>
             )}
           </section>
@@ -394,12 +398,14 @@ export function AdminPanel() {
         {/* ── Заявки · міні-CRM ── */}
         {tab === 'leads' && (
           <section className="adm-sec">
-            <h1 className="sysx-display adm-h1">Заявки · CRM</h1>
-            {leads === null ? <p className="mc-msg mono">Завантаження…</p>
-              : leads.length === 0 ? <EmptyState icon="✉" text="Заявок ще немає. Вони зʼявляться тут автоматично з форм сайту (і дублюються на пошту)." />
+            <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Первинна комунікація</h1></div>
+            <p className="adm-hint mono">Заявки від нових/потенційних клієнтів. Запити доступів існуючих клієнтів — у вкладці «Запити доступів».</p>
+            {(() => { const comm = (leads || []).filter((l) => !ACCESS_SOURCES.includes(l.source || '')); return (
+              leads === null ? <p className="mc-msg mono">Завантаження…</p>
+              : comm.length === 0 ? <EmptyState icon="✉" text="Первинних заявок ще немає. Вони зʼявляться тут автоматично з форм сайту (і дублюються на пошту)." />
               : (() => {
-                const count = (k: LeadStatus) => leads.filter((l) => stageOf(l) === k).length;
-                const won = count('won'), total = leads.length, lost = count('lost');
+                const count = (k: LeadStatus) => comm.filter((l) => stageOf(l) === k).length;
+                const won = count('won'), total = comm.length, lost = count('lost');
                 const conv = total ? Math.round((won / total) * 100) : 0;
                 return (
                   <>
@@ -423,7 +429,7 @@ export function AdminPanel() {
                     {/* Пайплайн-дошка */}
                     <div className="adm-board">
                       {LEAD_STAGES.map((s) => {
-                        const col = leads.filter((l) => stageOf(l) === s.k);
+                        const col = comm.filter((l) => stageOf(l) === s.k);
                         return (
                           <div key={s.k} className="adm-col">
                             <div className="adm-col-head"><span className={`cab-badge mono tst-${s.cls}`}>{s.l}</span><span className="adm-col-n mono">{col.length}</span></div>
@@ -444,7 +450,8 @@ export function AdminPanel() {
                     <p className="adm-hint mono">Виграно: {won} · Втрачено: {lost}. Клік по картці — картка заявки й зміна стадії.</p>
                   </>
                 );
-              })()}
+              })()
+            ); })()}
           </section>
         )}
 
@@ -470,7 +477,7 @@ export function AdminPanel() {
       {ask && (
         <div className="adm-modal-wrap" onClick={() => setAsk(null)}>
           <div className="adm-modal" onClick={(e) => e.stopPropagation()}>
-            <b className="adm-modal-h">{ask.status === 'rejected' ? `Відхилити ${ask.tier}` : `${ask.tier}: запит даних`}</b>
+            <b className="adm-modal-h">{ask.status === 'rejected' ? `Відхилити: ${tierLabel(ask.tier)}` : `${tierLabel(ask.tier)}: запит даних`}</b>
             <p className="adm-modal-p mono">{ask.status === 'rejected' ? 'Причина відмови — її побачить клієнт у кабінеті.' : 'Що саме потрібно від клієнта — він побачить це у кабінеті.'}</p>
             <textarea className="adm-modal-ta" autoFocus rows={3} value={askReason} onChange={(e) => setAskReason(e.target.value)}
               placeholder={ask.status === 'rejected' ? 'Напр.: недостатньо даних для рівня' : 'Напр.: надайте доступ до GA4 та вивантаження замовлень'} />
@@ -628,13 +635,13 @@ function UserDetail({ row, onClose, openFile, onStatus, busy }: { row: AdminRow;
 
           <Block title="Глибокий аудит">{row.hasDeep ? <p className="mono">у роботі</p> : <p className="mono adm-empty">не почато</p>}</Block>
 
-          <Block title="Доступи T1–T4">{tiers.length ? (
+          <Block title="Запити доступів">{tiers.length ? (
             <div className="adm-drawer-tiers">
               {tiers.map(([tid, s]) => {
                 const b = `${row.userId}:${tid}`;
                 return (
                   <div key={tid} className="adm-dtier">
-                    <div className="adm-dtier-l"><b className="mc-tid">{tid}</b><span className={`cab-badge mono tst-${ST[s].cls}`}>{ST[s].txt}</span></div>
+                    <div className="adm-dtier-l"><b className="mc-tid">{tierLabel(tid)}</b><span className={`cab-badge mono tst-${ST[s].cls}`}>{ST[s].txt}</span></div>
                     <div className="mc-tier-act">
                       <button className="mc-btn ok" disabled={busy === b} onClick={() => onStatus(row.userId, tid, 'granted')}>Надати</button>
                       <button className="mc-btn wait" disabled={busy === b} onClick={() => onStatus(row.userId, tid, 'data')}>Дані</button>
