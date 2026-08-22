@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   currentUser, signOut, loadDiag, saveDiag, CONFIGURED, isCloudUser,
-  registerWithEmail, signInWithEmail, resendConfirmation, signInWithGoogle, onAuth,
+  signInWithGoogle, onAuth,
   ensureAudit, findAuditIdByCode, loadAuditAnswers, loadAuditExtra, getProjects,
   type DiagUser, type DiagRecord, type CompanyProfile, type TierStatus, type TierEvent, type AuditAnswer, type ExtraQ,
 } from '@/lib/supa';
@@ -29,62 +29,6 @@ type SectionId = 'overview' | 'company' | 'audits' | 'deep' | 'project' | 'findi
 type NavItem = { id: SectionId; label: string; soon?: boolean };
 
 const EMPTY_COMPANY: CompanyProfile = { name: '', site: '', niche: '', revenue: '', channels: [], contactName: '', contactPhone: '', notes: '' };
-
-// Cloudflare Turnstile (капча). Вмикається лише за наявності ключа (env), інакше — no-op.
-const TURNSTILE_SITE_KEY = (import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined) || '';
-declare global {
-  interface Window { turnstile?: {
-    render: (el: HTMLElement, o: Record<string, unknown>) => string;
-    reset: (id?: string) => void;
-    execute: (id?: string) => void;
-  } }
-}
-/**
- * Turnstile у режимі «execute»: віджет мовчить, а свіжий токен генерується САМЕ
- * в момент сабміту (parent викликає execute()). Це усуває `invalid-input-response`
- * від «протухлого»/повторного пред-розвʼязаного токена. provideExecute віддає
- * батьку функцію, що повертає Promise<token>.
- */
-function Turnstile({ siteKey, provideExecute }: { siteKey: string; provideExecute: (fn: (() => Promise<string>) | null) => void }) {
-  const box = useRef<HTMLDivElement>(null);
-  const widget = useRef<string>('');
-  const resolve = useRef<((t: string) => void) | null>(null);
-  const reject = useRef<((e: unknown) => void) | null>(null);
-  const [err, setErr] = useState('');
-  useEffect(() => {
-    const SID = 'cf-turnstile-js';
-    let tries = 0;
-    const settle = (fn: 'resolve' | 'reject', v: unknown) => {
-      const r = fn === 'resolve' ? resolve.current : reject.current;
-      resolve.current = null; reject.current = null;
-      if (r) (r as (x: unknown) => void)(v);
-    };
-    const mount = () => {
-      if (!box.current || widget.current) return;
-      if (!window.turnstile) { if (tries++ < 50) setTimeout(mount, 200); return; }
-      try {
-        widget.current = window.turnstile.render(box.current, {
-          sitekey: siteKey, theme: 'light', language: 'uk', execution: 'execute', appearance: 'interaction-only',
-          callback: (t: string) => { setErr(''); settle('resolve', t); },
-          'error-callback': () => { setErr('Капча не пройшла. Оновіть сторінку або увійдіть через Google.'); settle('reject', new Error('captcha-error')); },
-          'expired-callback': () => settle('reject', new Error('captcha-expired')),
-        });
-        provideExecute(() => new Promise<string>((res, rej) => {
-          if (!window.turnstile || !widget.current) { rej(new Error('captcha-not-ready')); return; }
-          resolve.current = res; reject.current = rej;
-          try { window.turnstile.reset(widget.current); window.turnstile.execute(widget.current); } catch (e) { settle('reject', e); }
-        }));
-      } catch { setErr('Не вдалося завантажити капчу.'); }
-    };
-    if (!document.getElementById(SID)) {
-      const s = document.createElement('script');
-      s.id = SID; s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'; s.async = true; s.defer = true;
-      s.onload = mount; s.onerror = () => setErr('Не вдалося завантажити капчу.'); document.head.appendChild(s);
-    } else { mount(); }
-    return () => provideExecute(null);
-  }, [siteKey]); // eslint-disable-line react-hooks/exhaustive-deps
-  return <div className="cab-captcha"><div ref={box} />{err && <span className="cab-auth-err mono">{err}</span>}</div>;
-}
 
 /** Скелетон завантаження кабінету — брендові плейсхолдери замість голого тексту. */
 function CabSkeleton({ t }: { t: (uk: string, en: string) => string }) {
@@ -122,21 +66,9 @@ export function Cabinet() {
   const [express, setExpress] = useState<ExpressAudit | null>(null);
   const [section, setSection] = useState<SectionId>('overview');
 
-  // логін / реєстрація
-  const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [email, setEmail] = useState('');
-  const [pass, setPass] = useState('');
+  // Вхід — лише Google (email/пароль тимчасово прибрано; інші провайдери додамо згодом).
   const [busy, setBusy] = useState(false);
   const [authErr, setAuthErr] = useState('');
-  const [confirmSent, setConfirmSent] = useState('');   // email, на який надіслано лист підтвердження
-  const [resendMsg, setResendMsg] = useState('');
-  const captchaOn = Boolean(TURNSTILE_SITE_KEY);
-  const execCaptcha = useRef<(() => Promise<string>) | null>(null);
-  // Отримати свіжий токен капчі в момент сабміту (або undefined, якщо капча вимкнена).
-  const getCaptcha = async (): Promise<string | undefined> => {
-    if (!captchaOn || !execCaptcha.current) return undefined;
-    return execCaptcha.current();
-  };
 
   useEffect(() => { setExpress(getExpressAudit()); }, []);
   // Прив'язати локальний експрес-аудит до акаунту й перечитати запис.
@@ -148,42 +80,10 @@ export function Cabinet() {
     });
   }, []);
   // Google OAuth повертає користувача редіректом → сесія зʼявляється після монтування.
-  useEffect(() => onAuth((u) => { if (u) { setUser(u); hydrate(u); setConfirmSent(''); } }), []);
+  useEffect(() => onAuth((u) => { if (u) { setUser(u); hydrate(u); } }), []);
 
   const journey = useMemo(() => buildJourney({ loggedIn: Boolean(user), rec, express }), [user, rec, express]);
 
-  const enter = (u: DiagUser) => { setUser(u); hydrate(u); };
-  const doLogin = async () => {
-    setBusy(true); setAuthErr(''); setResendMsg('');
-    let token: string | undefined;
-    try { token = await getCaptcha(); }
-    catch { setBusy(false); setAuthErr(t('Капча не пройдена. Спробуйте ще раз або увійдіть через Google.', 'Captcha failed. Try again or use Google.')); return; }
-    const r = await signInWithEmail(email.trim(), pass, token);
-    setBusy(false);
-    if (r.user) enter(r.user);
-    else if (r.confirm) { setConfirmSent(r.confirm); }
-    else setAuthErr(r.error || t('Не вдалося увійти. Перевірте email і пароль.', 'Could not sign in. Check your email and password.'));
-  };
-  const doRegister = async () => {
-    setBusy(true); setAuthErr(''); setResendMsg('');
-    let token: string | undefined;
-    try { token = await getCaptcha(); }
-    catch { setBusy(false); setAuthErr(t('Капча не пройдена. Спробуйте ще раз або зареєструйтесь через Google.', 'Captcha failed. Try again or use Google.')); return; }
-    const r = await registerWithEmail(email.trim(), pass, token);
-    setBusy(false);
-    if (r.confirm) setConfirmSent(r.confirm);          // увімкнено підтвердження email → лист надіслано
-    else if (r.user) enter(r.user);                     // сесія одразу (демо або без Confirm email)
-    else if (r.error && /sending confirmation|confirmation email|error sending|smtp/i.test(r.error))
-      setAuthErr(t('Не вдалося надіслати лист підтвердження. Скористайтесь швидким входом через Google — ваш експрес-аудит підтягнеться автоматично.', 'Could not send the confirmation email. Use quick Google sign-in — your express audit will be linked automatically.'));
-    else setAuthErr(r.error || t('Не вдалося зареєструватися. Спробуйте ще раз.', 'Could not sign up. Please try again.'));
-  };
-  const doAuth = () => (mode === 'register' ? doRegister() : doLogin());
-  const doResend = async () => {
-    setResendMsg(''); setBusy(true);
-    const r = await resendConfirmation(confirmSent);
-    setBusy(false);
-    setResendMsg(r.ok ? t('Лист надіслано ще раз. Перевірте пошту.', 'Email sent again. Check your inbox.') : (r.error || t('Не вдалося надіслати. Спробуйте пізніше.', 'Could not send. Try again later.')));
-  };
   const doGoogle = async () => {
     setAuthErr(''); setBusy(true);
     const r = await signInWithGoogle();
@@ -221,7 +121,7 @@ export function Cabinet() {
                 <span className="cab-gate-saved-ic" aria-hidden="true">✓</span>
                 <div>
                   <b>{t('Ваш експрес-аудит збережено', 'Your express audit is saved')}: {eur(express.total)}<i>{t('/рік', '/yr')}</i></b>
-                  <span className="mono">{t('Зареєструйтесь — і він закріпиться за акаунтом. Проходити аудит заново не треба.', 'Sign up — and it will be linked to your account. No need to redo the audit.')}</span>
+                  <span className="mono">{t('Увійдіть через Google — і він закріпиться за акаунтом. Проходити аудит заново не треба.', 'Sign in with Google — and it will be linked to your account. No need to redo the audit.')}</span>
                 </div>
               </div>
             )}
@@ -232,44 +132,20 @@ export function Cabinet() {
             </ul>
           </div>
           <div className="cab-gate-right">
-            {confirmSent ? (
-              /* ── Стан «підтвердіть email» ── */
-              <div className="cab-form cab-confirm">
-                <span className="cab-confirm-ic" aria-hidden="true">✉</span>
-                <span className="sysx-kick">{t('Підтвердіть email', 'Confirm your email')}</span>
-                <p className="cab-confirm-p">{t('Ми надіслали лист на', 'We sent a message to')} <b>{confirmSent}</b>. {t('Відкрийте посилання в листі — і кабінет відкриється автоматично.', 'Open the link in it — and your cabinet will open automatically.')}</p>
-                <p className="sysx-note mono">{t('Не бачите листа? Перевірте «Спам» і «Промоакції».', 'Don\'t see it? Check Spam and Promotions.')}</p>
-                {resendMsg && <p className="cab-auth-note mono">{resendMsg}</p>}
-                <button className="sysx-cta" onClick={doResend} disabled={busy}>{busy ? t('Надсилаємо…', 'Sending…') : t('Надіслати лист повторно', 'Resend email')}</button>
-                <button className="cab-linkbtn mono" onClick={() => { setConfirmSent(''); setResendMsg(''); setMode('login'); }}>← {t('Інший email', 'Use another email')}</button>
-              </div>
-            ) : (
-              <div className="cab-form">
-                <div className="cab-auth-tabs" role="tablist">
-                  <button role="tab" className={`cab-auth-tab${mode === 'login' ? ' on' : ''}`} onClick={() => { setMode('login'); setAuthErr(''); }}>{t('Вхід', 'Sign in')}</button>
-                  <button role="tab" className={`cab-auth-tab${mode === 'register' ? ' on' : ''}`} onClick={() => { setMode('register'); setAuthErr(''); }}>{t('Реєстрація', 'Sign up')}</button>
-                </div>
-                {CONFIGURED && (
-                  <>
-                    <button className="cab-google" onClick={doGoogle} disabled={busy}>
-                      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.71-1.57 2.68-3.89 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.9 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
-                      {t('Продовжити з Google', 'Continue with Google')}
-                    </button>
-                    <div className="cab-or mono"><span>{t('або через email', 'or with email')}</span></div>
-                  </>
-                )}
-                <label className="sysx-inp"><span className="sysx-inp-l">Email</span>
-                  <input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@shop.com" /></label>
-                <label className="sysx-inp"><span className="sysx-inp-l">{t('Пароль · мін. 6 символів', 'Password · min. 6 characters')}</span>
-                  <input type="password" autoComplete={mode === 'register' ? 'new-password' : 'current-password'} value={pass} onChange={(e) => setPass(e.target.value)} placeholder="••••••" onKeyDown={(e) => e.key === 'Enter' && email && pass.length >= 6 && doAuth()} /></label>
-                {authErr && <p className="cab-auth-err mono">{authErr}</p>}
-                {captchaOn && <Turnstile siteKey={TURNSTILE_SITE_KEY} provideExecute={(fn) => { execCaptcha.current = fn; }} />}
-                <button className="sysx-cta is-primary" onClick={doAuth} disabled={busy || !email || pass.length < 6}>
-                  {busy ? (mode === 'register' ? t('Реєструємо…', 'Signing up…') : t('Заходимо…', 'Signing in…')) : (mode === 'register' ? t('Створити кабінет →', 'Create cabinet →') : t('Увійти →', 'Sign in →'))}
+            <div className="cab-form">
+              <span className="sysx-kick">{t('Вхід у кабінет', 'Sign in to cabinet')}</span>
+              <p className="cab-form-lead">{t('Швидкий і безпечний вхід через Google. Ваш експрес-аудит підтягнеться до акаунту автоматично.', 'Quick and secure sign-in with Google. Your express audit is linked to the account automatically.')}</p>
+              {CONFIGURED ? (
+                <button className="cab-google cab-google-lg" onClick={doGoogle} disabled={busy}>
+                  <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.71-1.57 2.68-3.89 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.9 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
+                  {busy ? t('Відкриваємо Google…', 'Opening Google…') : t('Продовжити з Google', 'Continue with Google')}
                 </button>
-                <p className="sysx-note mono">{CONFIGURED ? t('Захищений вхід. Дані синхронізуються між пристроями.', 'Secure sign-in. Data syncs across your devices.') : t('Демо-режим: дані зберігаються локально в цьому браузері.', 'Demo mode: data is stored locally in this browser.')}</p>
-              </div>
-            )}
+              ) : (
+                <p className="cab-auth-err mono">{t('Вхід тимчасово недоступний — Supabase не налаштовано.', 'Sign-in is temporarily unavailable — Supabase is not configured.')}</p>
+              )}
+              {authErr && <p className="cab-auth-err mono">{authErr}</p>}
+              <p className="sysx-note mono">{t('Незабаром додамо інші способи входу. Захищений вхід, дані синхронізуються між пристроями.', 'More sign-in options coming soon. Secure sign-in, data syncs across your devices.')}</p>
+            </div>
           </div>
         </div>
       </div>
