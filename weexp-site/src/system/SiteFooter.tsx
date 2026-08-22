@@ -21,6 +21,12 @@ const DMCA_ID = '715d145d-fa76-4b19-a69c-9143c8af7f20';
 // Shopify Partner — вмикається ПІСЛЯ реєстрації в partners.shopify.com (безкоштовно, миттєво).
 // Текстовий бейдж «Shopify Partner» за бренд-гайдами дозволено партнерам. Не заявляти до факту.
 const SHOPIFY_PARTNER = false;
+// Сертифікати (HubSpot / Google Skillshop тощо) — додати запис після складання іспиту.
+// href = публічне посилання на сертифікат (перевіряється клієнтом). icon — емодзі.
+const CERT_BADGES: { icon: string; label: string; href: string }[] = [
+  // { icon: '🎓', label: 'HubSpot Certified', href: 'https://app.hubspot.com/academy/...' },
+  // { icon: '📊', label: 'Google Analytics Certified', href: 'https://skillshop.exceedlms.com/...' },
+];
 
 export function SiteFooter() {
   const year = 2026;
@@ -62,6 +68,7 @@ export function SiteFooter() {
         <span className="sfoot-trust-i">🔒 {t('SSL / захищене зʼєднання', 'SSL / secure connection')}</span>
         <span className="sfoot-trust-i">🇪🇺 GDPR-ready</span>
         {SHOPIFY_PARTNER && <a className="sfoot-trust-i sfoot-trust-a" href="https://www.shopify.com/partners" target="_blank" rel="noopener noreferrer" title="Shopify Partner">🛍 Shopify Partner <i aria-hidden="true">↗</i></a>}
+        {CERT_BADGES.map((c) => <a key={c.label} className="sfoot-trust-i sfoot-trust-a" href={c.href} target="_blank" rel="noopener noreferrer" title={c.label}>{c.icon} {c.label} <i aria-hidden="true">↗</i></a>)}
         <a className="sfoot-trust-i sfoot-trust-a" href="https://securityheaders.com/?q=https%3A%2F%2Fweexp.agency&followRedirects=on" target="_blank" rel="noopener noreferrer" title="Security Headers scan">🛡 {t('Security Headers', 'Security Headers')} <i aria-hidden="true">↗</i></a>
       </div>
       <div className="sfoot-bottom mono">
