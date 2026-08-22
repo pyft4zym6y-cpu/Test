@@ -10,6 +10,7 @@ import {
 } from '@/lib/supa';
 import { eur, sysLabel, actionText, type SysKey } from './lossModel';
 import { toast } from '@/lib/toast';
+import { useCabTheme, ThemeToggle } from '@/lib/cabTheme';
 import { AuditBuilder } from './AuditBuilder';
 import { loadTemplate, uid, Q_TYPES, type AuditTemplate, type Question } from './auditTemplate';
 import './system.css';
@@ -70,6 +71,7 @@ function rel(iso?: string): string {
 }
 
 export function AdminPanel() {
+  const theme = useCabTheme();
   const [user, setUser] = useState<DiagUser | null>(null);
   const [checking, setChecking] = useState(true);
   const [rows, setRows] = useState<AdminRow[] | null>(null);
@@ -265,7 +267,7 @@ export function AdminPanel() {
   const detail = openUser ? (rows || []).find((r) => r.userId === openUser) : null;
 
   return (
-    <div className="sysx adm">
+    <div className={'sysx adm' + theme.cls}>
       <aside className="adm-side">
         <Link to="/" className="adm-brand"><b>WEEXP</b><span className="mono">admin</span></Link>
         <nav className="adm-nav">
@@ -275,7 +277,10 @@ export function AdminPanel() {
         </nav>
         <div className="adm-foot mono">
           <span title={user.email}>{user.email}</span>
-          <button onClick={load} className="adm-refresh">↻ оновити</button>
+          <div className="cab-side-foot-row">
+            <button onClick={load} className="adm-refresh">↻ оновити</button>
+            <ThemeToggle dark={theme.dark} onToggle={theme.toggle} />
+          </div>
         </div>
       </aside>
 

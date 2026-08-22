@@ -4,6 +4,54 @@
 .cab { min-height: 100vh; background: var(--cream); color: var(--charcoal); }
 .cab-boot { padding: 22vh 6vw; color: var(--graphite); font-weight: 700; }
 
+/* ═══ Скелетон завантаження ═══ */
+.cab-skel { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+.cab-skel-side { background: var(--cream-2); border-right: var(--bd); padding: 22px 18px; display: flex; flex-direction: column; gap: 12px; }
+.cab-skel-brand { height: 26px; width: 60%; }
+.cab-skel-nav { height: 34px; width: 100%; border-radius: 0; }
+.cab-skel-main { padding: clamp(20px, 4vw, 44px); display: flex; flex-direction: column; gap: 16px; }
+.cab-skel-h { height: 38px; width: 46%; }
+.cab-skel-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.cab-skel-tile { height: 92px; }
+.cab-skel-block { height: 120px; width: 100%; }
+.sk-shimmer { display: block; background: linear-gradient(100deg, var(--silver) 30%, color-mix(in srgb, var(--pure-white) 70%, var(--silver)) 50%, var(--silver) 70%);
+  background-size: 200% 100%; animation: skShimmer 1.25s ease-in-out infinite; border: var(--bd); }
+@keyframes skShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .sk-shimmer { animation: none; } }
+@media (max-width: 720px) { .cab-skel { grid-template-columns: 1fr; } .cab-skel-side { display: none; } .cab-skel-tiles { grid-template-columns: 1fr 1fr; } }
+
+.cab-side-foot-row { display: flex; align-items: center; gap: 8px; }
+.cab-side-foot-row .cab-signout { flex: 1 1 auto; }
+
+/* ═══ Темна тема кабінету/адмінки (клас .is-dark на корені) ═══
+   Інвертуємо семантичні токени: поверхні → темні, чорнило → світле. Токени
+   рамок/тіней (--bd/--sh) посилаються на --deep, тож підхоплюють інверсію
+   автоматично (нео-брутальна світла тінь на темному). Активні «залиті»
+   стани (bg:--deep) стають світлими пігулками — контраст зберігається. */
+.cab.is-dark, .adm.is-dark {
+  --cream: #16130F;
+  --cream-2: #201C17;
+  --pure-white: #24201B;
+  --deep: #F3EEE4;
+  --charcoal: #ECE7DC;
+  --graphite: #A8A192;
+  --silver: #342F27;
+  --red: #FF5A3C;
+  --yellow: #FFD200;
+  --ok: #35C26B;
+  --ok-strong: #46D07C;
+  --warn: #E7A23C;
+  color-scheme: dark;
+}
+/* AI-кнопка була deep-bg + yellow-text: у темній робимо жовту пігулку з темним текстом. */
+.cab.is-dark .mc-btn.ai, .adm.is-dark .mc-btn.ai { background: var(--yellow); color: #16130F; }
+/* Перемикач теми */
+.cab-theme-btn { width: 38px; height: 38px; flex: 0 0 auto; display: inline-grid; place-items: center;
+  background: var(--pure-white); border: var(--bd); border-radius: 0; color: var(--deep);
+  font-size: 16px; cursor: pointer; box-shadow: 3px 3px 0 var(--deep); transition: transform var(--dur-fast, .15s) ease; }
+.cab-theme-btn:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--red); }
+.cab-theme-btn:active { transform: translate(1px, 1px); box-shadow: 2px 2px 0 var(--deep); }
+
 /* ═══ Ворота входу — двоколонковий постер ═══ */
 .cab-gate { display: grid; place-items: center; min-height: 100vh;
   padding: calc(84px + env(safe-area-inset-top)) clamp(18px, 5vw, 56px) 8vh; }

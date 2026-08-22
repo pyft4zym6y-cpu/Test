@@ -14,6 +14,7 @@ import { eur } from './lossModel';
 import { sendLead } from '@/lib/leads';
 import { isValidCode } from '@/lib/access';
 import { toast } from '@/lib/toast';
+import { useCabTheme, ThemeToggle } from '@/lib/cabTheme';
 import { useT, useLp } from '@/i18n';
 import './system.css';
 import './cabinet.css';
@@ -85,10 +86,29 @@ function Turnstile({ siteKey, provideExecute }: { siteKey: string; provideExecut
   return <div className="cab-captcha"><div ref={box} />{err && <span className="cab-auth-err mono">{err}</span>}</div>;
 }
 
+/** Скелетон завантаження кабінету — брендові плейсхолдери замість голого тексту. */
+function CabSkeleton({ t }: { t: (uk: string, en: string) => string }) {
+  return (
+    <div className="cab-skel" aria-busy="true" aria-label={t('Завантаження кабінету…', 'Loading cabinet…')}>
+      <aside className="cab-skel-side">
+        <span className="cab-skel-brand sk-shimmer" />
+        {Array.from({ length: 6 }).map((_, i) => <span key={i} className="cab-skel-nav sk-shimmer" />)}
+      </aside>
+      <main className="cab-skel-main">
+        <span className="cab-skel-h sk-shimmer" />
+        <div className="cab-skel-tiles">{Array.from({ length: 4 }).map((_, i) => <span key={i} className="cab-skel-tile sk-shimmer" />)}</div>
+        <span className="cab-skel-block sk-shimmer" />
+        <span className="cab-skel-block sk-shimmer" style={{ width: '72%' }} />
+      </main>
+    </div>
+  );
+}
+
 export function Cabinet() {
   const t = useT();
   const lp = useLp();
   const nav = useNavigate();
+  const theme = useCabTheme();
   const NAV: { group: string; items: NavItem[] }[] = [
     { group: t('Огляд', 'Overview'), items: [{ id: 'overview', label: t('Огляд та шлях', 'Overview & path') }, { id: 'audits', label: t('Мої аудити', 'My audits') }] },
     { group: t('Дані', 'Data'), items: [{ id: 'company', label: t('Дані компанії', 'Company data') }] },
@@ -186,10 +206,10 @@ export function Cabinet() {
   };
 
   /* ── Ворота входу ── */
-  if (checking) return <div className="sysx cab"><div className="cab-boot mono">{t('Завантаження кабінету…', 'Loading cabinet…')}</div></div>;
+  if (checking) return <div className={'sysx cab' + theme.cls}><CabSkeleton t={t} /></div>;
   if (!user) {
     return (
-      <div className="sysx cab cab-gate">
+      <div className={'sysx cab cab-gate' + theme.cls}>
         <div className="cab-gate-card">
           <div className="cab-gate-left">
             <Link to={lp('/')} className="cab-gate-back mono">← {t('на сайт', 'to site')}</Link>
@@ -259,7 +279,7 @@ export function Cabinet() {
   const cur = journey.find((j) => j.current);
 
   return (
-    <div className="sysx cab">
+    <div className={'sysx cab' + theme.cls}>
       {/* Сайдбар */}
       <aside className="cab-side">
         <Link to={lp('/')} className="cab-brand"><b>WEEXP</b><span className="mono">{t('кабінет', 'cabinet')}</span></Link>
@@ -278,7 +298,10 @@ export function Cabinet() {
         <div className="cab-side-foot">
           <span className="cab-user mono" title={user.email}>{user.email}</span>
           <span className="cab-user-mode mono">{isCloudUser(user) ? t('☁ хмара', '☁ cloud') : t('● локально', '● local')}</span>
-          <button className="cab-signout mono" onClick={doSignOut}>{t('Вийти', 'Sign out')}</button>
+          <div className="cab-side-foot-row">
+            <button className="cab-signout mono" onClick={doSignOut}>{t('Вийти', 'Sign out')}</button>
+            <ThemeToggle dark={theme.dark} onToggle={theme.toggle} />
+          </div>
         </div>
       </aside>
 
