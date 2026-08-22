@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, signTierFile, CONFIGURED,
   findAuditIdByCode, loadAuditAnswers, loadAuditExtra, saveAuditExtra,
-  saveProjectsFor, emptyProject, getProjects, loadPmDirectory, savePmDirectory,
+  saveProjectsFor, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject,
   MANAGER_EMAILS, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
   type Project, type ProjTask, type ProjMember, type ProjPayment, type ProjMonth, type ProjTariffItem,
   type PmDirectory, type PmSpecialist, type PmRoleRate,
@@ -737,7 +737,7 @@ function UserDetail({ row, onClose, openFile, onStatus, busy }: { row: AdminRow;
             <Block title="Уточнення (Крок 2)"><ExtraEditor code={code} /></Block>
           )}
 
-          <Block title="Мій проект (ведення)"><ProjectsManager userId={row.userId} initial={getProjects(rec)} /></Block>
+          <Block title="Мій проект (ведення)"><ProjectsManager userId={row.userId} initial={getProjects(rec)} code={code} company={company?.name} /></Block>
 
           {files.length > 0 && (
             <Block title="Файли">
@@ -806,9 +806,15 @@ function PmOffice() {
   const num = (v: string) => (v === '' ? 0 : Number(v));
   const setSpec = (i: number, k: keyof PmSpecialist, v: unknown) => setDir({ ...dir, specialists: specs.map((s, j) => (j === i ? { ...s, [k]: v } : s)) });
   const setRole = (i: number, k: keyof PmRoleRate, v: unknown) => setDir({ ...dir, roleRates: roles.map((s, j) => (j === i ? { ...s, [k]: v } : s)) });
+  const presets = dir.presets || [];
   const save = async () => {
     setBusy(true); setMsg('');
-    const r = await savePmDirectory({ specialists: specs.filter((s) => s.name.trim() || s.role.trim()), roleRates: roles.filter((s) => s.role.trim()) });
+    const r = await savePmDirectory({
+      specialists: specs.filter((s) => s.name.trim() || s.role.trim()),
+      roleRates: roles.filter((s) => s.role.trim()),
+      knowledge: dir.knowledge || '',
+      presets,
+    });
     setBusy(false);
     setMsg(r.ok ? '✓ Довідник збережено.' : (r.error || 'Помилка'));
   };
@@ -846,6 +852,26 @@ function PmOffice() {
         </div>
       </div>
 
+      <div className="pj-card" style={{ marginTop: 16 }}>
+        <h2 className="pj-h2">База знань для AI</h2>
+        <p className="pj-sub mono">Методика й правила агенції: як складати план, типові етапи, підходи до команди й тарифікації. Клод спирається на це, коли генерує чернетку проекту з аудиту.</p>
+        <textarea className="ab-inp" rows={7} value={dir.knowledge || ''} onChange={(e) => setDir({ ...dir, knowledge: e.target.value })}
+          placeholder={'напр.:\n— Старт завжди з дискавері (2–3 тижні).\n— Роль Tech Lead підключаємо з 2-го місяця.\n— Мінімальна тарифікація маркетолога — 40 год/міс.\n— Аванс 40% на старті, решта — помісячно.'} />
+      </div>
+
+      <div className="pj-card">
+        <h2 className="pj-h2">Пресети проектів ({presets.length})</h2>
+        <p className="pj-sub mono">Шаблони плану (Гант + команда + тарифікація). Зберігаються з картки клієнта кнопкою «Зберегти як пресет», застосовуються там само.</p>
+        {presets.length === 0 ? <p className="mono adm-empty">Пресетів ще немає.</p> : (
+          <ul className="adm-files">{presets.map((pr) => (
+            <li key={pr.id} className="pm-preset">
+              <span><b>{pr.title || 'без назви'}</b> <i className="mono">· {(pr.tasks || []).length} задач · {(pr.team || []).length} ролей</i></span>
+              <button className="mc-btn ghost" onClick={() => setDir({ ...dir, presets: presets.filter((x) => x.id !== pr.id) })}>✕</button>
+            </li>
+          ))}</ul>
+        )}
+      </div>
+
       <div className="pj-ed-foot" style={{ marginTop: 16 }}>
         {msg && <span className="mono adm-fill-au">{msg}</span>}
         <button className="mc-btn ok" onClick={save} disabled={busy}>{busy ? 'Зберігаємо…' : 'Зберегти довідник'}</button>
@@ -855,7 +881,7 @@ function PmOffice() {
 }
 
 /** Менеджер керує кількома проектами клієнта: селектор + додати/видалити + збереження. */
-function ProjectsManager({ userId, initial }: { userId: string; initial: Project[] }) {
+function ProjectsManager({ userId, initial, code, company }: { userId: string; initial: Project[]; code?: string; company?: string }) {
   const [list, setList] = useState<Project[]>(initial.length ? initial : []);
   const [active, setActive] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -886,7 +912,7 @@ function ProjectsManager({ userId, initial }: { userId: string; initial: Project
       </div>
       {!cur ? <p className="mono adm-empty">Проектів ще немає. Додайте перший.</p> : (
         <>
-          <ProjectEditor key={cur.id} value={cur} onChange={patchCur} />
+          <ProjectEditor key={cur.id} value={cur} onChange={patchCur} code={code} company={company} />
           <div className="pj-ed-foot">
             <button className="mc-btn bad" onClick={delProject}>Видалити проект</button>
             <div className="pj-mgr-save">
@@ -901,12 +927,57 @@ function ProjectsManager({ userId, initial }: { userId: string; initial: Project
 }
 
 /** Редактор одного проекту (керований): Гант, команда, фінкалендар, тарифікація, бюджет. */
-function ProjectEditor({ value, onChange }: { value: Project; onChange: (p: Project) => void }) {
+function ProjectEditor({ value, onChange, code, company }: { value: Project; onChange: (p: Project) => void; code?: string; company?: string }) {
   const p = value;
   const [dir, setDir] = useState<PmDirectory>({});
+  const [ai, setAi] = useState('');   // статус AI-чернетки
   useEffect(() => { loadPmDirectory().then(setDir); }, []);
   const upd = (patch: Partial<Project>) => onChange({ ...p, ...patch });
   const num = (v: string) => (v === '' ? 0 : Number(v));
+  const rid = (pfx: string) => `${pfx}_${Math.random().toString(36).slice(2, 8)}`;
+
+  // 🪄 Згенерувати чернетку плану з відповідей аудиту клієнта.
+  const genDraft = async () => {
+    if (!code) { setAi('Немає коду аудиту — клієнт ще не відкрив розділ.'); return; }
+    setAi('Читаю аудит…');
+    const id = await findAuditIdByCode(code);
+    if (!id) { setAi('Аудит не знайдено.'); return; }
+    const answers = await loadAuditAnswers(id);
+    if (!answers || !Object.keys(answers).length) { setAi('Клієнт ще не заповнив відповіді аудиту.'); return; }
+    setAi('Клод складає чернетку…');
+    const r = await aiDraftProject({
+      answers, company, knowledge: dir.knowledge, roleRates: dir.roleRates, specialists: dir.specialists,
+      startMonth: p.startMonth, span: p.span,
+    });
+    if (!r.ok || !r.draft) { setAi(r.error || 'Не вдалося згенерувати.'); return; }
+    const d = r.draft;
+    upd({
+      title: p.title || d.title || '',
+      tasks: (d.tasks || []).map((t) => ({ id: rid('t'), name: t.name || '', track: t.track, startM: Math.max(0, Number(t.startM) || 0), lenM: Math.max(1, Number(t.lenM) || 1), progress: 0, owner: t.owner })),
+      team: (d.team || []).map((m) => ({ id: rid('m'), role: m.role || '', name: m.name || '' })),
+      tariff: (d.tariff || []).map((mo) => ({ id: rid('mo'), month: mo.month || p.startMonth || '', items: (mo.items || []).map((it) => ({ id: rid('i'), label: it.label || '', hours: Number(it.hours) || 0, rate: Number(it.rate) || 0 })) })),
+    });
+    setAi(`✓ Чернетку складено${d.rationale ? ': ' + d.rationale : ''}. Перевірте й відредагуйте перед публікацією.`);
+  };
+  // Пресети проектів (шаблони) з довідника.
+  const presets = dir.presets || [];
+  const applyPreset = (pr: Project) => {
+    upd({
+      title: pr.title || p.title, span: pr.span || p.span,
+      tasks: (pr.tasks || []).map((t) => ({ ...t, id: rid('t') })),
+      team: (pr.team || []).map((m) => ({ ...m, id: rid('m') })),
+      tariff: (pr.tariff || []).map((mo) => ({ ...mo, id: rid('mo'), items: (mo.items || []).map((it) => ({ ...it, id: rid('i') })) })),
+    });
+    setAi(`✓ Застосовано пресет «${pr.title || 'без назви'}».`);
+  };
+  const saveAsPreset = async () => {
+    const name = prompt('Назва пресету:', p.title || 'Пресет');
+    if (!name) return;
+    const preset: Project = { ...p, id: rid('pr'), title: name, published: false, payments: [], budget: {} };
+    const nd = { ...dir, presets: [...presets, preset] };
+    setDir(nd); await savePmDirectory(nd);
+    setAi(`✓ Збережено як пресет «${name}» (у Проект-офісі).`);
+  };
 
   const tasks = p.tasks || [], team = p.team || [], pays = p.payments || [], tariff = p.tariff || [];
   const specialists = dir.specialists || [];
@@ -926,6 +997,18 @@ function ProjectEditor({ value, onChange }: { value: Project; onChange: (p: Proj
 
   return (
     <div className="pj-ed">
+      <div className="pj-ai">
+        <button className="mc-btn ai" onClick={genDraft}>🪄 AI-чернетка з аудиту</button>
+        {presets.length > 0 && (
+          <select className="ab-sel" value="" onChange={(e) => { const pr = presets.find((x) => x.id === e.target.value); if (pr) applyPreset(pr); }}>
+            <option value="">Застосувати пресет…</option>
+            {presets.map((pr) => <option key={pr.id} value={pr.id}>{pr.title || 'без назви'}</option>)}
+          </select>
+        )}
+        <button className="mc-btn" onClick={saveAsPreset}>Зберегти як пресет</button>
+        {ai && <span className="mono pj-ai-msg">{ai}</span>}
+      </div>
+
       <div className="pj-ed-row2">
         <label className="pj-ed-f"><i>Назва проекту</i><input className="ab-inp" value={p.title || ''} onChange={(e) => upd({ title: e.target.value })} placeholder="напр. Ecom-система Q3" /></label>
         <label className="pj-ed-f sm"><i>Старт (міс.)</i><input className="ab-inp" type="month" value={p.startMonth || ''} onChange={(e) => upd({ startMonth: e.target.value })} /></label>

@@ -773,3 +773,11 @@
 .pj-mgr-save { display: flex; gap: 12px; align-items: center; }
 .pj-ed-pubrow { padding-top: 10px; border-top: 2px dashed var(--deep); }
 .mc-btn.bad { background: var(--red); color: #fff; }
+
+/* ─── AI-чернетка + пресети ─── */
+.pj-ai { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 10px; margin-bottom: 14px; border: 2.5px dashed var(--deep); background: var(--cream-2); }
+.mc-btn.ai { background: var(--deep); color: var(--yellow); font-weight: 700; }
+.mc-btn.ai:hover { background: #000; }
+.pj-ai-msg { flex: 1 1 220px; min-width: 180px; color: var(--graphite); font-size: 12px; }
+.pm-preset { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.pm-preset i { color: var(--graphite); font-style: normal; }

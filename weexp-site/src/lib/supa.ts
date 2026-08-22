@@ -105,7 +105,21 @@ export function getProjects(rec?: DiagRecord | null): Project[] {
 /* ─── Проект-офіс (PM): довідник команди та ставок ─── */
 export type PmSpecialist = { id: string; name: string; role: string; rate: number };  // ставка €/год
 export type PmRoleRate = { id: string; role: string; rate: number };
-export type PmDirectory = { specialists?: PmSpecialist[]; roleRates?: PmRoleRate[] };
+export type PmDirectory = { specialists?: PmSpecialist[]; roleRates?: PmRoleRate[]; knowledge?: string; presets?: Project[] };
+
+/** AI-чернетка проекту з відповідей аудиту (через /api/ai-draft → Anthropic). */
+export type AiDraft = { title?: string; tasks?: ProjTask[]; team?: ProjMember[]; tariff?: ProjMonth[]; rationale?: string };
+export async function aiDraftProject(payload: {
+  answers: Record<string, unknown>; company?: string; knowledge?: string;
+  roleRates?: PmRoleRate[]; specialists?: PmSpecialist[]; startMonth?: string; span?: number;
+}): Promise<{ ok: boolean; draft?: AiDraft; error?: string }> {
+  try {
+    const r = await fetch('/api/ai-draft', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
+    const j = await r.json();
+    if (j.error) return { ok: false, error: j.error };
+    return { ok: true, draft: j.draft as AiDraft };
+  } catch (e) { return { ok: false, error: String(e) }; }
+}
 
 /** Довідник проект-офісу зберігається у записі менеджера (diagnostics.data.pmDir). */
 export async function loadPmDirectory(): Promise<PmDirectory> {
