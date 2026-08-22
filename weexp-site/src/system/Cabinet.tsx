@@ -243,7 +243,6 @@ export function Cabinet() {
                   <input type="password" autoComplete={mode === 'register' ? 'new-password' : 'current-password'} value={pass} onChange={(e) => setPass(e.target.value)} placeholder="••••••" onKeyDown={(e) => e.key === 'Enter' && email && pass.length >= 6 && doAuth()} /></label>
                 {authErr && <p className="cab-auth-err mono">{authErr}</p>}
                 {captchaOn && <Turnstile siteKey={TURNSTILE_SITE_KEY} provideExecute={(fn) => { execCaptcha.current = fn; }} />}
-                {captchaOn && <span className="mono" style={{ fontSize: 10, color: '#9a948a' }}>captcha key: {TURNSTILE_SITE_KEY.slice(0, 10)}…</span>}
                 <button className="sysx-cta is-primary" onClick={doAuth} disabled={busy || !email || pass.length < 6}>
                   {busy ? (mode === 'register' ? t('Реєструємо…', 'Signing up…') : t('Заходимо…', 'Signing in…')) : (mode === 'register' ? t('Створити кабінет →', 'Create cabinet →') : t('Увійти →', 'Sign in →'))}
                 </button>
