@@ -638,7 +638,7 @@ export function AdminPanel() {
       </main>
 
       {/* Панель деталей користувача */}
-      {detail && <UserDetail row={detail} onClose={() => setOpenUser(null)} openFile={openFile} onStatus={setStatus} onDelete={removeUser} busy={busy} />}
+      {detail && <UserDetail row={detail} leads={leads} onClose={() => setOpenUser(null)} openFile={openFile} onStatus={setStatus} onDelete={removeUser} busy={busy} />}
       {/* Панель деталей заявки */}
       {openLead && leads && <LeadDetail lead={leads.find((l) => l.id === openLead)} allRows={rows || []} onClose={() => setOpenLead(null)} onStatus={moveLead} onDelete={removeLead} busy={busy} onOpenClient={(uid) => { setOpenLead(null); setTab('users'); setOpenUser(uid); }} />}
 
@@ -923,7 +923,7 @@ table{border-collapse:collapse;width:100%}td{border-bottom:1px solid #EEE7D6;pad
   else toast('Дозвольте спливаючі вікна, щоб відкрити досьє', 'err');
 }
 
-function UserDetail({ row, onClose, openFile, onStatus, onDelete, busy }: { row: AdminRow; onClose: () => void; openFile: (p: string) => void; onStatus: (userId: string, tier: string, status: TierStatus) => void; onDelete: (userId: string, email: string) => void; busy: string }) {
+function UserDetail({ row, leads, onClose, openFile, onStatus, onDelete, busy }: { row: AdminRow; leads: LeadRow[] | null; onClose: () => void; openFile: (p: string) => void; onStatus: (userId: string, tier: string, status: TierStatus) => void; onDelete: (userId: string, email: string) => void; busy: string }) {
   const rec = row.record || {};
   const company = rec.company;
   const money = rec.stage1Money;
@@ -934,7 +934,10 @@ function UserDetail({ row, onClose, openFile, onStatus, onDelete, busy }: { row:
     <div className="adm-drawer-wrap" onClick={onClose}>
       <aside className="adm-drawer" onClick={(e) => e.stopPropagation()}>
         <div className="adm-drawer-head">
-          <a className="adm-email adm-mail" href={`mailto:${row.email}`}>{row.email}</a>
+          <div className="adm-drawer-head-id">
+            <a className="adm-email adm-mail" href={`mailto:${row.email}`}>{row.email}</a>
+            {(() => { const st = FUNNEL.find((x) => x.k === funnelStage(row))!; return <span className={`cab-badge mono tst-${st.cls} adm-drawer-stage`}>{st.l}</span>; })()}
+          </div>
           <div className="adm-drawer-head-act">
             <button className="mc-btn" onClick={() => openClientDossier(row)} title="Сформувати PDF-досьє клієнта">📄 Досьє PDF</button>
             <button className="adm-x" onClick={onClose} aria-label="Закрити" title="Закрити">✕</button>
@@ -1075,6 +1078,27 @@ function UserDetail({ row, onClose, openFile, onStatus, onDelete, busy }: { row:
               )))}</ul>
             </Block>
           )}
+
+          <Block title="Заявки клієнта">{(() => {
+            const mine = (leads || []).filter((l) => !ACCESS_SOURCES.includes(l.source || '') && (l.email || '').toLowerCase() === row.email.toLowerCase());
+            if (!mine.length) return <p className="mono adm-empty">заявок від цього email немає</p>;
+            return <ul className="adm-kv">{mine.map((l) => (
+              <li key={l.id}><i>{rel(l.at)}{l.source ? ` · ${l.source}` : ''}</i><span>{l.task || l.comment || '—'}{l.status ? ` · ${LEAD_STAGES.find((s) => s.k === (l.status as LeadStatus))?.l || l.status}` : ''}</span></li>
+            ))}</ul>;
+          })()}</Block>
+
+          <Block title="Історія активності">{(() => {
+            const ev: { at: string; t: string }[] = [];
+            if (row.record?.express?.at) ev.push({ at: row.record.express.at, t: `Пройдено експрес-аудит · ${eur(row.record.express.total)}/рік` });
+            Object.entries(row.funnel?.tierHistory || {}).forEach(([tid, list]) => (list || []).forEach((e) => ev.push({ at: e.at, t: `${tierLabel(tid)} → ${ST[e.st]?.txt ?? e.st}${e.by === 'manager' ? ' · менеджер' : ''}` })));
+            if (row.funnel?.leadAt) ev.push({ at: row.funnel.leadAt, t: 'Заявка на співпрацю з кабінету' });
+            if (row.updatedAt) ev.push({ at: row.updatedAt, t: 'Оновлення профілю' });
+            ev.sort((a, b) => (b.at || '').localeCompare(a.at || ''));
+            if (!ev.length) return <p className="mono adm-empty">подій ще немає</p>;
+            return <ul className="adm-activity">{ev.slice(0, 20).map((e, i) => (
+              <li key={i}><span className="adm-act-dot" /><span className="adm-act-t">{e.t}</span><span className="mono adm-act-at">{rel(e.at)}</span></li>
+            ))}</ul>;
+          })()}</Block>
 
           <div className="adm-danger">
             <span className="mono adm-empty">Небезпечна зона — прибирання тестових даних:</span>
