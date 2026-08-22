@@ -87,6 +87,7 @@ export function AdminPanel() {
   const [period, setPeriod] = useState<7 | 30 | 90 | 0>(30);
   const [ask, setAsk] = useState<{ userId: string; tier: string; status: TierStatus } | null>(null);
   const [askReason, setAskReason] = useState('');
+  const [selLeads, setSelLeads] = useState<Set<string>>(new Set()); // мультивибір заявок (має бути ДО ранніх return — правило хуків)
 
   const load = () => {
     listAllDiagnostics().then(setRows);
@@ -203,7 +204,6 @@ export function AdminPanel() {
     setOpenLead(null);
   };
   // Масові дії над заявками (мультивибір).
-  const [selLeads, setSelLeads] = useState<Set<string>>(new Set());
   const toggleSel = (id: string) => setSelLeads((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
   const clearSel = () => setSelLeads(new Set());
   const bulkStatus = async (status: LeadStatus) => {
