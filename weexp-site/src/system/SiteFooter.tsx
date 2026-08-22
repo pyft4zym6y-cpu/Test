@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useT, useLp } from '@/i18n';
 import './system.css';
@@ -22,6 +23,13 @@ export function SiteFooter() {
   const year = 2026;
   const t = useT();
   const lp = useLp();
+  // Helper DMCA реєструє адресу сторінки в dmca.com → сканування → статус «Protected».
+  useEffect(() => {
+    if (!DMCA_ID || document.getElementById('dmca-badge-helper')) return;
+    const s = document.createElement('script');
+    s.id = 'dmca-badge-helper'; s.src = 'https://images.dmca.com/Badges/DMCABadgeHelper.min.js'; s.async = true;
+    document.body.appendChild(s);
+  }, []);
   return (
     <footer className="sfoot sysx">
       <div className="sfoot-in">
@@ -51,7 +59,7 @@ export function SiteFooter() {
         <span>© {year} WEEXP</span>
         {DMCA_ID && (
           <a href={`https://www.dmca.com/Protection/Status.aspx?ID=${DMCA_ID}`} target="_blank" rel="noopener noreferrer"
-            title="DMCA.com Protection Status" className="sfoot-dmca">
+            title="DMCA.com Protection Status" className="sfoot-dmca dmca-badge">
             <img src={`https://images.dmca.com/Badges/dmca_protected_sml_120m.png?ID=${DMCA_ID}`} alt="DMCA.com Protection Status" height="20" loading="lazy" />
           </a>
         )}
