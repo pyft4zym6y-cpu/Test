@@ -4,7 +4,7 @@ import {
   currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, deleteLead, deleteDiagnostics, signTierFile, CONFIGURED,
   findAuditIdByCode, loadAuditAnswers, loadAuditExtra, saveAuditExtra,
   saveProjectsFor, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject,
-  MANAGER_EMAILS, TEAM_ROLES, ROLE_LABEL, roleOf, can, type Role, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
+  MANAGER_EMAILS, TEAM_ROLES, ROLE_LABEL, roleOf, can, teamApi, type Role, type TeamMember, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
   type Project, type ProjTask, type ProjMember, type ProjPayment, type ProjMonth, type ProjTariffItem,
   type PmDirectory, type PmSpecialist, type PmRoleRate,
 } from '@/lib/supa';
@@ -660,8 +660,10 @@ export function AdminPanel() {
                 <p className="mono"><b>Manager</b> — робота з клієнтами, заявками й аудитами; без системних налаштувань.</p>
                 <p className="mono"><b>Auditor / Specialist</b> — лише аудити й робочі дані.</p>
               </div>
-              <p className="adm-hint mono">Ролі задаються в <code>src/lib/supa.ts → TEAM_ROLES</code>. Керування командою з інтерфейсу (створення адміна, пароль, інвайт, блокування) підключається наступним кроком через серверний Supabase Auth Admin API. Нового адміна також треба додати в RLS-політики Supabase (SELECT/UPDATE на <code>diagnostics</code>).</p>
+              <p className="adm-hint mono">Бутстрап-super-адміни задані в коді (<code>TEAM_ROLES</code>) — щоб не втратити доступ. Інші ролі керуються нижче й зберігаються в акаунті. Нового адміна також додайте в RLS-політики Supabase (SELECT/UPDATE на <code>diagnostics</code>), щоб він бачив дані клієнтів.</p>
             </div>
+
+            {can(user, 'manage_team') && <TeamManager selfEmail={user.email} />}
           </section>
         )}
       </main>
@@ -1186,6 +1188,75 @@ function gMonthLabel(startMonth: string | undefined, i: number): string {
 }
 
 /** Проект-офіс: глобальний довідник команди та ставок (переиспользується в проектах). */
+const ALL_ROLES: Role[] = ['super', 'admin', 'manager', 'auditor'];
+/** Керування командою через серверний /api/team (лише Super Admin). */
+function TeamManager({ selfEmail }: { selfEmail: string }) {
+  const [members, setMembers] = useState<TeamMember[] | null>(null);
+  const [msg, setMsg] = useState('');
+  const [busy, setBusy] = useState('');
+  const [nEmail, setNEmail] = useState('');
+  const [nPass, setNPass] = useState('');
+  const [nRole, setNRole] = useState<Role>('manager');
+  const load = () => { setMsg(''); teamApi('list').then((r) => { if (r.users) setMembers(r.users); else { setMembers([]); setMsg(r.error || 'Не вдалося завантажити список'); } }); };
+  useEffect(load, []);
+  const run = async (action: string, payload: Record<string, unknown>, key: string) => {
+    setBusy(key); const r = await teamApi(action, payload); setBusy('');
+    if (r.error) { setMsg('✕ ' + r.error); toast('Помилка: ' + r.error, 'err'); return false; }
+    setMsg('✓ Готово'); toast('✓ Готово'); load(); return true;
+  };
+  const create = async () => {
+    if (!nEmail.trim() || nPass.length < 8) { setMsg('Вкажіть email і пароль (мін. 8 символів)'); return; }
+    if (await run('create', { email: nEmail.trim(), password: nPass, role: nRole }, 'create')) { setNEmail(''); setNPass(''); }
+  };
+  const invite = async () => {
+    if (!nEmail.trim()) { setMsg('Вкажіть email'); return; }
+    if (await run('invite', { email: nEmail.trim(), role: nRole }, 'invite')) setNEmail('');
+  };
+  return (
+    <div className="pj-card">
+      <h2 className="pj-h2">Керування командою</h2>
+      <p className="pj-sub mono">Створення адмінів, ролі, блокування — через захищений сервер. Ролі зберігаються в акаунті (Supabase Auth). Доступно лише Super Admin.</p>
+      {msg && <p className="mono adm-fill-au" style={{ marginBottom: 8 }}>{msg}</p>}
+
+      <div className="adm-team-add">
+        <input className="ab-inp" type="email" placeholder="email нового адміна" value={nEmail} onChange={(e) => setNEmail(e.target.value)} />
+        <select className="ab-sel" value={nRole} onChange={(e) => setNRole(e.target.value as Role)}>
+          {ALL_ROLES.map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
+        </select>
+        <input className="ab-inp" type="text" placeholder="пароль (мін. 8) — або інвайт" value={nPass} onChange={(e) => setNPass(e.target.value)} />
+        <button className="mc-btn ok" disabled={busy === 'create'} onClick={create}>{busy === 'create' ? '…' : '+ Створити'}</button>
+        <button className="mc-btn" disabled={busy === 'invite'} onClick={invite} title="Надіслати інвайт-лист (потрібен SMTP у Supabase)">✉ Інвайт</button>
+      </div>
+
+      {members === null ? <p className="mono adm-empty">Завантаження…</p> : members.length === 0 ? <p className="mono adm-empty">Членів команди з роллю ще немає (або не налаштовано сервер).</p> : (
+        <div className="adm-team-tbl">
+          <div className="adm-team-row2 adm-team-th"><span>Email</span><span>Роль</span><span>Стан</span><span>Дії</span></div>
+          {members.map((m) => {
+            const isSelf = m.email.toLowerCase() === selfEmail.toLowerCase();
+            const isBootstrap = MANAGER_EMAILS.includes(m.email.toLowerCase());
+            return (
+              <div key={m.id} className="adm-team-row2">
+                <span className="mono">{m.email}{isSelf ? ' (ви)' : ''}</span>
+                <span>
+                  <select className="ab-sel sm" value={m.role || 'manager'} disabled={isBootstrap || busy === 'role:' + m.id} onChange={(e) => run('set_role', { userId: m.id, email: m.email, role: e.target.value }, 'role:' + m.id)}>
+                    {ALL_ROLES.map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
+                  </select>
+                </span>
+                <span className="mono">{m.banned ? '🚫 заблоковано' : m.confirmed ? '✓ активний' : '⏳ не підтверджено'}</span>
+                <span className="adm-team-acts">
+                  <button className="mc-btn ghost" disabled={busy === 'reset:' + m.id} onClick={() => run('reset', { email: m.email }, 'reset:' + m.id)} title="Надіслати лист скидання пароля">🔑</button>
+                  {!isBootstrap && !isSelf && <button className="mc-btn ghost" disabled={busy === 'ban:' + m.id} onClick={() => run('ban', { userId: m.id, banned: !m.banned }, 'ban:' + m.id)}>{m.banned ? 'Розблок.' : 'Блок'}</button>}
+                  {!isBootstrap && !isSelf && <button className="mc-btn bad" disabled={busy === 'rm:' + m.id} onClick={() => { if (confirm(`Видалити адміна ${m.email}?`)) run('remove', { userId: m.id, email: m.email }, 'rm:' + m.id); }}>✕</button>}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function PmOffice() {
   const [dir, setDir] = useState<PmDirectory | null>(null);
   const [msg, setMsg] = useState('');

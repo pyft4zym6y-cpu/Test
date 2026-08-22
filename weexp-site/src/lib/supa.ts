@@ -19,7 +19,7 @@ export const supabase = createClient(url ?? 'https://placeholder.supabase.co', a
   auth: { persistSession: true, autoRefreshToken: true },
 });
 
-export type DiagUser = { id: string; email: string };
+export type DiagUser = { id: string; email: string; role?: Role };
 
 /** true, якщо користувач збережений у хмарному кабінеті (Supabase), а не локально. */
 export const isCloudUser = (u: DiagUser | null): boolean => !!u && !u.id.startsWith('local:') && !u.id.startsWith('demo:');
@@ -172,8 +172,24 @@ export async function currentUser(): Promise<DiagUser | null> {
   const local = lsUser(); if (local) return local;
   if (!CONFIGURED) return null;
   const { data } = await supabase.auth.getSession();
-  const s = data.session; return s?.user ? { id: s.user.id, email: s.user.email ?? '' } : null;
+  const s = data.session;
+  if (!s?.user) return null;
+  // Роль — з app_metadata (керується сервером /api/team). У бутстрап-super — з коду.
+  const meta = (s.user.app_metadata || {}) as { role?: Role };
+  return { id: s.user.id, email: s.user.email ?? '', role: meta.role };
 }
+
+/** Виклик серверного керування командою (/api/team) з токеном поточного super-адміна. */
+export async function teamApi(action: string, payload: Record<string, unknown> = {}): Promise<{ ok?: boolean; error?: string; users?: TeamMember[]; user?: unknown }> {
+  try {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    if (!token) return { error: 'Немає сесії. Увійдіть через Google.' };
+    const r = await fetch('/api/team', { method: 'POST', headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ action, ...payload }) });
+    return await r.json();
+  } catch (e) { return { error: String(e) }; }
+}
+export type TeamMember = { id: string; email: string; role: Role | null; banned: boolean; lastSignIn: string | null; createdAt: string | null; confirmed: boolean };
 
 /**
  * Реєстрація/вхід. Ніколи не блокує потік: якщо Supabase не дав сесію (напр.
@@ -328,7 +344,8 @@ export const ROLE_LABEL: Record<Role, string> = {
 };
 export function roleOf(u: DiagUser | null): Role | null {
   if (!u) return null;
-  return TEAM_ROLES[(u.email || '').toLowerCase()] ?? null;
+  // Бутстрап-super з коду завжди super (щоб не залочити себе), далі — роль із сесії.
+  return TEAM_ROLES[(u.email || '').toLowerCase()] ?? u.role ?? null;
 }
 /** Чи має користувач право на дію. */
 export function can(u: DiagUser | null, cap: Capability): boolean {
