@@ -5,6 +5,7 @@ import {
   MANAGER_EMAILS, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus,
 } from '@/lib/supa';
 import { eur } from './lossModel';
+import { AuditBuilder } from './AuditBuilder';
 import './system.css';
 import './cabinet.css';
 
@@ -18,11 +19,12 @@ type SiteTraffic = {
   period?: string; sessions?: number; users?: number; pageviews?: number; bounceRate?: number;
   sources?: { name: string; sessions: number }[]; pages?: { path: string; views: number }[]; error?: string;
 };
-type Tab = 'overview' | 'users' | 'audits' | 'access' | 'leads' | 'settings';
+type Tab = 'overview' | 'users' | 'audits' | 'template' | 'access' | 'leads' | 'settings';
 const TABS: { id: Tab; label: string }[] = [
   { id: 'overview', label: 'Дашборд' },
   { id: 'users', label: 'Користувачі' },
   { id: 'audits', label: 'Аудити' },
+  { id: 'template', label: 'Конструктор аудиту' },
   { id: 'access', label: 'Запити доступів' },
   { id: 'leads', label: 'Первинна комунікація' },
   { id: 'settings', label: 'Налаштування' },
@@ -343,6 +345,9 @@ export function AdminPanel() {
             )}
           </section>
         )}
+
+        {/* ── Конструктор шаблону аудиту ── */}
+        {tab === 'template' && <AuditBuilder />}
 
         {/* ── Запити доступів (глибокий аудит) ── */}
         {tab === 'access' && (

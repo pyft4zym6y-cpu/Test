@@ -478,6 +478,29 @@
 .adm-dtier { display: flex; flex-direction: column; gap: 8px; border: 2px solid var(--deep); background: var(--cream); padding: 10px 12px; }
 .adm-dtier-l { display: flex; align-items: center; gap: 8px; }
 
+/* ── Конструктор аудиту ── */
+.ab-blocks { display: flex; flex-direction: column; gap: 16px; }
+.ab-block { background: var(--pure-white); border: var(--bd); box-shadow: var(--sh); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.ab-block-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border-bottom: 2px solid var(--deep); padding-bottom: 12px; }
+.ab-inp, .ab-sel, .ab-block-head select, .ab-q-cond select { border: 2px solid var(--deep); background: var(--cream); color: var(--deep); font: inherit; font-size: 14px; padding: 8px 10px; }
+.ab-inp:focus, .ab-sel:focus { outline: 0; box-shadow: 2px 2px 0 var(--red); }
+.ab-title { flex: 1; min-width: 180px; font-weight: 800; font-size: 15px; }
+.ab-role { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--graphite); }
+.ab-role select { font-size: 12px; padding: 6px 8px; }
+.ab-mv { display: flex; gap: 4px; margin-left: auto; }
+.ab-qs { display: flex; flex-direction: column; gap: 10px; }
+.ab-q { background: var(--cream-2); border: 2px solid var(--deep); padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.ab-q-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ab-q-row .ab-inp { flex: 1; min-width: 200px; }
+.ab-sel { min-width: 130px; }
+.ab-req { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--graphite); white-space: nowrap; }
+.ab-q-row2 { display: flex; gap: 8px; flex-wrap: wrap; }
+.ab-q-row2 .ab-inp { flex: 1; min-width: 200px; font-size: 13px; }
+.ab-hint { color: var(--charcoal); }
+.ab-q-cond { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 11px; color: var(--graphite); text-transform: uppercase; letter-spacing: .04em; }
+.ab-q-cond select { font-size: 12px; padding: 5px 8px; text-transform: none; }
+.ab-cond { max-width: 160px; }
+
 /* Порожні стани */
 .adm-empty-box { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;
   background: var(--pure-white); border: 2.5px dashed var(--deep); padding: 40px 24px; color: var(--graphite); }
