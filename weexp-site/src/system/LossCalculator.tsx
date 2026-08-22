@@ -274,7 +274,7 @@ ${projRows ? `<div class="card"><h2>${esc(t('Зараз → куди можем�
                 </div>
                 <div className="sysx-calc-actions">
                   <button className="sysx-cta" onClick={downloadBrandedPdf}>{t('Завантажити PDF', 'Download PDF')} ↓</button>
-                  <Link className="sysx-cta" to={lp('/cabinet')}>{t('Зберегти в кабінет', 'Save to cabinet')} →</Link>
+                  <Link className="sysx-cta" to={lp('/cabinet?from=express')}>{t('Зберегти в кабінет', 'Save to cabinet')} →</Link>
                 </div>
               </div>
             ) : orderOpen ? (
@@ -297,7 +297,7 @@ ${projRows ? `<div class="card"><h2>${esc(t('Зараз → куди можем�
                 <button className="sysx-cta is-primary" onClick={() => setOrderOpen(true)}>{t('Замовити аудит', 'Order the audit')} →</button>
                 <button className="sysx-cta" onClick={downloadBrandedPdf}>{t('Завантажити PDF', 'Download PDF')} ↓</button>
                 <Link className="sysx-cta" to={lp('/pricing')}>{t('Формати і ціни', 'Formats & pricing')} →</Link>
-                <Link className="sysx-cta" to={lp('/cabinet')}>{t('Зберегти в кабінет', 'Save to cabinet')} →</Link>
+                <Link className="sysx-cta" to={lp('/cabinet?from=express')}>{t('Зберегти в кабінет', 'Save to cabinet')} →</Link>
                 <button className="sysx-cta" onClick={restart}>{t('Перерахувати', 'Recalculate')}</button>
               </div>
             )}

@@ -56,10 +56,17 @@ export function genAccessCode(): string {
   return `WEEXP-${part()}-${part()}`;
 }
 
+/** Знімок експрес-аудиту, закріплений за акаунтом (щоб бачив і клієнт, і адмін). */
+export type ExpressSnapshot = {
+  at: string; total: number; range: [number, number]; primary: string; overallHealth: number;
+  symptoms?: string[]; source?: string;
+};
+
 /** Дані діагностики, що зберігаються між сесіями (усі етапи). */
 export type DiagRecord = {
   site?: string;
   stage1?: unknown;
+  express?: ExpressSnapshot;         // експрес-аудит, прив'язаний до акаунту (з калькулятора)
   stage1Money?: [number, number];   // діапазон можливості з Етапу 1 (€) — якір для Етапу 3
   stage2?: unknown;
   stage2Result?: unknown;

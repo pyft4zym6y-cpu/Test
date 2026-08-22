@@ -9,7 +9,7 @@ import {
 import { AuditForm } from './AuditForm';
 import { ProjectView } from './ProjectView';
 import { loadTemplate, CLIENT_ROLES, type AuditTemplate, type Question } from './auditTemplate';
-import { getExpressAudit, clearExpressAudit, buildJourney, type ExpressAudit } from './cabinetData';
+import { getExpressAudit, clearExpressAudit, buildJourney, syncExpressToAccount, type ExpressAudit } from './cabinetData';
 import { eur } from './lossModel';
 import { sendLead } from '@/lib/leads';
 import { isValidCode } from '@/lib/access';
@@ -55,18 +55,20 @@ export function Cabinet() {
   const [resendMsg, setResendMsg] = useState('');
 
   useEffect(() => { setExpress(getExpressAudit()); }, []);
+  // Прив'язати локальний експрес-аудит до акаунту й перечитати запис.
+  const hydrate = (u: DiagUser) => { syncExpressToAccount(u).finally(() => loadDiag(u).then(setRec)); };
   useEffect(() => {
     currentUser().then((u) => {
       setUser(u); setChecking(false);
-      if (u) loadDiag(u).then(setRec);
+      if (u) hydrate(u);
     });
   }, []);
   // Google OAuth повертає користувача редіректом → сесія зʼявляється після монтування.
-  useEffect(() => onAuth((u) => { if (u) { setUser(u); loadDiag(u).then(setRec); setConfirmSent(''); } }), []);
+  useEffect(() => onAuth((u) => { if (u) { setUser(u); hydrate(u); setConfirmSent(''); } }), []);
 
   const journey = useMemo(() => buildJourney({ loggedIn: Boolean(user), rec, express }), [user, rec, express]);
 
-  const enter = (u: DiagUser) => { setUser(u); loadDiag(u).then(setRec); };
+  const enter = (u: DiagUser) => { setUser(u); hydrate(u); };
   const doLogin = async () => {
     setBusy(true); setAuthErr(''); setResendMsg('');
     const r = await signInWithEmail(email.trim(), pass);
@@ -122,6 +124,15 @@ export function Cabinet() {
             <span className="cab-gate-badge">{t('Особистий кабінет WEEXP', 'WEEXP client cabinet')}</span>
             <h1 className="sysx-display cab-gate-h">{t('Вхід у ваш', 'Sign in to your')}<br /><span className="hl">{t('кабінет', 'cabinet')}</span></h1>
             <p className="sysx-lead">{t('Один вхід — усі дані в одному місці. Повторний вхід тим самим email відкриває збережений розбір.', 'One sign-in — all your data in one place. Signing back in with the same email opens your saved analysis.')}</p>
+            {express && (
+              <div className="cab-gate-saved">
+                <span className="cab-gate-saved-ic" aria-hidden="true">✓</span>
+                <div>
+                  <b>{t('Ваш експрес-аудит збережено', 'Your express audit is saved')}: {eur(express.total)}<i>{t('/рік', '/yr')}</i></b>
+                  <span className="mono">{t('Зареєструйтесь — і він закріпиться за акаунтом. Проходити аудит заново не треба.', 'Sign up — and it will be linked to your account. No need to redo the audit.')}</span>
+                </div>
+              </div>
+            )}
             <ul className="cab-gate-gets">
               <li>{t('Експрес-витік із калькулятора — збережений', 'Express leak from the calculator — saved')}</li>
               <li>{t('Профіль компанії та безпечні доступи', 'Company profile and secure access')}</li>

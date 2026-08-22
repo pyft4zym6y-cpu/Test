@@ -8,7 +8,7 @@ import {
   type Project, type ProjTask, type ProjMember, type ProjPayment, type ProjMonth, type ProjTariffItem,
   type PmDirectory, type PmSpecialist, type PmRoleRate,
 } from '@/lib/supa';
-import { eur } from './lossModel';
+import { eur, sysLabel, type SysKey } from './lossModel';
 import { AuditBuilder } from './AuditBuilder';
 import { loadTemplate, uid, Q_TYPES, type AuditTemplate, type Question } from './auditTemplate';
 import './system.css';
@@ -117,10 +117,11 @@ export function AdminPanel() {
     const statusDist = (['requested', 'data', 'granted', 'rejected'] as TierStatus[]).map((s) => ({
       s, n: r.reduce((n, x) => n + Object.values(x.funnel?.tierStatus || {}).filter((v) => v === s).length, 0),
     }));
-    type Ev = { at: string; kind: 'user' | 'tier' | 'lead'; label: string; sub?: string };
+    type Ev = { at: string; kind: 'user' | 'tier' | 'lead' | 'express'; label: string; sub?: string };
     const ev: Ev[] = [];
     r.forEach((x) => {
       if (x.updatedAt) ev.push({ at: x.updatedAt, kind: 'user', label: x.email, sub: x.company || 'оновлення профілю' });
+      if (x.record?.express) ev.push({ at: x.record.express.at, kind: 'express', label: x.email, sub: `експрес-аудит: ${eur(x.record.express.total)}/рік` });
       Object.entries(x.funnel?.tierHistory || {}).forEach(([tid, list]) => (list || []).forEach((e) => {
         ev.push({ at: e.at, kind: 'tier', label: x.email, sub: `${tid} → ${ST[e.st].txt}${e.by === 'manager' ? ' · менеджер' : ''}` });
       }));
@@ -708,7 +709,27 @@ function UserDetail({ row, onClose, openFile, onStatus, busy }: { row: AdminRow;
             </ul>
           ) : <p className="mono adm-empty">профіль не заповнено</p>}</Block>
 
-          <Block title="Експрес-витік">{money ? <p className="adm-money">{eur(money[0])} – {eur(money[1])} <i>/ рік</i></p> : <p className="mono adm-empty">{row.hasExpress ? 'є' : 'не рахували'}</p>}</Block>
+          <Block title="Експрес-аудит">{(() => {
+            const ex = rec.express;
+            if (ex) return (
+              <div className="adm-express">
+                <p className="adm-money">{eur(ex.total)} <i>/ рік</i> <span className="mono adm-express-sub">діапазон {eur(ex.range[0])}–{eur(ex.range[1])} · Health {ex.overallHealth}/100</span></p>
+                <ul className="adm-kv">
+                  <li><i>Пройдено</i><span className="mono">{new Date(ex.at).toLocaleString('uk-UA')}</span></li>
+                  <li><i>Головний вузол</i><span>{sysLabel(ex.primary as SysKey, 'uk')}</span></li>
+                  {ex.source && <li><i>Джерело</i><span className="mono">{ex.source}</span></li>}
+                </ul>
+                {ex.symptoms && ex.symptoms.length > 0 && (
+                  <div className="adm-syms">
+                    <span className="mono adm-empty">Обрані симптоми:</span>
+                    <div className="adm-sym-tags">{ex.symptoms.map((s) => <span key={s} className="adm-sym">{sysLabel(s as SysKey, 'uk')}</span>)}</div>
+                  </div>
+                )}
+              </div>
+            );
+            if (money) return <p className="adm-money">{eur(money[0])} – {eur(money[1])} <i>/ рік</i></p>;
+            return <p className="mono adm-empty">{row.hasExpress ? 'є' : 'не рахували'}</p>;
+          })()}</Block>
 
           <Block title="Глибокий аудит">{row.hasDeep ? <p className="mono">у роботі</p> : <p className="mono adm-empty">не почато</p>}</Block>
 

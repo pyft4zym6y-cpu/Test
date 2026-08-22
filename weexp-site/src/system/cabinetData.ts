@@ -7,7 +7,7 @@
  * показали число ще до входу; профіль і воронка — у DiagRecord (Supabase/local).
  */
 import type { LossInput, LossResult } from './lossModel';
-import type { DiagRecord } from '@/lib/supa';
+import { loadDiag, saveDiag, type DiagRecord, type DiagUser } from '@/lib/supa';
 
 const EXPRESS_KEY = 'weexp:express-audit-v1';
 
@@ -36,6 +36,30 @@ export function getExpressAudit(): ExpressAudit | null {
 /** Видалити збережений експрес-аудит (кнопка «Видалити» в кабінеті). */
 export function clearExpressAudit(): void {
   try { localStorage.removeItem(EXPRESS_KEY); } catch { /* noop */ }
+}
+
+/**
+ * Прив'язати локальний експрес-аудит до акаунту: записати знімок у DiagRecord
+ * (Supabase/local), щоб клієнт бачив свій аудит після реєстрації на будь-якому
+ * пристрої, а адмін — у панелі. Викликається, щойно в кабінеті з'являється user.
+ * Ідемпотентно: якщо той самий знімок (за `at`) вже в записі — не перезаписує.
+ */
+export async function syncExpressToAccount(user: DiagUser | null): Promise<boolean> {
+  if (!user) return false;
+  const ex = getExpressAudit();
+  if (!ex) return false;
+  try {
+    const rec = await loadDiag(user);
+    if (rec.express?.at === ex.at) return false;   // вже синхронізовано
+    await saveDiag(user, {
+      express: {
+        at: ex.at, total: ex.total, range: ex.range, primary: ex.primary,
+        overallHealth: ex.overallHealth, symptoms: ex.input.symptoms, source: 'cabinet',
+      },
+      stage1Money: ex.range,
+    });
+    return true;
+  } catch { return false; }
 }
 
 export type JourneyStep = { id: string; label: string; hint: string; done: boolean; current: boolean };
