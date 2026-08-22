@@ -29,7 +29,12 @@
     { "source": "/how-it-works/business-health", "destination": "/diagnose", "permanent": true },
     { "source": "/how-it-works/independence-score", "destination": "/diagnose", "permanent": true },
     { "source": "/how-it-works/benchmark", "destination": "/diagnose", "permanent": true },
-    { "source": "/intelligence", "destination": "/proof", "permanent": true }
+    { "source": "/intelligence", "destination": "/proof", "permanent": true },
+    { "source": "/privacy", "destination": "/privacy.html", "permanent": false },
+    { "source": "/en/privacy", "destination": "/privacy.html", "permanent": false },
+    { "source": "/terms", "destination": "/oferta.html", "permanent": false },
+    { "source": "/oferta", "destination": "/oferta.html", "permanent": false },
+    { "source": "/security.txt", "destination": "/.well-known/security.txt", "permanent": false }
   ],
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
   "headers": [
