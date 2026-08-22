@@ -341,33 +341,87 @@ function Audits({ express, rec, go, onDelete }: { express: ExpressAudit | null; 
 
 function CompanyForm({ user, rec, onSaved }: { user: DiagUser; rec: DiagRecord | null; onSaved: () => void }) {
   const t = useT();
-  const CHANNELS = ['Instagram', t('Сайт / магазин', 'Site / store'), t('Розетка / marketplace', 'Marketplace'), 'Google Ads', 'Meta Ads', 'Email / CRM', t('Офлайн', 'Offline')];
+  const CHANNELS = ['Instagram', 'TikTok', t('Сайт / магазин', 'Site / store'), t('Marketplace (Rozetka, Prom…)', 'Marketplace'), t('Офлайн / ретейл', 'Offline / retail'), 'Email / CRM', t('Опт / B2B', 'Wholesale / B2B')];
+  const ACQ = ['SEO', 'Google Ads', 'Meta Ads', 'TikTok Ads', t('Інфлюенсери', 'Influencers'), 'Email / CRM', t('Реферали', 'Referrals'), 'Marketplace', t('Офлайн', 'Offline'), t('PR / контент', 'PR / content')];
+  const INDUSTRIES = [t('Мода й одяг', 'Fashion & apparel'), t('Косметика й бʼюті', 'Beauty & cosmetics'), t('Електроніка', 'Electronics'), t('Дім і меблі', 'Home & furniture'), t('Дитячі товари', 'Kids'), t('Спорт і активність', 'Sports'), t('Здоровʼя й аптека', 'Health & pharmacy'), t('Продукти й напої', 'Food & beverages'), t('Авто й запчастини', 'Automotive'), t('Прикраси й аксесуари', 'Jewelry & accessories'), t('Хобі та подарунки', 'Hobby & gifts'), t('Цифрові товари / послуги', 'Digital goods / services'), t('B2B / послуги', 'B2B / services'), t('Інше', 'Other')];
+  const BIZ_TYPES = ['B2C', 'B2B', 'D2C', 'Marketplace', 'Hybrid'];
+  const SIZE_RANGES = [t('до €10k / міс', 'up to €10k / mo'), '€10–50k / міс', '€50–200k / міс', '€200k–1M / міс', '€1M+ / міс'];
+  const TEAM_SIZES = ['1–3', '4–10', '11–30', '31–100', '100+'];
+  const PLATFORMS = ['Shopify', 'WooCommerce', 'Хорошоп', 'Prom / OLX', 'OpenCart', 'Magento', 'Wix / Tilda', t('Кастомна', 'Custom'), t('Інше', 'Other')];
+
   const [c, setC] = useState<CompanyProfile>({ ...EMPTY_COMPANY, ...(rec?.company || {}) });
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   useEffect(() => { setC({ ...EMPTY_COMPANY, ...(rec?.company || {}) }); }, [rec]);
-  const set = (k: keyof CompanyProfile) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setC((s) => ({ ...s, [k]: e.target.value }));
-  const toggleCh = (ch: string) => setC((s) => ({ ...s, channels: (s.channels || []).includes(ch) ? (s.channels || []).filter((x) => x !== ch) : [...(s.channels || []), ch] }));
+  const set = (k: keyof CompanyProfile) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setC((s) => ({ ...s, [k]: e.target.value }));
+  const toggle = (k: 'channels' | 'acqChannels', v: string) => setC((s) => { const a = s[k] || []; return { ...s, [k]: a.includes(v) ? a.filter((x) => x !== v) : [...a, v] }; });
   const save = async () => { setSaving(true); await saveDiag(user, { company: c }); setSaving(false); setSaved(true); onSaved(); setTimeout(() => setSaved(false), 1800); };
+  const filled = [c.name, c.industry, c.bizType, c.markets, c.categories, c.sizeRange, c.teamSize, c.platform, c.crmErp].filter(Boolean).length;
+
   return (
     <section className="cab-sec">
-      <SecHead kick={t('Дані компанії', 'Company data')} title={t('Профіль магазину', 'Store profile')} lead={t('Базові дані про бізнес. Вони уточнюють оцінку витоку й готують ґрунт для глибокого аудиту — щоб не питати те саме двічі.', 'Basic data about the business. It refines the leak estimate and prepares the ground for the deep audit — so we don\'t ask the same thing twice.')} />
-      <div className="cab-grid2">
-        <label className="sysx-inp"><span className="sysx-inp-l">{t('Назва компанії', 'Company name')}</span><input value={c.name || ''} onChange={set('name')} placeholder={t('Ваш бренд', 'Your brand')} /></label>
-        <label className="sysx-inp"><span className="sysx-inp-l">{t('Сайт', 'Site')}</span><input value={c.site || ''} onChange={set('site')} placeholder="shop.com" /></label>
-        <label className="sysx-inp"><span className="sysx-inp-l">{t('Ніша', 'Niche')}</span><input value={c.niche || ''} onChange={set('niche')} placeholder={t('одяг · косметика · електроніка…', 'apparel · cosmetics · electronics…')} /></label>
-        <label className="sysx-inp"><span className="sysx-inp-l">{t('Онлайн-виторг · € / міс', 'Online revenue · € / mo')}</span><input value={c.revenue || ''} onChange={set('revenue')} placeholder={t('напр. 25000', 'e.g. 25000')} /></label>
-        <label className="sysx-inp"><span className="sysx-inp-l">{t('Контактна особа', 'Contact person')}</span><input value={c.contactName || ''} onChange={set('contactName')} placeholder={t('Імʼя', 'Name')} /></label>
-        <label className="sysx-inp"><span className="sysx-inp-l">{t('Телефон', 'Phone')}</span><input value={c.contactPhone || ''} onChange={set('contactPhone')} placeholder="+380…" /></label>
+      <SecHead kick={t('Дані компанії', 'Company data')} title={t('Бізнес-профіль', 'Business profile')} lead={t('Що детальніший профіль — то точніший аналіз вашої тематики й глибокий аудит. Заповнюється один раз, дані переносяться далі автоматично.', 'The more detailed the profile, the more precise the analysis of your niche and the deep audit. Fill it once — the data carries forward automatically.')} />
+
+      <div className="cab-formgrp">
+        <span className="cab-formgrp-h">{t('Про бізнес', 'About the business')}</span>
+        <div className="cab-grid2">
+          <label className="sysx-inp"><span className="sysx-inp-l">{t('Назва компанії', 'Company name')}</span><input value={c.name || ''} onChange={set('name')} placeholder={t('Ваш бренд', 'Your brand')} /></label>
+          <label className="sysx-inp req"><span className="sysx-inp-l">{t('Сфера бізнесу', 'Industry')} *</span>
+            <select value={c.industry || ''} onChange={set('industry')}><option value="">{t('— оберіть —', '— select —')}</option>{INDUSTRIES.map((i) => <option key={i} value={i}>{i}</option>)}</select></label>
+          <label className="sysx-inp"><span className="sysx-inp-l">{t('Тип бізнесу', 'Business type')}</span>
+            <select value={c.bizType || ''} onChange={set('bizType')}><option value="">{t('— оберіть —', '— select —')}</option>{BIZ_TYPES.map((i) => <option key={i} value={i}>{i}</option>)}</select></label>
+          <label className="sysx-inp"><span className="sysx-inp-l">{t('Напрям / чим займаєтесь', 'What you do')}</span><input value={c.model || ''} onChange={set('model')} placeholder={t('коротко про продукт', 'briefly about the product')} /></label>
+          <label className="sysx-inp"><span className="sysx-inp-l">{t('Ключові категорії товарів / послуг', 'Key product / service categories')}</span><input value={c.categories || ''} onChange={set('categories')} placeholder={t('напр. взуття, аксесуари', 'e.g. footwear, accessories')} /></label>
+          <label className="sysx-inp"><span className="sysx-inp-l">{t('Ніша (деталізація)', 'Niche (detail)')}</span><input value={c.niche || ''} onChange={set('niche')} placeholder={t('вужче про нішу', 'more specific niche')} /></label>
+        </div>
       </div>
-      <div className="cab-ch">
-        <span className="sysx-inp-l">{t('Канали продажів', 'Sales channels')}</span>
-        <div className="cab-ch-row">{CHANNELS.map((ch) => <button key={ch} className={`cab-chip${(c.channels || []).includes(ch) ? ' on' : ''}`} onClick={() => toggleCh(ch)}>{ch}</button>)}</div>
+
+      <div className="cab-formgrp">
+        <span className="cab-formgrp-h">{t('Ринки та масштаб', 'Markets & scale')}</span>
+        <div className="cab-grid2">
+          <label className="sysx-inp"><span className="sysx-inp-l">{t('Основні ринки / географії', 'Main markets / geographies')}</span><input value={c.markets || ''} onChange={set('markets')} placeholder={t('напр. Україна, ЄС', 'e.g. Ukraine, EU')} /></label>
+          <label className="sysx-inp"><span className="sysx-inp-l">{t('Країна / країни роботи', 'Country / countries')}</span><input value={c.countries || ''} onChange={set('countries')} placeholder={t('де продаєте', 'where you sell')} /></label>
+          <label className="sysx-inp"><span className="sysx-inp-l">{t('Діапазон обороту', 'Revenue range')}</span>
+            <select value={c.sizeRange || ''} onChange={set('sizeRange')}><option value="">{t('— оберіть —', '— select —')}</option>{SIZE_RANGES.map((i) => <option key={i} value={i}>{i}</option>)}</select></label>
+          <label className="sysx-inp"><span className="sysx-inp-l">{t('Онлайн-виторг · € / міс', 'Online revenue · € / mo')}</span><input value={c.revenue || ''} onChange={set('revenue')} placeholder={t('напр. 25000', 'e.g. 25000')} /></label>
+          <label className="sysx-inp"><span className="sysx-inp-l">{t('Розмір команди', 'Team size')}</span>
+            <select value={c.teamSize || ''} onChange={set('teamSize')}><option value="">{t('— оберіть —', '— select —')}</option>{TEAM_SIZES.map((i) => <option key={i} value={i}>{i}</option>)}</select></label>
+          <label className="sysx-inp"><span className="sysx-inp-l">{t('Точок продажу / магазинів', 'Points of sale / stores')}</span><input value={c.outlets || ''} onChange={set('outlets')} placeholder={t('якщо є офлайн', 'if any offline')} /></label>
+        </div>
       </div>
-      <label className="sysx-inp"><span className="sysx-inp-l">{t('Нотатки · що болить найбільше', 'Notes · what hurts most')}</span><textarea rows={3} value={c.notes || ''} onChange={set('notes')} placeholder={t('Коротко про головну задачу…', 'Briefly about the main task…')} /></label>
+
+      <div className="cab-formgrp">
+        <span className="cab-formgrp-h">{t('Канали', 'Channels')}</span>
+        <div className="cab-ch">
+          <span className="sysx-inp-l">{t('Канали продажів', 'Sales channels')}</span>
+          <div className="cab-ch-row">{CHANNELS.map((ch) => <button key={ch} type="button" className={`cab-chip${(c.channels || []).includes(ch) ? ' on' : ''}`} onClick={() => toggle('channels', ch)}>{ch}</button>)}</div>
+        </div>
+        <div className="cab-ch">
+          <span className="sysx-inp-l">{t('Канали залучення клієнтів', 'Customer acquisition channels')}</span>
+          <div className="cab-ch-row">{ACQ.map((ch) => <button key={ch} type="button" className={`cab-chip${(c.acqChannels || []).includes(ch) ? ' on' : ''}`} onClick={() => toggle('acqChannels', ch)}>{ch}</button>)}</div>
+        </div>
+      </div>
+
+      <div className="cab-formgrp">
+        <span className="cab-formgrp-h">{t('Технології та контакти', 'Tech & contacts')}</span>
+        <div className="cab-grid2">
+          <label className="sysx-inp"><span className="sysx-inp-l">{t('Сайт', 'Site')}</span><input value={c.site || ''} onChange={set('site')} placeholder="shop.com" /></label>
+          <label className="sysx-inp"><span className="sysx-inp-l">{t('Додаткові домени', 'Additional domains')}</span><input value={c.domains || ''} onChange={set('domains')} placeholder={t('через кому', 'comma-separated')} /></label>
+          <label className="sysx-inp"><span className="sysx-inp-l">{t('E-commerce платформа', 'E-commerce platform')}</span>
+            <select value={c.platform || ''} onChange={set('platform')}><option value="">{t('— оберіть —', '— select —')}</option>{PLATFORMS.map((i) => <option key={i} value={i}>{i}</option>)}</select></label>
+          <label className="sysx-inp"><span className="sysx-inp-l">CRM / ERP</span><input value={c.crmErp || ''} onChange={set('crmErp')} placeholder={t('напр. KeyCRM, 1С, HubSpot', 'e.g. KeyCRM, HubSpot')} /></label>
+          <label className="sysx-inp"><span className="sysx-inp-l">{t('Контактна особа', 'Contact person')}</span><input value={c.contactName || ''} onChange={set('contactName')} placeholder={t('Імʼя', 'Name')} /></label>
+          <label className="sysx-inp"><span className="sysx-inp-l">{t('Телефон', 'Phone')}</span><input value={c.contactPhone || ''} onChange={set('contactPhone')} placeholder="+380…" /></label>
+        </div>
+      </div>
+
+      <label className="sysx-inp"><span className="sysx-inp-l">{t('Додаткові коментарі про бізнес', 'Additional notes about the business')}</span><textarea rows={3} value={c.notes || ''} onChange={set('notes')} placeholder={t('Що важливо знати, що болить найбільше…', 'What is important to know, what hurts most…')} /></label>
+
       <div className="cab-actions">
-        <button className="sysx-cta is-primary" onClick={save} disabled={saving}>{saving ? t('Зберігаємо…', 'Saving…') : t('Зберегти профіль', 'Save profile')}</button>
+        <button className="sysx-cta is-primary" onClick={save} disabled={saving || !c.industry}>{saving ? t('Зберігаємо…', 'Saving…') : t('Зберегти профіль', 'Save profile')}</button>
+        {!c.industry && <span className="cab-req-hint mono">{t('Вкажіть «Сферу бізнесу» — це головне поле для аналізу.', 'Set “Industry” — the key field for analysis.')}</span>}
         {saved && <span className="cab-saved mono">{t('✓ збережено', '✓ saved')}</span>}
+        <span className="cab-fill mono">{t('Заповнено ключових полів', 'Key fields filled')}: {filled}/9</span>
       </div>
     </section>
   );

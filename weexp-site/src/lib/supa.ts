@@ -28,6 +28,20 @@ export const isCloudUser = (u: DiagUser | null): boolean => !!u && !u.id.startsW
 export type CompanyProfile = {
   name?: string; site?: string; niche?: string; revenue?: string;
   channels?: string[]; contactName?: string; contactPhone?: string; notes?: string;
+  // Розширений бізнес-профіль (контекст для глибокого аналізу):
+  industry?: string;        // сфера бізнесу (пріоритетне поле)
+  bizType?: string;         // B2B / B2C / D2C / Marketplace / Hybrid
+  model?: string;           // напрям / тип бізнесу (вільний опис)
+  markets?: string;         // основні ринки / географії
+  countries?: string;       // країна / країни роботи
+  acqChannels?: string[];   // канали залучення клієнтів
+  domains?: string;         // додаткові домени
+  categories?: string;      // ключові категорії товарів / послуг
+  sizeRange?: string;       // розмір бізнесу / діапазон обороту
+  teamSize?: string;        // розмір команди
+  outlets?: string;         // кількість точок продажу / магазинів
+  platform?: string;        // e-commerce платформа
+  crmErp?: string;          // CRM / ERP
 };
 /** Стан воронки клієнта (наскрізна логіка кабінету). */
 /** Статус доступу до кожного рівня аудиту (керована воронка): відсутній ключ = «не запрошено». */

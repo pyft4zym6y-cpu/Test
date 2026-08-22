@@ -725,13 +725,28 @@ function UserDetail({ row, onClose, openFile, onStatus, busy }: { row: AdminRow;
               <span className="mono adm-empty">клієнт вводить його у «Глибокому аудиті»</span>
             </Block>
           )}
-          <Block title="Компанія">{company?.name ? (
+          <Block title="Компанія">{(company?.name || company?.industry) ? (
             <ul className="adm-kv">
-              <li><i>Назва</i><span>{company.name}</span></li>
-              {company.site && <li><i>Сайт</i><span>{company.site}</span></li>}
+              {company.name && <li><i>Назва</i><span>{company.name}</span></li>}
+              {company.industry && <li><i>Сфера</i><span>{company.industry}</span></li>}
+              {company.bizType && <li><i>Тип</i><span>{company.bizType}</span></li>}
+              {company.model && <li><i>Напрям</i><span>{company.model}</span></li>}
+              {company.categories && <li><i>Категорії</i><span>{company.categories}</span></li>}
               {company.niche && <li><i>Ніша</i><span>{company.niche}</span></li>}
-              {company.revenue && <li><i>Оборот</i><span>{company.revenue}</span></li>}
+              {company.markets && <li><i>Ринки</i><span>{company.markets}</span></li>}
+              {company.countries && <li><i>Країни</i><span>{company.countries}</span></li>}
+              {company.sizeRange && <li><i>Оборот (діапазон)</i><span>{company.sizeRange}</span></li>}
+              {company.revenue && <li><i>Виторг €/міс</i><span>{company.revenue}</span></li>}
+              {company.teamSize && <li><i>Команда</i><span>{company.teamSize}</span></li>}
+              {company.outlets && <li><i>Точки продажу</i><span>{company.outlets}</span></li>}
+              {(company.channels?.length ?? 0) > 0 && <li><i>Канали продажів</i><span>{company.channels!.join(', ')}</span></li>}
+              {(company.acqChannels?.length ?? 0) > 0 && <li><i>Канали залучення</i><span>{company.acqChannels!.join(', ')}</span></li>}
+              {company.site && <li><i>Сайт</i><span>{company.site}</span></li>}
+              {company.domains && <li><i>Домени</i><span>{company.domains}</span></li>}
+              {company.platform && <li><i>Платформа</i><span>{company.platform}</span></li>}
+              {company.crmErp && <li><i>CRM / ERP</i><span>{company.crmErp}</span></li>}
               {company.contactName && <li><i>Контакт</i><span>{company.contactName} {company.contactPhone || ''}</span></li>}
+              {company.notes && <li><i>Коментар</i><span>{company.notes}</span></li>}
             </ul>
           ) : <p className="mono adm-empty">профіль не заповнено</p>}</Block>
 
