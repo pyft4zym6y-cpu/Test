@@ -2096,3 +2096,8 @@
 .calc-human-v b { font-weight: 700; }
 .calc-human-v i { color: var(--graphite); font-weight: 400; font-size: 13px; }
 @media (max-width: 620px) { .calc-human-row { grid-template-columns: 1fr; gap: 2px; } }
+
+/* DMCA-бейдж у підвалі */
+.sfoot-dmca { display: inline-flex; align-items: center; opacity: .85; transition: opacity .15s; }
+.sfoot-dmca:hover { opacity: 1; }
+.sfoot-bottom { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
