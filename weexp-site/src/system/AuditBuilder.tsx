@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  loadTemplate, saveTemplate, uid, Q_TYPES, CLIENT_ROLES, AUDIT_FRAMEWORK,
+  loadTemplate, saveTemplate, uid, Q_TYPES, CLIENT_ROLES, FRAMEWORK_PRESETS, frameworkFor,
   type AuditTemplate, type Block, type Question, type QType,
 } from './auditTemplate';
 
@@ -13,6 +13,7 @@ export function AuditBuilder() {
   const [tpl, setTpl] = useState<AuditTemplate | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
+  const [preset, setPreset] = useState<string>('full');
 
   useEffect(() => { loadTemplate().then(setTpl); }, []);
 
@@ -34,9 +35,10 @@ export function AuditBuilder() {
   const setQ = (bi: number, qi: number, k: keyof Question, v: unknown) => patch((t) => { (t.blocks[bi].questions[qi] as Record<string, unknown>)[k] = v; return t; });
 
   const loadFramework = () => {
-    if (!confirm('Замінити поточні блоки повним фреймворком (16 модулів A–P)? Поточні незбережені блоки буде втрачено. Зберегти зміни треба окремо кнопкою «Зберегти нову версію».')) return;
-    setTpl((t) => ({ version: t?.version || 1, blocks: structuredClone(AUDIT_FRAMEWORK.blocks) }));
-    setMsg('Завантажено фреймворк (16 модулів). Перевірте й натисніть «Зберегти нову версію».');
+    const p = FRAMEWORK_PRESETS.find((x) => x.id === preset) || FRAMEWORK_PRESETS[0];
+    if (!confirm(`Замінити поточні блоки пресетом «${p.label}» (${p.modules.length} модулів)? Поточні незбережені блоки буде втрачено. Збереження — окремою кнопкою «Зберегти нову версію».`)) return;
+    setTpl((t) => ({ ...frameworkFor(preset), version: t?.version || 1 }));
+    setMsg(`Завантажено пресет «${p.label}» (${p.modules.length} модулів). Перевірте й натисніть «Зберегти нову версію».`);
   };
 
   const save = async () => {
@@ -53,7 +55,10 @@ export function AuditBuilder() {
       <div className="adm-sec-head">
         <div><h1 className="sysx-display adm-h1">Конструктор аудиту</h1><span className="mono adm-hint">Активна версія v{tpl.version} · {tpl.blocks.length} блоків</span></div>
         <div className="adm-head-r">
-          <button className="sysx-cta" onClick={loadFramework} title="Замінити блоки повним C-level фреймворком (16 модулів A–P)">↺ Завантажити фреймворк</button>
+          <select className="ab-sel" value={preset} onChange={(e) => setPreset(e.target.value)} title="Тип бізнесу — пресет фреймворку">
+            {FRAMEWORK_PRESETS.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+          </select>
+          <button className="sysx-cta" onClick={loadFramework} title="Замінити блоки обраним пресетом C-level фреймворку">↺ Завантажити пресет</button>
           <button className="sysx-cta is-primary" onClick={save} disabled={busy}>{busy ? 'Зберігаємо…' : 'Зберегти нову версію →'}</button>
         </div>
       </div>

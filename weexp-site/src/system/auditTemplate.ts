@@ -199,6 +199,24 @@ export const AUDIT_FRAMEWORK: AuditTemplate = {
   ],
 };
 
+/* ── Пресети фреймворку під тип бізнесу ──
+   Кожен пресет = підмножина модулів A–P у своєму порядку (скоуп під тип
+   замовника). Адмін вантажить пресет як стартову структуру й доопрацьовує. */
+export const FRAMEWORK_PRESETS: { id: string; label: string; modules: string[] }[] = [
+  { id: 'full', label: 'Повний (D2C / e-commerce)', modules: ['company', 'finance', 'commercial', 'customer', 'brand', 'marketing', 'seo', 'ux', 'ops', 'crm', 'analytics', 'tech', 'people', 'processes', 'strategy', 'competition'] },
+  { id: 'b2b', label: 'B2B', modules: ['company', 'strategy', 'commercial', 'customer', 'marketing', 'crm', 'finance', 'seo', 'ux', 'analytics', 'tech', 'people', 'processes', 'competition'] },
+  { id: 'marketplace', label: 'Marketplace', modules: ['company', 'finance', 'commercial', 'ops', 'marketing', 'seo', 'analytics', 'competition', 'customer', 'ux', 'tech', 'strategy'] },
+  { id: 'omnichannel', label: 'Omnichannel retail', modules: ['company', 'finance', 'commercial', 'customer', 'brand', 'marketing', 'seo', 'ux', 'ops', 'crm', 'analytics', 'tech', 'people', 'processes', 'strategy', 'competition'] },
+  { id: 'saas', label: 'SaaS / послуги', modules: ['company', 'strategy', 'finance', 'customer', 'brand', 'marketing', 'seo', 'ux', 'crm', 'analytics', 'tech', 'people', 'processes', 'competition'] },
+];
+/** Побудувати шаблон під пресет: модулі AUDIT_FRAMEWORK у порядку пресету. */
+export function frameworkFor(presetId: string): AuditTemplate {
+  const preset = FRAMEWORK_PRESETS.find((p) => p.id === presetId) || FRAMEWORK_PRESETS[0];
+  const byKey = new Map(AUDIT_FRAMEWORK.blocks.map((b) => [b.key, b]));
+  const blocks = preset.modules.map((k) => byKey.get(k)).filter((b): b is Block => !!b);
+  return { version: 1, blocks: structuredClone(blocks) };
+}
+
 const LS_KEY = 'weexp:audit-template-v1';
 
 export async function loadTemplate(): Promise<AuditTemplate> {
