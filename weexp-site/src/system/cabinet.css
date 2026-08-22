@@ -537,6 +537,22 @@
 .ab-q-cond select { font-size: 12px; padding: 5px 8px; text-transform: none; }
 .ab-cond { max-width: 160px; }
 
+/* Заповнення аудиту в адмінці (Фаза C) */
+.adm-fill { display: flex; flex-direction: column; gap: 10px; }
+.adm-fill-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.adm-fill-p { font-weight: 800; color: var(--deep); background: var(--yellow); border: 2px solid var(--deep); padding: 2px 8px; font-size: 12px; }
+.adm-fill-au { font-size: 11px; color: var(--graphite); }
+.adm-fill-rf { margin-left: auto; padding: 4px 9px; }
+.adm-fill-blocks { display: flex; flex-direction: column; gap: 12px; }
+.adm-fill-block { display: flex; flex-direction: column; gap: 4px; }
+.adm-fill-bt { font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--red); }
+.adm-fill-q { display: flex; flex-direction: column; gap: 1px; padding: 5px 0; border-bottom: 1px solid var(--cream-2); }
+.adm-fill-ql { font-size: 12px; color: var(--graphite); }
+.adm-fill-q.on .adm-fill-ql { color: var(--deep); font-weight: 600; }
+.adm-fill-qv { font-size: 13px; color: var(--deep); font-weight: 500; }
+.adm-fill-qv i { font-style: normal; color: var(--graphite); font-size: 11px; }
+.adm-fill-qe { color: var(--silver); }
+
 /* Порожні стани */
 .adm-empty-box { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;
   background: var(--pure-white); border: 2.5px dashed var(--deep); padding: 40px 24px; color: var(--graphite); }

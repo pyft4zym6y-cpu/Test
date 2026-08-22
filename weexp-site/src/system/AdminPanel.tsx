@@ -2,10 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, signTierFile, CONFIGURED,
-  MANAGER_EMAILS, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus,
+  findAuditIdByCode, loadAuditAnswers,
+  MANAGER_EMAILS, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus, type AuditAnswer,
 } from '@/lib/supa';
 import { eur } from './lossModel';
 import { AuditBuilder } from './AuditBuilder';
+import { loadTemplate, type AuditTemplate, type Question } from './auditTemplate';
 import './system.css';
 import './cabinet.css';
 
@@ -549,6 +551,69 @@ function Tile({ n, l, accent }: { n: number; l: string; accent?: boolean }) {
   return <div className={`adm-tile${accent ? ' accent' : ''}`}><b className="adm-tile-n">{n}</b><span className="adm-tile-l">{l}</span></div>;
 }
 
+const fmtVal = (v: unknown): string => {
+  if (v == null || v === '') return '';
+  if (Array.isArray(v)) return v.join(', ');
+  if (typeof v === 'object') { const o = v as { name?: string }; return o.name ? `📎 ${o.name}` : JSON.stringify(v); }
+  return String(v);
+};
+const relT = (iso?: string) => {
+  if (!iso) return ''; const s = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
+  if (s < 60) return 'щойно'; if (s < 3600) return `${Math.floor(s / 60)} хв`; if (s < 86400) return `${Math.floor(s / 3600)} год`;
+  try { return new Date(iso).toLocaleDateString('uk-UA', { day: '2-digit', month: 'short' }); } catch { return ''; }
+};
+
+/** Realtime-подача заповнення спільного аудиту (адмінка): що заповнено + автор. */
+function AuditFill({ code }: { code: string }) {
+  const [tpl, setTpl] = useState<AuditTemplate | null>(null);
+  const [answers, setAnswers] = useState<Record<string, AuditAnswer>>({});
+  const [loading, setLoading] = useState(true);
+  const load = () => {
+    setLoading(true);
+    (async () => {
+      const t = await loadTemplate();
+      const id = await findAuditIdByCode(code);
+      const a = id ? await loadAuditAnswers(id) : {};
+      setTpl(t); setAnswers(a); setLoading(false);
+    })();
+  };
+  useEffect(load, [code]);
+  const stat = useMemo(() => {
+    let total = 0, done = 0; const authors = new Set<string>();
+    (tpl?.blocks || []).forEach((b) => b.questions.forEach((q) => { total++; const a = answers[q.key]; if (a && a.value != null && a.value !== '') { done++; if (a.by) authors.add(a.by); } }));
+    return { total, done, pct: total ? Math.round((done / total) * 100) : 0, authors: [...authors] };
+  }, [tpl, answers]);
+
+  return (
+    <div className="adm-fill">
+      <div className="adm-fill-head">
+        <span className="mono adm-fill-p">{stat.done}/{stat.total} · {stat.pct}%</span>
+        {stat.authors.length > 0 && <span className="mono adm-fill-au">автори: {stat.authors.join(', ')}</span>}
+        <button className="mc-btn ghost adm-fill-rf" onClick={load}>↻</button>
+      </div>
+      {loading ? <p className="mono adm-empty">Завантаження…</p> : !tpl ? <p className="mono adm-empty">—</p> : (
+        <div className="adm-fill-blocks">
+          {tpl.blocks.map((b) => (
+            <div key={b.key} className="adm-fill-block">
+              <b className="adm-fill-bt">{b.title}</b>
+              {b.questions.map((q: Question) => {
+                const a = answers[q.key];
+                const filled = a && a.value != null && a.value !== '';
+                return (
+                  <div key={q.key} className={`adm-fill-q${filled ? ' on' : ''}`}>
+                    <span className="adm-fill-ql">{q.label}</span>
+                    {filled ? <span className="adm-fill-qv">{fmtVal(a!.value)}<i className="mono"> — {a!.by} · {relT(a!.at)}</i></span> : <span className="mono adm-fill-qe">—</span>}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function EmptyState({ icon, text }: { icon: string; text: string }) {
   return <div className="adm-empty-box"><span className="adm-empty-ic" aria-hidden="true">{icon}</span><p className="mono">{text}</p></div>;
 }
@@ -657,6 +722,10 @@ function UserDetail({ row, onClose, openFile, onStatus, busy }: { row: AdminRow;
               })}
             </div>
           ) : <p className="mono adm-empty">немає запитів</p>}</Block>
+
+          {code && (
+            <Block title="Заповнення аудиту"><AuditFill code={code} /></Block>
+          )}
 
           {files.length > 0 && (
             <Block title="Файли">
