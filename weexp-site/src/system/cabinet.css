@@ -670,3 +670,82 @@
   .adm-tr, .adm-tr-4 { grid-template-columns: 1fr 1fr; gap: 6px; font-size: 12.5px; }
   .adm-th { display: none; }
 }
+
+/* ─── «Мій проект» — вітрина ведення (клієнт: read-only) ─── */
+.pj-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.pj-print { border: var(--bd); background: var(--yellow); box-shadow: var(--sh) var(--deep); padding: 10px 16px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: transform .08s, box-shadow .08s; }
+.pj-print:hover { transform: translate(-2px,-2px); box-shadow: 8px 8px 0 var(--deep); }
+.pj-print:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 var(--deep); }
+.pj-empty, .pj-none { color: var(--graphite); padding: 18px 0; }
+.pj-card { border: var(--bd); background: var(--pure-white); box-shadow: var(--sh) var(--deep); padding: 20px; margin-top: 18px; }
+.pj-h2 { font-size: 19px; font-weight: 800; margin: 0 0 4px; }
+.pj-sub { color: var(--graphite); margin: 0 0 14px; font-size: 12.5px; }
+
+/* Гант */
+.pj-gantt-wrap { overflow-x: auto; }
+.pj-gantt { display: grid; grid-template-columns: 190px repeat(var(--cols), minmax(46px, 1fr)); gap: 6px 4px; align-items: center; min-width: 520px; }
+.pj-g-corner { grid-column: 1; }
+.pj-g-mh { text-align: center; font-size: 11px; color: var(--graphite); padding-bottom: 6px; border-bottom: 2px solid var(--deep); }
+.pj-g-task { grid-column: 1; display: flex; flex-direction: column; gap: 1px; padding-right: 10px; }
+.pj-g-task b { font-size: 13.5px; line-height: 1.2; }
+.pj-g-owner { font-size: 10.5px; color: var(--graphite); }
+.pj-g-bar { position: relative; height: 24px; background: var(--cream-2); border: 2.5px solid var(--deep); overflow: hidden; display: flex; align-items: center; }
+.pj-g-fill { position: absolute; inset: 0 auto 0 0; background: var(--yellow); }
+.pj-g-pct { position: relative; z-index: 1; font-size: 10.5px; font-weight: 700; padding-left: 6px; }
+
+/* Команда */
+.pj-team { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+.pj-member { border: 2.5px solid var(--deep); background: var(--cream); padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+.pj-m-role { font-size: 10.5px; color: var(--red); text-transform: uppercase; letter-spacing: .04em; }
+.pj-m-name { font-size: 14.5px; }
+
+/* Таблиці (фінкалендар + тарифікація) */
+.pj-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.pj-table th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--graphite); padding: 6px 8px; border-bottom: 2.5px solid var(--deep); }
+.pj-table td { padding: 8px; border-bottom: 1.5px solid var(--silver); }
+.pj-table .r { text-align: right; }
+.pj-table.sm { font-size: 12.5px; }
+.pj-pay { font-size: 11px; font-weight: 700; padding: 2px 8px; border: 2px solid var(--deep); }
+.pj-pay.paid { background: var(--ok); color: #fff; }
+.pj-pay.pending { background: var(--yellow); }
+.pj-fin-sum { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 14px; padding-top: 12px; border-top: 2.5px solid var(--deep); font-size: 14px; }
+.pj-fin-sum .ok { color: var(--ok); }
+.pj-tmonth { border: 2.5px solid var(--deep); margin-top: 12px; }
+.pj-tm-head { display: flex; justify-content: space-between; align-items: center; background: var(--cream-2); padding: 8px 12px; border-bottom: 2.5px solid var(--deep); font-size: 14px; }
+.pj-tmonth .pj-table { padding: 0; }
+.pj-tmonth .pj-table th { padding-left: 12px; padding-right: 12px; }
+.pj-tmonth .pj-table td { padding-left: 12px; padding-right: 12px; }
+
+@media (max-width: 640px) {
+  .pj-fin-sum { gap: 14px; font-size: 13px; }
+  .pj-card { padding: 14px; }
+}
+
+/* Друк → PDF: лишаємо тільки «Мій проект» */
+@media print {
+  body { background: #fff; }
+  .cab-side, .pj-print { display: none !important; }
+  .cab-main { padding: 0 !important; }
+  .pj-card { box-shadow: none; break-inside: avoid; page-break-inside: avoid; }
+  .pj-tmonth, .pj-member, .pj-g-bar { break-inside: avoid; }
+}
+
+/* ─── Редактор проекту в адмінці ─── */
+.pj-ed { display: flex; flex-direction: column; gap: 14px; }
+.pj-ed-row2 { display: flex; gap: 10px; flex-wrap: wrap; }
+.pj-ed-f { display: flex; flex-direction: column; gap: 3px; flex: 1 1 200px; }
+.pj-ed-f.sm { flex: 0 0 130px; }
+.pj-ed-f i { font-size: 11px; color: var(--graphite); font-style: normal; }
+.pj-ed-sec { border: 2.5px solid var(--deep); padding: 12px; background: var(--cream); }
+.pj-ed-h { display: block; font-size: 13px; margin-bottom: 8px; }
+.pj-ed-task { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; flex-wrap: wrap; }
+.pj-ed-task .gg { flex: 1 1 140px; min-width: 100px; }
+.pj-ed-task .xs { width: 92px; }
+.pj-ed-task .xxs { width: 56px; }
+.pj-ed-mini { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--graphite); }
+.pj-ed-sum { font-size: 12px; min-width: 62px; text-align: right; }
+.pj-ed-tm { border: 2px dashed var(--deep); padding: 10px; margin-bottom: 8px; }
+.pj-ed-tm-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.pj-ed-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.pj-ed-pub { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; }
+.mc-btn.sm { font-size: 11px; padding: 4px 8px; }

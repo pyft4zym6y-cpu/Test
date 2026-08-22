@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom';
 import {
   currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, signTierFile, CONFIGURED,
   findAuditIdByCode, loadAuditAnswers, loadAuditExtra, saveAuditExtra,
+  saveProjectFor, emptyProject,
   MANAGER_EMAILS, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
+  type Project, type ProjTask, type ProjMember, type ProjPayment, type ProjMonth, type ProjTariffItem,
 } from '@/lib/supa';
 import { eur } from './lossModel';
 import { AuditBuilder } from './AuditBuilder';
@@ -730,6 +732,8 @@ function UserDetail({ row, onClose, openFile, onStatus, busy }: { row: AdminRow;
             <Block title="Уточнення (Крок 2)"><ExtraEditor code={code} /></Block>
           )}
 
+          <Block title="Мій проект (ведення)"><ProjectEditor userId={row.userId} initial={rec.project} /></Block>
+
           {files.length > 0 && (
             <Block title="Файли">
               <ul className="adm-files">{files.flatMap(([tid, arr]) => arr.map((f, i) => (
@@ -771,6 +775,113 @@ function ExtraEditor({ code }: { code: string }) {
       <div className="adm-extra-act">
         <button className="mc-btn" onClick={add}>+ Питання</button>
         <button className="mc-btn ok" onClick={save} disabled={busy}>{busy ? 'Зберігаємо…' : 'Зберегти й надіслати'}</button>
+      </div>
+      {msg && <span className="mono adm-fill-au">{msg}</span>}
+    </div>
+  );
+}
+
+/** Редактор проекту клієнта (веде менеджер): Гант, команда, фінкалендар, тарифікація. */
+function ProjectEditor({ userId, initial }: { userId: string; initial?: Project }) {
+  const [p, setP] = useState<Project>({ ...emptyProject(), ...(initial || {}) });
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState('');
+  const upd = (patch: Partial<Project>) => setP((s) => ({ ...s, ...patch }));
+  const num = (v: string) => (v === '' ? 0 : Number(v));
+
+  const tasks = p.tasks || [], team = p.team || [], pays = p.payments || [], tariff = p.tariff || [];
+  const setTask = (i: number, k: keyof ProjTask, v: unknown) => upd({ tasks: tasks.map((t, j) => (j === i ? { ...t, [k]: v } : t)) });
+  const setMember = (i: number, k: keyof ProjMember, v: unknown) => upd({ team: team.map((t, j) => (j === i ? { ...t, [k]: v } : t)) });
+  const setPay = (i: number, k: keyof ProjPayment, v: unknown) => upd({ payments: pays.map((t, j) => (j === i ? { ...t, [k]: v } : t)) });
+  const setMonth = (i: number, k: keyof ProjMonth, v: unknown) => upd({ tariff: tariff.map((t, j) => (j === i ? { ...t, [k]: v } : t)) });
+  const setItem = (mi: number, ii: number, k: keyof ProjTariffItem, v: unknown) =>
+    upd({ tariff: tariff.map((m, j) => (j === mi ? { ...m, items: (m.items || []).map((it, q) => (q === ii ? { ...it, [k]: v } : it)) } : m)) });
+
+  const save = async () => {
+    setBusy(true); setMsg('');
+    const r = await saveProjectFor(userId, p);
+    setBusy(false);
+    setMsg(r.ok ? (p.published ? '✓ Збережено та опубліковано — клієнт бачить у «Мій проект».' : '✓ Збережено (чернетка, клієнту ще не видно).') : (r.error || 'Помилка'));
+  };
+
+  return (
+    <div className="pj-ed">
+      <div className="pj-ed-row2">
+        <label className="pj-ed-f"><i>Назва проекту</i><input className="ab-inp" value={p.title || ''} onChange={(e) => upd({ title: e.target.value })} placeholder="напр. Ecom-система Q3" /></label>
+        <label className="pj-ed-f sm"><i>Старт (міс.)</i><input className="ab-inp" type="month" value={p.startMonth || ''} onChange={(e) => upd({ startMonth: e.target.value })} /></label>
+        <label className="pj-ed-f sm"><i>Місяців у Ганті</i><input className="ab-inp" type="number" min={1} max={24} value={p.span || 6} onChange={(e) => upd({ span: Math.max(1, Math.min(24, num(e.target.value))) })} /></label>
+      </div>
+
+      {/* Гант */}
+      <div className="pj-ed-sec"><b className="pj-ed-h">Дорожня карта (Гант)</b>
+        {tasks.map((tk, i) => (
+          <div key={tk.id} className="pj-ed-task">
+            <input className="ab-inp gg" value={tk.name} onChange={(e) => setTask(i, 'name', e.target.value)} placeholder="Задача / етап" />
+            <input className="ab-inp xs" value={tk.owner || ''} onChange={(e) => setTask(i, 'owner', e.target.value)} placeholder="хто" />
+            <label className="pj-ed-mini">старт<input className="ab-inp xxs" type="number" min={0} value={tk.startM} onChange={(e) => setTask(i, 'startM', num(e.target.value))} /></label>
+            <label className="pj-ed-mini">трив.<input className="ab-inp xxs" type="number" min={1} value={tk.lenM} onChange={(e) => setTask(i, 'lenM', Math.max(1, num(e.target.value)))} /></label>
+            <label className="pj-ed-mini">%<input className="ab-inp xxs" type="number" min={0} max={100} value={tk.progress ?? 0} onChange={(e) => setTask(i, 'progress', Math.max(0, Math.min(100, num(e.target.value))))} /></label>
+            <button className="mc-btn ghost" onClick={() => upd({ tasks: tasks.filter((_, j) => j !== i) })}>✕</button>
+          </div>
+        ))}
+        <button className="mc-btn" onClick={() => upd({ tasks: [...tasks, { id: uid('t'), name: '', startM: 0, lenM: 1, progress: 0 }] })}>+ Задача</button>
+      </div>
+
+      {/* Команда */}
+      <div className="pj-ed-sec"><b className="pj-ed-h">Команда</b>
+        {team.map((m, i) => (
+          <div key={m.id} className="pj-ed-task">
+            <input className="ab-inp xs" value={m.role} onChange={(e) => setMember(i, 'role', e.target.value)} placeholder="Роль" />
+            <input className="ab-inp gg" value={m.name} onChange={(e) => setMember(i, 'name', e.target.value)} placeholder="Імʼя" />
+            <button className="mc-btn ghost" onClick={() => upd({ team: team.filter((_, j) => j !== i) })}>✕</button>
+          </div>
+        ))}
+        <button className="mc-btn" onClick={() => upd({ team: [...team, { id: uid('m'), role: '', name: '' }] })}>+ Учасник</button>
+      </div>
+
+      {/* Фінкалендар */}
+      <div className="pj-ed-sec"><b className="pj-ed-h">Фінансовий календар (€, без ПДВ)</b>
+        {pays.map((x, i) => (
+          <div key={x.id} className="pj-ed-task">
+            <input className="ab-inp gg" value={x.label} onChange={(e) => setPay(i, 'label', e.target.value)} placeholder="Платіж (напр. Аванс)" />
+            <input className="ab-inp xs" type="month" value={x.month} onChange={(e) => setPay(i, 'month', e.target.value)} />
+            <label className="pj-ed-mini">€<input className="ab-inp xs" type="number" min={0} value={x.amount} onChange={(e) => setPay(i, 'amount', num(e.target.value))} /></label>
+            <select className="ab-sel" value={x.status} onChange={(e) => setPay(i, 'status', e.target.value as ProjPayment['status'])}><option value="pending">Очікує</option><option value="paid">Сплачено</option></select>
+            <button className="mc-btn ghost" onClick={() => upd({ payments: pays.filter((_, j) => j !== i) })}>✕</button>
+          </div>
+        ))}
+        <button className="mc-btn" onClick={() => upd({ payments: [...pays, { id: uid('p'), label: '', month: p.startMonth || '', amount: 0, status: 'pending' }] })}>+ Платіж</button>
+      </div>
+
+      {/* Тарифікація */}
+      <div className="pj-ed-sec"><b className="pj-ed-h">Помісячна тарифікація</b>
+        {tariff.map((mo, mi) => {
+          const items = mo.items || [];
+          return (
+            <div key={mo.id} className="pj-ed-tm">
+              <div className="pj-ed-tm-head">
+                <input className="ab-inp xs" type="month" value={mo.month} onChange={(e) => setMonth(mi, 'month', e.target.value)} />
+                <button className="mc-btn ghost" onClick={() => upd({ tariff: tariff.filter((_, j) => j !== mi) })}>✕ місяць</button>
+              </div>
+              {items.map((it, ii) => (
+                <div key={it.id} className="pj-ed-task">
+                  <input className="ab-inp gg" value={it.label} onChange={(e) => setItem(mi, ii, 'label', e.target.value)} placeholder="Робота / роль" />
+                  <label className="pj-ed-mini">год<input className="ab-inp xxs" type="number" min={0} value={it.hours} onChange={(e) => setItem(mi, ii, 'hours', num(e.target.value))} /></label>
+                  <label className="pj-ed-mini">€/год<input className="ab-inp xs" type="number" min={0} value={it.rate} onChange={(e) => setItem(mi, ii, 'rate', num(e.target.value))} /></label>
+                  <span className="mono pj-ed-sum">€{((it.hours || 0) * (it.rate || 0)).toLocaleString('uk-UA')}</span>
+                  <button className="mc-btn ghost" onClick={() => setMonth(mi, 'items', items.filter((_, j) => j !== ii))}>✕</button>
+                </div>
+              ))}
+              <button className="mc-btn sm" onClick={() => setMonth(mi, 'items', [...items, { id: uid('i'), label: '', hours: 0, rate: 0 }])}>+ Рядок</button>
+            </div>
+          );
+        })}
+        <button className="mc-btn" onClick={() => upd({ tariff: [...tariff, { id: uid('mo'), month: p.startMonth || '', items: [] }] })}>+ Місяць</button>
+      </div>
+
+      <div className="pj-ed-foot">
+        <label className="pj-ed-pub"><input type="checkbox" checked={!!p.published} onChange={(e) => upd({ published: e.target.checked })} /> Опубліковано (видно клієнту)</label>
+        <button className="mc-btn ok" onClick={save} disabled={busy}>{busy ? 'Зберігаємо…' : 'Зберегти проект'}</button>
       </div>
       {msg && <span className="mono adm-fill-au">{msg}</span>}
     </div>

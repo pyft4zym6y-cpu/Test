@@ -7,6 +7,7 @@ import {
   type DiagUser, type DiagRecord, type CompanyProfile, type TierStatus, type TierEvent, type AuditAnswer, type ExtraQ,
 } from '@/lib/supa';
 import { AuditForm } from './AuditForm';
+import { ProjectView } from './ProjectView';
 import { loadTemplate, CLIENT_ROLES, type AuditTemplate, type Question } from './auditTemplate';
 import { getExpressAudit, clearExpressAudit, buildJourney, type ExpressAudit } from './cabinetData';
 import { eur } from './lossModel';
@@ -22,7 +23,7 @@ import './cabinet.css';
  * зберігання (DiagRecord). Гроші/витік беруться з калькулятора (lossModel), а
  * глибокий аудит — вбудований Stage3. Це не окремі інструменти, а кроки системи.
  */
-type SectionId = 'overview' | 'company' | 'audits' | 'deep' | 'findings' | 'access' | 'docs' | 'collab' | 'settings';
+type SectionId = 'overview' | 'company' | 'audits' | 'deep' | 'project' | 'findings' | 'access' | 'docs' | 'collab' | 'settings';
 type NavItem = { id: SectionId; label: string; soon?: boolean };
 
 const EMPTY_COMPANY: CompanyProfile = { name: '', site: '', niche: '', revenue: '', channels: [], contactName: '', contactPhone: '', notes: '' };
@@ -35,6 +36,7 @@ export function Cabinet() {
     { group: t('Огляд', 'Overview'), items: [{ id: 'overview', label: t('Огляд та шлях', 'Overview & path') }, { id: 'audits', label: t('Мої аудити', 'My audits') }] },
     { group: t('Дані', 'Data'), items: [{ id: 'company', label: t('Дані компанії', 'Company data') }] },
     { group: t('Розбір', 'Analysis'), items: [{ id: 'deep', label: t('Глибокий аудит', 'Deep audit') }, { id: 'findings', label: t('Знахідки та план', 'Findings & plan'), soon: true }, { id: 'docs', label: t('Документи', 'Documents'), soon: true }] },
+    { group: t('Ведення', 'Delivery'), items: [{ id: 'project', label: t('Мій проект', 'My project') }] },
     { group: t('Робота разом', 'Work with us'), items: [{ id: 'collab', label: t('Співпраця', 'Work with us') }, { id: 'settings', label: t('Налаштування', 'Settings') }] },
   ];
   const [user, setUser] = useState<DiagUser | null>(null);
@@ -202,6 +204,7 @@ export function Cabinet() {
         {section === 'audits' && <Audits express={express} rec={rec} go={setSection} onDelete={deleteExpress} />}
         {section === 'company' && <CompanyForm user={user} rec={rec} onSaved={refreshRec} />}
         {section === 'deep' && <DeepAudit user={user} rec={rec} express={express} onDone={refreshRec} onClose={() => setSection('overview')} go={setSection} />}
+        {section === 'project' && <ProjectView project={rec?.project} en={t('', 'en') === 'en'} />}
         {section === 'findings' && <Soon title={t('Знахідки та дорожня карта', 'Findings & roadmap')} lead={t('Тут зʼявляться підтверджені знахідки глибокого аудиту й план під Definition of Done: що робити, у якому порядку і який ефект. Розділ вмикається після завершення Tier-2 розбору.', 'Confirmed findings from the deep audit and a plan under a Definition of Done will appear here: what to do, in what order and what the effect is. The section unlocks after the Tier-2 analysis is complete.')} />}
         {section === 'docs' && <Soon title={t('Документи', 'Documents')} lead={t('PDF-звіти, робочі аркуші й матеріали розбору складатимуться сюди — щоб усе було в одному місці й доступне команді.', 'PDF reports, worksheets and analysis materials will gather here — so everything is in one place and available to the team.')} />}
         {section === 'collab' && <Collab user={user} rec={rec} express={express} onDone={refreshRec} />}

@@ -66,8 +66,30 @@ export type DiagRecord = {
   stage3?: Record<string, unknown>;
   company?: CompanyProfile;         // розділ «Дані компанії»
   funnel?: FunnelState;             // наскрізна воронка кабінету
+  project?: Project;                // розділ «Мій проект» (веде менеджер, клієнт лише переглядає)
   updatedAt?: string;
 };
+
+/* ─── «Мій проект»: план ведення (Гант, команда, фінкалендар, тарифікація) ─── */
+export type ProjTask = { id: string; name: string; track?: string; startM: number; lenM: number; progress?: number; owner?: string };
+export type ProjMember = { id: string; role: string; name: string };
+export type ProjPayment = { id: string; label: string; month: string; amount: number; status: 'paid' | 'pending' };
+export type ProjTariffItem = { id: string; label: string; hours: number; rate: number };
+export type ProjMonth = { id: string; month: string; items: ProjTariffItem[] };
+export type Project = {
+  title?: string;
+  startMonth?: string;   // 'YYYY-MM' — місяць 0 діаграми Ганта
+  span?: number;         // кількість місяців у діаграмі
+  tasks?: ProjTask[];
+  team?: ProjMember[];
+  payments?: ProjPayment[];
+  tariff?: ProjMonth[];
+  published?: boolean;   // видимий клієнту (менеджер публікує, коли готово)
+  updatedAt?: string;
+};
+export function emptyProject(): Project {
+  return { title: '', startMonth: '', span: 6, tasks: [], team: [], payments: [], tariff: [], published: false };
+}
 
 const LS_SESSION = 'weexp:diag-user';
 const LS_DATA = (id: string) => `weexp:diag-data:${id}`;
@@ -363,6 +385,24 @@ export async function clearTierStatusFor(userId: string, tier: string): Promise<
     const merged: DiagRecord = { ...rec, funnel, updatedAt: new Date().toISOString() };
     const { error } = await supabase.from('diagnostics').update({ data: merged }).eq('user_id', userId);
     return error ? { ok: false, error: error.message } : { ok: true };
+  } catch (e) { return { ok: false, error: String(e) }; }
+}
+
+/** Менеджер зберігає/оновлює проект клієнта (в diagnostics.data.project). Клієнт лише переглядає. */
+export async function saveProjectFor(userId: string, project: Project): Promise<{ ok: boolean; error?: string }> {
+  const p: Project = { ...project, updatedAt: new Date().toISOString() };
+  if (!CONFIGURED || userId.startsWith('local:') || userId.startsWith('demo:')) {
+    try { const k = LS_DATA(userId); const prev = JSON.parse(localStorage.getItem(k) || '{}'); localStorage.setItem(k, JSON.stringify({ ...prev, project: p })); } catch { /* ignore */ }
+    return { ok: true };
+  }
+  try {
+    const { data } = await supabase.from('diagnostics').select('data').eq('user_id', userId).maybeSingle();
+    const rec = (data?.data as DiagRecord) || {};
+    const merged: DiagRecord = { ...rec, project: p, updatedAt: new Date().toISOString() };
+    const { data: upd, error } = await supabase.from('diagnostics').update({ data: merged }).eq('user_id', userId).select('user_id');
+    if (error) return { ok: false, error: error.message };
+    if (!upd || upd.length === 0) return { ok: false, error: 'Оновлення не застосовано — перевірте UPDATE-політику адміна на diagnostics (RLS).' };
+    return { ok: true };
   } catch (e) { return { ok: false, error: String(e) }; }
 }
 
