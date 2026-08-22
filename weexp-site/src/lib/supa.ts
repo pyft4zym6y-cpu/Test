@@ -67,6 +67,7 @@ export type DiagRecord = {
   company?: CompanyProfile;         // розділ «Дані компанії»
   funnel?: FunnelState;             // наскрізна воронка кабінету
   project?: Project;                // розділ «Мій проект» (веде менеджер, клієнт лише переглядає)
+  pmDir?: PmDirectory;              // проект-офіс: довідник команди та ставок (лише в записі менеджера)
   updatedAt?: string;
 };
 
@@ -84,11 +85,31 @@ export type Project = {
   team?: ProjMember[];
   payments?: ProjPayment[];
   tariff?: ProjMonth[];
+  budget?: Record<string, number>;  // бюджет-матриця: ключ `${taskId}:${monthIndex}` → € (внутрішнє, проект-офіс)
   published?: boolean;   // видимий клієнту (менеджер публікує, коли готово)
   updatedAt?: string;
 };
 export function emptyProject(): Project {
-  return { title: '', startMonth: '', span: 6, tasks: [], team: [], payments: [], tariff: [], published: false };
+  return { title: '', startMonth: '', span: 6, tasks: [], team: [], payments: [], tariff: [], budget: {}, published: false };
+}
+
+/* ─── Проект-офіс (PM): довідник команди та ставок ─── */
+export type PmSpecialist = { id: string; name: string; role: string; rate: number };  // ставка €/год
+export type PmRoleRate = { id: string; role: string; rate: number };
+export type PmDirectory = { specialists?: PmSpecialist[]; roleRates?: PmRoleRate[] };
+
+/** Довідник проект-офісу зберігається у записі менеджера (diagnostics.data.pmDir). */
+export async function loadPmDirectory(): Promise<PmDirectory> {
+  const u = await currentUser();
+  if (!u) return { specialists: [], roleRates: [] };
+  const rec = await loadDiag(u);
+  return rec.pmDir || { specialists: [], roleRates: [] };
+}
+export async function savePmDirectory(dir: PmDirectory): Promise<{ ok: boolean; error?: string }> {
+  const u = await currentUser();
+  if (!u) return { ok: false, error: 'no_user' };
+  try { await saveDiag(u, { pmDir: dir }); return { ok: true }; }
+  catch (e) { return { ok: false, error: String(e) }; }
 }
 
 const LS_SESSION = 'weexp:diag-user';

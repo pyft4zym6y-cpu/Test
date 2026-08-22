@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom';
 import {
   currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, signTierFile, CONFIGURED,
   findAuditIdByCode, loadAuditAnswers, loadAuditExtra, saveAuditExtra,
-  saveProjectFor, emptyProject,
+  saveProjectFor, emptyProject, loadPmDirectory, savePmDirectory,
   MANAGER_EMAILS, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
   type Project, type ProjTask, type ProjMember, type ProjPayment, type ProjMonth, type ProjTariffItem,
+  type PmDirectory, type PmSpecialist, type PmRoleRate,
 } from '@/lib/supa';
 import { eur } from './lossModel';
 import { AuditBuilder } from './AuditBuilder';
@@ -23,7 +24,7 @@ type SiteTraffic = {
   period?: string; sessions?: number; users?: number; pageviews?: number; bounceRate?: number;
   sources?: { name: string; sessions: number }[]; pages?: { path: string; views: number }[]; error?: string;
 };
-type Tab = 'overview' | 'users' | 'audits' | 'template' | 'access' | 'leads' | 'settings';
+type Tab = 'overview' | 'users' | 'audits' | 'template' | 'access' | 'leads' | 'pm' | 'settings';
 const TABS: { id: Tab; label: string }[] = [
   { id: 'overview', label: 'Дашборд' },
   { id: 'users', label: 'Користувачі' },
@@ -31,6 +32,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'template', label: 'Конструктор аудиту' },
   { id: 'access', label: 'Запити доступів' },
   { id: 'leads', label: 'Первинна комунікація' },
+  { id: 'pm', label: 'Проект-офіс' },
   { id: 'settings', label: 'Налаштування' },
 ];
 // Джерела заявок, що є запитами доступу (не первинна комунікація).
@@ -464,6 +466,9 @@ export function AdminPanel() {
           </section>
         )}
 
+        {/* ── Проект-офіс: довідник команди та ставок ── */}
+        {tab === 'pm' && <PmOffice />}
+
         {/* ── Налаштування ── */}
         {tab === 'settings' && (
           <section className="adm-sec">
@@ -781,21 +786,99 @@ function ExtraEditor({ code }: { code: string }) {
   );
 }
 
+const PM_MONTHS = ['січ', 'лют', 'бер', 'кві', 'тра', 'чер', 'лип', 'сер', 'вер', 'жов', 'лис', 'гру'];
+function gMonthLabel(startMonth: string | undefined, i: number): string {
+  const m = /^(\d{4})-(\d{1,2})$/.exec(startMonth || '');
+  if (!m) return `М${i + 1}`;
+  const base = Number(m[1]) * 12 + (Number(m[2]) - 1) + i;
+  return `${PM_MONTHS[base % 12]} ${String(Math.floor(base / 12)).slice(2)}`;
+}
+
+/** Проект-офіс: глобальний довідник команди та ставок (переиспользується в проектах). */
+function PmOffice() {
+  const [dir, setDir] = useState<PmDirectory | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState('');
+  useEffect(() => { loadPmDirectory().then(setDir); }, []);
+  if (!dir) return <section className="adm-sec"><h1 className="sysx-display adm-h1">Проект-офіс</h1><p className="mono adm-empty">Завантаження…</p></section>;
+
+  const specs = dir.specialists || [], roles = dir.roleRates || [];
+  const num = (v: string) => (v === '' ? 0 : Number(v));
+  const setSpec = (i: number, k: keyof PmSpecialist, v: unknown) => setDir({ ...dir, specialists: specs.map((s, j) => (j === i ? { ...s, [k]: v } : s)) });
+  const setRole = (i: number, k: keyof PmRoleRate, v: unknown) => setDir({ ...dir, roleRates: roles.map((s, j) => (j === i ? { ...s, [k]: v } : s)) });
+  const save = async () => {
+    setBusy(true); setMsg('');
+    const r = await savePmDirectory({ specialists: specs.filter((s) => s.name.trim() || s.role.trim()), roleRates: roles.filter((s) => s.role.trim()) });
+    setBusy(false);
+    setMsg(r.ok ? '✓ Довідник збережено.' : (r.error || 'Помилка'));
+  };
+
+  return (
+    <section className="adm-sec">
+      <h1 className="sysx-display adm-h1">Проект-офіс</h1>
+      <p className="adm-hint mono">Довідник команди та ставок. Використовується при складанні тарифікації та бюджету проектів. Ставки — €/год, без ПДВ.</p>
+
+      <div className="pm-grid">
+        <div className="pj-card">
+          <h2 className="pj-h2">Команда (спеціалісти)</h2>
+          {specs.map((s, i) => (
+            <div key={s.id} className="pj-ed-task">
+              <input className="ab-inp gg" value={s.name} onChange={(e) => setSpec(i, 'name', e.target.value)} placeholder="Імʼя" />
+              <input className="ab-inp xs" value={s.role} onChange={(e) => setSpec(i, 'role', e.target.value)} placeholder="Роль" />
+              <label className="pj-ed-mini">€/год<input className="ab-inp xs" type="number" min={0} value={s.rate} onChange={(e) => setSpec(i, 'rate', num(e.target.value))} /></label>
+              <button className="mc-btn ghost" onClick={() => setDir({ ...dir, specialists: specs.filter((_, j) => j !== i) })}>✕</button>
+            </div>
+          ))}
+          <button className="mc-btn" onClick={() => setDir({ ...dir, specialists: [...specs, { id: uid('sp'), name: '', role: '', rate: 0 }] })}>+ Спеціаліст</button>
+        </div>
+
+        <div className="pj-card">
+          <h2 className="pj-h2">Ставки за ролями</h2>
+          <p className="pj-sub mono">Дефолтна ставка ролі, якщо спеціаліст не вказаний.</p>
+          {roles.map((s, i) => (
+            <div key={s.id} className="pj-ed-task">
+              <input className="ab-inp gg" value={s.role} onChange={(e) => setRole(i, 'role', e.target.value)} placeholder="Роль (напр. Senior dev)" />
+              <label className="pj-ed-mini">€/год<input className="ab-inp xs" type="number" min={0} value={s.rate} onChange={(e) => setRole(i, 'rate', num(e.target.value))} /></label>
+              <button className="mc-btn ghost" onClick={() => setDir({ ...dir, roleRates: roles.filter((_, j) => j !== i) })}>✕</button>
+            </div>
+          ))}
+          <button className="mc-btn" onClick={() => setDir({ ...dir, roleRates: [...roles, { id: uid('rr'), role: '', rate: 0 }] })}>+ Ставка ролі</button>
+        </div>
+      </div>
+
+      <div className="pj-ed-foot" style={{ marginTop: 16 }}>
+        {msg && <span className="mono adm-fill-au">{msg}</span>}
+        <button className="mc-btn ok" onClick={save} disabled={busy}>{busy ? 'Зберігаємо…' : 'Зберегти довідник'}</button>
+      </div>
+    </section>
+  );
+}
+
 /** Редактор проекту клієнта (веде менеджер): Гант, команда, фінкалендар, тарифікація. */
 function ProjectEditor({ userId, initial }: { userId: string; initial?: Project }) {
   const [p, setP] = useState<Project>({ ...emptyProject(), ...(initial || {}) });
+  const [dir, setDir] = useState<PmDirectory>({});
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
+  useEffect(() => { loadPmDirectory().then(setDir); }, []);
   const upd = (patch: Partial<Project>) => setP((s) => ({ ...s, ...patch }));
   const num = (v: string) => (v === '' ? 0 : Number(v));
 
   const tasks = p.tasks || [], team = p.team || [], pays = p.payments || [], tariff = p.tariff || [];
+  const specialists = dir.specialists || [];
+  const span = Math.max(1, Math.min(24, p.span || 6));
+  const cols = Array.from({ length: span }, (_, i) => i);
+  const budget = p.budget || {};
+  const setBudget = (taskId: string, m: number, v: number) => { const b = { ...budget }; const k = `${taskId}:${m}`; if (v) b[k] = v; else delete b[k]; upd({ budget: b }); };
+  const budgetGrand = Object.values(budget).reduce((s, v) => s + (v || 0), 0);
   const setTask = (i: number, k: keyof ProjTask, v: unknown) => upd({ tasks: tasks.map((t, j) => (j === i ? { ...t, [k]: v } : t)) });
   const setMember = (i: number, k: keyof ProjMember, v: unknown) => upd({ team: team.map((t, j) => (j === i ? { ...t, [k]: v } : t)) });
   const setPay = (i: number, k: keyof ProjPayment, v: unknown) => upd({ payments: pays.map((t, j) => (j === i ? { ...t, [k]: v } : t)) });
   const setMonth = (i: number, k: keyof ProjMonth, v: unknown) => upd({ tariff: tariff.map((t, j) => (j === i ? { ...t, [k]: v } : t)) });
   const setItem = (mi: number, ii: number, k: keyof ProjTariffItem, v: unknown) =>
     upd({ tariff: tariff.map((m, j) => (j === mi ? { ...m, items: (m.items || []).map((it, q) => (q === ii ? { ...it, [k]: v } : it)) } : m)) });
+  const patchItem = (mi: number, ii: number, patch: Partial<ProjTariffItem>) =>
+    upd({ tariff: tariff.map((m, j) => (j === mi ? { ...m, items: (m.items || []).map((it, q) => (q === ii ? { ...it, ...patch } : it)) } : m)) });
 
   const save = async () => {
     setBusy(true); setMsg('');
@@ -836,7 +919,15 @@ function ProjectEditor({ userId, initial }: { userId: string; initial?: Project 
             <button className="mc-btn ghost" onClick={() => upd({ team: team.filter((_, j) => j !== i) })}>✕</button>
           </div>
         ))}
-        <button className="mc-btn" onClick={() => upd({ team: [...team, { id: uid('m'), role: '', name: '' }] })}>+ Учасник</button>
+        <div className="pj-ed-add">
+          {specialists.length > 0 && (
+            <select className="ab-sel" value="" onChange={(e) => { const s = specialists.find((x) => x.id === e.target.value); if (s) upd({ team: [...team, { id: uid('m'), role: s.role, name: s.name }] }); }}>
+              <option value="">+ з довідника…</option>
+              {specialists.map((s) => <option key={s.id} value={s.id}>{s.name} — {s.role}</option>)}
+            </select>
+          )}
+          <button className="mc-btn" onClick={() => upd({ team: [...team, { id: uid('m'), role: '', name: '' }] })}>+ Учасник</button>
+        </div>
       </div>
 
       {/* Фінкалендар */}
@@ -866,6 +957,12 @@ function ProjectEditor({ userId, initial }: { userId: string; initial?: Project 
               {items.map((it, ii) => (
                 <div key={it.id} className="pj-ed-task">
                   <input className="ab-inp gg" value={it.label} onChange={(e) => setItem(mi, ii, 'label', e.target.value)} placeholder="Робота / роль" />
+                  {specialists.length > 0 && (
+                    <select className="ab-sel xs" value="" title="Підставити зі довідника" onChange={(e) => { const s = specialists.find((x) => x.id === e.target.value); if (s) patchItem(mi, ii, { label: `${s.name} · ${s.role}`, rate: s.rate }); }}>
+                      <option value="">довідник</option>
+                      {specialists.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    </select>
+                  )}
                   <label className="pj-ed-mini">год<input className="ab-inp xxs" type="number" min={0} value={it.hours} onChange={(e) => setItem(mi, ii, 'hours', num(e.target.value))} /></label>
                   <label className="pj-ed-mini">€/год<input className="ab-inp xs" type="number" min={0} value={it.rate} onChange={(e) => setItem(mi, ii, 'rate', num(e.target.value))} /></label>
                   <span className="mono pj-ed-sum">€{((it.hours || 0) * (it.rate || 0)).toLocaleString('uk-UA')}</span>
@@ -877,6 +974,36 @@ function ProjectEditor({ userId, initial }: { userId: string; initial?: Project 
           );
         })}
         <button className="mc-btn" onClick={() => upd({ tariff: [...tariff, { id: uid('mo'), month: p.startMonth || '', items: [] }] })}>+ Місяць</button>
+      </div>
+
+      {/* Бюджет-матриця задачі × місяці (внутрішнє, проект-офіс) */}
+      <div className="pj-ed-sec"><b className="pj-ed-h">Бюджет: задачі × місяці (€, внутрішнє)</b>
+        {tasks.length === 0 ? <p className="mono adm-empty">Додайте задачі в дорожній карті — рядки бюджету зʼявляться автоматично.</p> : (
+          <div className="pj-bud-wrap">
+            <table className="pj-bud">
+              <thead><tr><th className="l">Задача</th>{cols.map((m) => <th key={m}>{gMonthLabel(p.startMonth, m)}</th>)}<th>Σ</th></tr></thead>
+              <tbody>
+                {tasks.map((tk) => {
+                  const rowSum = cols.reduce((s, m) => s + (budget[`${tk.id}:${m}`] || 0), 0);
+                  return (
+                    <tr key={tk.id}>
+                      <td className="l">{tk.name || '—'}</td>
+                      {cols.map((m) => (
+                        <td key={m}><input className="pj-bud-inp" type="number" min={0} value={budget[`${tk.id}:${m}`] || ''} onChange={(e) => setBudget(tk.id, m, num(e.target.value))} /></td>
+                      ))}
+                      <td className="mono r">€{rowSum.toLocaleString('uk-UA')}</td>
+                    </tr>
+                  );
+                })}
+                <tr className="pj-bud-tot">
+                  <td className="l">Разом</td>
+                  {cols.map((m) => { const cs = tasks.reduce((s, tk) => s + (budget[`${tk.id}:${m}`] || 0), 0); return <td key={m} className="mono">€{cs.toLocaleString('uk-UA')}</td>; })}
+                  <td className="mono r">€{budgetGrand.toLocaleString('uk-UA')}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       <div className="pj-ed-foot">
