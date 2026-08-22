@@ -3,11 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   currentUser, signOut, loadDiag, saveDiag, CONFIGURED, isCloudUser,
   registerWithEmail, signInWithEmail, resendConfirmation, signInWithGoogle, onAuth,
-  ensureAudit, findAuditIdByCode, loadAuditAnswers,
-  type DiagUser, type DiagRecord, type CompanyProfile, type TierStatus, type TierEvent, type AuditAnswer,
+  ensureAudit, findAuditIdByCode, loadAuditAnswers, loadAuditExtra,
+  type DiagUser, type DiagRecord, type CompanyProfile, type TierStatus, type TierEvent, type AuditAnswer, type ExtraQ,
 } from '@/lib/supa';
 import { AuditForm } from './AuditForm';
-import { loadTemplate, CLIENT_ROLES, type AuditTemplate } from './auditTemplate';
+import { loadTemplate, CLIENT_ROLES, type AuditTemplate, type Question } from './auditTemplate';
 import { getExpressAudit, clearExpressAudit, buildJourney, type ExpressAudit } from './cabinetData';
 import { eur } from './lossModel';
 import { sendLead } from '@/lib/leads';
@@ -416,6 +416,7 @@ function DeepAudit({ user, rec, express, onDone, onClose, go }: { user: DiagUser
   const [auditId, setAuditId] = useState<string | null>(null);
   const [tpl, setTpl] = useState<AuditTemplate | null>(null);
   const [answers, setAnswers] = useState<Record<string, AuditAnswer>>({});
+  const [extra, setExtra] = useState<ExtraQ[]>([]);
   const [loadingWork, setLoadingWork] = useState(false);
   const [role, setRole] = useState<string>(rec?.funnel?.auditRole || '');
 
@@ -433,8 +434,9 @@ function DeepAudit({ user, rec, express, onDone, onClose, go }: { user: DiagUser
         id = await findAuditIdByCode(c);
       }
       const ans = id ? await loadAuditAnswers(id) : {};
+      const ex = c ? await loadAuditExtra(c) : [];
       if (!alive) return;
-      setTpl(template); setAuditId(id); setAnswers(ans); setLoadingWork(false);
+      setTpl(template); setAuditId(id); setAnswers(ans); setExtra(ex); setLoadingWork(false);
     })();
     return () => { alive = false; };
   }, [granted, status, accessCode, joinCode]);
@@ -480,7 +482,7 @@ function DeepAudit({ user, rec, express, onDone, onClose, go }: { user: DiagUser
               <div className="cab-roles">{CLIENT_ROLES.map((r) => <button key={r} className="sysx-cta" onClick={() => pickRole(r)}>{r}</button>)}</div>
             </div>
           )
-          : <AuditForm user={user} auditId={auditId} template={tpl} initial={answers} role={role} isOwner={status === 'granted'} />}
+          : <AuditForm user={user} auditId={auditId} template={tpl} initial={answers} role={role} isOwner={status === 'granted'} extra={extra as unknown as Question[]} />}
       </section>
     );
   }

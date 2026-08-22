@@ -253,7 +253,8 @@ export async function ensureAudit(company: string, code: string, version: number
 /** Знайти id аудиту за кодом (для приєднання зі стороннього акаунта). */
 export async function findAuditIdByCode(code: string): Promise<string | null> {
   if (!CONFIGURED) return 'local:' + code.trim().toUpperCase();
-  try { const { data } = await supabase.from('audits').select('id').eq('access_code', code.trim().toUpperCase()).maybeSingle(); return (data?.id as string) ?? null; } catch { return null; }
+  const c = code.trim().toUpperCase();
+  try { const { data, error } = await supabase.from('audits').select('id').eq('access_code', c).maybeSingle(); if (error) return 'local:' + c; return (data?.id as string) ?? null; } catch { return 'local:' + c; }
 }
 export async function loadAuditAnswers(auditId: string): Promise<Record<string, AuditAnswer>> {
   if (!CONFIGURED || auditId.startsWith('local:')) { try { return JSON.parse(localStorage.getItem('weexp:aud:' + auditId) || '{}'); } catch { return {}; } }
@@ -276,6 +277,24 @@ export async function saveAuditAnswer(auditId: string, qkey: string, value: unkn
     supabase.from('audit_answer_log').insert({ audit_id: auditId, qkey, value, updated_by: by }).then(() => {}, () => {});   // історія, best-effort
     return { ok: true, at };
   } catch (e) { return { ok: false, error: String(e) }; }
+}
+
+/** Уточнююче питання Кроку 2 (ad-hoc від менеджера конкретному клієнту). */
+export type ExtraQ = { key: string; label: string; type: string; hint?: string; options?: string[] };
+/** Завантажити уточнення (Крок 2) аудиту за кодом. */
+export async function loadAuditExtra(code: string): Promise<ExtraQ[]> {
+  const id = await findAuditIdByCode(code);
+  if (!id) return [];
+  if (id.startsWith('local:')) { try { return JSON.parse(localStorage.getItem('weexp:aud-extra:' + id) || '[]'); } catch { return []; } }
+  try { const { data } = await supabase.from('audits').select('extra').eq('id', id).maybeSingle(); return (data?.extra as ExtraQ[]) || []; } catch { return []; }
+}
+/** Менеджер зберігає уточнення (Крок 2) для аудиту клієнта. */
+export async function saveAuditExtra(code: string, extra: ExtraQ[]): Promise<{ ok: boolean; error?: string }> {
+  const id = await findAuditIdByCode(code);
+  if (!id) return { ok: false, error: 'Аудит не знайдено (клієнт ще не відкрив розділ).' };
+  if (id.startsWith('local:')) { try { localStorage.setItem('weexp:aud-extra:' + id, JSON.stringify(extra)); } catch { /* ignore */ } return { ok: true }; }
+  try { const { error } = await supabase.from('audits').update({ extra }).eq('id', id); return error ? { ok: false, error: error.message } : { ok: true }; }
+  catch (e) { return { ok: false, error: String(e) }; }
 }
 
 /** Стадія ліда в міні-CRM (воронка продажів). */

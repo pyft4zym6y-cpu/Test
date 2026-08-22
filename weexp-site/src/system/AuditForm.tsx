@@ -14,8 +14,8 @@ const relTime = (iso?: string) => {
   try { return new Date(iso).toLocaleDateString('uk-UA', { day: '2-digit', month: 'short' }); } catch { return ''; }
 };
 
-export function AuditForm({ user, auditId, template, initial, role, isOwner }: {
-  user: DiagUser; auditId: string; template: AuditTemplate; initial: Record<string, AuditAnswer>; role?: string; isOwner: boolean;
+export function AuditForm({ user, auditId, template, initial, role, isOwner, extra }: {
+  user: DiagUser; auditId: string; template: AuditTemplate; initial: Record<string, AuditAnswer>; role?: string; isOwner: boolean; extra?: Question[];
 }) {
   const [answers, setAnswers] = useState<Record<string, AuditAnswer>>(initial);
   const [saving, setSaving] = useState<string>('');
@@ -49,6 +49,23 @@ export function AuditForm({ user, auditId, template, initial, role, isOwner }: {
         <div className="af-prog-bar"><span style={{ width: `${progress.pct}%` }} /></div>
         <span className="mono">{progress.done}/{progress.total} · {progress.pct}%</span>
       </div>
+
+      {extra && extra.length > 0 && (
+        <div className="af-block af-extra">
+          <div className="af-block-head"><b className="af-block-t">Уточнення від менеджера</b><span className="af-role mono" style={{ background: 'var(--red)', color: '#fff' }}>Крок 2</span></div>
+          {extra.map((q) => {
+            const a = answers[q.key];
+            return (
+              <div key={q.key} className="af-q">
+                <label className="af-lbl">{q.label}</label>
+                {q.hint && <span className="af-hint mono">{q.hint}</span>}
+                <Field q={q} value={a?.value} disabled={saving === q.key} onCommit={(v) => commit(q.key, v)} onFile={(e) => onFile(q.key, e)} />
+                {a?.by && <span className="af-by mono">← {a.by} · {relTime(a.at)}</span>}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {template.blocks.map((b) => {
         const locked = !!b.role && !isOwner && role !== b.role;

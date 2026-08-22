@@ -2,12 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, signTierFile, CONFIGURED,
-  findAuditIdByCode, loadAuditAnswers,
-  MANAGER_EMAILS, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus, type AuditAnswer,
+  findAuditIdByCode, loadAuditAnswers, loadAuditExtra, saveAuditExtra,
+  MANAGER_EMAILS, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
 } from '@/lib/supa';
 import { eur } from './lossModel';
 import { AuditBuilder } from './AuditBuilder';
-import { loadTemplate, type AuditTemplate, type Question } from './auditTemplate';
+import { loadTemplate, uid, Q_TYPES, type AuditTemplate, type Question } from './auditTemplate';
 import './system.css';
 import './cabinet.css';
 
@@ -726,6 +726,9 @@ function UserDetail({ row, onClose, openFile, onStatus, busy }: { row: AdminRow;
           {code && (
             <Block title="Заповнення аудиту"><AuditFill code={code} /></Block>
           )}
+          {code && (
+            <Block title="Уточнення (Крок 2)"><ExtraEditor code={code} /></Block>
+          )}
 
           {files.length > 0 && (
             <Block title="Файли">
@@ -736,6 +739,40 @@ function UserDetail({ row, onClose, openFile, onStatus, busy }: { row: AdminRow;
           )}
         </div>
       </aside>
+    </div>
+  );
+}
+
+/** Редактор персональних уточнень (Крок 2) для клієнта — менеджер додає ad-hoc питання. */
+function ExtraEditor({ code }: { code: string }) {
+  const [list, setList] = useState<ExtraQ[] | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState('');
+  useEffect(() => { loadAuditExtra(code).then(setList); }, [code]);
+  if (list === null) return <p className="mono adm-empty">Завантаження…</p>;
+  const add = () => setList([...list, { key: uid('x'), label: '', type: 'text' }]);
+  const set = (i: number, k: keyof ExtraQ, v: unknown) => setList(list.map((q, j) => (j === i ? { ...q, [k]: v } : q)));
+  const del = (i: number) => setList(list.filter((_, j) => j !== i));
+  const save = async () => {
+    setBusy(true); setMsg('');
+    const r = await saveAuditExtra(code, list.filter((q) => q.label.trim()));
+    setBusy(false);
+    setMsg(r.ok ? '✓ Збережено — клієнт побачить у розділі «Крок 2».' : (r.error || 'Помилка'));
+  };
+  return (
+    <div className="adm-extra">
+      {list.length === 0 ? <p className="mono adm-empty">Немає уточнень. Додайте персональні питання/доступи для цього клієнта.</p> : list.map((q, i) => (
+        <div key={q.key} className="adm-extra-q">
+          <input className="ab-inp" value={q.label} onChange={(e) => set(i, 'label', e.target.value)} placeholder="Питання / що уточнити" />
+          <select className="ab-sel" value={q.type} onChange={(e) => set(i, 'type', e.target.value)}>{Q_TYPES.map((t) => <option key={t.v} value={t.v}>{t.label}</option>)}</select>
+          <button className="mc-btn ghost" onClick={() => del(i)}>✕</button>
+        </div>
+      ))}
+      <div className="adm-extra-act">
+        <button className="mc-btn" onClick={add}>+ Питання</button>
+        <button className="mc-btn ok" onClick={save} disabled={busy}>{busy ? 'Зберігаємо…' : 'Зберегти й надіслати'}</button>
+      </div>
+      {msg && <span className="mono adm-fill-au">{msg}</span>}
     </div>
   );
 }
