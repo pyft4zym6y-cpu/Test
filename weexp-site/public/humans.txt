@@ -1,0 +1,10 @@
+/* TEAM */
+  Agency: WEEXP — Commerce Architecture & Management
+  Site: https://weexp.agency
+  Contact: hello@weexp.agency
+  Location: Ukraine 🇺🇦
+
+/* SITE */
+  Standard: HTML5, TypeScript, React, Vite
+  Style: neo-brutalist .sysx design system
+  Made with: system instead of heroics

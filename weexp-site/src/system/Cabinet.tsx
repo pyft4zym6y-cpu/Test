@@ -425,10 +425,18 @@ function CompanyForm({ user, rec, onSaved }: { user: DiagUser; rec: DiagRecord |
   const [c, setC] = useState<CompanyProfile>({ ...EMPTY_COMPANY, ...(rec?.company || {}) });
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
-  useEffect(() => { setC({ ...EMPTY_COMPANY, ...(rec?.company || {}) }); }, [rec]);
-  const set = (k: keyof CompanyProfile) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setC((s) => ({ ...s, [k]: e.target.value }));
-  const toggle = (k: 'channels' | 'acqChannels', v: string) => setC((s) => { const a = s[k] || []; return { ...s, [k]: a.includes(v) ? a.filter((x) => x !== v) : [...a, v] }; });
-  const save = async () => { setSaving(true); await saveDiag(user, { company: c }); setSaving(false); setSaved(true); onSaved(); toast(t('✓ Профіль компанії збережено', '✓ Company profile saved')); setTimeout(() => setSaved(false), 1800); };
+  const dirty = useRef(false);
+  const [autosaved, setAutosaved] = useState(false);
+  useEffect(() => { setC({ ...EMPTY_COMPANY, ...(rec?.company || {}) }); dirty.current = false; }, [rec]);
+  const set = (k: keyof CompanyProfile) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => { dirty.current = true; setC((s) => ({ ...s, [k]: e.target.value })); };
+  const toggle = (k: 'channels' | 'acqChannels', v: string) => { dirty.current = true; setC((s) => { const a = s[k] || []; return { ...s, [k]: a.includes(v) ? a.filter((x) => x !== v) : [...a, v] }; }); };
+  // Автозбереження: через 1.4с бездіяльності після реальної правки — тихо зберігаємо, нічого не втрачаючи.
+  useEffect(() => {
+    if (!dirty.current || !c.industry) return;
+    const id = setTimeout(async () => { await saveDiag(user, { company: c }); dirty.current = false; onSaved(); setAutosaved(true); setTimeout(() => setAutosaved(false), 1600); }, 1400);
+    return () => clearTimeout(id);
+  }, [c]); // eslint-disable-line react-hooks/exhaustive-deps
+  const save = async () => { setSaving(true); await saveDiag(user, { company: c }); dirty.current = false; setSaving(false); setSaved(true); onSaved(); toast(t('✓ Профіль компанії збережено', '✓ Company profile saved')); setTimeout(() => setSaved(false), 1800); };
   const filled = [c.name, c.industry, c.bizType, c.markets, c.categories, c.sizeRange, c.teamSize, c.platform, c.crmErp].filter(Boolean).length;
 
   return (
@@ -494,6 +502,7 @@ function CompanyForm({ user, rec, onSaved }: { user: DiagUser; rec: DiagRecord |
         <button className="sysx-cta is-primary" onClick={save} disabled={saving || !c.industry}>{saving ? t('Зберігаємо…', 'Saving…') : t('Зберегти профіль', 'Save profile')}</button>
         {!c.industry && <span className="cab-req-hint mono">{t('Вкажіть «Сферу бізнесу» — це головне поле для аналізу.', 'Set “Industry” — the key field for analysis.')}</span>}
         {saved && <span className="cab-saved mono">{t('✓ збережено', '✓ saved')}</span>}
+        {autosaved && !saved && <span className="cab-saved mono">{t('✓ автозбережено', '✓ autosaved')}</span>}
         <span className="cab-fill mono">{t('Заповнено ключових полів', 'Key fields filled')}: {filled}/9</span>
       </div>
     </section>

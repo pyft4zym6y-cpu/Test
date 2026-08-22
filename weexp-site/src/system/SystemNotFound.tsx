@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { usePageSeo } from '@/lib/seo';
+import { track } from '@/lib/analytics';
 import { useT, useLp } from '@/i18n';
 import './system.css';
 
@@ -13,6 +15,8 @@ export function SystemNotFound() {
   const t = useT();
   const lp = useLp();
   usePageSeo(t('Сторінку не знайдено · WEEXP', 'Page not found · WEEXP'), t('Такої сторінки немає.', 'This page does not exist.'), pathname, true);
+  // Трекінг 404 — щоб бачити биті посилання (шлях + звідки прийшли).
+  useEffect(() => { track('page_not_found', { path: pathname, ref: typeof document !== 'undefined' ? document.referrer : '' }); }, [pathname]);
   return (
     <section className="sysx sysx-404" aria-label={t('Сторінку не знайдено', 'Page not found')}>
       <div className="sysx-404-in">

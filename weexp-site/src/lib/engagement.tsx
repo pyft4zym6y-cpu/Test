@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { track } from '@/lib/analytics';
+import { captureUtm } from '@/lib/utm';
 
 /**
  * Легка поведінкова аналітика через існуючий track() (self-hosted, без сторонніх).
@@ -8,6 +9,8 @@ import { track } from '@/lib/analytics';
  */
 export function Engagement() {
   const { pathname } = useLocation();
+
+  useEffect(() => { captureUtm(); }, []);
 
   useEffect(() => {
     const hit = new Set<number>();
