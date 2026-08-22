@@ -18,6 +18,30 @@ const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m)
  */
 const HW = (s: number) => (s >= 65 ? 'ok' : s >= 40 ? 'warn' : 'bad');
 
+/**
+ * Людяне резюме результату (замість «сирих» метрик): ключова проблема, поточний
+ * рівень словами, потенціал, головний витік і що робити далі. Використовується у
+ * формі заявки, щоб клієнт бачив зрозумілий підсумок, а не вивід системи.
+ */
+function HumanSummary({ res, lang, t }: { res: LossResult; lang: 'uk' | 'en'; t: (uk: string, en: string) => string }) {
+  const hw = res.overallHealth >= 65 ? t('добрий', 'good') : res.overallHealth >= 40 ? t('середній', 'moderate') : t('слабкий', 'weak');
+  const action = res.actions?.[0] ? actionText(res.actions[0].key, lang) : '';
+  const leak = res.leaks?.[0];
+  const Row = ({ k, v }: { k: string; v: React.ReactNode }) => (
+    <div className="calc-human-row"><span className="calc-human-k">{k}</span><span className="calc-human-v">{v}</span></div>
+  );
+  return (
+    <div className="calc-human">
+      <span className="calc-human-h">{t('Ваш результат коротко', 'Your result in brief')}</span>
+      <Row k={t('Ключова проблема', 'Key problem')} v={<b>{sysLabel(res.primary, lang)}</b>} />
+      <Row k={t('Поточний рівень', 'Current level')} v={<><b>{hw}</b> <i>({res.overallHealth}/100)</i></>} />
+      <Row k={t('Потенціал повернення', 'Recovery potential')} v={<>{t('до', 'up to')} <b>{eur(res.total)}</b>/{t('рік', 'yr')}</>} />
+      {leak && <Row k={t('Головний витік', 'Biggest leak')} v={<>{leakLabel(leak, lang)} — {eur(leak.amount)}/{t('рік', 'yr')}</>} />}
+      {action && <Row k={t('Що радимо далі', 'Recommended next step')} v={action} />}
+    </div>
+  );
+}
+
 export function LossCalculator() {
   const t = useT();
   const lp = useLp();
@@ -49,10 +73,10 @@ export function LossCalculator() {
   const [oName, setOName] = useState('');
   const [oEmail, setOEmail] = useState('');
   const [oPhone, setOPhone] = useState('');
-  const [oService, setOService] = useState('');
   const [oMsg, setOMsg] = useState('');
   const [oErr, setOErr] = useState('');
-  const SERVICES = [t('Повний аудит', 'Full audit'), t('Глибокий аудит · Tier-2', 'Deep audit · Tier-2'), t('Консультація перед аудитом', 'Pre-audit consultation')];
+  // Заявка йде саме за результатом експрес-аудиту — тип фіксований, без «вибору послуги».
+  const REQUEST_LABEL = t('Заявка за експрес-аудитом', 'Request from express audit');
   const alerts = useRef<number[]>([]);
   const panelRef = useRef<HTMLDivElement>(null);
   // Зміна кроку — підводимо панель до верху вьюпорта (щоб екран не «стрибав» посередині форми)
@@ -70,7 +94,7 @@ export function LossCalculator() {
   const primaryLabel = (k: SysKey) => sysLabel(k, lang);
 
   // Замовлення аудиту — повноцінний сценарій: форма → перевірка даних → надсилання.
-  const openOrder = () => { setOErr(''); if (!oService) setOService(SERVICES[0]); setOrderStep('form'); };
+  const openOrder = () => { setOErr(''); setOrderStep('form'); };
   const toReview = (e: React.FormEvent) => {
     e.preventDefault();
     const email = oEmail.trim();
@@ -82,9 +106,9 @@ export function LossCalculator() {
     setLeadBusy(true);
     await sendLead({
       source: 'calc-order-audit', role: 'calc', name: oName.trim() || undefined, email: oEmail.trim(), phone: oPhone.trim() || undefined,
-      task: `${t('Замовлення', 'Order')}: ${oService || SERVICES[0]}`,
+      task: REQUEST_LABEL,
       comment: `${oMsg.trim() ? oMsg.trim() + ' · ' : ''}${t('Витік', 'Leak')}: ${eur(res.total)}/${t('рік', 'yr')} · bottleneck: ${sysLabel(res.primary, lang)} · Health ${res.overallHealth}/100`,
-      calc: `service=${oService || SERVICES[0]};total=${res.total};range=${res.range[0]}-${res.range[1]};bottleneck=${res.primary};health=${res.overallHealth}`,
+      calc: `total=${res.total};range=${res.range[0]}-${res.range[1]};bottleneck=${res.primary};health=${res.overallHealth}`,
     });
     setLeadBusy(false); setOrderStep('sent');
   };
@@ -268,7 +292,7 @@ ${projRows ? `<div class="card"><h2>${esc(t('Зараз → куди можем�
               <div className="calc-order calc-ordered">
                 <span className="sysx-kick">{t('✓ Заявку надіслано', '✓ Request sent')}</span>
                 <b className="sysx-display calc-ordered-h">{oName ? `${t('Дякуємо, ', 'Thank you, ')}${oName}!` : t('Дякуємо!', 'Thank you!')}</b>
-                <p className="calc-ordered-p">{t('Ми отримали вашу заявку «', 'We received your request «')}<b>{oService || SERVICES[0]}</b>{t('» разом із результатом експрес-витоку ', '» together with your express-leak result ')}<b>{eur(res.total)}/{t('рік', 'yr')}</b>{t(' і головним вузлом «', ' and the main bottleneck «')}{primaryLabel(res.primary)}».</p>
+                <p className="calc-ordered-p">{t('Ми отримали вашу заявку разом із результатом експрес-аудиту ', 'We received your request together with your express-audit result ')}<b>{eur(res.total)}/{t('рік', 'yr')}</b>{t(' і ключовою проблемою «', ' and the key problem «')}{primaryLabel(res.primary)}».</p>
                 <div className="calc-ordered-next">
                   <span className="mono">{t('Що далі', "What's next")}:</span>
                   <ol>
@@ -289,13 +313,13 @@ ${projRows ? `<div class="card"><h2>${esc(t('Зараз → куди можем�
                 <span className="sysx-kick">{t('Перевірте заявку', 'Check your request')}</span>
                 <p className="calc-order-lead">{t('Переконайтесь, що все правильно. Після надсилання менеджер звʼяжеться з вами протягом робочого дня.', 'Make sure everything is correct. After you send it, a manager will contact you within one business day.')}</p>
                 <dl className="calc-order-summary">
-                  <div><dt>{t('Послуга', 'Service')}</dt><dd>{oService || SERVICES[0]}</dd></div>
+                  <div><dt>{t('Заявка', 'Request')}</dt><dd>{REQUEST_LABEL}</dd></div>
                   <div><dt>{t("Ім'я", 'Name')}</dt><dd>{oName || <i className="mono">{t('не вказано', 'not provided')}</i>}</dd></div>
                   <div><dt>Email</dt><dd>{oEmail}</dd></div>
                   <div><dt>{t('Телефон', 'Phone')}</dt><dd>{oPhone || <i className="mono">{t('не вказано', 'not provided')}</i>}</dd></div>
                   {oMsg.trim() && <div><dt>{t('Коментар', 'Note')}</dt><dd>{oMsg}</dd></div>}
-                  <div><dt>{t('Ваш експрес-витік', 'Your express leak')}</dt><dd>{eur(res.total)}/{t('рік', 'yr')} · {t('вузол', 'node')} «{primaryLabel(res.primary)}» · Health {res.overallHealth}/100</dd></div>
                 </dl>
+                <HumanSummary res={res} lang={lang} t={t} />
                 <div className="sysx-calc-actions">
                   <button className="sysx-cta is-primary" onClick={submitOrder} disabled={leadBusy}>{leadBusy ? t('Надсилаємо…', 'Sending…') : t('Підтвердити і надіслати', 'Confirm & send')} →</button>
                   <button className="sysx-cta" onClick={() => setOrderStep('form')}>← {t('Змінити дані', 'Edit details')}</button>
@@ -305,16 +329,14 @@ ${projRows ? `<div class="card"><h2>${esc(t('Зараз → куди можем�
               <form className="calc-order" onSubmit={toReview}>
                 <div className="calc-order-steps mono"><span className="on">1 · {t('Дані', 'Details')}</span><span>2 · {t('Перевірка', 'Review')}</span><span>3 · {t('Готово', 'Done')}</span></div>
                 <span className="sysx-kick">{t('Замовити аудит', 'Order the audit')}</span>
-                <p className="calc-order-lead">{t('Оберіть послугу й лишіть контакт. Далі ви перевірите дані, а після відправлення менеджер WEEXP звʼяжеться протягом робочого дня. Ваш експрес-витік додається до заявки автоматично.', 'Choose a service and leave your contact. Next you review the details, and after sending, a WEEXP manager will reach out within one business day. Your express leak is attached automatically.')}</p>
-                <label className="sysx-inp calc-order-svc"><span className="sysx-inp-l">{t('Тип послуги', 'Service type')}</span>
-                  <select value={oService || SERVICES[0]} onChange={(e) => setOService(e.target.value)}>{SERVICES.map((s) => <option key={s} value={s}>{s}</option>)}</select></label>
+                <p className="calc-order-lead">{t('Лишіть контакт — далі ви перевірите дані, а після відправлення менеджер WEEXP звʼяжеться протягом робочого дня. Результат вашого експрес-аудиту додається до заявки автоматично.', 'Leave your contact — next you review the details, and after sending, a WEEXP manager will reach out within one business day. Your express-audit result is attached automatically.')}</p>
                 <div className="calc-order-row">
                   <label className="sysx-inp"><span className="sysx-inp-l">{t("Ім'я", 'Name')}</span><input value={oName} onChange={(e) => setOName(e.target.value)} placeholder={t('Ваше імʼя', 'Your name')} /></label>
                   <label className="sysx-inp"><span className="sysx-inp-l">Email *</span><input type="email" value={oEmail} onChange={(e) => setOEmail(e.target.value)} placeholder="you@company.com" required /></label>
                   <label className="sysx-inp"><span className="sysx-inp-l">{t('Телефон', 'Phone')}</span><input type="tel" value={oPhone} onChange={(e) => setOPhone(e.target.value)} placeholder="+380…" /></label>
                 </div>
                 <label className="sysx-inp"><span className="sysx-inp-l">{t('Коментар (необовʼязково)', 'Note (optional)')}</span><input value={oMsg} onChange={(e) => setOMsg(e.target.value)} placeholder={t('Що для вас важливо?', 'What matters most to you?')} /></label>
-                <div className="calc-order-attach mono">📎 {t('До заявки додається', 'Attached to the request')}: {t('експрес-витік', 'express leak')} {eur(res.total)}/{t('рік', 'yr')} · «{primaryLabel(res.primary)}»</div>
+                <HumanSummary res={res} lang={lang} t={t} />
                 {oErr && <span className="s3-err mono">{oErr}</span>}
                 <div className="sysx-calc-actions">
                   <button className="sysx-cta is-primary" type="submit">{t('Перевірити заявку', 'Review request')} →</button>
@@ -325,7 +347,7 @@ ${projRows ? `<div class="card"><h2>${esc(t('Зараз → куди можем�
               <div className="sysx-calc-actions">
                 <button className="sysx-cta is-primary" onClick={openOrder}>{t('Замовити аудит', 'Order the audit')} →</button>
                 <button className="sysx-cta" onClick={downloadBrandedPdf}>{t('Завантажити PDF', 'Download PDF')} ↓</button>
-                <Link className="sysx-cta" to={lp('/pricing')}>{t('Формати і ціни', 'Formats & pricing')} →</Link>
+                <a className="sysx-cta" href={lp('/pricing')} target="_blank" rel="noopener noreferrer">{t('Формати і ціни', 'Formats & pricing')} ↗</a>
                 <Link className="sysx-cta" to={lp('/cabinet?from=express')}>{t('Зберегти в кабінет', 'Save to cabinet')} →</Link>
                 <button className="sysx-cta" onClick={restart}>{t('Перерахувати', 'Recalculate')}</button>
               </div>
