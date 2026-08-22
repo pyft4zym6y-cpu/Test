@@ -132,7 +132,7 @@ export function AdminPanel() {
       if (x.updatedAt) ev.push({ at: x.updatedAt, kind: 'user', label: x.email, sub: x.company || 'оновлення профілю' });
       if (x.record?.express) ev.push({ at: x.record.express.at, kind: 'express', label: x.email, sub: `експрес-аудит: ${eur(x.record.express.total)}/рік` });
       Object.entries(x.funnel?.tierHistory || {}).forEach(([tid, list]) => (list || []).forEach((e) => {
-        ev.push({ at: e.at, kind: 'tier', label: x.email, sub: `${tid} → ${ST[e.st].txt}${e.by === 'manager' ? ' · менеджер' : ''}` });
+        ev.push({ at: e.at, kind: 'tier', label: x.email, sub: `${tid} → ${ST[e.st]?.txt ?? e.st}${e.by === 'manager' ? ' · менеджер' : ''}` });
       }));
     });
     (leads || []).forEach((l) => { if (l.at) ev.push({ at: l.at, kind: 'lead', label: l.email || l.phone || 'заявка', sub: l.source }); });
@@ -331,7 +331,7 @@ export function AdminPanel() {
                   <div className="adm-dist">
                     {analytics.statusDist.map((d) => (
                       <div key={d.s} className="adm-dist-row">
-                        <span className={`cab-badge mono tst-${ST[d.s].cls}`}>{ST[d.s].txt}</span>
+                        <span className={`cab-badge mono tst-${ST[d.s]?.cls ?? 'muted'}`}>{ST[d.s]?.txt ?? d.s}</span>
                         <span className="adm-dist-n mono">{d.n}</span>
                       </div>
                     ))}
@@ -431,7 +431,7 @@ export function AdminPanel() {
                       <span className="adm-c-email">{r.email}</span>
                       <span className="mono">{money ? `${eur(money[0])}–${eur(money[1])}` : r.hasExpress ? 'є' : '—'}</span>
                       <span className="mono">{r.hasDeep ? 'у роботі' : '—'}</span>
-                      <span className="adm-c-tiers">{tiers.length === 0 ? <i className="mono">—</i> : tiers.map(([tid, s]) => <span key={tid} className={`cab-badge mono tst-${ST[s].cls}`}>{tid}</span>)}</span>
+                      <span className="adm-c-tiers">{tiers.length === 0 ? <i className="mono">—</i> : tiers.map(([tid, s]) => <span key={tid} className={`cab-badge mono tst-${ST[s]?.cls ?? 'muted'}`}>{tid}</span>)}</span>
                     </button>
                   );
                 })}
@@ -474,7 +474,7 @@ export function AdminPanel() {
                         const b = `${r.userId}:${tid}`;
                         return (
                           <div key={tid} className="mc-tier">
-                            <div className="mc-tier-l"><b className="mc-tid">{tierLabel(tid)}</b><span className={`cab-badge mono tst-${ST[cur].cls}`}>{ST[cur].txt}</span>
+                            <div className="mc-tier-l"><b className="mc-tid">{tierLabel(tid)}</b><span className={`cab-badge mono tst-${ST[cur]?.cls ?? 'muted'}`}>{ST[cur]?.txt ?? cur}</span>
                               {files.map((f, i) => <button key={i} className="mc-file mono" onClick={() => openFile(f.path)}>📎 {f.name}</button>)}</div>
                             <div className="mc-tier-act">
                               <button className="mc-btn ok" disabled={busy === b} onClick={() => setStatus(r.userId, tid, 'granted')}>Надати</button>
@@ -998,7 +998,7 @@ function UserDetail({ row, onClose, openFile, onStatus, onDelete, busy }: { row:
                 const b = `${row.userId}:${tid}`;
                 return (
                   <div key={tid} className="adm-dtier">
-                    <div className="adm-dtier-l"><b className="mc-tid">{tierLabel(tid)}</b><span className={`cab-badge mono tst-${ST[s].cls}`}>{ST[s].txt}</span></div>
+                    <div className="adm-dtier-l"><b className="mc-tid">{tierLabel(tid)}</b><span className={`cab-badge mono tst-${ST[s]?.cls ?? 'muted'}`}>{ST[s]?.txt ?? s}</span></div>
                     <div className="mc-tier-act">
                       <button className="mc-btn ok" disabled={busy === b} onClick={() => onStatus(row.userId, tid, 'granted')}>Надати</button>
                       <button className="mc-btn wait" disabled={busy === b} onClick={() => onStatus(row.userId, tid, 'data')}>Дані</button>

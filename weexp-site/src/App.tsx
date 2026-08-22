@@ -30,6 +30,9 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
         <div style={{ maxWidth: 460, border: '2.5px solid #141210', boxShadow: '6px 6px 0 #141210', background: '#fff', padding: '28px 26px' }}>
           <b style={{ display: 'block', fontSize: 22, marginBottom: 8 }}>Сторінка не завантажилась</b>
           <p style={{ color: '#6B675E', marginBottom: 18, fontSize: 14, lineHeight: 1.5 }}>Стався технічний збій. Ваші дані збережені — перезавантажте сторінку або поверніться на сайт, нічого не втрачено.</p>
+          {this.state.error && (
+            <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: '#F1E9D4', border: '1px solid #E3D9C0', padding: '10px 12px', marginBottom: 16, fontSize: 11.5, lineHeight: 1.45, maxHeight: 180, overflow: 'auto', fontFamily: 'JetBrains Mono, monospace', color: '#B0210F' }}>{String(this.state.error?.message || this.state.error)}{'\n'}{String(this.state.error?.stack || '').split('\n').slice(1, 4).join('\n')}</pre>
+          )}
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             <button onClick={() => location.reload()} style={{ border: '2.5px solid #141210', background: '#FFD200', padding: '10px 18px', fontWeight: 700, cursor: 'pointer' }}>Перезавантажити</button>
             <a href="/" style={{ border: '2.5px solid #141210', background: '#fff', padding: '10px 18px', fontWeight: 700, textDecoration: 'none', color: '#141210' }}>На головну</a>
