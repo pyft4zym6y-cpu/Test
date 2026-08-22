@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useT, useLp, useLang } from '@/i18n';
 import { TEAM, localizeRole } from '@/data/team';
 import { L } from '@/system/expertises';
+import { useJsonLd, ORIGIN } from '@/lib/seo';
 import './system.css';
 
 /**
@@ -28,6 +29,15 @@ export function About() {
   const lp = useLp();
   const lang = useLang();
   const fnd = localizeRole(FOUNDER, lang);
+
+  // Person-схема засновника — краще для пошуку та Knowledge Graph.
+  useJsonLd('person', {
+    '@context': 'https://schema.org', '@type': 'Person',
+    name: fnd.name, jobTitle: t('Засновник і архітектор Commerce', 'Founder & Architect of Commerce'),
+    worksFor: { '@type': 'Organization', name: 'WEEXP', url: ORIGIN },
+    ...(FOUNDER.photo ? { image: ORIGIN + FOUNDER.photo } : {}),
+    url: ORIGIN + (lang === 'en' ? '/en/people' : '/people'),
+  });
 
   const VALUES: { t: string; d: string }[] = [
     { t: t('Система, а не героїзм', 'A system, not heroics'), d: t('Результат тримається на процесах і стандартах, а не на конкретних людях і нічних змінах.', 'Results rest on processes and standards, not on specific people and night shifts.') },

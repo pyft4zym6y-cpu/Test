@@ -4,6 +4,7 @@ import { CASES, localizeCase } from '@/data/cases';
 import { SHORT } from '@/data/xray';
 import { band, seg, setLayer as set, useScrollScene } from '@/lib/scene';
 import { useT, useLp, useLang } from '@/i18n';
+import { ShareButton } from '@/system/ShareButton';
 import './system.css';
 
 /**
@@ -112,6 +113,7 @@ export function CasesFilm() {
           <div className="sysx-cta-row">
             <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Знайти свою дельту →', 'Find your delta →')}</Link>
             <Link to={lp('/contact')} className="sysx-cta">{t('Написати нам', 'Contact us')} →</Link>
+            <ShareButton title={t('WEEXP — докази в цифрах', 'WEEXP — proof in numbers')} />
           </div>
         </div>
       </div>
