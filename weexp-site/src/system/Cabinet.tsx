@@ -31,26 +31,47 @@ const EMPTY_COMPANY: CompanyProfile = { name: '', site: '', niche: '', revenue: 
 // Cloudflare Turnstile (капча). Вмикається лише за наявності ключа (env), інакше — no-op.
 const TURNSTILE_SITE_KEY = (import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined) || '';
 declare global {
-  interface Window { turnstile?: { render: (el: HTMLElement, o: Record<string, unknown>) => string; reset: (id?: string) => void } }
+  interface Window { turnstile?: {
+    render: (el: HTMLElement, o: Record<string, unknown>) => string;
+    reset: (id?: string) => void;
+    execute: (id?: string) => void;
+  } }
 }
-function Turnstile({ siteKey, resetKey, onToken }: { siteKey: string; resetKey: number; onToken: (t: string) => void }) {
+/**
+ * Turnstile у режимі «execute»: віджет мовчить, а свіжий токен генерується САМЕ
+ * в момент сабміту (parent викликає execute()). Це усуває `invalid-input-response`
+ * від «протухлого»/повторного пред-розвʼязаного токена. provideExecute віддає
+ * батьку функцію, що повертає Promise<token>.
+ */
+function Turnstile({ siteKey, provideExecute }: { siteKey: string; provideExecute: (fn: (() => Promise<string>) | null) => void }) {
   const box = useRef<HTMLDivElement>(null);
   const widget = useRef<string>('');
+  const resolve = useRef<((t: string) => void) | null>(null);
+  const reject = useRef<((e: unknown) => void) | null>(null);
   const [err, setErr] = useState('');
   useEffect(() => {
     const SID = 'cf-turnstile-js';
     let tries = 0;
-    // Чекаємо, поки завантажиться скрипт Turnstile, і лише тоді рендеримо (уникаємо гонки).
+    const settle = (fn: 'resolve' | 'reject', v: unknown) => {
+      const r = fn === 'resolve' ? resolve.current : reject.current;
+      resolve.current = null; reject.current = null;
+      if (r) (r as (x: unknown) => void)(v);
+    };
     const mount = () => {
       if (!box.current || widget.current) return;
       if (!window.turnstile) { if (tries++ < 50) setTimeout(mount, 200); return; }
       try {
         widget.current = window.turnstile.render(box.current, {
-          sitekey: siteKey, theme: 'light', language: 'uk',
-          callback: (t: string) => { setErr(''); onToken(t); },
-          'expired-callback': () => onToken(''),
-          'error-callback': () => { setErr('Капча не пройшла перевірку. Оновіть сторінку або скористайтесь входом через Google.'); onToken(''); },
+          sitekey: siteKey, theme: 'light', language: 'uk', execution: 'execute', appearance: 'interaction-only',
+          callback: (t: string) => { setErr(''); settle('resolve', t); },
+          'error-callback': () => { setErr('Капча не пройшла. Оновіть сторінку або увійдіть через Google.'); settle('reject', new Error('captcha-error')); },
+          'expired-callback': () => settle('reject', new Error('captcha-expired')),
         });
+        provideExecute(() => new Promise<string>((res, rej) => {
+          if (!window.turnstile || !widget.current) { rej(new Error('captcha-not-ready')); return; }
+          resolve.current = res; reject.current = rej;
+          try { window.turnstile.reset(widget.current); window.turnstile.execute(widget.current); } catch (e) { settle('reject', e); }
+        }));
       } catch { setErr('Не вдалося завантажити капчу.'); }
     };
     if (!document.getElementById(SID)) {
@@ -58,8 +79,8 @@ function Turnstile({ siteKey, resetKey, onToken }: { siteKey: string; resetKey: 
       s.id = SID; s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'; s.async = true; s.defer = true;
       s.onload = mount; s.onerror = () => setErr('Не вдалося завантажити капчу.'); document.head.appendChild(s);
     } else { mount(); }
+    return () => provideExecute(null);
   }, [siteKey]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { if (resetKey && window.turnstile && widget.current) { window.turnstile.reset(widget.current); onToken(''); } }, [resetKey]); // eslint-disable-line react-hooks/exhaustive-deps
   return <div className="cab-captcha"><div ref={box} />{err && <span className="cab-auth-err mono">{err}</span>}</div>;
 }
 
@@ -88,10 +109,13 @@ export function Cabinet() {
   const [authErr, setAuthErr] = useState('');
   const [confirmSent, setConfirmSent] = useState('');   // email, на який надіслано лист підтвердження
   const [resendMsg, setResendMsg] = useState('');
-  const [captcha, setCaptcha] = useState('');           // токен Turnstile (якщо капча увімкнена)
-  const [captchaReset, setCaptchaReset] = useState(0);  // лічильник для скидання віджета після спроби
   const captchaOn = Boolean(TURNSTILE_SITE_KEY);
-  const bumpCaptcha = () => { setCaptcha(''); setCaptchaReset((n) => n + 1); };
+  const execCaptcha = useRef<(() => Promise<string>) | null>(null);
+  // Отримати свіжий токен капчі в момент сабміту (або undefined, якщо капча вимкнена).
+  const getCaptcha = async (): Promise<string | undefined> => {
+    if (!captchaOn || !execCaptcha.current) return undefined;
+    return execCaptcha.current();
+  };
 
   useEffect(() => { setExpress(getExpressAudit()); }, []);
   // Прив'язати локальний експрес-аудит до акаунту й перечитати запис.
@@ -110,16 +134,22 @@ export function Cabinet() {
   const enter = (u: DiagUser) => { setUser(u); hydrate(u); };
   const doLogin = async () => {
     setBusy(true); setAuthErr(''); setResendMsg('');
-    const r = await signInWithEmail(email.trim(), pass, captcha || undefined);
-    setBusy(false); bumpCaptcha();
+    let token: string | undefined;
+    try { token = await getCaptcha(); }
+    catch { setBusy(false); setAuthErr(t('Капча не пройдена. Спробуйте ще раз або увійдіть через Google.', 'Captcha failed. Try again or use Google.')); return; }
+    const r = await signInWithEmail(email.trim(), pass, token);
+    setBusy(false);
     if (r.user) enter(r.user);
     else if (r.confirm) { setConfirmSent(r.confirm); }
     else setAuthErr(r.error || t('Не вдалося увійти. Перевірте email і пароль.', 'Could not sign in. Check your email and password.'));
   };
   const doRegister = async () => {
     setBusy(true); setAuthErr(''); setResendMsg('');
-    const r = await registerWithEmail(email.trim(), pass, captcha || undefined);
-    setBusy(false); bumpCaptcha();
+    let token: string | undefined;
+    try { token = await getCaptcha(); }
+    catch { setBusy(false); setAuthErr(t('Капча не пройдена. Спробуйте ще раз або зареєструйтесь через Google.', 'Captcha failed. Try again or use Google.')); return; }
+    const r = await registerWithEmail(email.trim(), pass, token);
+    setBusy(false);
     if (r.confirm) setConfirmSent(r.confirm);          // увімкнено підтвердження email → лист надіслано
     else if (r.user) enter(r.user);                     // сесія одразу (демо або без Confirm email)
     else if (r.error && /sending confirmation|confirmation email|error sending|smtp/i.test(r.error))
@@ -212,8 +242,8 @@ export function Cabinet() {
                 <label className="sysx-inp"><span className="sysx-inp-l">{t('Пароль · мін. 6 символів', 'Password · min. 6 characters')}</span>
                   <input type="password" autoComplete={mode === 'register' ? 'new-password' : 'current-password'} value={pass} onChange={(e) => setPass(e.target.value)} placeholder="••••••" onKeyDown={(e) => e.key === 'Enter' && email && pass.length >= 6 && doAuth()} /></label>
                 {authErr && <p className="cab-auth-err mono">{authErr}</p>}
-                {captchaOn && <Turnstile siteKey={TURNSTILE_SITE_KEY} resetKey={captchaReset} onToken={setCaptcha} />}
-                <button className="sysx-cta is-primary" onClick={doAuth} disabled={busy || !email || pass.length < 6 || (captchaOn && !captcha)}>
+                {captchaOn && <Turnstile siteKey={TURNSTILE_SITE_KEY} provideExecute={(fn) => { execCaptcha.current = fn; }} />}
+                <button className="sysx-cta is-primary" onClick={doAuth} disabled={busy || !email || pass.length < 6}>
                   {busy ? (mode === 'register' ? t('Реєструємо…', 'Signing up…') : t('Заходимо…', 'Signing in…')) : (mode === 'register' ? t('Створити кабінет →', 'Create cabinet →') : t('Увійти →', 'Sign in →'))}
                 </button>
                 <p className="sysx-note mono">{CONFIGURED ? t('Захищений вхід. Дані синхронізуються між пристроями.', 'Secure sign-in. Data syncs across your devices.') : t('Демо-режим: дані зберігаються локально в цьому браузері.', 'Demo mode: data is stored locally in this browser.')}</p>
