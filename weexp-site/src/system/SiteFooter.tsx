@@ -78,7 +78,7 @@ export function SiteFooter() {
         {DMCA_ID && (
           <a href={`https://www.dmca.com/Protection/Status.aspx?ID=${DMCA_ID}`} target="_blank" rel="noopener noreferrer"
             title="DMCA.com Protection Status" className="sfoot-dmca dmca-badge">
-            <img src={`https://images.dmca.com/Badges/dmca_protected_sml_120m.png?ID=${DMCA_ID}`} alt="DMCA.com Protection Status" height="20" loading="lazy" />
+            <img src={`https://images.dmca.com/Badges/dmca_protected_sml_120m.png?ID=${DMCA_ID}`} alt="DMCA.com Protection Status" width="121" height="20" loading="lazy" />
           </a>
         )}
       </div>
