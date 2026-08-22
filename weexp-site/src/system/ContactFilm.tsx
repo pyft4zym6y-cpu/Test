@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useT, useLp } from '@/i18n';
+import { useLiteVisuals } from '@/lib/liteVisuals';
 import { sendLead } from '@/lib/leads';
 import { track } from '@/lib/analytics';
 import { DIAG_SUMMARY_KEY } from '@/data/xray';
@@ -22,6 +23,7 @@ type Status = 'idle' | 'sending' | 'ok' | 'fallback';
 export function ContactFilm() {
   const t = useT();
   const lp = useLp();
+  const lite = useLiteVisuals();
   const TURNOVER = [t('до $0.5M', 'up to $0.5M'), '$0.5–1M', '$1–3M', '$3–10M', '> $10M'];
   // Кваліфікація ліда (ТЗ §9): роль ЛПР, головна задача, терміни, бюджет —
   // щоб відділ продажів одразу бачив, з ким і про що говорити.
@@ -78,7 +80,7 @@ export function ContactFilm() {
   return (
     <section className="sysx sysx-calc">
       <div className="sysx-field" aria-hidden="true" />
-      <div className="sysx-calc-bg"><Suspense fallback={null}><CommerceSystem3D fixedProgress={0.68} /></Suspense></div>
+      <div className={'sysx-calc-bg' + (lite ? ' is-lite' : '')} aria-hidden="true">{!lite && <Suspense fallback={null}><CommerceSystem3D fixedProgress={0.68} /></Suspense>}</div>
 
       <div className="sysx-calc-panel">
         <header className="sysx-calc-head">

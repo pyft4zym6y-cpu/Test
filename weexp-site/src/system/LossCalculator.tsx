@@ -5,6 +5,7 @@ import { saveExpressAudit } from './cabinetData';
 import { sendLead } from '@/lib/leads';
 import { shortOf } from '@/data/xray';
 import { useT, useLp, useLang } from '@/i18n';
+import { useLiteVisuals } from '@/lib/liteVisuals';
 import './system.css';
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
@@ -44,6 +45,7 @@ function HumanSummary({ res, lang, t }: { res: LossResult; lang: 'uk' | 'en'; t:
 
 export function LossCalculator() {
   const t = useT();
+  const lite = useLiteVisuals();
   const lp = useLp();
   const lang = useLang();
   const FIELDS: { k: keyof Omit<LossInput, 'symptoms'>; label: string; unit: string; hint?: string }[] = [
@@ -170,7 +172,7 @@ ${projRows ? `<div class="card"><h2>${esc(t('Зараз → куди можем�
   return (
     <section className="sysx sysx-calc">
       <div className="sysx-field" aria-hidden="true" />
-      <div className="sysx-calc-bg"><Suspense fallback={null}><CommerceSystem3D fixedProgress={0.72} alerts={alerts} /></Suspense></div>
+      <div className={'sysx-calc-bg' + (lite ? ' is-lite' : '')} aria-hidden="true">{!lite && <Suspense fallback={null}><CommerceSystem3D fixedProgress={0.72} alerts={alerts} /></Suspense>}</div>
 
       <div className="sysx-calc-panel" ref={panelRef}>
         {step !== 3 && (
