@@ -30,6 +30,8 @@ export function ContactFilm() {
   const TIMELINE = [t('Готовий почати зараз', 'Ready to start now'), t('Протягом 1–3 місяців', 'Within 1–3 months'), t('Досліджую ринок', 'Exploring the market')];
   const BUDGET = [t('Ще не визначено', 'Not decided yet'), t('до €5k', 'up to €5k'), '€5–15k', '€15–40k', '€40k+'];
   const [status, setStatus] = useState<Status>('idle');
+  const [emailErr, setEmailErr] = useState('');   // мʼяка інлайн-підказка по email
+  const [phoneErr, setPhoneErr] = useState('');
   const [diag, setDiag] = useState('');
   const [keepDiag, setKeepDiag] = useState(false);   // ЗА ЗАМОВЧУВАННЯМ не додаємо — клієнт вирішує чекбоксом
   const [fallbackUrl, setFallbackUrl] = useState('');
@@ -117,8 +119,18 @@ export function ContactFilm() {
                   {ROLES.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </label>
-              <label className="ctf-field"><span className="mono">Email</span><input name="email" type="email" required autoComplete="email" /></label>
-              <label className="ctf-field"><span className="mono">{t('Телефон', 'Phone')}</span><input name="phone" type="tel" autoComplete="tel" /></label>
+              <label className="ctf-field"><span className="mono">Email</span>
+                <input name="email" type="email" required autoComplete="email" aria-invalid={!!emailErr}
+                  onBlur={(e) => setEmailErr(e.target.value && !/.+@.+\..+/.test(e.target.value) ? t('Схоже, email некоректний', 'This email looks invalid') : '')}
+                  onInput={() => emailErr && setEmailErr('')} />
+                {emailErr && <span className="s3-err mono ctf-inperr">{emailErr}</span>}
+              </label>
+              <label className="ctf-field"><span className="mono">{t('Телефон', 'Phone')}</span>
+                <input name="phone" type="tel" autoComplete="tel" aria-invalid={!!phoneErr}
+                  onBlur={(e) => setPhoneErr(e.target.value && e.target.value.replace(/\D/g, '').length < 7 ? t('Схоже, номер неповний', 'The number looks incomplete') : '')}
+                  onInput={() => phoneErr && setPhoneErr('')} />
+                {phoneErr && <span className="s3-err mono ctf-inperr">{phoneErr}</span>}
+              </label>
               <label className="ctf-field"><span className="mono">{t('Магазин / сайт', 'Store / site')}</span><input name="store" required /></label>
               <label className="ctf-field"><span className="mono">{t('Оборот / міс', 'Turnover / mo')}</span>
                 <select name="turnover" required defaultValue="">

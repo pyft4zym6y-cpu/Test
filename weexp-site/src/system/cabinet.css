@@ -835,3 +835,12 @@
 
 /* Turnstile-капча у формі входу */
 .cab-captcha { margin: 4px 0 2px; min-height: 65px; }
+
+/* Масові дії над заявками */
+.adm-bulk { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 12px 0; padding: 10px 12px; border: 2.5px solid var(--deep); background: var(--yellow); box-shadow: 4px 4px 0 var(--deep); }
+.adm-bulk-lbl { color: var(--graphite); }
+.adm-lead-card { position: relative; }
+.adm-lead-card.sel { outline: 3px solid var(--red); outline-offset: 1px; }
+.adm-lead-chk { position: absolute; top: 8px; right: 8px; width: 18px; height: 18px; cursor: pointer; z-index: 2; accent-color: var(--red); }
+.adm-lead-open { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 0; font: inherit; cursor: pointer; color: inherit; }
+.adm-lead-open b, .adm-lead-open span { display: block; }

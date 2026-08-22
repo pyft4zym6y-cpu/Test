@@ -185,6 +185,28 @@ export function AdminPanel() {
     toast('✓ Заявку видалено'); setLeads((ls) => (ls || []).filter((l) => l.id !== id));
     setOpenLead(null);
   };
+  // Масові дії над заявками (мультивибір).
+  const [selLeads, setSelLeads] = useState<Set<string>>(new Set());
+  const toggleSel = (id: string) => setSelLeads((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const clearSel = () => setSelLeads(new Set());
+  const bulkStatus = async (status: LeadStatus) => {
+    const ids = [...selLeads]; setBusy('bulk');
+    const res = await Promise.all(ids.map((id) => setLeadStatus(id, status)));
+    setBusy(''); clearSel();
+    const ok = res.filter((r) => r.ok).length;
+    toast(ok === ids.length ? `✓ Стадію змінено для ${ok}` : `Оновлено ${ok}/${ids.length} (перевірте RLS)`, ok === ids.length ? 'ok' : 'err');
+    listLeads().then(setLeads);
+  };
+  const bulkDelete = async () => {
+    const ids = [...selLeads];
+    if (!window.confirm(`Видалити ${ids.length} заявок назавжди? Дію не можна скасувати.`)) return;
+    setBusy('bulk');
+    const res = await Promise.all(ids.map((id) => deleteLead(id)));
+    setBusy(''); clearSel();
+    const ok = res.filter((r) => r.ok).length;
+    toast(ok === ids.length ? `✓ Видалено ${ok}` : `Видалено ${ok}/${ids.length}`, ok === ids.length ? 'ok' : 'err');
+    setLeads((ls) => (ls || []).filter((l) => !ids.includes(l.id || '')));
+  };
   const removeUser = async (userId: string, email: string) => {
     if (!window.confirm(`Видалити клієнта ${email} та всі його дані (профіль, експрес/глибокий аудит, воронку, проекти)? Обліковий запис входу лишиться в Supabase Auth, але з панелі зникне. Дію не можна скасувати.`)) return;
     setBusy('del:' + userId);
@@ -469,6 +491,17 @@ export function AdminPanel() {
                       </div>
                     </div>
 
+                    {/* Масові дії */}
+                    {selLeads.size > 0 && (
+                      <div className="adm-bulk">
+                        <span className="mono">Обрано {selLeads.size}</span>
+                        <span className="adm-bulk-lbl mono">→ стадія:</span>
+                        {LEAD_STAGES.map((s) => <button key={s.k} className={`mc-btn sm tst-${s.cls}`} disabled={busy === 'bulk'} onClick={() => bulkStatus(s.k)}>{s.l}</button>)}
+                        <button className="mc-btn sm bad" disabled={busy === 'bulk'} onClick={bulkDelete}>Видалити</button>
+                        <button className="mc-btn sm ghost" onClick={clearSel}>Скинути</button>
+                      </div>
+                    )}
+
                     {/* Пайплайн-дошка */}
                     <div className="adm-board">
                       {LEAD_STAGES.map((s) => {
@@ -478,11 +511,14 @@ export function AdminPanel() {
                             <div className="adm-col-head"><span className={`cab-badge mono tst-${s.cls}`}>{s.l}</span><span className="adm-col-n mono">{col.length}</span></div>
                             <div className="adm-col-body">
                               {col.map((l) => (
-                                <button key={l.id} className="adm-lead-card" onClick={() => setOpenLead(l.id || '')}>
-                                  <b>{l.name || l.email || l.phone || 'Заявка'}</b>
-                                  <span className="mono adm-lead-sub">{l.task || l.comment || l.source || '—'}</span>
-                                  <span className="mono adm-lead-at">{rel(l.at)}{l.source ? ` · ${l.source}` : ''}</span>
-                                </button>
+                                <div key={l.id} className={`adm-lead-card${selLeads.has(l.id || '') ? ' sel' : ''}`}>
+                                  <input type="checkbox" className="adm-lead-chk" checked={selLeads.has(l.id || '')} onChange={() => toggleSel(l.id || '')} title="Обрати" onClick={(e) => e.stopPropagation()} />
+                                  <button className="adm-lead-open" onClick={() => setOpenLead(l.id || '')}>
+                                    <b>{l.name || l.email || l.phone || 'Заявка'}</b>
+                                    <span className="mono adm-lead-sub">{l.task || l.comment || l.source || '—'}</span>
+                                    <span className="mono adm-lead-at">{rel(l.at)}{l.source ? ` · ${l.source}` : ''}</span>
+                                  </button>
+                                </div>
                               ))}
                               {col.length === 0 && <span className="mono adm-col-empty">—</span>}
                             </div>

@@ -2139,3 +2139,5 @@
 .read-prog span { display: block; height: 100%; width: 100%; transform-origin: left; transform: scaleX(0); background: #F5301C; transition: transform .08s linear; }
 @media print { .read-prog, .skip-link { display: none; } }
 #main-content:focus { outline: none; }
+
+.ctf-inperr { display: block; margin-top: 4px; }
