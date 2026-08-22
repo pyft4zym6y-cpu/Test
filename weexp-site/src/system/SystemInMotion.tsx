@@ -107,6 +107,7 @@ export function SystemInMotion() {
             <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати мій витік', 'Calculate my leak')} →</Link>
             <Link to={lp('/contact')} className="sysx-cta">{t('Залишити заявку', 'Leave a request')} →</Link>
           </div>
+          <span className="sysx-reassure mono">{t('Безкоштовно · ~2 хв · без реєстрації та картки', 'Free · ~2 min · no sign-up, no card')}</span>
           <span className="sysx-scrollhint mono">{t('↓ або погортайте, як це працює', '↓ or scroll to see how it works')}</span>
         </div>
 

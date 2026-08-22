@@ -168,6 +168,7 @@
 .sysx-label-t { font: 600 11.5px/1 ui-monospace, "SFMono-Regular", Menlo, monospace; letter-spacing: .06em; text-transform: uppercase; color: var(--charcoal); background: rgba(255, 255, 255, .74); backdrop-filter: blur(4px); padding: 4px 9px; border: 1px solid rgba(58, 61, 66, .14); border-radius: 20px; }
 .sysx-label.is-alert .sysx-label-dot { background: var(--alert); box-shadow: 0 0 0 4px rgba(214, 54, 43, .18); }
 .sysx-label.is-alert .sysx-label-t { color: var(--alert); border-color: rgba(214, 54, 43, .3); }
+.sysx-reassure { display: block; margin-top: 12px; color: var(--graphite); font-size: 12px; letter-spacing: .04em; }
 .sysx-scrollhint { margin-top: 10px; color: var(--graphite); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; animation: sysxBob 2.6s var(--ease-cine) infinite; }
 @keyframes sysxBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(7px); } }
 .sysx-cta-row { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
