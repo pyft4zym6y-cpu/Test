@@ -36,25 +36,31 @@ declare global {
 function Turnstile({ siteKey, resetKey, onToken }: { siteKey: string; resetKey: number; onToken: (t: string) => void }) {
   const box = useRef<HTMLDivElement>(null);
   const widget = useRef<string>('');
+  const [err, setErr] = useState('');
   useEffect(() => {
     const SID = 'cf-turnstile-js';
+    let tries = 0;
+    // Чекаємо, поки завантажиться скрипт Turnstile, і лише тоді рендеримо (уникаємо гонки).
     const mount = () => {
-      if (!window.turnstile || !box.current || widget.current) return;
-      widget.current = window.turnstile.render(box.current, {
-        sitekey: siteKey, theme: 'light', language: 'uk', appearance: 'interaction-only',
-        callback: (t: string) => onToken(t),
-        'expired-callback': () => onToken(''),
-        'error-callback': () => onToken(''),
-      });
+      if (!box.current || widget.current) return;
+      if (!window.turnstile) { if (tries++ < 50) setTimeout(mount, 200); return; }
+      try {
+        widget.current = window.turnstile.render(box.current, {
+          sitekey: siteKey, theme: 'light', language: 'uk',
+          callback: (t: string) => { setErr(''); onToken(t); },
+          'expired-callback': () => onToken(''),
+          'error-callback': () => { setErr('Капча не пройшла перевірку. Оновіть сторінку або скористайтесь входом через Google.'); onToken(''); },
+        });
+      } catch { setErr('Не вдалося завантажити капчу.'); }
     };
     if (!document.getElementById(SID)) {
       const s = document.createElement('script');
       s.id = SID; s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'; s.async = true; s.defer = true;
-      s.onload = mount; document.head.appendChild(s);
+      s.onload = mount; s.onerror = () => setErr('Не вдалося завантажити капчу.'); document.head.appendChild(s);
     } else { mount(); }
   }, [siteKey]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (resetKey && window.turnstile && widget.current) { window.turnstile.reset(widget.current); onToken(''); } }, [resetKey]); // eslint-disable-line react-hooks/exhaustive-deps
-  return <div ref={box} className="cab-captcha" />;
+  return <div className="cab-captcha"><div ref={box} />{err && <span className="cab-auth-err mono">{err}</span>}</div>;
 }
 
 export function Cabinet() {
