@@ -64,6 +64,18 @@ export function applySeo(title: string, description: string, path: string, noind
   setRobots(noindex);
 }
 
+/** Впорснути/оновити JSON-LD скрипт за id (для FAQPage, BreadcrumbList тощо). Знімається при демонтажі. */
+export function useJsonLd(id: string, data: unknown | null) {
+  useEffect(() => {
+    const sid = 'jsonld-' + id;
+    let el = document.getElementById(sid) as HTMLScriptElement | null;
+    if (!data) { if (el) el.remove(); return; }
+    if (!el) { el = document.createElement('script'); el.id = sid; el.type = 'application/ld+json'; document.head.appendChild(el); }
+    el.textContent = JSON.stringify(data);
+    return () => { const e = document.getElementById(sid); if (e) e.remove(); };
+  }, [id, data]);
+}
+
 /** Хелпер для сторінок з динамічним заголовком (SystemPage, CaseDetail, NotFound). */
 export function usePageSeo(title: string, description: string, path: string, noindex = false) {
   useEffect(() => { applySeo(title, description, path, noindex); }, [title, description, path, noindex]);

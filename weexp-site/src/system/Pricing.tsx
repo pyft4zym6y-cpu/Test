@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useT, useLp } from '@/i18n';
+import { useJsonLd } from '@/lib/seo';
 import './system.css';
 
 /**
@@ -94,6 +95,11 @@ export function Pricing() {
     { q: t('Чому дешевше за ринок?', 'Why cheaper than the market?'), a: t('Ринок США бере за таку експертизу $75–250/год, fractional-керівники — $8–22K/міс. Ми працюємо напряму, без офісних накладних агенції — ви платите за експертизу, а не за бренд.', "The US market charges $75–250/hr for this expertise, fractional executives — $8–22K/mo. We work directly, without an agency's office overhead — you pay for expertise, not for a brand.") },
     { q: t('Чим захищений мій бюджет?', 'How is my budget protected?'), a: t('Кожен етап має Definition of Done — вимірюваний критерій приймання. Наступний транш стартує лише після прийнятого результату попереднього, а звітність щомісяця показує факт проти плану.', 'Each stage has a Definition of Done — a measurable acceptance criterion. The next tranche starts only after the previous result is accepted, and monthly reporting shows actuals against plan.') },
   ];
+  // FAQPage-розмітка для Google (rich-сніпет). Будується з видимого FAQ — без окремого UI.
+  useJsonLd('faq', {
+    '@context': 'https://schema.org', '@type': 'FAQPage',
+    mainEntity: FAQ.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+  });
 
   return (
     <section className="sysx pric" aria-label={t('Формати та ціни', 'Pricing & formats')}>

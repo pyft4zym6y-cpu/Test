@@ -217,6 +217,14 @@ export function AdminPanel() {
     const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'weexp-users.csv'; a.click(); URL.revokeObjectURL(a.href);
   };
+  const exportLeadsCsv = (list: LeadRow[]) => {
+    const head = ['at', 'source', 'status', 'name', 'email', 'phone', 'task', 'comment'];
+    const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const lines = [head.join(',')].concat(list.map((l) => [l.at || '', l.source || '', l.status || '', l.name || '', l.email || '', l.phone || '', l.task || '', l.comment || ''].map(esc).join(',')));
+    const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'weexp-leads.csv'; a.click(); URL.revokeObjectURL(a.href);
+    toast('✓ CSV завантажено');
+  };
   const detail = openUser ? (rows || []).find((r) => r.userId === openUser) : null;
 
   return (
@@ -429,7 +437,11 @@ export function AdminPanel() {
         {/* ── Заявки · міні-CRM ── */}
         {tab === 'leads' && (
           <section className="adm-sec">
-            <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Первинна комунікація</h1></div>
+            <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Первинна комунікація</h1>
+              {(leads || []).some((l) => !ACCESS_SOURCES.includes(l.source || '')) && (
+                <button className="sysx-cta" onClick={() => exportLeadsCsv((leads || []).filter((l) => !ACCESS_SOURCES.includes(l.source || '')))}>↓ CSV</button>
+              )}
+            </div>
             <p className="adm-hint mono">Заявки від нових/потенційних клієнтів. Запити доступів існуючих клієнтів — у вкладці «Запити доступів».</p>
             {(() => { const comm = (leads || []).filter((l) => !ACCESS_SOURCES.includes(l.source || '')); return (
               leads === null ? <p className="mc-msg mono">Завантаження…</p>
