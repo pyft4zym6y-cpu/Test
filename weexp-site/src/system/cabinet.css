@@ -28,6 +28,14 @@
 .pj-save-saving { color: var(--graphite); }
 .pj-save-saved { color: var(--ok-strong); background: color-mix(in srgb, var(--ok) 12%, transparent); }
 .pj-save-error { color: var(--red); background: color-mix(in srgb, var(--red) 10%, transparent); }
+/* Сегментований перемикач підрозділів (Користувачі / Аудити) */
+.adm-seg { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 16px; }
+.adm-seg button { border: var(--bd); background: var(--pure-white); color: var(--deep); font-family: var(--sans); font-weight: 700; font-size: 12.5px; padding: 7px 13px; cursor: pointer; box-shadow: 3px 3px 0 var(--deep); display: inline-flex; align-items: center; gap: 7px; transition: transform .1s, box-shadow .1s; }
+.adm-seg button b { font-size: 11px; background: var(--cream-2); padding: 1px 7px; border-radius: 100px; }
+.adm-seg button:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--red); }
+.adm-seg button.on { background: var(--deep); color: var(--cream); box-shadow: 3px 3px 0 var(--red); }
+.adm-seg button.on b { background: rgba(255,255,255,.16); color: var(--cream); }
+.adm-role-tag { display: inline-block; font-size: 9px; font-weight: 800; letter-spacing: .08em; background: var(--yellow); color: #141210; padding: 1px 5px; border-radius: 3px; margin-right: 7px; vertical-align: middle; }
 
 /* ═══ Темна тема кабінету/адмінки (клас .is-dark на корені) ═══
    Інвертуємо семантичні токени: поверхні → темні, чорнило → світле. Токени

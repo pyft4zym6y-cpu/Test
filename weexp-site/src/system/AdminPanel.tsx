@@ -88,6 +88,7 @@ export function AdminPanel() {
   const [ask, setAsk] = useState<{ userId: string; tier: string; status: TierStatus } | null>(null);
   const [askReason, setAskReason] = useState('');
   const [selLeads, setSelLeads] = useState<Set<string>>(new Set()); // мультивибір заявок (має бути ДО ранніх return — правило хуків)
+  const [userSeg, setUserSeg] = useState<'clients' | 'admins' | 'all'>('clients'); // підрозділ «Користувачі»
 
   const load = () => {
     listAllDiagnostics().then(setRows);
@@ -383,7 +384,13 @@ export function AdminPanel() {
         )}
 
         {/* ── Користувачі ── */}
-        {tab === 'users' && (
+        {tab === 'users' && (() => {
+          const isAdm = (email: string) => MANAGER_EMAILS.map((e) => e.toLowerCase()).includes((email || '').toLowerCase());
+          const nAdmins = sorted.filter((r) => isAdm(r.email)).length;
+          const nClients = sorted.length - nAdmins;
+          const segRows = sorted.filter((r) => userSeg === 'all' ? true : userSeg === 'admins' ? isAdm(r.email) : !isAdm(r.email));
+          const emptyText = q ? 'Нічого не знайдено за запитом.' : userSeg === 'admins' ? 'Адміністраторів немає.' : 'Зареєстрованих користувачів поки немає.';
+          return (
           <section className="adm-sec">
             <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Користувачі</h1>
               <div className="adm-head-r">
@@ -391,7 +398,12 @@ export function AdminPanel() {
                 <button className="sysx-cta" onClick={exportUsersCsv} disabled={sorted.length === 0}>↓ CSV</button>
               </div>
             </div>
-            {rows === null ? <p className="mc-msg mono">Завантаження…</p> : sorted.length === 0 ? <EmptyState icon="👥" text={q ? 'Нічого не знайдено за запитом.' : 'Зареєстрованих користувачів поки немає.'} /> : (
+            <div className="adm-seg mono" role="tablist">
+              <button role="tab" className={userSeg === 'clients' ? 'on' : ''} onClick={() => setUserSeg('clients')}>Зареєстровані <b>{nClients}</b></button>
+              <button role="tab" className={userSeg === 'admins' ? 'on' : ''} onClick={() => setUserSeg('admins')}>Адміністратори <b>{nAdmins}</b></button>
+              <button role="tab" className={userSeg === 'all' ? 'on' : ''} onClick={() => setUserSeg('all')}>Всі <b>{sorted.length}</b></button>
+            </div>
+            {rows === null ? <p className="mc-msg mono">Завантаження…</p> : segRows.length === 0 ? <EmptyState icon="👥" text={emptyText} /> : (
               <div className="adm-table adm-tr-users">
                 <div className="adm-tr adm-th adm-tr-users">
                   <button className="adm-sort" onClick={() => toggleSort('email')}>Email{sortMark('email')}</button>
@@ -401,9 +413,9 @@ export function AdminPanel() {
                   <button className="adm-sort" onClick={() => toggleSort('updated')}>Активність{sortMark('updated')}</button>
                   <span></span>
                 </div>
-                {sorted.map((r) => (
+                {segRows.map((r) => (
                   <div key={r.userId} className="adm-tr adm-tr-users">
-                    <a className="adm-c-email adm-mail" href={`mailto:${r.email}`} title="Написати">{r.email}</a>
+                    <a className="adm-c-email adm-mail" href={`mailto:${r.email}`} title="Написати">{isAdm(r.email) && <span className="adm-role-tag mono" title="Адміністратор">ADM</span>}{r.email}</a>
                     <span className="mono">{r.company || '—'}</span>
                     <span className="mono">{r.hasExpress ? 'E' : '·'} {r.hasDeep ? 'D' : '·'}</span>
                     <span className="mono">{tierCount(r) || '—'}{r.funnel?.accessCode ? ' 🔑' : ''}</span>
@@ -414,7 +426,8 @@ export function AdminPanel() {
               </div>
             )}
           </section>
-        )}
+          );
+        })()}
 
         {/* ── Аудити ── */}
         {tab === 'audits' && (
