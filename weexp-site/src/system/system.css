@@ -2064,3 +2064,24 @@
 .about-area-c { gap: 6px; }
 .about-area-n { font-family: var(--display); font-weight: 900; font-size: 18px; color: var(--red); font-style: normal; }
 .about-area-c b { font-size: 15px; }
+
+/* ─── Сценарій замовлення аудиту (форма → перевірка → готово) ─── */
+.calc-order { display: grid; gap: 14px; border: 1px solid var(--silver); border-radius: 16px; background: var(--pure-white); padding: 22px; }
+.calc-order-steps { display: flex; gap: 8px; flex-wrap: wrap; font-size: 11px; }
+.calc-order-steps span { color: var(--graphite); padding: 3px 10px; border: 1px solid var(--silver); border-radius: 20px; }
+.calc-order-steps span.on { color: var(--pure-white); background: var(--deep); border-color: var(--deep); }
+.calc-order-lead { font-size: 13.5px; color: var(--graphite); line-height: 1.5; margin: -2px 0 2px; }
+.calc-order-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.calc-order-svc select, .calc-order .sysx-inp input, .calc-order .sysx-inp select {
+  border: 1px solid var(--silver); border-radius: 10px; padding: 11px 12px; font-size: 15px; color: var(--deep);
+  background: var(--pure-white); width: 100%; outline: none; font-family: inherit; }
+.calc-order .sysx-inp input:focus, .calc-order .sysx-inp select:focus, .calc-order-svc select:focus { border-color: var(--data); }
+.calc-order-attach { font-size: 11.5px; color: var(--graphite); background: var(--mist); border: 1px dashed var(--silver); border-radius: 10px; padding: 9px 12px; }
+.calc-order-summary { display: grid; gap: 0; border: 1px solid var(--silver); border-radius: 12px; overflow: hidden; }
+.calc-order-summary > div { display: grid; grid-template-columns: 150px 1fr; gap: 12px; padding: 11px 14px; }
+.calc-order-summary > div + div { border-top: 1px solid var(--silver); }
+.calc-order-summary dt { font-size: 12px; color: var(--graphite); }
+.calc-order-summary dd { font-size: 14px; color: var(--deep); font-weight: 500; }
+.calc-order-summary dd i { color: var(--graphite); font-weight: 400; }
+.calc-order-cabhint { font-size: 12px; color: var(--graphite); background: var(--mist); border-radius: 10px; padding: 10px 12px; line-height: 1.45; }
+@media (max-width: 620px) { .calc-order-row { grid-template-columns: 1fr; } .calc-order-summary > div { grid-template-columns: 1fr; gap: 3px; } }

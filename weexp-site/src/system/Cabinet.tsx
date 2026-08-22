@@ -319,7 +319,9 @@ function Audits({ express, rec, go, onDelete }: { express: ExpressAudit | null; 
             ? <><span className="sysx-display cab-audit-v">{eur(express.total)}<i>{t('/ рік', '/ year')}</i></span>
                 <span className="mono cab-sub">{t('від', 'from')} {new Date(express.at).toLocaleDateString(t('uk-UA', 'en-GB'))} · Health {express.overallHealth}/100 · {t('діапазон', 'range')} {eur(express.range[0])}–{eur(express.range[1])}</span>
                 <div className="cab-audit-actions">
-                  <Link className="sysx-cta" to={lp('/diagnose')}>{t('Перерахувати →', 'Recalculate →')}</Link>
+                  <Link className="sysx-cta is-primary" to={lp('/diagnose')}>{t('Переглянути результат →', 'View result →')}</Link>
+                  <button className="sysx-cta" onClick={() => go('deep')}>{t('До глибокого аудиту →', 'To deep audit →')}</button>
+                  <Link className="sysx-cta" to={lp('/diagnose')}>{t('Перерахувати', 'Recalculate')}</Link>
                   <button className="cab-del" onClick={del} aria-label={t('Видалити аудит', 'Delete audit')} title={t('Видалити', 'Delete')}>
                     <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6M10 11v6M14 11v6"/></svg>
                     {t('Видалити', 'Delete')}
