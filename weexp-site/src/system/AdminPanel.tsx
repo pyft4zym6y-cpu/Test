@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, deleteLead, deleteDiagnostics, signTierFile, CONFIGURED,
   findAuditIdByCode, loadAuditAnswers, loadAuditExtra, saveAuditExtra,
-  saveProjectsFor, saveAssessmentFor, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject, type ModuleScore,
+  saveProjectsFor, saveAssessmentFor, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject, aiScoreAudit, type ModuleScore, type DiagRecord,
   MANAGER_EMAILS, TEAM_ROLES, ROLE_LABEL, roleOf, can, teamApi, type Role, type TeamMember, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
   type Project, type ProjTask, type ProjMember, type ProjPayment, type ProjMonth, type ProjTariffItem,
   type PmDirectory, type PmSpecialist, type PmRoleRate,
@@ -1086,7 +1086,7 @@ function UserDetail({ row, leads, canDelete, onClose, openFile, onStatus, onDele
 
           <Block title="Глибокий аудит">{row.hasDeep ? <p className="mono">у роботі</p> : <p className="mono adm-empty">не почато</p>}</Block>
 
-          <Block title="Оцінка модулів (C-level) — внутрішнє"><ModuleScoring userId={row.userId} initial={rec.assessment || {}} /></Block>
+          <Block title="Оцінка модулів (C-level) — внутрішнє"><ModuleScoring userId={row.userId} initial={rec.assessment || {}} code={code} rec={rec} /></Block>
 
           <Block title="Запити доступів">{tiers.length ? (
             <div className="adm-drawer-tiers">
@@ -1202,10 +1202,11 @@ function gMonthLabel(startMonth: string | undefined, i: number): string {
 
 /** Проект-офіс: глобальний довідник команди та ставок (переиспользується в проектах). */
 /** Адмінський шар: C-level оцінка кожного модуля аудиту клієнта. Автозбереження. */
-function ModuleScoring({ userId, initial }: { userId: string; initial: Record<string, ModuleScore> }) {
+function ModuleScoring({ userId, initial, code, rec }: { userId: string; initial: Record<string, ModuleScore>; code?: string; rec: DiagRecord }) {
   const [mods, setMods] = useState<Block[] | null>(null);
   const [map, setMap] = useState<Record<string, ModuleScore>>(initial || {});
   const [open, setOpen] = useState<string | null>(null);
+  const [ai, setAi] = useState(false);
   const [state, setState] = useState<SaveState>('idle');
   const [savedAt, setSavedAt] = useState('');
   const latest = useRef(map); latest.current = map;
@@ -1223,6 +1224,32 @@ function ModuleScoring({ userId, initial }: { userId: string; initial: Record<st
   }, [map]);
   useEffect(() => () => { if (dirty.current) void saveAssessmentFor(userId, latest.current); }, [userId]);
 
+  const aiDraft = async () => {
+    if (!mods) return;
+    setAi(true);
+    try {
+      const id = code ? await findAuditIdByCode(code) : null;
+      const answers = id ? await loadAuditAnswers(id) : {};
+      const r = await aiScoreAudit({ modules: mods.map((b) => ({ key: b.key, title: b.title })), answers, company: rec.company, express: rec.express });
+      if (r.error || !r.scores) { toast('AI: ' + (r.error || 'порожньо'), 'err'); setAi(false); return; }
+      // Заповнюємо ЛИШЕ порожні поля — правки аудитора не перетираємо.
+      setMap((m) => {
+        const next = { ...m };
+        for (const [k, s] of Object.entries(r.scores!)) {
+          const cur = next[k] || {};
+          next[k] = {
+            score: cur.score ?? s.score, state: cur.state || s.state, gap: cur.gap || s.gap,
+            rec: cur.rec || s.rec, impact: cur.impact || s.impact, priority: cur.priority || s.priority,
+            evidence: cur.evidence, owner: cur.owner, expected: cur.expected,
+          };
+        }
+        return next;
+      });
+      toast('✓ AI-чернетку оцінки складено — перевірте й доопрацюйте');
+    } catch (e) { toast('AI-помилка: ' + String(e), 'err'); }
+    setAi(false);
+  };
+
   if (!mods) return <p className="mono adm-empty">Завантаження модулів…</p>;
   const set = (k: string, patch: Partial<ModuleScore>) => setMap((m) => ({ ...m, [k]: { ...m[k], ...patch } }));
   const scored = mods.filter((b) => (map[b.key]?.score ?? null) !== null && map[b.key]?.score !== undefined);
@@ -1237,6 +1264,7 @@ function ModuleScoring({ userId, initial }: { userId: string; initial: Record<st
         <span>Оцінено: <b>{scored.length}/{mods.length}</b></span>
         <span>P1: <b>{p1}</b></span>
         {label && <span className={`pj-save-state pj-save-${state}`}>{label}</span>}
+        <button className="mc-btn ai" disabled={ai} onClick={aiDraft} title="AI-чернетка оцінки з даних клієнта (заповнює лише порожні поля)" style={{ marginLeft: 'auto' }}>{ai ? '🪄 Думаю…' : '🪄 AI-чернетка'}</button>
       </div>
       {mods.map((b) => {
         const s = map[b.key] || {};

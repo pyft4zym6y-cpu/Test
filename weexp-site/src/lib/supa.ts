@@ -160,6 +160,19 @@ export async function aiDraftProject(payload: {
   } catch (e) { return { ok: false, error: String(e) }; }
 }
 
+/** AI-чернетка C-level оцінки модулів аудиту з даних клієнта (аудитор доопрацьовує). */
+export async function aiScoreAudit(payload: {
+  modules: { key: string; title: string }[];
+  answers?: Record<string, unknown>; company?: unknown; express?: unknown;
+}): Promise<{ ok: boolean; scores?: Record<string, ModuleScore>; error?: string }> {
+  try {
+    const r = await fetch('/api/ai-score', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
+    const j = await r.json();
+    if (j.error) return { ok: false, error: j.error };
+    return { ok: true, scores: (j.scores || {}) as Record<string, ModuleScore> };
+  } catch (e) { return { ok: false, error: String(e) }; }
+}
+
 /** Довідник проект-офісу зберігається у записі менеджера (diagnostics.data.pmDir). */
 export async function loadPmDirectory(): Promise<PmDirectory> {
   const u = await currentUser();
