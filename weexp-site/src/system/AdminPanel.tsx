@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, signTierFile, CONFIGURED,
   findAuditIdByCode, loadAuditAnswers, loadAuditExtra, saveAuditExtra,
-  saveProjectFor, emptyProject, loadPmDirectory, savePmDirectory,
+  saveProjectsFor, emptyProject, getProjects, loadPmDirectory, savePmDirectory,
   MANAGER_EMAILS, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
   type Project, type ProjTask, type ProjMember, type ProjPayment, type ProjMonth, type ProjTariffItem,
   type PmDirectory, type PmSpecialist, type PmRoleRate,
@@ -737,7 +737,7 @@ function UserDetail({ row, onClose, openFile, onStatus, busy }: { row: AdminRow;
             <Block title="Уточнення (Крок 2)"><ExtraEditor code={code} /></Block>
           )}
 
-          <Block title="Мій проект (ведення)"><ProjectEditor userId={row.userId} initial={rec.project} /></Block>
+          <Block title="Мій проект (ведення)"><ProjectsManager userId={row.userId} initial={getProjects(rec)} /></Block>
 
           {files.length > 0 && (
             <Block title="Файли">
@@ -854,14 +854,58 @@ function PmOffice() {
   );
 }
 
-/** Редактор проекту клієнта (веде менеджер): Гант, команда, фінкалендар, тарифікація. */
-function ProjectEditor({ userId, initial }: { userId: string; initial?: Project }) {
-  const [p, setP] = useState<Project>({ ...emptyProject(), ...(initial || {}) });
-  const [dir, setDir] = useState<PmDirectory>({});
+/** Менеджер керує кількома проектами клієнта: селектор + додати/видалити + збереження. */
+function ProjectsManager({ userId, initial }: { userId: string; initial: Project[] }) {
+  const [list, setList] = useState<Project[]>(initial.length ? initial : []);
+  const [active, setActive] = useState(0);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
+  const idx = Math.min(active, Math.max(0, list.length - 1));
+  const cur = list[idx];
+
+  const patchCur = (p: Project) => setList((l) => l.map((x, i) => (i === idx ? p : x)));
+  const addProject = () => { const np = emptyProject(); np.title = `Проект ${list.length + 1}`; setList([...list, np]); setActive(list.length); setMsg(''); };
+  const delProject = () => { if (!cur) return; if (!confirm('Видалити цей проект?')) return; const nl = list.filter((_, i) => i !== idx); setList(nl); setActive(0); setMsg(''); };
+  const save = async () => {
+    setBusy(true); setMsg('');
+    const r = await saveProjectsFor(userId, list);
+    setBusy(false);
+    const pubN = list.filter((x) => x.published).length;
+    setMsg(r.ok ? `✓ Збережено (${list.length} проект(и), ${pubN} видно клієнту).` : (r.error || 'Помилка'));
+  };
+
+  return (
+    <div className="pj-mgr">
+      <div className="pj-mgr-bar">
+        {list.map((x, i) => (
+          <button key={x.id || i} className={`pj-switch-b${i === idx ? ' on' : ''}`} onClick={() => setActive(i)}>
+            {x.published ? '● ' : '○ '}{x.title || `Проект ${i + 1}`}
+          </button>
+        ))}
+        <button className="mc-btn sm" onClick={addProject}>+ Проект</button>
+      </div>
+      {!cur ? <p className="mono adm-empty">Проектів ще немає. Додайте перший.</p> : (
+        <>
+          <ProjectEditor key={cur.id} value={cur} onChange={patchCur} />
+          <div className="pj-ed-foot">
+            <button className="mc-btn bad" onClick={delProject}>Видалити проект</button>
+            <div className="pj-mgr-save">
+              {msg && <span className="mono adm-fill-au">{msg}</span>}
+              <button className="mc-btn ok" onClick={save} disabled={busy}>{busy ? 'Зберігаємо…' : 'Зберегти всі проекти'}</button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/** Редактор одного проекту (керований): Гант, команда, фінкалендар, тарифікація, бюджет. */
+function ProjectEditor({ value, onChange }: { value: Project; onChange: (p: Project) => void }) {
+  const p = value;
+  const [dir, setDir] = useState<PmDirectory>({});
   useEffect(() => { loadPmDirectory().then(setDir); }, []);
-  const upd = (patch: Partial<Project>) => setP((s) => ({ ...s, ...patch }));
+  const upd = (patch: Partial<Project>) => onChange({ ...p, ...patch });
   const num = (v: string) => (v === '' ? 0 : Number(v));
 
   const tasks = p.tasks || [], team = p.team || [], pays = p.payments || [], tariff = p.tariff || [];
@@ -879,13 +923,6 @@ function ProjectEditor({ userId, initial }: { userId: string; initial?: Project 
     upd({ tariff: tariff.map((m, j) => (j === mi ? { ...m, items: (m.items || []).map((it, q) => (q === ii ? { ...it, [k]: v } : it)) } : m)) });
   const patchItem = (mi: number, ii: number, patch: Partial<ProjTariffItem>) =>
     upd({ tariff: tariff.map((m, j) => (j === mi ? { ...m, items: (m.items || []).map((it, q) => (q === ii ? { ...it, ...patch } : it)) } : m)) });
-
-  const save = async () => {
-    setBusy(true); setMsg('');
-    const r = await saveProjectFor(userId, p);
-    setBusy(false);
-    setMsg(r.ok ? (p.published ? '✓ Збережено та опубліковано — клієнт бачить у «Мій проект».' : '✓ Збережено (чернетка, клієнту ще не видно).') : (r.error || 'Помилка'));
-  };
 
   return (
     <div className="pj-ed">
@@ -1006,11 +1043,9 @@ function ProjectEditor({ userId, initial }: { userId: string; initial?: Project 
         )}
       </div>
 
-      <div className="pj-ed-foot">
+      <div className="pj-ed-pubrow">
         <label className="pj-ed-pub"><input type="checkbox" checked={!!p.published} onChange={(e) => upd({ published: e.target.checked })} /> Опубліковано (видно клієнту)</label>
-        <button className="mc-btn ok" onClick={save} disabled={busy}>{busy ? 'Зберігаємо…' : 'Зберегти проект'}</button>
       </div>
-      {msg && <span className="mono adm-fill-au">{msg}</span>}
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   currentUser, signOut, loadDiag, saveDiag, CONFIGURED, isCloudUser,
   registerWithEmail, signInWithEmail, resendConfirmation, signInWithGoogle, onAuth,
-  ensureAudit, findAuditIdByCode, loadAuditAnswers, loadAuditExtra,
+  ensureAudit, findAuditIdByCode, loadAuditAnswers, loadAuditExtra, getProjects,
   type DiagUser, type DiagRecord, type CompanyProfile, type TierStatus, type TierEvent, type AuditAnswer, type ExtraQ,
 } from '@/lib/supa';
 import { AuditForm } from './AuditForm';
@@ -204,7 +204,7 @@ export function Cabinet() {
         {section === 'audits' && <Audits express={express} rec={rec} go={setSection} onDelete={deleteExpress} />}
         {section === 'company' && <CompanyForm user={user} rec={rec} onSaved={refreshRec} />}
         {section === 'deep' && <DeepAudit user={user} rec={rec} express={express} onDone={refreshRec} onClose={() => setSection('overview')} go={setSection} />}
-        {section === 'project' && <ProjectView project={rec?.project} en={t('', 'en') === 'en'} />}
+        {section === 'project' && <ProjectView projects={getProjects(rec)} en={t('', 'en') === 'en'} />}
         {section === 'findings' && <Soon title={t('Знахідки та дорожня карта', 'Findings & roadmap')} lead={t('Тут зʼявляться підтверджені знахідки глибокого аудиту й план під Definition of Done: що робити, у якому порядку і який ефект. Розділ вмикається після завершення Tier-2 розбору.', 'Confirmed findings from the deep audit and a plan under a Definition of Done will appear here: what to do, in what order and what the effect is. The section unlocks after the Tier-2 analysis is complete.')} />}
         {section === 'docs' && <Soon title={t('Документи', 'Documents')} lead={t('PDF-звіти, робочі аркуші й матеріали розбору складатимуться сюди — щоб усе було в одному місці й доступне команді.', 'PDF reports, worksheets and analysis materials will gather here — so everything is in one place and available to the team.')} />}
         {section === 'collab' && <Collab user={user} rec={rec} express={express} onDone={refreshRec} />}

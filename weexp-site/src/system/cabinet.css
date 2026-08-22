@@ -764,3 +764,12 @@
 .pj-bud-inp:focus { outline: none; border-color: var(--deep); }
 .pj-bud-tot td { background: var(--cream-2); font-weight: 700; border-color: var(--deep); }
 @media (max-width: 720px) { .pm-grid { grid-template-columns: 1fr; } }
+
+/* ─── Кілька проектів: перемикач (клієнт + менеджер) ─── */
+.pj-switch, .pj-mgr-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 0 0 16px; }
+.pj-switch-b { border: 2.5px solid var(--deep); background: var(--pure-white); padding: 7px 14px; font-weight: 600; cursor: pointer; font-size: 13px; }
+.pj-switch-b.on { background: var(--yellow); box-shadow: 3px 3px 0 var(--deep); }
+.pj-mgr-bar { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 2px solid var(--silver); }
+.pj-mgr-save { display: flex; gap: 12px; align-items: center; }
+.pj-ed-pubrow { padding-top: 10px; border-top: 2px dashed var(--deep); }
+.mc-btn.bad { background: var(--red); color: #fff; }

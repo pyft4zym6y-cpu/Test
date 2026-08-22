@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { Project, ProjTask, ProjMonth } from '@/lib/supa';
 
 /**
@@ -24,9 +24,11 @@ const monthName = (ym: string) => {
 const rowTotal = (mo: ProjMonth) => (mo.items || []).reduce((s, it) => s + (it.hours || 0) * (it.rate || 0), 0);
 const rowHours = (mo: ProjMonth) => (mo.items || []).reduce((s, it) => s + (it.hours || 0), 0);
 
-export function ProjectView({ project, en }: { project?: Project; en: boolean }) {
+export function ProjectView({ projects, en }: { projects: Project[]; en: boolean }) {
   const t = (uk: string, e: string) => (en ? e : uk);
-  const p = project;
+  const pub = (projects || []).filter((x) => x.published);
+  const [sel, setSel] = useState(0);
+  const p = pub[Math.min(sel, pub.length - 1)];
   const span = Math.max(1, Math.min(24, p?.span || 6));
   const cols = useMemo(() => Array.from({ length: span }, (_, i) => i), [span]);
 
@@ -39,7 +41,7 @@ export function ProjectView({ project, en }: { project?: Project; en: boolean })
 
   const tariffTotal = useMemo(() => (p?.tariff || []).reduce((s, mo) => s + rowTotal(mo), 0), [p]);
 
-  if (!p || !p.published) {
+  if (!p) {
     return (
       <section className="cab-sec">
         <header className="cab-sec-head">
@@ -61,6 +63,14 @@ export function ProjectView({ project, en }: { project?: Project; en: boolean })
         </div>
         <button className="pj-print mono" onClick={() => window.print()}>⬇ {t('Завантажити PDF', 'Download PDF')}</button>
       </header>
+
+      {pub.length > 1 && (
+        <div className="pj-switch">
+          {pub.map((x, i) => (
+            <button key={x.id || i} className={`pj-switch-b${i === Math.min(sel, pub.length - 1) ? ' on' : ''}`} onClick={() => setSel(i)}>{x.title || t('Проект', 'Project') + ' ' + (i + 1)}</button>
+          ))}
+        </div>
+      )}
 
       {/* Гант */}
       <div className="pj-card">

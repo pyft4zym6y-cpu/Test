@@ -66,7 +66,8 @@ export type DiagRecord = {
   stage3?: Record<string, unknown>;
   company?: CompanyProfile;         // розділ «Дані компанії»
   funnel?: FunnelState;             // наскрізна воронка кабінету
-  project?: Project;                // розділ «Мій проект» (веде менеджер, клієнт лише переглядає)
+  project?: Project;                // (legacy) один проект — мігрує в projects[]
+  projects?: Project[];             // розділ «Мій проект»: кілька проектів на клієнта (веде менеджер)
   pmDir?: PmDirectory;              // проект-офіс: довідник команди та ставок (лише в записі менеджера)
   updatedAt?: string;
 };
@@ -78,6 +79,7 @@ export type ProjPayment = { id: string; label: string; month: string; amount: nu
 export type ProjTariffItem = { id: string; label: string; hours: number; rate: number };
 export type ProjMonth = { id: string; month: string; items: ProjTariffItem[] };
 export type Project = {
+  id?: string;
   title?: string;
   startMonth?: string;   // 'YYYY-MM' — місяць 0 діаграми Ганта
   span?: number;         // кількість місяців у діаграмі
@@ -90,7 +92,14 @@ export type Project = {
   updatedAt?: string;
 };
 export function emptyProject(): Project {
-  return { title: '', startMonth: '', span: 6, tasks: [], team: [], payments: [], tariff: [], budget: {}, published: false };
+  return { id: 'pr_' + Math.random().toString(36).slice(2, 9), title: '', startMonth: '', span: 6, tasks: [], team: [], payments: [], tariff: [], budget: {}, published: false };
+}
+/** Список проектів клієнта з міграцією зі старого одиночного `project`. */
+export function getProjects(rec?: DiagRecord | null): Project[] {
+  if (!rec) return [];
+  if (rec.projects && rec.projects.length) return rec.projects.map((p) => ({ ...p, id: p.id || 'pr_' + Math.random().toString(36).slice(2, 9) }));
+  if (rec.project) return [{ ...rec.project, id: rec.project.id || 'pr_legacy' }];
+  return [];
 }
 
 /* ─── Проект-офіс (PM): довідник команди та ставок ─── */
@@ -409,17 +418,19 @@ export async function clearTierStatusFor(userId: string, tier: string): Promise<
   } catch (e) { return { ok: false, error: String(e) }; }
 }
 
-/** Менеджер зберігає/оновлює проект клієнта (в diagnostics.data.project). Клієнт лише переглядає. */
-export async function saveProjectFor(userId: string, project: Project): Promise<{ ok: boolean; error?: string }> {
-  const p: Project = { ...project, updatedAt: new Date().toISOString() };
+/** Менеджер зберігає/оновлює проекти клієнта (в diagnostics.data.projects). Клієнт лише переглядає. */
+export async function saveProjectsFor(userId: string, projects: Project[]): Promise<{ ok: boolean; error?: string }> {
+  const stamp = new Date().toISOString();
+  const list: Project[] = projects.map((p) => ({ ...p, id: p.id || 'pr_' + Math.random().toString(36).slice(2, 9), updatedAt: stamp }));
   if (!CONFIGURED || userId.startsWith('local:') || userId.startsWith('demo:')) {
-    try { const k = LS_DATA(userId); const prev = JSON.parse(localStorage.getItem(k) || '{}'); localStorage.setItem(k, JSON.stringify({ ...prev, project: p })); } catch { /* ignore */ }
+    try { const k = LS_DATA(userId); const prev = JSON.parse(localStorage.getItem(k) || '{}'); delete prev.project; localStorage.setItem(k, JSON.stringify({ ...prev, projects: list })); } catch { /* ignore */ }
     return { ok: true };
   }
   try {
     const { data } = await supabase.from('diagnostics').select('data').eq('user_id', userId).maybeSingle();
     const rec = (data?.data as DiagRecord) || {};
-    const merged: DiagRecord = { ...rec, project: p, updatedAt: new Date().toISOString() };
+    const merged: DiagRecord = { ...rec, projects: list, updatedAt: stamp };
+    delete merged.project;  // прибираємо legacy-поле після міграції
     const { data: upd, error } = await supabase.from('diagnostics').update({ data: merged }).eq('user_id', userId).select('user_id');
     if (error) return { ok: false, error: error.message };
     if (!upd || upd.length === 0) return { ok: false, error: 'Оновлення не застосовано — перевірте UPDATE-політику адміна на diagnostics (RLS).' };
