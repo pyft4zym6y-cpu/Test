@@ -2,9 +2,8 @@
 // із герой-числами, чесна окупність М4–М5, повний бюджет, слайди «ціна бездіяльності» і «ризики».
 import { doc } from './gen.mjs';
 
-const N = 18;
-const foot = (n) => `<div class="foot"><span>WEEXP · Глибокий аудит · «Тестик» · дані станом на 20.08.2026</span><span style="color:#D6362B">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>${String(n).padStart(2, '0')} / ${N}</span></div>`;
-const sl = (cls, body, n) => `<div class="sl ${cls}">${body}${foot(n)}</div>`;
+const sl = (cls, body, n) => [cls, body];
+const render = (cls, body, i, N) => `<div class="sl ${cls}">${body}<div class="foot"><span>WEEXP · Глибокий аудит · «Тестик» · дані станом на 20.08.2026</span><span style="color:#D6362B">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>${String(i).padStart(2, '0')} / ${N}</span></div></div>`;
 function slideRadar() {
   const vals = [['Business',2],['Market',2],['Product',2],['Customer',1],['Website',2],['SEO',2],['Acquisition',3],['CRM',1],['Analytics',1],['Operations',2],['Technology',2],['Organization',2]];
   const size = 460, cx = size/2, cy = size/2, R = size/2 - 88;
@@ -20,8 +19,8 @@ const S = [];
 // 01 обкладинка
 S.push(sl('ink', `
   <span class="ebrow">Звіт 1 із 5 · Читка результатів</span>
-  <h1 style="font-size:84px">«Тестик»: де бізнес втрачає<br><span class="mk">€433k виручки</span> —<br>≈€156k прибутку на рік</h1>
-  <p style="margin-top:32px;font-family:var(--mono);font-size:15px;color:rgba(255,255,255,.55)">12 аудитів · 160 перевірок · 14 відкритих систем · 24 місяці замовлень · усі розрахунки — у Звітах 2–3</p>
+  <h1 style="font-size:84px">«Тестик» щомісяця не доотримує<br><span class="mk">≈€13 000 прибутку</span>.<br>Ми знайшли, де саме.</h1>
+  <p style="margin-top:32px;font-family:var(--mono);font-size:15px;color:rgba(255,255,255,.55)">≈€156k прибутку/рік (€433k у виручковому еквіваленті) · 12 аудитів · 160 перевірок · 14 систем · 24 місяці замовлень · вивід — Звіт 3, гл. 3.00</p>
 `, 1));
 
 // 02 головний висновок
@@ -93,6 +92,19 @@ S.push(sl('', `
   <p style="margin-top:12px;font-family:var(--mono);font-size:13px;color:#94A0A8">замовлення 24 міс · eSputnik · план прогріву — Звіт 2, гл. 2.11</p>
 `, 6));
 
+
+// 06b — історія (емоційний якір)
+S.push(sl('ink', `
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;max-width:1050px">
+    <span class="ebrow">Один відгук, який пояснює половину пакета</span>
+    <p style="font-size:30px;line-height:1.5;color:rgba(255,255,255,.92)">«Замовила каструлю мамі на день народження. Приїхала <span style="color:#F08379">розбита</span>.
+    Поки переслали заміну — свято минуло. Більше не замовлятиму»</p>
+    <p style="margin-top:22px;font-family:var(--mono);font-size:14px;color:rgba(255,255,255,.5)">відгук №147 з 214 тегованих · тема «доставка/бій» — 62% усього негативу</p>
+    <p style="margin-top:30px;font-size:20px;color:rgba(255,255,255,.75)">Це не одна історія: 2.1% відправлень приходять з боєм, і після бою клієнт повертається вдвічі рідше.
+    Посуд — подарункова категорія: зірваний подарунок = втрачений клієнт назавжди. Фікс — стандарт пакування, тиждень 1.</p>
+  </div>
+`, 0));
+
 // 07 аналітика
 S.push(sl('ink', `
   <span class="ebrow">Доказ №4 · Аналітика</span>
@@ -141,6 +153,22 @@ S.push(sl('verd', `
     <h1 style="font-size:76px;max-width:1050px">Нічого з цього не лікується<br>«ще одним підрядником».<br>Лікується системою.</h1>
   </div>
 `, 10));
+
+
+// 10b — «ми це вже пробували»
+S.push(sl('', `
+  <span class="ebrow">Головне заперечення цієї кімнати — розберемо чесно</span>
+  <h1>«Ми вже пробували». Так.<br>Чотири рази. Ось чому не вийшло.</h1>
+  <table style="width:100%;border-collapse:collapse;margin-top:34px;font-size:16.5px">
+    <tr style="border-bottom:2.5px solid #070d12"><th style="text-align:left;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#6E7C86;padding:8px">Спроба (12 міс)</th><th style="text-align:left;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#6E7C86;padding:8px">Чим скінчилось</th><th style="text-align:left;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#6E7C86;padding:8px">Справжня причина → що інакше цього разу</th></tr>
+    ${[['Performance-агентство, 6 міс', 'CAC +22%', 'оптимізація по GA4, який не бачив 22% замовлень → спершу лагодимо вимірювання (тиждень 1–3)'],
+       ['Редизайн головної', 'CR без змін', 'головна — не вузьке місце → працюємо там, де втрати: checkout і mobile'],
+       ['Знижки −25% на залежаний товар', 'виручка ↑, прибуток ↓', 'без собівартості по SKU → правило: жодної знижки без contribution-розрахунку'],
+       ['Найм маркетолога-универсала', 'пішов за 4 міс', 'роль без даних і ритму → спочатку дашборд і щотижнева читка, потім люди']]
+      .map(([a, b, c]) => `<tr style="border-bottom:1px solid #dfe4e6"><td style="padding:11px 8px;font-weight:700">${a}</td><td style="padding:11px 8px;color:#D6362B;font-family:var(--mono)">${b}</td><td style="padding:11px 8px;color:#3A3D42">${c}</td></tr>`).join('')}
+  </table>
+  <p style="margin-top:26px;font-size:19px;color:#3A3D42;max-width:1060px">Усі чотири вмерли з однієї причини: <b>не було власника метрики і ритму перевірки</b>. Саме це — а не задачі — і є те, що ми будуємо 9 місяців.</p>
+`, 0));
 
 // 11 важелі
 S.push(sl('', `
@@ -191,6 +219,30 @@ S.push(sl('', `
   </div>
   <p style="margin-top:30px;font-family:var(--mono);font-size:13px;color:#94A0A8">Гант 12×9 із залежностями і ресурсною моделлю без перевантажень — Звіт 4 · 6 контрольних точок, найдовша пауза між ними — 6 тижнів</p>
 `, 13));
+
+
+// 13b — три формати участі (архітектура вибору)
+S.push(sl('', `
+  <span class="ebrow">Три способи пройти цей маршрут</span>
+  <h1>Обирається не «чи робити».<br>Обирається — хто веде.</h1>
+  <div style="display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:20px;margin-top:40px">
+    <div style="border:2px solid #94A0A8;padding:20px">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:.12em;color:#6E7C86">ФОРМАТ А · СУПРОВІД</div>
+      <div style="font-family:var(--mono);font-weight:700;font-size:40px;margin:10px 0">€2.9k/міс</div>
+      <p style="font-size:15.5px;line-height:1.5;color:#3A3D42">Ритм, пріоритети, приймання — наші. Виконання — повністю ваше. Для команди, якій бракує лише навігації.</p>
+      <p style="font-family:var(--mono);font-size:12px;color:#94A0A8;margin-top:12px">чесно: 4 минулі DIY-спроби вмерли без ритму — формат А лишає виконання там само</p></div>
+    <div style="border:3px solid #070d12;padding:20px;background:#F4F6F5">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:.12em;color:#D6362B">ФОРМАТ Б · РАЗОМ · рекомендовано</div>
+      <div style="font-family:var(--mono);font-weight:700;font-size:40px;margin:10px 0">€6.0k/міс</div>
+      <p style="font-size:15.5px;line-height:1.5;color:#26292e">Ми: аналітика, CRO/CRM, ритм, підрядники, КТ. Ви: PM і виконавці. Гарантія КТ-2 нашим коштом.</p>
+      <p style="font-family:var(--mono);font-size:12px;color:#6E7C86;margin-top:12px">повний бюджет €70–74k / 9 міс — наступний слайд</p></div>
+    <div style="border:2px solid #94A0A8;padding:20px">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:.12em;color:#6E7C86">ФОРМАТ В · ПІД КЛЮЧ</div>
+      <div style="font-family:var(--mono);font-weight:700;font-size:40px;margin:10px 0">€9.5k+/міс</div>
+      <p style="font-size:15.5px;line-height:1.5;color:#3A3D42">Формат Б + наші підрядники під нашим управлінням. Коли внутрішньої ємності немає зовсім.</p></div>
+  </div>
+  <p style="margin-top:28px;font-family:var(--mono);font-size:13px;color:#94A0A8">перехід Б → А можливий після КТ-3, коли власники каналів і ритм живуть самі · деталі і умови — Звіт 5</p>
+`, 0));
 
 // 14 гроші проекту — формат AD-15: CAPEX + ретейнери, повний бюджет
 S.push(sl('', `
@@ -268,13 +320,17 @@ S.push(sl('verd', `
 // 18 фінал
 S.push(sl('ink', `
   <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
-    <span class="ebrow">Наступний крок</span>
-    <h1 style="font-size:70px">30 днів — і перші важелі<br>вже працюють.</h1>
-    <p style="margin-top:34px;font-size:22px;color:rgba(255,255,255,.8);max-width:980px">Читка пакета (4 години включено) → старт хвилі 1 → КТ-1 через 30 днів.
-    Гарантія на КТ-2 — з нашим коштом (Звіт 5). Вартість аудиту зараховується у впровадження.</p>
+    <span class="ebrow">Рішення</span>
+    <h1 style="font-size:66px">Стартуємо хвилю 1<br>з понеділка 01.09?</h1>
+    <div style="display:flex;gap:44px;margin-top:36px">
+      <div><div style="font-family:var(--mono);font-weight:700;font-size:40px;color:#fff">100%</div><div style="font-size:14px;color:rgba(255,255,255,.6);max-width:220px">вартості аудиту зараховується — при старті впродовж 30 днів від читки (далі згорає до 50%)</div></div>
+      <div><div style="font-family:var(--mono);font-weight:700;font-size:40px;color:#F08379">−€13k</div><div style="font-size:14px;color:rgba(255,255,255,.6);max-width:220px">прибутку коштує кожен місяць паузи — порахованих у цьому ж пакеті</div></div>
+      <div><div style="font-family:var(--mono);font-weight:700;font-size:40px;color:#fff">КТ-2</div><div style="font-size:14px;color:rgba(255,255,255,.6);max-width:220px">гарантія нашим коштом: цілі дня 90 не досягнуто → М4 не оплачується, вихід з передачею всього</div></div>
+    </div>
+    <p style="margin-top:34px;font-size:20px;color:rgba(255,255,255,.8);max-width:1000px">Від вас на старті — пʼять рішень і два години на місяць (Звіт 5). Решта — наша робота.</p>
     <p style="margin-top:36px;font-family:var(--mono);font-size:15px;color:rgba(255,255,255,.55)">hello@weexp.agency · weexp.agency</p>
   </div>
 `, 18));
 
-doc('zvit-1-prezentatsiia.html', 'Звіт 1 · Презентація аудиту — Тестик', S.join(''));
-console.log('r1 done: 18 slides');
+doc('zvit-1-prezentatsiia.html', 'Звіт 1 · Презентація аудиту — Тестик', S.map(([c, b], i) => render(c, b, i + 1, S.length)).join(''));
+console.log('r1 done:', S.length, 'slides');
