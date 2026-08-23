@@ -11,6 +11,7 @@ export type LeadPayload = {
   phone?: string;
   name?: string;
   store?: string;
+  site?: string;      // сайт клієнта (окремо від назви магазину)
   turnover?: string;
   role?: string;      // роль ЛПР
   task?: string;      // головна задача / напрям

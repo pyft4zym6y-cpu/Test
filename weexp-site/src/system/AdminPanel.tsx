@@ -37,15 +37,16 @@ type SiteTraffic = {
   period?: string; sessions?: number; users?: number; pageviews?: number; bounceRate?: number;
   sources?: { name: string; sessions: number }[]; pages?: { path: string; views: number }[]; error?: string;
 };
-type Tab = 'overview' | 'users' | 'audits' | 'template' | 'access' | 'leads' | 'pm' | 'settings';
+type Tab = 'overview' | 'users' | 'audits' | 'template' | 'access' | 'leads' | 'pm' | 'projects' | 'settings';
 type Cap = Parameters<typeof can>[1];
+// Структура меню: Дашборд → Заявки (вхідна точка) → Користувачі → Аудити (вся
+// логіка проходження, підрозділи + конструктор) → Проекти (робочий простір) → Налаштування.
 const TABS: { id: Tab; label: string; cap: Cap }[] = [
   { id: 'overview', label: 'Дашборд', cap: 'view_dashboard' },
+  { id: 'leads', label: 'Заявки', cap: 'view_leads' },
   { id: 'users', label: 'Користувачі', cap: 'view_users' },
   { id: 'audits', label: 'Аудити', cap: 'view_audits' },
-  { id: 'template', label: 'Конструктор аудиту', cap: 'edit_template' },
-  { id: 'leads', label: 'Первинна комунікація', cap: 'view_leads' },
-  { id: 'pm', label: 'Проект-офіс', cap: 'manage_pm' },
+  { id: 'projects', label: 'Проекти', cap: 'manage_pm' },
   { id: 'settings', label: 'Налаштування', cap: 'manage_settings' },
 ];
 // Джерела заявок, що є запитами доступу (не первинна комунікація).
@@ -61,16 +62,20 @@ const ST: Record<TierStatus | 'none', { txt: string; cls: string }> = {
   data: { txt: 'Потрібні дані', cls: 'wait' }, granted: { txt: 'Надано', cls: 'ok' }, rejected: { txt: 'Відхилено', cls: 'bad' },
 };
 
-// Стадії воронки міні-CRM
+// Статуси заявки (адмін керує вручну). Легасі-статуси старих записів
+// (proposal/won/lost) відображаються у найближчий новий.
 const LEAD_STAGES: { k: LeadStatus; l: string; cls: string }[] = [
-  { k: 'new', l: 'Новий', cls: 'wait' },
-  { k: 'progress', l: 'У роботі', cls: 'wait' },
-  { k: 'qualified', l: 'Кваліфікований', cls: 'ok' },
-  { k: 'proposal', l: 'Пропозиція', cls: 'ok' },
-  { k: 'won', l: 'Виграно', cls: 'ok' },
-  { k: 'lost', l: 'Втрачено', cls: 'bad' },
+  { k: 'new', l: 'Нова', cls: 'wait' },
+  { k: 'qualified', l: 'Кваліфікована', cls: 'ok' },
+  { k: 'unqualified', l: 'Некваліфікована', cls: 'bad' },
+  { k: 'progress', l: 'В роботі', cls: 'wait' },
+  { k: 'done', l: 'Завершена', cls: 'ok' },
+  { k: 'archive', l: 'Архів', cls: 'none' },
 ];
-const stageOf = (l: LeadRow): LeadStatus => l.status || 'new';
+const stageOf = (l: LeadRow): LeadStatus => {
+  const s = l.status || 'new';
+  return s === 'proposal' ? 'progress' : s === 'won' ? 'done' : s === 'lost' ? 'unqualified' : s;
+};
 // Клієнту показуємо єдину послугу «Глибокий аудит» (ключ DEEP). Старі T1–T4 — легасі.
 const tierLabel = (tid: string) => (tid === 'DEEP' ? 'Глибокий аудит' : tid);
 
@@ -126,7 +131,8 @@ export function AdminPanel() {
   const [askReason, setAskReason] = useState('');
   const [selLeads, setSelLeads] = useState<Set<string>>(new Set()); // мультивибір заявок (має бути ДО ранніх return — правило хуків)
   const [userSeg, setUserSeg] = useState<'clients' | 'admins' | 'all'>('clients'); // підрозділ «Користувачі»
-  const [auditFilter, setAuditFilter] = useState<FunnelStage | 'all'>('all'); // фільтр воронки «Аудити»
+  const [auditSeg, setAuditSeg] = useState<'all' | 'express' | 'express_reg' | 'deep_req' | 'deep_work' | 'deep_done' | 'builder'>('all'); // підрозділи «Аудити»
+  const [projSeg, setProjSeg] = useState<'list' | 'office'>('list'); // підрозділи «Проекти»
 
   const load = () => {
     listAllDiagnostics().then(setRows);
@@ -476,21 +482,41 @@ export function AdminPanel() {
         {curTab === 'audits' && (() => {
           const base = (rows || []).filter((r) => !q || r.email.toLowerCase().includes(q.toLowerCase()) || (r.company || '').toLowerCase().includes(q.toLowerCase()));
           const withStage = base.map((r) => ({ r, stage: funnelStage(r) }));
-          const counts = FUNNEL.reduce((m, s) => { m[s.k] = withStage.filter((x) => x.stage === s.k).length; return m; }, {} as Record<FunnelStage, number>);
-          const shown = auditFilter === 'all' ? withStage : withStage.filter((x) => x.stage === auditFilter);
+          // Підрозділи: Всі (будь-яка аудит-активність) · Експрес (всі, вкл. незареєстрованих
+          // з заявок) · Експрес зареєстрованих · Запити на глибокий · В роботі · Завершено (→ проект).
+          const anonExpress = (leads || []).filter((l) => (l.diag || l.calc) && !ACCESS_SOURCES.includes(l.source || ''));
+          const segRows: Record<string, { r: AdminRow; stage: FunnelStage }[]> = {
+            all: withStage.filter((x) => x.stage !== 'registered'),
+            express: withStage.filter((x) => x.r.hasExpress),
+            express_reg: withStage.filter((x) => x.r.hasExpress),
+            deep_req: withStage.filter((x) => x.stage === 'requested' || x.stage === 'awaiting_data'),
+            deep_work: withStage.filter((x) => x.stage === 'in_work'),
+            deep_done: withStage.filter((x) => x.stage === 'project'),
+          };
+          const SEGS: { k: typeof auditSeg; l: string; n?: number }[] = [
+            { k: 'all', l: 'Всі аудити', n: segRows.all.length },
+            { k: 'express', l: 'Експрес-аудити', n: segRows.express.length + anonExpress.length },
+            { k: 'express_reg', l: 'Експрес зареєстрованих', n: segRows.express_reg.length },
+            { k: 'deep_req', l: 'Запити на глибокий', n: segRows.deep_req.length },
+            { k: 'deep_work', l: 'Глибокий — в роботі', n: segRows.deep_work.length },
+            { k: 'deep_done', l: 'Глибокий — завершено', n: segRows.deep_done.length },
+          ];
+          const shown = auditSeg === 'builder' ? [] : (segRows[auditSeg] || segRows.all);
           return (
           <section className="adm-sec">
             <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Аудити</h1>
-              <input className="mc-search" placeholder="Пошук: email / компанія" value={q} onChange={(e) => setQ(e.target.value)} />
+              {auditSeg !== 'builder' && <input className="mc-search" placeholder="Пошук: email / компанія" value={q} onChange={(e) => setQ(e.target.value)} />}
             </div>
-            <p className="adm-hint mono">Єдина воронка: Лід → Користувач → Експрес → Запит на глибокий → Доступ → Аудит → Проект. Клацніть клієнта — доступи, дані й проект керуються в його картці.</p>
             <div className="adm-seg mono" role="tablist">
-              <button role="tab" className={auditFilter === 'all' ? 'on' : ''} onClick={() => setAuditFilter('all')}>Всі <b>{withStage.length}</b></button>
-              {FUNNEL.map((s) => (
-                <button key={s.k} role="tab" className={auditFilter === s.k ? 'on' : ''} onClick={() => setAuditFilter(s.k)}>{s.l} <b>{counts[s.k]}</b></button>
+              {SEGS.map((s) => (
+                <button key={s.k} role="tab" className={auditSeg === s.k ? 'on' : ''} onClick={() => setAuditSeg(s.k)}>{s.l} <b>{s.n}</b></button>
               ))}
+              {can(user, 'edit_template') && (
+                <button role="tab" className={auditSeg === 'builder' ? 'on' : ''} onClick={() => setAuditSeg('builder')}>⚙ Конструктор</button>
+              )}
             </div>
-            {rows === null ? <p className="mc-msg mono">Завантаження…</p> : shown.length === 0 ? <EmptyState icon="📊" text={auditFilter === 'all' ? 'Аудитів поки немає.' : 'На цій стадії немає клієнтів.'} /> : (
+            {auditSeg === 'builder' ? <AuditBuilder /> : (<>
+            {rows === null ? <p className="mc-msg mono">Завантаження…</p> : shown.length === 0 && !(auditSeg === 'express' && anonExpress.length) ? <EmptyState icon="📊" text="У цьому підрозділі поки порожньо." /> : (
               <div className="adm-table adm-tr-funnel">
                 <div className="adm-tr adm-th adm-tr-funnel"><span>Email / компанія</span><span>Стадія</span><span>Витік/рік</span><span>Доступ</span><span></span></div>
                 {shown.map(({ r, stage }) => {
@@ -508,12 +534,58 @@ export function AdminPanel() {
                 })}
               </div>
             )}
+            {auditSeg === 'express' && anonExpress.length > 0 && (
+              <div className="adm-anon-express">
+                <span className="adm-acc-cat-h mono">Експрес без реєстрації (із заявок) · {anonExpress.length}</span>
+                {anonExpress.map((l) => (
+                  <div key={l.id} className="adm-tr adm-tr-anon">
+                    <span className="adm-c-email"><b>{l.name || l.email || l.phone || 'анонім'}</b>{l.email && l.name && <i className="mono adm-c-co"> · {l.email}</i>}</span>
+                    <span className="mono adm-anon-diag">{(l.diag || l.calc || '').slice(0, 80)}</span>
+                    <span className="adm-act-at mono">{rel(l.at)}</span>
+                    <button className="adm-open" onClick={() => { setTab('leads'); setOpenLead(l.id || null); }}>Заявка →</button>
+                  </div>
+                ))}
+              </div>
+            )}
+            </>)}
           </section>
           );
         })()}
 
-        {/* ── Конструктор шаблону аудиту ── */}
-        {curTab === 'template' && <AuditBuilder />}
+        {/* ── Проекти: робочий простір сформованих проектів ── */}
+        {curTab === 'projects' && (() => {
+          const withProj = (rows || [])
+            .map((r) => ({ r, projects: getProjects(r.record) }))
+            .filter((x) => x.projects.length)
+            .filter((x) => !q || x.r.email.toLowerCase().includes(q.toLowerCase()) || (x.r.company || '').toLowerCase().includes(q.toLowerCase()));
+          return (
+          <section className="adm-sec">
+            <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Проекти</h1>
+              {projSeg === 'list' && <input className="mc-search" placeholder="Пошук: email / компанія" value={q} onChange={(e) => setQ(e.target.value)} />}
+            </div>
+            <div className="adm-seg mono" role="tablist">
+              <button role="tab" className={projSeg === 'list' ? 'on' : ''} onClick={() => setProjSeg('list')}>Проекти клієнтів <b>{withProj.length}</b></button>
+              <button role="tab" className={projSeg === 'office' ? 'on' : ''} onClick={() => setProjSeg('office')}>Команда і ставки</button>
+            </div>
+            {projSeg === 'office' ? <PmOffice /> : (
+              rows === null ? <p className="mc-msg mono">Завантаження…</p> : withProj.length === 0 ? <EmptyState icon="📁" text="Сформованих проектів поки немає. Проект створюється в картці клієнта після аудиту." /> : (
+                <div className="adm-table adm-tr-proj">
+                  <div className="adm-tr adm-tr-proj adm-th"><span>Клієнт</span><span>Проект</span><span>Задач</span><span>Оновлено</span><span></span></div>
+                  {withProj.map(({ r, projects }) => (
+                    <div key={r.userId} className="adm-tr adm-tr-proj">
+                      <span className="adm-c-email"><b>{r.email}</b>{r.company && <i className="mono adm-c-co"> · {r.company}</i>}</span>
+                      <span>{projects.map((p) => p.title || 'Без назви').join(' · ')}{projects.length > 1 && <i className="mono adm-c-co"> ({projects.length})</i>}</span>
+                      <span className="mono">{projects.reduce((n, p) => n + (p.tasks?.length || 0), 0)}</span>
+                      <span className="mono adm-c-date">{r.updatedAt ? rel(r.updatedAt) : '—'}</span>
+                      <button className="adm-open" onClick={() => setOpenUser(r.userId)}>Відкрити →</button>
+                    </div>
+                  ))}
+                </div>
+              )
+            )}
+          </section>
+          );
+        })()}
 
         {/* ── Запити доступів (глибокий аудит) ── */}
         {tab === 'access' && (
@@ -569,7 +641,7 @@ export function AdminPanel() {
         {/* ── Заявки · міні-CRM ── */}
         {curTab === 'leads' && (
           <section className="adm-sec">
-            <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Первинна комунікація</h1>
+            <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Заявки</h1>
               {(leads || []).some((l) => !ACCESS_SOURCES.includes(l.source || '')) && (
                 <button className="sysx-cta" onClick={() => exportLeadsCsv((leads || []).filter((l) => !ACCESS_SOURCES.includes(l.source || '')))}>↓ CSV</button>
               )}
@@ -645,7 +717,6 @@ export function AdminPanel() {
         )}
 
         {/* ── Проект-офіс: довідник команди та ставок ── */}
-        {curTab === 'pm' && <PmOffice />}
 
         {/* ── Налаштування ── */}
         {curTab === 'settings' && (

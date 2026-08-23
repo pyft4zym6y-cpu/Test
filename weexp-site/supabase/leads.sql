@@ -30,6 +30,7 @@ alter table public.leads add column if not exists phone text;
 alter table public.leads add column if not exists name text;
 alter table public.leads add column if not exists role text;
 alter table public.leads add column if not exists store text;
+alter table public.leads add column if not exists site text;
 alter table public.leads add column if not exists turnover text;
 alter table public.leads add column if not exists task text;
 alter table public.leads add column if not exists timeline text;

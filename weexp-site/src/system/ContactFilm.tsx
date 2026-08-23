@@ -24,13 +24,7 @@ export function ContactFilm() {
   const t = useT();
   const lp = useLp();
   const lite = useLiteVisuals();
-  const TURNOVER = [t('до $0.5M', 'up to $0.5M'), '$0.5–1M', '$1–3M', '$3–10M', '> $10M'];
-  // Кваліфікація ліда (ТЗ §9): роль ЛПР, головна задача, терміни, бюджет —
-  // щоб відділ продажів одразу бачив, з ким і про що говорити.
-  const ROLES = [t('Власник / CEO', 'Owner / CEO'), t('Комерційний директор', 'Commercial director'), t('Маркетинг / CMO', 'Marketing / CMO'), t('Керівник e-commerce', 'Head of e-commerce'), t('Інше', 'Other')];
-  const TASKS = [t('Знайти вузьке місце', 'Find the bottleneck'), t('Зростання виторгу', 'Grow revenue'), t('Вихід у ЄС / США', 'Launch into the EU / US'), t('Новий сайт / платформа', 'New site / platform'), t('CRM / відділ продажів', 'CRM / sales team'), t('Аналітика й дані', 'Analytics and data'), t('Ще не визначився', 'Not decided yet')];
-  const TIMELINE = [t('Готовий почати зараз', 'Ready to start now'), t('Протягом 1–3 місяців', 'Within 1–3 months'), t('Досліджую ринок', 'Exploring the market')];
-  const BUDGET = [t('Ще не визначено', 'Not decided yet'), t('до €5k', 'up to €5k'), '€5–15k', '€15–40k', '€40k+'];
+  // Коротка форма: імʼя + телефон обовʼязкові, решта — необовʼязкова.
   const [status, setStatus] = useState<Status>('idle');
   const [emailErr, setEmailErr] = useState('');   // мʼяка інлайн-підказка по email
   const [phoneErr, setPhoneErr] = useState('');
@@ -56,9 +50,7 @@ export function ContactFilm() {
       source: attach ? 'diagnosis' : 'contact',
       name: String(f.get('name') || ''), email: String(f.get('email') || ''),
       phone: String(f.get('phone') || ''), store: String(f.get('store') || ''),
-      turnover: String(f.get('turnover') || ''), comment: String(f.get('comment') || ''),
-      role: String(f.get('role') || ''), task: String(f.get('task') || ''),
-      timeline: String(f.get('timeline') || ''), budget: String(f.get('budget') || ''),
+      site: String(f.get('site') || ''), comment: String(f.get('comment') || ''),
       diag: attach || undefined, company_website: String(f.get('company_website') || ''),
     };
     setStatus('sending');
@@ -106,51 +98,22 @@ export function ContactFilm() {
               </div>
             )}
             <form className="ctf-form" onSubmit={submit}>
-              <label className="ctf-field"><span className="mono">{t("Ім'я", 'Name')}</span><input name="name" required autoComplete="name" /></label>
-              <label className="ctf-field"><span className="mono">{t('Ваша роль', 'Your role')}</span>
-                <select name="role" required defaultValue="">
-                  <option value="" disabled>{t('оберіть…', 'select…')}</option>
-                  {ROLES.map((o) => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </label>
-              <label className="ctf-field"><span className="mono">Email</span>
-                <input name="email" type="email" required autoComplete="email" aria-invalid={!!emailErr}
-                  onBlur={(e) => setEmailErr(e.target.value && !/.+@.+\..+/.test(e.target.value) ? t('Схоже, email некоректний', 'This email looks invalid') : '')}
-                  onInput={() => emailErr && setEmailErr('')} />
-                {emailErr && <span className="s3-err mono ctf-inperr">{emailErr}</span>}
-              </label>
-              <label className="ctf-field"><span className="mono">{t('Телефон', 'Phone')}</span>
-                <input name="phone" type="tel" autoComplete="tel" aria-invalid={!!phoneErr}
+              <label className="ctf-field"><span className="mono">{t("Ім'я", 'Name')} *</span><input name="name" required autoComplete="name" /></label>
+              <label className="ctf-field"><span className="mono">{t('Телефон', 'Phone')} *</span>
+                <input name="phone" type="tel" required autoComplete="tel" aria-invalid={!!phoneErr}
                   onBlur={(e) => setPhoneErr(e.target.value && e.target.value.replace(/\D/g, '').length < 7 ? t('Схоже, номер неповний', 'The number looks incomplete') : '')}
                   onInput={() => phoneErr && setPhoneErr('')} />
                 {phoneErr && <span className="s3-err mono ctf-inperr">{phoneErr}</span>}
               </label>
-              <label className="ctf-field"><span className="mono">{t('Магазин / сайт', 'Store / site')}</span><input name="store" required /></label>
-              <label className="ctf-field"><span className="mono">{t('Оборот / міс', 'Turnover / mo')}</span>
-                <select name="turnover" required defaultValue="">
-                  <option value="" disabled>{t('оберіть…', 'select…')}</option>
-                  {TURNOVER.map((o) => <option key={o} value={o}>{o}</option>)}
-                </select>
+              <label className="ctf-field"><span className="mono">{t('Магазин ', 'Store ')}<i className="ctf-opt">{t('(необовʼязково)', '(optional)')}</i></span><input name="store" /></label>
+              <label className="ctf-field"><span className="mono">{t('Сайт ', 'Site ')}<i className="ctf-opt">{t('(необовʼязково)', '(optional)')}</i></span><input name="site" type="url" placeholder="https://" /></label>
+              <label className="ctf-field"><span className="mono">Email <i className="ctf-opt">{t('(необовʼязково)', '(optional)')}</i></span>
+                <input name="email" type="email" autoComplete="email" aria-invalid={!!emailErr}
+                  onBlur={(e) => setEmailErr(e.target.value && !/.+@.+\..+/.test(e.target.value) ? t('Схоже, email некоректний', 'This email looks invalid') : '')}
+                  onInput={() => emailErr && setEmailErr('')} />
+                {emailErr && <span className="s3-err mono ctf-inperr">{emailErr}</span>}
               </label>
-              <label className="ctf-field"><span className="mono">{t('Головна задача', 'Main task')}</span>
-                <select name="task" required defaultValue="">
-                  <option value="" disabled>{t('оберіть…', 'select…')}</option>
-                  {TASKS.map((o) => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </label>
-              <label className="ctf-field"><span className="mono">{t('Терміни', 'Timeline')}</span>
-                <select name="timeline" defaultValue="">
-                  <option value="" disabled>{t('оберіть…', 'select…')}</option>
-                  {TIMELINE.map((o) => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </label>
-              <label className="ctf-field ctf-full"><span className="mono">{t('Орієнтовний бюджет ', 'Approximate budget ')}<i className="ctf-opt">{t('(необовʼязково)', '(optional)')}</i></span>
-                <select name="budget" defaultValue="">
-                  <option value="" disabled>{t('оберіть…', 'select…')}</option>
-                  {BUDGET.map((o) => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </label>
-              <label className="ctf-field ctf-full"><span className="mono">{t('Коментар / поточна проблема', 'Comment / current problem')}</span><textarea name="comment" rows={3} placeholder={t('Що зараз найбільше турбує у продажах?', 'What worries you most about sales right now?')} /></label>
+              <label className="ctf-field ctf-full"><span className="mono">{t('Коментар ', 'Comment ')}<i className="ctf-opt">{t('(необовʼязково)', '(optional)')}</i></span><textarea name="comment" rows={3} placeholder={t('Що зараз найбільше турбує у продажах?', 'What worries you most about sales right now?')} /></label>
               <input name="company_website" tabIndex={-1} autoComplete="off" className="ctf-hp" aria-hidden="true" />
               <div className="sysx-calc-actions ctf-full">
                 <button className="sysx-cta is-primary" type="submit" disabled={status === 'sending'}>

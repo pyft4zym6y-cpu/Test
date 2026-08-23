@@ -151,6 +151,12 @@
 .adm-doc-vers { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 8px; }
 .adm-doc-ver { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; padding: 5px 0; border-bottom: 1px dashed var(--line); }
 @media (max-width: 640px) { .adm-team-row2 { grid-template-columns: 1fr auto; } .adm-team-row2 > :nth-child(3) { display: none; } }
+/* Аудити: анонімні експреси із заявок · Проекти: таблиця */
+.adm-anon-express { margin-top: 18px; border-top: 2px solid var(--line); padding-top: 8px; }
+.adm-tr.adm-tr-anon { display: grid; grid-template-columns: minmax(160px, 1fr) minmax(120px, 1.2fr) 70px auto; gap: 10px; align-items: center; }
+.adm-anon-diag { color: var(--graphite); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.adm-tr.adm-tr-proj { display: grid; grid-template-columns: minmax(170px, 1.2fr) minmax(140px, 1fr) 64px 88px auto; gap: 10px; align-items: center; }
+@media (max-width: 720px) { .adm-tr.adm-tr-anon, .adm-tr.adm-tr-proj { grid-template-columns: 1fr auto; } .adm-tr.adm-tr-anon > :nth-child(2), .adm-tr.adm-tr-proj > :nth-child(3), .adm-tr.adm-tr-proj > :nth-child(4) { display: none; } }
 /* Власні файли аудитора */
 .adm-afiles-add { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
 .adm-afile { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 12px; }

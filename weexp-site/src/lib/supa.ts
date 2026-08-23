@@ -584,7 +584,8 @@ export async function saveAuditExtra(code: string, extra: ExtraQ[]): Promise<{ o
 }
 
 /** Стадія ліда в міні-CRM (воронка продажів). */
-export type LeadStatus = 'new' | 'progress' | 'qualified' | 'proposal' | 'won' | 'lost';
+/** Статуси заявки. Основні 6 — за процесом; proposal/won/lost — легасі старих записів. */
+export type LeadStatus = 'new' | 'qualified' | 'unqualified' | 'progress' | 'done' | 'archive' | 'proposal' | 'won' | 'lost';
 /** Лід (заявка з форм). Пишеться в таблицю `leads` (див. INFRA/SQL); для адмінки. */
 export type LeadRow = {
   id?: string; at?: string; source?: string; email?: string; name?: string; phone?: string;

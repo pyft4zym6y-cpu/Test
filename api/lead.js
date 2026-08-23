@@ -33,7 +33,7 @@ async function saveLeadToDb(row) {
     const minimal = {};
     for (const k of CORE) if (row[k] != null) minimal[k] = row[k];
     // Додаткові поля (роль/задача/бюджет тощо) складаємо у comment, щоб не втратити.
-    const EXTRA = { role: 'Роль', store: 'Магазин', turnover: 'Оборот', task: 'Задача', timeline: 'Терміни', budget: 'Бюджет' };
+    const EXTRA = { role: 'Роль', store: 'Магазин', site: 'Сайт', turnover: 'Оборот', task: 'Задача', timeline: 'Терміни', budget: 'Бюджет' };
     const tail = Object.entries(EXTRA).filter(([k]) => row[k]).map(([k, lbl]) => `${lbl}: ${row[k]}`).join(' · ');
     if (tail) minimal.comment = [minimal.comment, tail].filter(Boolean).join(' — ');
     if (row.diag) minimal.comment = [minimal.comment, `\n${row.diag}`].filter(Boolean).join('');
@@ -71,7 +71,7 @@ export default async function handler(req, res) {
   const clip = (v, n) => (v ? String(v).slice(0, n) : null);
   const dbOk = await saveLeadToDb({
     source, email: email || null, phone: phone || null,
-    name: clip(b.name, 120), role: clip(b.role, 80), store: clip(b.store, 200),
+    name: clip(b.name, 120), role: clip(b.role, 80), store: clip(b.store, 200), site: clip(b.site, 200),
     turnover: clip(b.turnover, 60), task: clip(b.task, 200), timeline: clip(b.timeline, 80),
     budget: clip(b.budget, 60), comment: clip(b.comment, 2000),
     diag: clip(b.diag, 4000), calc: clip(b.calc, 3000), status: 'new',
@@ -86,7 +86,8 @@ export default async function handler(req, res) {
     phone && `Телефон: ${phone}`,
     b.name && `Імʼя: ${String(b.name).slice(0, 120)}`,
     b.role && `Роль: ${String(b.role).slice(0, 80)}`,
-    b.store && `Магазин / сайт: ${String(b.store).slice(0, 200)}`,
+    b.store && `Магазин: ${String(b.store).slice(0, 200)}`,
+    b.site && `Сайт: ${String(b.site).slice(0, 200)}`,
     b.turnover && `Оборот / міс: ${String(b.turnover).slice(0, 60)}`,
     b.task && `Задача: ${String(b.task).slice(0, 120)}`,
     b.timeline && `Терміни: ${String(b.timeline).slice(0, 80)}`,
