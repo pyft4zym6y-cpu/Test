@@ -2252,3 +2252,5 @@
 .apack-bt { display: block; font-size: 14px; color: var(--deep, #141210); padding-right: 28px; }
 .apack-bd { margin: 4px 0 6px; font-size: 11.5px; line-height: 1.45; color: var(--graphite, #6B675E); }
 .apack-bn { font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--red, #F5301C); }
+
+.apack-bdocs { margin: 6px 0 0; font-size: 10.5px; color: var(--graphite, #6B675E); line-height: 1.4; }

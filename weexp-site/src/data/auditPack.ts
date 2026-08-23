@@ -58,19 +58,30 @@ export const packByPhase = (p: PackPhase) => PACK_ARTIFACTS.filter((a) => a.phas
  * Website → SEO/GEO → Marketing → CRM/Retention → Analytics → Operations →
  * Technology → Organization). Всередині кожного блоку — конкретні перевірки;
  * опитувальник (модулі A–P конструктора) і лінзи рушія мапляться на ці блоки. */
-export type AuditBlock = { key: string; uk: string; en: string; taskUk: string; taskEn: string; checks: number };
+export type AuditBlock = {
+  key: string; uk: string; en: string; taskUk: string; taskEn: string; checks: number;
+  /** Які спеціалізовані аудити зведені під цей заголовок (№ з каталогу 150). */
+  merges: string;
+  /** У яких документах пакета живе результат цього аудиту (id артефактів). */
+  docs: string[];
+};
 export const AUDIT_BLOCKS: AuditBlock[] = [
-  { key: 'business', uk: 'Business', en: 'Business', taskUk: 'Зрозуміти економіку: стратегія, бізнес-модель, P&L, юніт-економіка, маржа', taskEn: 'Understand the economics: strategy, business model, P&L, unit economics, margin', checks: 14 },
-  { key: 'market', uk: 'Market', en: 'Market', taskUk: 'Зрозуміти ринок: ЦА, конкуренти, позиціонування, бренд', taskEn: 'Understand the market: audience, competitors, positioning, brand', checks: 12 },
-  { key: 'product', uk: 'Product', en: 'Product', taskUk: 'Зрозуміти товар: асортимент, ABC/XYZ, ціноутворення, мерчандайзинг', taskEn: 'Understand the product: assortment, ABC/XYZ, pricing, merchandising', checks: 13 },
-  { key: 'customer', uk: 'Customer', en: 'Customer', taskUk: 'Зрозуміти клієнта: CJM, сегменти, LTV, retention, churn', taskEn: 'Understand the customer: CJM, segments, LTV, retention, churn', checks: 13 },
-  { key: 'website', uk: 'Website', en: 'Website', taskUk: 'Підняти конверсію: UX/UI, CRO, воронка, mobile, доступність', taskEn: 'Lift conversion: UX/UI, CRO, funnel, mobile, accessibility', checks: 16 },
-  { key: 'seo', uk: 'SEO / GEO / AEO', en: 'SEO / GEO / AEO', taskUk: 'Підняти органічний попит: SEO, контент, видимість в AI-пошуку (LLM)', taskEn: 'Grow organic demand: SEO, content, AI-search (LLM) visibility', checks: 14 },
-  { key: 'marketing', uk: 'Marketing', en: 'Marketing', taskUk: 'Підняти acquisition: PPC, Meta, TikTok, Shopping, інфлюенсери, affiliate', taskEn: 'Grow acquisition: PPC, Meta, TikTok, Shopping, influencers, affiliate', checks: 15 },
-  { key: 'crm', uk: 'CRM / Retention', en: 'CRM / Retention', taskUk: 'Підняти LTV: email, push, месенджери, лояльність, автоматизація', taskEn: 'Grow LTV: email, push, messengers, loyalty, automation', checks: 14 },
-  { key: 'analytics', uk: 'Analytics', en: 'Analytics', taskUk: 'Зробити дані достовірними: GA4, GTM, атрибуція, BI, якість даних', taskEn: 'Make the data trustworthy: GA4, GTM, attribution, BI, data quality', checks: 10 },
-  { key: 'operations', uk: 'Operations', en: 'Operations', taskUk: 'Знизити операційні втрати: склад, закупівлі, fulfillment, доставка, повернення', taskEn: 'Cut operational losses: warehouse, purchasing, fulfillment, delivery, returns', checks: 13 },
-  { key: 'technology', uk: 'Technology', en: 'Technology', taskUk: 'Забезпечити масштабованість: CMS, ERP, інтеграції, швидкість, безпека', taskEn: 'Ensure scalability: CMS, ERP, integrations, performance, security', checks: 14 },
-  { key: 'organization', uk: 'Organization', en: 'Organization', taskUk: 'Зробити систему керованою: команда, процеси, KPI, підрядники, AI', taskEn: 'Make the system manageable: team, processes, KPIs, contractors, AI', checks: 12 },
+  { key: 'business', uk: 'Business', en: 'Business', taskUk: 'Зрозуміти економіку: стратегія, бізнес-модель, P&L, юніт-економіка, маржа', taskEn: 'Understand the economics: strategy, business model, P&L, unit economics, margin', checks: 14, merges: '1,2,15,16,82,83,84,110,111,112', docs: ['a08', 'a10'] },
+  { key: 'market', uk: 'Market', en: 'Market', taskUk: 'Зрозуміти ринок: ЦА, конкуренти, позиціонування, бренд', taskEn: 'Understand the market: audience, competitors, positioning, brand', checks: 12, merges: '3,6,7,8,143,145', docs: ['a08'] },
+  { key: 'product', uk: 'Product', en: 'Product', taskUk: 'Зрозуміти товар: асортимент, ABC/XYZ, ціноутворення, мерчандайзинг', taskEn: 'Understand the product: assortment, ABC/XYZ, pricing, merchandising', checks: 13, merges: '9,10,13,14,17,18,103,104,105,122,124,125', docs: ['a08'] },
+  { key: 'customer', uk: 'Customer', en: 'Customer', taskUk: 'Зрозуміти клієнта: CJM, сегменти, LTV, retention, churn', taskEn: 'Understand the customer: CJM, segments, LTV, retention, churn', checks: 13, merges: '4,5,57,58,59,134,137,138', docs: ['a13', 'a06'] },
+  { key: 'website', uk: 'Website', en: 'Website', taskUk: 'Підняти конверсію: UX/UI, CRO, воронка, mobile, доступність', taskEn: 'Lift conversion: UX/UI, CRO, funnel, mobile, accessibility', checks: 16, merges: '20,21,22,23,24,25,26,27,28,29,107,126,129', docs: ['a06'] },
+  { key: 'seo', uk: 'SEO / GEO / AEO', en: 'SEO / GEO / AEO', taskUk: 'Підняти органічний попит: SEO, контент, видимість в AI-пошуку (LLM)', taskEn: 'Grow organic demand: SEO, content, AI-search (LLM) visibility', checks: 14, merges: '31,32,33,34,35,36,37,38,39,40', docs: ['a07'] },
+  { key: 'marketing', uk: 'Marketing', en: 'Marketing', taskUk: 'Підняти acquisition: PPC, Meta, TikTok, Shopping, інфлюенсери, affiliate', taskEn: 'Grow acquisition: PPC, Meta, TikTok, Shopping, influencers, affiliate', checks: 15, merges: '42,43,44,45,46,48,49,50,51,109,144,146,147,148', docs: ['a07'] },
+  { key: 'crm', uk: 'CRM / Retention', en: 'CRM / Retention', taskUk: 'Підняти LTV: email, push, месенджери, лояльність, автоматизація', taskEn: 'Grow LTV: email, push, messengers, loyalty, automation', checks: 14, merges: '60,61,62,63,64,65,66,67,68,69,131,139', docs: ['a06', 'a12'] },
+  { key: 'analytics', uk: 'Analytics', en: 'Analytics', taskUk: 'Зробити дані достовірними: GA4, GTM, атрибуція, BI, якість даних', taskEn: 'Make the data trustworthy: GA4, GTM, attribution, BI, data quality', checks: 10, merges: '53,54,55,56', docs: ['a07', 'a14'] },
+  { key: 'operations', uk: 'Operations', en: 'Operations', taskUk: 'Знизити операційні втрати: склад, закупівлі, fulfillment, доставка, повернення', taskEn: 'Cut operational losses: warehouse, purchasing, fulfillment, delivery, returns', checks: 13, merges: '70,72,74,75,76,78,80,81,85,136', docs: ['a08', 'a12'] },
+  { key: 'technology', uk: 'Technology', en: 'Technology', taskUk: 'Забезпечити масштабованість: CMS, ERP, інтеграції, швидкість, безпека', taskEn: 'Ensure scalability: CMS, ERP, integrations, performance, security', checks: 14, merges: '87,88,90,91,92,93,94,96,98,99,100,101', docs: ['a06'] },
+  { key: 'organization', uk: 'Organization', en: 'Organization', taskUk: 'Зробити систему керованою: команда, процеси, KPI, підрядники, AI', taskEn: 'Make the system manageable: team, processes, KPIs, contractors, AI', checks: 12, merges: '113,114,115,117,118,119,120,121,150', docs: ['a09', 'a15'] },
 ];
 export const TOTAL_CHECKS = AUDIT_BLOCKS.reduce((s, b) => s + b.checks, 0);
+
+/** Коротка назва документа пакета за id (для мапи «аудит → документ»). */
+export const PACK_SHORT: Record<string, string> = Object.fromEntries(
+  PACK_ARTIFACTS.map((a) => [a.id, a.uk.replace(/ \(.*\)$/, '')]),
+);

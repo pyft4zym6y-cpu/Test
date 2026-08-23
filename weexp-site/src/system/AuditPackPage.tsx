@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useT, useLp } from '@/i18n';
-import { PACK_PHASES, packByPhase, AUDIT_BLOCKS, TOTAL_CHECKS } from '@/data/auditPack';
+import { PACK_PHASES, packByPhase, AUDIT_BLOCKS, TOTAL_CHECKS, PACK_SHORT } from '@/data/auditPack';
 import './system.css';
 
 /**
@@ -52,6 +52,7 @@ export function AuditPackPage() {
                 <b className="apack-bt">{t(b.uk, b.en)}</b>
                 <p className="apack-bd">{t(b.taskUk, b.taskEn)}</p>
                 <span className="apack-bn mono">{b.checks} {t('перевірок', 'checks')}</span>
+                <p className="apack-bdocs mono">→ {b.docs.map((d) => PACK_SHORT[d]).filter(Boolean).join(' · ')}</p>
               </div>
             ))}
           </div>
