@@ -43,11 +43,16 @@ export type NicheKey = 'fashion' | 'beauty' | 'electronics' | 'home' | 'kids' | 
 /** Сезонність поточного місяця: типовий / піковий (вище) / низький. */
 export type Season = 'typical' | 'high' | 'low';
 
+/** Швидкі «так/ні» — живі сигнали для систем, які не мають числових метрик
+ *  (стратегія / дані / організація / експансія). undefined = не відповіли. */
+export type Signals = { mgmtCycle?: boolean; analytics?: boolean; ownerFree?: boolean; exportSales?: boolean };
+
 export type LossInput = {
   monthlyRevenue: number; aov: number; conversion: number; repeatRate: number;
   returnsRate: number; grossMargin: number; cac: number; symptoms: SysKey[];
   niche?: NicheKey;       // ніша — обирає набір бенчмарків (без ніші — універсальні)
   seasonal?: Season;      // чи типовий цей місяць за виторгом (корекція річної бази)
+  signals?: Signals;      // швидкі так/ні → Health стратегії/даних/орг/експансії
 };
 
 export type Leak = { key: SysKey; label: string; labelEn: string; amount: number };
@@ -202,13 +207,19 @@ export function computeLoss(inp: LossInput): LossResult {
   const total = Math.round((sorted[0] ?? 0) + sorted.slice(1).reduce((s, x) => s + x, 0) * 0.45);
   const range: [number, number] = [Math.round(total * rangeLow), total];
 
-  // Business Health (8 систем 0..100) — відносно еталонів ніші.
+  // Business Health (8 систем 0..100) — числові метрики відносно еталонів ніші,
+  // «сліпі» системи (стратегія/дані/орг/експансія) оживляються сигналами так/ні.
+  const sig = inp.signals || {};
   const health: Health[] = SYS.map(({ key, label }) => {
     let s = 55;
     if (key === 'commercial') s = clamp(50 + ((inp.grossMargin || bn.margin) - bn.margin) * 0.9 + (inp.aov > 0 ? clamp((inp.aov / bn.aov - 1) * 20, -12, 12) : 0), 5, 95);
     else if (key === 'customer') s = clamp(50 + (inp.repeatRate - bn.repeat) * 1.2, 5, 95);
     else if (key === 'experience') s = clamp(45 + (inp.conversion - bn.cr) * (25 / bn.cr), 5, 95);
     else if (key === 'operations') s = clamp(72 - (inp.returnsRate - bn.returns) * 4, 5, 95);
+    else if (key === 'strategy' && sig.mgmtCycle !== undefined) s = sig.mgmtCycle ? 70 : 35;
+    else if (key === 'data' && sig.analytics !== undefined) s = sig.analytics ? 70 : 32;
+    else if (key === 'org' && sig.ownerFree !== undefined) s = sig.ownerFree ? 72 : 30;
+    else if (key === 'expansion' && sig.exportSales !== undefined) s = sig.exportSales ? 65 : 45;
     if (has(sym, key)) s -= 22;
     return { key, label, score: Math.round(clamp(s, 5, 98)) };
   });

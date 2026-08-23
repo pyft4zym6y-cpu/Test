@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { computeLoss, eur, project, localizeSys, sysLabel, leakLabel, actionText, NICHES, type LossInput, type LossResult, type SysKey, type NicheKey, type Season } from './lossModel';
+import { computeLoss, eur, project, localizeSys, sysLabel, leakLabel, actionText, NICHES, type LossInput, type LossResult, type SysKey, type NicheKey, type Season, type Signals } from './lossModel';
 import { saveExpressAudit } from './cabinetData';
 import { sendLead } from '@/lib/leads';
 import { shortOf } from '@/data/xray';
@@ -99,6 +99,15 @@ export function LossCalculator() {
   const setNum = (k: NumKey) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setInp((s) => ({ ...s, [k]: parseFloat(e.target.value) || 0 }));
   const toggle = (k: SysKey) => setInp((s) => ({ ...s, symptoms: s.symptoms.includes(k) ? s.symptoms.filter((x) => x !== k) : [...s.symptoms, k] }));
+  // Швидкі так/ні: повторний клік по тій самій відповіді знімає її (undefined).
+  const setSig = (k: keyof Signals, v: boolean) =>
+    setInp((s) => ({ ...s, signals: { ...s.signals, [k]: s.signals?.[k] === v ? undefined : v } }));
+  const SIGNALS: { k: keyof Signals; q: string }[] = [
+    { k: 'mgmtCycle', q: t('Чи є регулярний управлінський цикл: цілі → план → факт → рішення?', 'Do you run a regular management cycle: goals → plan → actuals → decisions?') },
+    { k: 'analytics', q: t('Чи є наскрізна аналітика — одна правда в цифрах для всіх рішень?', 'Do you have end-to-end analytics — one source of truth for decisions?') },
+    { k: 'ownerFree', q: t('Чи пропрацює бізнес 2+ тижні без власника, не втрачаючи темп?', 'Would the business run 2+ weeks without the owner at full pace?') },
+    { k: 'exportSales', q: t('Чи продаєте вже за межі України?', 'Do you already sell outside your home market?') },
+  ];
   const compute = () => { const r = computeLoss(inp); setRes(r); alerts.current = r.bottleneckNodes; saveExpressAudit(inp, r); setStep(3); };
   const restart = () => { alerts.current = []; setRes(null); setOrderStep(null); setStep(1); };
   const primaryLabel = (k: SysKey) => sysLabel(k, lang);
@@ -235,6 +244,21 @@ ${projRows ? `<div class="card"><h2>${esc(t('Зараз → куди можем�
                   <b>{s.label}</b><span>«{PAIN[s.key]}»</span>
                 </button>
               ))}
+            </div>
+            <div className="sysx-sig">
+              <p className="sysx-sig-h mono">{t('І чотири швидкі «так / ні» — вони оживляють оцінку систем управління:', 'And four quick “yes / no” — they bring the management systems to life:')}</p>
+              {SIGNALS.map((sg) => {
+                const v = inp.signals?.[sg.k];
+                return (
+                  <div key={sg.k} className="sysx-sig-row">
+                    <span className="sysx-sig-q">{sg.q}</span>
+                    <span className="sysx-sig-btns">
+                      <button className={'sysx-sig-b' + (v === true ? ' on-yes' : '')} onClick={() => setSig(sg.k, true)}>{t('Так', 'Yes')}</button>
+                      <button className={'sysx-sig-b' + (v === false ? ' on-no' : '')} onClick={() => setSig(sg.k, false)}>{t('Ні', 'No')}</button>
+                    </span>
+                  </div>
+                );
+              })}
             </div>
             <div className="sysx-calc-actions">
               <button className="sysx-cta" onClick={() => setStep(1)}>{t('← Назад', '← Back')}</button>

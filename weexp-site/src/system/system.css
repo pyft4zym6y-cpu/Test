@@ -1654,6 +1654,16 @@
 .sysx-total-big span { font-size: .32em; color: var(--graphite); margin-left: 8px; font-weight: 700; }
 .sysx-total-cap { font-size: 11px; color: var(--graphite); letter-spacing: .04em; }
 .sysx-total-conf { display: block; margin-top: 6px; font-size: 11.5px; color: var(--warn, #C0851E); max-width: 520px; line-height: 1.5; }
+/* Швидкі так/ні у кроці «Симптоми» */
+.sysx-sig { margin-top: 22px; border-top: 2px solid var(--silver); padding-top: 16px; display: grid; gap: 10px; }
+.sysx-sig-h { font-size: 11.5px; letter-spacing: .04em; color: var(--graphite); }
+.sysx-sig-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.sysx-sig-q { flex: 1 1 320px; font-size: 14px; font-weight: 600; color: var(--deep); line-height: 1.4; }
+.sysx-sig-btns { display: inline-flex; gap: 6px; }
+.sysx-sig-b { border: 2px solid var(--deep); background: var(--pure-white); color: var(--deep); font: inherit; font-weight: 800; font-size: 12.5px; padding: 7px 16px; cursor: pointer; transition: background .12s, color .12s; }
+.sysx-sig-b:hover { box-shadow: 2px 2px 0 var(--deep); }
+.sysx-sig-b.on-yes { background: var(--ok, #1F9D55); border-color: var(--ok, #1F9D55); color: #fff; }
+.sysx-sig-b.on-no { background: var(--red); border-color: var(--red); color: #fff; }
 .sysx-leaks { display: grid; gap: 8px; }
 .sysx-leak { display: grid; grid-template-columns: 130px 1fr auto; align-items: center; gap: 12px; }
 .sysx-leak-l { font-size: 12px; color: var(--charcoal); }
