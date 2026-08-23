@@ -12,18 +12,31 @@ async function saveLeadToDb(row) {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) return false;
   const base = url.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
-  try {
+  const post = async (payload) => {
     const r = await fetch(`${base}/rest/v1/leads`, {
       method: 'POST',
-      headers: {
-        apikey: key,
-        Authorization: `Bearer ${key}`,
-        'Content-Type': 'application/json',
-        Prefer: 'return=minimal',
-      },
-      body: JSON.stringify(row),
+      headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify(payload),
     });
-    return r.ok; // 201 Created
+    return r.ok ? { ok: true } : { ok: false, status: r.status, body: await r.text().catch(() => '') };
+  };
+  try {
+    // 1) Повна вставка з усіма полями.
+    const full = await post(row);
+    if (full.ok) return true;
+    // 2) Якщо таблиця у старішій формі й бракує колонок (PostgREST 400/PGRST204),
+    //    не втрачаємо заявку — пишемо гарантований мінімум ядра. Так адмінка
+    //    отримає лід навіть без міграції leads.sql.
+    const CORE = ['source', 'email', 'phone', 'name', 'comment', 'status'];
+    const minimal = {};
+    for (const k of CORE) if (row[k] != null) minimal[k] = row[k];
+    // Додаткові поля (роль/задача/бюджет тощо) складаємо у comment, щоб не втратити.
+    const EXTRA = { role: 'Роль', store: 'Магазин', turnover: 'Оборот', task: 'Задача', timeline: 'Терміни', budget: 'Бюджет' };
+    const tail = Object.entries(EXTRA).filter(([k]) => row[k]).map(([k, lbl]) => `${lbl}: ${row[k]}`).join(' · ');
+    if (tail) minimal.comment = [minimal.comment, tail].filter(Boolean).join(' — ');
+    if (row.diag) minimal.comment = [minimal.comment, `\n${row.diag}`].filter(Boolean).join('');
+    const fb = await post(minimal);
+    return fb.ok;
   } catch {
     return false;
   }
