@@ -14,11 +14,16 @@ const relTime = (iso?: string) => {
   try { return new Date(iso).toLocaleDateString('uk-UA', { day: '2-digit', month: 'short' }); } catch { return ''; }
 };
 
+/** Один аудит — три робочі простори: питання / доступи / файли (окремі вкладки). */
+type Ws = 'questions' | 'access' | 'files';
+const wsOf = (t: Question['type']): Ws => (t === 'access' ? 'access' : t === 'file' ? 'files' : 'questions');
+
 export function AuditForm({ user, auditId, template, initial, role, isOwner, extra }: {
   user: DiagUser; auditId: string; template: AuditTemplate; initial: Record<string, AuditAnswer>; role?: string; isOwner: boolean; extra?: Question[];
 }) {
   const [answers, setAnswers] = useState<Record<string, AuditAnswer>>(initial);
   const [saving, setSaving] = useState<string>('');
+  const [ws, setWs] = useState<Ws>('questions');
 
   const valOf = (k: string) => answers[k]?.value;
   const visible = (q: Question) => !q.condQKey || String(valOf(q.condQKey) ?? '') === String(q.condValue ?? '');
@@ -37,11 +42,22 @@ export function AuditForm({ user, auditId, template, initial, role, isOwner, ext
     setSaving('');
   };
 
+  // Прогрес рахуємо і загальний, і по кожному робочому простору окремо.
   const progress = useMemo(() => {
-    let total = 0, done = 0;
-    template.blocks.forEach((b) => b.questions.forEach((q) => { if (visible(q)) { total++; if (answers[q.key]?.value != null && answers[q.key]?.value !== '') done++; } }));
-    return { total, done, pct: total ? Math.round((done / total) * 100) : 0 };
+    const mk = () => ({ total: 0, done: 0 });
+    const per: Record<Ws, { total: number; done: number }> = { questions: mk(), access: mk(), files: mk() };
+    template.blocks.forEach((b) => b.questions.forEach((q) => {
+      if (!visible(q)) return;
+      const p = per[wsOf(q.type)];
+      p.total++;
+      if (answers[q.key]?.value != null && answers[q.key]?.value !== '') p.done++;
+    }));
+    const total = per.questions.total + per.access.total + per.files.total;
+    const done = per.questions.done + per.access.done + per.files.done;
+    return { total, done, pct: total ? Math.round((done / total) * 100) : 0, per };
   }, [answers, template]);
+
+  const WS_TABS: { k: Ws; l: string }[] = [{ k: 'questions', l: 'Питання' }, { k: 'access', l: 'Доступи' }, { k: 'files', l: 'Файли' }];
 
   return (
     <div className="af">
@@ -50,7 +66,15 @@ export function AuditForm({ user, auditId, template, initial, role, isOwner, ext
         <span className="mono">{progress.done}/{progress.total} · {progress.pct}%</span>
       </div>
 
-      {extra && extra.length > 0 && (
+      <div className="af-ws mono" role="tablist">
+        {WS_TABS.map((w) => (
+          <button key={w.k} role="tab" className={ws === w.k ? 'on' : ''} onClick={() => setWs(w.k)}>
+            {w.l} <b>{progress.per[w.k].done}/{progress.per[w.k].total}</b>
+          </button>
+        ))}
+      </div>
+
+      {ws === 'questions' && extra && extra.length > 0 && (
         <div className="af-block af-extra">
           <div className="af-block-head"><b className="af-block-t">Уточнення від менеджера</b><span className="af-role mono" style={{ background: 'var(--red)', color: '#fff' }}>Крок 2</span></div>
           {extra.map((q) => {
@@ -69,7 +93,8 @@ export function AuditForm({ user, auditId, template, initial, role, isOwner, ext
 
       {template.blocks.map((b) => {
         const locked = !!b.role && !isOwner && role !== b.role;
-        const vqs = b.questions.filter(visible);
+        const vqs = b.questions.filter(visible).filter((q) => wsOf(q.type) === ws);
+        if (vqs.length === 0) return null;
         return (
           <div key={b.key} className={`af-block${locked ? ' locked' : ''}`}>
             <div className="af-block-head">

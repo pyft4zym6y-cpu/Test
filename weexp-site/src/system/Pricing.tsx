@@ -124,6 +124,7 @@ export function Pricing() {
 
   return (
     <section className="sysx pric" aria-label={t('Формати та ціни', 'Pricing & formats')}>
+      <div className="sysx-field" aria-hidden="true" />
       <div className="pric-in">
         <header className="pric-head">
           <span className="sysx-kick">{t('Формати співпраці · хто відповідає за результат', 'Cooperation formats · who is responsible for the result')}</span>

@@ -542,6 +542,12 @@
 .af-prog { display: flex; align-items: center; gap: 12px; position: sticky; top: 66px; z-index: 3; background: var(--cream);
   border: var(--bd); box-shadow: var(--sh); padding: 10px 14px; }
 .af-prog-bar { flex: 1; height: 12px; background: var(--cream-2); border: 2px solid var(--deep); overflow: hidden; }
+/* Вкладки робочих просторів аудиту: Питання / Доступи / Файли */
+.af-ws { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 16px; }
+.af-ws button { border: 2px solid var(--deep); background: var(--pure-white); color: var(--deep); font: inherit; font-weight: 800; font-size: 12.5px; padding: 8px 14px; cursor: pointer; }
+.af-ws button b { font-weight: 600; color: var(--graphite); margin-left: 4px; }
+.af-ws button.on { background: var(--deep); color: var(--cream); box-shadow: 3px 3px 0 var(--red); }
+.af-ws button.on b { color: var(--yellow); }
 .af-prog-bar span { display: block; height: 100%; background: var(--red); transition: width .3s; }
 .af-block { background: var(--pure-white); border: var(--bd); box-shadow: var(--sh); padding: 18px; display: flex; flex-direction: column; gap: 14px; }
 .af-block.locked { opacity: .72; }
@@ -970,6 +976,8 @@
 .pm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .pj-ed-add { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .ab-sel.xs { width: 92px; }
+.ab-kind { font-size: 12px; color: var(--graphite); white-space: nowrap; padding: 0 6px; }
+.ab-empty { padding: 4px 0 8px; }
 .pj-bud-wrap { overflow-x: auto; }
 .pj-bud { border-collapse: collapse; font-size: 12.5px; min-width: 100%; }
 .pj-bud th, .pj-bud td { border: 1.5px solid var(--silver); padding: 4px 6px; text-align: center; white-space: nowrap; }

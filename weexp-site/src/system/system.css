@@ -1746,8 +1746,9 @@
 /* ============================================================
    Формати та ціни (Pricing) — світла сторінка, монохром + синій акцент
    ============================================================ */
-.pric { position: relative; background: var(--warm-white); }
-.pric-in { max-width: 1160px; margin: 0 auto;
+/* Фон — єдина система сайту: крем + точкова сітка (.sysx-field), без окремої підложки. */
+.pric { position: relative; }
+.pric-in { position: relative; z-index: 1; max-width: 1160px; margin: 0 auto;
   padding: calc(96px + env(safe-area-inset-top)) clamp(18px, 5vw, 44px) clamp(60px, 9vw, 110px); }
 .pric-head { max-width: 760px; margin-bottom: clamp(28px, 4vw, 48px); }
 .pric-h1 { font-size: clamp(32px, 5.5vw, 60px); margin: 12px 0 14px; }
