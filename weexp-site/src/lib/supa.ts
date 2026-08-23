@@ -151,10 +151,10 @@ export type WorkerMaturity = { rows: MaturityRow[]; observedAvg: number | null }
  * (кілька доменів на один модуль) заповнюють модуль лише якщо він ще порожній.
  */
 export const MATURITY_DOMAIN_MODULE: Record<string, string> = {
-  SEO: 'seo', Platform: 'tech', Product: 'ux', Analytics: 'analytics', Marketing: 'marketing',
-  Strategy: 'strategy', Customer: 'customer', Brand: 'brand', Sales: 'commercial', CRM: 'crm',
-  Pricing: 'commercial', Operations: 'ops', Marketplace: 'ops', International: 'strategy',
-  Finance: 'finance', People: 'people', AI: 'tech', Governance: 'processes',
+  SEO: 'seo', Platform: 'technology', Product: 'product', Analytics: 'analytics', Marketing: 'acquisition',
+  Strategy: 'business', Customer: 'customer', Brand: 'market', Sales: 'business', CRM: 'crm',
+  Pricing: 'product', Operations: 'operations', Marketplace: 'operations', International: 'business',
+  Finance: 'business', People: 'organization', AI: 'technology', Governance: 'organization',
 };
 
 /**

@@ -153,5 +153,25 @@ function Field({ q, value, disabled, onCommit, onFile }: {
       <span>{f?.name ? `📎 ${f.name}` : '＋ Завантажити файл'}</span>
     </label>;
   }
+  if (q.type === 'rank' || q.type === 'rate10') {
+    const map = (value && typeof value === 'object' && !Array.isArray(value) ? value : {}) as Record<string, number>;
+    return <div className="af-rank">
+      {(q.options || []).map((o) => (
+        <div key={o} className="af-rank-row">
+          <span className="af-rank-lbl">{o}</span>
+          <select className="af-rank-sel" value={map[o] ?? ''} disabled={disabled}
+            onChange={(e) => {
+              const next = { ...map };
+              if (e.target.value === '') delete next[o]; else next[o] = Number(e.target.value);
+              onCommit(Object.keys(next).length ? next : '');
+            }}>
+            <option value="">—</option>
+            {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{n}</option>)}
+          </select>
+        </div>
+      ))}
+      <span className="af-rank-hint mono">{q.type === 'rank' ? '1 — найвищий пріоритет · 10 — найнижчий' : '1 — не важливо · 10 — критично важливо'}</span>
+    </div>;
+  }
   return null;
 }

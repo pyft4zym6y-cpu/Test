@@ -1082,3 +1082,13 @@
 .adm-modn-verdict p { margin: 6px 0; }
 .adm-modn-verdict ul { margin: 6px 0 0; padding-left: 18px; }
 .adm-modn-verdict li { margin-bottom: 4px; }
+
+/* ── Питання типу rank / rate10: пункт + оцінка 1–10 ── */
+.af-rank { display: flex; flex-direction: column; gap: 6px; }
+.af-rank-row { display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  border: 2px solid var(--deep); background: var(--pure-white); padding: 8px 10px; }
+.af-rank-lbl { font-size: 13px; font-weight: 600; color: var(--deep); }
+.af-rank-sel { border: 2px solid var(--deep); background: var(--pure-white); color: var(--deep);
+  font-family: inherit; font-weight: 700; font-size: 13px; padding: 4px 6px; min-width: 56px; cursor: pointer; }
+.af-rank-sel:disabled { opacity: .5; cursor: default; }
+.af-rank-hint { font-size: 11px; opacity: .65; }

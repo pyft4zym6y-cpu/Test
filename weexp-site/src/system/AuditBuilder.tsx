@@ -141,7 +141,7 @@ export function AuditBuilder() {
                   </div>
                   <div className="ab-q-row2">
                     <input className="ab-inp ab-hint" value={q.hint || ''} onChange={(e) => setQ(bi, q.key, 'hint', e.target.value)} placeholder={ws === 'access' ? 'Інструкція: кого і як додати (напр. audit@weexp.agency як Viewer)' : ws === 'files' ? 'Формат/період (напр. CSV, 12 міс)' : 'Підказка (необов.)'} />
-                    {(q.type === 'single' || q.type === 'multi') && (
+                    {(q.type === 'single' || q.type === 'multi' || q.type === 'rank' || q.type === 'rate10') && (
                       <input className="ab-inp" value={(q.options || []).join(', ')} onChange={(e) => setQ(bi, q.key, 'options', e.target.value.split(',').map((s) => s.trim()).filter(Boolean))} placeholder="Варіанти через кому" />
                     )}
                   </div>

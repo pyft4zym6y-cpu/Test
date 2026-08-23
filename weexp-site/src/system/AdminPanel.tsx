@@ -23,10 +23,9 @@ import './cabinet.css';
 const MATURITY_MODULE_OF = MATURITY_DOMAIN_MODULE;
 /** Короткі підписи модулів A–P для рядків імпорту зрілості. */
 const MOD_LABEL: Record<string, string> = {
-  company: 'A Компанія', finance: 'B Фінанси', commercial: 'C Комерція', customer: 'D Клієнт',
-  brand: 'E Бренд', marketing: 'F Маркетинг', seo: 'G SEO', ux: 'H Сайт/UX', ops: 'I Операції',
-  crm: 'J CRM', analytics: 'K Аналітика', tech: 'L Технології', people: 'M Люди',
-  processes: 'N Процеси', strategy: 'O Стратегія', competition: 'P Конкуренти',
+  business: '01 Business', market: '02 Market', product: '03 Product', customer: '04 Customer',
+  website: '05 Website', seo: '06 SEO/GEO', acquisition: '07 Acquisition', crm: '08 CRM/Retention',
+  analytics: '09 Analytics', operations: '10 Operations', technology: '11 Technology', organization: '12 Organization',
 };
 
 /**
