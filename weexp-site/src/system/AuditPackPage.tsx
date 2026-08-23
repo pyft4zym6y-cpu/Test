@@ -20,7 +20,7 @@ export function AuditPackPage() {
         <header className="apack-head">
           <span className="sysx-kick">{t('Формат 01 · Аудит · що всередині', 'Format 01 · Audit · what is inside')}</span>
           <h1 className="sysx-display apack-h1">{t('Пакет аудиту — ', 'The audit pack — ')}<span className="sysx-em">{t('19 артефактів', '19 artifacts')}</span></h1>
-          <p className="sysx-lead">{t('Жодних «звітів у повітрі»: до старту ви бачите повний перелік документів, які отримаєте. Кожен артефакт — окремий документ із висновками, доказами або планом.', 'No “reports in the air”: before we start you see the full list of documents you will receive. Each artifact is a separate document with conclusions, evidence or a plan.')}</p>
+          <p className="sysx-lead">{t('Жодних «звітів у повітрі»: до старту ви бачите повний перелік. 5 головних документів — Презентація, Матриця зрілості, Роадмапа, План 90 днів, Цільова модель — і 14 додатків із детальними звітами 12 аудитів та доказовою базою.', 'No “reports in the air”: before we start you see the full list. 5 headline documents — Presentation, Maturity matrix, Roadmap, 90-day plan, Target model — and 14 annexes with the detailed reports of the 12 audits and the evidence base.')}</p>
         </header>
 
         {PACK_PHASES.map((ph) => (
@@ -34,7 +34,7 @@ export function AuditPackPage() {
                     <span className="apack-num mono">{String(n).padStart(2, '0')}</span>
                     <b className="apack-t">{t(a.uk, a.en)}</b>
                     <p className="apack-d">{t(a.descUk, a.descEn)}</p>
-                    <span className={'apack-aud mono' + (a.tier === 'annex' ? ' int' : '')}>{a.tier === 'core' ? t('ядро пакета', 'pack core') : t('додаток · доказова база', 'annex · evidence base')}</span>
+                    <span className={'apack-aud mono' + (a.tier === 'annex' ? ' int' : '')}>{a.tier === 'core' ? t('головний документ', 'headline document') : t('додаток', 'annex')}</span>
                   </article>
                 );
               })}

@@ -4,7 +4,9 @@
  * і чеклист готовності в картці клієнта (адмінка) читають саме цей перелік.
  * source: worker — генерує рушій Commerce OS (pack.zip); admin — генерується/
  * редагується в адмінці; portal — збирається з даних кабінету клієнта.
- * Ядро (12) + Додатки/доказова база (7) — клієнту передаються ВСІ 19.
+ * Структура пакета: 5 ГОЛОВНИХ документів (Презентація · Матриця зрілості ·
+ * Роадмапа · План 90 днів · Цільова модель) + 14 ДОДАТКІВ (детальні звіти
+ * 12 аудитів, доказова база, сервісні документи). Клієнту передаються ВСІ 19.
  */
 export type PackPhase = 'discovery' | 'core' | 'evidence' | 'plan';
 export type PackSource = 'worker' | 'admin' | 'portal';
@@ -14,7 +16,7 @@ export type PackArtifact = {
   uk: string; en: string;
   descUk: string; descEn: string;
   source: PackSource;
-  /** core — ядро пакета (12); annex — додаток/доказова база (7). ВСІ 19 передаються клієнту. */
+  /** core — 5 головних документів; annex — 14 додатків (детальні звіти аудитів + сервісні). ВСІ 19 передаються клієнту. */
   tier: 'core' | 'annex';
 };
 
@@ -32,12 +34,12 @@ export const PACK_ARTIFACTS: PackArtifact[] = [
   { id: 'a03', phase: 'discovery', uk: 'Знімок експрес-аудиту (baseline)', en: 'Express-audit snapshot (baseline)', descUk: 'Точка «як прийшли»: витік, Business Health, ключова проблема — для чесного «до/після».', descEn: 'The starting point: leak, Business Health, key problem — for an honest before/after.', source: 'portal', tier: 'annex' },
   // ── Ядро аудиту ──
   { id: 'a04', phase: 'core', uk: 'Презентація аудиту (для зустрічі-читки)', en: 'Audit presentation', descUk: 'Слайди для розбору: висновки, цифри + строки, бюджет проєкту, необхідна команда (fulltime/parttime/підрядники) і розподіл — що закриваємо ми, що партнери, що ваша команда.', descEn: 'The readout deck: conclusions, numbers + timeline, project budget, required team (full-time/part-time/contractors) and the split — what we close, what partners do, what your team does.', source: 'worker', tier: 'core' },
-  { id: 'a05', phase: 'core', uk: 'Головний висновок (письмове резюме)', en: 'Main conclusion (executive summary)', descUk: '2–3 сторінки тексту для CEO: що працює, що тече, що робити першим. Доповнює презентацію, не дублює її.', descEn: '2–3 pages of text for the CEO: what works, what leaks, what to fix first. Complements the deck, does not duplicate it.', source: 'worker', tier: 'core' },
-  { id: 'a06', phase: 'core', uk: 'Досвід і конверсія', en: 'Experience & conversion', descUk: 'UX/UI, картка, кошик, checkout, mobile, CRO — де саме губляться покупці.', descEn: 'UX/UI, product page, cart, checkout, mobile, CRO — where buyers are lost.', source: 'worker', tier: 'core' },
-  { id: 'a07', phase: 'core', uk: 'Трафік і видимість', en: 'Traffic & visibility', descUk: 'SEO, контент, канали залучення: звідки приходять і чому не приходять більше.', descEn: 'SEO, content, acquisition channels: where traffic comes from and why not more.', source: 'worker', tier: 'core' },
-  { id: 'a08', phase: 'core', uk: 'Бізнес і ринок', en: 'Business & market', descUk: 'Конкурентне поле, ціноутворення, юніт-економіка — позиція в грошах.', descEn: 'Competitive field, pricing, unit economics — your position in money.', source: 'worker', tier: 'core' },
+  { id: 'a05', phase: 'core', uk: 'Головний висновок (письмове резюме)', en: 'Main conclusion (executive summary)', descUk: '2–3 сторінки тексту для CEO: що працює, що тече, що робити першим. Доповнює презентацію, не дублює її.', descEn: '2–3 pages of text for the CEO: what works, what leaks, what to fix first. Complements the deck, does not duplicate it.', source: 'worker', tier: 'annex' },
+  { id: 'a06', phase: 'core', uk: 'Досвід і конверсія', en: 'Experience & conversion', descUk: 'UX/UI, картка, кошик, checkout, mobile, CRO — де саме губляться покупці.', descEn: 'UX/UI, product page, cart, checkout, mobile, CRO — where buyers are lost.', source: 'worker', tier: 'annex' },
+  { id: 'a07', phase: 'core', uk: 'Трафік і видимість', en: 'Traffic & visibility', descUk: 'SEO, контент, канали залучення: звідки приходять і чому не приходять більше.', descEn: 'SEO, content, acquisition channels: where traffic comes from and why not more.', source: 'worker', tier: 'annex' },
+  { id: 'a08', phase: 'core', uk: 'Бізнес і ринок', en: 'Business & market', descUk: 'Конкурентне поле, ціноутворення, юніт-економіка — позиція в грошах.', descEn: 'Competitive field, pricing, unit economics — your position in money.', source: 'worker', tier: 'annex' },
   { id: 'a09', phase: 'core', uk: 'Health Score і матриця зрілості', en: 'Health Score & maturity matrix', descUk: 'Зрілість систем бізнесу за 18 доменами: L1 Хаос → L5 Оптимізовано.', descEn: 'Business systems maturity across 18 domains: L1 Chaos → L5 Optimized.', source: 'worker', tier: 'core' },
-  { id: 'a10', phase: 'core', uk: 'Розрив у грошах: 8 важелів + прогноз 12 міс', en: 'The money gap: 8 levers + 12-month forecast', descUk: 'Причинна карта втрат, baseline і консервативний прогноз відновлення.', descEn: 'Causal loss map, baseline and a conservative recovery forecast.', source: 'worker', tier: 'core' },
+  { id: 'a10', phase: 'core', uk: 'Розрив у грошах: 8 важелів + прогноз 12 міс', en: 'The money gap: 8 levers + 12-month forecast', descUk: 'Причинна карта втрат, baseline і консервативний прогноз відновлення.', descEn: 'Causal loss map, baseline and a conservative recovery forecast.', source: 'worker', tier: 'annex' },
   // ── Доказова база ──
   { id: 'a11', phase: 'evidence', uk: 'Реєстр знахідок з пріоритетами', en: 'Findings registry with priorities', descUk: 'Кожна знахідка: доказ, впевненість, пріоритет P0–P2 — жодних «здається».', descEn: 'Every finding: evidence, confidence, P0–P2 priority — no hand-waving.', source: 'worker', tier: 'annex' },
   { id: 'a12', phase: 'evidence', uk: 'Зведений беклог робіт', en: 'Consolidated work backlog', descUk: 'Знахідки, згорнуті в конкретні роботи з оцінкою ефекту.', descEn: 'Findings rolled into concrete work items with impact estimates.', source: 'worker', tier: 'annex' },
@@ -47,8 +49,8 @@ export const PACK_ARTIFACTS: PackArtifact[] = [
   { id: 'a15', phase: 'plan', uk: 'Роадмапа хвилями + Гант А→Б', en: 'Roadmap in waves', descUk: 'Скрупульозна дорожня карта з точки А в точку Б: кожен крок по місяцях (діаграма Ганта), бюджет, власник кожної задачі.', descEn: 'A meticulous roadmap from point A to point B: every step by month (Gantt chart), budget, an owner for every task.', source: 'worker', tier: 'core' },
   { id: 'a16', phase: 'plan', uk: 'План перших 90 днів', en: 'First-90-days plan', descUk: 'Операційна деталізація ПЕРШОЇ хвилі роадмапи: швидкі перемоги з P0-знахідок по днях 1–30/31–60/61–90.', descEn: 'The operational detail of the roadmap’s FIRST wave: quick wins from P0 findings across days 1–30/31–60/61–90.', source: 'admin', tier: 'core' },
   { id: 'a17', phase: 'plan', uk: 'Цільова модель (Definition of Done)', en: 'Target model (Definition of Done)', descUk: 'Куди мають прийти метрики: еталони ніші як вимірна мета, а не побажання.', descEn: 'Where the metrics must land: niche benchmarks as a measurable goal.', source: 'admin', tier: 'core' },
-  { id: 'a18', phase: 'plan', uk: 'Комерційна пропозиція на впровадження', en: 'Implementation proposal', descUk: 'Формат 02/03 під вашу ситуацію; вартість аудиту зараховується у впровадження.', descEn: 'Format 02/03 for your case; the audit fee is credited toward implementation.', source: 'worker', tier: 'core' },
-  { id: 'a19', phase: 'plan', uk: 'Протокол передачі', en: 'Handover protocol', descUk: 'Що передано, 4 години розборів, дата контрольного дзвінка через 30 днів.', descEn: 'What was handed over, 4 hours of walkthroughs, the 30-day check-in date.', source: 'admin', tier: 'core' },
+  { id: 'a18', phase: 'plan', uk: 'Комерційна пропозиція на впровадження', en: 'Implementation proposal', descUk: 'Формат 02/03 під вашу ситуацію; вартість аудиту зараховується у впровадження.', descEn: 'Format 02/03 for your case; the audit fee is credited toward implementation.', source: 'worker', tier: 'annex' },
+  { id: 'a19', phase: 'plan', uk: 'Протокол передачі', en: 'Handover protocol', descUk: 'Що передано, 4 години розборів, дата контрольного дзвінка через 30 днів.', descEn: 'What was handed over, 4 hours of walkthroughs, the 30-day check-in date.', source: 'admin', tier: 'annex' },
 ];
 
 export const packByPhase = (p: PackPhase) => PACK_ARTIFACTS.filter((a) => a.phase === p);
