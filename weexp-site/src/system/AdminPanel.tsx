@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import {
   currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, deleteLead, deleteDiagnostics, signTierFile, CONFIGURED,
   findAuditIdByCode, loadAuditAnswers, loadAuditExtra, saveAuditExtra,
-  saveProjectsFor, saveAssessmentFor, savePatchFor, runWorkerAudit, uploadAdminFile, deleteAdminFile, maturityToAssessment, sendFindingReviews, loadLearningSnapshot, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject, aiScoreAudit, type ModuleScore, type DiagRecord, type AccessState, type ProjectNote, type AuditJobRef, type AdminFile, type WorkerMaturity, type ReviewableFinding, type FindingReview, type LearningSnapshot, type AuditDoc, type AuditDocSection, type AuditDocVersion, type PackState,
+  saveProjectsFor, saveAssessmentFor, savePatchFor, runWorkerAudit, uploadAdminFile, deleteAdminFile, maturityToAssessment, sendFindingReviews, loadLearningSnapshot, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject, aiScoreAudit, aiSufficiency, type SufficiencyVerdict, type SharedDoc,
+  type ModuleScore, type DiagRecord, type AccessState, type ProjectNote, type AuditJobRef, type AdminFile, type WorkerMaturity, type ReviewableFinding, type FindingReview, type LearningSnapshot, type AuditDoc, type AuditDocSection, type AuditDocVersion, type PackState,
   MANAGER_EMAILS, TEAM_ROLES, ROLE_LABEL, roleOf, can, teamApi, MATURITY_DOMAIN_MODULE, type Role, type TeamMember, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
   type Project, type ProjTask, type ProjMember, type ProjPayment, type ProjMonth, type ProjTariffItem,
   type PmDirectory, type PmSpecialist, type PmRoleRate,
@@ -1177,11 +1178,13 @@ function UserDetail({ row, leads, canDelete, selfEmail, onClose, openFile, onSta
 
           <Block title="Внутрішні нотатки команди"><NotesPanel userId={row.userId} initial={rec.notes || []} author={selfEmail} /></Block>
 
+          <Block title="Модерація опитувальника"><ModerationPanel userId={row.userId} code={code} rec={rec} /></Block>
+
           <Block title="Пакет аудиту — 19 артефактів"><PackChecklist userId={row.userId} email={row.email} rec={rec} /></Block>
 
           <Block title="Документ аудиту (редагований)"><AuditDocEditor userId={row.userId} email={row.email} rec={rec} /></Block>
 
-          <Block title="Мої файли (внутрішні)"><AdminFiles userId={row.userId} initial={rec.adminFiles || []} author={selfEmail} openFile={openFile} /></Block>
+          <Block title="Мої файли та передача клієнту"><AdminFiles userId={row.userId} initial={rec.adminFiles || []} sharedInitial={rec.sharedDocs || []} author={selfEmail} openFile={openFile} /></Block>
 
           <Block title="Запити доступів">{tiers.length ? (
             <div className="adm-drawer-tiers">
@@ -1670,6 +1673,66 @@ function AuditDocEditor({ userId, email, rec }: { userId: string; email: string;
   );
 }
 
+/* ── Модерація опитувальника: AI-перевірка достатності + рішення менеджера ── */
+function ModerationPanel({ userId, code, rec }: { userId: string; code?: string; rec: DiagRecord }) {
+  const [busy, setBusy] = useState('');
+  const [verdict, setVerdict] = useState<SufficiencyVerdict | null>(null);
+  const mod = rec.deepModeration;
+  const setStatus = async (status: 'accepted' | 'clarify', note?: string) => {
+    setBusy(status);
+    const r = await savePatchFor(userId, { deepModeration: { ...(mod || {}), status, at: new Date().toISOString(), note: note || undefined, aiVerdict: verdict ? { sufficient: verdict.sufficient, coveragePct: verdict.coveragePct, summary: verdict.summary, at: new Date().toISOString() } : mod?.aiVerdict } });
+    setBusy('');
+    if (r.ok) toast(status === 'accepted' ? '✓ Підтверджено — клієнт бачить «очікуйте підсумки»' : '✓ Повернуто з уточненнями — клієнт бачить питання');
+    else toast('Не вдалося: ' + (r.error || ''), 'err');
+  };
+  const runAi = async () => {
+    setBusy('ai'); setVerdict(null);
+    try {
+      const id = code ? await findAuditIdByCode(code) : null;
+      const answers = id ? await loadAuditAnswers(id) : {};
+      if (!Object.keys(answers).length) { toast('Відповідей ще немає — клієнт не заповнював опитувальник.', 'err'); setBusy(''); return; }
+      const tpl = await loadTemplate();
+      const modules = (tpl?.blocks || []).map((b) => ({ key: b.key, title: b.title }));
+      const r = await aiSufficiency({ answers, modules, company: rec.company });
+      if (r.ok && r.verdict) setVerdict(r.verdict);
+      else toast('AI-перевірка: ' + (r.error || 'помилка'), 'err');
+    } catch (e) { toast('Помилка: ' + String(e), 'err'); }
+    setBusy('');
+  };
+  const clarify = () => {
+    const note = window.prompt('Коментар клієнту (побачить у кабінеті). Самі питання додайте у блоці «Уточнення (Крок 2)» нижче:', verdict?.missing?.length ? 'Потрібно кілька уточнень — питання нижче у вкладці «Питання».' : '') || undefined;
+    void setStatus('clarify', note);
+  };
+  const M: Record<string, { l: string; cls: string }> = {
+    submitted: { l: 'надіслано на модерацію', cls: 'wait' }, clarify: { l: 'повернуто з уточненнями', cls: 'wait' }, accepted: { l: 'підтверджено', cls: 'ok' },
+  };
+  return (
+    <div className="adm-modn">
+      <div className="adm-modn-head">
+        <span className={`cab-badge mono tst-${mod ? M[mod.status].cls : 'muted'}`}>{mod ? M[mod.status].l : 'клієнт ще не надсилав'}</span>
+        {mod && <span className="mono adm-act-at">{rel(mod.at)}</span>}
+        {mod?.aiVerdict && <span className="mono adm-modn-ai">AI: {mod.aiVerdict.sufficient ? '✓ достатньо' : '✕ недостатньо'}{typeof mod.aiVerdict.coveragePct === 'number' ? ` · ${mod.aiVerdict.coveragePct}%` : ''}</span>}
+      </div>
+      <div className="adm-modn-acts">
+        <button className="mc-btn ghost" disabled={busy === 'ai'} onClick={runAi}>{busy === 'ai' ? '🤖 Аналізую…' : '🤖 AI: чи достатньо даних?'}</button>
+        <button className="mc-btn ok" disabled={!!busy} onClick={() => setStatus('accepted')}>✓ Підтвердити отримання</button>
+        <button className="mc-btn wait" disabled={!!busy} onClick={clarify}>↩ Повернути з уточненнями</button>
+      </div>
+      {verdict && (
+        <div className={'adm-modn-verdict' + (verdict.sufficient ? ' is-ok' : ' is-warn')}>
+          <b>{verdict.sufficient ? '✓ Даних достатньо' : '✕ Даних недостатньо'} · покриття ~{verdict.coveragePct}%</b>
+          <p>{verdict.summary}</p>
+          {verdict.missing.length > 0 && (
+            <ul>{verdict.missing.map((m, i) => <li key={i}><b>{m.module}:</b> {m.ask}</li>)}</ul>
+          )}
+          {!verdict.sufficient && <p className="mono adm-hint">Скопіюйте потрібні питання у блок «Уточнення (Крок 2)» і натисніть «Повернути з уточненнями».</p>}
+        </div>
+      )}
+      <p className="mono adm-hint">Ланцюг: клієнт надсилає анкету → AI/менеджер перевіряють повноту → «Підтвердити» (клієнт бачить «очікуйте підсумки») або «Повернути» (клієнт бачить уточнюючі питання). Результати аудиту НЕ потрапляють до клієнта автоматично — лише через «поділитися» у файлах.</p>
+    </div>
+  );
+}
+
 /* ── Пакет аудиту: чеклист 19 артефактів + автогенерація адмінських документів ── */
 
 /** Спільний друкований шаблон WEEXP (як досьє): відкриває вікно → друк у PDF. */
@@ -1807,12 +1870,23 @@ function PackChecklist({ userId, email, rec }: { userId: string; email: string; 
   );
 }
 
-/** Власні файли аудитора у картці клієнта (свої дані, дельіверабли). */
-function AdminFiles({ userId, initial, author, openFile }: { userId: string; initial: AdminFile[]; author: string; openFile: (p: string) => void }) {
+/** Власні файли аудитора у картці клієнта (свої дані, дельіверабли).
+ *  «Поділитися» — ЄДИНИЙ шлях, яким документ потрапляє клієнту в кабінет
+ *  (розділ «Документи»): нічого не публікується автоматично. */
+function AdminFiles({ userId, initial, sharedInitial, author, openFile }: { userId: string; initial: AdminFile[]; sharedInitial: SharedDoc[]; author: string; openFile: (p: string) => void }) {
   const [list, setList] = useState<AdminFile[]>(initial || []);
+  const [shared, setShared] = useState<SharedDoc[]>(sharedInitial || []);
   const [kind, setKind] = useState<AdminFile['kind']>('data');
   const [busy, setBusy] = useState('');
   const persist = (next: AdminFile[]) => { setList(next); void savePatchFor(userId, { adminFiles: next }); };
+  const isShared = (p: string) => shared.some((d) => d.path === p);
+  const toggleShare = (f: AdminFile) => {
+    const next = isShared(f.path)
+      ? shared.filter((d) => d.path !== f.path)
+      : [...shared, { id: f.path, title: f.name, path: f.path, at: new Date().toISOString(), by: author }];
+    setShared(next); void savePatchFor(userId, { sharedDocs: next });
+    toast(isShared(f.path) ? 'Прибрано з кабінету клієнта' : '✓ Поділилися: клієнт бачить документ у розділі «Документи»');
+  };
   const onPick = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []); e.target.value = '';
     if (!files.length) return;
@@ -1842,6 +1916,9 @@ function AdminFiles({ userId, initial, author, openFile }: { userId: string; ini
           <li key={f.path} className="adm-afile">
             <button className="mono adm-file" onClick={() => openFile(f.path)}>📎 {f.name}</button>
             <span className="mono adm-afile-m">{f.kind === 'deliverable' ? 'документ' : f.kind === 'data' ? 'дані' : 'інше'} · {rel(f.at)}</span>
+            <button className={'mc-btn ' + (isShared(f.path) ? 'fr-on-ok' : 'ghost')} onClick={() => toggleShare(f)} title="Показати/приховати документ у кабінеті клієнта">
+              {isShared(f.path) ? '✓ У клієнта' : '↗ Поділитися'}
+            </button>
             <button className="adm-note-x mono" disabled={busy === f.path} onClick={() => del(f)} title="Видалити">✕</button>
           </li>
         ))}</ul>

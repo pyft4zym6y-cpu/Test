@@ -30,10 +30,11 @@ export function AuditPackPage() {
               {packByPhase(ph.key).map((a) => {
                 n += 1;
                 return (
-                  <article key={a.id} className="apack-card">
+                  <article key={a.id} className={'apack-card' + (a.audience === 'internal' ? ' is-int' : '')}>
                     <span className="apack-num mono">{String(n).padStart(2, '0')}</span>
                     <b className="apack-t">{t(a.uk, a.en)}</b>
                     <p className="apack-d">{t(a.descUk, a.descEn)}</p>
+                    <span className={'apack-aud mono' + (a.audience === 'internal' ? ' int' : '')}>{a.audience === 'client' ? t('передається вам', 'handed to you') : t('робочий документ · на запит', 'working doc · on request')}</span>
                   </article>
                 );
               })}

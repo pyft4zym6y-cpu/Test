@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   currentUser, signOut, loadDiag, saveDiag, CONFIGURED, isCloudUser,
-  signInWithGoogle, onAuth,
+  signInWithGoogle, onAuth, signTierFile,
   ensureAudit, findAuditIdByCode, loadAuditAnswers, loadAuditExtra, getProjects,
   type DiagUser, type DiagRecord, type CompanyProfile, type TierStatus, type TierEvent, type AuditAnswer, type ExtraQ, type AccessState,
 } from '@/lib/supa';
@@ -195,6 +195,25 @@ export function Cabinet() {
         {section === 'docs' && (
           <div className="cab-sec">
             <SecHead kick={t('Документи', 'Documents')} title={t('Документи та доступи', 'Documents & access')} lead={t('Все, що ви надаєте нам для роботи, і все, що отримуєте від нас: доступи до систем, файли, звіти аудиту.', 'Everything you provide for the work and everything you receive from us: system access, files, audit reports.')} />
+            <div className="cab-shared">
+              <span className="sysx-kick">{t('Ваші документи від WEEXP', 'Your documents from WEEXP')}</span>
+              {(rec?.sharedDocs || []).length === 0 ? (
+                <p className="cab-sub">{rec?.deepModeration?.status === 'accepted'
+                  ? t('Готуємо фінальний пакет аудиту — документи зʼявляться тут, щойно менеджер поділиться ними.', 'We are preparing the final audit pack — documents will appear here as soon as the manager shares them.')
+                  : t('Тут зʼявляться фінальні документи аудиту, коли менеджер поділиться ними.', 'The final audit documents will appear here once the manager shares them.')}</p>
+              ) : (
+                <ul className="cab-shared-list">
+                  {(rec?.sharedDocs || []).map((d) => (
+                    <li key={d.id} className="cab-shared-i">
+                      <button className="cab-shared-dl" onClick={async () => { if (!d.path) return; const url = await signTierFile(d.path); if (url) window.open(url, '_blank'); else toast(t('Не вдалося відкрити файл', 'Could not open the file'), 'err'); }}>
+                        📄 <b>{d.title}</b>
+                      </button>
+                      <span className="mono cab-shared-at">{new Date(d.at).toLocaleDateString(t('uk-UA', 'en-GB'))}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
             <AccessGrant user={user} rec={rec} embedded />
           </div>
         )}
@@ -638,7 +657,42 @@ function DeepAudit({ user, rec, express, onDone, onClose, go }: { user: DiagUser
               <div className="cab-roles">{CLIENT_ROLES.map((r) => <button key={r} className="sysx-cta" onClick={() => pickRole(r)}>{r}</button>)}</div>
             </div>
           )
-          : <AuditForm user={user} auditId={auditId} template={tpl} initial={answers} role={role} isOwner={status === 'granted'} extra={extra as unknown as Question[]} />}
+          : (
+            <>
+              {/* Модерація: банер стану + кнопка «Надіслати на модерацію» */}
+              {rec?.deepModeration?.status === 'accepted' ? (
+                <div className="cab-mod-banner is-ok">
+                  <b>{t('✓ Відповіді прийнято', '✓ Answers accepted')}</b>
+                  <p>{t('Очікуйте підсумки аудиту — фінальні документи зʼявляться у розділі «Документи». Ми повідомимо, щойно все буде готово.', 'Await the audit results — the final documents will appear in the “Documents” section. We will let you know as soon as everything is ready.')}</p>
+                  <button className="sysx-cta" onClick={() => go('docs')}>{t('До розділу «Документи» →', 'To “Documents” →')}</button>
+                </div>
+              ) : rec?.deepModeration?.status === 'clarify' ? (
+                <div className="cab-mod-banner is-warn">
+                  <b>{t('Уточнюючі питання від менеджера', 'Clarifying questions from your manager')}</b>
+                  <p>{rec.deepModeration.note || t('Ми переглянули відповіді — потрібно кілька уточнень. Питання додано у вкладку «Питання» (блок «Уточнення від менеджера»). Після відповіді надішліть анкету повторно.', 'We reviewed your answers — a few clarifications are needed. The questions were added to the “Questions” tab. Re-submit once answered.')}</p>
+                </div>
+              ) : rec?.deepModeration?.status === 'submitted' ? (
+                <div className="cab-mod-banner">
+                  <b>{t('Дякуємо! Ваші відповіді на модерації', 'Thank you! Your answers are under review')}</b>
+                  <p>{t('Ми перевіряємо повноту даних і повідомимо подальші кроки. Відповіді можна доповнювати — вони зберігаються автоматично.', 'We are checking data completeness and will let you know the next steps. You can still add answers — they save automatically.')}</p>
+                </div>
+              ) : null}
+              <AuditForm user={user} auditId={auditId} template={tpl} initial={answers} role={role} isOwner={status === 'granted'} extra={extra as unknown as Question[]} />
+              {rec?.deepModeration?.status !== 'accepted' && (
+                <div className="cab-mod-submit">
+                  <button className="sysx-cta is-primary" disabled={busy} onClick={async () => {
+                    setBusy(true);
+                    await saveDiag(user, { deepModeration: { status: 'submitted', at: new Date().toISOString() } });
+                    setBusy(false); onDone();
+                    toast(t('✓ Надіслано на модерацію. Ми повідомимо подальші кроки.', '✓ Submitted for review. We will let you know the next steps.'));
+                  }}>
+                    {rec?.deepModeration?.status === 'clarify' ? t('Надіслати відповіді на уточнення →', 'Send the clarified answers →') : rec?.deepModeration?.status === 'submitted' ? t('Оновити надіслані відповіді →', 'Update the submitted answers →') : t('Надіслати на модерацію →', 'Submit for review →')}
+                  </button>
+                  <span className="sysx-note mono">{t('Після надсилання менеджер перевірить повноту даних.', 'After submission the manager checks data completeness.')}</span>
+                </div>
+              )}
+            </>
+          )}
       </section>
     );
   }

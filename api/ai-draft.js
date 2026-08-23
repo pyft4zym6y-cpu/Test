@@ -105,11 +105,32 @@ ${startNote} ${spanNote}
   }
 }
 
+/* ── Гілка 3: перевірка достатності даних опитувальника (модерація) ── */
+async function handleSufficiency(req, res, key) {
+  const { answers, modules, company } = req.body ?? {};
+  const flat = flatAnswers(answers, '');
+  if (!flat) { res.status(200).json({ ok: true, verdict: { sufficient: false, coveragePct: 0, summary: 'Опитувальник порожній — даних немає.', missing: (modules || []).slice(0, 8).map((m) => ({ module: m.title || m.key, ask: 'Заповнити блок повністю.' })) } }); return; }
+  const modList = (Array.isArray(modules) ? modules : []).map((m) => `- ${m.key}: ${m.title}`).join('\n').slice(0, 5000);
+  const sys = `Ти — керівник аудиторської практики WEEXP. Твоє завдання — МОДЕРАЦІЯ вхідних даних глибокого аудиту: оцінити, чи ДОСТАТНЬО відповідей клієнта, щоб коректно сформувати повний пакет документів аудиту (висновки, оцінка зрілості, план). Будь вимогливим, але практичним: критичні прогалини — це відсутні фінансові показники, доступи до аналітики, опис бізнес-моделі. Відповідай українською.`;
+  const prompt = `МОДУЛІ АУДИТУ:\n${modList}\n\nВІДПОВІДІ КЛІЄНТА:\n${flat.slice(0, 18000)}\n${company ? `\nКОМПАНІЯ: ${JSON.stringify(company).slice(0, 1500)}` : ''}
+
+Оціни достатність даних. Поверни ТІЛЬКИ валідний JSON:
+{ "sufficient": true|false, "coveragePct": 0-100, "summary": "2-3 речення: стан даних і головні прогалини", "missing": [{"module":"назва модуля","ask":"конкретне питання/дані, яких бракує"}] }
+Правила: sufficient=true лише якщо покриття критичних модулів ≥70% і немає блокуючих прогалин; missing — максимум 8 найважливіших пунктів, сформульованих як готові питання клієнту.`;
+  try {
+    const v = await callClaude(key, sys, prompt);
+    res.status(200).json({ ok: true, verdict: { sufficient: Boolean(v.sufficient), coveragePct: Math.max(0, Math.min(100, Number(v.coveragePct) || 0)), summary: String(v.summary || ''), missing: Array.isArray(v.missing) ? v.missing.slice(0, 8) : [] } });
+  } catch (e) {
+    res.status(200).json({ error: String(e.message || e).slice(0, 200) });
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ error: 'POST only' }); return; }
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) { res.status(200).json({ error: 'AI не налаштовано: додайте ANTHROPIC_API_KEY у Vercel.' }); return; }
-  // Диспетчер: запит оцінки завжди несе масив modules (плюс rewrite зберігає URL).
+  // Диспетчер: kind='sufficiency' → модерація; масив modules (або rewrite ai-score) → оцінка; інакше — чернетка проєкту.
+  if (req.body?.kind === 'sufficiency') { await handleSufficiency(req, res, key); return; }
   const isScore = Array.isArray(req.body?.modules) || String(req.url || '').includes('ai-score');
   if (isScore) { await handleScore(req, res, key); return; }
   await handleDraft(req, res, key);

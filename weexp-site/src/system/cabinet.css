@@ -1058,3 +1058,27 @@
 .adm-lead-chk { position: absolute; top: 8px; right: 8px; width: 18px; height: 18px; cursor: pointer; z-index: 2; accent-color: var(--red); }
 .adm-lead-open { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 0; font: inherit; cursor: pointer; color: inherit; }
 .adm-lead-open b, .adm-lead-open span { display: block; }
+
+/* ═══ Модерація опитувальника + передані документи ═══ */
+.cab-mod-banner { border: 2.5px solid var(--deep); background: var(--pure-white); box-shadow: 4px 4px 0 var(--deep); padding: 16px 18px; margin-bottom: 16px; }
+.cab-mod-banner b { display: block; font-size: 16px; margin-bottom: 6px; }
+.cab-mod-banner p { margin: 0 0 10px; font-size: 13.5px; line-height: 1.55; color: var(--charcoal); }
+.cab-mod-banner.is-ok { border-color: var(--ok, #1F9D55); box-shadow: 4px 4px 0 var(--ok, #1F9D55); }
+.cab-mod-banner.is-warn { border-color: var(--warn, #C0851E); box-shadow: 4px 4px 0 var(--warn, #C0851E); }
+.cab-mod-submit { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 18px; padding-top: 14px; border-top: 2px solid var(--line); }
+.cab-shared { border: 2.5px solid var(--deep); background: var(--pure-white); box-shadow: 4px 4px 0 var(--deep); padding: 16px 18px; margin: 4px 0 18px; }
+.cab-shared-list { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 8px; }
+.cab-shared-i { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+.cab-shared-dl { background: none; border: 0; cursor: pointer; font: inherit; color: var(--red); font-size: 14.5px; text-align: left; padding: 0; }
+.cab-shared-dl:hover { text-decoration: underline; }
+.cab-shared-at { color: var(--graphite); font-size: 11px; }
+/* Адмінка: модерація */
+.adm-modn-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 10px; }
+.adm-modn-ai { font-size: 11px; color: var(--graphite); }
+.adm-modn-acts { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.adm-modn-verdict { border: 2px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; font-size: 12.5px; }
+.adm-modn-verdict.is-ok { border-color: var(--ok, #1F9D55); }
+.adm-modn-verdict.is-warn { border-color: var(--warn, #C0851E); }
+.adm-modn-verdict p { margin: 6px 0; }
+.adm-modn-verdict ul { margin: 6px 0 0; padding-left: 18px; }
+.adm-modn-verdict li { margin-bottom: 4px; }

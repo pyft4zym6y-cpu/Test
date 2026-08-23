@@ -102,8 +102,21 @@ export type DiagRecord = {
   findingReviews?: Record<string, FindingReview>; // рецензії findings рушія (ключ = findingId) — цикл навчання
   auditDoc?: AuditDoc;                         // редагований документ аудиту (адмін коригує/версіонує/експортує)
   packChecklist?: Record<string, PackState>;   // готовність 19 артефактів пакета (ключ = auditPack id)
+  deepModeration?: DeepModeration;             // модерація опитувальника глибокого аудиту
+  sharedDocs?: SharedDoc[];                    // фінальні документи, якими адмін поділився з клієнтом
   updatedAt?: string;
 };
+
+/** Модерація опитувальника: клієнт надіслав → AI/менеджер перевірили → підтверджено або уточнення. */
+export type DeepModeration = {
+  status: 'submitted' | 'clarify' | 'accepted';
+  at: string;
+  note?: string;          // коментар менеджера клієнту (видно в кабінеті)
+  aiVerdict?: { sufficient: boolean; coveragePct?: number; summary?: string; at: string }; // внутрішнє
+};
+
+/** Документ, переданий клієнту в кабінет (розділ «Документи»). path → tier-files. */
+export type SharedDoc = { id: string; title: string; path?: string; at: string; by?: string };
 
 /** Стан одного артефакта пакета аудиту: — → готово → передано. */
 export type PackState = { st?: 'ready' | 'delivered'; at?: string };
@@ -293,6 +306,15 @@ export async function sendFindingReviews(auditId: string, findings: ReviewableFi
 /** Прочитати знімок навчання з воркера. */
 export async function loadLearningSnapshot(): Promise<{ ok?: boolean; snapshot?: LearningSnapshot; error?: string }> {
   return runWorkerAudit('learnSnapshot');
+}
+
+/** AI-перевірка достатності даних опитувальника для формування пакета документів. */
+export type SufficiencyVerdict = { sufficient: boolean; coveragePct: number; summary: string; missing: { module: string; ask: string }[] };
+export async function aiSufficiency(payload: { answers: Record<string, unknown>; modules: { key: string; title: string }[]; company?: unknown }): Promise<{ ok?: boolean; verdict?: SufficiencyVerdict; error?: string }> {
+  try {
+    const r = await fetch('/api/ai-draft', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ kind: 'sufficiency', ...payload }) });
+    return await r.json();
+  } catch (e) { return { error: String(e) }; }
 }
 
 /** Довідник проект-офісу зберігається у записі менеджера (diagnostics.data.pmDir). */
