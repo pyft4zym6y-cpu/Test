@@ -273,7 +273,7 @@ function AccessGrant({ user, rec, embedded }: { user: DiagUser; rec: DiagRecord 
   };
   const set = (id: string, patch: Partial<AccessState>) => persist({ ...map, [id]: { ...map[id], ...patch, at: new Date().toISOString() } });
   // GA4 — справжній OAuth-конектор: статус із сервера + старт авторизації Google.
-  const [gaInfo, setGaInfo] = useState<{ connected?: boolean; email?: string; properties?: { id: string; name: string; account: string }[]; error?: string } | null>(null);
+  const [gaInfo, setGaInfo] = useState<{ connected?: boolean; email?: string; properties?: { id: string; name: string; account: string }[]; sites?: { url: string; level: string }[]; error?: string } | null>(null);
   useEffect(() => {
     let alive = true;
     fetch(`/api/ga4?action=status&u=${encodeURIComponent(user.id)}`)
@@ -284,6 +284,8 @@ function AccessGrant({ user, rec, embedded }: { user: DiagUser; rec: DiagRecord 
         const cur = latest.current['AC-01']?.connStatus;
         if (j.connected && cur !== 'on') set('AC-01', { connStatus: 'on', method: 'oauth', status: 'granted' });
         if (!j.connected && !j.error && cur === 'on') set('AC-01', { connStatus: 'off' });
+        // Те саме підключення покриває і Search Console (webmasters.readonly)
+        if (j.connected && (j.sites || []).length && latest.current['AC-03']?.connStatus !== 'on') set('AC-03', { connStatus: 'on', method: 'oauth', status: 'granted' });
       })
       .catch(() => {});
     return () => { alive = false; };
@@ -360,6 +362,7 @@ function AccessGrant({ user, rec, embedded }: { user: DiagUser; rec: DiagRecord 
                   <p className="cab-acc-how-t cab-ga-ok">
                     ✓ {t('Підключено акаунт', 'Connected account')}: <b>{gaInfo.email || '—'}</b>
                     {(gaInfo.properties || []).length > 0 && <> · {t('властивості', 'properties')}: {(gaInfo.properties || []).slice(0, 3).map((pp) => pp.name).join(', ')}{(gaInfo.properties || []).length > 3 ? '…' : ''}</>}
+                    {(gaInfo.sites || []).length > 0 && <> · Search Console: {(gaInfo.sites || []).length} {t('сайт(и)', 'site(s)')}</>}
                     {' · '}<button className="cab-ga-drop" onClick={dropGa}>{t('відключити', 'disconnect')}</button>
                   </p>
                 )}

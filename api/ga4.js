@@ -62,7 +62,7 @@ function sb() {
 }
 
 /* ── OAuth helpers ── */
-const OAUTH_SCOPE = 'openid email https://www.googleapis.com/auth/analytics.readonly';
+const OAUTH_SCOPE = 'openid email https://www.googleapis.com/auth/analytics.readonly https://www.googleapis.com/auth/webmasters.readonly';
 function redirectUri(req) {
   return process.env.GOOGLE_OAUTH_REDIRECT || `https://${req.headers['x-forwarded-host'] || req.headers.host}/api/ga4`;
 }
@@ -130,11 +130,17 @@ export default async function handler(req, res) {
       try { email = JSON.parse(Buffer.from(String(tok.id_token).split('.')[1], 'base64url').toString()).email || ''; } catch { /* noop */ }
       let properties = [];
       try { properties = await listProperties(tok.access_token); } catch { /* покажемо пізніше через status */ }
+      let sites = [];
+      try {
+        const rs = await fetch('https://www.googleapis.com/webmasters/v3/sites', { headers: { Authorization: `Bearer ${tok.access_token}` } });
+        const js = await rs.json();
+        sites = (js.siteEntry || []).map((x) => ({ url: x.siteUrl, level: x.permissionLevel }));
+      } catch { /* GSC опційний */ }
       // refresh_token приходить лише з prompt=consent; якщо його нема — лишаємо старий
       const prev = tok.refresh_token ? null : await store.get(u);
       const ok = await store.upsert({
         user_id: u, email, refresh_token: tok.refresh_token || prev?.refresh_token || '',
-        properties, at: new Date().toISOString(),
+        properties, sites, at: new Date().toISOString(),
       });
       if (!ok) return back(res, 'ga=error&reason=store');
       return back(res, 'ga=connected');
@@ -159,7 +165,7 @@ export default async function handler(req, res) {
     if (!store) { res.status(200).json({ connected: false, error: 'not_configured' }); return; }
     const row = u ? await store.get(u) : null;
     res.status(200).json(row
-      ? { connected: !!row.refresh_token, email: row.email || '', properties: row.properties || [], at: row.at }
+      ? { connected: !!row.refresh_token, email: row.email || '', properties: row.properties || [], sites: row.sites || [], at: row.at }
       : { connected: false });
     return;
   }
@@ -172,6 +178,42 @@ export default async function handler(req, res) {
       await store.del(u);
     }
     res.status(200).json({ ok: true }); return;
+  }
+
+  if (action === 'pull_gsc') {
+    const u = String(q.u || ''); const site = String(q.site || '');
+    if (!CID || !CSECRET || !store) { res.status(200).json({ error: 'not_configured' }); return; }
+    const row = u ? await store.get(u) : null;
+    if (!row?.refresh_token) { res.status(200).json({ error: 'not_connected' }); return; }
+    if (!site) { res.status(400).json({ error: 'site required' }); return; }
+    try {
+      const access = await refreshAccess(row.refresh_token, CID, CSECRET);
+      const end = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      const start = new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10);
+      const qr = async (body) => {
+        const r = await fetch(`https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(site)}/searchAnalytics/query`, {
+          method: 'POST', headers: { Authorization: `Bearer ${access}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ startDate: start, endDate: end, ...body }),
+        });
+        const j = await r.json();
+        if (j.error) throw new Error(j.error.message);
+        return j;
+      };
+      const [tot, topq] = await Promise.all([
+        qr({}),
+        qr({ dimensions: ['query'], rowLimit: 10 }),
+      ]);
+      const t = tot.rows?.[0] || {};
+      res.status(200).json({
+        period: '28 днів',
+        clicks: Math.round(t.clicks || 0), impressions: Math.round(t.impressions || 0),
+        ctr: Math.round((t.ctr || 0) * 10000) / 100, position: Math.round((t.position || 0) * 10) / 10,
+        queries: (topq.rows || []).map((r2) => ({ q: r2.keys?.[0] || '—', clicks: Math.round(r2.clicks || 0), impressions: Math.round(r2.impressions || 0), position: Math.round((r2.position || 0) * 10) / 10 })),
+      });
+    } catch (e) {
+      res.status(200).json({ error: String(e.message || e) });
+    }
+    return;
   }
 
   if (action === 'pull') {

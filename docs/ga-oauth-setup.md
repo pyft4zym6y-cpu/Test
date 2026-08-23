@@ -21,10 +21,19 @@
 
 (меню ☰ → APIs & Services → **Library**)
 
-1. У пошуку набрати **Google Analytics Data API** → відкрити → **Enable**.
-2. Так само **Google Analytics Admin API** → **Enable**.
-   - Data API — тягне метрики (сесії/замовлення/виручка).
-   - Admin API — дає список властивостей (properties) клієнта для селектора.
+Вмикаємо ОДРАЗУ все, що використовуватиме аудит (безкоштовно, нічого не ламає):
+
+1. **Google Analytics Data API** → Enable — метрики GA4 (сесії/замовлення/виручка).
+2. **Google Analytics Admin API** → Enable — список властивостей клієнта.
+3. **Google Search Console API** → Enable — кліки/покази/запити з GSC
+   (те саме підключення клієнта покриває і GSC — scope додано в код).
+4. (опційно, на майбутнє) **Content API for Shopping** → Enable — Merchant Center.
+5. (опційно) **Tag Manager API** → Enable — читання контейнерів GTM.
+
+⚠ **Google Ads API — окрема історія**: крім увімкнення API потрібен
+**Developer Token** (Google Ads → Tools → API Center), який Google видає
+за заявкою і розглядає днями. Увімкнути API можна зараз, але конектор
+для Ads підключимо окремим кроком, коли буде токен.
 
 ## Крок 3 · Екран згоди (OAuth consent screen)
 
@@ -38,7 +47,8 @@
    - App domain / Authorized domains: `weexp.agency`.
    - Developer contact email: та сама пошта. → Save.
 3. Scopes → **Add or remove scopes** → знайти й позначити:
-   - `.../auth/analytics.readonly` (Google Analytics API, read-only)
+   - `.../auth/analytics.readonly` (Google Analytics, read-only)
+   - `.../auth/webmasters.readonly` (Search Console, read-only)
    - `openid`, `.../auth/userinfo.email`
    → Update → Save.
 4. Audience / Test users → **Add users** → додати:

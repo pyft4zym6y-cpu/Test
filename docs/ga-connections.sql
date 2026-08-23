@@ -9,3 +9,6 @@ create table if not exists public.ga_connections (
 );
 alter table public.ga_connections enable row level security;
 -- Жодних політик: читає/пише лише service-role ключ із серверних функцій.
+
+-- v2: список сайтів Search Console того самого підключення
+alter table public.ga_connections add column if not exists sites jsonb default '[]'::jsonb;

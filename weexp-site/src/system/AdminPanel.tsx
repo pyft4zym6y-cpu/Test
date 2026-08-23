@@ -2681,19 +2681,24 @@ function ProjectEditor({ value, onChange, code, company }: { value: Project; onC
 
 /** GA4-конектор клієнта: перевірка підключення і превʼю ключових даних (read-only). */
 function GaPreview({ userId }: { userId: string }) {
-  type GaStatus = { connected?: boolean; email?: string; properties?: { id: string; name: string; account: string }[]; at?: string; error?: string };
+  type GaStatus = { connected?: boolean; email?: string; properties?: { id: string; name: string; account: string }[]; sites?: { url: string; level: string }[]; at?: string; error?: string };
   type GaPull = { period?: string; sessions?: number; users?: number; transactions?: number; revenue?: number; cr?: number; aov?: number;
     channels?: { name: string; sessions: number; revenue: number }[]; devices?: { name: string; sessions: number; cr: number }[]; error?: string };
+  type GscPull = { period?: string; clicks?: number; impressions?: number; ctr?: number; position?: number;
+    queries?: { q: string; clicks: number; impressions: number; position: number }[]; error?: string };
   const [st, setSt] = useState<GaStatus | null>(null);
   const [prop, setProp] = useState('');
   const [data, setData] = useState<GaPull | null>(null);
-  const [busy, setBusy] = useState<'status' | 'pull' | ''>('');
+  const [site, setSite] = useState('');
+  const [gsc, setGsc] = useState<GscPull | null>(null);
+  const [busy, setBusy] = useState<'status' | 'pull' | 'gsc' | ''>('');
   const check = async () => {
     setBusy('status'); setData(null);
     try {
       const j: GaStatus = await (await fetch(`/api/ga4?action=status&u=${encodeURIComponent(userId)}`)).json();
       setSt(j);
       if (j.connected && (j.properties || []).length && !prop) setProp(String((j.properties || [])[0].id));
+      if (j.connected && (j.sites || []).length && !site) setSite((j.sites || [])[0].url);
     } catch { setSt({ connected: false, error: 'network' }); }
     setBusy('');
   };
@@ -2702,6 +2707,13 @@ function GaPreview({ userId }: { userId: string }) {
     setBusy('pull');
     try { setData(await (await fetch(`/api/ga4?action=pull&u=${encodeURIComponent(userId)}&property=${prop}`)).json()); }
     catch { setData({ error: 'network' }); }
+    setBusy('');
+  };
+  const pullGsc = async () => {
+    if (!site) return;
+    setBusy('gsc');
+    try { setGsc(await (await fetch(`/api/ga4?action=pull_gsc&u=${encodeURIComponent(userId)}&site=${encodeURIComponent(site)}`)).json()); }
+    catch { setGsc({ error: 'network' }); }
     setBusy('');
   };
   const eurF = (n?: number) => `€${Math.round(n || 0).toLocaleString('uk-UA')}`;
@@ -2722,6 +2734,34 @@ function GaPreview({ userId }: { userId: string }) {
           <button className="sysx-cta is-primary" onClick={pull} disabled={!prop || busy === 'pull'}>{busy === 'pull' ? 'Тягнемо дані…' : 'Превʼю даних (30 дн) →'}</button>
         </div>
       )}
+      {st?.connected && (st.sites || []).length > 0 && (
+        <div className="adm-ga-bar">
+          <select className="ab-sel" value={site} onChange={(e) => setSite(e.target.value)}>
+            {(st.sites || []).map((s2) => <option key={s2.url} value={s2.url}>GSC · {s2.url} ({s2.level})</option>)}
+          </select>
+          <button className="sysx-cta" onClick={pullGsc} disabled={!site || busy === 'gsc'}>{busy === 'gsc' ? 'Тягнемо…' : 'Превʼю Search Console (28 дн) →'}</button>
+        </div>
+      )}
+      {gsc && (gsc.error
+        ? <p className="mono adm-ga-no">GSC: {gsc.error}</p>
+        : (
+          <div className="adm-ga-data">
+            <div className="adm-ga-kpis" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+              <div><b>{(gsc.clicks || 0).toLocaleString('uk-UA')}</b><span>кліків</span></div>
+              <div><b>{(gsc.impressions || 0).toLocaleString('uk-UA')}</b><span>показів</span></div>
+              <div><b>{gsc.ctr ?? 0}%</b><span>CTR</span></div>
+              <div><b>{gsc.position ?? 0}</b><span>сер. позиція</span></div>
+            </div>
+            {(gsc.queries || []).length > 0 && (
+              <div className="adm-ga-tbl">
+                <span className="mono adm-ga-h">Топ-10 запитів · кліки / покази / позиція</span>
+                {(gsc.queries || []).map((q2) => (
+                  <div key={q2.q} className="adm-ga-row adm-ga-row4"><span>{q2.q}</span><b className="mono">{q2.clicks}</b><i className="mono">{q2.impressions.toLocaleString('uk-UA')}</i><i className="mono">{q2.position}</i></div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
       {data && (data.error
         ? <p className="mono adm-ga-no">Помилка: {data.error}</p>
         : (

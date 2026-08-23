@@ -2305,3 +2305,5 @@
 .adm-ga-row b, .adm-ga-row i { text-align: right; font-style: normal; }
 .adm-ga-note { font-size: 11px; color: var(--graphite); }
 @media (max-width: 900px) { .adm-ga-kpis { grid-template-columns: repeat(3, 1fr); } }
+
+.adm-ga-row4 { grid-template-columns: 1fr 60px 80px 60px; }
