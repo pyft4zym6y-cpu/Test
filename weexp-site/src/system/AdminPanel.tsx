@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, deleteLead, deleteDiagnostics, signTierFile, CONFIGURED,
   findAuditIdByCode, loadAuditAnswers, loadAuditExtra, saveAuditExtra,
-  saveProjectsFor, saveAssessmentFor, savePatchFor, runWorkerAudit, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject, aiScoreAudit, type ModuleScore, type DiagRecord, type AccessState, type ProjectNote, type AuditJobRef,
+  saveProjectsFor, saveAssessmentFor, savePatchFor, runWorkerAudit, uploadAdminFile, deleteAdminFile, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject, aiScoreAudit, type ModuleScore, type DiagRecord, type AccessState, type ProjectNote, type AuditJobRef, type AdminFile,
   MANAGER_EMAILS, TEAM_ROLES, ROLE_LABEL, roleOf, can, teamApi, type Role, type TeamMember, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
   type Project, type ProjTask, type ProjMember, type ProjPayment, type ProjMonth, type ProjTariffItem,
   type PmDirectory, type PmSpecialist, type PmRoleRate,
@@ -1095,6 +1095,8 @@ function UserDetail({ row, leads, canDelete, selfEmail, onClose, openFile, onSta
 
           <Block title="Внутрішні нотатки команди"><NotesPanel userId={row.userId} initial={rec.notes || []} author={selfEmail} /></Block>
 
+          <Block title="Мої файли (внутрішні)"><AdminFiles userId={row.userId} initial={rec.adminFiles || []} author={selfEmail} openFile={openFile} /></Block>
+
           <Block title="Запити доступів">{tiers.length ? (
             <div className="adm-drawer-tiers">
               {tiers.map(([tid, s]) => {
@@ -1354,6 +1356,49 @@ function WorkerAudit({ userId, code, rec }: { userId: string; code?: string; rec
             </div>
           ))}
         </div>
+      )}
+    </div>
+  );
+}
+
+/** Власні файли аудитора у картці клієнта (свої дані, дельіверабли). */
+function AdminFiles({ userId, initial, author, openFile }: { userId: string; initial: AdminFile[]; author: string; openFile: (p: string) => void }) {
+  const [list, setList] = useState<AdminFile[]>(initial || []);
+  const [kind, setKind] = useState<AdminFile['kind']>('data');
+  const [busy, setBusy] = useState('');
+  const persist = (next: AdminFile[]) => { setList(next); void savePatchFor(userId, { adminFiles: next }); };
+  const onPick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []); e.target.value = '';
+    if (!files.length) return;
+    setBusy('up');
+    const added: AdminFile[] = [];
+    for (const f of files) {
+      const r = await uploadAdminFile(userId, f);
+      if (r.ok && r.path) added.push({ path: r.path, name: f.name, kind, at: new Date().toISOString(), by: author });
+      else toast('Не вдалося: ' + f.name + ' · ' + (r.error || ''), 'err');
+    }
+    setBusy('');
+    if (added.length) { persist([...added, ...list]); toast(`✓ Додано файлів: ${added.length}`); }
+  };
+  const del = async (f: AdminFile) => { if (!confirm(`Видалити «${f.name}»?`)) return; setBusy(f.path); await deleteAdminFile(f.path); setBusy(''); persist(list.filter((x) => x.path !== f.path)); };
+  return (
+    <div className="adm-afiles">
+      <div className="adm-afiles-add">
+        <select className="ab-sel sm" value={kind} onChange={(e) => setKind(e.target.value as AdminFile['kind'])}>
+          <option value="data">Дані клієнта</option><option value="deliverable">Документ (дельіверабл)</option><option value="other">Інше</option>
+        </select>
+        <label className={'mc-btn ok' + (busy === 'up' ? ' is-off' : '')}>{busy === 'up' ? 'Завантаження…' : '+ Завантажити файл'}
+          <input type="file" multiple style={{ display: 'none' }} disabled={busy === 'up'} onChange={onPick} />
+        </label>
+      </div>
+      {list.length === 0 ? <p className="mono adm-empty">своїх файлів ще немає</p> : (
+        <ul className="adm-files">{list.map((f) => (
+          <li key={f.path} className="adm-afile">
+            <button className="mono adm-file" onClick={() => openFile(f.path)}>📎 {f.name}</button>
+            <span className="mono adm-afile-m">{f.kind === 'deliverable' ? 'документ' : f.kind === 'data' ? 'дані' : 'інше'} · {rel(f.at)}</span>
+            <button className="adm-note-x mono" disabled={busy === f.path} onClick={() => del(f)} title="Видалити">✕</button>
+          </li>
+        ))}</ul>
       )}
     </div>
   );

@@ -100,6 +100,11 @@
 .adm-worker-sum { flex-basis: 100%; color: var(--graphite); font-size: 11.5px; }
 .adm-worker-dl { display: inline-flex; gap: 5px; }
 @media (max-width: 640px) { .adm-team-row2 { grid-template-columns: 1fr auto; } .adm-team-row2 > :nth-child(3) { display: none; } }
+/* Власні файли аудитора */
+.adm-afiles-add { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+.adm-afile { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 12px; }
+.adm-afile-m { color: var(--graphite); font-size: 11px; }
+.mc-btn.is-off { opacity: .55; pointer-events: none; }
 
 /* ═══ Темна тема кабінету/адмінки (клас .is-dark на корені) ═══
    Інвертуємо семантичні токени: поверхні → темні, чорнило → світле. Токени

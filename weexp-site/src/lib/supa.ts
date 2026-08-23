@@ -98,8 +98,12 @@ export type DiagRecord = {
   accessLog?: Record<string, AccessState>;   // каталог доступів клієнта (ключ = AC-id)
   notes?: ProjectNote[];                      // внутрішні нотатки/коментарі аудитора
   auditJobs?: AuditJobRef[];                  // прогони рушія Commerce OS (worker)
+  adminFiles?: AdminFile[];                   // власні файли аудитора (дані/дельіверабли), внутрішнє
   updatedAt?: string;
 };
+
+/** Власний файл аудитора, прикріплений до картки клієнта. */
+export type AdminFile = { path: string; name: string; kind?: 'data' | 'deliverable' | 'other'; at: string; by?: string };
 
 /** Посилання на прогін аудиту рушієм (worker). */
 export type AuditJobRef = { id: string; at: string; site?: string; tier?: number; status?: string; summary?: string };
@@ -646,6 +650,23 @@ export async function uploadTierFile(user: DiagUser, tier: string, file: File): 
     return error ? { ok: false, error: error.message } : { ok: true, path };
   } catch (e) { return { ok: false, error: String(e) }; }
 }
+/** Завантажити ВЛАСНИЙ файл аудитора у картку клієнта (адмінський шар). */
+export async function uploadAdminFile(clientUserId: string, file: File): Promise<{ ok: boolean; path?: string; error?: string }> {
+  if (!CONFIGURED || clientUserId.startsWith('local:') || clientUserId.startsWith('demo:')) return { ok: false, error: 'not_configured' };
+  try {
+    const safe = file.name.replace(/[^\w.\-]+/g, '_').slice(-80);
+    const path = `${clientUserId}/admin/${Date.now()}_${safe}`;
+    const { error } = await supabase.storage.from(TIER_BUCKET).upload(path, file, { upsert: false, contentType: file.type || undefined });
+    return error ? { ok: false, error: error.message } : { ok: true, path };
+  } catch (e) { return { ok: false, error: String(e) }; }
+}
+/** Видалити власний файл аудитора зі сховища. */
+export async function deleteAdminFile(path: string): Promise<{ ok: boolean; error?: string }> {
+  if (!CONFIGURED) return { ok: false, error: 'not_configured' };
+  try { const { error } = await supabase.storage.from(TIER_BUCKET).remove([path]); return error ? { ok: false, error: error.message } : { ok: true }; }
+  catch (e) { return { ok: false, error: String(e) }; }
+}
+
 /** Тимчасове посилання на файл (для завантаження менеджером або клієнтом). */
 export async function signTierFile(path: string): Promise<string | null> {
   if (!CONFIGURED) return null;
