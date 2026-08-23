@@ -104,6 +104,20 @@
 .adm-worker-mat-rows { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; margin-bottom: 6px; }
 .adm-worker-mat-row { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; padding: 2px 0; border-bottom: 1px dashed var(--line); }
 @media (max-width: 640px) { .adm-worker-mat-rows { grid-template-columns: 1fr; } }
+/* Рецензування знахідок (learning loop) */
+.adm-fr { margin-top: 10px; border: 2px solid var(--deep); border-radius: 10px; padding: 10px 12px; }
+.adm-fr-h { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.adm-fr-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.adm-fr-item { border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+.adm-fr-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; }
+.adm-fr-dom { color: var(--graphite); font-size: 11px; }
+.adm-fr-title { flex: 1 1 220px; color: var(--deep); }
+.adm-fr-conf { color: var(--graphite); font-size: 11px; }
+.adm-fr-acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
+.mc-btn.fr-on-ok { background: var(--ok, #1F9D55); color: #fff; border-color: var(--ok, #1F9D55); }
+.mc-btn.fr-on-bad { background: var(--red); color: #fff; border-color: var(--red); }
+.adm-worker-learn { margin-top: 10px; }
+.adm-worker-snap { margin-top: 8px; background: var(--cream-2); border-radius: 8px; padding: 8px 10px; font-size: 11.5px; line-height: 1.6; }
 @media (max-width: 640px) { .adm-team-row2 { grid-template-columns: 1fr auto; } .adm-team-row2 > :nth-child(3) { display: none; } }
 /* Власні файли аудитора */
 .adm-afiles-add { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }

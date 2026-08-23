@@ -144,7 +144,7 @@ export type AuditMetrics = {
   aqcFails: number | null;
   potentialYear: number | null;
 };
-export type AuditResult = { id: string; dir: string; summary: string; files: string[]; metrics: AuditMetrics; maturity?: import('./maturity.js').MaturityReport | null };
+export type AuditResult = { id: string; dir: string; summary: string; files: string[]; metrics: AuditMetrics; maturity?: import('./maturity.js').MaturityReport | null; findings?: import('./learning/ledger.js').ReviewableFinding[] };
 
 function slug(url: string): string {
   try { return new URL(url).hostname.replace(/^www\./, '').replace(/[^a-z0-9]+/gi, '-'); }
@@ -882,7 +882,14 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
     if (metrics.compliance != null) parts.push(`соответствие ${metrics.compliance}%`);
     if (engine?.score != null) parts.push(`Health Score ${engine.score}/100`);
     if (money) parts.push(`недополучено ≈ ${Math.round(money.potentialYear).toLocaleString('ru-RU')} ₴/год`);
-    return { id, dir, summary: parts.join(' · '), files, metrics, maturity: maturityReport };
+    // Компактный список находок для human-in-the-loop ревью в админке (замыкание
+    // цикла обучения): id/домен/ключ/тема/уверенность/приоритет, топ по приоритету.
+    const pri = { P0: 0, P1: 1, P2: 2 } as Record<string, number>;
+    const reviewable = (registry ?? [])
+      .map((f) => ({ id: f.id, domain: f.domain, key: f.key, title: f.title, confidence: f.confidence, priority: f.priority }))
+      .sort((a, b) => (pri[a.priority] - pri[b.priority]) || (b.confidence - a.confidence))
+      .slice(0, 60);
+    return { id, dir, summary: parts.join(' · '), files, metrics, maturity: maturityReport, findings: reviewable };
   } finally {
     await browser.close().catch(() => {});
     await closePdfBrowser();

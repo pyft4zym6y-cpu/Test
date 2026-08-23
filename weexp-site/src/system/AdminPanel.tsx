@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, deleteLead, deleteDiagnostics, signTierFile, CONFIGURED,
   findAuditIdByCode, loadAuditAnswers, loadAuditExtra, saveAuditExtra,
-  saveProjectsFor, saveAssessmentFor, savePatchFor, runWorkerAudit, uploadAdminFile, deleteAdminFile, maturityToAssessment, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject, aiScoreAudit, type ModuleScore, type DiagRecord, type AccessState, type ProjectNote, type AuditJobRef, type AdminFile, type WorkerMaturity,
+  saveProjectsFor, saveAssessmentFor, savePatchFor, runWorkerAudit, uploadAdminFile, deleteAdminFile, maturityToAssessment, sendFindingReviews, loadLearningSnapshot, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject, aiScoreAudit, type ModuleScore, type DiagRecord, type AccessState, type ProjectNote, type AuditJobRef, type AdminFile, type WorkerMaturity, type ReviewableFinding, type FindingReview, type LearningSnapshot,
   MANAGER_EMAILS, TEAM_ROLES, ROLE_LABEL, roleOf, can, teamApi, MATURITY_DOMAIN_MODULE, type Role, type TeamMember, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
   type Project, type ProjTask, type ProjMember, type ProjPayment, type ProjMonth, type ProjTariffItem,
   type PmDirectory, type PmSpecialist, type PmRoleRate,
@@ -1097,7 +1097,7 @@ function UserDetail({ row, leads, canDelete, selfEmail, onClose, openFile, onSta
 
           <Block title="Глибокий аудит">{row.hasDeep ? <p className="mono">у роботі</p> : <p className="mono adm-empty">не почато</p>}</Block>
 
-          <Block title="Аудит рушієм Commerce OS"><WorkerAudit userId={row.userId} code={code} rec={rec} /></Block>
+          <Block title="Аудит рушієм Commerce OS"><WorkerAudit userId={row.userId} code={code} rec={rec} reviewer={selfEmail} /></Block>
 
           <Block title="Оцінка модулів (C-level) — внутрішнє"><ModuleScoring userId={row.userId} initial={rec.assessment || {}} code={code} rec={rec} /></Block>
 
@@ -1282,7 +1282,7 @@ function AccessCatalog({ userId, initial }: { userId: string; initial: Record<st
 }
 
 /** Запуск аудиту рушієм Commerce OS (worker) з картки клієнта + історія прогонів. */
-function WorkerAudit({ userId, code, rec }: { userId: string; code?: string; rec: DiagRecord }) {
+function WorkerAudit({ userId, code, rec, reviewer }: { userId: string; code?: string; rec: DiagRecord; reviewer: string }) {
   const [site, setSite] = useState(rec.company?.site || rec.company?.domains || '');
   const [tier, setTier] = useState(2);
   const [jobs, setJobs] = useState<AuditJobRef[]>(rec.auditJobs || []);
@@ -1290,7 +1290,15 @@ function WorkerAudit({ userId, code, rec }: { userId: string; code?: string; rec
   const [job, setJob] = useState<Record<string, unknown> | null>(null);
   const [maturity, setMaturity] = useState<WorkerMaturity | null>(null);
   const [imported, setImported] = useState(false);
+  const [snap, setSnap] = useState<LearningSnapshot | null>(null);
   const [err, setErr] = useState('');
+  const findings = (Array.isArray(job?.findings) ? job!.findings as ReviewableFinding[] : []);
+
+  const showSnapshot = async () => {
+    const r = await loadLearningSnapshot();
+    if (r.ok && r.snapshot) setSnap(r.snapshot);
+    else toast('Знімок навчання недоступний: ' + (r.error || 'воркер ще не оновлено'), 'err');
+  };
   const poll = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   useEffect(() => () => { if (poll.current) clearInterval(poll.current); }, []);
 
@@ -1381,6 +1389,20 @@ function WorkerAudit({ userId, code, rec }: { userId: string; code?: string; rec
           <p className="mono adm-hint">Рівні L1–L5 → бали 20–100. Імпорт заповнює лише порожні модулі (ручні оцінки не перетираються). Домени «потрібні дані» зʼявляться після доступів/опитувальника.</p>
         </div>
       )}
+      {findings.length > 0 && (
+        <FindingsReview auditId={String(job?.id || '')} findings={findings} userId={userId} reviewer={reviewer} initial={rec.findingReviews || {}} />
+      )}
+      <div className="adm-worker-learn">
+        <button className="mc-btn ghost" onClick={showSnapshot}>📈 Знімок навчання рушія</button>
+        {snap && (
+          <div className="adm-worker-snap mono">
+            <div>Записів у леджері: <b>{snap.ledgerEntries}</b> · аудитів: <b>{snap.distinctAudits}</b> · golden-кандидатів: <b>{snap.goldenCandidateCount}</b></div>
+            <div>Калібрування: n={snap.calibration.n} · ECE {snap.calibration.ece ?? '—'} · {snap.calibration.reliable ? 'надійно' : 'мало даних'}</div>
+            <div>Патернів: <b>{snap.patterns.length}</b> · антипатернів: <b>{snap.antiPatterns.length}</b> · пропозицій методології: <b>{snap.suggestions.length}</b></div>
+            {snap.suggestions.slice(0, 3).map((s, i) => <div key={i} className="adm-worker-l">• {s.kind}: {s.target} — {s.rationale} (n={s.evidenceN})</div>)}
+          </div>
+        )}
+      </div>
       {jobs.length > 0 && (
         <div className="adm-worker-hist">
           <span className="adm-acc-cat-h mono">Прогони</span>
@@ -1398,6 +1420,67 @@ function WorkerAudit({ userId, code, rec }: { userId: string; code?: string; rec
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+/** Рецензування знахідок рушія (human-in-the-loop) → леджер навчання воркера. */
+function FindingsReview({ auditId, findings, userId, reviewer, initial }: { auditId: string; findings: ReviewableFinding[]; userId: string; reviewer: string; initial: Record<string, FindingReview> }) {
+  const [reviews, setReviews] = useState<Record<string, FindingReview>>(initial || {});
+  const [busy, setBusy] = useState(false);
+  const PRI_CLS: Record<string, string> = { P0: 'bad', P1: 'wait', P2: 'muted' };
+  const setV = (id: string, patch: Partial<FindingReview>) => {
+    const prev = reviews[id] || { verdict: 'accepted' as const, at: '' };
+    const next = { ...reviews, [id]: { ...prev, ...patch, sent: false, at: new Date().toISOString() } };
+    setReviews(next); void savePatchFor(userId, { findingReviews: next });
+  };
+  const decided = findings.filter((f) => reviews[f.id]);
+  const unsent = decided.filter((f) => !reviews[f.id].sent).length;
+  const send = async () => {
+    const verdicts = decided.map((f) => ({ findingId: f.id, verdict: reviews[f.id].verdict, correctedPriority: reviews[f.id].correctedPriority, note: reviews[f.id].note }));
+    if (!verdicts.length) { toast('Спершу винесіть вердикт хоча б по одній знахідці.', 'err'); return; }
+    if (!auditId) { toast('Немає id прогону для відправки.', 'err'); return; }
+    setBusy(true);
+    const r = await sendFindingReviews(auditId, findings, verdicts, reviewer);
+    setBusy(false);
+    if (r.ok) {
+      const next = { ...reviews }; verdicts.forEach((v) => { if (next[v.findingId]) next[v.findingId] = { ...next[v.findingId], sent: true }; });
+      setReviews(next); void savePatchFor(userId, { findingReviews: next });
+      toast(`✓ У навчання записано: ${r.written ?? verdicts.length}`);
+    } else toast('Не вдалося надіслати: ' + (r.error || 'воркер ще не оновлено'), 'err');
+  };
+  return (
+    <div className="adm-fr">
+      <div className="adm-fr-h">
+        <span className="adm-acc-cat-h mono">Рецензування знахідок ({decided.length}/{findings.length})</span>
+        <button className="mc-btn ok" disabled={busy || !unsent} onClick={send}>{busy ? 'Надсилаю…' : unsent ? `↑ У навчання (${unsent})` : '✓ Надіслано'}</button>
+      </div>
+      <ul className="adm-fr-list">
+        {findings.map((f) => {
+          const rv = reviews[f.id];
+          return (
+            <li key={f.id} className="adm-fr-item">
+              <div className="adm-fr-top">
+                <span className={`cab-badge tst-${PRI_CLS[f.priority] || 'muted'}`}>{f.priority}</span>
+                <span className="adm-fr-dom mono">{f.domain}</span>
+                <span className="adm-fr-title">{f.title}</span>
+                <span className="adm-fr-conf mono">{Math.round(f.confidence * 100)}%{rv?.sent ? ' · ✓' : ''}</span>
+              </div>
+              <div className="adm-fr-acts">
+                <button className={'mc-btn ' + (rv?.verdict === 'accepted' ? 'fr-on-ok' : 'ghost')} onClick={() => setV(f.id, { verdict: 'accepted', correctedPriority: undefined })}>✓ Реальна</button>
+                <button className={'mc-btn ' + (rv?.verdict === 'rejected' ? 'fr-on-bad' : 'ghost')} onClick={() => setV(f.id, { verdict: 'rejected', correctedPriority: undefined })}>✕ Хибна</button>
+                <button className={'mc-btn ' + (rv?.verdict === 'corrected' ? 'fr-on-ok' : 'ghost')} onClick={() => setV(f.id, { verdict: 'corrected', correctedPriority: rv?.correctedPriority || f.priority })}>± Коригувати</button>
+                {rv?.verdict === 'corrected' && (
+                  <select className="ab-sel xs" value={rv.correctedPriority || f.priority} onChange={(e) => setV(f.id, { verdict: 'corrected', correctedPriority: e.target.value as 'P0' | 'P1' | 'P2' })}>
+                    {['P0', 'P1', 'P2'].map((p) => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+      <p className="mono adm-hint">Вердикти калібрують рушій: підтверджені/хибні/скориговані знахідки лягають у append-only леджер навчання (ECE, патерни, golden-кандидати). Дані клієнта не передаються — лише id/домен/тема/впевненість.</p>
     </div>
   );
 }

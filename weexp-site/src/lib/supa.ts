@@ -99,7 +99,17 @@ export type DiagRecord = {
   notes?: ProjectNote[];                      // внутрішні нотатки/коментарі аудитора
   auditJobs?: AuditJobRef[];                  // прогони рушія Commerce OS (worker)
   adminFiles?: AdminFile[];                   // власні файли аудитора (дані/дельіверабли), внутрішнє
+  findingReviews?: Record<string, FindingReview>; // рецензії findings рушія (ключ = findingId) — цикл навчання
   updatedAt?: string;
+};
+
+/** Рецензія однієї знахідки рушія (human-in-the-loop, замикає цикл навчання). */
+export type FindingReview = {
+  verdict: 'accepted' | 'rejected' | 'corrected';
+  correctedPriority?: 'P0' | 'P1' | 'P2';
+  note?: string;
+  at: string;
+  sent?: boolean;   // відправлено у леджер навчання воркера
 };
 
 /** Власний файл аудитора, прикріплений до картки клієнта. */
@@ -243,11 +253,36 @@ export async function aiScoreAudit(payload: {
 }
 
 /** Виклик аудит-рушія (worker) через серверний проксі /api/audit-run. */
-export async function runWorkerAudit(action: 'start' | 'status' | 'health', payload: Record<string, unknown> = {}): Promise<{ ok?: boolean; error?: string; id?: string; job?: Record<string, unknown>; hasKey?: boolean }> {
+export async function runWorkerAudit(action: 'start' | 'status' | 'health' | 'learn' | 'learnSnapshot', payload: Record<string, unknown> = {}): Promise<{ ok?: boolean; error?: string; id?: string; job?: Record<string, unknown>; hasKey?: boolean; written?: number; snapshot?: LearningSnapshot }> {
   try {
     const r = await fetch('/api/audit-run', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action, ...payload }) });
     return await r.json();
   } catch (e) { return { error: String(e) }; }
+}
+
+/** Знахідка рушія для рецензування (форма з worker registry / status.job.findings). */
+export type ReviewableFinding = { id: string; domain: string; key?: string | null; title: string; confidence: number; priority: 'P0' | 'P1' | 'P2' };
+/** Знімок навчання (компактний зріз leaning snapshot воркера для UI). */
+export type LearningSnapshot = {
+  generatedAt: string; ledgerEntries: number; distinctAudits: number;
+  calibration: { n: number; ece: number | null; reliable: boolean; note: string };
+  patterns: { signature: string; domain: string; theme: string; support: number; acceptRate: number }[];
+  antiPatterns: { signature: string; domain: string; theme: string; support: number; acceptRate: number }[];
+  suggestions: { kind: string; target: string; rationale: string; evidenceN: number }[];
+  goldenCandidateCount: number; note: string;
+};
+
+/**
+ * Надіслати рецензії знахідок у леджер навчання воркера (замикає цикл: аудитор
+ * підтверджує/відхиляє/коригує знахідки — рушій калібрується на реальних даних).
+ */
+export async function sendFindingReviews(auditId: string, findings: ReviewableFinding[], verdicts: { findingId: string; verdict: 'accepted' | 'rejected' | 'corrected'; correctedPriority?: 'P0' | 'P1' | 'P2'; note?: string }[], reviewer: string): Promise<{ ok?: boolean; written?: number; error?: string }> {
+  return runWorkerAudit('learn', { auditId, findings, verdicts, reviewer });
+}
+
+/** Прочитати знімок навчання з воркера. */
+export async function loadLearningSnapshot(): Promise<{ ok?: boolean; snapshot?: LearningSnapshot; error?: string }> {
+  return runWorkerAudit('learnSnapshot');
 }
 
 /** Довідник проект-офісу зберігається у записі менеджера (diagnostics.data.pmDir). */

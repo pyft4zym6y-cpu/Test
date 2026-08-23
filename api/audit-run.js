@@ -32,6 +32,18 @@ export default async function handler(req, res) {
       res.status(200).json(j.ok ? { ok: true, job: j.job } : { error: j.error || 'not_found' });
       return;
     }
+    if (b.action === 'learnSnapshot') {
+      const r = await fetch(`${base}/learn/snapshot`, { headers: hdr });
+      res.status(200).json(await r.json());
+      return;
+    }
+    if (b.action === 'learn') {
+      if (!b.auditId || !Array.isArray(b.verdicts) || !b.verdicts.length) { res.status(200).json({ error: 'need auditId + verdicts' }); return; }
+      const body = { auditId: b.auditId, findings: b.findings || [], verdicts: b.verdicts, reviewer: b.reviewer || 'admin', observations: b.observations || {} };
+      const r = await fetch(`${base}/learn`, { method: 'POST', headers: hdr, body: JSON.stringify(body) });
+      res.status(200).json(await r.json());
+      return;
+    }
     if (b.action === 'pack') {
       if (!b.id) { res.status(200).json({ error: 'no_id' }); return; }
       const suffix = b.internal ? 'pack-internal.zip' : 'pack.zip';

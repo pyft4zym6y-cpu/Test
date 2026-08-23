@@ -42,6 +42,7 @@ type Job = {
   startedAt: number; finishedAt?: number; log: string[]; summary?: string;
   metrics?: AuditMetrics; resultId?: string; files?: FileRef[]; error?: string;
   maturity?: import('./maturity.js').MaturityReport | null;
+  findings?: import('./learning/ledger.js').ReviewableFinding[];
   opts?: Record<string, unknown>; clientId?: string;
 };
 
@@ -85,7 +86,7 @@ const isThemeDoc = (name: string) => /^[0-5]-.+\.(pdf|docx)$/i.test(name); // 0-
 const isProposal = (name: string) => /(коммерческое.?предложение|комерційна.?пропозиц|kp)\.(pdf|docx)$/i.test(name);
 const isClientDoc = (name: string) => isDoc(name) && (isThemeDoc(name) || isProposal(name));
 
-const persistView = (j: Job) => ({ id: j.id, client: j.client, tier: j.tier, status: j.status, startedAt: j.startedAt, finishedAt: j.finishedAt, summary: j.summary, metrics: j.metrics, maturity: j.maturity, resultId: j.resultId, files: j.files });
+const persistView = (j: Job) => ({ id: j.id, client: j.client, tier: j.tier, status: j.status, startedAt: j.startedAt, finishedAt: j.finishedAt, summary: j.summary, metrics: j.metrics, maturity: j.maturity, findings: j.findings, resultId: j.resultId, files: j.files });
 
 async function processQueue(): Promise<void> {
   if (running) return;
@@ -98,7 +99,7 @@ async function processQueue(): Promise<void> {
     job.status = 'running';
     void persistJob(job);
     const r = await runAudit({ ...(job.opts as any), out: OUT, log: (m: string) => { job.log.push(m); if (job.log.length > 800) job.log.shift(); void persistJob(job, 4000); } });
-    job.resultId = r.id; job.summary = r.summary; job.metrics = r.metrics; job.maturity = r.maturity ?? null;
+    job.resultId = r.id; job.summary = r.summary; job.metrics = r.metrics; job.maturity = r.maturity ?? null; job.findings = r.findings ?? [];
     job.files = r.files.filter(isClientDoc).map((n) => ({ name: n, url: `/result/${r.id}/${encodeURIComponent(n)}`, category: categorize(n) }));
     job.status = 'done'; job.finishedAt = Date.now();
     await writeFile(join(OUT, r.id, 'job.json'), JSON.stringify(persistView(job)), 'utf8').catch(() => {});
@@ -294,7 +295,42 @@ const server = createServer(async (req, res) => {
   if (req.method === 'GET' && jm) {
     const j = jobs.get(jm[1]);
     if (!j) { json(res, 404, { ok: false, error: 'прогон не найден' }); return; }
-    json(res, 200, { ok: true, job: { id: j.id, client: j.client, tier: j.tier, status: j.status, startedAt: j.startedAt, finishedAt: j.finishedAt, log: j.log, summary: j.summary, metrics: j.metrics, maturity: j.maturity, files: j.files, error: j.error } });
+    json(res, 200, { ok: true, job: { id: j.id, client: j.client, tier: j.tier, status: j.status, startedAt: j.startedAt, finishedAt: j.finishedAt, log: j.log, summary: j.summary, metrics: j.metrics, maturity: j.maturity, findings: j.findings, files: j.files, error: j.error } });
+    return;
+  }
+
+  // ── Замыкание цикла обучения (human-in-the-loop) ──
+  // Снимок обучения из накопленного леджера: калибровка, паттерны, бенчмарки, предложения.
+  if (req.method === 'GET' && path === '/learn/snapshot') {
+    try {
+      const { readLedger } = await import('./learning/ledger.js');
+      const { buildLearningSnapshot } = await import('./learning/core.js');
+      const { entries, skipped } = await readLedger();
+      const snap = buildLearningSnapshot(entries, new Date().toISOString());
+      json(res, 200, { ok: true, snapshot: snap, skipped });
+    } catch (e) { json(res, 200, { ok: false, error: String(e).slice(0, 200) }); }
+    return;
+  }
+  // Приём вердиктов ревьюера (accepted/rejected/corrected) → append-only леджер.
+  if (req.method === 'POST' && path === '/learn') {
+    try {
+      const b = JSON.parse((await readBody(req)) || '{}');
+      const auditId = String(b.auditId || '').trim();
+      const reviewer = String(b.reviewer || 'admin').slice(0, 120);
+      const findings = Array.isArray(b.findings) ? b.findings : [];
+      const verdicts = Array.isArray(b.verdicts) ? b.verdicts : [];
+      if (!auditId || !findings.length || !verdicts.length) { json(res, 400, { ok: false, error: 'need auditId + findings + verdicts' }); return; }
+      const { entriesFromRun, appendLedger } = await import('./learning/ledger.js');
+      const { METHODOLOGY_VERSION } = await import('./version.js');
+      const entries = entriesFromRun({
+        auditId, findings, verdicts, reviewer,
+        reviewedAt: new Date().toISOString(),
+        observations: (b.observations && typeof b.observations === 'object') ? b.observations : {},
+        methodologyVersion: METHODOLOGY_VERSION,
+      });
+      const n = await appendLedger(entries);
+      json(res, 200, { ok: true, written: n });
+    } catch (e) { json(res, 200, { ok: false, error: String(e).slice(0, 200) }); }
     return;
   }
 
