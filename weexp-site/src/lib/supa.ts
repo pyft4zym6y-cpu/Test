@@ -97,8 +97,12 @@ export type DiagRecord = {
   assessment?: Record<string, ModuleScore>; // C-level оцінка модулів аудиту (адмін-шар, ключ = block.key)
   accessLog?: Record<string, AccessState>;   // каталог доступів клієнта (ключ = AC-id)
   notes?: ProjectNote[];                      // внутрішні нотатки/коментарі аудитора
+  auditJobs?: AuditJobRef[];                  // прогони рушія Commerce OS (worker)
   updatedAt?: string;
 };
+
+/** Посилання на прогін аудиту рушієм (worker). */
+export type AuditJobRef = { id: string; at: string; site?: string; tier?: number; status?: string; summary?: string };
 
 /** Стан одного доступу (каталог доступів у картці клієнта). */
 export type AccessState = {
@@ -183,6 +187,14 @@ export async function aiScoreAudit(payload: {
     if (j.error) return { ok: false, error: j.error };
     return { ok: true, scores: (j.scores || {}) as Record<string, ModuleScore> };
   } catch (e) { return { ok: false, error: String(e) }; }
+}
+
+/** Виклик аудит-рушія (worker) через серверний проксі /api/audit-run. */
+export async function runWorkerAudit(action: 'start' | 'status' | 'health', payload: Record<string, unknown> = {}): Promise<{ ok?: boolean; error?: string; id?: string; job?: Record<string, unknown>; hasKey?: boolean }> {
+  try {
+    const r = await fetch('/api/audit-run', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action, ...payload }) });
+    return await r.json();
+  } catch (e) { return { error: String(e) }; }
 }
 
 /** Довідник проект-офісу зберігається у записі менеджера (diagnostics.data.pmDir). */

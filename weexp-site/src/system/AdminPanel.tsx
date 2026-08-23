@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, deleteLead, deleteDiagnostics, signTierFile, CONFIGURED,
   findAuditIdByCode, loadAuditAnswers, loadAuditExtra, saveAuditExtra,
-  saveProjectsFor, saveAssessmentFor, savePatchFor, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject, aiScoreAudit, type ModuleScore, type DiagRecord, type AccessState, type ProjectNote,
+  saveProjectsFor, saveAssessmentFor, savePatchFor, runWorkerAudit, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject, aiScoreAudit, type ModuleScore, type DiagRecord, type AccessState, type ProjectNote, type AuditJobRef,
   MANAGER_EMAILS, TEAM_ROLES, ROLE_LABEL, roleOf, can, teamApi, type Role, type TeamMember, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
   type Project, type ProjTask, type ProjMember, type ProjPayment, type ProjMonth, type ProjTariffItem,
   type PmDirectory, type PmSpecialist, type PmRoleRate,
@@ -1087,6 +1087,8 @@ function UserDetail({ row, leads, canDelete, selfEmail, onClose, openFile, onSta
 
           <Block title="Глибокий аудит">{row.hasDeep ? <p className="mono">у роботі</p> : <p className="mono adm-empty">не почато</p>}</Block>
 
+          <Block title="Аудит рушієм Commerce OS"><WorkerAudit userId={row.userId} code={code} rec={rec} /></Block>
+
           <Block title="Оцінка модулів (C-level) — внутрішнє"><ModuleScoring userId={row.userId} initial={rec.assessment || {}} code={code} rec={rec} /></Block>
 
           <Block title="Каталог доступів клієнта"><AccessCatalog userId={row.userId} initial={rec.accessLog || {}} /></Block>
@@ -1263,6 +1265,82 @@ function AccessCatalog({ userId, initial }: { userId: string; initial: Record<st
           })}
         </div>
       ))}
+    </div>
+  );
+}
+
+/** Запуск аудиту рушієм Commerce OS (worker) з картки клієнта + історія прогонів. */
+function WorkerAudit({ userId, code, rec }: { userId: string; code?: string; rec: DiagRecord }) {
+  const [site, setSite] = useState(rec.company?.site || rec.company?.domains || '');
+  const [tier, setTier] = useState(2);
+  const [jobs, setJobs] = useState<AuditJobRef[]>(rec.auditJobs || []);
+  const [running, setRunning] = useState(false);
+  const [job, setJob] = useState<Record<string, unknown> | null>(null);
+  const [err, setErr] = useState('');
+  const poll = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+  useEffect(() => () => { if (poll.current) clearInterval(poll.current); }, []);
+
+  const saveJobs = (next: AuditJobRef[]) => { setJobs(next); void savePatchFor(userId, { auditJobs: next }); };
+
+  const start = async () => {
+    setErr('');
+    if (!site.trim()) { setErr('Вкажіть сайт клієнта (домен).'); return; }
+    setRunning(true); setJob(null);
+    let answers: Record<string, unknown> = {};
+    try { const id = code ? await findAuditIdByCode(code) : null; if (id) answers = await loadAuditAnswers(id); } catch { /* ignore */ }
+    const r = await runWorkerAudit('start', { site: site.trim(), tier, answers });
+    if (r.error || !r.id) { setErr('Помилка запуску: ' + (r.error || '')); setRunning(false); toast('Аудит не запущено: ' + (r.error || ''), 'err'); return; }
+    const ref: AuditJobRef = { id: r.id, at: new Date().toISOString(), site: site.trim(), tier, status: 'queued' };
+    const next = [ref, ...jobs].slice(0, 20); saveJobs(next);
+    toast('✓ Аудит запущено на рушії');
+    // Полінг статусу.
+    poll.current = setInterval(async () => {
+      const s = await runWorkerAudit('status', { id: r.id });
+      if (s.error) return;
+      const j = s.job || {};
+      setJob(j);
+      const st = String(j.status || '');
+      if (st === 'done' || st === 'error' || st === 'failed') {
+        if (poll.current) clearInterval(poll.current);
+        setRunning(false);
+        const upd = next.map((x) => x.id === r.id ? { ...x, status: st, summary: typeof j.summary === 'string' ? j.summary : undefined } : x);
+        saveJobs(upd);
+        toast(st === 'done' ? '✓ Аудит завершено рушієм' : 'Аудит завершився з помилкою', st === 'done' ? 'ok' : 'err');
+      }
+    }, 4000);
+  };
+
+  const logLines = (Array.isArray(job?.log) ? job!.log as string[] : []).slice(-6);
+  return (
+    <div className="adm-worker">
+      <p className="mono adm-hint">Рушій Commerce OS краулить сайт і будує повний аудит (findings, метрики, документи). Відповіді клієнта з опитувальника додаються автоматично.</p>
+      <div className="adm-worker-run">
+        <input className="ab-inp" value={site} onChange={(e) => setSite(e.target.value)} placeholder="https://site.com — домен клієнта" />
+        <select className="ab-sel" value={tier} onChange={(e) => setTier(Number(e.target.value))}>
+          {[1, 2, 3, 4].map((t) => <option key={t} value={t}>Tier {t}</option>)}
+        </select>
+        <button className="mc-btn ok" disabled={running} onClick={start}>{running ? '⏳ Аудит іде…' : '▶ Запустити аудит'}</button>
+      </div>
+      {err && <p className="cab-auth-err mono">{err}</p>}
+      {running && job && (
+        <div className="adm-worker-log mono">
+          <b>Статус: {String(job.status || '…')}</b>
+          {logLines.map((l, i) => <div key={i} className="adm-worker-l">{l}</div>)}
+        </div>
+      )}
+      {jobs.length > 0 && (
+        <div className="adm-worker-hist">
+          <span className="adm-acc-cat-h mono">Прогони</span>
+          {jobs.map((j) => (
+            <div key={j.id} className="adm-worker-item mono">
+              <span className={`cab-badge tst-${j.status === 'done' ? 'ok' : j.status === 'error' || j.status === 'failed' ? 'bad' : 'wait'}`}>{j.status || '…'}</span>
+              <span>{j.site} · Tier {j.tier}</span>
+              <span className="adm-act-at">{rel(j.at)}</span>
+              {j.summary && <span className="adm-worker-sum">{j.summary}</span>}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
