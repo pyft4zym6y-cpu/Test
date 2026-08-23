@@ -42,6 +42,7 @@ export type CompanyProfile = {
   outlets?: string;         // кількість точок продажу / магазинів
   platform?: string;        // e-commerce платформа
   crmErp?: string;          // CRM / ERP
+  team?: { name?: string; role?: string; phone?: string; email?: string }[];  // команда клієнта
 };
 /** Стан воронки клієнта (наскрізна логіка кабінету). */
 /** Статус доступу до кожного рівня аудиту (керована воронка): відсутній ключ = «не запрошено». */
@@ -96,6 +97,8 @@ export type DiagRecord = {
   pmDir?: PmDirectory;              // проект-офіс: довідник команди та ставок (лише в записі менеджера)
   assessment?: Record<string, ModuleScore>; // C-level оцінка модулів аудиту (адмін-шар, ключ = block.key)
   accessLog?: Record<string, AccessState>;   // каталог доступів клієнта (ключ = AC-id)
+  marketplaces?: MarketplaceAccess[];         // динамічні доступи до маркетплейсів
+  clientFiles?: ClientFile[];                 // файли клієнта: звітність і вивантаження
   notes?: ProjectNote[];                      // внутрішні нотатки/коментарі аудитора
   auditJobs?: AuditJobRef[];                  // прогони рушія Commerce OS (worker)
   adminFiles?: AdminFile[];                   // власні файли аудитора (дані/дельіверабли), внутрішнє
@@ -194,7 +197,30 @@ export function maturityToAssessment(
 export type AccessState = {
   status?: 'requested' | 'granted' | 'verified' | 'na';
   method?: 'view' | 'oauth' | 'upload';
+  /** Стан конектора (OAuth): off → progress → on / error. */
+  connStatus?: 'off' | 'progress' | 'on' | 'error';
   note?: string;
+  at?: string;
+};
+
+/** Динамічний доступ до маркетплейса (клієнт додає свої майданчики). */
+export type MarketplaceAccess = {
+  id: string;
+  name: string;                       // Rozetka / Amazon / Allegro / власна назва
+  scope?: string;                     // що потрібно: продажі / реклама / повний кабінет
+  status?: 'none' | 'wait' | 'granted';
+  at?: string;
+};
+
+/** Файл клієнта (управлінська звітність / вивантаження) — динамічний список. */
+export type ClientFile = {
+  id: string;
+  group: 'report' | 'export';         // управлінська звітність | вивантаження/файли
+  type?: string;                      // P&L / Cash Flow / звіт по продажах / …
+  title?: string;
+  period?: string;                    // напр. 01.01–31.12.2025
+  path?: string;                      // шлях у сховищі після завантаження
+  status?: 'wait' | 'uploaded';
   at?: string;
 };
 /** Внутрішня нотатка/коментар аудитора до проєкту (або до модуля). */

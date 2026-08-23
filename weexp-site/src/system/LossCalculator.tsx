@@ -78,7 +78,7 @@ export function LossCalculator() {
   useEffect(() => { try { localStorage.setItem(CALC_KEY, JSON.stringify(inp)); } catch { /* ignore */ } }, [inp]);
   const [res, setRes] = useState<LossResult | null>(null);
   const [leadBusy, setLeadBusy] = useState(false);
-  const [orderStep, setOrderStep] = useState<null | 'form' | 'review' | 'sent'>(null);
+  const [orderStep, setOrderStep] = useState<null | 'form' | 'sent'>(null);
   const [oName, setOName] = useState('');
   const [oEmail, setOEmail] = useState('');
   const [oPhone, setOPhone] = useState('');
@@ -96,8 +96,17 @@ export function LossCalculator() {
     window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
   }, [step]);
 
-  const setNum = (k: NumKey) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setInp((s) => ({ ...s, [k]: parseFloat(e.target.value) || 0 }));
+  // Сирий текст полів: дозволяє «0.5» / «0,6» і проміжні стани («0.», порожнє).
+  const [rawNum, setRawNum] = useState<Record<string, string>>({});
+  const PCT_KEYS: NumKey[] = ['conversion', 'repeatRate', 'returnsRate', 'grossMargin'];
+  const setNum = (k: NumKey) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = e.target.value.replace(',', '.').replace(/\s+/g, '');
+    if (!/^\d*\.?\d*$/.test(v)) return;
+    const n = parseFloat(v);
+    if (PCT_KEYS.includes(k) && Number.isFinite(n) && n > 100) return;
+    setRawNum((r) => ({ ...r, [k]: v }));
+    setInp((s) => ({ ...s, [k]: Number.isFinite(n) ? n : 0 }));
+  };
   const toggle = (k: SysKey) => setInp((s) => ({ ...s, symptoms: s.symptoms.includes(k) ? s.symptoms.filter((x) => x !== k) : [...s.symptoms, k] }));
   // Швидкі так/ні: повторний клік по тій самій відповіді знімає її (undefined).
   const setSig = (k: keyof Signals, v: boolean) =>
@@ -114,17 +123,20 @@ export function LossCalculator() {
 
   // Замовлення аудиту — повноцінний сценарій: форма → перевірка даних → надсилання.
   const openOrder = () => { setOErr(''); setOrderStep('form'); };
-  const toReview = (e: React.FormEvent) => {
+  const submitForm = (e: React.FormEvent) => {
     e.preventDefault();
+    const phone = oPhone.trim();
     const email = oEmail.trim();
-    if (!email || !/.+@.+\..+/.test(email)) { setOErr(t('Вкажіть коректний email — щоб ми надіслали план аудиту.', 'Enter a valid email — so we can send you the audit plan.')); return; }
-    setOErr(''); setOrderStep('review');
+    if (phone.replace(/\D/g, '').length < 9) { setOErr(t('Вкажіть коректний телефон — менеджер звʼяжеться з вами.', 'Enter a valid phone — the manager will contact you.')); return; }
+    if (email && !/.+@.+\..+/.test(email)) { setOErr(t('Email виглядає некоректно — виправте або лишіть поле порожнім.', 'The email looks invalid — fix it or leave the field empty.')); return; }
+    setOErr('');
+    void submitOrder();
   };
   const submitOrder = async () => {
     if (!res) return;
     setLeadBusy(true);
     await sendLead({
-      source: 'calc-order-audit', role: 'calc', name: oName.trim() || undefined, email: oEmail.trim(), phone: oPhone.trim() || undefined,
+      source: 'calc-order-audit', role: 'calc', name: oName.trim() || undefined, email: oEmail.trim() || undefined, phone: oPhone.trim(),
       company_website: oHp,
       task: REQUEST_LABEL,
       comment: `${oMsg.trim() ? oMsg.trim() + ' · ' : ''}${t('Витік', 'Leak')}: ${eur(res.total)}/${t('рік', 'yr')} · bottleneck: ${sysLabel(res.primary, lang)} · Health ${res.overallHealth}/100`,
@@ -222,7 +234,7 @@ ${projRows ? `<div class="card"><h2>${esc(t('Зараз → куди можем�
                 <label key={f.k} className="sysx-inp">
                   <span className="sysx-inp-l">{f.label}{f.hint && <i> · {f.hint}</i>}</span>
                   <span className="sysx-inp-row">
-                    <input type="number" inputMode="decimal" min={0} value={inp[f.k] || ''} onChange={setNum(f.k)} placeholder="0" />
+                    <input type="text" inputMode="decimal" value={rawNum[f.k] ?? (inp[f.k] || '')} onChange={setNum(f.k)} placeholder="0" />
                     <span className="sysx-inp-u mono">{f.unit}</span>
                   </span>
                 </label>
@@ -366,40 +378,22 @@ ${projRows ? `<div class="card"><h2>${esc(t('Зараз → куди можем�
                   <button className="sysx-cta" onClick={downloadBrandedPdf}>{t('Завантажити PDF', 'Download PDF')} ↓</button>
                 </div>
               </div>
-            ) : orderStep === 'review' ? (
-              <div className="calc-order">
-                <div className="calc-order-steps mono"><span>1 · {t('Дані', 'Details')}</span><span className="on">2 · {t('Перевірка', 'Review')}</span><span>3 · {t('Готово', 'Done')}</span></div>
-                <span className="sysx-kick">{t('Перевірте заявку', 'Check your request')}</span>
-                <p className="calc-order-lead">{t('Переконайтесь, що все правильно. Після надсилання менеджер звʼяжеться з вами протягом робочого дня.', 'Make sure everything is correct. After you send it, a manager will contact you within one business day.')}</p>
-                <dl className="calc-order-summary">
-                  <div><dt>{t('Заявка', 'Request')}</dt><dd>{REQUEST_LABEL}</dd></div>
-                  <div><dt>{t("Ім'я", 'Name')}</dt><dd>{oName || <i className="mono">{t('не вказано', 'not provided')}</i>}</dd></div>
-                  <div><dt>Email</dt><dd>{oEmail}</dd></div>
-                  <div><dt>{t('Телефон', 'Phone')}</dt><dd>{oPhone || <i className="mono">{t('не вказано', 'not provided')}</i>}</dd></div>
-                  {oMsg.trim() && <div><dt>{t('Коментар', 'Note')}</dt><dd>{oMsg}</dd></div>}
-                </dl>
-                <HumanSummary res={res} lang={lang} t={t} />
-                <div className="sysx-calc-actions">
-                  <button className="sysx-cta is-primary" onClick={submitOrder} disabled={leadBusy}>{leadBusy ? t('Надсилаємо…', 'Sending…') : t('Підтвердити і надіслати', 'Confirm & send')} →</button>
-                  <button className="sysx-cta" onClick={() => setOrderStep('form')}>← {t('Змінити дані', 'Edit details')}</button>
-                </div>
-              </div>
             ) : orderStep === 'form' ? (
-              <form className="calc-order" onSubmit={toReview}>
-                <div className="calc-order-steps mono"><span className="on">1 · {t('Дані', 'Details')}</span><span>2 · {t('Перевірка', 'Review')}</span><span>3 · {t('Готово', 'Done')}</span></div>
+              <form className="calc-order" onSubmit={submitForm}>
+                <div className="calc-order-steps mono"><span className="on">1 · {t('Дані', 'Details')}</span><span>2 · {t('Готово', 'Done')}</span></div>
                 <span className="sysx-kick">{t('Замовити аудит', 'Order the audit')}</span>
-                <p className="calc-order-lead">{t('Лишіть контакт — далі ви перевірите дані, а після відправлення менеджер WEEXP звʼяжеться протягом робочого дня. Результат вашого експрес-аудиту додається до заявки автоматично.', 'Leave your contact — next you review the details, and after sending, a WEEXP manager will reach out within one business day. Your express-audit result is attached automatically.')}</p>
+                <p className="calc-order-lead">{t('Лишіть контакт — менеджер WEEXP звʼяжеться протягом робочого дня. Результат вашого експрес-аудиту додається до заявки автоматично.', 'Leave your contact — a WEEXP manager will reach out within one business day. Your express-audit result is attached automatically.')}</p>
                 <div className="calc-order-row">
                   <label className="sysx-inp"><span className="sysx-inp-l">{t("Ім'я", 'Name')}</span><input value={oName} onChange={(e) => setOName(e.target.value)} placeholder={t('Ваше імʼя', 'Your name')} /></label>
-                  <label className="sysx-inp"><span className="sysx-inp-l">Email *</span><input type="email" value={oEmail} onChange={(e) => setOEmail(e.target.value)} placeholder="you@company.com" required /></label>
-                  <label className="sysx-inp"><span className="sysx-inp-l">{t('Телефон', 'Phone')}</span><input type="tel" value={oPhone} onChange={(e) => setOPhone(e.target.value)} placeholder="+380…" /></label>
+                  <label className="sysx-inp"><span className="sysx-inp-l">{t('Телефон', 'Phone')} *</span><input type="tel" value={oPhone} onChange={(e) => setOPhone(e.target.value)} placeholder="+380…" required /></label>
+                  <label className="sysx-inp"><span className="sysx-inp-l">Email</span><input type="email" value={oEmail} onChange={(e) => setOEmail(e.target.value)} placeholder="you@company.com" /></label>
                 </div>
                 <label className="sysx-inp"><span className="sysx-inp-l">{t('Коментар (необовʼязково)', 'Note (optional)')}</span><input value={oMsg} onChange={(e) => setOMsg(e.target.value)} placeholder={t('Що для вас важливо?', 'What matters most to you?')} /></label>
                 <input name="company_website" tabIndex={-1} autoComplete="off" aria-hidden="true" value={oHp} onChange={(e) => setOHp(e.target.value)} style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }} />
                 <HumanSummary res={res} lang={lang} t={t} />
                 {oErr && <span className="s3-err mono">{oErr}</span>}
                 <div className="sysx-calc-actions">
-                  <button className="sysx-cta is-primary" type="submit">{t('Перевірити заявку', 'Review request')} →</button>
+                  <button className="sysx-cta is-primary" type="submit" disabled={leadBusy}>{leadBusy ? t('Надсилаємо…', 'Sending…') : t('Надіслати заявку', 'Send request')} →</button>
                   <button className="sysx-cta" type="button" onClick={() => setOrderStep(null)}>{t('Скасувати', 'Cancel')}</button>
                 </div>
               </form>

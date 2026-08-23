@@ -2,16 +2,17 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   currentUser, signOut, loadDiag, saveDiag, CONFIGURED, isCloudUser,
-  signInWithGoogle, onAuth, signTierFile,
+  signInWithGoogle, onAuth, signTierFile, uploadTierFile,
   ensureAudit, findAuditIdByCode, loadAuditAnswers, loadAuditExtra, getProjects,
   type DiagUser, type DiagRecord, type CompanyProfile, type TierStatus, type TierEvent, type AuditAnswer, type ExtraQ, type AccessState,
+  type MarketplaceAccess, type ClientFile,
 } from '@/lib/supa';
-import { ACCESS_CATALOG, AUDIT_EMAIL, DATA_EMAIL, ACCESS_METHOD_LABEL, type AccessMethod } from '@/data/accessCatalog';
+import { ACCESS_CATALOG, AUDIT_EMAIL, DATA_EMAIL, ACCESS_METHOD_LABEL, CONN_STATUS_LABEL, MARKETPLACE_PRESETS, MARKETPLACE_SCOPES, REPORT_TYPES, EXPORT_TYPES, type AccessMethod } from '@/data/accessCatalog';
 import { AuditForm } from './AuditForm';
 import { ProjectView } from './ProjectView';
 import { loadTemplate, CLIENT_ROLES, type AuditTemplate, type Question } from './auditTemplate';
 import { getExpressAudit, clearExpressAudit, syncExpressToAccount, type ExpressAudit } from './cabinetData';
-import { eur, sysLabel, type SysKey } from './lossModel';
+import { eur, sysLabel, actionText, type SysKey } from './lossModel';
 import { sendLead } from '@/lib/leads';
 import { isValidCode } from '@/lib/access';
 import { toast } from '@/lib/toast';
@@ -215,6 +216,8 @@ export function Cabinet() {
               )}
             </div>
             <AccessGrant user={user} rec={rec} embedded />
+            <MarketplaceBlock user={user} rec={rec} onSaved={refreshRec} />
+            <FilesBlock user={user} rec={rec} onSaved={refreshRec} />
           </div>
         )}
         {section === 'collab' && <Collab user={user} rec={rec} express={express} onDone={refreshRec} />}
@@ -269,6 +272,10 @@ function AccessGrant({ user, rec, embedded }: { user: DiagUser; rec: DiagRecord 
           {ACCESS_CATALOG.filter((a) => a.category === cat).map((a) => {
             const s = map[a.id] || {};
             const done = ['granted', 'verified'].includes(s.status || '');
+            const conn = s.connStatus || 'off';
+            const hasConn = a.methods.includes('oauth');
+            const howKey = openHow?.startsWith(a.id) ? openHow.slice(a.id.length + 1) : null;
+            const toggleHow = (kind: 'view' | 'conn') => setOpenHow(openHow === `${a.id}:${kind}` ? null : `${a.id}:${kind}`);
             return (
               <div key={a.id} className={'cab-acc-card' + (done ? ' is-done' : '')}>
                 <div className="cab-acc-top">
@@ -278,18 +285,126 @@ function AccessGrant({ user, rec, embedded }: { user: DiagUser; rec: DiagRecord 
                   </button>
                 </div>
                 <div className="cab-acc-methods">
-                  {a.methods.map((m: AccessMethod) => (
-                    <button key={m} className={'cab-acc-m' + (s.method === m ? ' on' : '')} onClick={() => set(a.id, { method: m })}>{ACCESS_METHOD_LABEL[m]}</button>
-                  ))}
-                  {a.viewHow && <button className="cab-acc-how mono" onClick={() => setOpenHow(openHow === a.id ? null : a.id)}>{openHow === a.id ? t('▾ як надати', '▾ how to grant') : t('▸ як надати', '▸ how to grant')}</button>}
+                  {hasConn && (
+                    <>
+                      <button className={'cab-acc-conn st-' + conn} onClick={() => { if (conn === 'off') { set(a.id, { method: 'oauth', connStatus: 'progress' }); setOpenHow(`${a.id}:conn`); } else { toggleHow('conn'); } }}>
+                        {conn === 'off' ? t('Підключити конектор', 'Connect') + ' →' : CONN_STATUS_LABEL[conn]}
+                      </button>
+                      {conn !== 'off' && (
+                        <select className="cab-acc-connsel mono" value={conn} onChange={(e) => set(a.id, { connStatus: e.target.value as AccessState['connStatus'] })} aria-label={t('Статус конектора', 'Connector status')}>
+                          {(['off', 'progress', 'on', 'error'] as const).map((k) => <option key={k} value={k}>{CONN_STATUS_LABEL[k]}</option>)}
+                        </select>
+                      )}
+                    </>
+                  )}
+                  <button className={'cab-acc-m' + (s.method === 'view' ? ' on' : '')} onClick={() => { set(a.id, { method: 'view' }); setOpenHow(`${a.id}:view`); }}>{t('Надати доступ вручну', 'Grant manually')}</button>
+                  {a.methods.includes('upload') && <button className={'cab-acc-m' + (s.method === 'upload' ? ' on' : '')} onClick={() => set(a.id, { method: 'upload' })}>{ACCESS_METHOD_LABEL.upload}</button>}
                 </div>
-                {openHow === a.id && a.viewHow && <p className="cab-acc-how-t">{a.viewHow}</p>}
+                <div className="cab-acc-hows">
+                  {a.viewHow && <button className="cab-acc-how mono" onClick={() => toggleHow('view')}>{howKey === 'view' ? '▾' : '▸'} {t('Як надати доступ', 'How to grant access')}</button>}
+                  {hasConn && a.connectorHow && <button className="cab-acc-how mono" onClick={() => toggleHow('conn')}>{howKey === 'conn' ? '▾' : '▸'} {t('Як підключити конектор', 'How to connect')}</button>}
+                </div>
+                {howKey === 'view' && a.viewHow && <p className="cab-acc-how-t">{a.viewHow}</p>}
+                {howKey === 'conn' && a.connectorHow && <p className="cab-acc-how-t">{a.connectorHow}</p>}
               </div>
             );
           })}
         </div>
       ))}
     </div>
+  );
+}
+
+/** Динамічний блок «Маркетплейси»: + Додати маркетплейс → площадка · що потрібно · статус. */
+function MarketplaceBlock({ user, rec, onSaved }: { user: DiagUser; rec: DiagRecord | null; onSaved: () => void }) {
+  const t = useT();
+  const [rows, setRows] = useState<MarketplaceAccess[]>(rec?.marketplaces || []);
+  useEffect(() => { setRows(rec?.marketplaces || []); }, [rec]);
+  const persist = async (next: MarketplaceAccess[]) => { setRows(next); await saveDiag(user, { marketplaces: next }); onSaved(); };
+  const add = () => void persist([...rows, { id: `mp-${Date.now()}`, name: '', status: 'none', at: new Date().toISOString() }]);
+  const upd = (id: string, patch: Partial<MarketplaceAccess>) => void persist(rows.map((r) => (r.id === id ? { ...r, ...patch, at: new Date().toISOString() } : r)));
+  const del = (id: string) => void persist(rows.filter((r) => r.id !== id));
+  const ST: Record<NonNullable<MarketplaceAccess['status']>, string> = { none: t('Не додано', 'Not added'), wait: t('Очікується', 'Pending'), granted: t('Доступ надано', 'Access granted') };
+  return (
+    <div className="cab-acc-cat">
+      <span className="cab-acc-cat-h mono">Marketplace</span>
+      {rows.length === 0 && <p className="cab-sub">{t('Додайте маркетплейси, на яких продаєте — для кожного вкажемо, що саме потрібно.', 'Add the marketplaces you sell on — for each we specify exactly what is needed.')}</p>}
+      {rows.map((r) => (
+        <div key={r.id} className={'cab-acc-card cab-mp-row' + (r.status === 'granted' ? ' is-done' : '')}>
+          <select value={MARKETPLACE_PRESETS.includes(r.name) ? r.name : (r.name ? '__custom' : '')} onChange={(e) => upd(r.id, { name: e.target.value === '__custom' ? (r.name && !MARKETPLACE_PRESETS.includes(r.name) ? r.name : ' ') : e.target.value })}>
+            <option value="">{t('— маркетплейс —', '— marketplace —')}</option>
+            {MARKETPLACE_PRESETS.map((m) => <option key={m} value={m}>{m}</option>)}
+            <option value="__custom">{t('Інший…', 'Other…')}</option>
+          </select>
+          {(!MARKETPLACE_PRESETS.includes(r.name) && r.name !== '') && (
+            <input value={r.name.trim()} onChange={(e) => upd(r.id, { name: e.target.value || ' ' })} placeholder={t('Назва майданчика', 'Marketplace name')} />
+          )}
+          <select value={r.scope || ''} onChange={(e) => upd(r.id, { scope: e.target.value })}>
+            <option value="">{t('— що потрібно —', '— what is needed —')}</option>
+            {MARKETPLACE_SCOPES.map((sc) => <option key={sc} value={sc}>{sc}</option>)}
+          </select>
+          <select className={'cab-mp-st st-' + (r.status || 'none')} value={r.status || 'none'} onChange={(e) => upd(r.id, { status: e.target.value as MarketplaceAccess['status'] })}>
+            {(Object.keys(ST) as (keyof typeof ST)[]).map((k) => <option key={k} value={k}>{ST[k]}</option>)}
+          </select>
+          <button type="button" className="cab-del" onClick={() => del(r.id)} aria-label={t('Прибрати', 'Remove')}>✕</button>
+        </div>
+      ))}
+      <button type="button" className="sysx-cta" onClick={add}>+ {t('Додати маркетплейс', 'Add marketplace')}</button>
+    </div>
+  );
+}
+
+/** Динамічні файли: управлінська звітність і вивантаження. Тип · назва · період · файл · статус. */
+function FilesBlock({ user, rec, onSaved }: { user: DiagUser; rec: DiagRecord | null; onSaved: () => void }) {
+  const t = useT();
+  const [rows, setRows] = useState<ClientFile[]>(rec?.clientFiles || []);
+  const [busy, setBusy] = useState<string | null>(null);
+  useEffect(() => { setRows(rec?.clientFiles || []); }, [rec]);
+  const persist = async (next: ClientFile[]) => { setRows(next); await saveDiag(user, { clientFiles: next }); onSaved(); };
+  const add = (group: ClientFile['group']) => void persist([...rows, { id: `cf-${Date.now()}`, group, status: 'wait', at: new Date().toISOString() }]);
+  const upd = (id: string, patch: Partial<ClientFile>) => void persist(rows.map((r) => (r.id === id ? { ...r, ...patch, at: new Date().toISOString() } : r)));
+  const del = (id: string) => void persist(rows.filter((r) => r.id !== id));
+  const pick = (row: ClientFile) => {
+    const inp = document.createElement('input');
+    inp.type = 'file';
+    inp.onchange = async () => {
+      const f = inp.files?.[0];
+      if (!f) return;
+      setBusy(row.id);
+      const r = await uploadTierFile(user, 'client-files', f);
+      setBusy(null);
+      if (r.ok && r.path) { upd(row.id, { path: r.path, status: 'uploaded', title: row.title || f.name }); toast(t('✓ Файл завантажено', '✓ File uploaded')); }
+      else toast(r.error || t('Не вдалося завантажити файл', 'Upload failed'), 'err');
+    };
+    inp.click();
+  };
+  const groupRows = (group: ClientFile['group'], types: string[], title: string, lead: string) => (
+    <div className="cab-acc-cat">
+      <span className="cab-acc-cat-h mono">{title}</span>
+      <p className="cab-sub">{lead}</p>
+      {rows.filter((r) => r.group === group).map((r) => (
+        <div key={r.id} className={'cab-acc-card cab-file-row' + (r.status === 'uploaded' ? ' is-done' : '')}>
+          <select value={r.type || ''} onChange={(e) => upd(r.id, { type: e.target.value })}>
+            <option value="">{t('— тип —', '— type —')}</option>
+            {types.map((x) => <option key={x} value={x}>{x}</option>)}
+          </select>
+          <input value={r.title || ''} onChange={(e) => upd(r.id, { title: e.target.value })} placeholder={t('Назва документа', 'Document name')} />
+          <input value={r.period || ''} onChange={(e) => upd(r.id, { period: e.target.value })} placeholder={t('Період: 01.01–31.12.2025', 'Period')} />
+          <button type="button" className={'cab-file-up' + (r.status === 'uploaded' ? ' on' : '')} onClick={() => pick(r)} disabled={busy === r.id}>
+            {busy === r.id ? t('Завантаження…', 'Uploading…') : r.status === 'uploaded' ? t('✓ Завантажено · замінити', '✓ Uploaded · replace') : t('⬆ Завантажити файл', '⬆ Upload file')}
+          </button>
+          <span className={'cab-file-st mono st-' + (r.status || 'wait')}>{r.status === 'uploaded' ? t('Завантажено', 'Uploaded') : t('Очікується', 'Pending')}</span>
+          <button type="button" className="cab-del" onClick={() => del(r.id)} aria-label={t('Прибрати', 'Remove')}>✕</button>
+        </div>
+      ))}
+      <button type="button" className="sysx-cta" onClick={() => add(group)}>+ {t('Додати файл', 'Add file')}</button>
+    </div>
+  );
+  return (
+    <>
+      {groupRows('report', REPORT_TYPES, t('Управлінська звітність', 'Management reporting'), t('P&L, Cash Flow, звіти по продажах/маржі/категоріях/каналах — усе, чим ви реально керуєте.', 'P&L, Cash Flow, sales/margin/category/channel reports — whatever you actually manage by.'))}
+      {groupRows('export', EXPORT_TYPES, t('Вивантаження / файли', 'Exports / files'), t('Замовлення за 24 міс, залишки, собівартість — сирі дані для розрахунків.', 'Orders for 24 months, stock, costs — the raw data for calculations.'))}
+    </>
   );
 }
 
@@ -309,7 +424,7 @@ function deepStateOf(rec: DiagRecord | null): DeepState {
 function useDeepUi(state: DeepState) {
   const t = useT();
   const M: Record<DeepState, { badge: string; cls: string; cta: string; note: string }> = {
-    none: { badge: t('не запрошено', 'not requested'), cls: 'none', cta: t('Запросити доступ →', 'Request access →'), note: t('Розбір 8 систем магазину, конкурентне поле, юніт-економіка, план під DoD.', 'Analysis of 8 store systems, competitive field, unit economics, plan under DoD.') },
+    none: { badge: t('не запрошено', 'not requested'), cls: 'none', cta: t('Почати глибокий аудит →', 'Start the deep audit →'), note: t('Розбір 8 систем магазину, конкурентне поле, юніт-економіка, план під DoD.', 'Analysis of 8 store systems, competitive field, unit economics, plan under DoD.') },
     requested: { badge: t('запит надіслано', 'requested'), cls: 'wait', cta: t('Статус запиту →', 'Request status →'), note: t('Ми отримали ваш запит — менеджер підтвердить доступ найближчим часом.', 'We received your request — a manager will confirm access shortly.') },
     data: { badge: t('потрібні ваші дані', 'your data needed'), cls: 'wait', cta: t('Надати дані →', 'Provide data →'), note: t('Для старту аудиту нам потрібні додаткові дані від вас.', 'We need additional data from you to start the audit.') },
     rejected: { badge: t('відхилено', 'declined'), cls: 'bad', cta: t('Деталі →', 'Details →'), note: t('Запит відхилено — відкрийте деталі, щоб побачити причину.', 'The request was declined — open details to see the reason.') },
@@ -357,48 +472,121 @@ function Overview({ express, rec, go }: { express: ExpressAudit | null; rec: Dia
   );
 }
 
-/** Друкований підсумок експрес-аудиту (→ PDF через діалог друку браузера). */
+/** Друкований підсумок експрес-аудиту: РЕЗУЛЬТАТ (розрахунок → аналіз → дії), не анкета. */
 function exportExpressPdf(express: ExpressAudit, email?: string) {
   const w = window.open('', '_blank');
   if (!w) { toast('Дозвольте спливаючі вікна, щоб завантажити PDF', 'err'); return; }
   const esc = (s: unknown) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const inp = (express.input || {}) as unknown as Record<string, number | undefined>;
+  const inp = (express.input || {}) as unknown as Record<string, number | string | string[] | undefined>;
+  const num = (v: unknown) => (typeof v === 'number' && v > 0 ? v : undefined);
+  const symptoms = Array.isArray(inp.symptoms) ? (inp.symptoms as string[]) : [];
+  const healthRows = (express.health || []).map((h) => {
+    const c = h.score < 45 ? '#F5301C' : h.score < 65 ? '#C58A00' : '#1F6E4E';
+    return `<tr><td class="k">${esc(sysLabel(h.key as SysKey, 'uk'))}</td><td style="width:52%"><div style="background:#EEE7D6;height:8px;border-radius:4px"><div style="width:${Math.max(3, Math.min(100, h.score))}%;height:8px;border-radius:4px;background:${c}"></div></div></td><td style="width:56px;text-align:right;font-weight:700;color:${c}">${h.score}</td></tr>`;
+  }).join('');
+  const leakRows = (express.leaks || []).filter((l) => l.amount > 0).sort((x, y) => y.amount - x.amount)
+    .map((l) => `<tr><td class="k">${esc(sysLabel(l.key as SysKey, 'uk'))}</td><td style="text-align:right;font-weight:700">${esc(eur(l.amount))}<span style="color:#6B675E;font-weight:400"> / рік</span></td></tr>`).join('');
+  const actions = (express.actions || []).map((k, i) => `<li><b>${i + 1}.</b> ${esc(actionText(k as SysKey, 'uk'))}</li>`).join('');
+  const sympChips = symptoms.map((k) => `<span class="chip">${esc(sysLabel(k as SysKey, 'uk'))}</span>`).join('');
   const kv = (rows: [string, unknown][]) => rows.filter(([, v]) => v != null && v !== '').map(([k, v]) => `<tr><td class="k">${esc(k)}</td><td>${esc(v)}</td></tr>`).join('');
-  const rows: [string, unknown][] = [
-    ['Дата проходження', new Date(express.at).toLocaleString('uk-UA')],
-    ['Business Health', `${express.overallHealth}/100`],
-    ['Оцінений витік / рік', eur(express.total)],
-    ['Діапазон', `${eur(express.range[0])}–${eur(express.range[1])}`],
-    ['Ключова проблема', sysLabel(express.primary as SysKey, 'uk')],
-    ['Друга проблема', express.secondary ? sysLabel(express.secondary as SysKey, 'uk') : ''],
-    ['Оборот / міс', inp.monthlyRevenue ? eur(inp.monthlyRevenue) : ''],
-    ['Середній чек', inp.aov ? eur(inp.aov) : ''],
-    ['Конверсія', inp.conversion != null ? `${inp.conversion}%` : ''],
-    ['Повторні покупки', inp.repeatRate != null ? `${inp.repeatRate}%` : ''],
+  const srcRows: [string, unknown][] = [
+    ['Оборот / міс', num(inp.monthlyRevenue) ? eur(inp.monthlyRevenue as number) : ''],
+    ['Середній чек', num(inp.aov) ? eur(inp.aov as number) : ''],
+    ['Конверсія', num(inp.conversion) != null && (inp.conversion as number) > 0 ? `${inp.conversion}%` : ''],
+    ['Повторні покупки', num(inp.repeatRate) ? `${inp.repeatRate}%` : ''],
+    ['Повернення', num(inp.returnsRate) ? `${inp.returnsRate}%` : ''],
+    ['Валова маржа', num(inp.grossMargin) ? `${inp.grossMargin}%` : ''],
+    ['CAC', num(inp.cac) ? eur(inp.cac as number) : ''],
   ];
-  const html = `<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>Експрес-аудит — WEEXP</title><style>
-@page{margin:16mm}body{font-family:"IBM Plex Sans","Segoe UI",system-ui,Arial,sans-serif;color:#141210;margin:0;font-size:13px;line-height:1.55}
-.bar{height:8px;background:#F5301C}.wrap{padding:26px 30px;max-width:760px}
-.top{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #141210;padding-bottom:12px;margin-bottom:18px}
+  const html = `<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>Експрес-аудит — результат — WEEXP</title><style>
+@page{margin:14mm}body{font-family:"IBM Plex Sans","Segoe UI",system-ui,Arial,sans-serif;color:#141210;margin:0;font-size:12.5px;line-height:1.5}
+.bar{height:8px;background:#F5301C}.wrap{padding:24px 30px;max-width:780px}
+.top{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #141210;padding-bottom:12px;margin-bottom:16px}
 .logo{font-weight:800;font-size:22px}.logo span{color:#F5301C}.meta{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#6B675E;text-align:right}
-.money{font-size:30px;font-weight:800;margin:10px 0 2px}.money i{font-size:13px;color:#6B675E;font-weight:500;font-style:normal}
-table{border-collapse:collapse;width:100%;margin-top:12px}td{border-bottom:1px solid #EEE7D6;padding:6px 8px}td.k{width:220px;color:#6B675E;font-weight:600}
-.foot{margin-top:26px;padding-top:12px;border-top:1px solid #E3D9C0;color:#9a9488;font-size:10.5px}
+.money{font-size:32px;font-weight:800;margin:8px 0 0}.money i{font-size:13px;color:#6B675E;font-weight:500;font-style:normal}
+.sub{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#6B675E;margin:2px 0 14px}
+h2{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#6B675E;margin:20px 0 8px;border-bottom:1px solid #E3D9C0;padding-bottom:4px}
+table{border-collapse:collapse;width:100%}td{border-bottom:1px solid #F0EADB;padding:5px 8px;vertical-align:middle}td.k{width:230px;color:#3d3a35;font-weight:600}
+ol{margin:6px 0 0;padding-left:0;list-style:none}ol li{padding:6px 0;border-bottom:1px solid #F0EADB}
+.chip{display:inline-block;border:1px solid #E3D9C0;border-radius:100px;padding:3px 10px;margin:0 6px 6px 0;font-size:11.5px}
+.verdict{background:#FBF4E4;border-left:3px solid #F5301C;padding:10px 14px;margin-top:10px}
+.foot{margin-top:22px;padding-top:10px;border-top:1px solid #E3D9C0;color:#9a9488;font-size:10.5px}
 @media print{.noprint{display:none}}
 </style></head><body><div class="bar"></div><div class="wrap">
 <div class="top"><div><div class="logo">WEEXP<span>.</span></div><div style="font-family:monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B675E">Експрес-аудит · результат</div></div>
-<div class="meta">${email ? esc(email) + '<br>' : ''}сформовано ${esc(new Date().toLocaleString('uk-UA'))}</div></div>
-<button class="noprint" onclick="window.print()" style="margin:10px 0;background:#F5301C;color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer">🖨 Друк / зберегти в PDF</button>
-<div class="money">${esc(eur(express.total))} <i>/ рік · оцінений витік</i></div>
-<table>${kv(rows)}</table>
-<div class="foot">WEEXP — Commerce OS · weexp.agency · Експрес-оцінка за 7 показниками; глибокий аудит уточнює цифри й дає план дій.</div>
+<div class="meta">${email ? esc(email) + '<br>' : ''}пройдено ${esc(new Date(express.at).toLocaleString('uk-UA'))}</div></div>
+<button class="noprint" onclick="window.print()" style="margin:8px 0;background:#F5301C;color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer">🖨 Друк / зберегти в PDF</button>
+<div class="money">${esc(eur(express.total))} <i>/ рік · оцінений витік виторгу</i></div>
+<div class="sub">діапазон ${esc(eur(express.range[0]))}–${esc(eur(express.range[1]))} · Business Health ${express.overallHealth}/100</div>
+<div class="verdict"><b>Головний висновок:</b> ключова проблема — <b>${esc(sysLabel(express.primary as SysKey, 'uk'))}</b>${express.secondary ? `, друга — <b>${esc(sysLabel(express.secondary as SysKey, 'uk'))}</b>` : ''}. Потенціал зростання = повернення оціненого витоку: почніть із трьох дій нижче.</div>
+${healthRows ? `<h2>Здоровʼя 8 систем · оцінка</h2><table>${healthRows}</table>` : ''}
+${leakRows ? `<h2>Куди тече виторг · розрахунок</h2><table>${leakRows}</table>` : ''}
+${sympChips ? `<h2>Позначені симптоми</h2><div>${sympChips}</div>` : ''}
+${actions ? `<h2>Три перші дії · рекомендації</h2><ol>${actions}</ol>` : ''}
+<h2>Вихідні показники, надані вами</h2><table>${kv(srcRows)}</table>
+<div class="foot">WEEXP — Commerce OS · weexp.agency · Оцінка за наданими даними та бенчмарками ніші; не фінансовий аудит. Точна карта «де саме і чому» — глибокий аудит WEEXP.</div>
 </div></body></html>`;
   w.document.open(); w.document.write(html); w.document.close();
+}
+
+/** Збережений результат експрес-аудиту — прямо в кабінеті, без повторного проходження. */
+function ExpressResultView({ express }: { express: ExpressAudit }) {
+  const t = useT();
+  const lang = t('uk', 'en') as 'uk' | 'en';
+  const symptoms = (Array.isArray((express.input as unknown as { symptoms?: string[] })?.symptoms)
+    ? ((express.input as unknown as { symptoms?: string[] }).symptoms as string[]) : []);
+  const leaks = (express.leaks || []).filter((l) => l.amount > 0).sort((a, b) => b.amount - a.amount);
+  return (
+    <div className="cab-exres">
+      <div className="cab-exres-verdict">
+        <b>{t('Головний висновок:', 'Main takeaway:')}</b> {t('ключова проблема — ', 'the key problem is ')}
+        <b>{sysLabel(express.primary as SysKey, lang)}</b>
+        {express.secondary ? <>{t(', друга — ', ', second — ')}<b>{sysLabel(express.secondary as SysKey, lang)}</b></> : null}.
+      </div>
+      {(express.health || []).length > 0 && (
+        <div className="cab-exres-block">
+          <span className="cab-exres-h mono">{t('Здоровʼя 8 систем', 'Health of 8 systems')}</span>
+          {(express.health || []).map((h) => (
+            <div key={h.key} className="cab-exres-row">
+              <span className="cab-exres-l">{sysLabel(h.key as SysKey, lang)}</span>
+              <span className="cab-exres-bar"><i style={{ width: `${Math.max(3, Math.min(100, h.score))}%` }} data-lvl={h.score < 45 ? 'bad' : h.score < 65 ? 'mid' : 'ok'} /></span>
+              <b className="cab-exres-v mono">{h.score}</b>
+            </div>
+          ))}
+        </div>
+      )}
+      {leaks.length > 0 && (
+        <div className="cab-exres-block">
+          <span className="cab-exres-h mono">{t('Куди тече виторг', 'Where revenue leaks')}</span>
+          {leaks.map((l) => (
+            <div key={l.key} className="cab-exres-row is-2">
+              <span className="cab-exres-l">{sysLabel(l.key as SysKey, lang)}</span>
+              <b className="cab-exres-v mono">{eur(l.amount)}<i>{t('/рік', '/yr')}</i></b>
+            </div>
+          ))}
+        </div>
+      )}
+      {symptoms.length > 0 && (
+        <div className="cab-exres-block">
+          <span className="cab-exres-h mono">{t('Позначені симптоми', 'Marked symptoms')}</span>
+          <div className="cab-ch-row">{symptoms.map((k) => <span key={k} className="cab-chip on">{sysLabel(k as SysKey, lang)}</span>)}</div>
+        </div>
+      )}
+      {(express.actions || []).length > 0 && (
+        <div className="cab-exres-block">
+          <span className="cab-exres-h mono">{t('Три перші дії', 'First three actions')}</span>
+          <ol className="cab-exres-acts">{(express.actions || []).map((k) => <li key={k}>{actionText(k as SysKey, lang)}</li>)}</ol>
+        </div>
+      )}
+      <p className="cab-sub mono">{t('Оцінка за наданими даними; не фінансовий аудит. Точна карта — глибокий аудит.', 'An estimate from your data; not a financial audit. The precise map is the deep audit.')}</p>
+    </div>
+  );
 }
 
 function Audits({ express, rec, user, go, onDelete }: { express: ExpressAudit | null; rec: DiagRecord | null; user: DiagUser; go: (s: SectionId) => void; onDelete: () => void }) {
   const t = useT();
   const lp = useLp();
+  const [showRes, setShowRes] = useState(true);
   const deep = deepStateOf(rec);
   const ui = useDeepUi(deep);
   const del = () => { if (typeof window !== 'undefined' && !window.confirm(t('Видалити збережений експрес-аудит?', 'Delete the saved express audit?'))) return; onDelete(); };
@@ -412,21 +600,22 @@ function Audits({ express, rec, user, go, onDelete }: { express: ExpressAudit | 
             ? <><span className="sysx-display cab-audit-v">{eur(express.total)}<i>{t('/ рік', '/ year')}</i></span>
                 <span className="mono cab-sub">{t('пройдено', 'taken')} {new Date(express.at).toLocaleDateString(t('uk-UA', 'en-GB'))} · Health {express.overallHealth}/100 · {t('діапазон', 'range')} {eur(express.range[0])}–{eur(express.range[1])}</span>
                 <div className="cab-audit-actions">
-                  <Link className="sysx-cta is-primary" to={lp('/diagnose')}>{t('Переглянути результат →', 'View result →')}</Link>
+                  <button className="sysx-cta is-primary" onClick={() => setShowRes((v) => !v)}>{showRes ? t('Згорнути результат', 'Collapse result') : t('Переглянути результат →', 'View result →')}</button>
                   <button className="sysx-cta" onClick={() => exportExpressPdf(express, user.email)}>{t('Завантажити PDF', 'Download PDF')}</button>
                   <Link className="sysx-cta" to={lp('/diagnose')}>{t('Перерахувати', 'Recalculate')}</Link>
                   <button className="cab-del" onClick={del} aria-label={t('Видалити аудит', 'Delete audit')} title={t('Видалити', 'Delete')}>
                     <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6M10 11v6M14 11v6"/></svg>
                     {t('Видалити', 'Delete')}
                   </button>
-                </div></>
+                </div>
+                {showRes && <ExpressResultView express={express} />}</>
             : <><p className="cab-sub">{t('Швидка оцінка втрат за 7 показниками — ~2 хвилини.', 'A quick loss estimate across 7 metrics — ~2 minutes.')}</p><Link className="sysx-cta is-primary" to={lp('/diagnose')}>{t('Пройти експрес-аудит →', 'Take the express audit →')}</Link></>}
         </div>
         <div className="cab-audit">
           <div className="cab-audit-top"><b>{t('Глибокий аудит', 'Deep audit')}</b><span className={`cab-badge mono tst-${ui.cls}`}>{ui.badge}</span></div>
           <p className="cab-sub">{ui.note}</p>
           <div className="cab-audit-actions">
-            <button className="sysx-cta is-primary" onClick={() => go('deep')}>{deep === 'none' ? t('Запросити доступ →', 'Request access →') : ui.cta}</button>
+            <button className="sysx-cta is-primary" onClick={() => go('deep')}>{ui.cta}</button>
             {deep === 'done' && <button className="sysx-cta" onClick={() => go('docs')}>{t('Підсумковий звіт →', 'Final report →')}</button>}
           </div>
         </div>
@@ -437,13 +626,13 @@ function Audits({ express, rec, user, go, onDelete }: { express: ExpressAudit | 
 
 function CompanyForm({ user, rec, onSaved }: { user: DiagUser; rec: DiagRecord | null; onSaved: () => void }) {
   const t = useT();
-  const CHANNELS = ['Instagram', 'TikTok', t('Сайт / магазин', 'Site / store'), t('Marketplace (Rozetka, Prom…)', 'Marketplace'), t('Офлайн / ретейл', 'Offline / retail'), 'Email / CRM', t('Опт / B2B', 'Wholesale / B2B')];
-  const ACQ = ['SEO', 'Google Ads', 'Meta Ads', 'TikTok Ads', t('Інфлюенсери', 'Influencers'), 'Email / CRM', t('Реферали', 'Referrals'), 'Marketplace', t('Офлайн', 'Offline'), t('PR / контент', 'PR / content')];
+  const CHANNELS = [t('Власний інтернет-магазин', 'Own online store'), t('Marketplace (Amazon / Allegro / Rozetka…)', 'Marketplaces (Amazon / Allegro / Rozetka…)'), t('Офлайн-магазини', 'Offline stores'), t('Соцмережі / Social Commerce', 'Social commerce'), t('Мобільний застосунок', 'Mobile app'), t('B2B / оптові продажі', 'B2B / wholesale'), t('Дилери / дистрибʼютори', 'Dealers / distributors'), t('Власні sales-команди', 'In-house sales teams'), t('Партнерський канал', 'Partner channel'), 'Email / CRM'];
+  const ACQ = ['SEO', 'Google Ads', 'Meta Ads', 'TikTok Ads', 'Email Marketing', 'Social Media / SMM', 'Influencer Marketing', 'Affiliate', 'Marketplace traffic', 'Organic / Direct', 'Referral', t('PR / контент', 'PR / content'), t('Офлайн', 'Offline'), t('Інше', 'Other')];
   const INDUSTRIES = [t('Мода й одяг', 'Fashion & apparel'), t('Косметика й бʼюті', 'Beauty & cosmetics'), t('Електроніка', 'Electronics'), t('Дім і меблі', 'Home & furniture'), t('Дитячі товари', 'Kids'), t('Спорт і активність', 'Sports'), t('Здоровʼя й аптека', 'Health & pharmacy'), t('Продукти й напої', 'Food & beverages'), t('Авто й запчастини', 'Automotive'), t('Прикраси й аксесуари', 'Jewelry & accessories'), t('Хобі та подарунки', 'Hobby & gifts'), t('Цифрові товари / послуги', 'Digital goods / services'), t('B2B / послуги', 'B2B / services'), t('Інше', 'Other')];
-  const BIZ_TYPES = ['B2C', 'B2B', 'D2C', 'Marketplace', 'Hybrid'];
+  const BIZ_TYPES = ['B2C', 'B2B', 'D2C', 'B2B2C', 'Marketplace', 'Omnichannel', 'Retail', 'E-commerce', 'SaaS', 'Service Business', 'Hybrid'];
   const SIZE_RANGES = [t('до €10k / міс', 'up to €10k / mo'), '€10–50k / міс', '€50–200k / міс', '€200k–1M / міс', '€1M+ / міс'];
   const TEAM_SIZES = ['1–3', '4–10', '11–30', '31–100', '100+'];
-  const PLATFORMS = ['Shopify', 'WooCommerce', 'Хорошоп', 'Prom / OLX', 'OpenCart', 'Magento', 'Wix / Tilda', t('Кастомна', 'Custom'), t('Інше', 'Other')];
+  const PLATFORMS = ['Shopify', 'WooCommerce', 'Хорошоп', 'Prom / OLX', 'OpenCart', 'Magento', 'Wix / Tilda', 'Laravel / custom Laravel', t('Custom / самописна платформа', 'Custom-built platform'), t('Інше', 'Other')];
 
   const [c, setC] = useState<CompanyProfile>({ ...EMPTY_COMPANY, ...(rec?.company || {}) });
   const [saved, setSaved] = useState(false);
@@ -453,6 +642,10 @@ function CompanyForm({ user, rec, onSaved }: { user: DiagUser; rec: DiagRecord |
   useEffect(() => { setC({ ...EMPTY_COMPANY, ...(rec?.company || {}) }); dirty.current = false; }, [rec]);
   const set = (k: keyof CompanyProfile) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => { dirty.current = true; setC((s) => ({ ...s, [k]: e.target.value })); };
   const toggle = (k: 'channels' | 'acqChannels', v: string) => { dirty.current = true; setC((s) => { const a = s[k] || []; return { ...s, [k]: a.includes(v) ? a.filter((x) => x !== v) : [...a, v] }; }); };
+  type TeamMate = NonNullable<CompanyProfile['team']>[number];
+  const setMate = (i: number, k: keyof TeamMate, v: string) => { dirty.current = true; setC((s) => { const team = [...(s.team || [])]; team[i] = { ...team[i], [k]: v }; return { ...s, team }; }); };
+  const addMate = () => { dirty.current = true; setC((s) => ({ ...s, team: [...(s.team || []), {}] })); };
+  const delMate = (i: number) => { dirty.current = true; setC((s) => ({ ...s, team: (s.team || []).filter((_, x) => x !== i) })); };
   // Автозбереження: через 1.4с бездіяльності після реальної правки — тихо зберігаємо, нічого не втрачаючи.
   useEffect(() => {
     if (!dirty.current || !c.industry) return;
@@ -504,6 +697,21 @@ function CompanyForm({ user, rec, onSaved }: { user: DiagUser; rec: DiagRecord |
           <span className="sysx-inp-l">{t('Канали залучення клієнтів', 'Customer acquisition channels')}</span>
           <div className="cab-ch-row">{ACQ.map((ch) => <button key={ch} type="button" className={`cab-chip${(c.acqChannels || []).includes(ch) ? ' on' : ''}`} onClick={() => toggle('acqChannels', ch)}>{ch}</button>)}</div>
         </div>
+      </div>
+
+      <div className="cab-formgrp">
+        <span className="cab-formgrp-h">{t('Команда', 'Team')}</span>
+        <p className="cab-sub">{t('Хто відповідає за напрями — щоб аудит одразу говорив із правильними людьми.', 'Who owns which area — so the audit talks to the right people from day one.')}</p>
+        {(c.team || []).map((m, i) => (
+          <div key={i} className="cab-team-row">
+            <label className="sysx-inp"><span className="sysx-inp-l">{t('Імʼя', 'Name')}</span><input value={m.name || ''} onChange={(e) => setMate(i, 'name', e.target.value)} placeholder={t('Імʼя', 'Name')} /></label>
+            <label className="sysx-inp"><span className="sysx-inp-l">{t('Посада', 'Role')}</span><input value={m.role || ''} onChange={(e) => setMate(i, 'role', e.target.value)} placeholder={t('напр. маркетолог', 'e.g. marketer')} /></label>
+            <label className="sysx-inp"><span className="sysx-inp-l">{t('Телефон', 'Phone')}</span><input value={m.phone || ''} onChange={(e) => setMate(i, 'phone', e.target.value)} placeholder="+380…" /></label>
+            <label className="sysx-inp"><span className="sysx-inp-l">Email</span><input value={m.email || ''} onChange={(e) => setMate(i, 'email', e.target.value)} placeholder="name@company.com" /></label>
+            <button type="button" className="cab-del cab-team-del" onClick={() => delMate(i)} aria-label={t('Прибрати учасника', 'Remove member')}>✕</button>
+          </div>
+        ))}
+        <button type="button" className="sysx-cta cab-team-add" onClick={addMate}>+ {t('Додати учасника', 'Add member')}</button>
       </div>
 
       <div className="cab-formgrp">

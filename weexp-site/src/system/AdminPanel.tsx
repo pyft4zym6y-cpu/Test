@@ -52,6 +52,17 @@ const TABS: { id: Tab; label: string; cap: Cap }[] = [
 ];
 // Джерела заявок, що є запитами доступу (не первинна комунікація).
 const ACCESS_SOURCES = ['cabinet-access', 'cabinet-deep'];
+const SRC_LABEL: Record<string, string> = {
+  'calc-order-audit': 'Експрес-аудит (заявка)',
+  'contact': 'Контакти',
+  'contact-form': 'Контакти',
+  'cabinet-access': 'Кабінет · запит доступу',
+  'cabinet-deep': 'Кабінет · глибокий аудит',
+  'pricing': 'Початок співпраці',
+  'diagnose': 'Експрес-аудит',
+};
+const srcName = (s?: string | null): string => (s && (SRC_LABEL[s] || s)) || 'без мітки';
+
 const CAP_SUMMARY: Record<Role, string> = {
   super: 'усе + команда',
   admin: 'клієнти · аудити · заявки · проекти · конструктор',
@@ -182,7 +193,7 @@ export function AdminPanel() {
         ev.push({ at: e.at, kind: 'tier', label: x.email, sub: `${tid} → ${ST[e.st]?.txt ?? e.st}${e.by === 'manager' ? ' · менеджер' : ''}` });
       }));
     });
-    (leads || []).forEach((l) => { if (l.at) ev.push({ at: l.at, kind: 'lead', label: l.email || l.phone || 'заявка', sub: l.source }); });
+    (leads || []).forEach((l) => { if (l.at) ev.push({ at: l.at, kind: 'lead', label: l.email || l.phone || 'заявка', sub: srcName(l.source) }); });
     ev.sort((a, b) => (b.at || '').localeCompare(a.at || ''));
     // Фільтр за періодом (для стрічки й тренду); period=0 → усі.
     const since = period ? Date.now() - period * 86400000 : 0;
@@ -200,7 +211,7 @@ export function AdminPanel() {
     (leads || []).forEach((l) => {
       if (ACCESS_SOURCES.includes(l.source || '')) return;
       if (since && l.at && new Date(l.at).getTime() < since) return;
-      const key = (l.source || 'без мітки').trim() || 'без мітки';
+      const key = srcName(l.source);
       srcMap.set(key, (srcMap.get(key) || 0) + 1);
     });
     const leadSources = [...srcMap.entries()].map(([k, n]) => ({ k, n })).sort((a, b) => b.n - a.n).slice(0, 8);
@@ -698,8 +709,8 @@ export function AdminPanel() {
                                   <input type="checkbox" className="adm-lead-chk" checked={selLeads.has(l.id || '')} onChange={() => toggleSel(l.id || '')} title="Обрати" onClick={(e) => e.stopPropagation()} />
                                   <button className="adm-lead-open" onClick={() => setOpenLead(l.id || '')}>
                                     <b>{l.name || l.email || l.phone || 'Заявка'}</b>
-                                    <span className="mono adm-lead-sub">{l.task || l.comment || l.source || '—'}</span>
-                                    <span className="mono adm-lead-at">{rel(l.at)}{l.source ? ` · ${l.source}` : ''}</span>
+                                    <span className="mono adm-lead-sub">{l.task || l.comment || srcName(l.source)}</span>
+                                    <span className="mono adm-lead-at">{rel(l.at)}{l.source ? ` · ${srcName(l.source)}` : ''}</span>
                                   </button>
                                 </div>
                               ))}

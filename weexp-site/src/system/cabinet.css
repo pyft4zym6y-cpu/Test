@@ -1092,3 +1092,41 @@
   font-family: inherit; font-weight: 700; font-size: 13px; padding: 4px 6px; min-width: 56px; cursor: pointer; }
 .af-rank-sel:disabled { opacity: .5; cursor: default; }
 .af-rank-hint { font-size: 11px; opacity: .65; }
+
+/* ── Збережений результат експрес-аудиту ── */
+.cab-exres { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 14px; }
+.cab-exres-verdict { background: color-mix(in srgb, var(--red) 7%, transparent); border-left: 3px solid var(--red); padding: 10px 14px; font-size: 14px; line-height: 1.5; }
+.cab-exres-h { display: block; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--graphite); font-weight: 700; margin-bottom: 8px; }
+.cab-exres-row { display: grid; grid-template-columns: minmax(140px, 1fr) minmax(80px, 1.2fr) auto; gap: 10px; align-items: center; padding: 4px 0; border-bottom: 1px dashed var(--line); font-size: 13px; }
+.cab-exres-row.is-2 { grid-template-columns: 1fr auto; }
+.cab-exres-bar { background: color-mix(in srgb, var(--charcoal) 10%, transparent); height: 8px; border-radius: 4px; overflow: hidden; }
+.cab-exres-bar i { display: block; height: 100%; border-radius: 4px; background: #1F6E4E; }
+.cab-exres-bar i[data-lvl='mid'] { background: #C58A00; }
+.cab-exres-bar i[data-lvl='bad'] { background: var(--red); }
+.cab-exres-v i { font-style: normal; color: var(--graphite); font-size: 11px; }
+.cab-exres-acts { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 13.5px; line-height: 1.5; }
+
+/* ── Команда клієнта у профілі ── */
+.cab-team-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1.2fr auto; gap: 10px; align-items: end; margin-bottom: 10px; }
+.cab-team-del { align-self: end; height: 42px; }
+.cab-team-add { margin-top: 4px; }
+@media (max-width: 860px) { .cab-team-row { grid-template-columns: 1fr 1fr; } .cab-team-del { grid-column: 2; justify-self: end; } }
+
+/* ── Документи-workspace: конектори, маркетплейси, файли ── */
+.cab-acc-conn { border: 1.5px solid var(--red); background: var(--red); color: #fff; padding: 8px 14px; font: inherit; font-weight: 700; font-size: 12.5px; cursor: pointer; }
+.cab-acc-conn.st-progress { background: #C58A00; border-color: #C58A00; }
+.cab-acc-conn.st-on { background: #1F6E4E; border-color: #1F6E4E; }
+.cab-acc-conn.st-error { background: var(--red); }
+.cab-acc-connsel { font-size: 11.5px; padding: 6px 8px; border: 1px solid var(--line); background: var(--pure-white, #fff); }
+.cab-acc-hows { display: flex; gap: 14px; margin-top: 8px; flex-wrap: wrap; }
+.cab-mp-row, .cab-file-row { display: grid; gap: 8px; align-items: center; }
+.cab-mp-row { grid-template-columns: minmax(130px, 1fr) minmax(150px, 1.4fr) minmax(130px, 1fr) auto; }
+.cab-mp-row select, .cab-mp-row input, .cab-file-row select, .cab-file-row input { border: 1px solid var(--line); background: var(--pure-white, #fff); padding: 9px 10px; font: inherit; font-size: 13px; min-width: 0; }
+.cab-mp-st.st-granted { border-color: #1F6E4E; color: #1F6E4E; font-weight: 700; }
+.cab-mp-st.st-wait { border-color: #C58A00; color: #C58A00; font-weight: 700; }
+.cab-file-row { grid-template-columns: minmax(120px, 1fr) minmax(140px, 1.3fr) minmax(120px, 1fr) auto auto auto; }
+.cab-file-up { border: 1.5px solid var(--deep); background: var(--pure-white, #fff); padding: 8px 12px; font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.cab-file-up.on { border-color: #1F6E4E; color: #1F6E4E; }
+.cab-file-st.st-uploaded { color: #1F6E4E; font-weight: 700; }
+.cab-file-st.st-wait { color: #C58A00; }
+@media (max-width: 900px) { .cab-mp-row, .cab-file-row { grid-template-columns: 1fr 1fr; } }
