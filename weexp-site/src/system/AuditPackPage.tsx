@@ -20,7 +20,7 @@ export function AuditPackPage() {
         <header className="apack-head">
           <span className="sysx-kick">{t('Формат 01 · Аудит · що всередині', 'Format 01 · Audit · what is inside')}</span>
           <h1 className="sysx-display apack-h1">{t('Пакет аудиту — ', 'The audit pack — ')}<span className="sysx-em">{t('19 артефактів', '19 artifacts')}</span></h1>
-          <p className="sysx-lead">{t('Жодних «звітів у повітрі»: до старту ви бачите повний перелік. 5 головних документів — Презентація, Матриця зрілості, Роадмапа, План 90 днів, Цільова модель — і 14 додатків із детальними звітами 12 аудитів та доказовою базою.', 'No “reports in the air”: before we start you see the full list. 5 headline documents — Presentation, Maturity matrix, Roadmap, 90-day plan, Target model — and 14 annexes with the detailed reports of the 12 audits and the evidence base.')}</p>
+          <p className="sysx-lead">{t('Жодних «звітів у повітрі»: до старту ви бачите повний перелік. 19 повноцінних документів — від Презентації, Матриці зрілості, Роадмапи, Плану 90 днів і Цільової моделі до детальних звітів 12 аудитів та доказової бази. Кожен — робочий інструмент, не додаток.', 'No “reports in the air”: before we start you see the full list. 19 full documents — from the Presentation, Maturity matrix, Roadmap, 90-day plan and Target model to the detailed reports of the 12 audits and the evidence base. Each one is a working tool, not an appendix.')}</p>
         </header>
 
         {PACK_PHASES.map((ph) => (
@@ -30,11 +30,10 @@ export function AuditPackPage() {
               {packByPhase(ph.key).map((a) => {
                 n += 1;
                 return (
-                  <article key={a.id} className={'apack-card' + (a.tier === 'annex' ? ' is-int' : '')}>
+                  <article key={a.id} className="apack-card">
                     <span className="apack-num mono">{String(n).padStart(2, '0')}</span>
                     <b className="apack-t">{t(a.uk, a.en)}</b>
                     <p className="apack-d">{t(a.descUk, a.descEn)}</p>
-                    <span className={'apack-aud mono' + (a.tier === 'annex' ? ' int' : '')}>{a.tier === 'core' ? t('головний документ', 'headline document') : t('додаток', 'annex')}</span>
                   </article>
                 );
               })}
