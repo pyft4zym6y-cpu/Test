@@ -13,7 +13,7 @@ import { toast } from '@/lib/toast';
 import { useCabTheme, ThemeToggle } from '@/lib/cabTheme';
 import { AuditBuilder } from './AuditBuilder';
 import { loadTemplate, uid, Q_TYPES, type AuditTemplate, type Question, type Block } from './auditTemplate';
-import { ACCESS_CATALOG, AUDIT_EMAIL, DATA_EMAIL, ACCESS_METHOD_LABEL, type AccessMethod } from '@/data/accessCatalog';
+import { ACCESS_CATALOG, ACCESS_METHOD_LABEL } from '@/data/accessCatalog';
 import './system.css';
 import './cabinet.css';
 
@@ -1229,7 +1229,6 @@ const ACCESS_STATUS: { v: NonNullable<AccessState['status']>; l: string; cls: st
 /** Каталог доступів клієнта: 3 способи (перегляд-пошта / OAuth / вивантаження), статус, інструкція, нотатка. */
 function AccessCatalog({ userId, initial }: { userId: string; initial: Record<string, AccessState> }) {
   const [map, setMap] = useState<Record<string, AccessState>>(initial || {});
-  const [openHow, setOpenHow] = useState<string | null>(null);
   const [state, setState] = useState<SaveState>('idle');
   const latest = useRef(map); latest.current = map;
   const dirty = useRef(false); const first = useRef(true);
@@ -1249,31 +1248,28 @@ function AccessCatalog({ userId, initial }: { userId: string; initial: Record<st
 
   return (
     <div className="adm-acc">
-      <div className="adm-acc-banner mono">
-        Для перегляду додайте <b>{AUDIT_EMAIL}</b> як Viewer/Analyst (дані — {DATA_EMAIL}). Або підключіть OAuth-конектор (авто), або клієнт вивантажує файл. Способи доповнюють один одного.
+      <div className="adm-acc-sum mono">
+        <span>Надано: <b>{granted}/{ACCESS_CATALOG.length}</b></span>
+        <span className="adm-acc-hint">Статус-трекер команди. Інструкції з надання доступів клієнт бачить у своєму кабінеті.</span>
+        {state !== 'idle' && <span className={`pj-save-state pj-save-${state}`}>{state === 'saving' ? '💾' : state === 'saved' ? '✓' : state === 'dirty' ? '●' : '✕'}</span>}
       </div>
-      <div className="adm-score-sum mono"><span>Надано: <b>{granted}/{ACCESS_CATALOG.length}</b></span>{state !== 'idle' && <span className={`pj-save-state pj-save-${state}`}>{state === 'saving' ? '💾' : state === 'saved' ? '✓' : state === 'dirty' ? '●' : '✕'}</span>}</div>
       {cats.map((cat) => (
         <div key={cat} className="adm-acc-cat">
           <span className="adm-acc-cat-h mono">{cat}</span>
           {ACCESS_CATALOG.filter((a) => a.category === cat).map((a) => {
             const s = map[a.id] || {};
+            const st = ACCESS_STATUS.find((x) => x.v === s.status);
             return (
-              <div key={a.id} className="adm-acc-row">
-                <div className="adm-acc-main">
+              <div key={a.id} className="adm-acc-row2">
+                <div className="adm-acc-name">
                   <b>{a.system}</b>
-                  <span className="adm-acc-why mono">{a.why}</span>
-                  <div className="adm-acc-methods">{a.methods.map((mth: AccessMethod) => (
-                    <button key={mth} className={`adm-acc-m${s.method === mth ? ' on' : ''}`} onClick={() => set(a.id, { method: mth })} title="Обраний спосіб надання">{ACCESS_METHOD_LABEL[mth]}</button>
-                  ))}</div>
-                  {a.viewHow && <button className="adm-acc-how mono" onClick={() => setOpenHow(openHow === a.id ? null : a.id)}>{openHow === a.id ? '▾ як надати' : '▸ як надати'}</button>}
-                  {openHow === a.id && a.viewHow && <p className="adm-acc-how-t mono">{a.viewHow}</p>}
+                  {s.method && <span className={`adm-acc-mtag mono`}>{ACCESS_METHOD_LABEL[s.method]}</span>}
                 </div>
-                <select className="ab-sel sm" value={s.status || ''} onChange={(e) => set(a.id, { status: (e.target.value || undefined) as AccessState['status'] })}>
+                <select className={`ab-sel sm adm-acc-st tst-${st?.cls || 'muted'}`} value={s.status || ''} onChange={(e) => set(a.id, { status: (e.target.value || undefined) as AccessState['status'] })}>
                   <option value="">— статус —</option>
-                  {ACCESS_STATUS.map((st) => <option key={st.v} value={st.v}>{st.l}</option>)}
+                  {ACCESS_STATUS.map((x) => <option key={x.v} value={x.v}>{x.l}</option>)}
                 </select>
-                <input className="ab-inp sm" value={s.note || ''} onChange={(e) => set(a.id, { note: e.target.value })} placeholder="лог/акаунт/нотатка" />
+                <input className="ab-inp sm adm-acc-nt" value={s.note || ''} onChange={(e) => set(a.id, { note: e.target.value })} placeholder="лог / акаунт / нотатка" />
               </div>
             );
           })}

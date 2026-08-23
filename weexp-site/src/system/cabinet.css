@@ -69,18 +69,38 @@
 .adm-score-row3 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 @media (max-width: 640px) { .adm-score-row3 { grid-template-columns: 1fr 1fr; } }
 /* Каталог доступів */
-.adm-acc-banner { background: color-mix(in srgb, var(--yellow) 16%, transparent); border: 1px solid color-mix(in srgb, var(--yellow) 50%, var(--line)); border-radius: 8px; padding: 9px 12px; font-size: 12px; line-height: 1.5; margin-bottom: 10px; }
-.adm-acc-cat { margin-bottom: 12px; }
+/* Клієнтський розділ «Доступи для аудиту» */
+.cab-acc-banner { background: color-mix(in srgb, var(--yellow) 16%, transparent); border: 1px solid color-mix(in srgb, var(--yellow) 50%, var(--line)); border-radius: 10px; padding: 12px 15px; font-size: 13.5px; line-height: 1.55; margin: 4px 0 14px; }
+.cab-acc-sum { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 12px; font-size: 14px; }
+.cab-acc-save { color: var(--ok-strong); font-size: 12px; }
+.cab-acc-cat { margin-bottom: 16px; }
+.cab-acc-cat-h { display: block; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--data); margin: 10px 0 6px; }
+.cab-acc-card { border: 2px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; transition: border-color .15s, background .15s; }
+.cab-acc-card.is-done { border-color: color-mix(in srgb, var(--ok) 55%, var(--line)); background: color-mix(in srgb, var(--ok) 7%, transparent); }
+.cab-acc-top { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start; justify-content: space-between; }
+.cab-acc-name { flex: 1 1 220px; min-width: 0; }
+.cab-acc-name b { font-size: 15px; }
+.cab-acc-why { display: block; font-size: 12.5px; color: var(--graphite); margin-top: 2px; }
+.cab-acc-toggle { flex: 0 0 auto; border: 2px solid var(--deep); background: var(--pure-white); color: var(--deep); font-weight: 700; font-size: 12.5px; padding: 7px 13px; border-radius: 8px; cursor: pointer; transition: background .12s, color .12s; }
+.cab-acc-toggle:hover { box-shadow: 2px 2px 0 var(--deep); }
+.cab-acc-toggle.on { background: var(--ok, #1F9D55); color: #fff; border-color: var(--ok, #1F9D55); }
+.cab-acc-methods { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 10px; }
+.cab-acc-m { font-size: 12px; border: 1.5px solid var(--line); background: var(--pure-white); border-radius: 100px; padding: 4px 12px; cursor: pointer; color: var(--graphite); }
+.cab-acc-m.on { background: var(--deep); color: var(--cream); border-color: var(--deep); }
+.cab-acc-how { margin-left: auto; font-size: 12px; color: var(--data); background: none; border: 0; cursor: pointer; padding: 4px 0; }
+.cab-acc-how-t { font-size: 12.5px; color: var(--charcoal); background: var(--cream-2); border-radius: 8px; padding: 10px 12px; margin: 10px 0 0; line-height: 1.55; }
+.adm-acc-sum { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-bottom: 10px; font-size: 12px; }
+.adm-acc-sum .adm-acc-hint { color: var(--graphite); font-size: 11px; flex: 1 1 auto; }
+.adm-acc-cat { margin-bottom: 10px; }
 .adm-acc-cat-h { display: block; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--data); margin: 8px 0 4px; }
-.adm-acc-row { display: grid; grid-template-columns: 1fr 130px 160px; gap: 10px; align-items: start; padding: 8px 0; border-bottom: 1px solid var(--line); }
-.adm-acc-main b { font-size: 13.5px; }
-.adm-acc-why { display: block; font-size: 11px; color: var(--graphite); margin: 2px 0 5px; }
-.adm-acc-methods { display: flex; flex-wrap: wrap; gap: 5px; }
-.adm-acc-m { font-size: 11px; border: 1px solid var(--line); background: var(--pure-white); border-radius: 100px; padding: 2px 9px; cursor: pointer; color: var(--graphite); }
-.adm-acc-m.on { background: var(--deep); color: var(--cream); border-color: var(--deep); }
-.adm-acc-how { display: inline-block; margin-top: 5px; font-size: 11px; color: var(--data); background: none; border: 0; cursor: pointer; padding: 0; }
-.adm-acc-how-t { font-size: 11px; color: var(--charcoal); background: var(--cream-2); border-radius: 6px; padding: 6px 9px; margin: 4px 0 0; line-height: 1.5; }
-@media (max-width: 640px) { .adm-acc-row { grid-template-columns: 1fr; } }
+/* Компактний рядок: назва (гнучко) + статус + нотатка — переносяться, ніколи не виходять за межі */
+.adm-acc-row2 { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.adm-acc-name { flex: 1 1 160px; min-width: 0; display: flex; align-items: center; gap: 7px; }
+.adm-acc-name b { font-size: 13px; }
+.adm-acc-mtag { font-size: 10px; color: var(--graphite); background: var(--cream-2); border-radius: 100px; padding: 1px 7px; white-space: nowrap; }
+.adm-acc-st { flex: 0 0 auto; min-width: 118px; }
+.adm-acc-nt { flex: 2 1 150px; min-width: 0; }
+@media (max-width: 520px) { .adm-acc-st, .adm-acc-nt { flex: 1 1 100%; } }
 /* Внутрішні нотатки */
 .adm-notes-add { display: flex; gap: 8px; align-items: flex-end; margin-bottom: 10px; }
 .adm-notes-add textarea { flex: 1 1 auto; }

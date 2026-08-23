@@ -4,8 +4,9 @@ import {
   currentUser, signOut, loadDiag, saveDiag, CONFIGURED, isCloudUser,
   signInWithGoogle, onAuth,
   ensureAudit, findAuditIdByCode, loadAuditAnswers, loadAuditExtra, getProjects,
-  type DiagUser, type DiagRecord, type CompanyProfile, type TierStatus, type TierEvent, type AuditAnswer, type ExtraQ,
+  type DiagUser, type DiagRecord, type CompanyProfile, type TierStatus, type TierEvent, type AuditAnswer, type ExtraQ, type AccessState,
 } from '@/lib/supa';
+import { ACCESS_CATALOG, AUDIT_EMAIL, DATA_EMAIL, ACCESS_METHOD_LABEL, type AccessMethod } from '@/data/accessCatalog';
 import { AuditForm } from './AuditForm';
 import { ProjectView } from './ProjectView';
 import { loadTemplate, CLIENT_ROLES, type AuditTemplate, type Question } from './auditTemplate';
@@ -55,7 +56,7 @@ export function Cabinet() {
   const theme = useCabTheme();
   const NAV: { group: string; items: NavItem[] }[] = [
     { group: t('Огляд', 'Overview'), items: [{ id: 'overview', label: t('Огляд та шлях', 'Overview & path') }, { id: 'audits', label: t('Мої аудити', 'My audits') }] },
-    { group: t('Дані', 'Data'), items: [{ id: 'company', label: t('Дані компанії', 'Company data') }] },
+    { group: t('Дані', 'Data'), items: [{ id: 'company', label: t('Дані компанії', 'Company data') }, { id: 'access', label: t('Доступи для аудиту', 'Audit access') }] },
     { group: t('Розбір', 'Analysis'), items: [{ id: 'deep', label: t('Глибокий аудит', 'Deep audit') }, { id: 'findings', label: t('Знахідки та план', 'Findings & plan'), soon: true }, { id: 'docs', label: t('Документи', 'Documents'), soon: true }] },
     { group: t('Ведення', 'Delivery'), items: [{ id: 'project', label: t('Мій проект', 'My project') }] },
     { group: t('Робота разом', 'Work with us'), items: [{ id: 'collab', label: t('Співпраця', 'Work with us') }, { id: 'settings', label: t('Налаштування', 'Settings') }] },
@@ -186,6 +187,7 @@ export function Cabinet() {
         {section === 'overview' && <Overview journey={journey} express={express} rec={rec} cur={cur?.label} go={setSection} />}
         {section === 'audits' && <Audits express={express} rec={rec} go={setSection} onDelete={deleteExpress} />}
         {section === 'company' && <CompanyForm user={user} rec={rec} onSaved={refreshRec} />}
+        {section === 'access' && <AccessGrant user={user} rec={rec} />}
         {section === 'deep' && <DeepAudit user={user} rec={rec} express={express} onDone={refreshRec} onClose={() => setSection('overview')} go={setSection} />}
         {section === 'project' && <ProjectView projects={getProjects(rec)} en={t('', 'en') === 'en'} />}
         {section === 'findings' && <Soon title={t('Знахідки та дорожня карта', 'Findings & roadmap')} lead={t('Тут зʼявляться підтверджені знахідки глибокого аудиту й план під Definition of Done: що робити, у якому порядку і який ефект. Розділ вмикається після завершення Tier-2 розбору.', 'Confirmed findings from the deep audit and a plan under a Definition of Done will appear here: what to do, in what order and what the effect is. The section unlocks after the Tier-2 analysis is complete.')} />}
@@ -205,6 +207,64 @@ function SecHead({ kick, title, lead }: { kick: string; title: string; lead?: st
       <h1 className="sysx-display cab-h1">{title}</h1>
       {lead && <p className="sysx-lead">{lead}</p>}
     </header>
+  );
+}
+
+/** Клієнтський розділ «Доступи для аудиту»: інструкції як надати + відмітка «надано». */
+function AccessGrant({ user, rec }: { user: DiagUser; rec: DiagRecord | null }) {
+  const t = useT();
+  const [map, setMap] = useState<Record<string, AccessState>>(rec?.accessLog || {});
+  const [openHow, setOpenHow] = useState<string | null>(null);
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const latest = useRef(map); latest.current = map;
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => { setMap(rec?.accessLog || {}); }, [rec]);
+  const persist = (next: Record<string, AccessState>) => {
+    setMap(next); latest.current = next; setSaveState('saving');
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(async () => { await saveDiag(user, { accessLog: latest.current }); setSaveState('saved'); setTimeout(() => setSaveState('idle'), 1500); }, 700);
+  };
+  const set = (id: string, patch: Partial<AccessState>) => persist({ ...map, [id]: { ...map[id], ...patch, at: new Date().toISOString() } });
+  const cats = [...new Set(ACCESS_CATALOG.map((a) => a.category))];
+  const granted = ACCESS_CATALOG.filter((a) => ['granted', 'verified'].includes(map[a.id]?.status || '')).length;
+
+  return (
+    <div className="cab-sec">
+      <SecHead kick={t('Доступи', 'Access')} title={t('Доступи для аудиту', 'Access for the audit')} lead={t('Щоб ми провели повний аудит, надайте доступ до систем одним зі способів. Ми лише переглядаємо дані — нічого не змінюємо й не публікуємо.', 'To run the full audit, grant access to your systems in one of the ways below. We only view the data — we never change or publish anything.')} />
+      <div className="cab-acc-banner">
+        {t('Найшвидше — додайте', 'Fastest — add')} <b>{AUDIT_EMAIL}</b> {t('як Viewer / Analyst (для вивантажень даних —', 'as Viewer / Analyst (for data exports —')} <b>{DATA_EMAIL}</b>{t('). Або підключіть конектор (OAuth), або вивантажте файл. Способи доповнюють один одного — оберіть зручний для кожної системи.', '). Or connect via OAuth, or upload a file. The methods complement each other — pick whichever is convenient per system.')}
+      </div>
+      <div className="cab-acc-sum">
+        <b>{t('Надано', 'Granted')}: {granted}/{ACCESS_CATALOG.length}</b>
+        {saveState !== 'idle' && <span className="mono cab-acc-save">{saveState === 'saving' ? t('збереження…', 'saving…') : t('✓ збережено', '✓ saved')}</span>}
+      </div>
+      {cats.map((cat) => (
+        <div key={cat} className="cab-acc-cat">
+          <span className="cab-acc-cat-h mono">{cat}</span>
+          {ACCESS_CATALOG.filter((a) => a.category === cat).map((a) => {
+            const s = map[a.id] || {};
+            const done = ['granted', 'verified'].includes(s.status || '');
+            return (
+              <div key={a.id} className={'cab-acc-card' + (done ? ' is-done' : '')}>
+                <div className="cab-acc-top">
+                  <div className="cab-acc-name"><b>{a.system}</b><span className="cab-acc-why">{a.why}</span></div>
+                  <button className={'cab-acc-toggle' + (done ? ' on' : '')} onClick={() => set(a.id, { status: done ? undefined : 'granted' })}>
+                    {done ? t('✓ Надано', '✓ Granted') : t('Позначити «надано»', 'Mark as granted')}
+                  </button>
+                </div>
+                <div className="cab-acc-methods">
+                  {a.methods.map((m: AccessMethod) => (
+                    <button key={m} className={'cab-acc-m' + (s.method === m ? ' on' : '')} onClick={() => set(a.id, { method: m })}>{ACCESS_METHOD_LABEL[m]}</button>
+                  ))}
+                  {a.viewHow && <button className="cab-acc-how mono" onClick={() => setOpenHow(openHow === a.id ? null : a.id)}>{openHow === a.id ? t('▾ як надати', '▾ how to grant') : t('▸ як надати', '▸ how to grant')}</button>}
+                </div>
+                {openHow === a.id && a.viewHow && <p className="cab-acc-how-t">{a.viewHow}</p>}
+              </div>
+            );
+          })}
+        </div>
+      ))}
+    </div>
   );
 }
 
