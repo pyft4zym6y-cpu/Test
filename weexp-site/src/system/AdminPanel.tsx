@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import {
   currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, deleteLead, deleteDiagnostics, signTierFile, CONFIGURED,
   findAuditIdByCode, loadAuditAnswers, loadAuditExtra, saveAuditExtra,
-  saveProjectsFor, saveAssessmentFor, savePatchFor, runWorkerAudit, uploadAdminFile, deleteAdminFile, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject, aiScoreAudit, type ModuleScore, type DiagRecord, type AccessState, type ProjectNote, type AuditJobRef, type AdminFile,
-  MANAGER_EMAILS, TEAM_ROLES, ROLE_LABEL, roleOf, can, teamApi, type Role, type TeamMember, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
+  saveProjectsFor, saveAssessmentFor, savePatchFor, runWorkerAudit, uploadAdminFile, deleteAdminFile, maturityToAssessment, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject, aiScoreAudit, type ModuleScore, type DiagRecord, type AccessState, type ProjectNote, type AuditJobRef, type AdminFile, type WorkerMaturity,
+  MANAGER_EMAILS, TEAM_ROLES, ROLE_LABEL, roleOf, can, teamApi, MATURITY_DOMAIN_MODULE, type Role, type TeamMember, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
   type Project, type ProjTask, type ProjMember, type ProjPayment, type ProjMonth, type ProjTariffItem,
   type PmDirectory, type PmSpecialist, type PmRoleRate,
 } from '@/lib/supa';
@@ -16,6 +16,16 @@ import { loadTemplate, uid, Q_TYPES, type AuditTemplate, type Question, type Blo
 import { ACCESS_CATALOG, AUDIT_EMAIL, DATA_EMAIL, ACCESS_METHOD_LABEL, type AccessMethod } from '@/data/accessCatalog';
 import './system.css';
 import './cabinet.css';
+
+/** Домен рушія → ключ нашого модуля (реекспорт для UI імпорту зрілості). */
+const MATURITY_MODULE_OF = MATURITY_DOMAIN_MODULE;
+/** Короткі підписи модулів A–P для рядків імпорту зрілості. */
+const MOD_LABEL: Record<string, string> = {
+  company: 'A Компанія', finance: 'B Фінанси', commercial: 'C Комерція', customer: 'D Клієнт',
+  brand: 'E Бренд', marketing: 'F Маркетинг', seo: 'G SEO', ux: 'H Сайт/UX', ops: 'I Операції',
+  crm: 'J CRM', analytics: 'K Аналітика', tech: 'L Технології', people: 'M Люди',
+  processes: 'N Процеси', strategy: 'O Стратегія', competition: 'P Конкуренти',
+};
 
 /**
  * /admin — операційна адмінка (єдиний кокпіт власника): дашборд, користувачі,
@@ -1278,11 +1288,22 @@ function WorkerAudit({ userId, code, rec }: { userId: string; code?: string; rec
   const [jobs, setJobs] = useState<AuditJobRef[]>(rec.auditJobs || []);
   const [running, setRunning] = useState(false);
   const [job, setJob] = useState<Record<string, unknown> | null>(null);
+  const [maturity, setMaturity] = useState<WorkerMaturity | null>(null);
+  const [imported, setImported] = useState(false);
   const [err, setErr] = useState('');
   const poll = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   useEffect(() => () => { if (poll.current) clearInterval(poll.current); }, []);
 
   const saveJobs = (next: AuditJobRef[]) => { setJobs(next); void savePatchFor(userId, { auditJobs: next }); };
+
+  const importMaturity = async () => {
+    if (!maturity) return;
+    const { assessment, imported: n, skipped } = maturityToAssessment(maturity, rec.assessment || {});
+    if (!n) { toast('Немає нових оцінок для імпорту (усі домени вже оцінені вручну).', 'err'); return; }
+    const r = await savePatchFor(userId, { assessment });
+    if (r.ok) { setImported(true); toast(`✓ Імпортовано у C-level: ${n} модул. ${skipped ? `· пропущено ${skipped}` : ''} — оновіть сторінку, щоб побачити в блоці «Оцінка модулів».`); }
+    else toast('Не вдалося зберегти оцінку: ' + (r.error || ''), 'err');
+  };
 
   const downloadPack = async (id: string, internal: boolean) => {
     try {
@@ -1314,7 +1335,10 @@ function WorkerAudit({ userId, code, rec }: { userId: string; code?: string; rec
       if (st === 'done' || st === 'error' || st === 'failed') {
         if (poll.current) clearInterval(poll.current);
         setRunning(false);
-        const upd = next.map((x) => x.id === r.id ? { ...x, status: st, summary: typeof j.summary === 'string' ? j.summary : undefined } : x);
+        const mat = (j.maturity && Array.isArray((j.maturity as WorkerMaturity).rows)) ? j.maturity as WorkerMaturity : null;
+        if (mat) { setMaturity(mat); setImported(false); }
+        const health = (j.metrics as { health?: number } | undefined)?.health;
+        const upd = next.map((x) => x.id === r.id ? { ...x, status: st, summary: typeof j.summary === 'string' ? j.summary : undefined, health: typeof health === 'number' ? health : null } : x);
         saveJobs(upd);
         toast(st === 'done' ? '✓ Аудит завершено рушієм' : 'Аудит завершився з помилкою', st === 'done' ? 'ok' : 'err');
       }
@@ -1338,6 +1362,23 @@ function WorkerAudit({ userId, code, rec }: { userId: string; code?: string; rec
           <b>Статус: {String(job.status || '…')}{(() => { const mh = (job.metrics as { health?: number } | undefined)?.health; return typeof mh === 'number' ? ` · Health ${mh}/100` : ''; })()}</b>
           {logLines.map((l, i) => <div key={i} className="adm-worker-l">{l}</div>)}
           {typeof job.summary === 'string' && job.summary && <div className="adm-worker-l" style={{ opacity: 1, marginTop: 4 }}>{job.summary}</div>}
+        </div>
+      )}
+      {maturity && (
+        <div className="adm-worker-mat">
+          <div className="adm-worker-mat-h">
+            <span className="adm-acc-cat-h mono">Матриця зрілості рушія{typeof maturity.observedAvg === 'number' ? ` · середнє ${maturity.observedAvg}/5` : ''}</span>
+            <button className="mc-btn ok" disabled={imported} onClick={importMaturity}>{imported ? '✓ Імпортовано' : '↧ Імпортувати у C-level оцінку'}</button>
+          </div>
+          <div className="adm-worker-mat-rows mono">
+            {maturity.rows.filter((r) => r.level != null).map((r) => (
+              <div key={r.domain} className="adm-worker-mat-row">
+                <span>{r.domain} → {MOD_LABEL[MATURITY_MODULE_OF[r.domain]] || '—'}</span>
+                <b>L{r.level} · {(r.level || 0) * 20}/100</b>
+              </div>
+            ))}
+          </div>
+          <p className="mono adm-hint">Рівні L1–L5 → бали 20–100. Імпорт заповнює лише порожні модулі (ручні оцінки не перетираються). Домени «потрібні дані» зʼявляться після доступів/опитувальника.</p>
         </div>
       )}
       {jobs.length > 0 && (

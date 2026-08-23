@@ -106,7 +106,56 @@ export type DiagRecord = {
 export type AdminFile = { path: string; name: string; kind?: 'data' | 'deliverable' | 'other'; at: string; by?: string };
 
 /** Посилання на прогін аудиту рушієм (worker). */
-export type AuditJobRef = { id: string; at: string; site?: string; tier?: number; status?: string; summary?: string };
+export type AuditJobRef = { id: string; at: string; site?: string; tier?: number; status?: string; summary?: string; health?: number | null };
+
+/** Матриця зрілості з рушія Commerce OS (worker maturity.json). */
+export type MaturityRow = { domain: string; assesses: string; level: number | null; basis: string; source: string };
+export type WorkerMaturity = { rows: MaturityRow[]; observedAvg: number | null };
+
+/**
+ * Домени рушія → наші модулі A–P. На L0-прогоні (без доступів) рівні мають лише
+ * SEO/Platform/Product/Analytics/Marketing; решта — null і пропускаються. Дублі
+ * (кілька доменів на один модуль) заповнюють модуль лише якщо він ще порожній.
+ */
+export const MATURITY_DOMAIN_MODULE: Record<string, string> = {
+  SEO: 'seo', Platform: 'tech', Product: 'ux', Analytics: 'analytics', Marketing: 'marketing',
+  Strategy: 'strategy', Customer: 'customer', Brand: 'brand', Sales: 'commercial', CRM: 'crm',
+  Pricing: 'commercial', Operations: 'ops', Marketplace: 'ops', International: 'strategy',
+  Finance: 'finance', People: 'people', AI: 'tech', Governance: 'processes',
+};
+
+/**
+ * Зіллє матрицю зрілості рушія у C-level оцінку модулів (level 1–5 → score 20–100).
+ * Не перетирає ручні поля (gap/rec/owner/priority/expected) — оновлює лише score/state/
+ * evidence і лише для модулів, які ще не мають ручної оцінки (evidence без мітки рушія).
+ * Повертає { assessment, imported, skipped }.
+ */
+export function maturityToAssessment(
+  maturity: WorkerMaturity,
+  existing: Record<string, ModuleScore> = {},
+): { assessment: Record<string, ModuleScore>; imported: number; skipped: number } {
+  const TAG = 'Commerce OS';
+  const next: Record<string, ModuleScore> = { ...existing };
+  let imported = 0, skipped = 0;
+  for (const r of maturity.rows || []) {
+    if (r.level == null) continue;
+    const key = MATURITY_DOMAIN_MODULE[r.domain];
+    if (!key) continue;
+    const prev = next[key];
+    // не чіпати модуль з ручною оцінкою (є score/gap/rec, але не з рушія)
+    if (prev && (prev.gap || prev.rec) && !(prev.evidence || '').includes(TAG)) { skipped++; continue; }
+    // дубль-домен: не перетирати вже імпортований вищим рівнем
+    if (prev && (prev.evidence || '').includes(TAG) && typeof prev.score === 'number' && prev.score >= r.level * 20) { skipped++; continue; }
+    next[key] = {
+      ...prev,
+      score: r.level * 20,
+      state: `Рівень зрілості L${r.level} — ${r.assesses}`,
+      evidence: `${TAG} · ${r.domain} · ${r.basis}`,
+    };
+    imported++;
+  }
+  return { assessment: next, imported, skipped };
+}
 
 /** Стан одного доступу (каталог доступів у картці клієнта). */
 export type AccessState = {

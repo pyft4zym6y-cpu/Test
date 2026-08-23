@@ -144,7 +144,7 @@ export type AuditMetrics = {
   aqcFails: number | null;
   potentialYear: number | null;
 };
-export type AuditResult = { id: string; dir: string; summary: string; files: string[]; metrics: AuditMetrics };
+export type AuditResult = { id: string; dir: string; summary: string; files: string[]; metrics: AuditMetrics; maturity?: import('./maturity.js').MaturityReport | null };
 
 function slug(url: string): string {
   try { return new URL(url).hostname.replace(/^www\./, '').replace(/[^a-z0-9]+/gi, '-'); }
@@ -882,7 +882,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
     if (metrics.compliance != null) parts.push(`соответствие ${metrics.compliance}%`);
     if (engine?.score != null) parts.push(`Health Score ${engine.score}/100`);
     if (money) parts.push(`недополучено ≈ ${Math.round(money.potentialYear).toLocaleString('ru-RU')} ₴/год`);
-    return { id, dir, summary: parts.join(' · '), files, metrics };
+    return { id, dir, summary: parts.join(' · '), files, metrics, maturity: maturityReport };
   } finally {
     await browser.close().catch(() => {});
     await closePdfBrowser();

@@ -41,6 +41,7 @@ type Job = {
   id: string; client: string; tier: number; status: 'queued' | 'running' | 'done' | 'error';
   startedAt: number; finishedAt?: number; log: string[]; summary?: string;
   metrics?: AuditMetrics; resultId?: string; files?: FileRef[]; error?: string;
+  maturity?: import('./maturity.js').MaturityReport | null;
   opts?: Record<string, unknown>; clientId?: string;
 };
 
@@ -84,7 +85,7 @@ const isThemeDoc = (name: string) => /^[0-5]-.+\.(pdf|docx)$/i.test(name); // 0-
 const isProposal = (name: string) => /(коммерческое.?предложение|комерційна.?пропозиц|kp)\.(pdf|docx)$/i.test(name);
 const isClientDoc = (name: string) => isDoc(name) && (isThemeDoc(name) || isProposal(name));
 
-const persistView = (j: Job) => ({ id: j.id, client: j.client, tier: j.tier, status: j.status, startedAt: j.startedAt, finishedAt: j.finishedAt, summary: j.summary, metrics: j.metrics, resultId: j.resultId, files: j.files });
+const persistView = (j: Job) => ({ id: j.id, client: j.client, tier: j.tier, status: j.status, startedAt: j.startedAt, finishedAt: j.finishedAt, summary: j.summary, metrics: j.metrics, maturity: j.maturity, resultId: j.resultId, files: j.files });
 
 async function processQueue(): Promise<void> {
   if (running) return;
@@ -97,7 +98,7 @@ async function processQueue(): Promise<void> {
     job.status = 'running';
     void persistJob(job);
     const r = await runAudit({ ...(job.opts as any), out: OUT, log: (m: string) => { job.log.push(m); if (job.log.length > 800) job.log.shift(); void persistJob(job, 4000); } });
-    job.resultId = r.id; job.summary = r.summary; job.metrics = r.metrics;
+    job.resultId = r.id; job.summary = r.summary; job.metrics = r.metrics; job.maturity = r.maturity ?? null;
     job.files = r.files.filter(isClientDoc).map((n) => ({ name: n, url: `/result/${r.id}/${encodeURIComponent(n)}`, category: categorize(n) }));
     job.status = 'done'; job.finishedAt = Date.now();
     await writeFile(join(OUT, r.id, 'job.json'), JSON.stringify(persistView(job)), 'utf8').catch(() => {});
@@ -293,7 +294,7 @@ const server = createServer(async (req, res) => {
   if (req.method === 'GET' && jm) {
     const j = jobs.get(jm[1]);
     if (!j) { json(res, 404, { ok: false, error: 'прогон не найден' }); return; }
-    json(res, 200, { ok: true, job: { id: j.id, client: j.client, tier: j.tier, status: j.status, startedAt: j.startedAt, finishedAt: j.finishedAt, log: j.log, summary: j.summary, metrics: j.metrics, files: j.files, error: j.error } });
+    json(res, 200, { ok: true, job: { id: j.id, client: j.client, tier: j.tier, status: j.status, startedAt: j.startedAt, finishedAt: j.finishedAt, log: j.log, summary: j.summary, metrics: j.metrics, maturity: j.maturity, files: j.files, error: j.error } });
     return;
   }
 
