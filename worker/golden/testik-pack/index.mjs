@@ -3,7 +3,7 @@ import { doc, page } from './gen.mjs';
 
 const html = page('', 'Індекс пакета', `
   <span class="ebrow">WEEXP · Commerce OS Audit — індекс пакета «Тестик»</span>
-  <h1 class="big" style="font-size:26pt">Повний комплект аудиту.<br>10 документів, один порядок читання.</h1>
+  <h1 class="big" style="font-size:26pt">Повний комплект аудиту.<br>11 документів, один порядок читання.</h1>
   <table class="t" style="margin-top:4mm;font-size:8pt">
     <tr><th style="width:8mm">№</th><th>Документ</th><th class="num">Обсяг</th><th>Для чого</th><th>Перший читач</th></tr>
     <tr class="hl"><td class="num">1</td><td><b>Звіт 1 · Презентація аудиту</b></td><td class="num">21 слайд</td><td>рішення власника за 40 хвилин: що знайшли, скільки коштує, що робити</td><td>власник</td></tr>
@@ -15,14 +15,15 @@ const html = page('', 'Індекс пакета', `
     <tr><td class="num">7</td><td>Том B · Контент посторінково</td><td class="num">5 стор.</td><td>5 критеріїв × усі сторінки, черга переписування</td><td>копірайтер</td></tr>
     <tr><td class="num">8</td><td>Том C · SEO і дерево сайта</td><td class="num">6 стор.</td><td>індексація ×8.6, 6 кластерів, on-page, перелінковка, GEO</td><td>SEO-виконавець</td></tr>
     <tr><td class="num">9</td><td>Том D · Стартові шаблони</td><td class="num">5 стор.</td><td>вакансія PM, політика знижок із розрахунком, сценарій читки</td><td>власник, PM</td></tr>
-    <tr class="hl"><td class="num">10</td><td><b>Testik_Gantt_40t.xlsx</b></td><td class="num">4 листи</td><td>робочий Гант: 71 задача · 40 тижнів · DoD · підрядники · ресурси</td><td><b>PM — щодня</b></td></tr>
+    <tr><td class="num">10</td><td>Том E · Шлях клієнта посторінково</td><td class="num">14 стор.</td><td>15 етапів «зараз/як треба» з готовністю /10, 2 журні-тести руками, крива 4.2→7.8</td><td>власник, маркетолог</td></tr>
+    <tr class="hl"><td class="num">11</td><td><b>Testik_Gantt_40t.xlsx</b></td><td class="num">4 листи</td><td>робочий Гант: 71 задача · 40 тижнів · DoD · підрядники · ресурси</td><td><b>PM — щодня</b></td></tr>
   </table>
   <h2 class="st" style="font-size:11.5pt;margin-top:4mm">Порядок читання за роллю — коротко</h2>
   <table class="t" style="font-size:8.2pt">
     <tr><th>Роль</th><th>Маршрут</th></tr>
     <tr><td><b>Власник</b></td><td>1 → 3 (гл. 3.00–3.01) → 4 (гл. 4.04) → 5 · разом ≈90 хв</td></tr>
     <tr><td>Керівник напряму</td><td>2 (свої глави за маршрутом у гл. 2.00) → 4 (свої задачі) → відповідний том</td></tr>
-    <tr><td>Виконавець</td><td>свій том (A/B/C) → свої рядки в Ганті → DoD своїх задач</td></tr>
+    <tr><td>Виконавець</td><td>свій том (A/B/C/E) → свої рядки в Ганті → DoD своїх задач</td></tr>
     <tr><td>Новий PM</td><td>усе, за 2 дні; далі жити в Ганті й трекері знахідок</td></tr>
   </table>
   <p class="body" style="font-size:8.6pt;margin-top:3mm"><b>Три правила пакета:</b> (1) усі гроші виводяться з однієї формули — Звіт 3, гл. 3.00; якщо десь цифра не сходиться, канон там;
