@@ -8,7 +8,9 @@ const DEFAULT_NOTIFY_EMAIL = 'pashasidorenko18@gmail.com';
 // которую видит админка /admin. Требует env SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY.
 // Возвращает true при успешной записи, false при отсутствии env или ошибке.
 async function saveLeadToDb(row) {
-  const url = process.env.SUPABASE_URL;
+  // Той самий набір env, що й у team.js (який уже працює): приймаємо і VITE_-варіант,
+  // інакше з VITE_SUPABASE_URL заявки тихо не зберігались, хоч команда працює.
+  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) return false;
   const base = url.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
