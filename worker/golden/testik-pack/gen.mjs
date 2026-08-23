@@ -143,6 +143,26 @@ table.t td b { font-weight:700; color:var(--ink); }
 .wf .mrow { display:grid; gap:1.2mm; margin-bottom:1.2mm; }
 .wf .note { font-size:6.6pt; color:var(--steel); line-height:1.35; margin-top:1mm; }
 .wf .lnk { color:var(--verd7); font-weight:700; }
+/* ── Поблочні пари (канон Fragstore): нумерований блок, chips, анотації, дельта ── */
+.wfb { margin:0 0 3.2mm; break-inside:avoid; }
+.wfb .bh { display:flex; align-items:baseline; gap:2mm; margin-bottom:1mm; }
+.wfb .bh .n { font-family:var(--mono); font-size:7.5pt; font-weight:700; color:#fff; background:var(--ink); padding:.4mm 1.6mm; }
+.wfb .bh .tt { font-size:10pt; font-weight:700; letter-spacing:-.01em; }
+.wfb .bh .sb { font-size:7pt; color:var(--steel); }
+.wf .m.miss { border:1.5px dashed var(--mark); background:none; color:var(--mark); text-align:center; padding:5mm 2mm; font-weight:700; }
+.wf .cards { display:grid; gap:1mm; margin-bottom:1.2mm; }
+.wf .c2 { grid-template-columns:1fr 1fr; } .wf .c3 { grid-template-columns:1fr 1fr 1fr; } .wf .c4 { grid-template-columns:1fr 1fr 1fr 1fr; }
+.wf .card { border:1px solid var(--steel4); background:#fff; padding:1.2mm 1.4mm; font-size:5.9pt; line-height:1.25; }
+.wf .card b { font-size:6.3pt; display:block; }
+.wf .card .ph { height:6mm; background:#E8ECEA; margin-bottom:.8mm; }
+.wf.should .card.nw { border-color:var(--verd7); }
+.wf .ch { display:inline-block; border:1px solid var(--steel4); padding:.4mm 1.4mm; font-size:5.9pt; margin:0 .8mm .8mm 0; background:#fff; }
+.wf .ch.g { border-color:var(--verd7); color:var(--verd7); font-weight:700; }
+.wf .ann { font-size:6.2pt; line-height:1.3; padding:.8mm 1.5mm; border-left:2.5px solid; margin:1mm 0; }
+.wf .ann.bad { border-color:var(--mark); color:var(--mark); background:#FBF0EF; }
+.wf .ann.good { border-color:var(--verd7); color:var(--verd7); background:#EFF5F2; }
+.wfd { font-family:var(--mono); font-size:7pt; font-weight:700; color:var(--verd7); margin-top:1mm; }
+.wfd .neg { color:var(--mark); }
 
 /* ── Дерево сайта ── */
 .tree { font-family:var(--mono); font-size:7.2pt; line-height:1.55; }
