@@ -1331,10 +1331,11 @@ function WorkerAudit({ userId, code, rec }: { userId: string; code?: string; rec
         <button className="mc-btn ok" disabled={running} onClick={start}>{running ? '⏳ Аудит іде…' : '▶ Запустити аудит'}</button>
       </div>
       {err && <p className="cab-auth-err mono">{err}</p>}
-      {running && job && (
+      {job && (
         <div className="adm-worker-log mono">
-          <b>Статус: {String(job.status || '…')}</b>
+          <b>Статус: {String(job.status || '…')}{(() => { const mh = (job.metrics as { health?: number } | undefined)?.health; return typeof mh === 'number' ? ` · Health ${mh}/100` : ''; })()}</b>
           {logLines.map((l, i) => <div key={i} className="adm-worker-l">{l}</div>)}
+          {typeof job.summary === 'string' && job.summary && <div className="adm-worker-l" style={{ opacity: 1, marginTop: 4 }}>{job.summary}</div>}
         </div>
       )}
       {jobs.length > 0 && (
