@@ -35,6 +35,7 @@ export function Pricing() {
       forWhom: t('У вас сильна внутрішня команда. Потрібні не руки, а карта: де саме витікають гроші й що робити першим.', 'You have a strong in-house team. You need a map, not hands: exactly where the money leaks and what to fix first.'),
       includes: [
         t('Discovery-портал: опитувальники, передача доступів, бриф ЛПР', 'Discovery portal: questionnaires, access handover, decision-maker brief'),
+        t('E-commerce 360°: 12 блоків діагностики · 150+ спеціалізованих перевірок', 'E-commerce 360°: 12 diagnostic blocks · 150+ specialized checks'),
         t('Health Score і зрілість по 18 доменах', 'Health Score and maturity across 18 domains'),
         t('Розрив у грошах: 8 важелів, baseline, прогноз на 12 місяців', 'The gap in money: 8 levers, baseline, 12-month forecast'),
         t('Повний пакет документів аудиту — 19 артефактів (перелік відкритий)', 'Full audit document pack — 19 artifacts (open list)'),

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useT, useLp } from '@/i18n';
-import { PACK_PHASES, packByPhase } from '@/data/auditPack';
+import { PACK_PHASES, packByPhase, AUDIT_BLOCKS, TOTAL_CHECKS } from '@/data/auditPack';
 import './system.css';
 
 /**
@@ -30,17 +30,32 @@ export function AuditPackPage() {
               {packByPhase(ph.key).map((a) => {
                 n += 1;
                 return (
-                  <article key={a.id} className={'apack-card' + (a.audience === 'internal' ? ' is-int' : '')}>
+                  <article key={a.id} className={'apack-card' + (a.tier === 'annex' ? ' is-int' : '')}>
                     <span className="apack-num mono">{String(n).padStart(2, '0')}</span>
                     <b className="apack-t">{t(a.uk, a.en)}</b>
                     <p className="apack-d">{t(a.descUk, a.descEn)}</p>
-                    <span className={'apack-aud mono' + (a.audience === 'internal' ? ' int' : '')}>{a.audience === 'client' ? t('передається вам', 'handed to you') : t('робочий документ · на запит', 'working doc · on request')}</span>
+                    <span className={'apack-aud mono' + (a.tier === 'annex' ? ' int' : '')}>{a.tier === 'core' ? t('ядро пакета', 'pack core') : t('додаток · доказова база', 'annex · evidence base')}</span>
                   </article>
                 );
               })}
             </div>
           </div>
         ))}
+
+        <div className="apack-method">
+          <h2 className="apack-ph-t mono">{t(`Методологія: E-commerce 360° · 12 блоків · ${TOTAL_CHECKS}+ перевірок`, `Methodology: E-commerce 360° · 12 blocks · ${TOTAL_CHECKS}+ checks`)}</h2>
+          <p className="apack-d apack-method-lead">{t('Це не «аудит сайту». Кожен документ пакета спирається на діагностику всього бізнесу за 12 блоками — від економіки до команди. Business → Market → Product → Customer → Website → SEO/GEO → Marketing → CRM → Analytics → Operations → Technology → Organization.', 'This is not a “website audit”. Every document rests on a diagnosis of the whole business across 12 blocks — from economics to the team.')}</p>
+          <div className="apack-blocks">
+            {AUDIT_BLOCKS.map((b, i) => (
+              <div key={b.key} className="apack-block">
+                <span className="apack-num mono">{String(i + 1).padStart(2, '0')}</span>
+                <b className="apack-bt">{t(b.uk, b.en)}</b>
+                <p className="apack-bd">{t(b.taskUk, b.taskEn)}</p>
+                <span className="apack-bn mono">{b.checks} {t('перевірок', 'checks')}</span>
+              </div>
+            ))}
+          </div>
+        </div>
 
         <div className="apack-foot">
           <p className="sysx-lead">{t('Передача пакета — це не кінець: 4 години консультацій із розбором і контрольний дзвінок через 30 днів. А вартість аудиту зараховується у впровадження.', 'Handover is not the end: 4 hours of walkthrough consulting and a check-in call after 30 days. And the audit fee is credited toward implementation.')}</p>

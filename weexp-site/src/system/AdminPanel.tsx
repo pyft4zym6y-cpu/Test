@@ -1772,9 +1772,54 @@ function genAccessMap(rec: DiagRecord, email: string) {
     return `<tr><td><b>${escH(a.system)}</b><br><span class="muted">${escH(a.why)}</span></td><td>${escH(a.category)}</td><td>${s.method ? escH(ACCESS_METHOD_LABEL[s.method]) : '<span class="muted">—</span>'}</td><td>${s.status ? stTxt[s.status] : '<span class="warn">очікується</span>'}</td><td>${escH(s.note || '')}</td></tr>`;
   }).join('');
   const granted = ACCESS_CATALOG.filter((a) => ['granted', 'verified'].includes(log[a.id]?.status || '')).length;
+  // «Обмеження та припущення»: системи без доступу → що НЕ перевірялось і чому.
+  const missing = ACCESS_CATALOG.filter((a) => !['granted', 'verified', 'na'].includes(log[a.id]?.status || ''));
+  const limits = missing.length
+    ? `<h2>Обмеження та припущення</h2><p>Наведені нижче ділянки НЕ перевірялися напряму (доступ не надано на момент аудиту) — висновки по них спираються на зовнішні спостереження та відповіді опитувальника і мають нижчу впевненість:</p>
+       <table><tr><th>Система</th><th>Що лишилось поза перевіркою</th></tr>${missing.map((a) => `<tr><td><b>${escH(a.system)}</b></td><td>${escH(a.why)}</td></tr>`).join('')}</table>`
+    : '<h2>Обмеження та припущення</h2><p class="ok">Усі необхідні доступи було надано — суттєвих обмежень перевірки немає.</p>';
   openPrintDoc('Карта доступів і даних', email,
     `<p>Периметр аудиту: надано <b>${granted}/${ACCESS_CATALOG.length}</b> доступів. Способи: перегляд (корпоративна пошта), OAuth-конектор, вивантаження файлів.</p>
-     <table><tr><th>Система</th><th>Категорія</th><th>Спосіб</th><th>Статус</th><th>Нотатка</th></tr>${rows}</table>`);
+     <table><tr><th>Система</th><th>Категорія</th><th>Спосіб</th><th>Статус</th><th>Нотатка</th></tr>${rows}</table>
+     ${limits}`);
+}
+
+/** a15 — Роадмапа + Гант А→Б: кожен крок по місяцях, бюджет, команда, розподіл власників. */
+function genGantt(rec: DiagRecord, email: string) {
+  const p = getProjects(rec)[0];
+  const tasks = p?.tasks || [];
+  if (!p || !tasks.length) { toast('Спершу заповніть «Проект» у картці клієнта (задачі Ганта, команда, тарифікація).', 'err'); return; }
+  const span = Math.max(1, Math.min(24, p.span || 6));
+  const mLbl = (i: number) => {
+    if (!p.startMonth) return 'М' + (i + 1);
+    const [y, m] = p.startMonth.split('-').map(Number);
+    try { return new Date(y, (m - 1) + i, 1).toLocaleDateString('uk-UA', { month: 'short', year: '2-digit' }); } catch { return 'М' + (i + 1); }
+  };
+  const head = Array.from({ length: span }, (_, i) => `<th style="text-align:center">${mLbl(i)}</th>`).join('');
+  const gantt = tasks.map((tk) => {
+    const cells = Array.from({ length: span }, (_, i) => {
+      const on = i >= (tk.startM || 0) && i < (tk.startM || 0) + Math.max(1, tk.lenM || 1);
+      return `<td style="text-align:center;padding:4px 2px">${on ? '<span style="display:block;height:14px;background:#F5301C"></span>' : ''}</td>`;
+    }).join('');
+    return `<tr><td><b>${escH(tk.name)}</b>${tk.track ? `<br><span class="muted">${escH(tk.track)}</span>` : ''}</td><td>${escH(tk.owner || '—')}</td>${cells}</tr>`;
+  }).join('');
+  // Бюджет по місяцях (тарифікація: години × ставка).
+  const tariff = (p.tariff || []).map((mo) => {
+    const sum = (mo.items || []).reduce((s, it) => s + (it.hours || 0) * (it.rate || 0), 0);
+    return `<tr><td>${escH(mo.month)}</td><td>${(mo.items || []).map((it) => escH(`${it.label} · ${it.hours} год × €${it.rate}`)).join('<br>')}</td><td><b>€${Math.round(sum).toLocaleString('en-US')}</b></td></tr>`;
+  }).join('');
+  const total = (p.tariff || []).reduce((s, mo) => s + (mo.items || []).reduce((x, it) => x + (it.hours || 0) * (it.rate || 0), 0), 0);
+  const team = (p.team || []).map((tm) => `<tr><td><b>${escH(tm.role)}</b></td><td>${escH(tm.name || 'підбирається')}</td></tr>`).join('');
+  // Розподіл відповідальності: групуємо задачі за власником (WEEXP / партнер / команда клієнта).
+  const owners = new Map<string, string[]>();
+  tasks.forEach((tk) => { const o = tk.owner || 'Не призначено'; owners.set(o, [...(owners.get(o) || []), tk.name]); });
+  const split = [...owners.entries()].map(([o, ts]) => `<tr><td><b>${escH(o)}</b></td><td>${ts.map(escH).join(' · ')}</td></tr>`).join('');
+  openPrintDoc(`Роадмапа: ${p.title || 'проєкт'} — Гант А→Б`, email,
+    `<p>Дорожня карта з точки А в точку Б: ${tasks.length} кроків · горизонт ${span} міс${total ? ` · бюджет €${Math.round(total).toLocaleString('en-US')}` : ''}.</p>
+     <h2>Діаграма Ганта</h2><table><tr><th>Крок</th><th>Власник</th>${head}</tr>${gantt}</table>
+     ${team ? `<h2>Необхідна команда</h2><table><tr><th>Роль</th><th>Спеціаліст</th></tr>${team}</table>` : ''}
+     ${split ? `<h2>Розподіл відповідальності (ми / партнери / команда клієнта)</h2><table><tr><th>Власник</th><th>Задачі</th></tr>${split}</table>` : ''}
+     ${tariff ? `<h2>Бюджет по місяцях</h2><table><tr><th>Місяць</th><th>Склад робіт</th><th>Сума</th></tr>${tariff}<tr><td colspan="2"><b>Разом</b></td><td><b>€${Math.round(total).toLocaleString('en-US')}</b></td></tr></table>` : ''}`);
 }
 
 /** a16 — План перших 90 днів: рекомендації з C-level оцінки за пріоритетами. */
@@ -1836,6 +1881,7 @@ function PackChecklist({ userId, email, rec }: { userId: string; email: string; 
   };
   const GEN: Record<string, (() => void) | undefined> = {
     a02: () => genAccessMap(rec, email),
+    a15: () => genGantt(rec, email),
     a16: () => genPlan90(rec, email, modTitle),
     a17: () => genDoD(rec, email, modTitle),
     a19: () => genHandover(rec, email, map),

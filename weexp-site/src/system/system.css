@@ -2243,3 +2243,12 @@
 .apack-card.is-int { background: var(--cream-2, #F4EDDD); }
 .apack-aud { display: inline-block; margin-top: 8px; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--ok, #1F9D55); }
 .apack-aud.int { color: var(--graphite, #6B675E); }
+
+/* /audit-pack: методологія 12 блоків */
+.apack-method { margin: clamp(10px, 2vw, 20px) 0 clamp(24px, 3.4vw, 40px); }
+.apack-method-lead { max-width: 780px; font-size: 13.5px; margin: 0 0 14px; }
+.apack-blocks { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.apack-block { position: relative; border: 2px solid var(--deep, #141210); background: var(--pure-white, #fff); padding: 12px 14px 10px; }
+.apack-bt { display: block; font-size: 14px; color: var(--deep, #141210); padding-right: 28px; }
+.apack-bd { margin: 4px 0 6px; font-size: 11.5px; line-height: 1.45; color: var(--graphite, #6B675E); }
+.apack-bn { font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--red, #F5301C); }
