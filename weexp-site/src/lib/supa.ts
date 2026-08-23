@@ -101,8 +101,12 @@ export type DiagRecord = {
   adminFiles?: AdminFile[];                   // власні файли аудитора (дані/дельіверабли), внутрішнє
   findingReviews?: Record<string, FindingReview>; // рецензії findings рушія (ключ = findingId) — цикл навчання
   auditDoc?: AuditDoc;                         // редагований документ аудиту (адмін коригує/версіонує/експортує)
+  packChecklist?: Record<string, PackState>;   // готовність 19 артефактів пакета (ключ = auditPack id)
   updatedAt?: string;
 };
+
+/** Стан одного артефакта пакета аудиту: — → готово → передано. */
+export type PackState = { st?: 'ready' | 'delivered'; at?: string };
 
 /* ─── Редагований документ аудиту (Крок 4): адмін коригує те, що зібрав рушій ─── */
 export type AuditDocSection = { id: string; heading: string; body: string };

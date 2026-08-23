@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, deleteLead, deleteDiagnostics, signTierFile, CONFIGURED,
   findAuditIdByCode, loadAuditAnswers, loadAuditExtra, saveAuditExtra,
-  saveProjectsFor, saveAssessmentFor, savePatchFor, runWorkerAudit, uploadAdminFile, deleteAdminFile, maturityToAssessment, sendFindingReviews, loadLearningSnapshot, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject, aiScoreAudit, type ModuleScore, type DiagRecord, type AccessState, type ProjectNote, type AuditJobRef, type AdminFile, type WorkerMaturity, type ReviewableFinding, type FindingReview, type LearningSnapshot, type AuditDoc, type AuditDocSection, type AuditDocVersion,
+  saveProjectsFor, saveAssessmentFor, savePatchFor, runWorkerAudit, uploadAdminFile, deleteAdminFile, maturityToAssessment, sendFindingReviews, loadLearningSnapshot, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject, aiScoreAudit, type ModuleScore, type DiagRecord, type AccessState, type ProjectNote, type AuditJobRef, type AdminFile, type WorkerMaturity, type ReviewableFinding, type FindingReview, type LearningSnapshot, type AuditDoc, type AuditDocSection, type AuditDocVersion, type PackState,
   MANAGER_EMAILS, TEAM_ROLES, ROLE_LABEL, roleOf, can, teamApi, MATURITY_DOMAIN_MODULE, type Role, type TeamMember, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
   type Project, type ProjTask, type ProjMember, type ProjPayment, type ProjMonth, type ProjTariffItem,
   type PmDirectory, type PmSpecialist, type PmRoleRate,
@@ -14,6 +14,7 @@ import { useCabTheme, ThemeToggle } from '@/lib/cabTheme';
 import { AuditBuilder } from './AuditBuilder';
 import { loadTemplate, uid, Q_TYPES, type AuditTemplate, type Question, type Block } from './auditTemplate';
 import { ACCESS_CATALOG, ACCESS_METHOD_LABEL } from '@/data/accessCatalog';
+import { PACK_ARTIFACTS, PACK_PHASES, packByPhase } from '@/data/auditPack';
 import './system.css';
 import './cabinet.css';
 
@@ -1176,6 +1177,8 @@ function UserDetail({ row, leads, canDelete, selfEmail, onClose, openFile, onSta
 
           <Block title="Внутрішні нотатки команди"><NotesPanel userId={row.userId} initial={rec.notes || []} author={selfEmail} /></Block>
 
+          <Block title="Пакет аудиту — 19 артефактів"><PackChecklist userId={row.userId} email={row.email} rec={rec} /></Block>
+
           <Block title="Документ аудиту (редагований)"><AuditDocEditor userId={row.userId} email={row.email} rec={rec} /></Block>
 
           <Block title="Мої файли (внутрішні)"><AdminFiles userId={row.userId} initial={rec.adminFiles || []} author={selfEmail} openFile={openFile} /></Block>
@@ -1663,6 +1666,143 @@ function AuditDocEditor({ userId, email, rec }: { userId: string; email: string;
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+/* ── Пакет аудиту: чеклист 19 артефактів + автогенерація адмінських документів ── */
+
+/** Спільний друкований шаблон WEEXP (як досьє): відкриває вікно → друк у PDF. */
+function openPrintDoc(title: string, email: string, bodyHtml: string) {
+  const w = window.open('', '_blank');
+  if (!w) { toast('Дозвольте спливаючі вікна, щоб відкрити документ', 'err'); return; }
+  const now = new Date().toLocaleString('uk-UA');
+  const html = `<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>${title}</title><style>
+@page{margin:16mm}body{font-family:"IBM Plex Sans","Segoe UI",system-ui,Arial,sans-serif;color:#141210;margin:0;font-size:13px;line-height:1.55}
+.bar{height:8px;background:#F5301C}.wrap{padding:26px 30px;max-width:860px}
+.top{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #141210;padding-bottom:12px;margin-bottom:18px}
+.logo{font-weight:800;font-size:22px}.logo span{color:#F5301C}.meta{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#6B675E;text-align:right}
+h1{font-size:20px;margin:2px 0 14px}h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#F5301C;margin:20px 0 8px;border-bottom:1px solid #E3D9C0;padding-bottom:4px}
+table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #EEE7D6;padding:6px 8px;vertical-align:top;text-align:left;font-size:12.5px}
+th{color:#6B675E;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.muted{color:#9a9488}.ok{color:#177A43;font-weight:700}.warn{color:#C0851E;font-weight:700}
+.foot{margin-top:26px;padding-top:12px;border-top:1px solid #E3D9C0;color:#9a9488;font-size:10.5px}
+@media print{.noprint{display:none}}
+</style></head><body><div class="bar"></div><div class="wrap">
+<div class="top"><div><div class="logo">WEEXP<span>.</span></div><div style="font-family:monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B675E">Глибокий аудит · документ пакета</div></div>
+<div class="meta">${email}<br>сформовано ${now}</div></div>
+<h1>${title}</h1>
+<button class="noprint" onclick="window.print()" style="margin:0 0 14px;background:#F5301C;color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer">🖨 Друк / зберегти в PDF</button>
+${bodyHtml}
+<div class="foot">WEEXP — Commerce OS · weexp.agency · hello@weexp.agency · Конфіденційно, не для розповсюдження.</div>
+</div></body></html>`;
+  w.document.open(); w.document.write(html); w.document.close();
+}
+const escH = (s: unknown) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/** a02 — Карта доступів і даних: каталог × статус клієнта. */
+function genAccessMap(rec: DiagRecord, email: string) {
+  const log = rec.accessLog || {};
+  const stTxt: Record<string, string> = { requested: 'запрошено', granted: '<span class="ok">надано</span>', verified: '<span class="ok">перевірено</span>', na: '<span class="muted">не потрібно</span>' };
+  const rows = ACCESS_CATALOG.map((a) => {
+    const s = log[a.id] || {};
+    return `<tr><td><b>${escH(a.system)}</b><br><span class="muted">${escH(a.why)}</span></td><td>${escH(a.category)}</td><td>${s.method ? escH(ACCESS_METHOD_LABEL[s.method]) : '<span class="muted">—</span>'}</td><td>${s.status ? stTxt[s.status] : '<span class="warn">очікується</span>'}</td><td>${escH(s.note || '')}</td></tr>`;
+  }).join('');
+  const granted = ACCESS_CATALOG.filter((a) => ['granted', 'verified'].includes(log[a.id]?.status || '')).length;
+  openPrintDoc('Карта доступів і даних', email,
+    `<p>Периметр аудиту: надано <b>${granted}/${ACCESS_CATALOG.length}</b> доступів. Способи: перегляд (корпоративна пошта), OAuth-конектор, вивантаження файлів.</p>
+     <table><tr><th>Система</th><th>Категорія</th><th>Спосіб</th><th>Статус</th><th>Нотатка</th></tr>${rows}</table>`);
+}
+
+/** a16 — План перших 90 днів: рекомендації з C-level оцінки за пріоритетами. */
+function genPlan90(rec: DiagRecord, email: string, modTitle: (k: string) => string) {
+  const asm = rec.assessment || {};
+  const by = (p: 'P1' | 'P2' | 'P3') => Object.entries(asm).filter(([, s]) => s.priority === p && (s.rec || s.gap));
+  const sec = (label: string, items: [string, ModuleScore][]) => items.length
+    ? `<h2>${label}</h2><table><tr><th>Модуль</th><th>Дія</th><th>Очікуваний ефект</th></tr>${items.map(([k, s]) => `<tr><td><b>${escH(modTitle(k))}</b></td><td>${escH(s.rec || s.gap || '')}</td><td>${escH(s.expected || '—')}</td></tr>`).join('')}</table>`
+    : '';
+  const p1 = by('P1'), p2 = by('P2'), p3 = by('P3');
+  if (!p1.length && !p2.length && !p3.length) { toast('Спершу заповніть C-level оцінку модулів (рекомендації з пріоритетами).', 'err'); return; }
+  openPrintDoc('План перших 90 днів', email,
+    `<p>Швидкі перемоги та перші системні кроки — з C-level оцінки модулів. Пріоритет P1 — дні 1–30, P2 — дні 31–60, P3 — дні 61–90.</p>
+     ${sec('Дні 1–30 · критичні (P1)', p1)}${sec('Дні 31–60 · важливі (P2)', p2)}${sec('Дні 61–90 · системні (P3)', p3)}`);
+}
+
+/** a17 — Цільова модель (DoD): поточні score → цільові, з очікуваним ефектом. */
+function genDoD(rec: DiagRecord, email: string, modTitle: (k: string) => string) {
+  const asm = rec.assessment || {};
+  const rows = Object.entries(asm).filter(([, s]) => s.score != null || s.state || s.expected);
+  if (!rows.length) { toast('Спершу заповніть C-level оцінку модулів.', 'err'); return; }
+  const body = rows.map(([k, s]) => {
+    const cur = typeof s.score === 'number' ? s.score : null;
+    const tgt = cur != null ? Math.min(90, Math.max(cur + 20, 60)) : null;
+    return `<tr><td><b>${escH(modTitle(k))}</b></td><td>${cur != null ? cur + '/100' : '—'}</td><td>${tgt != null ? '<b>' + tgt + '/100</b>' : '—'}</td><td>${escH(s.expected || s.rec || '—')}</td></tr>`;
+  }).join('');
+  openPrintDoc('Цільова модель (Definition of Done)', email,
+    `<p>Куди мають прийти системи бізнесу за 6–9 місяців роботи. Ціль — вимірна: зрілість модуля за шкалою 0–100, критерій готовності — очікуваний ефект.</p>
+     <table><tr><th>Модуль</th><th>Зараз</th><th>Ціль</th><th>Критерій готовності / ефект</th></tr>${body}</table>`);
+}
+
+/** a19 — Протокол передачі: стан 19 артефактів + умови супроводу. */
+function genHandover(rec: DiagRecord, email: string, checklist: Record<string, PackState>) {
+  const rows = PACK_ARTIFACTS.map((a, i) => {
+    const st = checklist[a.id]?.st;
+    const stH = st === 'delivered' ? '<span class="ok">передано</span>' : st === 'ready' ? '<span class="warn">готово</span>' : '<span class="muted">в роботі</span>';
+    return `<tr><td>${String(i + 1).padStart(2, '0')}</td><td><b>${escH(a.uk)}</b></td><td>${stH}</td></tr>`;
+  }).join('');
+  const delivered = PACK_ARTIFACTS.filter((a) => checklist[a.id]?.st === 'delivered').length;
+  const call = new Date(Date.now() + 30 * 864e5).toLocaleDateString('uk-UA');
+  openPrintDoc('Протокол передачі пакета аудиту', email,
+    `<p>Передано артефактів: <b>${delivered}/19</b>. До пакета входять 4 години консультацій із розбором документів і контрольний дзвінок <b>${call}</b> (через 30 днів) — перевіряємо, що впровадження пішло.</p>
+     <table><tr><th>№</th><th>Артефакт</th><th>Стан</th></tr>${rows}</table>
+     <h2>Умови зарахування</h2><p>100% вартості аудиту зараховується в перший місяць формату 03 (50% — у формат 02), якщо старт упродовж 30 днів.</p>`);
+}
+
+/** Чеклист готовності пакета аудиту в картці клієнта. */
+function PackChecklist({ userId, email, rec }: { userId: string; email: string; rec: DiagRecord }) {
+  const [map, setMap] = useState<Record<string, PackState>>(rec.packChecklist || {});
+  const [modMap, setModMap] = useState<Record<string, string>>({});
+  useEffect(() => { let on = true; loadTemplate().then((tp) => { if (on && tp) setModMap(Object.fromEntries(tp.blocks.map((b) => [b.key, b.title]))); }).catch(() => {}); return () => { on = false; }; }, []);
+  const modTitle = (k: string) => modMap[k] || k;
+  const cycle = (id: string) => {
+    const cur = map[id]?.st;
+    const next: PackState['st'] = cur === undefined ? 'ready' : cur === 'ready' ? 'delivered' : undefined;
+    const nm = { ...map, [id]: { st: next, at: new Date().toISOString() } };
+    if (next === undefined) delete nm[id];
+    setMap(nm); void savePatchFor(userId, { packChecklist: nm });
+  };
+  const GEN: Record<string, (() => void) | undefined> = {
+    a02: () => genAccessMap(rec, email),
+    a16: () => genPlan90(rec, email, modTitle),
+    a17: () => genDoD(rec, email, modTitle),
+    a19: () => genHandover(rec, email, map),
+  };
+  const done = PACK_ARTIFACTS.filter((a) => map[a.id]?.st).length;
+  const delivered = PACK_ARTIFACTS.filter((a) => map[a.id]?.st === 'delivered').length;
+  let n = 0;
+  return (
+    <div className="adm-pack">
+      <div className="adm-pack-sum mono"><span>Готово/передано: <b>{done}/19</b> · передано: <b>{delivered}</b></span>
+        <span className="adm-acc-hint">Клік по статусу: — → готово → передано. «Рушій» — файл з pack.zip воркера.</span></div>
+      {PACK_PHASES.map((ph) => (
+        <div key={ph.key} className="adm-pack-ph">
+          <span className="adm-acc-cat-h mono">{ph.uk}</span>
+          {packByPhase(ph.key).map((a) => {
+            n += 1;
+            const st = map[a.id]?.st;
+            return (
+              <div key={a.id} className="adm-pack-row">
+                <span className="adm-pack-num mono">{String(n).padStart(2, '0')}</span>
+                <span className="adm-pack-t"><b>{a.uk}</b>{a.source === 'worker' && <i className="adm-pack-src mono"> · рушій</i>}{a.source === 'portal' && <i className="adm-pack-src mono"> · кабінет</i>}</span>
+                {GEN[a.id] && <button className="mc-btn ghost" onClick={GEN[a.id]}>📄 Згенерувати</button>}
+                <button className={`adm-pack-st mono st-${st || 'none'}`} onClick={() => cycle(a.id)}>
+                  {st === 'delivered' ? '↗ передано' : st === 'ready' ? '✓ готово' : '— в роботі'}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      ))}
     </div>
   );
 }

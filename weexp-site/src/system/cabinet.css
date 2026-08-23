@@ -160,6 +160,16 @@
 .adm-anon-diag { color: var(--graphite); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .adm-tr.adm-tr-proj { display: grid; grid-template-columns: minmax(170px, 1.2fr) minmax(140px, 1fr) 64px 88px auto; gap: 10px; align-items: center; }
 @media (max-width: 720px) { .adm-tr.adm-tr-anon, .adm-tr.adm-tr-proj { grid-template-columns: 1fr auto; } .adm-tr.adm-tr-anon > :nth-child(2), .adm-tr.adm-tr-proj > :nth-child(3), .adm-tr.adm-tr-proj > :nth-child(4) { display: none; } }
+/* Пакет аудиту — чеклист 19 артефактів */
+.adm-pack-sum { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-bottom: 10px; font-size: 12px; }
+.adm-pack-ph { margin-bottom: 10px; }
+.adm-pack-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.adm-pack-num { color: var(--graphite); font-size: 11px; flex: 0 0 22px; }
+.adm-pack-t { flex: 1 1 220px; min-width: 0; font-size: 13px; }
+.adm-pack-src { color: var(--graphite); font-size: 10.5px; font-style: normal; }
+.adm-pack-st { border: 2px solid var(--line); background: var(--pure-white); color: var(--graphite); font-size: 11.5px; font-weight: 700; padding: 5px 12px; cursor: pointer; min-width: 108px; }
+.adm-pack-st.st-ready { border-color: var(--warn, #C0851E); color: var(--warn, #C0851E); }
+.adm-pack-st.st-delivered { background: var(--ok, #1F9D55); border-color: var(--ok, #1F9D55); color: #fff; }
 /* Власні файли аудитора */
 .adm-afiles-add { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
 .adm-afile { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 12px; }

@@ -86,6 +86,7 @@ const Cabinet = lazy(() => import('@/system/Cabinet').then((m) => ({ default: m.
 const AdminPanel = lazy(() => import('@/system/AdminPanel').then((m) => ({ default: m.AdminPanel })));
 const ServicePage = lazy(() => import('@/system/ServicePage').then((m) => ({ default: m.ServicePage })));
 const Pricing = lazy(() => import('@/system/Pricing').then((m) => ({ default: m.Pricing })));
+const AuditPackPage = lazy(() => import('@/system/AuditPackPage').then((m) => ({ default: m.AuditPackPage })));
 
 // /challenges/:slug (легасі) → відповідна світла сторінка системи /systems/:slug
 // (слаги збігаються), щоб зберегти глибокі посилання, а не кидати все на індекс.
@@ -104,6 +105,7 @@ const PAGES: { path: string; el: JSX.Element }[] = [
   { path: '/expansion/:slug', el: <Expertise /> },
   { path: '/diagnose', el: <LossCalculator /> },
   { path: '/pricing', el: <Pricing /> },
+  { path: '/audit-pack', el: <AuditPackPage /> },
   { path: '/systems/:slug', el: <ServicePage /> },
   { path: '/contact', el: <ContactFilm /> },
 ];

@@ -115,6 +115,10 @@ const META: Record<string, Meta2> = {
     uk: [`Контакт — запит на діагноз${SUFFIX}`, 'Залиште контакт — повернемося з планом діагностики у грошах. Для e-commerce виробників і D2C-брендів $0.5–10M.'],
     en: [`Contact — request a diagnosis${ES}`, 'Leave your contact — we come back with a diagnosis plan in money. For e-commerce makers and D2C brands $0.5–10M.'],
   },
+  '/audit-pack': {
+    uk: [`Склад пакета аудиту — 19 артефактів${SUFFIX}`, 'Повний перелік документів глибокого аудиту WEEXP: від брифу й карти доступів до роадмапи хвилями і протоколу передачі.'],
+    en: [`Audit pack contents — 19 artifacts${ES}`, 'The full list of WEEXP deep-audit documents: from the brief and access map to the wave roadmap and handover protocol.'],
+  },
   '/pricing': {
     uk: [`Початок співпраці — формати та ціни${SUFFIX}`, 'Три формати співпраці WEEXP — аудит, консалтинг і супровід, управління під ключ. Відкриті ціни; різниця — у тому, хто відповідає за результат.'],
     en: [`Get started — formats & pricing${ES}`, 'Three ways to work with WEEXP — audit, consulting & advisory, managed delivery. Open prices; the difference is who owns the result.'],
