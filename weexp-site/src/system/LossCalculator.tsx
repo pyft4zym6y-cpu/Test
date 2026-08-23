@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { computeLoss, eur, project, localizeSys, sysLabel, leakLabel, actionText, type LossInput, type LossResult, type SysKey } from './lossModel';
+import { computeLoss, eur, project, localizeSys, sysLabel, leakLabel, actionText, NICHES, type LossInput, type LossResult, type SysKey, type NicheKey, type Season } from './lossModel';
 import { saveExpressAudit } from './cabinetData';
 import { sendLead } from '@/lib/leads';
 import { shortOf } from '@/data/xray';
@@ -48,7 +48,8 @@ export function LossCalculator() {
   const lite = useLiteVisuals();
   const lp = useLp();
   const lang = useLang();
-  const FIELDS: { k: keyof Omit<LossInput, 'symptoms'>; label: string; unit: string; hint?: string }[] = [
+  type NumKey = 'monthlyRevenue' | 'aov' | 'conversion' | 'repeatRate' | 'returnsRate' | 'grossMargin' | 'cac';
+  const FIELDS: { k: NumKey; label: string; unit: string; hint?: string }[] = [
     { k: 'monthlyRevenue', label: t('Онлайн-виторг', 'Online revenue'), unit: t('€ / міс', '€ / mo') },
     { k: 'aov', label: t('Середній чек', 'Average order value (AOV)'), unit: '€' },
     { k: 'conversion', label: t('Конверсія', 'Conversion'), unit: '%' },
@@ -95,7 +96,7 @@ export function LossCalculator() {
     window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
   }, [step]);
 
-  const setNum = (k: keyof Omit<LossInput, 'symptoms'>) => (e: React.ChangeEvent<HTMLInputElement>) =>
+  const setNum = (k: NumKey) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setInp((s) => ({ ...s, [k]: parseFloat(e.target.value) || 0 }));
   const toggle = (k: SysKey) => setInp((s) => ({ ...s, symptoms: s.symptoms.includes(k) ? s.symptoms.filter((x) => x !== k) : [...s.symptoms, k] }));
   const compute = () => { const r = computeLoss(inp); setRes(r); alerts.current = r.bottleneckNodes; saveExpressAudit(inp, r); setStep(3); };
@@ -189,6 +190,25 @@ ${projRows ? `<div class="card"><h2>${esc(t('Зараз → куди можем�
         {step === 1 && (
           <div className="sysx-card">
             <div className="sysx-grid">
+              <label className="sysx-inp">
+                <span className="sysx-inp-l">{t('Ніша', 'Niche')}<i> · {t('обирає еталони порівняння', 'picks the benchmarks')}</i></span>
+                <span className="sysx-inp-row">
+                  <select value={inp.niche || ''} onChange={(e) => setInp((s) => ({ ...s, niche: (e.target.value || undefined) as NicheKey | undefined }))}>
+                    <option value="">{t('— оберіть нішу —', '— select a niche —')}</option>
+                    {NICHES.map((n) => <option key={n.key} value={n.key}>{t(n.uk, n.en)}</option>)}
+                  </select>
+                </span>
+              </label>
+              <label className="sysx-inp">
+                <span className="sysx-inp-l">{t('Цей місяць за виторгом', 'This month vs typical')}<i> · {t('корекція сезонності', 'seasonality correction')}</i></span>
+                <span className="sysx-inp-row">
+                  <select value={inp.seasonal || 'typical'} onChange={(e) => setInp((s) => ({ ...s, seasonal: e.target.value as Season }))}>
+                    <option value="typical">{t('Типовий', 'Typical')}</option>
+                    <option value="high">{t('Вище типового (сезон/пік)', 'Above typical (peak season)')}</option>
+                    <option value="low">{t('Нижче типового', 'Below typical')}</option>
+                  </select>
+                </span>
+              </label>
               {FIELDS.map((f) => (
                 <label key={f.k} className="sysx-inp">
                   <span className="sysx-inp-l">{f.label}{f.hint && <i> · {f.hint}</i>}</span>
@@ -229,6 +249,11 @@ ${projRows ? `<div class="card"><h2>${esc(t('Зараз → куди можем�
             <div className="sysx-total">
               <span className="sysx-total-big sysx-display">{eur(res.total)}<span>{t('/ рік', '/ year')}</span></span>
               <span className="sysx-total-cap mono">{t('оцінена можливість · діапазон ', 'estimated opportunity · range ')}{eur(res.range[0])}–{eur(res.range[1])}</span>
+              {res.confidence !== 'high' && (
+                <span className="sysx-total-conf mono">{res.confidence === 'medium'
+                  ? t('⚠ середня впевненість: заповнено не всі показники — вилка розширена. Додайте цифри, щоб уточнити.', '⚠ medium confidence: not all metrics filled — the range is widened. Add numbers to refine.')
+                  : t('⚠ низька впевненість: замало даних — це лише орієнтир. Заповніть більше показників.', '⚠ low confidence: too little data — treat as a rough guide. Fill in more metrics.')}</span>
+              )}
             </div>
 
             <div className="sysx-leaks">

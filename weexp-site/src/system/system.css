@@ -1629,6 +1629,7 @@
 .sysx-inp-row:focus-within { border-color: var(--data); }
 .sysx-inp-row input { flex: 1; border: 0; outline: 0; background: transparent; font-family: var(--display); font-size: 20px; font-weight: 700; color: var(--deep); padding: 12px 0; width: 100%; -moz-appearance: textfield; }
 .sysx-inp-row input::-webkit-outer-spin-button, .sysx-inp-row input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.sysx-inp-row select { flex: 1; border: 0; outline: 0; background: transparent; font-family: var(--sans); font-size: 15px; font-weight: 600; color: var(--deep); padding: 14px 0; width: 100%; cursor: pointer; }
 .sysx-inp-u { font-size: 11px; color: var(--graphite); white-space: nowrap; }
 
 .sysx-sym { display: grid; grid-template-columns: 1fr; gap: 8px; }
@@ -1652,6 +1653,7 @@
 .sysx-total-big { font-size: clamp(44px, 6vw, 84px); color: var(--deep); font-weight: 800; letter-spacing: -.03em; }
 .sysx-total-big span { font-size: .32em; color: var(--graphite); margin-left: 8px; font-weight: 700; }
 .sysx-total-cap { font-size: 11px; color: var(--graphite); letter-spacing: .04em; }
+.sysx-total-conf { display: block; margin-top: 6px; font-size: 11.5px; color: var(--warn, #C0851E); max-width: 520px; line-height: 1.5; }
 .sysx-leaks { display: grid; gap: 8px; }
 .sysx-leak { display: grid; grid-template-columns: 130px 1fr auto; align-items: center; gap: 12px; }
 .sysx-leak-l { font-size: 12px; color: var(--charcoal); }
