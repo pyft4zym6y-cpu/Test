@@ -38,7 +38,7 @@ type SiteTraffic = {
   period?: string; sessions?: number; users?: number; pageviews?: number; bounceRate?: number;
   sources?: { name: string; sessions: number }[]; pages?: { path: string; views: number }[]; error?: string;
 };
-type Tab = 'overview' | 'users' | 'audits' | 'template' | 'access' | 'leads' | 'pm' | 'projects' | 'settings';
+type Tab = 'overview' | 'users' | 'audits' | 'template' | 'access' | 'leads' | 'pm' | 'projects' | 'deep' | 'settings';
 type Cap = Parameters<typeof can>[1];
 // Структура меню: Дашборд → Заявки (вхідна точка) → Користувачі → Аудити (вся
 // логіка проходження, підрозділи + конструктор) → Проекти (робочий простір) → Налаштування.
@@ -47,6 +47,7 @@ const TABS: { id: Tab; label: string; cap: Cap }[] = [
   { id: 'leads', label: 'Заявки', cap: 'view_leads' },
   { id: 'users', label: 'Користувачі', cap: 'view_users' },
   { id: 'audits', label: 'Аудити', cap: 'view_audits' },
+  { id: 'deep', label: 'Глибокий аудит', cap: 'view_audits' },
   { id: 'projects', label: 'Проекти', cap: 'manage_pm' },
   { id: 'settings', label: 'Налаштування', cap: 'manage_settings' },
 ];
@@ -618,6 +619,92 @@ export function AdminPanel() {
                 </div>
               )
             )}
+          </section>
+          );
+        })()}
+
+        {/* ── Глибокий аудит: воронка запитів і стадії ── */}
+        {curTab === 'deep' && (() => {
+          type DStage = 'requested' | 'data' | 'granted' | 'work' | 'done' | 'rejected';
+          const stageOf = (rec: DiagRecord | null | undefined): DStage | null => {
+            const st = Object.values(rec?.funnel?.tierStatus || {});
+            const mod = rec?.deepModeration?.status;
+            if (mod === 'accepted' || (rec?.sharedDocs || []).length) return 'done';
+            if (mod === 'submitted' || mod === 'clarify') return 'work';
+            if (st.includes('granted')) return 'granted';
+            if (st.includes('data')) return 'data';
+            if (st.includes('rejected')) return 'rejected';
+            if (st.includes('requested')) return 'requested';
+            return null;
+          };
+          const STAGES: { k: DStage; label: string; note: string }[] = [
+            { k: 'requested', label: 'Запит надіслано', note: 'клієнт натиснув «Почати глибокий аудит» — чекає рішення менеджера' },
+            { k: 'data', label: 'Потрібні дані', note: 'менеджер запросив додаткові дані/доступи' },
+            { k: 'granted', label: 'Доступ надано', note: 'код видано — клієнт заповнює опитувальник і доступи' },
+            { k: 'work', label: 'Анкета в роботі', note: 'опитувальник надіслано / на уточненні — аудит виконується' },
+            { k: 'done', label: 'Завершено', note: 'аудит прийнято, фінальні документи передані' },
+          ];
+          const withStage = (rows || [])
+            .map((r) => ({ r, stage: stageOf(r.record) }))
+            .filter((x): x is { r: typeof x.r; stage: DStage } => !!x.stage)
+            .filter((x) => !q || x.r.email.toLowerCase().includes(q.toLowerCase()) || (x.r.company || '').toLowerCase().includes(q.toLowerCase()));
+          const cnt = (k: DStage) => withStage.filter((x) => x.stage === k).length;
+          const rejected = cnt('rejected');
+          const reached = (i: number) => STAGES.slice(i).reduce((n, st2) => n + cnt(st2.k), 0);
+          const base = reached(0) || 1;
+          return (
+          <section className="adm-sec">
+            <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Глибокий аудит</h1>
+              <input className="mc-search" placeholder="Пошук: email / компанія" value={q} onChange={(e) => setQ(e.target.value)} /></div>
+            <p className="adm-hint mono">Всі запити на глибокий аудит і їхня воронка: запит → дані → доступ → анкета → завершено. Видача кодів і модерація — у картці клієнта (кнопка «Відкрити»).</p>
+            {rows === null ? <p className="mc-msg mono">Завантаження…</p> : withStage.length === 0 ? <EmptyState icon="🔬" text="Запитів на глибокий аудит поки немає. Вони зʼявляться, щойно клієнт натисне «Почати глибокий аудит» у кабінеті." /> : (<>
+              <div className="adm-dfun">
+                {STAGES.map((st2, i) => {
+                  const n = reached(i);
+                  const pct = Math.round((n / base) * 100);
+                  return (
+                    <div key={st2.k} className="adm-dfun-row" title={st2.note}>
+                      <span className="adm-dfun-l">{st2.label}</span>
+                      <span className="adm-dfun-bar"><i style={{ width: `${Math.max(4, pct)}%` }} /></span>
+                      <b className="adm-dfun-n mono">{n}</b>
+                      <span className="adm-dfun-pct mono">{pct}%</span>
+                      <span className="adm-dfun-here mono">{cnt(st2.k) ? `зараз тут: ${cnt(st2.k)}` : ''}</span>
+                    </div>
+                  );
+                })}
+                {rejected > 0 && <p className="adm-dfun-rej mono">✕ відхилено: {rejected}</p>}
+              </div>
+              {STAGES.map((st2) => {
+                const list = withStage.filter((x) => x.stage === st2.k);
+                if (!list.length) return null;
+                return (
+                  <div key={st2.k} className="adm-dfun-grp">
+                    <span className="cab-acc-cat-h mono" style={{ display: 'block', margin: '18px 0 8px' }}>{st2.label} · {list.length}</span>
+                    {list.map(({ r }) => (
+                      <div key={r.userId} className="adm-tr adm-tr-deep">
+                        <span className="adm-c-email"><b>{r.email}</b>{r.company && <i className="mono adm-c-co"> · {r.company}</i>}</span>
+                        <span className="mono">{r.record?.funnel?.accessCode ? `🔑 ${r.record.funnel.accessCode}` : '—'}</span>
+                        <span className="mono adm-c-date">{r.updatedAt ? rel(r.updatedAt) : '—'}</span>
+                        <button className="adm-open" onClick={() => setOpenUser(r.userId)}>Відкрити →</button>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+              {rejected > 0 && (
+                <div className="adm-dfun-grp">
+                  <span className="cab-acc-cat-h mono" style={{ display: 'block', margin: '18px 0 8px' }}>Відхилені · {rejected}</span>
+                  {withStage.filter((x) => x.stage === 'rejected').map(({ r }) => (
+                    <div key={r.userId} className="adm-tr adm-tr-deep">
+                      <span className="adm-c-email"><b>{r.email}</b>{r.company && <i className="mono adm-c-co"> · {r.company}</i>}</span>
+                      <span className="mono">{Object.values(r.record?.funnel?.tierReason || {}).filter(Boolean).join(' · ') || '—'}</span>
+                      <span className="mono adm-c-date">{r.updatedAt ? rel(r.updatedAt) : '—'}</span>
+                      <button className="adm-open" onClick={() => setOpenUser(r.userId)}>Відкрити →</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>)}
           </section>
           );
         })()}

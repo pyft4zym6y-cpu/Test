@@ -1134,3 +1134,6 @@
 .cab-file-row.is-req { border-left: 3px solid var(--red); }
 .cab-file-req { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--graphite); white-space: nowrap; }
 .cab-file-why { grid-column: 1 / -1; font-size: 11px; color: var(--graphite); }
+
+.cab-ga-ok { color: #1F6E4E; }
+.cab-ga-drop { background: none; border: 0; padding: 0; color: var(--red); font: inherit; font-size: 12px; cursor: pointer; text-decoration: underline; }

@@ -77,6 +77,25 @@ export function Cabinet() {
   const [authErr, setAuthErr] = useState('');
 
   useEffect(() => { setExpress(getExpressAudit()); }, []);
+  // Повернення з Google OAuth (конектор GA4): /cabinet?section=docs&ga=connected|error
+  const gaHandled = useRef(false);
+  useEffect(() => {
+    if (gaHandled.current || !user || typeof window === 'undefined') return;
+    const p = new URLSearchParams(window.location.search);
+    const ga = p.get('ga');
+    if (!ga) return;
+    gaHandled.current = true;
+    if (p.get('section') === 'docs') setSection('docs');
+    void (async () => {
+      const cur = await loadDiag(user);
+      const next = { ...(cur.accessLog || {}), 'AC-01': { ...(cur.accessLog || {})['AC-01'], method: 'oauth' as const, connStatus: (ga === 'connected' ? 'on' : 'error') as 'on' | 'error', ...(ga === 'connected' ? { status: 'granted' as const } : {}), at: new Date().toISOString() } };
+      await saveDiag(user, { accessLog: next });
+      setRec(await loadDiag(user));
+      if (ga === 'connected') toast(t('✓ Google Analytics підключено — доступ read-only', '✓ Google Analytics connected — read-only access'));
+      else toast(t('Не вдалося підключити Google Analytics: ', 'Could not connect Google Analytics: ') + (p.get('reason') || ''), 'err');
+      window.history.replaceState(null, '', window.location.pathname);
+    })();
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
   // Прив'язати локальний експрес-аудит до акаунту й перечитати запис.
   const hydrate = (u: DiagUser) => { syncExpressToAccount(u).finally(() => loadDiag(u).then(setRec)); };
   useEffect(() => {
@@ -253,6 +272,37 @@ function AccessGrant({ user, rec, embedded }: { user: DiagUser; rec: DiagRecord 
     timer.current = setTimeout(async () => { await saveDiag(user, { accessLog: latest.current }); setSaveState('saved'); setTimeout(() => setSaveState('idle'), 1500); }, 700);
   };
   const set = (id: string, patch: Partial<AccessState>) => persist({ ...map, [id]: { ...map[id], ...patch, at: new Date().toISOString() } });
+  // GA4 — справжній OAuth-конектор: статус із сервера + старт авторизації Google.
+  const [gaInfo, setGaInfo] = useState<{ connected?: boolean; email?: string; properties?: { id: string; name: string; account: string }[]; error?: string } | null>(null);
+  useEffect(() => {
+    let alive = true;
+    fetch(`/api/ga4?action=status&u=${encodeURIComponent(user.id)}`)
+      .then((r) => r.json())
+      .then((j) => {
+        if (!alive) return;
+        setGaInfo(j);
+        const cur = latest.current['AC-01']?.connStatus;
+        if (j.connected && cur !== 'on') set('AC-01', { connStatus: 'on', method: 'oauth', status: 'granted' });
+        if (!j.connected && !j.error && cur === 'on') set('AC-01', { connStatus: 'off' });
+      })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [user.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  const startGa = async () => {
+    try {
+      const r = await fetch(`/api/ga4?action=status&u=${encodeURIComponent(user.id)}`);
+      const j = await r.json();
+      if (j.error === 'not_configured') { toast(t('Конектор ще не налаштовано на сервері — поки що скористайтесь «Надати доступ вручну»', 'The connector is not configured on the server yet — use "Grant manually" for now'), 'err'); return; }
+    } catch { /* мережевий збій — все одно пробуємо */ }
+    set('AC-01', { method: 'oauth', connStatus: 'progress' });
+    window.location.href = `/api/ga4?action=oauth_start&u=${encodeURIComponent(user.id)}`;
+  };
+  const dropGa = async () => {
+    if (!confirm(t('Відключити Google Analytics? Ми втратимо read-only доступ до даних.', 'Disconnect Google Analytics? We lose read-only access to the data.'))) return;
+    try { await fetch(`/api/ga4?action=disconnect&u=${encodeURIComponent(user.id)}`); } catch { /* noop */ }
+    setGaInfo({ connected: false });
+    set('AC-01', { connStatus: 'off', status: undefined });
+  };
   const cats = [...new Set(ACCESS_CATALOG.map((a) => a.category))];
   const granted = ACCESS_CATALOG.filter((a) => ['granted', 'verified'].includes(map[a.id]?.status || '')).length;
 
@@ -287,7 +337,7 @@ function AccessGrant({ user, rec, embedded }: { user: DiagUser; rec: DiagRecord 
                 <div className="cab-acc-methods">
                   {hasConn && (
                     <>
-                      <button className={'cab-acc-conn st-' + conn} onClick={() => { if (conn === 'off') { set(a.id, { method: 'oauth', connStatus: 'progress' }); setOpenHow(`${a.id}:conn`); } else { toggleHow('conn'); } }}>
+                      <button className={'cab-acc-conn st-' + conn} onClick={() => { if (a.id === 'AC-01') { if (conn === 'on') toggleHow('conn'); else void startGa(); } else if (conn === 'off') { set(a.id, { method: 'oauth', connStatus: 'progress' }); setOpenHow(`${a.id}:conn`); } else { toggleHow('conn'); } }}>
                         {conn === 'off' ? t('Підключити конектор', 'Connect') + ' →' : CONN_STATUS_LABEL[conn]}
                       </button>
                       {conn !== 'off' && (
@@ -306,6 +356,13 @@ function AccessGrant({ user, rec, embedded }: { user: DiagUser; rec: DiagRecord 
                 </div>
                 {howKey === 'view' && a.viewHow && <p className="cab-acc-how-t">{a.viewHow}</p>}
                 {howKey === 'conn' && a.connectorHow && <p className="cab-acc-how-t">{a.connectorHow}</p>}
+                {a.id === 'AC-01' && gaInfo?.connected && (
+                  <p className="cab-acc-how-t cab-ga-ok">
+                    ✓ {t('Підключено акаунт', 'Connected account')}: <b>{gaInfo.email || '—'}</b>
+                    {(gaInfo.properties || []).length > 0 && <> · {t('властивості', 'properties')}: {(gaInfo.properties || []).slice(0, 3).map((pp) => pp.name).join(', ')}{(gaInfo.properties || []).length > 3 ? '…' : ''}</>}
+                    {' · '}<button className="cab-ga-drop" onClick={dropGa}>{t('відключити', 'disconnect')}</button>
+                  </p>
+                )}
               </div>
             );
           })}
