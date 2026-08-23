@@ -59,7 +59,7 @@ export function ContactFilm() {
     const payload = {
       source: attach ? 'diagnosis' : 'contact',
       name: String(f.get('name') || ''), email: String(f.get('email') || ''),
-      phone: String(f.get('phone') || ''), store: String(f.get('store') || ''),
+      phone: String(f.get('phone') || ''),
       site: String(f.get('site') || ''), comment: String(f.get('comment') || ''),
       task: format || undefined,   // обраний формат співпраці → колонка «Задача» заявки
       diag: attach || undefined, company_website: String(f.get('company_website') || ''),
@@ -122,7 +122,6 @@ export function ContactFilm() {
                   onInput={() => phoneErr && setPhoneErr('')} />
                 {phoneErr && <span className="s3-err mono ctf-inperr">{phoneErr}</span>}
               </label>
-              <label className="ctf-field"><span className="mono">{t('Магазин ', 'Store ')}<i className="ctf-opt">{t('(необовʼязково)', '(optional)')}</i></span><input name="store" /></label>
               <label className="ctf-field"><span className="mono">{t('Сайт ', 'Site ')}<i className="ctf-opt">{t('(необовʼязково)', '(optional)')}</i></span><input name="site" type="url" placeholder="https://" /></label>
               <label className="ctf-field"><span className="mono">Email <i className="ctf-opt">{t('(необовʼязково)', '(optional)')}</i></span>
                 <input name="email" type="email" autoComplete="email" aria-invalid={!!emailErr}
