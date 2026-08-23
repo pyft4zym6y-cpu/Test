@@ -182,20 +182,32 @@ export default async function handler(req, res) {
     if (!prop) { res.status(400).json({ error: 'property required' }); return; }
     try {
       const access = await refreshAccess(row.refresh_token, CID, CSECRET);
-      const r = await fetch(`https://analyticsdata.googleapis.com/v1beta/properties/${prop}:runReport`, {
-        method: 'POST', headers: { Authorization: `Bearer ${access}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          dateRanges: [{ startDate: '30daysAgo', endDate: 'yesterday' }],
-          metrics: [{ name: 'sessions' }, { name: 'transactions' }, { name: 'purchaseRevenue' }],
-        }),
+      const run = async (body) => {
+        const r = await fetch(`https://analyticsdata.googleapis.com/v1beta/properties/${prop}:runReport`, {
+          method: 'POST', headers: { Authorization: `Bearer ${access}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ dateRanges: [{ startDate: '30daysAgo', endDate: 'yesterday' }], ...body }),
+        });
+        const j = await r.json();
+        if (j.error) throw new Error(j.error.message);
+        return j;
+      };
+      // Превʼю ключових даних: тотали + канали + пристрої (все read-only, 30 днів)
+      const [tot, ch, dev] = await Promise.all([
+        run({ metrics: [{ name: 'sessions' }, { name: 'transactions' }, { name: 'purchaseRevenue' }, { name: 'totalUsers' }] }),
+        run({ dimensions: [{ name: 'sessionDefaultChannelGroup' }], metrics: [{ name: 'sessions' }, { name: 'purchaseRevenue' }], orderBys: [{ metric: { metricName: 'sessions' }, desc: true }], limit: 6 }),
+        run({ dimensions: [{ name: 'deviceCategory' }], metrics: [{ name: 'sessions' }, { name: 'transactions' }] }),
+      ]);
+      const tv = tot.rows?.[0]?.metricValues ?? [];
+      const sessions = Number(tv[0]?.value ?? 0), transactions = Number(tv[1]?.value ?? 0), revenue = Number(tv[2]?.value ?? 0), users = Number(tv[3]?.value ?? 0);
+      const channels = (ch.rows || []).map((r2) => ({ name: r2.dimensionValues?.[0]?.value || '—', sessions: Number(r2.metricValues?.[0]?.value ?? 0), revenue: Math.round(Number(r2.metricValues?.[1]?.value ?? 0)) }));
+      const devices = (dev.rows || []).map((r2) => {
+        const s2 = Number(r2.metricValues?.[0]?.value ?? 0), t2 = Number(r2.metricValues?.[1]?.value ?? 0);
+        return { name: r2.dimensionValues?.[0]?.value || '—', sessions: s2, cr: s2 ? Math.round((t2 / s2) * 10000) / 100 : 0 };
       });
-      const j = await r.json();
-      if (j.error) throw new Error(j.error.message);
-      const rowv = j.rows?.[0]?.metricValues ?? [];
-      const sessions = Number(rowv[0]?.value ?? 0), transactions = Number(rowv[1]?.value ?? 0), revenue = Number(rowv[2]?.value ?? 0);
-      res.status(200).json({ period: '30 днів', sessions, transactions, revenue,
+      res.status(200).json({ period: '30 днів', sessions, users, transactions, revenue: Math.round(revenue),
         cr: sessions ? Math.round((transactions / sessions) * 10000) / 100 : 0,
-        aov: transactions ? Math.round(revenue / transactions) : 0 });
+        aov: transactions ? Math.round(revenue / transactions) : 0,
+        channels, devices });
     } catch (e) {
       res.status(200).json({ error: String(e.message || e) });
     }

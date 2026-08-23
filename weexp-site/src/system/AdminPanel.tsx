@@ -1296,6 +1296,8 @@ function UserDetail({ row, leads, canDelete, selfEmail, onClose, openFile, onSta
 
           <Block title="Каталог доступів клієнта"><AccessCatalog userId={row.userId} initial={rec.accessLog || {}} /></Block>
 
+          <Block title="Аналітика клієнта (GA4) — конектор"><GaPreview userId={row.userId} /></Block>
+
           <Block title="Внутрішні нотатки команди"><NotesPanel userId={row.userId} initial={rec.notes || []} author={selfEmail} /></Block>
 
           <Block title="Модерація опитувальника"><ModerationPanel userId={row.userId} code={code} rec={rec} /></Block>
@@ -2673,6 +2675,85 @@ function ProjectEditor({ value, onChange, code, company }: { value: Project; onC
       <div className="pj-ed-pubrow">
         <label className="pj-ed-pub"><input type="checkbox" checked={!!p.published} onChange={(e) => upd({ published: e.target.checked })} /> Опубліковано (видно клієнту)</label>
       </div>
+    </div>
+  );
+}
+
+/** GA4-конектор клієнта: перевірка підключення і превʼю ключових даних (read-only). */
+function GaPreview({ userId }: { userId: string }) {
+  type GaStatus = { connected?: boolean; email?: string; properties?: { id: string; name: string; account: string }[]; at?: string; error?: string };
+  type GaPull = { period?: string; sessions?: number; users?: number; transactions?: number; revenue?: number; cr?: number; aov?: number;
+    channels?: { name: string; sessions: number; revenue: number }[]; devices?: { name: string; sessions: number; cr: number }[]; error?: string };
+  const [st, setSt] = useState<GaStatus | null>(null);
+  const [prop, setProp] = useState('');
+  const [data, setData] = useState<GaPull | null>(null);
+  const [busy, setBusy] = useState<'status' | 'pull' | ''>('');
+  const check = async () => {
+    setBusy('status'); setData(null);
+    try {
+      const j: GaStatus = await (await fetch(`/api/ga4?action=status&u=${encodeURIComponent(userId)}`)).json();
+      setSt(j);
+      if (j.connected && (j.properties || []).length && !prop) setProp(String((j.properties || [])[0].id));
+    } catch { setSt({ connected: false, error: 'network' }); }
+    setBusy('');
+  };
+  const pull = async () => {
+    if (!prop) return;
+    setBusy('pull');
+    try { setData(await (await fetch(`/api/ga4?action=pull&u=${encodeURIComponent(userId)}&property=${prop}`)).json()); }
+    catch { setData({ error: 'network' }); }
+    setBusy('');
+  };
+  const eurF = (n?: number) => `€${Math.round(n || 0).toLocaleString('uk-UA')}`;
+  return (
+    <div className="adm-ga">
+      <div className="adm-ga-bar">
+        <button className="mc-btn sm" onClick={check} disabled={busy === 'status'}>{busy === 'status' ? 'Перевіряємо…' : '🔍 Перевірити підключення'}</button>
+        {st && (st.connected
+          ? <span className="mono adm-ga-ok">✓ підключено · {st.email || '—'}{st.at ? ` · ${new Date(st.at).toLocaleDateString('uk-UA')}` : ''}</span>
+          : <span className="mono adm-ga-no">{st.error === 'not_configured' ? '⚙ конектор не налаштовано на сервері (env)' : '— не підключено (клієнт ще не пройшов OAuth у кабінеті)'}</span>)}
+      </div>
+      {st?.connected && (
+        <div className="adm-ga-bar">
+          <select className="ab-sel" value={prop} onChange={(e) => setProp(e.target.value)}>
+            {(st.properties || []).length === 0 && <option value="">властивостей не знайдено</option>}
+            {(st.properties || []).map((p) => <option key={p.id} value={p.id}>{p.name} · {p.account} · {p.id}</option>)}
+          </select>
+          <button className="sysx-cta is-primary" onClick={pull} disabled={!prop || busy === 'pull'}>{busy === 'pull' ? 'Тягнемо дані…' : 'Превʼю даних (30 дн) →'}</button>
+        </div>
+      )}
+      {data && (data.error
+        ? <p className="mono adm-ga-no">Помилка: {data.error}</p>
+        : (
+          <div className="adm-ga-data">
+            <div className="adm-ga-kpis">
+              <div><b>{(data.sessions || 0).toLocaleString('uk-UA')}</b><span>сесій</span></div>
+              <div><b>{(data.users || 0).toLocaleString('uk-UA')}</b><span>користувачів</span></div>
+              <div><b>{(data.transactions || 0).toLocaleString('uk-UA')}</b><span>замовлень</span></div>
+              <div><b>{eurF(data.revenue)}</b><span>виручка</span></div>
+              <div><b>{data.cr ?? 0}%</b><span>CR</span></div>
+              <div><b>{eurF(data.aov)}</b><span>чек</span></div>
+            </div>
+            {(data.channels || []).length > 0 && (
+              <div className="adm-ga-tbl">
+                <span className="mono adm-ga-h">Канали · сесії / виручка</span>
+                {(data.channels || []).map((c) => (
+                  <div key={c.name} className="adm-ga-row"><span>{c.name}</span><b className="mono">{c.sessions.toLocaleString('uk-UA')}</b><i className="mono">{eurF(c.revenue)}</i></div>
+                ))}
+              </div>
+            )}
+            {(data.devices || []).length > 0 && (
+              <div className="adm-ga-tbl">
+                <span className="mono adm-ga-h">Пристрої · сесії / CR</span>
+                {(data.devices || []).map((d) => (
+                  <div key={d.name} className="adm-ga-row"><span>{d.name}</span><b className="mono">{d.sessions.toLocaleString('uk-UA')}</b><i className="mono">{d.cr}%</i></div>
+                ))}
+              </div>
+            )}
+            <p className="mono adm-ga-note">Період: {data.period} · read-only, живі дані з GA4 клієнта — для звірки анкети й baseline аудиту.</p>
+          </div>
+        ))}
+      {!st && <p className="mono adm-empty">Натисніть «Перевірити підключення», щоб побачити стан конектора і превʼю даних.</p>}
     </div>
   );
 }
