@@ -101,7 +101,7 @@ export type DiagRecord = {
   adminFiles?: AdminFile[];                   // власні файли аудитора (дані/дельіверабли), внутрішнє
   findingReviews?: Record<string, FindingReview>; // рецензії findings рушія (ключ = findingId) — цикл навчання
   auditDoc?: AuditDoc;                         // редагований документ аудиту (адмін коригує/версіонує/експортує)
-  packChecklist?: Record<string, PackState>;   // готовність 19 артефактів пакета (ключ = auditPack id)
+  packChecklist?: Record<string, PackState>;   // готовність глав пакета (5 звітів; ключ = auditPack chapter id)
   deepModeration?: DeepModeration;             // модерація опитувальника глибокого аудиту
   sharedDocs?: SharedDoc[];                    // фінальні документи, якими адмін поділився з клієнтом
   updatedAt?: string;

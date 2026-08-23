@@ -15,7 +15,7 @@ import { useCabTheme, ThemeToggle } from '@/lib/cabTheme';
 import { AuditBuilder } from './AuditBuilder';
 import { loadTemplate, uid, Q_TYPES, type AuditTemplate, type Question, type Block } from './auditTemplate';
 import { ACCESS_CATALOG, ACCESS_METHOD_LABEL } from '@/data/accessCatalog';
-import { PACK_ARTIFACTS, PACK_PHASES, packByPhase } from '@/data/auditPack';
+import { PACK_ARTIFACTS, PACK_REPORTS, chaptersOf, TOTAL_CHAPTERS } from '@/data/auditPack';
 import './system.css';
 import './cabinet.css';
 
@@ -1179,7 +1179,7 @@ function UserDetail({ row, leads, canDelete, selfEmail, onClose, openFile, onSta
 
           <Block title="Модерація опитувальника"><ModerationPanel userId={row.userId} code={code} rec={rec} /></Block>
 
-          <Block title="Пакет аудиту — 19 артефактів"><PackChecklist userId={row.userId} email={row.email} rec={rec} /></Block>
+          <Block title="Пакет аудиту — 5 звітів"><PackChecklist userId={row.userId} email={row.email} rec={rec} /></Block>
 
           <Block title="Документ аудиту (редагований)"><AuditDocEditor userId={row.userId} email={row.email} rec={rec} /></Block>
 
@@ -1732,7 +1732,7 @@ function ModerationPanel({ userId, code, rec }: { userId: string; code?: string;
   );
 }
 
-/* ── Пакет аудиту: чеклист 19 артефактів + автогенерація адмінських документів ── */
+/* ── Пакет аудиту: чеклист глав 5 звітів + автогенерація адмінських документів ── */
 
 /** Спільний друкований шаблон WEEXP (як досьє): відкриває вікно → друк у PDF. */
 function openPrintDoc(title: string, email: string, bodyHtml: string) {
@@ -1850,7 +1850,7 @@ function genDoD(rec: DiagRecord, email: string, modTitle: (k: string) => string)
      <table><tr><th>Модуль</th><th>Зараз</th><th>Ціль</th><th>Критерій готовності / ефект</th></tr>${body}</table>`);
 }
 
-/** a19 — Протокол передачі: стан 19 артефактів + умови супроводу. */
+/** a19 — Протокол передачі: стан глав пакета + умови супроводу. */
 function genHandover(rec: DiagRecord, email: string, checklist: Record<string, PackState>) {
   const rows = PACK_ARTIFACTS.map((a, i) => {
     const st = checklist[a.id]?.st;
@@ -1860,8 +1860,8 @@ function genHandover(rec: DiagRecord, email: string, checklist: Record<string, P
   const delivered = PACK_ARTIFACTS.filter((a) => checklist[a.id]?.st === 'delivered').length;
   const call = new Date(Date.now() + 30 * 864e5).toLocaleDateString('uk-UA');
   openPrintDoc('Протокол передачі пакета аудиту', email,
-    `<p>Передано артефактів: <b>${delivered}/19</b>. До пакета входять 4 години консультацій із розбором документів і контрольний дзвінок <b>${call}</b> (через 30 днів) — перевіряємо, що впровадження пішло.</p>
-     <table><tr><th>№</th><th>Артефакт</th><th>Стан</th></tr>${rows}</table>
+    `<p>Передано глав пакета: <b>${delivered}/${PACK_ARTIFACTS.length}</b> (5 звітів). До пакета входять 4 години консультацій із розбором документів і контрольний дзвінок <b>${call}</b> (через 30 днів) — перевіряємо, що впровадження пішло.</p>
+     <table><tr><th>№</th><th>Глава</th><th>Стан</th></tr>${rows}</table>
      <h2>Умови зарахування</h2><p>100% вартості аудиту зараховується в перший місяць формату 03 (50% — у формат 02), якщо старт упродовж 30 днів.</p>`);
 }
 
@@ -1890,12 +1890,12 @@ function PackChecklist({ userId, email, rec }: { userId: string; email: string; 
   let n = 0;
   return (
     <div className="adm-pack">
-      <div className="adm-pack-sum mono"><span>Готово/передано: <b>{done}/19</b> · передано: <b>{delivered}</b></span>
+      <div className="adm-pack-sum mono"><span>Готово/передано: <b>{done}/{TOTAL_CHAPTERS}</b> · передано: <b>{delivered}</b> · 5 звітів</span>
         <span className="adm-acc-hint">Клік по статусу: — → готово → передано. «Рушій» — файл з pack.zip воркера.</span></div>
-      {PACK_PHASES.map((ph) => (
-        <div key={ph.key} className="adm-pack-ph">
-          <span className="adm-acc-cat-h mono">{ph.uk}</span>
-          {packByPhase(ph.key).map((a) => {
+      {PACK_REPORTS.map((rp, ri) => (
+        <div key={rp.id} className="adm-pack-ph">
+          <span className="adm-acc-cat-h mono">Звіт {ri + 1} · {rp.uk}</span>
+          {chaptersOf(rp.id).map((a) => {
             n += 1;
             const st = map[a.id]?.st;
             return (

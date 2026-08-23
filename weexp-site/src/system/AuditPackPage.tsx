@@ -1,49 +1,45 @@
 import { Link } from 'react-router-dom';
 import { useT, useLp } from '@/i18n';
-import { PACK_PHASES, packByPhase, AUDIT_BLOCKS, TOTAL_CHECKS, PACK_SHORT } from '@/data/auditPack';
+import { PACK_REPORTS, chaptersOf, AUDIT_BLOCKS, TOTAL_CHECKS } from '@/data/auditPack';
 import './system.css';
 
 /**
- * /audit-pack — публічний склад пакета глибокого аудиту: ті самі «19 артефактів»
- * з формату 01 на /pricing, розгорнуті поіменно. Прозорість продажу: клієнт до
- * оплати бачить, що саме отримає. Джерело переліку — src/data/auditPack.ts
- * (той самий, що й чеклист готовності в адмінці).
+ * /audit-pack — публічний склад пакета глибокого аудиту: 5 ємких звітів
+ * (обіцянка формату 01 на /pricing), кожен зі змістом і конечною цінністю.
+ * 12 спеціалізованих аудитів — глави Звіту 2. Джерело — src/data/auditPack.ts
+ * (той самий канон, що й чеклист готовності в адмінці).
  */
 export function AuditPackPage() {
   const t = useT();
   const lp = useLp();
-  let n = 0;
   return (
     <section className="sysx apack" aria-label={t('Склад пакета аудиту', 'Audit pack contents')}>
       <div className="sysx-field" aria-hidden="true" />
       <div className="apack-in">
         <header className="apack-head">
           <span className="sysx-kick">{t('Формат 01 · Аудит · що всередині', 'Format 01 · Audit · what is inside')}</span>
-          <h1 className="sysx-display apack-h1">{t('Пакет аудиту — ', 'The audit pack — ')}<span className="sysx-em">{t('19 артефактів', '19 artifacts')}</span></h1>
-          <p className="sysx-lead">{t('Жодних «звітів у повітрі»: до старту ви бачите повний перелік. 19 повноцінних документів — від Презентації, Матриці зрілості, Роадмапи, Плану 90 днів і Цільової моделі до детальних звітів 12 аудитів та доказової бази. Кожен — робочий інструмент, не додаток.', 'No “reports in the air”: before we start you see the full list. 19 full documents — from the Presentation, Maturity matrix, Roadmap, 90-day plan and Target model to the detailed reports of the 12 audits and the evidence base. Each one is a working tool, not an appendix.')}</p>
+          <h1 className="sysx-display apack-h1">{t('Пакет аудиту — ', 'The audit pack — ')}<span className="sysx-em">{t('5 звітів', '5 reports')}</span></h1>
+          <p className="sysx-lead">{t('Жодних «звітів у повітрі»: до старту ви бачите повний зміст. Пʼять самодостатніх звітів — Презентація, Діагностичний том із 12 аудитами, Фінансовий звіт із мостом P&L, Роадмапа впровадження, Пропозиція та передача. Кожен зі змістом, конечною цінністю і логічним завершенням.', 'No “reports in the air”: before we start you see the full contents. Five self-contained reports — the Presentation, the Diagnostic volume with the 12 audits, the Financial report with the P&L bridge, the Implementation roadmap, the Proposal & handover. Each with a table of contents, terminal value and logical closure.')}</p>
         </header>
 
-        {PACK_PHASES.map((ph) => (
-          <div key={ph.key} className="apack-phase">
-            <h2 className="apack-ph-t mono">{t(ph.uk, ph.en)}</h2>
+        {PACK_REPORTS.map((r, ri) => (
+          <div key={r.id} className="apack-phase">
+            <h2 className="apack-ph-t mono">{t('Звіт', 'Report')} {ri + 1} · {t(r.uk, r.en)}</h2>
+            <p className="apack-d apack-method-lead">{t(r.descUk, r.descEn)} <b>{t(r.valueUk, r.valueEn)}</b></p>
             <div className="apack-grid">
-              {packByPhase(ph.key).map((a) => {
-                n += 1;
-                return (
-                  <article key={a.id} className="apack-card">
-                    <span className="apack-num mono">{String(n).padStart(2, '0')}</span>
-                    <b className="apack-t">{t(a.uk, a.en)}</b>
-                    <p className="apack-d">{t(a.descUk, a.descEn)}</p>
-                  </article>
-                );
-              })}
+              {chaptersOf(r.id).map((c, ci) => (
+                <article key={c.id} className="apack-card">
+                  <span className="apack-num mono">{ri + 1}.{String(ci + 1).padStart(2, '0')}</span>
+                  <b className="apack-t">{t(c.uk, c.en)}</b>
+                </article>
+              ))}
             </div>
           </div>
         ))}
 
         <div className="apack-method">
-          <h2 className="apack-ph-t mono">{t(`Методологія: E-commerce 360° · 12 блоків · ${TOTAL_CHECKS}+ перевірок`, `Methodology: E-commerce 360° · 12 blocks · ${TOTAL_CHECKS}+ checks`)}</h2>
-          <p className="apack-d apack-method-lead">{t('Це не «аудит сайту». Кожен документ пакета спирається на діагностику всього бізнесу за 12 блоками — від економіки до команди. Business → Market → Product → Customer → Website → SEO/GEO → Marketing → CRM → Analytics → Operations → Technology → Organization.', 'This is not a “website audit”. Every document rests on a diagnosis of the whole business across 12 blocks — from economics to the team.')}</p>
+          <h2 className="apack-ph-t mono">{t(`Методологія: E-commerce 360° · 12 аудитів · ${TOTAL_CHECKS}+ перевірок`, `Methodology: E-commerce 360° · 12 audits · ${TOTAL_CHECKS}+ checks`)}</h2>
+          <p className="apack-d apack-method-lead">{t('Це не «аудит сайту». Ядро пакета — Звіт 2: діагностика всього бізнесу за 12 аудитами, кожен зі спільним каркасом: вердикт → методика → факти проти бенчмарків → знахідки з доказами → рекомендації з власником → звʼязки → що міряти через 90 днів.', 'This is not a “website audit”. The core of the pack is Report 2: a diagnosis of the whole business across 12 audits, each on a shared skeleton: verdict → method → facts vs benchmarks → evidenced findings → owned recommendations → links → what to measure in 90 days.')}</p>
           <div className="apack-blocks">
             {AUDIT_BLOCKS.map((b, i) => (
               <div key={b.key} className="apack-block">
@@ -51,7 +47,7 @@ export function AuditPackPage() {
                 <b className="apack-bt">{t(b.uk, b.en)}</b>
                 <p className="apack-bd">{t(b.taskUk, b.taskEn)}</p>
                 <span className="apack-bn mono">{b.checks} {t('перевірок', 'checks')}</span>
-                <p className="apack-bdocs mono">→ {b.docs.map((d) => PACK_SHORT[d]).filter(Boolean).join(' · ')}</p>
+                <p className="apack-bdocs mono">→ {t('Звіт 2, глава', 'Report 2, chapter')} 2.{String(i + 5).padStart(2, '0')}</p>
               </div>
             ))}
           </div>

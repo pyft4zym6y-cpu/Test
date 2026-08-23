@@ -38,7 +38,7 @@ export function Pricing() {
         t('E-commerce 360°: 12 блоків діагностики · 150+ спеціалізованих перевірок', 'E-commerce 360°: 12 diagnostic blocks · 150+ specialized checks'),
         t('Health Score і зрілість по 18 доменах', 'Health Score and maturity across 18 domains'),
         t('Розрив у грошах: 8 важелів, baseline, прогноз на 12 місяців', 'The gap in money: 8 levers, baseline, 12-month forecast'),
-        t('Повний пакет документів аудиту — 19 артефактів (перелік відкритий)', 'Full audit document pack — 19 artifacts (open list)'),
+        t('Повний пакет: 5 ємких звітів, усередині — 12 аудитів (зміст відкритий)', 'The full pack: 5 dense reports with the 12 audits inside (contents open)'),
         t('Роадмапа хвилями: пріоритети, бюджет, строки, команда', 'Roadmap in waves: priorities, budget, timelines, team'),
       ],
       format: t('Передача документів + 4 години консультацій із розбором + контрольний дзвінок через 30 днів: перевіряємо, що впровадження пішло.', 'Document handover + 4 hours of consulting with a walkthrough + a check-in call after 30 days: we confirm implementation is underway.'),
@@ -168,7 +168,7 @@ export function Pricing() {
 
               <p className="pric-resp">{m.resp}</p>
               <Link to={`${lp('/contact')}?format=${Number(m.n)}`} className={'sysx-cta pric-cta' + (m.featured ? ' is-primary' : '')}>{t('Обговорити формат', 'Discuss format')} {m.n} →</Link>
-              {m.n === '01' && <Link to={lp('/audit-pack')} className="pric-pack-link mono">{t('Що всередині: 19 артефактів →', 'What is inside: 19 artifacts →')}</Link>}
+              {m.n === '01' && <Link to={lp('/audit-pack')} className="pric-pack-link mono">{t('Що всередині: 5 звітів →', 'What is inside: 5 reports →')}</Link>}
             </article>
           ))}
         </div>
