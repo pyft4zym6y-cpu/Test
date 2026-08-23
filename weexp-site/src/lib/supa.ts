@@ -95,8 +95,20 @@ export type DiagRecord = {
   projects?: Project[];             // розділ «Мій проект»: кілька проектів на клієнта (веде менеджер)
   pmDir?: PmDirectory;              // проект-офіс: довідник команди та ставок (лише в записі менеджера)
   assessment?: Record<string, ModuleScore>; // C-level оцінка модулів аудиту (адмін-шар, ключ = block.key)
+  accessLog?: Record<string, AccessState>;   // каталог доступів клієнта (ключ = AC-id)
+  notes?: ProjectNote[];                      // внутрішні нотатки/коментарі аудитора
   updatedAt?: string;
 };
+
+/** Стан одного доступу (каталог доступів у картці клієнта). */
+export type AccessState = {
+  status?: 'requested' | 'granted' | 'verified' | 'na';
+  method?: 'view' | 'oauth' | 'upload';
+  note?: string;
+  at?: string;
+};
+/** Внутрішня нотатка/коментар аудитора до проєкту (або до модуля). */
+export type ProjectNote = { id: string; at: string; author?: string; module?: string; text: string };
 
 /** C-level оцінка одного модуля аудиту (адмінський шар: Current State → … → Owner). */
 export type ModuleScore = {
@@ -567,6 +579,24 @@ export async function saveAssessmentFor(userId: string, assessment: Record<strin
     const { data } = await supabase.from('diagnostics').select('data').eq('user_id', userId).maybeSingle();
     const rec = (data?.data as DiagRecord) || {};
     const merged: DiagRecord = { ...rec, assessment, updatedAt: stamp };
+    const { data: upd, error } = await supabase.from('diagnostics').update({ data: merged }).eq('user_id', userId).select('user_id');
+    if (error) return { ok: false, error: error.message };
+    if (!upd || upd.length === 0) return { ok: false, error: 'Оновлення не застосовано — перевірте UPDATE-політику адміна на diagnostics (RLS).' };
+    return { ok: true };
+  } catch (e) { return { ok: false, error: String(e) }; }
+}
+
+/** Оновити один розділ record клієнта (адмінський шар: accessLog / notes / …). */
+export async function savePatchFor(userId: string, patch: Partial<DiagRecord>): Promise<{ ok: boolean; error?: string }> {
+  const stamp = new Date().toISOString();
+  if (!CONFIGURED || userId.startsWith('local:') || userId.startsWith('demo:')) {
+    try { const k = LS_DATA(userId); const prev = JSON.parse(localStorage.getItem(k) || '{}'); localStorage.setItem(k, JSON.stringify({ ...prev, ...patch })); } catch { /* ignore */ }
+    return { ok: true };
+  }
+  try {
+    const { data } = await supabase.from('diagnostics').select('data').eq('user_id', userId).maybeSingle();
+    const rec = (data?.data as DiagRecord) || {};
+    const merged: DiagRecord = { ...rec, ...patch, updatedAt: stamp };
     const { data: upd, error } = await supabase.from('diagnostics').update({ data: merged }).eq('user_id', userId).select('user_id');
     if (error) return { ok: false, error: error.message };
     if (!upd || upd.length === 0) return { ok: false, error: 'Оновлення не застосовано — перевірте UPDATE-політику адміна на diagnostics (RLS).' };

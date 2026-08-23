@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, deleteLead, deleteDiagnostics, signTierFile, CONFIGURED,
   findAuditIdByCode, loadAuditAnswers, loadAuditExtra, saveAuditExtra,
-  saveProjectsFor, saveAssessmentFor, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject, aiScoreAudit, type ModuleScore, type DiagRecord,
+  saveProjectsFor, saveAssessmentFor, savePatchFor, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject, aiScoreAudit, type ModuleScore, type DiagRecord, type AccessState, type ProjectNote,
   MANAGER_EMAILS, TEAM_ROLES, ROLE_LABEL, roleOf, can, teamApi, type Role, type TeamMember, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
   type Project, type ProjTask, type ProjMember, type ProjPayment, type ProjMonth, type ProjTariffItem,
   type PmDirectory, type PmSpecialist, type PmRoleRate,
@@ -13,6 +13,7 @@ import { toast } from '@/lib/toast';
 import { useCabTheme, ThemeToggle } from '@/lib/cabTheme';
 import { AuditBuilder } from './AuditBuilder';
 import { loadTemplate, uid, Q_TYPES, type AuditTemplate, type Question, type Block } from './auditTemplate';
+import { ACCESS_CATALOG, AUDIT_EMAIL, DATA_EMAIL, ACCESS_METHOD_LABEL, type AccessMethod } from '@/data/accessCatalog';
 import './system.css';
 import './cabinet.css';
 
@@ -669,7 +670,7 @@ export function AdminPanel() {
       </main>
 
       {/* Панель деталей користувача */}
-      {detail && <UserDetail row={detail} leads={leads} canDelete={can(user, 'delete_data')} onClose={() => setOpenUser(null)} openFile={openFile} onStatus={setStatus} onDelete={removeUser} busy={busy} />}
+      {detail && <UserDetail row={detail} leads={leads} canDelete={can(user, 'delete_data')} selfEmail={user.email} onClose={() => setOpenUser(null)} openFile={openFile} onStatus={setStatus} onDelete={removeUser} busy={busy} />}
       {/* Панель деталей заявки */}
       {openLead && leads && <LeadDetail lead={leads.find((l) => l.id === openLead)} allRows={rows || []} onClose={() => setOpenLead(null)} onStatus={moveLead} onDelete={removeLead} busy={busy} onOpenClient={(uid) => { setOpenLead(null); setTab('users'); setOpenUser(uid); }} />}
 
@@ -965,7 +966,7 @@ ${asmKeys.length ? `<h2>C-level оцінка модулів${asmAvg != null ? ` 
   w.document.open(); w.document.write(html); w.document.close();
 }
 
-function UserDetail({ row, leads, canDelete, onClose, openFile, onStatus, onDelete, busy }: { row: AdminRow; leads: LeadRow[] | null; canDelete: boolean; onClose: () => void; openFile: (p: string) => void; onStatus: (userId: string, tier: string, status: TierStatus) => void; onDelete: (userId: string, email: string) => void; busy: string }) {
+function UserDetail({ row, leads, canDelete, selfEmail, onClose, openFile, onStatus, onDelete, busy }: { row: AdminRow; leads: LeadRow[] | null; canDelete: boolean; selfEmail: string; onClose: () => void; openFile: (p: string) => void; onStatus: (userId: string, tier: string, status: TierStatus) => void; onDelete: (userId: string, email: string) => void; busy: string }) {
   const rec = row.record || {};
   const company = rec.company;
   const money = rec.stage1Money;
@@ -1088,6 +1089,10 @@ function UserDetail({ row, leads, canDelete, onClose, openFile, onStatus, onDele
 
           <Block title="Оцінка модулів (C-level) — внутрішнє"><ModuleScoring userId={row.userId} initial={rec.assessment || {}} code={code} rec={rec} /></Block>
 
+          <Block title="Каталог доступів клієнта"><AccessCatalog userId={row.userId} initial={rec.accessLog || {}} /></Block>
+
+          <Block title="Внутрішні нотатки команди"><NotesPanel userId={row.userId} initial={rec.notes || []} author={selfEmail} /></Block>
+
           <Block title="Запити доступів">{tiers.length ? (
             <div className="adm-drawer-tiers">
               {tiers.map(([tid, s]) => {
@@ -1201,6 +1206,94 @@ function gMonthLabel(startMonth: string | undefined, i: number): string {
 }
 
 /** Проект-офіс: глобальний довідник команди та ставок (переиспользується в проектах). */
+const ACCESS_STATUS: { v: NonNullable<AccessState['status']>; l: string; cls: string }[] = [
+  { v: 'requested', l: 'Запрошено', cls: 'wait' }, { v: 'granted', l: 'Надано', cls: 'ok' },
+  { v: 'verified', l: 'Перевірено', cls: 'ok' }, { v: 'na', l: 'Не потрібно', cls: 'none' },
+];
+/** Каталог доступів клієнта: 3 способи (перегляд-пошта / OAuth / вивантаження), статус, інструкція, нотатка. */
+function AccessCatalog({ userId, initial }: { userId: string; initial: Record<string, AccessState> }) {
+  const [map, setMap] = useState<Record<string, AccessState>>(initial || {});
+  const [openHow, setOpenHow] = useState<string | null>(null);
+  const [state, setState] = useState<SaveState>('idle');
+  const latest = useRef(map); latest.current = map;
+  const dirty = useRef(false); const first = useRef(true);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => {
+    if (first.current) { first.current = false; return; }
+    dirty.current = true; setState('dirty');
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(async () => { setState('saving'); const r = await savePatchFor(userId, { accessLog: latest.current }); setState(r.ok ? 'saved' : 'error'); dirty.current = !r.ok; }, 1000);
+    return () => { if (timer.current) clearTimeout(timer.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map]);
+  useEffect(() => () => { if (dirty.current) void savePatchFor(userId, { accessLog: latest.current }); }, [userId]);
+  const set = (id: string, patch: Partial<AccessState>) => setMap((m) => ({ ...m, [id]: { ...m[id], ...patch, at: new Date().toISOString() } }));
+  const cats = [...new Set(ACCESS_CATALOG.map((a) => a.category))];
+  const granted = ACCESS_CATALOG.filter((a) => ['granted', 'verified'].includes(map[a.id]?.status || '')).length;
+
+  return (
+    <div className="adm-acc">
+      <div className="adm-acc-banner mono">
+        Для перегляду додайте <b>{AUDIT_EMAIL}</b> як Viewer/Analyst (дані — {DATA_EMAIL}). Або підключіть OAuth-конектор (авто), або клієнт вивантажує файл. Способи доповнюють один одного.
+      </div>
+      <div className="adm-score-sum mono"><span>Надано: <b>{granted}/{ACCESS_CATALOG.length}</b></span>{state !== 'idle' && <span className={`pj-save-state pj-save-${state}`}>{state === 'saving' ? '💾' : state === 'saved' ? '✓' : state === 'dirty' ? '●' : '✕'}</span>}</div>
+      {cats.map((cat) => (
+        <div key={cat} className="adm-acc-cat">
+          <span className="adm-acc-cat-h mono">{cat}</span>
+          {ACCESS_CATALOG.filter((a) => a.category === cat).map((a) => {
+            const s = map[a.id] || {};
+            return (
+              <div key={a.id} className="adm-acc-row">
+                <div className="adm-acc-main">
+                  <b>{a.system}</b>
+                  <span className="adm-acc-why mono">{a.why}</span>
+                  <div className="adm-acc-methods">{a.methods.map((mth: AccessMethod) => (
+                    <button key={mth} className={`adm-acc-m${s.method === mth ? ' on' : ''}`} onClick={() => set(a.id, { method: mth })} title="Обраний спосіб надання">{ACCESS_METHOD_LABEL[mth]}</button>
+                  ))}</div>
+                  {a.viewHow && <button className="adm-acc-how mono" onClick={() => setOpenHow(openHow === a.id ? null : a.id)}>{openHow === a.id ? '▾ як надати' : '▸ як надати'}</button>}
+                  {openHow === a.id && a.viewHow && <p className="adm-acc-how-t mono">{a.viewHow}</p>}
+                </div>
+                <select className="ab-sel sm" value={s.status || ''} onChange={(e) => set(a.id, { status: (e.target.value || undefined) as AccessState['status'] })}>
+                  <option value="">— статус —</option>
+                  {ACCESS_STATUS.map((st) => <option key={st.v} value={st.v}>{st.l}</option>)}
+                </select>
+                <input className="ab-inp sm" value={s.note || ''} onChange={(e) => set(a.id, { note: e.target.value })} placeholder="лог/акаунт/нотатка" />
+              </div>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Внутрішні нотатки й коментарі аудитора до проєкту (командна робота). */
+function NotesPanel({ userId, initial, author }: { userId: string; initial: ProjectNote[]; author: string }) {
+  const [list, setList] = useState<ProjectNote[]>(initial || []);
+  const [text, setText] = useState('');
+  const [busy, setBusy] = useState(false);
+  const persist = async (next: ProjectNote[]) => { setBusy(true); await savePatchFor(userId, { notes: next }); setBusy(false); };
+  const add = () => { if (!text.trim()) return; const next = [{ id: uid('n'), at: new Date().toISOString(), author, text: text.trim() }, ...list]; setList(next); setText(''); void persist(next); };
+  const del = (id: string) => { const next = list.filter((n) => n.id !== id); setList(next); void persist(next); };
+  return (
+    <div className="adm-notes">
+      <div className="adm-notes-add">
+        <textarea className="ab-inp" rows={2} value={text} onChange={(e) => setText(e.target.value)} placeholder="Внутрішня нотатка / коментар (бачить лише команда)…" />
+        <button className="mc-btn ok" disabled={busy || !text.trim()} onClick={add}>Додати</button>
+      </div>
+      {list.length === 0 ? <p className="mono adm-empty">нотаток ще немає</p> : (
+        <ul className="adm-notes-list">{list.map((n) => (
+          <li key={n.id} className="adm-note">
+            <div className="adm-note-h mono"><b>{n.author || 'команда'}</b> · {rel(n.at)}{n.module ? ` · ${n.module}` : ''}</div>
+            <p className="adm-note-t">{n.text}</p>
+            <button className="adm-note-x mono" onClick={() => del(n.id)} title="Видалити">✕</button>
+          </li>
+        ))}</ul>
+      )}
+    </div>
+  );
+}
+
 /** Адмінський шар: C-level оцінка кожного модуля аудиту клієнта. Автозбереження. */
 function ModuleScoring({ userId, initial, code, rec }: { userId: string; initial: Record<string, ModuleScore>; code?: string; rec: DiagRecord }) {
   const [mods, setMods] = useState<Block[] | null>(null);
