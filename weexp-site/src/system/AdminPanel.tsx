@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, deleteLead, deleteDiagnostics, signTierFile, CONFIGURED,
   findAuditIdByCode, loadAuditAnswers, loadAuditExtra, saveAuditExtra,
-  saveProjectsFor, saveAssessmentFor, savePatchFor, runWorkerAudit, uploadAdminFile, deleteAdminFile, maturityToAssessment, sendFindingReviews, loadLearningSnapshot, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject, aiScoreAudit, type ModuleScore, type DiagRecord, type AccessState, type ProjectNote, type AuditJobRef, type AdminFile, type WorkerMaturity, type ReviewableFinding, type FindingReview, type LearningSnapshot,
+  saveProjectsFor, saveAssessmentFor, savePatchFor, runWorkerAudit, uploadAdminFile, deleteAdminFile, maturityToAssessment, sendFindingReviews, loadLearningSnapshot, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject, aiScoreAudit, type ModuleScore, type DiagRecord, type AccessState, type ProjectNote, type AuditJobRef, type AdminFile, type WorkerMaturity, type ReviewableFinding, type FindingReview, type LearningSnapshot, type AuditDoc, type AuditDocSection, type AuditDocVersion,
   MANAGER_EMAILS, TEAM_ROLES, ROLE_LABEL, roleOf, can, teamApi, MATURITY_DOMAIN_MODULE, type Role, type TeamMember, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
   type Project, type ProjTask, type ProjMember, type ProjPayment, type ProjMonth, type ProjTariffItem,
   type PmDirectory, type PmSpecialist, type PmRoleRate,
@@ -1105,6 +1105,8 @@ function UserDetail({ row, leads, canDelete, selfEmail, onClose, openFile, onSta
 
           <Block title="Внутрішні нотатки команди"><NotesPanel userId={row.userId} initial={rec.notes || []} author={selfEmail} /></Block>
 
+          <Block title="Документ аудиту (редагований)"><AuditDocEditor userId={row.userId} email={row.email} rec={rec} /></Block>
+
           <Block title="Мої файли (внутрішні)"><AdminFiles userId={row.userId} initial={rec.adminFiles || []} author={selfEmail} openFile={openFile} /></Block>
 
           <Block title="Запити доступів">{tiers.length ? (
@@ -1481,6 +1483,119 @@ function FindingsReview({ auditId, findings, userId, reviewer, initial }: { audi
         })}
       </ul>
       <p className="mono adm-hint">Вердикти калібрують рушій: підтверджені/хибні/скориговані знахідки лягають у append-only леджер навчання (ECE, патерни, golden-кандидати). Дані клієнта не передаються — лише id/домен/тема/впевненість.</p>
+    </div>
+  );
+}
+
+/** Зібрати чернетку розділів документа з наявних даних картки. */
+function seedAuditSections(rec: DiagRecord, modTitle: (k: string) => string): AuditDocSection[] {
+  const secs: AuditDocSection[] = [];
+  const jobSum = (rec.auditJobs || []).find((j) => j.summary)?.summary;
+  const ex = rec.express;
+  const resume = jobSum || (ex ? `Business Health ${ex.overallHealth}/100. Ключова проблема: ${sysLabel(ex.primary as SysKey, 'uk')}. Оцінений витік ≈ ${eur(ex.total)}/рік.` : '');
+  secs.push({ id: uid(), heading: 'Резюме', body: resume || 'Короткий підсумок аудиту…' });
+  const asm = rec.assessment || {};
+  const keys = Object.keys(asm).filter((k) => { const s = asm[k]; return s && (s.score != null || s.gap || s.rec || s.state); });
+  if (keys.length) {
+    const body = keys.map((k) => { const s = asm[k]; return `• ${modTitle(k)} — ${s.score != null ? `${s.score}/100` : '—'}${s.priority ? ` [${s.priority}]` : ''}\n  ${s.gap || s.state || ''}${s.rec ? `\n  → ${s.rec}` : ''}`; }).join('\n\n');
+    secs.push({ id: uid(), heading: 'Оцінка модулів (C-level)', body });
+    const recs = keys.filter((k) => asm[k].rec).map((k) => `• ${modTitle(k)}: ${asm[k].rec}${asm[k].expected ? ` (ефект: ${asm[k].expected})` : ''}`);
+    if (recs.length) secs.push({ id: uid(), heading: 'Рекомендації', body: recs.join('\n') });
+  }
+  const notes = rec.notes || [];
+  if (notes.length) secs.push({ id: uid(), heading: 'Нотатки команди', body: notes.map((n) => `• ${n.text}`).join('\n') });
+  secs.push({ id: uid(), heading: 'Дорожня карта', body: 'Етап 1 — …\nЕтап 2 — …\nЕтап 3 — …' });
+  return secs;
+}
+
+/** Експорт документа аудиту у друкований HTML (→ PDF), у брендованому шаблоні WEEXP. */
+function exportAuditDocPdf(doc: AuditDoc, email: string) {
+  const w = window.open('', '_blank');
+  if (!w) { toast('Дозвольте спливаючі вікна, щоб відкрити документ', 'err'); return; }
+  const esc = (s: unknown) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const now = new Date().toLocaleString('uk-UA');
+  const body = doc.sections.map((s) => `<h2>${esc(s.heading)}</h2><div class="body">${esc(s.body).replace(/\n/g, '<br>')}</div>`).join('');
+  const html = `<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>${esc(doc.title)} — ${esc(email)}</title><style>
+@page{margin:16mm}*{box-sizing:border-box}body{font-family:"IBM Plex Sans","Segoe UI",system-ui,Arial,sans-serif;color:#141210;margin:0;font-size:13px;line-height:1.55}
+.bar{height:8px;background:#F5301C}.wrap{padding:26px 30px;max-width:900px}
+.top{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #141210;padding-bottom:12px;margin-bottom:18px}
+.logo{font-weight:800;font-size:22px}.logo span{color:#F5301C}.meta{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#6B675E;text-align:right}
+h1{font-size:20px;margin:2px 0 2px}.sub{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B675E}
+h2{font-size:14px;letter-spacing:.04em;color:#F5301C;margin:22px 0 8px;border-bottom:1px solid #E3D9C0;padding-bottom:4px}
+.body{white-space:normal}.foot{margin-top:26px;padding-top:12px;border-top:1px solid #E3D9C0;color:#9a9488;font-size:10.5px}
+@media print{.noprint{display:none}}
+</style></head><body><div class="bar"></div><div class="wrap">
+<div class="top"><div><div class="logo">WEEXP<span>.</span></div><div class="sub">Документ аудиту · конфіденційно</div></div>
+<div class="meta">${esc(email)}<br>сформовано ${esc(now)}</div></div>
+<h1>${esc(doc.title)}</h1>
+<button class="noprint" onclick="window.print()" style="margin:14px 0;background:#F5301C;color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer">🖨 Друк / зберегти в PDF</button>
+${body}
+<div class="foot">WEEXP — Commerce OS · weexp.agency · hello@weexp.agency · Документ містить конфіденційні дані клієнта. Не для розповсюдження.</div>
+</div></body></html>`;
+  w.document.open(); w.document.write(html); w.document.close();
+}
+
+/** Редактор документа аудиту: коригуємо те, що зібрав рушій; версіонуємо; експорт у PDF. */
+function AuditDocEditor({ userId, email, rec }: { userId: string; email: string; rec: DiagRecord }) {
+  const [doc, setDoc] = useState<AuditDoc>(rec.auditDoc || { title: 'Документ аудиту', sections: [] });
+  const [state, setState] = useState<SaveState>('idle');
+  const [modMap, setModMap] = useState<Record<string, string>>({});
+  const dirty = useRef(false); const latest = useRef(doc); const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => { let on = true; loadTemplate().then((t) => { if (on && t) setModMap(Object.fromEntries(t.blocks.map((b) => [b.key, b.title]))); }).catch(() => {}); return () => { on = false; }; }, []);
+  const modTitle = (k: string) => modMap[k] || k;
+  const push = (next: AuditDoc) => {
+    next.updatedAt = new Date().toISOString(); latest.current = next; setDoc({ ...next }); dirty.current = true; setState('dirty');
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(async () => { setState('saving'); const r = await savePatchFor(userId, { auditDoc: latest.current }); setState(r.ok ? 'saved' : 'error'); dirty.current = !r.ok; }, 1200);
+  };
+  useEffect(() => () => { if (dirty.current) void savePatchFor(userId, { auditDoc: latest.current }); }, [userId]);
+
+  const setSec = (id: string, patch: Partial<AuditDocSection>) => push({ ...doc, sections: doc.sections.map((s) => s.id === id ? { ...s, ...patch } : s) });
+  const addSec = () => push({ ...doc, sections: [...doc.sections, { id: uid(), heading: 'Новий розділ', body: '' }] });
+  const delSec = (id: string) => push({ ...doc, sections: doc.sections.filter((s) => s.id !== id) });
+  const move = (i: number, d: number) => { const j = i + d; if (j < 0 || j >= doc.sections.length) return; const s = [...doc.sections]; [s[i], s[j]] = [s[j], s[i]]; push({ ...doc, sections: s }); };
+  const seed = () => { if (doc.sections.length && !confirm('Перезібрати чернетку з даних? Поточний вміст буде замінено (стару версію можна зберегти окремо).')) return; push({ ...doc, sections: seedAuditSections(rec, modTitle) }); };
+  const saveVersion = () => { const v: AuditDocVersion = { at: new Date().toISOString(), title: doc.title, sections: doc.sections, by: email }; push({ ...doc, versions: [v, ...(doc.versions || [])].slice(0, 10) }); toast('✓ Версію збережено'); };
+  const restore = (v: AuditDocVersion) => { if (!confirm(`Відновити версію від ${new Date(v.at).toLocaleString('uk-UA')}? Поточний вміст замінить її знімок.`)) return; push({ ...doc, title: v.title, sections: v.sections }); };
+
+  return (
+    <div className="adm-doc">
+      <div className="adm-doc-bar">
+        <input className="ab-inp adm-doc-title" value={doc.title} onChange={(e) => push({ ...doc, title: e.target.value })} placeholder="Назва документа" />
+        <span className={`pj-save-state pj-save-${state}`}>{state === 'saving' ? 'збереження…' : state === 'saved' ? '✓ збережено' : state === 'error' ? '⚠ помилка' : state === 'dirty' ? '● не збережено' : ''}</span>
+      </div>
+      <div className="adm-doc-tools">
+        <button className="mc-btn ghost" onClick={seed}>✨ {doc.sections.length ? 'Перезібрати' : 'Зібрати'} чернетку</button>
+        <button className="mc-btn ghost" onClick={saveVersion} disabled={!doc.sections.length}>💾 Зберегти версію</button>
+        <button className="mc-btn ok" onClick={() => exportAuditDocPdf(doc, email)} disabled={!doc.sections.length}>📄 Експорт PDF</button>
+      </div>
+      {doc.sections.length === 0 ? (
+        <p className="mono adm-empty">Документа ще немає. Натисніть «✨ Зібрати чернетку», щоб зібрати його з оцінки, знахідок і нотаток — далі коригуйте вручну.</p>
+      ) : doc.sections.map((s, i) => (
+        <div key={s.id} className="adm-doc-sec">
+          <div className="adm-doc-sec-h">
+            <input className="ab-inp adm-doc-heading" value={s.heading} onChange={(e) => setSec(s.id, { heading: e.target.value })} />
+            <div className="adm-doc-sec-act">
+              <button className="adm-note-x mono" onClick={() => move(i, -1)} disabled={i === 0} title="Вгору">↑</button>
+              <button className="adm-note-x mono" onClick={() => move(i, 1)} disabled={i === doc.sections.length - 1} title="Вниз">↓</button>
+              <button className="adm-note-x mono" onClick={() => delSec(s.id)} title="Видалити розділ">✕</button>
+            </div>
+          </div>
+          <textarea className="ab-inp adm-doc-body" rows={Math.min(14, Math.max(3, s.body.split('\n').length + 1))} value={s.body} onChange={(e) => setSec(s.id, { body: e.target.value })} />
+        </div>
+      ))}
+      {doc.sections.length > 0 && <button className="mc-btn ghost adm-doc-add" onClick={addSec}>+ Розділ</button>}
+      {(doc.versions || []).length > 0 && (
+        <div className="adm-doc-vers">
+          <span className="adm-acc-cat-h mono">Версії</span>
+          {(doc.versions || []).map((v) => (
+            <div key={v.at} className="adm-doc-ver mono">
+              <span>{new Date(v.at).toLocaleString('uk-UA')} · {v.sections.length} розд.{v.by ? ` · ${v.by}` : ''}</span>
+              <button className="mc-btn ghost" onClick={() => restore(v)}>Відновити</button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

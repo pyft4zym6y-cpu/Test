@@ -118,6 +118,18 @@
 .mc-btn.fr-on-bad { background: var(--red); color: #fff; border-color: var(--red); }
 .adm-worker-learn { margin-top: 10px; }
 .adm-worker-snap { margin-top: 8px; background: var(--cream-2); border-radius: 8px; padding: 8px 10px; font-size: 11.5px; line-height: 1.6; }
+/* Редактор документа аудиту */
+.adm-doc-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+.adm-doc-title { flex: 1 1 auto; font-weight: 700; font-size: 15px; }
+.adm-doc-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.adm-doc-sec { border: 2px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+.adm-doc-sec-h { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+.adm-doc-heading { flex: 1 1 auto; font-weight: 700; }
+.adm-doc-sec-act { display: inline-flex; gap: 2px; }
+.adm-doc-body { width: 100%; resize: vertical; font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12.5px; line-height: 1.5; }
+.adm-doc-add { margin-top: 2px; }
+.adm-doc-vers { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 8px; }
+.adm-doc-ver { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; padding: 5px 0; border-bottom: 1px dashed var(--line); }
 @media (max-width: 640px) { .adm-team-row2 { grid-template-columns: 1fr auto; } .adm-team-row2 > :nth-child(3) { display: none; } }
 /* Власні файли аудитора */
 .adm-afiles-add { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }

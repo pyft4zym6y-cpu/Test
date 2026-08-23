@@ -100,8 +100,14 @@ export type DiagRecord = {
   auditJobs?: AuditJobRef[];                  // прогони рушія Commerce OS (worker)
   adminFiles?: AdminFile[];                   // власні файли аудитора (дані/дельіверабли), внутрішнє
   findingReviews?: Record<string, FindingReview>; // рецензії findings рушія (ключ = findingId) — цикл навчання
+  auditDoc?: AuditDoc;                         // редагований документ аудиту (адмін коригує/версіонує/експортує)
   updatedAt?: string;
 };
+
+/* ─── Редагований документ аудиту (Крок 4): адмін коригує те, що зібрав рушій ─── */
+export type AuditDocSection = { id: string; heading: string; body: string };
+export type AuditDocVersion = { at: string; title: string; sections: AuditDocSection[]; by?: string };
+export type AuditDoc = { title: string; sections: AuditDocSection[]; updatedAt?: string; versions?: AuditDocVersion[] };
 
 /** Рецензія однієї знахідки рушія (human-in-the-loop, замикає цикл навчання). */
 export type FindingReview = {
