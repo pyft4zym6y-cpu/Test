@@ -18,7 +18,7 @@ const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m)
  * скляній картці. «Це ще не робота, це діагноз».
  */
 const MAIL = 'hello@weexp.agency';
-type Status = 'idle' | 'sending' | 'ok' | 'fallback';
+type Status = 'idle' | 'sending' | 'ok' | 'error';
 
 export function ContactFilm() {
   const t = useT();
@@ -36,7 +36,6 @@ export function ContactFilm() {
   const [phoneErr, setPhoneErr] = useState('');
   const [diag, setDiag] = useState('');
   const [keepDiag, setKeepDiag] = useState(false);   // ЗА ЗАМОВЧУВАННЯМ не додаємо — клієнт вирішує чекбоксом
-  const [fallbackUrl, setFallbackUrl] = useState('');
 
   // Підсумок аудиту: спершу текстовий X-Ray, інакше — будуємо з експрес-аудиту калькулятора.
   useEffect(() => {
@@ -65,16 +64,9 @@ export function ContactFilm() {
     setStatus('sending');
     const res = await sendLead(payload);
     track('lead_submit', { source: payload.source, result: res, has_diag: Boolean(attach) });
-    if (res === 'ok') { setStatus('ok'); return; }
-    const body = [
-      `${t("Ім'я", 'Name')}: ${payload.name}`, `${t('Роль', 'Role')}: ${payload.role}`, `Email: ${payload.email}`, `${t('Телефон', 'Phone')}: ${payload.phone}`,
-      `${t('Магазин', 'Store')}: ${payload.store}`, `${t('Оборот', 'Turnover')}: ${payload.turnover}`, `${t('Задача', 'Task')}: ${payload.task}`,
-      `${t('Терміни', 'Timeline')}: ${payload.timeline}`, `${t('Бюджет', 'Budget')}: ${payload.budget}`, `${t('Коментар', 'Comment')}: ${payload.comment}`,
-      attach ? `\n— ${t('Результат діагностики', 'Diagnostics result')} —\n${attach}` : '',
-    ].filter(Boolean).join('\n');
-    const url = `mailto:${MAIL}?subject=${encodeURIComponent(t('Запит на діагноз — WEEXP', 'Request a diagnosis — WEEXP'))}&body=${encodeURIComponent(body)}`;
-    try { navigator.clipboard?.writeText(body); } catch { /* ignore */ }
-    setFallbackUrl(url); setStatus('fallback'); window.location.href = url;
+    // Заявка створюється у системі (Supabase → адмінка). Ніяких mailto/буфера:
+    // або підтвердження, або чесна помилка з пропозицією написати вручну.
+    setStatus(res === 'ok' ? 'ok' : 'error');
   };
 
   return (
@@ -92,8 +84,8 @@ export function ContactFilm() {
         {status === 'ok' ? (
           <div className="sysx-card cf-thanks">
             <div className="sysx-kick">{t('Заявку отримано', 'Request received')}</div>
-            <h2 className="sysx-display">{t('Дякуємо. Ми на звʼязку.', 'Thank you. We’re in touch.')}</h2>
-            <p className="sysx-lead">{t('Заявка з вашими даними', 'Your request with your details')}{attach ? t(' і результатом діагностики', ' and diagnostics result') : ''}{t(' вже у нас. Повернемося протягом робочого дня з планом діагностики у грошах.', ' is already with us. We’ll come back within a business day with a plan for the diagnosis in money.')}</p>
+            <h2 className="sysx-display">{t('Дякуємо! Ваш запит отримано.', 'Thank you! Your request has been received.')}</h2>
+            <p className="sysx-lead">{t('Менеджер зв’яжеться з вами протягом робочого дня.', 'A manager will contact you within one business day.')}{attach ? t(' Підсумок вашого аудиту додано до заявки.', ' Your audit summary has been attached to the request.') : ''}</p>
             <a className="sysx-cta" href={`mailto:${MAIL}`}>{MAIL}</a>
           </div>
         ) : (
@@ -166,9 +158,8 @@ export function ContactFilm() {
                 </button>
                 <span className="sysx-note mono">UA · EU · US · {MAIL}</span>
               </div>
-              {status === 'fallback' && (
-                <p className="sysx-note mono ctf-full">{t('Пошту відкрито з готовим листом (також скопійовано в буфер).', 'Your email client opened with a ready message (also copied to the clipboard).')}
-                  {t(' Якщо не відкрилась — ', ' If it didn’t open — ')}<a href={fallbackUrl}>{t('натисніть тут', 'click here')}</a>{t(' або напишіть на ', ' or write to ')}<a href={`mailto:${MAIL}`}>{MAIL}</a>.</p>
+              {status === 'error' && (
+                <p className="s3-err mono ctf-full">{t('Не вдалося надіслати заявку. Спробуйте ще раз або напишіть нам на ', 'Could not send the request. Please try again or write to us at ')}<a href={`mailto:${MAIL}`}>{MAIL}</a>.</p>
               )}
             </form>
           </div>
