@@ -1282,6 +1282,15 @@ function WorkerAudit({ userId, code, rec }: { userId: string; code?: string; rec
 
   const saveJobs = (next: AuditJobRef[]) => { setJobs(next); void savePatchFor(userId, { auditJobs: next }); };
 
+  const downloadPack = async (id: string, internal: boolean) => {
+    try {
+      const r = await fetch('/api/audit-run', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'pack', id, internal }) });
+      if (!r.ok || (r.headers.get('content-type') || '').includes('application/json')) { const j = await r.json().catch(() => ({})); toast('Завантаження: ' + (j.error || 'недоступно'), 'err'); return; }
+      const blob = await r.blob();
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `audit-${id}${internal ? '-internal' : ''}.zip`; a.click(); URL.revokeObjectURL(a.href);
+    } catch (e) { toast('Помилка завантаження: ' + String(e), 'err'); }
+  };
+
   const start = async () => {
     setErr('');
     if (!site.trim()) { setErr('Вкажіть сайт клієнта (домен).'); return; }
@@ -1336,6 +1345,10 @@ function WorkerAudit({ userId, code, rec }: { userId: string; code?: string; rec
               <span className={`cab-badge tst-${j.status === 'done' ? 'ok' : j.status === 'error' || j.status === 'failed' ? 'bad' : 'wait'}`}>{j.status || '…'}</span>
               <span>{j.site} · Tier {j.tier}</span>
               <span className="adm-act-at">{rel(j.at)}</span>
+              {j.status === 'done' && <span className="adm-worker-dl">
+                <button className="mc-btn ghost" onClick={() => downloadPack(j.id, false)} title="Пакет документів для клієнта">⬇ Клієнту</button>
+                <button className="mc-btn ghost" onClick={() => downloadPack(j.id, true)} title="Внутрішній пакет (усі доки + JSON)">⬇ Внутрішній</button>
+              </span>}
               {j.summary && <span className="adm-worker-sum">{j.summary}</span>}
             </div>
           ))}

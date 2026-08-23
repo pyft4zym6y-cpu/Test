@@ -32,6 +32,17 @@ export default async function handler(req, res) {
       res.status(200).json(j.ok ? { ok: true, job: j.job } : { error: j.error || 'not_found' });
       return;
     }
+    if (b.action === 'pack') {
+      if (!b.id) { res.status(200).json({ error: 'no_id' }); return; }
+      const suffix = b.internal ? 'pack-internal.zip' : 'pack.zip';
+      const r = await fetch(`${base}/job/${encodeURIComponent(b.id)}/${suffix}`, { headers: hdr });
+      if (!r.ok) { res.status(200).json({ error: 'пакет недоступний (' + r.status + ')' }); return; }
+      const buf = Buffer.from(await r.arrayBuffer());
+      res.setHeader('content-type', 'application/zip');
+      res.setHeader('content-disposition', `attachment; filename="audit-${b.id}${b.internal ? '-internal' : ''}.zip"`);
+      res.status(200).send(buf);
+      return;
+    }
     res.status(400).json({ error: 'unknown_action' });
   } catch (e) {
     res.status(200).json({ error: String(e).slice(0, 200) });
