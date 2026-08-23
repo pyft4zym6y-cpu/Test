@@ -111,6 +111,37 @@ table.t td b { font-weight:700; color:var(--ink); }
 .sl .heron { font-family:var(--mono); font-weight:700; font-size:220px; letter-spacing:-.05em; line-height:.95; }
 .sl .foot { position:absolute; left:64px; right:64px; bottom:28px; display:flex; justify-content:space-between; font-family:var(--mono); font-size:11px; color:var(--steel6); }
 .sl.ink .foot, .sl.verd .foot { color:rgba(255,255,255,.45); }
+
+/* ── Постраничный разбор: блок-таблиця з оцінкою 0–5 ── */
+.bt { width:100%; border-collapse:collapse; font-size:7.4pt; }
+.bt th { font-family:var(--mono); font-size:6.6pt; letter-spacing:.1em; text-transform:uppercase; color:var(--steel); text-align:left; border-bottom:1.5px solid var(--ink); padding:1.5mm 1.8mm; }
+.bt td { border-bottom:1px solid var(--hair); padding:1.7mm 1.8mm; vertical-align:top; line-height:1.35; }
+.bt .bnum { font-family:var(--mono); font-weight:700; white-space:nowrap; }
+.bt .score { font-family:var(--mono); font-weight:700; font-size:10pt; text-align:center; width:10mm; }
+.bt .sc5 { color:var(--verd7); } .bt .sc4 { color:var(--ink); } .bt .sc2, .bt .sc3 { color:#a06a00; } .bt .sc0, .bt .sc1 { color:var(--mark); }
+.tag { font-family:var(--mono); font-size:5.8pt; letter-spacing:.06em; border:1px solid var(--steel6); color:var(--steel); padding:.3mm 1mm; margin-right:.8mm; }
+.okm { color:var(--verd7); font-weight:700; } .badm { color:var(--mark); font-weight:700; }
+
+/* ── Wireframe ЗАРАЗ / ЯК ТРЕБА ── */
+.wf2 { display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin:2.5mm 0; }
+.wf { border:2px solid; padding:2.5mm; }
+.wf.cur { border-color:var(--mark); } .wf.should { border-color:var(--verd7); }
+.wf .wfh { font-family:var(--mono); font-size:6.8pt; letter-spacing:.14em; margin-bottom:1.6mm; }
+.wf.cur .wfh { color:var(--mark); } .wf.should .wfh { color:var(--verd7); }
+.wf .m { background:#F4F6F5; border:1px solid var(--steel4); padding:1.6mm 2mm; margin-bottom:1.2mm; font-size:6.8pt; line-height:1.3; }
+.wf .m b { font-size:7.2pt; }
+.wf .m.ghost { border-style:dashed; color:var(--steel6); text-align:center; }
+.wf .m.cta { background:var(--ink); color:#fff; text-align:center; font-weight:700; }
+.wf .m.cta.mk { background:var(--mark); }
+.wf .mrow { display:grid; gap:1.2mm; margin-bottom:1.2mm; }
+.wf .note { font-size:6.6pt; color:var(--steel); line-height:1.35; margin-top:1mm; }
+.wf .lnk { color:var(--verd7); font-weight:700; }
+
+/* ── Дерево сайта ── */
+.tree { font-family:var(--mono); font-size:7.2pt; line-height:1.55; }
+.tree b { font-size:7.6pt; }
+.tree .lvl1 { margin-left:5mm; } .tree .lvl2 { margin-left:10mm; color:#33373c; }
+.tree .cnt { color:var(--steel6); } .tree .warn { color:var(--mark); font-weight:700; } .tree .good { color:var(--verd7); }
 @media print { .pg, .sl { break-inside: avoid; } }
 </style></head><body><div class="pg ink">
   <div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
@@ -190,7 +221,7 @@ table.t td b { font-weight:700; color:var(--ink); }
         NDA на P&L і собівартість; файли клієнта видаляються на 31-й день після передачі (Звіт 5).</div>
       </div>
     </div>
-    <p class="marg" style="margin-top:3mm">Виконано 163 перевірки за каталогом 12 аудитів (перелік по главах — у §2 кожної глави). Доступи: audit@weexp.agency, read-only, відкликання за чеклистом Звіту 5.</p>
+    <p class="marg" style="margin-top:3mm">Виконано 160 перевірок за каталогом 12 аудитів (сума по главах: 14+12+13+13+16+14+15+14+10+13+14+12) (перелік по главах — у §2 кожної глави). Доступи: audit@weexp.agency, read-only, відкликання за чеклистом Звіту 5.</p>
   <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 4/35</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.03 · Baseline · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
     <span class="ebrow">Глава 2.03 · Знімок експрес-аудиту (baseline)</span>
     <h1 class="big" style="font-size:26pt">Експрес казав €390k і помилявся<br>у трьох місцях. Ось у яких.</h1>
@@ -224,14 +255,14 @@ table.t td b { font-weight:700; color:var(--ink); }
     <h2 class="st" style="font-size:12pt;margin-top:3mm">§3 Факти проти бенчмарків</h2>
     <table class="t" style="font-size:8pt">
       <tr><th>Метрика</th><th class="num">Факт</th><th class="num">Бенч</th><th>Розрив</th><th>Джерело бенчу</th></tr>
-      <tr><td>Contribution сайту після реклами</td><td class="num"><b>12%</b></td><td class="num">10–15%</td><td>норма</td><td class="src">галузеві D2C-звіти</td></tr><tr><td>Contribution Allegro</td><td class="num"><b>3%</b></td><td class="num">≥8%</td><td><span class="mark">−5 п.п.</span></td><td class="src">внутрішній поріг каналу</td></tr><tr><td>LTV:CAC (UA, paid)</td><td class="num"><b>3.4</b></td><td class="num">≥3.0</td><td>норма</td><td class="src">канон юніт-економіки</td></tr><tr><td>LTV:CAC (PL)</td><td class="num"><b>1.9</b></td><td class="num">≥2.5 для масштабування</td><td><span class="mark">нижче порога</span></td><td class="src">той самий</td></tr><tr><td>CCC</td><td class="num"><b>61 дн (DIO 68 · DSO 12 · DPO 19)</b></td><td class="num">≤45 дн</td><td><span class="mark">+16 дн</span></td><td class="src">бенч рітейлу</td></tr><tr><td>Частка Q4 у виручці</td><td class="num"><b>38%</b></td><td class="num">30–35% у ніші</td><td>підвищена сезонність</td><td class="src">замовлення 24 міс</td></tr><tr><td>B2B-опт: contribution</td><td class="num"><b>≈18%</b></td><td class="num">20–25%</td><td>нижче через логістику</td><td class="src">розрахунок з P&L</td></tr>
+      <tr><td>Contribution сайту після реклами</td><td class="num"><b>12%</b></td><td class="num">10–15%</td><td>норма</td><td class="src">галузеві D2C-звіти</td></tr><tr><td>Contribution Allegro</td><td class="num"><b>3%</b></td><td class="num">≥8%</td><td><span class="mark">−5 п.п.</span></td><td class="src">внутрішній поріг каналу</td></tr><tr><td>CAC (paid, new) проти маржі 1-го замовлення</td><td class="num"><b>€18 < €21.8</b></td><td class="num">payback ≤ 1 покупки</td><td><span class="okm">окупається одразу</span></td><td class="src">кабінети + юніт-модель d01</td></tr><tr><td>PL: CAC проти маржі 1-го замовлення</td><td class="num"><b>≈€24 > €18.2</b></td><td class="num">payback ≤ 1 — умова масштабування</td><td><span class="mark">не окупається 1-ю покупкою</span></td><td class="src">кабінети PL + юніт-модель</td></tr><tr><td>CCC</td><td class="num"><b>61 дн (DIO 68 · DSO 12 · DPO 19)</b></td><td class="num">≤45 дн</td><td><span class="mark">+16 дн</span></td><td class="src">бенч рітейлу</td></tr><tr><td>Частка Q4 у виручці</td><td class="num"><b>38%</b></td><td class="num">30–35% у ніші</td><td>підвищена сезонність</td><td class="src">замовлення 24 міс</td></tr><tr><td>B2B-опт: contribution</td><td class="num"><b>≈18%</b></td><td class="num">20–25%</td><td>нижче через логістику</td><td class="src">розрахунок з P&L</td></tr>
     </table>
     
   <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 6/35</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.04 · Business-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
     <h2 class="st" style="font-size:12pt">§4 Знахідки з доказами й розрахунками</h2>
     <table class="t" style="font-size:8pt">
       <tr><th style="width:34mm">Знахідка</th><th>Доказ → розрахунок ефекту</th><th class="num" style="width:17mm">Ефект/рік</th><th style="width:11mm">Впевн.</th></tr>
-      <tr class="hl"><td><b>Allegro: канал-боржник</b></td><td>юніт-розрахунок на середнє замовлення €35: маржа 18.2 − комісія 4.2 − логістика 6.1 − Ads 2.5 − повернення 1.6 = <b>€1.1 (3%)</b>. 40 SKU — нижче беззбитковості каналу</td><td class="num"><b>€60k</b></td><td><span class="sev ok">high</span></td></tr><tr class="hl"><td><b>Каса: розрив перед Q4</b></td><td>CCC 61 дн × закупівлі жовтня ≈ €85k передоплат при залишку кешу €40–60k — розрив €25–45k покривається дорогим овердрафтом</td><td class="num"><b>вартість грошей €4–6k</b></td><td><span class="sev ok">high</span></td></tr><tr><td><b>B2B без правил</b></td><td>14 клієнтів, прайс −25%, без мін. замовлення: 31% B2B-замовлень < €200 — collection cost зʼїдає маржу; дебіторка 45 дн проти DPO 19</td><td class="num"><b>€9–14k</b></td><td><span class="sev m">med</span></td></tr><tr class="hl"><td><b>Фінмоделі немає</b></td><td>рішення про Q4-закупівлі й нові ринки — без сценаріїв; ціль €250k/міс не розкладена на драйвери</td><td class="num"><b>якість рішень</b></td><td><span class="sev ok">high</span></td></tr>
+      <tr class="hl"><td><b>Allegro: канал-боржник</b></td><td>юніт-розрахунок на середнє замовлення €35: маржа 18.2 − комісія 4.2 − логістика Smart! 6.1 − Ads 2.5 − повернення PL 1.6 − пакування й обробка 1.3 − Smart!-промо та примусові знижки 1.4 = <b>€1.1 (3%)</b>. 40 SKU — нижче беззбитковості каналу</td><td class="num"><b>€60k</b></td><td><span class="sev ok">high</span></td></tr><tr class="hl"><td><b>Каса: розрив перед Q4</b></td><td>CCC 61 дн × закупівлі жовтня ≈ €85k передоплат при залишку кешу €40–60k — розрив €25–45k покривається дорогим овердрафтом</td><td class="num"><b>вартість грошей €4–6k</b></td><td><span class="sev ok">high</span></td></tr><tr><td><b>B2B без правил</b></td><td>14 клієнтів, прайс −25%, без мін. замовлення: 31% B2B-замовлень < €200 — collection cost зʼїдає маржу; дебіторка 45 дн проти DPO 19</td><td class="num"><b>€9–14k</b></td><td><span class="sev m">med</span></td></tr><tr class="hl"><td><b>Фінмоделі немає</b></td><td>рішення про Q4-закупівлі й нові ринки — без сценаріїв; ціль €250k/міс не розкладена на драйвери</td><td class="num"><b>якість рішень</b></td><td><span class="sev ok">high</span></td></tr>
     </table>
     <h2 class="st" style="font-size:12pt;margin-top:3mm">§5 Рекомендації</h2>
     <table class="t" style="font-size:8pt">
@@ -510,7 +541,7 @@ table.t td b { font-weight:700; color:var(--ink); }
     <h2 class="st" style="font-size:12pt;margin-top:3mm">§3 Факти проти бенчмарків</h2>
     <table class="t" style="font-size:8pt">
       <tr><th>Метрика</th><th class="num">Факт</th><th class="num">Бенч</th><th>Розрив</th><th>Джерело бенчу</th></tr>
-      <tr><td>Розбіжність purchase GA4↔бекенд</td><td class="num"><b>22%</b></td><td class="num">≤5%</td><td><span class="mark">×4 порога</span></td><td class="src">звірка 6 міс по днях</td></tr><tr><td>Причини (розкладка)</td><td class="num"><b>Apple Pay redirect ≈13% · consent ≈7% · дублі ≈−2%</b></td><td class="num">—</td><td>кожна з фіксом у W1</td><td class="src">тег-аудит</td></tr><tr><td>Маржа в подіях</td><td class="num"><b>немає</b></td><td class="num">value+margin</td><td>оптимізація наосліп</td><td class="src">схема подій</td></tr><tr><td>UTM-дисципліна</td><td class="num"><b>71% кампаній розмічено</b></td><td class="num">100%</td><td>CRM/соцмережі губляться</td><td class="src">аудит посилань</td></tr><tr><td>BI-шар</td><td class="num"><b>Excel раз на місяць</b></td><td class="num">щотижневий авто-дашборд</td><td>рішення на місяць запізнюються</td><td class="src">анкета+інтервʼю</td></tr><tr><td>Власність акаунтів</td><td class="num"><b>GA4-адмін — підрядник минулого</b></td><td class="num">власник/компанія</td><td><span class="mark">ризик доступу</span></td><td class="src">перевірка адмінів</td></tr>
+      <tr><td>Розбіжність purchase GA4↔бекенд</td><td class="num"><b>22%</b></td><td class="num">≤5%</td><td><span class="mark">×4 порога</span></td><td class="src">звірка 6 міс по днях</td></tr><tr><td>Причини (розкладка, разом ≈22%)</td><td class="num"><b>Apple Pay ≈13% · consent ≈7% · редиректи інших оплат і edge-кейси ≈2%</b></td><td class="num">—</td><td>кожна з фіксом у W1</td><td class="src">тег-аудит</td></tr><tr><td>Маржа в подіях</td><td class="num"><b>немає</b></td><td class="num">value+margin</td><td>оптимізація наосліп</td><td class="src">схема подій</td></tr><tr><td>UTM-дисципліна</td><td class="num"><b>71% кампаній розмічено</b></td><td class="num">100%</td><td>CRM/соцмережі губляться</td><td class="src">аудит посилань</td></tr><tr><td>BI-шар</td><td class="num"><b>Excel раз на місяць</b></td><td class="num">щотижневий авто-дашборд</td><td>рішення на місяць запізнюються</td><td class="src">анкета+інтервʼю</td></tr><tr><td>Власність акаунтів</td><td class="num"><b>GA4-адмін — підрядник минулого</b></td><td class="num">власник/компанія</td><td><span class="mark">ризик доступу</span></td><td class="src">перевірка адмінів</td></tr>
     </table>
     
   <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 23/35</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.12 · Analytics-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
@@ -686,8 +717,9 @@ table.t td b { font-weight:700; color:var(--ink); }
       <tr><th>Домен</th><th style="width:9mm">Рівень</th><th style="width:9mm">Вага*</th><th>Чому цей рівень (глава)</th><th>Ціль 9 міс</th></tr>
       <tr><td><b>Business</b></td><td class="num" style="">L2</td><td class="num">10</td><td>d01: юніт-економіка є, фінмоделі немає, каса з розривами</td><td class="src">L3: фінмодель жива, каса планована</td></tr><tr><td><b>Market</b></td><td class="num" style="">L2</td><td class="num">6</td><td>d02: позиціонування-тест провалено, AI-полиця 0/48</td><td class="src">L3: позиція + моніторинг + EUIPO</td></tr><tr><td><b>Product</b></td><td class="num" style="">L2</td><td class="num">7</td><td>d03: 33% dead stock, ціни без собівартості</td><td class="src">L3: ABC-квартал, правила знижок, прайс-тести</td></tr><tr class="hl"><td><b>Customer</b></td><td class="num" style="color:var(--mark);font-weight:700">L1</td><td class="num">8</td><td>d04: сегментів немає, NPS немає, вікно 30–60 дн порожнє</td><td class="src">L3: сегменти, NPS, 2-га покупка 18%</td></tr><tr><td><b>Website</b></td><td class="num" style="">L2</td><td class="num">8</td><td>d05: checkout 43.6%, LCP 4.6s, але процес правок існує</td><td class="src">L3: 60%, ≤2.5s, A/B-ритм</td></tr><tr><td><b>SEO/GEO</b></td><td class="num" style="">L2</td><td class="num">6</td><td>d06: індекс ×8 сміття, 3/6 кластерів, AI 0/48</td><td class="src">L3: чистий індекс, 6/6, GEO-програма</td></tr><tr><td><b>Acquisition</b></td><td class="num" style="">L3</td><td class="num">7</td><td>d07: керовано, але бренд у PMax і 2 креативи</td><td class="src">L4: біддинг за contribution</td></tr><tr class="hl"><td><b>CRM</b></td><td class="num" style="color:var(--mark);font-weight:700">L1</td><td class="num">9</td><td>d08: 1 flow, DMARC немає, база спить</td><td class="src">L3: 6 flows, 18% виручки</td></tr><tr class="hl"><td><b>Analytics</b></td><td class="num" style="color:var(--mark);font-weight:700">L1</td><td class="num">9</td><td>d09: GA4 −22%, Excel раз на місяць</td><td class="src">L3: ≤5%, щотижневий дашборд</td></tr><tr><td><b>Operations</b></td><td class="num" style="">L2</td><td class="num">7</td><td>d10: OOS 17%, бій 2.1%, OTIF не міряється</td><td class="src">L3: правила закупівель, стандарт пакування</td></tr><tr><td><b>Technology</b></td><td class="num" style="">L2</td><td class="num">6</td><td>d11: bus-factor 1, без staging, бекап не тестований</td><td class="src">L3: staging, SLA, перевірений бекап</td></tr><tr><td><b>Organization</b></td><td class="num" style="">L2</td><td class="num">8</td><td>d12: все на власнику, ритму немає</td><td class="src">L3: політики, власники каналів, ритм</td></tr>
     </table>
-    <p class="body" style="font-size:8.5pt;margin-top:3mm"><b>Розрахунок Health 52 — показаний:</b> Health = Σ(рівень/5 × вага) / Σваг × 100.
-    = (2·10+2·6+2·7+1·8+2·8+2·6+3·7+1·9+1·9+2·7+2·6+2·8) / (5×91) × 100 = <b>236/455 ≈ 52</b>.
+    <p class="body" style="font-size:8.5pt;margin-top:3mm"><b>Розрахунок Health 52 — показаний:</b> Health = Σ(бал×вага)/Σваг. Бал домену (0–100) — гранулярніша оцінка всередині рівня:
+    частка пройдених перевірок глави (L1 ≈ 20–39 · L2 ≈ 40–59 · L3 ≈ 60–79). Бали: 60·54·56·40·56·50·72·38·36·56·60·54;
+    ваги: 10·6·7·8·8·6·7·9·9·7·6·8 (Σ=91). Σ(бал×вага) = <b>4 738; 4 738/91 = 52.1 → 52</b>.
     *Ваги — важливість напрямів з анкети власника (block_rate 1–10): найвищі — економіка (10), CRM (9), аналітика (9). Збіг «найважливіше = найнезріліше» = пріоритет хвиль.</p>
     <p class="marg">Правило рівня: найнижчий ПОВНІСТЮ виконаний (за CMMI). Переоблік: КТ-2 (день 90) і кінець кожної хвилі — лише за критеріями DoD (Звіт 3), не «стало краще». Acquisition L3 — єдиний зрілий домен: масштабувати його поверх трьох L1 = купувати некерований трафік; тому порядок хвиль саме такий.</p>
   <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 33/35</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.18 · Реєстр знахідок · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
@@ -706,7 +738,7 @@ table.t td b { font-weight:700; color:var(--ink); }
     <span class="ebrow">Глава 2.19 · Протокол якості аудиту</span>
     <h1 class="big" style="font-size:26pt">Аудит, який не перевірив себе, —<br>це думка. Ось перевірки.</h1>
     <div class="kpis" style="margin-top:4mm">
-      <div class="kpi"><div class="v ">163</div><div class="k">перевірок виконано (каталог 12 аудитів)</div></div>
+      <div class="kpi"><div class="v ">160</div><div class="k">перевірок виконано (каталог 12 аудитів: 14+12+13+13+16+14+15+14+10+13+14+12)</div></div>
       <div class="kpi"><div class="v ">14/16</div><div class="k">систем відкрито (2.02)</div></div>
       <div class="kpi"><div class="v ">31</div><div class="k">знахідка · 12 high</div></div>
       <div class="kpi"><div class="v ok">100%</div><div class="k">грошей — від бекенда</div></div>

@@ -21,7 +21,7 @@ const S = [];
 S.push(sl('ink', `
   <span class="ebrow">Звіт 1 із 5 · Читка результатів</span>
   <h1 style="font-size:84px">«Тестик»: де бізнес втрачає<br><span class="mk">€433k виручки</span> —<br>≈€156k прибутку на рік</h1>
-  <p style="margin-top:32px;font-family:var(--mono);font-size:15px;color:rgba(255,255,255,.55)">12 аудитів · 163 перевірки · 14 відкритих систем · 24 місяці замовлень · усі розрахунки — у Звітах 2–3</p>
+  <p style="margin-top:32px;font-family:var(--mono);font-size:15px;color:rgba(255,255,255,.55)">12 аудитів · 160 перевірок · 14 відкритих систем · 24 місяці замовлень · усі розрахунки — у Звітах 2–3</p>
 `, 1));
 
 // 02 головний висновок
@@ -29,7 +29,7 @@ S.push(sl('', `
   <span class="ebrow">Головний висновок</span>
   <h1>Попиту достатньо.<br>Гроші зливаються <span class="mk">після кліку</span>.</h1>
   <p style="margin-top:40px;font-size:24px;line-height:1.45;color:#3A3D42;max-width:1050px">
-    Реклама окупається (LTV:CAC 3.4). Але з тих, хто почав оформлення, платить лише 43.6%.
+    Реклама окупається: CAC €18 — нижчий за маржу першого замовлення €21.8. Але з тих, хто почав оформлення, платить лише 43.6%.
     Друга покупка — у 13% клієнтів проти 25–30% у ніші. І компанія цього не бачить:
     аналітика розходиться з реальністю на 22%.</p>
   <p style="margin-top:28px;font-family:var(--mono);font-size:13px;color:#94A0A8">джерела: бекенд-замовлення 24 міс · GA4 · кабінети · метод Baymard · Звіт 2, глави 2.08 / 2.11 / 2.12</p>
@@ -41,7 +41,7 @@ S.push(sl('ink', `
   <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
     <div class="heron" style="color:#D6362B;font-size:190px">€433k</div>
     <p style="margin-top:6px;font-size:24px;color:rgba(255,255,255,.85)">виручки на рік · <b style="color:#fff">у прибутку (contribution) це ≈€156k</b></p>
-    <p style="margin-top:10px;font-size:17px;color:rgba(255,255,255,.6)">воронкова модель: рычаги — множники вузлів воронки, ефект = добуток (не сума) · програма = добуток ×1.325 по сайту + прибуткові важелі</p>
+    <p style="margin-top:10px;font-size:17px;color:rgba(255,255,255,.6)">воронкова модель: важелі — множники вузлів воронки, ефект = добуток (не сума) · програма = добуток ×1.325 по сайту + прибуткові важелі</p>
     <p style="margin-top:10px;font-family:var(--mono);font-size:13px;color:rgba(255,255,255,.45)">сценарії: песиміст ≈€250k · база €433k · стеля за бенчами ≈€600k+ — розрахунок у Звіті 3, гл. 3.03</p>
   </div>
 `, 3));
@@ -145,7 +145,7 @@ S.push(sl('verd', `
 // 11 важелі
 S.push(sl('', `
   <span class="ebrow">Вісім важелів · виручка на рік · сценарій «база»</span>
-  <h1>Один важіль — повністю.<br>Решта — консервативні 45%.</h1>
+  <h1>Сім важелів + кеш-важіль:<br>сума стель €731k → добуток €433k.</h1>
   <div style="margin-top:40px;max-width:1080px">
     ${[['Checkout 43.6% → 60%', 190, 'high'], ['Retention 13% → 20%', 150, 'high'], ['Mobile LCP 4.6 → 2.5s', 120, 'med'], ['OOS топ-20: 17% → 7%', 95, 'high'], ['SEO: фасети, кластери, зірки', 85, 'med'], ['Allegro: ціни й логістика', 60, 'high'], ['Бій 2.1% → 0.7%', 31, 'high']]
       .map(([l, v, c], i) => `<div style="display:flex;align-items:center;gap:16px;margin-bottom:12px">
@@ -154,7 +154,7 @@ S.push(sl('', `
         <span style="font-family:var(--mono);font-weight:700;font-size:17px;width:80px;text-align:right">€${v}k</span>
         <span style="font-family:var(--mono);font-size:11px;color:${c === 'high' ? '#2A6D5C' : '#a06a00'};width:40px">${c}</span></div>`).join('')}
   </div>
-  <p style="margin-top:20px;font-family:var(--mono);font-size:13.5px;color:#6E7C86">разом: <b style="color:#070d12">€433k виручки ≈ €156k прибутку/рік</b> · + €55k кешу з dead stock (одноразово) · кожен важіль із трьома сценаріями — Звіт 3, гл. 3.03</p>
+  <p style="margin-top:20px;font-family:var(--mono);font-size:13.5px;color:#6E7C86">суми на барах — СТЕЛІ важелів окремо (Σ €731k); важелі перетинаються як множники воронки → чесний добуток програми: <b style="color:#070d12">€433k виручки ≈ €156k прибутку/рік</b> + €55k кешу (одноразово) · перехід сума→добуток і сценарії — Звіт 3, гл. 3.03</p>
 `, 11));
 
 // 12 ціна бездіяльності (НОВИЙ)
@@ -205,7 +205,7 @@ S.push(sl('', `
        ['Ваш існуючий розробник', 'поточна витрата ≈€1.4k×9', '≈€12 600', 'НЕ нова — для повноти картини']]
       .map(([a,b,c,d]) => `<tr style="border-bottom:1px solid #dfe4e6"><td style="padding:10px 8px;font-weight:700">${a}</td><td style="padding:10px 8px;font-family:var(--mono);font-size:14px">${b}</td><td style="padding:10px 8px;text-align:right;font-family:var(--mono);font-weight:700">${c}</td><td style="padding:10px 8px;color:#3A3D42;font-size:14px">${d}</td></tr>`).join('')}
   </table>
-  <p style="margin-top:26px;font-size:19px;color:#3A3D42;max-width:1060px">Разом нових грошей ≈€61k, повна інвестиція €70–74k — проти €156k/рік потенціалу в прибутку.
+  <p style="margin-top:26px;font-size:19px;color:#3A3D42;max-width:1060px">Разом нових грошей ≈€62k (з разовим CAPEX €800), повна інвестиція €70–74k — проти €156k/рік потенціалу в прибутку.
   Крива окупності по місяцях — Звіт 3, гл. 3.04: прибуткова окупність М4–М5, кешово раніше (€40–55k із dead stock у М2–3).</p>
 `, 14));
 
@@ -259,7 +259,7 @@ S.push(sl('verd', `
       <p style="font-family:var(--mono);font-size:12px;color:rgba(255,255,255,.5);margin-top:10px">= 24 пороги DoD, Звіт 3 гл. 3.05</p></div>
     <div style="border-top:5px solid rgba(255,255,255,.9);padding-top:16px">
       <div style="font-family:var(--mono);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#6FAA9A">12–36 міс · стратегія</div>
-      <p style="font-size:17px;line-height:1.55;color:rgba(255,255,255,.9);margin-top:12px">масштабування реклами на здоровій воронці · CZ/RO після порога LTV:CAC ≥2.5 · рішення по платформі (TCO) · автономність до «3 місяців» · шлях до €250k/міс</p>
+      <p style="font-size:17px;line-height:1.55;color:rgba(255,255,255,.9);margin-top:12px">масштабування реклами на здоровій воронці · CZ/RO після порога «PL окупається 1-ю покупкою» · рішення по платформі (TCO) · автономність до «3 місяців» · шлях до €250k/міс</p>
       <p style="font-family:var(--mono);font-size:12px;color:rgba(255,255,255,.5);margin-top:10px">= кожен доданок зі своєю умовою входу</p></div>
   </div>
   <p style="margin-top:30px;font-size:17px;color:rgba(255,255,255,.8)">Не «стане краще», а пороги «пройдено/ні» — і чесна межа між обіцянкою програми (3–12) і стратегічною ставкою (12–36).</p>

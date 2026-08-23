@@ -1,0 +1,225 @@
+<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>Том B · Контент-аудит посторінково — Тестик</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink:#070d12; --ink8:#0F1A21; --ink6:#1E3038;
+  --verd:#1F5648; --verd7:#2A6D5C; --verd5:#6FAA9A;
+  --mark:#D6362B; --steel:#6E7C86; --steel6:#94A0A8; --steel4:#D3D9DC;
+  --vel:#E7EAE7; --paper:#fff; --hair:#dfe4e6;
+  --sans:'IBM Plex Sans','Golos Text',system-ui,Arial,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+html,body { background:#fff; }
+body { font-family:var(--sans); color:#26292e; }
+.mono, .num { font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:.02em; }
+
+/* ── Сторінка A4 ── */
+.pg { width: 210mm; height: 296mm; position: relative; overflow: hidden; page-break-after: always; background:#fff; padding: 16mm 16mm 14mm; display:flex; flex-direction:column; }
+.pg.ink { background: var(--ink); color: #E8ECEA; }
+.pg.verd { background: var(--verd); color: #EAF2EE; }
+
+/* шапка/підвал документа */
+.hd { display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid var(--ink); padding-bottom:4mm; margin-bottom:8mm; }
+.pg.ink .hd, .pg.verd .hd { border-color: rgba(255,255,255,.35); }
+.hd .l { font-family:var(--mono); font-size:8.5pt; letter-spacing:.16em; text-transform:uppercase; }
+.hd .r { font-family:var(--mono); font-size:8.5pt; color:var(--steel); }
+.pg.ink .hd .r, .pg.verd .hd .r { color:rgba(255,255,255,.55); }
+.ft { position:absolute; left:16mm; right:16mm; bottom:8mm; display:flex; justify-content:space-between; font-family:var(--mono); font-size:7.5pt; color:var(--steel6); border-top:1px solid var(--hair); padding-top:2.5mm; }
+.pg.ink .ft, .pg.verd .ft { color:rgba(255,255,255,.45); border-color:rgba(255,255,255,.2); }
+.proto { color:var(--mark); }
+
+/* типографіка */
+.ebrow { font-family:var(--mono); font-size:9pt; letter-spacing:.22em; text-transform:uppercase; color:var(--verd7); margin-bottom:5mm; }
+.pg.ink .ebrow { color:var(--verd5); }
+h1.big { font-weight:800; letter-spacing:-.03em; line-height:.98; font-size:34pt; color:var(--ink); }
+.pg.ink h1.big, .pg.verd h1.big { color:#fff; }
+h2.st { font-weight:800; letter-spacing:-.02em; font-size:16pt; color:var(--ink); margin:0 0 4mm; line-height:1.05; }
+.pg.ink h2.st { color:#fff; }
+p.lead { font-size:11pt; line-height:1.5; color:#3A3D42; max-width:150mm; }
+.pg.ink p.lead, .pg.verd p.lead { color:rgba(255,255,255,.82); }
+p.body { font-size:9.5pt; line-height:1.55; color:#33373c; margin-bottom:3mm; }
+.marg { font-family:var(--mono); font-size:7.5pt; color:var(--steel); line-height:1.45; }
+.src { font-family:var(--mono); font-size:7pt; color:var(--steel6); }
+.mark { color: var(--mark); }
+.verdc { color: var(--verd7); }
+
+/* число-герой */
+.hero { margin: 8mm 0 4mm; }
+.hero .n { font-family:var(--mono); font-weight:700; font-size:64pt; letter-spacing:-.04em; line-height:1; color:var(--ink); }
+.hero.m .n { color:var(--mark); } .hero.v .n { color:var(--verd7); }
+.pg.ink .hero .n { color:#fff; }
+.hero .cap { font-size:10pt; color:var(--steel); margin-top:2mm; max-width:120mm; }
+.pg.ink .hero .cap { color:rgba(255,255,255,.65); }
+
+/* KPI-ряд */
+.kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:4mm; margin:5mm 0; }
+.kpis.c3 { grid-template-columns:repeat(3,1fr); }
+.kpi { border:1.5px solid var(--ink); padding:3.5mm 4mm; }
+.kpi .v { font-family:var(--mono); font-weight:700; font-size:16pt; letter-spacing:-.02em; }
+.kpi .v.bad { color:var(--mark); } .kpi .v.ok { color:var(--verd7); }
+.kpi .k { font-family:var(--mono); font-size:7pt; letter-spacing:.1em; text-transform:uppercase; color:var(--steel); margin-top:1.5mm; }
+
+/* таблиці */
+table.t { width:100%; border-collapse:collapse; font-size:8.5pt; }
+table.t th { font-family:var(--mono); font-size:7pt; letter-spacing:.12em; text-transform:uppercase; color:var(--steel); text-align:left; border-bottom:1.5px solid var(--ink); padding:1.8mm 2mm; }
+table.t td { border-bottom:1px solid var(--hair); padding:1.9mm 2mm; vertical-align:top; line-height:1.35; }
+table.t td.num, table.t th.num { text-align:right; font-family:var(--mono); }
+table.t tr.hl td { background:#F4F6F5; }
+table.t td b { font-weight:700; color:var(--ink); }
+.sev { font-family:var(--mono); font-size:7pt; letter-spacing:.08em; padding:.5mm 1.5mm; border:1px solid; }
+.sev.h { color:var(--mark); border-color:var(--mark); }
+.sev.m { color:#a06a00; border-color:#a06a00; }
+.sev.l { color:var(--steel); border-color:var(--steel6); }
+.sev.ok { color:var(--verd7); border-color:var(--verd7); }
+
+/* шкала-бенчмарк (D1) */
+.bench { margin:3.5mm 0; }
+.bench .lab { display:flex; justify-content:space-between; font-size:8.5pt; margin-bottom:1.2mm; }
+.bench .lab .b { font-family:var(--mono); }
+.bench .bar { position:relative; height:5.5mm; background:var(--vel); }
+.bench .fill { position:absolute; left:0; top:0; bottom:0; background:var(--ink); }
+.bench .fill.bad { background:var(--mark); }
+.bench .tick { position:absolute; top:-1.2mm; bottom:-1.2mm; width:1px; background:var(--verd7); }
+.bench .tick i { position:absolute; top:100%; left:-14mm; width:28mm; text-align:center; font-family:var(--mono); font-style:normal; font-size:6.5pt; color:var(--verd7); }
+
+/* гант */
+.gantt { width:100%; border-collapse:collapse; font-size:8pt; }
+.gantt th { font-family:var(--mono); font-size:6.5pt; letter-spacing:.08em; color:var(--steel); border-bottom:1.5px solid var(--ink); padding:1.5mm 1mm; text-align:center; }
+.gantt th.rn { text-align:left; }
+.gantt td { border-bottom:1px solid var(--hair); padding:1.5mm 1mm; }
+.gantt td.rn { font-size:8pt; line-height:1.25; width:52mm; }
+.gantt .cell { height:4.5mm; }
+.gantt .on { background:var(--ink); } .gantt .on.w1 { background:var(--mark); } .gantt .on.w3 { background:var(--verd7); }
+
+/* блоки-виноски */
+.callout { border-left:3px solid var(--mark); padding:2.5mm 4mm; background:#FBF3F2; font-size:9pt; line-height:1.45; margin:3mm 0; }
+.callout.v { border-color:var(--verd7); background:#F1F6F4; }
+.cols2 { display:grid; grid-template-columns:1fr 1fr; gap:6mm; }
+.cols3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:5mm; }
+
+/* слайди 16:9 */
+.sl { width:1280px; height:720px; position:relative; overflow:hidden; page-break-after:always; background:var(--paper); padding:56px 64px; display:flex; flex-direction:column; }
+.sl.ink { background:var(--ink); color:#E8ECEA; }
+.sl.verd { background:var(--verd); color:#EAF2EE; }
+.sl .ebrow { font-size:12px; margin-bottom:18px; }
+.sl h1 { font-weight:800; letter-spacing:-.03em; line-height:.98; font-size:64px; color:var(--ink); max-width:1000px; }
+.sl.ink h1, .sl.verd h1 { color:#fff; }
+.sl h1 .mk { color:var(--mark); }
+.sl .heron { font-family:var(--mono); font-weight:700; font-size:220px; letter-spacing:-.05em; line-height:.95; }
+.sl .foot { position:absolute; left:64px; right:64px; bottom:28px; display:flex; justify-content:space-between; font-family:var(--mono); font-size:11px; color:var(--steel6); }
+.sl.ink .foot, .sl.verd .foot { color:rgba(255,255,255,.45); }
+
+/* ── Постраничный разбор: блок-таблиця з оцінкою 0–5 ── */
+.bt { width:100%; border-collapse:collapse; font-size:7.4pt; }
+.bt th { font-family:var(--mono); font-size:6.6pt; letter-spacing:.1em; text-transform:uppercase; color:var(--steel); text-align:left; border-bottom:1.5px solid var(--ink); padding:1.5mm 1.8mm; }
+.bt td { border-bottom:1px solid var(--hair); padding:1.7mm 1.8mm; vertical-align:top; line-height:1.35; }
+.bt .bnum { font-family:var(--mono); font-weight:700; white-space:nowrap; }
+.bt .score { font-family:var(--mono); font-weight:700; font-size:10pt; text-align:center; width:10mm; }
+.bt .sc5 { color:var(--verd7); } .bt .sc4 { color:var(--ink); } .bt .sc2, .bt .sc3 { color:#a06a00; } .bt .sc0, .bt .sc1 { color:var(--mark); }
+.tag { font-family:var(--mono); font-size:5.8pt; letter-spacing:.06em; border:1px solid var(--steel6); color:var(--steel); padding:.3mm 1mm; margin-right:.8mm; }
+.okm { color:var(--verd7); font-weight:700; } .badm { color:var(--mark); font-weight:700; }
+
+/* ── Wireframe ЗАРАЗ / ЯК ТРЕБА ── */
+.wf2 { display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin:2.5mm 0; }
+.wf { border:2px solid; padding:2.5mm; }
+.wf.cur { border-color:var(--mark); } .wf.should { border-color:var(--verd7); }
+.wf .wfh { font-family:var(--mono); font-size:6.8pt; letter-spacing:.14em; margin-bottom:1.6mm; }
+.wf.cur .wfh { color:var(--mark); } .wf.should .wfh { color:var(--verd7); }
+.wf .m { background:#F4F6F5; border:1px solid var(--steel4); padding:1.6mm 2mm; margin-bottom:1.2mm; font-size:6.8pt; line-height:1.3; }
+.wf .m b { font-size:7.2pt; }
+.wf .m.ghost { border-style:dashed; color:var(--steel6); text-align:center; }
+.wf .m.cta { background:var(--ink); color:#fff; text-align:center; font-weight:700; }
+.wf .m.cta.mk { background:var(--mark); }
+.wf .mrow { display:grid; gap:1.2mm; margin-bottom:1.2mm; }
+.wf .note { font-size:6.6pt; color:var(--steel); line-height:1.35; margin-top:1mm; }
+.wf .lnk { color:var(--verd7); font-weight:700; }
+
+/* ── Дерево сайта ── */
+.tree { font-family:var(--mono); font-size:7.2pt; line-height:1.55; }
+.tree b { font-size:7.6pt; }
+.tree .lvl1 { margin-left:5mm; } .tree .lvl2 { margin-left:10mm; color:#33373c; }
+.tree .cnt { color:var(--steel6); } .tree .warn { color:var(--mark); font-weight:700; } .tree .good { color:var(--verd7); }
+@media print { .pg, .sl { break-inside: avoid; } }
+</style></head><body><div class="pg ink">
+  <div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+    <span class="ebrow">Звіт 2·B із 5</span>
+    <h1 class="big" style="font-size:40pt">Робочий том B:<br>контент посторінково</h1>
+    <p class="lead" style="margin-top:8mm">Кожна сторінка — контент проти еталона свого типу за пʼятьма критеріями: повнота, мова покупця, доказовість, унікальність, машиночитність. Включно з мікротекстами, транзакційними листами і розбором усіх 12 статей блогу.</p>
+    <p class="marg" style="margin-top:10mm;color:rgba(255,255,255,.5)">5 сторінок · 27 сторінок/шаблонів розібрано · зведення 67/135</p>
+  </div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 1/·</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Зміст · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+  <span class="ebrow">Зміст звіту</span>
+  <table class="t" style="margin-top:4mm">
+    <tr><th style="width:16mm">Глава</th><th>Назва — і що вона дає</th><th class="num" style="width:14mm">стор.</th></tr>
+    <tr><td class="num"><b>B.1</b></td><td>Методика: 5 критеріїв × еталони типів сторінок · зведення 67/135</td><td class="num">3</td></tr><tr><td class="num"><b>B.2</b></td><td>Комерційний контент посторінково: головна, категорії, PDP+вибірка, кошик/checkout</td><td class="num">4</td></tr><tr><td class="num"><b>B.3</b></td><td>Службові сторінки, транзакційні листи і блог (12/12 статей)</td><td class="num">5</td></tr>
+  </table><div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 2/5</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">B.1 · Методика · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава B.1 · Методика контент-аудиту</span>
+    <h1 class="big" style="font-size:24pt">Контент міряємо пʼятьма критеріями.<br>Кожна сторінка — проти еталона свого типу.</h1>
+    <table class="t" style="margin-top:4mm;font-size:8.3pt">
+      <tr><th>Критерій (0–5 кожен)</th><th>Що перевіряємо</th><th>Еталон</th></tr>
+      <tr><td><b>1 · Повнота</b></td><td>чи відповідає сторінка на ВСІ питання свого моменту</td><td>чекліст питань за типом сторінки (нижче в главах)</td></tr>
+      <tr><td><b>2 · Мова покупця</b></td><td>вигоди vs технічні терміни; «полуторний» → «на диван»</td><td>кожен термін має переклад рішенням</td></tr>
+      <tr><td><b>3 · Доказовість</b></td><td>цифри, сертифікати, фото-докази замість прикметників</td><td>жодного «якісний/надійний» без доказу поруч</td></tr>
+      <tr><td><b>4 · Унікальність</b></td><td>проти постачальника і конкурентів (порівняльний кроул)</td><td>≥80% унікального тексту на комерційних сторінках</td></tr>
+      <tr><td><b>5 · Машиночитність (AEO)</b></td><td>чи витягне відповідь LLM/сніпет: структура, факти, розмітка</td><td>відповідь на питання — в одному абзаці/таблиці з розміткою</td></tr>
+    </table>
+    <div class="kpis" style="margin-top:4mm">
+      <div class="kpi"><div class="v bad">67/135</div><div class="k">разом по 27 розібраних сторінках</div></div>
+      <div class="kpi"><div class="v bad">61%</div><div class="k">SKU з текстом постачальника</div></div>
+      <div class="kpi"><div class="v bad">3</div><div class="k">значення порогу доставки в текстах</div></div>
+      <div class="kpi"><div class="v bad">12</div><div class="k">статей блогу · остання 8 міс тому</div></div>
+    </div>
+    <p class="body" style="font-size:8.6pt">Скоуп: головна, 8 категорій, PDP-шаблон + вибірка 5 SKU, 11 службових, 12 статей блогу — 27 сторінок/шаблонів.
+    Сквозна знахідка тома: сайт пише <b>мовою виробництва</b> («300 гр/м²», «індукція: так»), а купують <b>мовою рішення</b>
+    («не пригорає і легко миється», «підходить для всіх плит»). Другий системний дефект — прикметники без доказів:
+    «якісний», «надійний», «перевірений» — 47 входжень без жодної цифри поруч.</p>
+    <p class="marg">Оцінки нижче: сумарний бал сторінки = сума пʼяти критеріїв (макс. 25). Порівняльний кроул: 4 конкуренти + сайти постачальників.</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 3/5</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">B.2 · Комерційний контент · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава B.2 · Контент комерційних сторінок — посторінково</span>
+    <h1 class="big" style="font-size:23pt">Там, де вирішуються гроші,<br>контент відповідає на пів питання.</h1>
+    <table class="bt" style="margin-top:2mm">
+      <tr><th style="width:20mm">Сторінка</th><th>Контент зараз (факти)</th><th style="width:46mm">Еталон типу</th><th style="width:8mm">Σ/25</th></tr>
+      <tr><td class="bnum">Головна</td><td><span class="okm">✅</span> Категорії підписані, ціни чесні. <span class="badm">🔴</span> Оффер-вода («якісний посуд для дому»); блоки довіри без відповідей; про виробництво — 1 абзац без жодної цифри; нуль відповідей на «чому ви»</td><td>Оффер із конкретикою + 3 цифри-докази виробництва + блоки довіри-відповіді (том A, wireframe)</td><td class="score sc9">9</td></tr>
+      <tr class="hl"><td class="bnum">Категорії (8)</td><td><span class="badm">🔴</span> Опис 2 рядки «великий вибір…» під H1 — однаковий шаблон у 8 категорій зі зміненим словом. Нуль консультації: як обрати діаметр/покриття/сталь — ніде</td><td>Гайд-блок «як обрати» на кожній категорії: 3–5 питань вибору з відповідями + таблиця порівняння покриттів + вихід у повний гайд</td><td class="score sc6">6</td></tr>
+      <tr class="hl"><td class="bnum">PDP (шаблон)</td><td><span class="okm">✅</span> Характеристики повні (8 параметрів). <span class="badm">🔴</span> 61% описів = текст постачальника (у 3 конкурентів — той самий); характеристики без перекладу вигодами; «якісне антипригарне покриття» — без назви покриття; історія бренду/виробництва в картці відсутня</td><td>Унікальний опис за формулою «для кого + що вирішує + чим доведено»; кожна характеристика з вигодою; блок «чому Тестик» з цифрами</td><td class="score sc11">11</td></tr>
+      <tr><td class="bnum">PDP: вибірка 5</td><td>Подарунковий набір — без складу комплекту текстом (тільки фото!); ніж шеф — без марки сталі й твердості (критерій №1); чавунна каструля — без ваги в описі (критично для чавуну); форма — без темп. режиму; сковорода — еталонно краща за інші</td><td>Категорійні обовʼязкові поля: у кожної підкатегорії свій чекліст критичних атрибутів у тексті</td><td class="score sc8">8</td></tr>
+      <tr><td class="bnum">Кошик/Checkout</td><td><span class="badm">🔴</span> Мікротексти-заглушки: «Ваш кошик порожній», помилки форми англійською («Field is required»), кнопка «Отправить» російською на checkout-кроці 2</td><td>Людські мікротексти УКР скрізь; помилки з підказкою що робити; мовна консистентність</td><td class="score sc7">7</td></tr>
+    </table>
+    <h2 class="st" style="font-size:11pt;margin-top:3mm">Найдорожчі контент-дірки комерційного шляху</h2>
+    <table class="t" style="font-size:7.9pt">
+      <tr><th>#</th><th>Дірка</th><th>Де</th><th>Ефект виправлення</th></tr>
+      <tr class="hl"><td class="num">1</td><td>61% описів SKU = постачальник (дубль у видачі і в конкурентів)</td><td>PDP ×390</td><td>унікалізація топ-200 (задача 48+71 Ганта: атрибутика + AI-пілот з редактурою)</td></tr>
+      <tr><td class="num">2</td><td>Гайдів вибору немає ніде (0 сторінок проти 6 кластерів попиту)</td><td>категорії + блог</td><td>контент-ядро W3 (задача 62): 24 догляд + 20 вибір + 16 подарункові</td></tr>
+      <tr><td class="num">3</td><td>Прикметники без доказів (47 входжень)</td><td>всюди</td><td>правило: прикметник → цифра/факт поруч або видалити</td></tr>
+      <tr><td class="num">4</td><td>Мовна суміш УКР/РУС/АНГЛ у мікротекстах</td><td>кошик, checkout, листи</td><td>вичитка мікротекстів одним пакетом (8 год контентника)</td></tr>
+    </table>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 4/5</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">B.3 · Службові і блог · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава B.3 · Контент службових сторінок і блогу</span>
+    <h1 class="big" style="font-size:23pt">Службовий контент: юридична мова<br>там, де потрібна людська.</h1>
+    <table class="bt" style="margin-top:2mm">
+      <tr><th style="width:22mm">Сторінка</th><th>Контент зараз</th><th style="width:44mm">Еталон</th><th style="width:8mm">Σ/25</th></tr>
+      <tr><td class="bnum">Про нас</td><td>Історія 3 абзаци без цифр, команди, фото виробництва. «Ми любимо посуд» — не доказ</td><td>Сторінка-фундамент довіри: рік, цифри, люди, сертифікати, фото/відео виробництва — джерело RTB і E-E-A-T</td><td class="score sc6">6</td></tr>
+      <tr><td class="bnum">Доставка і оплата</td><td>Фактаж коректний, але суцільним текстом; <span class="badm">поріг €45 — третє значення на сайті</span></td><td>Таблиця «місто → строк → вартість», FAQ-розмітка, один поріг</td><td class="score sc11">11</td></tr>
+      <tr><td class="bnum">Повернення</td><td>Юридичне полотно; сценарію «прийшло з боєм» немає (2.1% доставок!)</td><td>Кроки 1-2-3 + окремий сценарій бою: «фото → заміна, нічого не пересилайте»</td><td class="score sc8">8</td></tr>
+      <tr><td class="bnum">Гарантія</td><td>Один абзац без процедури</td><td>Що покриває/ні + як звернутись + строк рішення</td><td class="score sc5">5</td></tr>
+      <tr><td class="bnum">FAQ</td><td><span class="badm">🔴 Немає.</span> Відповіді розкидані по аккордеонах 640 карток</td><td>Хаб за темами (доставка/догляд/повернення/оригінальність) з FAQPage — головний AEO-актив</td><td class="score sc0">0</td></tr>
+      <tr><td class="bnum">Листи (транзакційні)</td><td>Підтвердження замовлення — системний шаблон платформи без бренду; трекінг-листа немає</td><td>Брендовані листи: підтвердження → відправка+трекінг → «як доглядати» (вхід у цикл d08)</td><td class="score sc4">4</td></tr>
+    </table>
+    <h2 class="st" style="font-size:11.5pt;margin-top:3mm">Блог: 12 статей — розбір кожної</h2>
+    <table class="t" style="font-size:7.4pt">
+      <tr><th>Стаття (12/12)</th><th class="num">Кластер</th><th class="num">Слів</th><th>Діагноз</th><th>Дія</th></tr>
+      <tr><td>«Як обрати сковороду» (2024)</td><td class="num">вибір</td><td class="num">640</td><td>тема-жила, розкрита поверхово, без таблиць/фото</td><td><b>переписати</b> у флагманський гайд 2500+ слів</td></tr>
+      <tr><td>«Догляд за чавуном» (2024)</td><td class="num">догляд</td><td class="num">480</td><td>корисна база, без структури крок-за-кроком</td><td><b>розширити</b> + FAQ-розмітка</td></tr>
+      <tr><td>«Топ-10 подарунків» (2023)</td><td class="num">подарунки</td><td class="num">720</td><td>застаріла: 4 з 10 SKU зняті з продажу</td><td><b>оновити</b> під сезон + добірки за бюджетом</td></tr>
+      <tr><td>2 новини компанії (2023–24)</td><td class="num">—</td><td class="num">~200</td><td>нульова пошукова цінність</td><td>лишити, виключити з sitemap-пріоритетів</td></tr>
+      <tr><td>7 статей «загальні поради» (2023–24)</td><td class="num">розмиті</td><td class="num">300–500</td><td>без кластера, без перелінковки, 0–3 візити/міс</td><td>3 обʼєднати у гайди · 4 переписати під кластери</td></tr>
+    </table>
+    <p class="body" style="font-size:8.4pt;margin-top:2mm"><b>Підсумок блогу:</b> жодна стаття не привʼязана до кластера попиту, нуль перелінковки з категоріями,
+    остання публікація — 8 місяців тому. Це не блог, а архів. План: 12 статей → 3 переписати + 3 оновити + решта в контент-ядро W3
+    (60 сторінок за календарем: 24 догляд · 20 вибір · 16 подарункові добірки — задача 62 Ганта, редполітика в робочих матеріалах).</p>
+    <p class="marg">Контент-календар W3 і редполітика (тон, структура гайда, чекліст доказовості, правила перелінковки) — передаються студії при тендері (задача 7 Ганта).</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 5/5</span></div></div></body></html>
