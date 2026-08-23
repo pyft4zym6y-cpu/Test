@@ -29,6 +29,18 @@
    (те саме підключення клієнта покриває і GSC — scope додано в код).
 4. (опційно, на майбутнє) **Content API for Shopping** → Enable — Merchant Center.
 5. (опційно) **Tag Manager API** → Enable — читання контейнерів GTM.
+6. **PageSpeed Insights API** → Enable — швидкість/Core Web Vitals по URL
+   (БЕЗ OAuth: працює одразу; опційно створіть API key — Credentials →
+   Create credentials → API key → у Vercel як `PAGESPEED_API_KEY`, квота 25k/день).
+
+На перспективу (безкоштовно, вмикається так само в Library):
+7. **Chrome UX Report API** — польові Core Web Vitals по origin (CrUX),
+   історія по місяцях — для трендів швидкості в аудиті.
+8. **Google Sheets API** + **Google Drive API** — автоматична видача клієнту
+   живих таблиць (Гант, юніт-моделі, реєстр знахідок) замість статичних файлів.
+9. **BigQuery API** — якщо у клієнта налаштований експорт GA4 → BigQuery:
+   аудит сирих подій без семплювання.
+10. **Safe Browsing API** — перевірка, чи не позначений сайт клієнта як небезпечний.
 
 ⚠ **Google Ads API — окрема історія**: крім увімкнення API потрібен
 **Developer Token** (Google Ads → Tools → API Center), який Google видає

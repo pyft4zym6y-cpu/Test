@@ -1296,7 +1296,7 @@ function UserDetail({ row, leads, canDelete, selfEmail, onClose, openFile, onSta
 
           <Block title="Каталог доступів клієнта"><AccessCatalog userId={row.userId} initial={rec.accessLog || {}} /></Block>
 
-          <Block title="Аналітика клієнта (GA4) — конектор"><GaPreview userId={row.userId} /></Block>
+          <Block title="Аналітика клієнта (GA4 · GSC · PageSpeed)"><GaPreview userId={row.userId} siteUrl={company?.site || rec.site || ''} /></Block>
 
           <Block title="Внутрішні нотатки команди"><NotesPanel userId={row.userId} initial={rec.notes || []} author={selfEmail} /></Block>
 
@@ -2680,18 +2680,22 @@ function ProjectEditor({ value, onChange, code, company }: { value: Project; onC
 }
 
 /** GA4-конектор клієнта: перевірка підключення і превʼю ключових даних (read-only). */
-function GaPreview({ userId }: { userId: string }) {
+function GaPreview({ userId, siteUrl }: { userId: string; siteUrl?: string }) {
   type GaStatus = { connected?: boolean; email?: string; properties?: { id: string; name: string; account: string }[]; sites?: { url: string; level: string }[]; at?: string; error?: string };
   type GaPull = { period?: string; sessions?: number; users?: number; transactions?: number; revenue?: number; cr?: number; aov?: number;
     channels?: { name: string; sessions: number; revenue: number }[]; devices?: { name: string; sessions: number; cr: number }[]; error?: string };
   type GscPull = { period?: string; clicks?: number; impressions?: number; ctr?: number; position?: number;
     queries?: { q: string; clicks: number; impressions: number; position: number }[]; error?: string };
+  type PsiPull = { score?: number; strategy?: string; lab?: { lcpMs: number; cls: number; tbtMs: number; fcpMs: number; siMs: number };
+    field?: { lcp?: { v: number; cat: string } | null; inp?: { v: number; cat: string } | null; cls?: { v: number; cat: string } | null }; fieldOverall?: string | null; error?: string };
   const [st, setSt] = useState<GaStatus | null>(null);
   const [prop, setProp] = useState('');
   const [data, setData] = useState<GaPull | null>(null);
   const [site, setSite] = useState('');
   const [gsc, setGsc] = useState<GscPull | null>(null);
-  const [busy, setBusy] = useState<'status' | 'pull' | 'gsc' | ''>('');
+  const [psiUrl, setPsiUrl] = useState(siteUrl ? (siteUrl.startsWith('http') ? siteUrl : `https://${siteUrl}`) : '');
+  const [psi, setPsi] = useState<PsiPull | null>(null);
+  const [busy, setBusy] = useState<'status' | 'pull' | 'gsc' | 'psi' | ''>('');
   const check = async () => {
     setBusy('status'); setData(null);
     try {
@@ -2716,7 +2720,16 @@ function GaPreview({ userId }: { userId: string }) {
     catch { setGsc({ error: 'network' }); }
     setBusy('');
   };
+  const pullPsi = async (strategy: 'mobile' | 'desktop') => {
+    if (!psiUrl) return;
+    setBusy('psi');
+    try { setPsi(await (await fetch(`/api/ga4?action=psi&url=${encodeURIComponent(psiUrl)}&strategy=${strategy}`)).json()); }
+    catch { setPsi({ error: 'network' }); }
+    setBusy('');
+  };
   const eurF = (n?: number) => `€${Math.round(n || 0).toLocaleString('uk-UA')}`;
+  const sec = (ms?: number) => `${Math.round((ms || 0) / 100) / 10}s`;
+  const catC = (c?: string) => (c === 'FAST' ? '#1F6E4E' : c === 'AVERAGE' ? '#C58A00' : c ? 'var(--red)' : 'var(--graphite)');
   return (
     <div className="adm-ga">
       <div className="adm-ga-bar">
@@ -2791,6 +2804,27 @@ function GaPreview({ userId }: { userId: string }) {
               </div>
             )}
             <p className="mono adm-ga-note">Період: {data.period} · read-only, живі дані з GA4 клієнта — для звірки анкети й baseline аудиту.</p>
+          </div>
+        ))}
+      <div className="adm-ga-bar" style={{ borderTop: '1px dashed var(--silver)', paddingTop: 10 }}>
+        <input className="mc-search" style={{ minWidth: 240 }} value={psiUrl} onChange={(e) => setPsiUrl(e.target.value)} placeholder="https://сайт-клієнта.com" />
+        <button className="mc-btn sm" onClick={() => void pullPsi('mobile')} disabled={!psiUrl || busy === 'psi'}>{busy === 'psi' ? 'Вимірюємо…' : '⚡ PageSpeed · mobile'}</button>
+        <button className="mc-btn sm" onClick={() => void pullPsi('desktop')} disabled={!psiUrl || busy === 'psi'}>desktop</button>
+        <span className="mono adm-ga-no">PSI — без OAuth, працює одразу по URL</span>
+      </div>
+      {psi && (psi.error
+        ? <p className="mono adm-ga-no">PSI: {psi.error}</p>
+        : (
+          <div className="adm-ga-data">
+            <div className="adm-ga-kpis" style={{ gridTemplateColumns: 'repeat(6, 1fr)' }}>
+              <div><b style={{ color: (psi.score || 0) >= 90 ? '#1F6E4E' : (psi.score || 0) >= 50 ? '#C58A00' : 'var(--red)' }}>{psi.score}</b><span>Performance · {psi.strategy}</span></div>
+              <div><b style={{ color: catC(psi.field?.lcp?.cat) }}>{psi.field?.lcp ? sec(psi.field.lcp.v) : sec(psi.lab?.lcpMs)}</b><span>LCP {psi.field?.lcp ? '(поле)' : '(лаб)'}</span></div>
+              <div><b style={{ color: catC(psi.field?.inp?.cat) }}>{psi.field?.inp ? `${psi.field.inp.v}ms` : '—'}</b><span>INP (поле)</span></div>
+              <div><b style={{ color: catC(psi.field?.cls?.cat) }}>{psi.field?.cls ? Math.round(psi.field.cls.v) / 100 : psi.lab?.cls}</b><span>CLS</span></div>
+              <div><b>{sec(psi.lab?.fcpMs)}</b><span>FCP (лаб)</span></div>
+              <div><b>{psi.lab?.tbtMs}ms</b><span>TBT (лаб)</span></div>
+            </div>
+            <p className="mono adm-ga-note">Польові дані (CrUX, 28 дн) — реальні користувачі; лабораторні — симуляція. {psi.fieldOverall ? `Загальна польова оцінка: ${psi.fieldOverall}.` : 'Польових даних мало (низький трафік) — дивимось лабораторні.'}</p>
           </div>
         ))}
       {!st && <p className="mono adm-empty">Натисніть «Перевірити підключення», щоб побачити стан конектора і превʼю даних.</p>}

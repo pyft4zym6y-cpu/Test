@@ -180,6 +180,35 @@ export default async function handler(req, res) {
     res.status(200).json({ ok: true }); return;
   }
 
+  /* PageSpeed Insights: публічний API по URL — без OAuth і згоди клієнта.
+     Env (опційно): PAGESPEED_API_KEY — піднімає квоту до 25k/день. */
+  if (action === 'psi') {
+    const url = String(q.url || '');
+    const strategy = q.strategy === 'desktop' ? 'desktop' : 'mobile';
+    if (!/^https?:\/\//.test(url)) { res.status(400).json({ error: 'url required (https://…)' }); return; }
+    try {
+      const key = process.env.PAGESPEED_API_KEY;
+      const api = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&strategy=${strategy}&category=performance${key ? `&key=${key}` : ''}`;
+      const j = await (await fetch(api)).json();
+      if (j.error) throw new Error(j.error.message);
+      const lr = j.lighthouseResult || {};
+      const audits = lr.audits || {};
+      const ms = (k) => Math.round(audits[k]?.numericValue || 0);
+      const crux = j.loadingExperience?.metrics || {};
+      const cx = (k) => crux[k] ? { v: crux[k].percentile, cat: crux[k].category } : null;
+      res.status(200).json({
+        url, strategy,
+        score: Math.round((lr.categories?.performance?.score || 0) * 100),
+        lab: { lcpMs: ms('largest-contentful-paint'), cls: Math.round((audits['cumulative-layout-shift']?.numericValue || 0) * 1000) / 1000, tbtMs: ms('total-blocking-time'), fcpMs: ms('first-contentful-paint'), siMs: ms('speed-index') },
+        field: { lcp: cx('LARGEST_CONTENTFUL_PAINT_MS'), inp: cx('INTERACTION_TO_NEXT_PAINT'), cls: cx('CUMULATIVE_LAYOUT_SHIFT_SCORE') },
+        fieldOverall: j.loadingExperience?.overall_category || null,
+      });
+    } catch (e) {
+      res.status(200).json({ error: String(e.message || e) });
+    }
+    return;
+  }
+
   if (action === 'pull_gsc') {
     const u = String(q.u || ''); const site = String(q.site || '');
     if (!CID || !CSECRET || !store) { res.status(200).json({ error: 'not_configured' }); return; }
