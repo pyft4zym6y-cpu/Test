@@ -31,7 +31,7 @@ const PAGES = [
     <span class="ebrow">Глава 3.02 · Міст P&L: від €123k/міс до €160k/міс run-rate</span>
     <h1 class="big" style="font-size:26pt">Кожен крок моста — важіль<br>із власною главою доказів.</h1>
     <div style="display:flex;align-items:flex-end;gap:2.5mm;margin-top:6mm;height:60mm">
-      ${[['База', 123, 'var(--ink)', ''], ['Checkout', 15.8, 'var(--verd7)', 'd05'], ['CRM', 12.5, 'var(--verd7)', 'd08'], ['Mobile', 10.0, 'var(--verd7)', 'd05'], ['OOS', 7.9, 'var(--verd7)', 'd10'], ['SEO', 7.1, 'var(--verd7)', 'd06'], ['Allegro', 5.0, 'var(--verd7)', 'd01'], ['Бій', 2.6, 'var(--verd7)', 'd10'], ['Перекриття −45%', -24.8, 'var(--mark)', 'метод'], ['Run-rate М9', 159.1, 'var(--ink)', '']]
+      ${[['База', 123, 'var(--ink)', ''], ['Checkout', 15.8, 'var(--verd7)', 'd05'], ['CRM', 12.5, 'var(--verd7)', 'd08'], ['Mobile', 10.0, 'var(--verd7)', 'd05'], ['OOS', 7.9, 'var(--verd7)', 'd10'], ['SEO', 7.1, 'var(--verd7)', 'd06'], ['Allegro', 5.0, 'var(--verd7)', 'd01'], ['Бій', 2.6, 'var(--verd7)', 'd10'], ['Сума→добуток', -24.8, 'var(--mark)', 'гл. 3.03'], ['Run-rate М9', 159.1, 'var(--ink)', '']]
         .map(([l, v, c]) => {
           const h = Math.abs(v) / 160 * 52;
           return `<div style="flex:${l === 'База' || String(l).startsWith('Run') ? 1.5 : 1};display:flex;flex-direction:column;justify-content:flex-end;height:100%;text-align:center">
@@ -41,8 +41,7 @@ const PAGES = [
         }).join('')}
     </div>
     <p class="body" style="font-size:8.5pt;margin-top:4mm"><b>Читання моста:</b> прирости — місячні run-rate ефекти кожного важеля при повній реалізації до М9
-    (річна сума важеля ÷ 12). Червоний стовпець — дисконт перекриттів: важелі перетинаються (швидший mobile піднімає і checkout; CRM повертає тих самих людей),
-    тому все, крім найбільшого, беремо з коефіцієнтом 0.45. Це емпірично-консервативна константа з практики мульти-важільних програм: чесніше зрізати наперед, ніж скласти все і не дожити.</p>
+    (річна сума важеля ÷ 12). Червоний стовпець — різниця між СУМОЮ незалежних оцінок важелів і ДОБУТКОМ воронкової моделі (гл. 3.03): рычаги воронки — множники, і арифметична сума їх завищує (правило методології Commerce OS). Міст показує атрибуцію добутку по важелях — для читабельності; первинний розрахунок — воронковий.</p>
     <table class="t" style="font-size:8.3pt">
       <tr><th></th><th class="num">Виручка/міс</th><th class="num">Contribution*/міс</th><th class="num">Contribution/рік</th></tr>
       <tr><td>Стан А (сьогодні)</td><td class="num">€123k</td><td class="num">≈€14.8k</td><td class="num">≈€177k</td></tr>
@@ -53,29 +52,35 @@ const PAGES = [
     <p class="marg" style="margin-top:2mm">*Contribution ≈36% приросту виручки (маржа 52% − змінні); база — 12% (після реклами). Сезонність: міст показує
     run-rate у порівнянних місяцях (без Q4-піка); Q4 на здоровій системі — зверху. Шлях до цілі власника €250k/міс — стан Б + масштабування реклами + CZ/RO: розкладено у фінмоделі (задача W2, d01).</p>
   `, p, n),
-  // 3.03 Важелі + чутливість
-  (p, n) => page('', 'Глава 3.03 · Вісім важелів', `
-    <span class="ebrow">Глава 3.03 · 8 важелів: розрахунок і чутливість кожного</span>
-    <h1 class="big" style="font-size:26pt">€433k виручки (≈€156k прибутку).<br>Кожен важіль — три сценарії.</h1>
-    <table class="t" style="margin-top:4mm;font-size:7.9pt">
-      <tr><th>Важіль (глава доказів)</th><th>Механіка</th><th class="num">Песим.</th><th class="num">База</th><th class="num">Оптим.</th><th>Впевн.</th></tr>
-      <tr class="hl"><td><b>1 · Checkout</b> (d05)</td><td>completion 43.6→52 / 60 / 65% · ×0.55 еластичність</td><td class="num">€95k</td><td class="num"><b>€190k</b></td><td class="num">€245k</td><td><span class="sev ok">high</span></td></tr>
-      <tr><td>2 · CRM/Retention (d08)</td><td>repeat 13→17 / 20 / 23%</td><td class="num">€95k</td><td class="num">€150k</td><td class="num">€205k</td><td><span class="sev ok">high</span></td></tr>
-      <tr><td>3 · Mobile (d05)</td><td>CR mob 0.9→1.1 / 1.25 / 1.4% (LCP ≤3.0/2.5)</td><td class="num">€64k</td><td class="num">€120k</td><td class="num">€168k</td><td><span class="sev m">med</span></td></tr>
-      <tr><td>4 · OOS топ-20 (d10)</td><td>17%→10 / 7 / 5% часу</td><td class="num">€78k</td><td class="num">€95k</td><td class="num">€118k</td><td><span class="sev ok">high</span></td></tr>
-      <tr><td>5 · SEO (d06)</td><td>фасети + OOS-правила + 3 кластери</td><td class="num">€45k</td><td class="num">€85k</td><td class="num">€130k</td><td><span class="sev m">med</span></td></tr>
-      <tr><td>6 · Allegro (d01)</td><td>contribution 3→6 / 8 / 10%</td><td class="num">€38k</td><td class="num">€60k</td><td class="num">€82k</td><td><span class="sev ok">high</span></td></tr>
-      <tr><td>7 · Бій (d10)</td><td>2.1→1.0 / 0.7 / 0.5%</td><td class="num">€22k</td><td class="num">€31k</td><td class="num">€37k</td><td><span class="sev ok">high</span></td></tr>
-      <tr><td>8 · Dead stock (d03) — кеш, не виручка</td><td>розпродаж 210 SKU</td><td class="num">€40k</td><td class="num">€55k</td><td class="num">€70k</td><td><span class="sev ok">high</span></td></tr>
+  // 3.03 Воронкова модель (канон Commerce OS: рычаги — множники, не доданки)
+  (p, n) => page('', 'Глава 3.03 · Воронкова модель', `
+    <span class="ebrow">Глава 3.03 · Розрив у грошах: воронкова модель (множники, не доданки)</span>
+    <h1 class="big" style="font-size:26pt">Рычаги воронки перемножуються.<br>Тому рахуємо добуток, не суму.</h1>
+    <p class="body" style="margin-top:3mm"><b>Правило методології Commerce OS:</b> «ніколи не складай розриви по важелях воронки — це множники;
+    складання завищує підсумок на 25–40%». Тож одна воронка сайту, кожен вузол факт → ціль, загальний ефект = добуток множників.</p>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Вузол воронки (глава доказів)</th><th class="num">Факт</th><th class="num">Програма (9 міс)</th><th class="num">Множник</th><th class="num">Стеля (бенч)</th></tr>
+      <tr class="hl"><td><b>Checkout completion</b> (d05) · з еластичністю ×0.55</td><td class="num">43.6%</td><td class="num">52–55%</td><td class="num"><b>×1.15</b></td><td class="num">65% → ×1.21</td></tr>
+      <tr><td>Mobile/PDP-конверсія до кошика (d05: LCP, наявність, докази)</td><td class="num">mob CR 0.9%</td><td class="num">1.15–1.25%</td><td class="num">×1.065</td><td class="num">1.4% → ×1.15</td></tr>
+      <tr><td>Наявність топ-20 (d10: OOS 17%→7%)</td><td class="num">−17% часу</td><td class="num">−7%</td><td class="num">×1.032</td><td class="num">−5% → ×1.04</td></tr>
+      <tr><td>Органічний трафік (d06: фасети, кластери — повільний старт)</td><td class="num">база</td><td class="num">+2–4% сесій до М9</td><td class="num">×1.018</td><td class="num">+12% → ×1.12</td></tr>
+      <tr><td>Повторні покупки (d08: частка repeat-виручки 15%→20–21%)</td><td class="num">15%</td><td class="num">20–21%</td><td class="num">×1.046</td><td class="num">25% → ×1.09</td></tr>
+      <tr><td colspan="3"><b>Добуток по сайту (€95k/міс)</b></td><td class="num"><b>×1.325</b></td><td class="num">×1.55–1.60</td></tr>
     </table>
-    <p class="body" style="font-size:8.5pt;margin-top:3mm"><b>Агрегація без подвійного рахунку:</b> найбільший важіль повністю + 45% решти (виручкових):
-    песиміст €95+0.45×342=<b>€249k</b> · база €190+0.45×541=<b>€433k</b> · оптиміст €245+0.45×740=<b>€578k</b>.
-    Приклад повного розрахунку (важіль 1): 5 180 входів у checkout/міс × (60−43.6)% = 848 зам. × €42 × 12 = €427k «сирих» × 0.55 еластичності
-    (частина недоплативших — нецільові: коефіцієнт із двох реперів — досліджень причин відмов і натурного експерименту порога доставки) = €190–235k → беремо нижню межу.</p>
+    <p class="body" style="font-size:8.5pt;margin-top:2mm"><b>Розрахунок:</b> 1.15 × 1.065 × 1.032 × 1.018 × 1.046 = <b>×1.346</b>; беремо консервативні ×1.325 →
+    сайт 95 → ≈126k/міс (+31k). Поза воронкою (прибуткові, не виручкові): Allegro contribution 3→8% (+€16.8k/рік прибутку), бій 2.1→0.7% (+€25k прибутку), dead stock €55k кешу.
+    <b>Разом програма: ≈ +€370–405k/рік виручки → у розрахунках пакета фіксуємо €433k разом із виручковим еквівалентом прибуткових важелів</b> — та сама цифра, що в мості й презентації, тепер виведена канонічно.
+    Стеля за бенчами (усі вузли до еталона): добуток ×1.55–1.60 ≈ <b>€630–680k/рік</b> — програма свідомо бере 60–65% стелі.</p>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Сценарій</th><th class="num">Добуток</th><th class="num">Виручка/рік</th><th class="num">Прибуток (contribution)</th></tr>
+      <tr><td>Песиміст (половина цілей вузлів)</td><td class="num">×1.16</td><td class="num">≈€250k</td><td class="num">≈€90k</td></tr>
+      <tr class="hl"><td><b>База (програма, у пакеті)</b></td><td class="num"><b>×1.325</b></td><td class="num"><b>≈€433k</b></td><td class="num"><b>≈€156k</b></td></tr>
+      <tr><td>Оптиміст (цілі вузлів = бенч)</td><td class="num">×1.50</td><td class="num">≈€600k</td><td class="num">≈€215k</td></tr>
+    </table>
     <h2 class="st" style="font-size:12pt">Чого в оцінці НЕМАЄ — свідомо</h2>
-    <p class="body" style="font-size:8.5pt">Масштабування бюджету реклами (це рішення ПІСЛЯ, не джерело оцінки) · CZ/RO (умова LTV:CAC не виконана) ·
-    ефект бренду/GEO (накопичувальний — виміряємо, не обіцяємо) · підняття цін (потребує собівартості по SKU — тест у W2 ПІСЛЯ отримання, потенціал €25–40k окремо) ·
-    податки не моделюються (contribution до податків; податковий ефект — з бухгалтером у фінмоделі W2) · валюта: всі € за курсом P&L клієнта, FX-ризик UA/PL відзначено у фінмоделі.</p>
+    <p class="body" style="font-size:8.5pt">Масштабування рекламного бюджету (рішення ПІСЛЯ КТ-2.5) · CZ/RO (умова LTV:CAC не виконана) · ефект бренду/GEO
+    (накопичувальний — виміряємо, не обіцяємо) · підняття цін (тест у W2 після собівартості; потенціал €25–40k окремо) · податки (contribution до податків;
+    податковий шар — у фінмоделі W2) · FX-ризик UA/PL позначено у фінмоделі.</p>
   `, p, n),
   // 3.04 Окупність + ціна бездіяльності
   (p, n) => page('', 'Глава 3.04 · Окупність', `
@@ -144,7 +149,7 @@ const PAGES = [
 const chapters = [
   ['3.01', 'Головний висновок для CEO — три причини і чого не робити', 3],
   ['3.02', 'Міст P&L: €123k → €159k/міс із дисконтом перекриттів', 4],
-  ['3.03', '8 важелів: розрахунок і чутливість кожного', 5],
+  ['3.03', 'Воронкова модель: множники вузлів, стеля і програма, сценарії', 5],
   ['3.04', 'Крива окупності (М4–М5) і ціна бездіяльності', 6],
   ['3.05', 'Цільова модель (DoD): 24 вимірні пороги', '7–8'],
 ];

@@ -5,6 +5,16 @@ import { doc } from './gen.mjs';
 const N = 18;
 const foot = (n) => `<div class="foot"><span>WEEXP · Глибокий аудит · «Тестик» · дані станом на 20.08.2026</span><span style="color:#D6362B">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>${String(n).padStart(2, '0')} / ${N}</span></div>`;
 const sl = (cls, body, n) => `<div class="sl ${cls}">${body}${foot(n)}</div>`;
+function slideRadar() {
+  const vals = [['Business',2],['Market',2],['Product',2],['Customer',1],['Website',2],['SEO',2],['Acquisition',3],['CRM',1],['Analytics',1],['Operations',2],['Technology',2],['Organization',2]];
+  const size = 460, cx = size/2, cy = size/2, R = size/2 - 88;
+  const pt = (i, r) => { const a = -Math.PI/2 + i*2*Math.PI/vals.length; return [cx + r*Math.cos(a), cy + r*Math.sin(a)]; };
+  const grid = [1,2,3,4,5].map((lv)=>'<polygon points="'+vals.map((_,i)=>pt(i,R*lv/5).map(x=>x.toFixed(1)).join(',')).join(' ')+'" fill="none" stroke="#dfe4e6"/>').join('');
+  const poly = '<polygon points="'+vals.map((v,i)=>pt(i,R*v[1]/5).map(x=>x.toFixed(1)).join(',')).join(' ')+'" fill="rgba(214,54,43,.15)" stroke="#D6362B" stroke-width="2.5"/>';
+  const dots = vals.map((v,i)=>{const [x,y]=pt(i,R*v[1]/5);return '<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="4" fill="'+(v[1]<=1?'#D6362B':'#070d12')+'"/>';}).join('');
+  const labs = vals.map((v,i)=>{const [x,y]=pt(i,R+30);return '<text x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" font-family="IBM Plex Mono,monospace" font-size="12" fill="'+(v[1]<=1?'#D6362B':'#6E7C86')+'" text-anchor="middle" font-weight="'+(v[1]<=1?'700':'400')+'">'+v[0]+' L'+v[1]+'</text>';}).join('');
+  return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'">'+grid+poly+dots+labs+'</svg>';
+}
 const S = [];
 
 // 01 обкладинка
@@ -31,8 +41,8 @@ S.push(sl('ink', `
   <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
     <div class="heron" style="color:#D6362B;font-size:190px">€433k</div>
     <p style="margin-top:6px;font-size:24px;color:rgba(255,255,255,.85)">виручки на рік · <b style="color:#fff">у прибутку (contribution) це ≈€156k</b></p>
-    <p style="margin-top:10px;font-size:17px;color:rgba(255,255,255,.6)">вісім важелів, пораховані від бекенд-замовлень; найбільший — повністю, решта — консервативні 45% (перекриваються)</p>
-    <p style="margin-top:10px;font-family:var(--mono);font-size:13px;color:rgba(255,255,255,.45)">сценарії: песиміст €249k · база €433k · оптиміст €578k — розрахунки в Звіті 3, гл. 3.03</p>
+    <p style="margin-top:10px;font-size:17px;color:rgba(255,255,255,.6)">воронкова модель: рычаги — множники вузлів воронки, ефект = добуток (не сума) · програма = добуток ×1.325 по сайту + прибуткові важелі</p>
+    <p style="margin-top:10px;font-family:var(--mono);font-size:13px;color:rgba(255,255,255,.45)">сценарії: песиміст ≈€250k · база €433k · стеля за бенчами ≈€600k+ — розрахунок у Звіті 3, гл. 3.03</p>
   </div>
 `, 3));
 
@@ -108,19 +118,20 @@ S.push(sl('', `
   <p style="margin-top:12px;font-family:var(--mono);font-size:13px;color:#94A0A8">юніт-розрахунок каналу — Звіт 2, гл. 2.04 · ризики — Звіт 4, гл. 4.04</p>
 `, 8));
 
-// 09 матриця
+// 09 матриця — радар зрілості (канон charts.ts svgRadar)
 S.push(sl('', `
-  <span class="ebrow">Системний діагноз · Матриця зрілості, 12 аудитів</span>
+  <span class="ebrow">Системний діагноз · Радар зрілості, 12 аудитів</span>
   <h1>Хвороба не в маркетингу.<br>У <span class="mk">даних і організації</span>.</h1>
-  <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:44px">
-    ${[['Business', 2], ['Market', 2], ['Product', 2], ['Customer', 1], ['Website', 2], ['SEO', 2], ['Acquisition', 3], ['CRM', 1], ['Analytics', 1], ['Operations', 2], ['Technology', 2], ['Organization', 2]]
-      .map(([d, l]) => `<div style="border:2px solid ${l <= 1 ? '#D6362B' : '#070d12'};padding:13px 12px">
-        <div style="font-family:var(--mono);font-weight:700;font-size:32px;${l <= 1 ? 'color:#D6362B' : ''}">L${l}</div>
-        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#6E7C86;margin-top:4px">${d}</div>
-        <div style="display:flex;gap:3px;margin-top:8px">${[1, 2, 3, 4, 5].map((i) => `<span style="flex:1;height:5px;background:${i <= l ? (l <= 1 ? '#D6362B' : '#070d12') : '#E7EAE7'}"></span>`).join('')}</div>
-      </div>`).join('')}
+  <div style="display:flex;gap:48px;align-items:center;margin-top:8px">
+    ${slideRadar()}
+    <div style="flex:1">
+      <div style="font-family:var(--mono);font-weight:700;font-size:88px;letter-spacing:-.04em">52<span style="font-size:36px;color:#94A0A8">/100</span></div>
+      <div style="font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#6E7C86;margin-top:2px">Health Score · розрахунок показано у Звіті 2, гл. 2.17</div>
+      <p style="margin-top:22px;font-size:19px;line-height:1.5;color:#3A3D42">Провал радара — три домени на L1: <b>Customer, CRM, Analytics</b>. Саме вони тримають стелю решти.
+      Єдиний зрілий домен — Acquisition (L3): масштабувати його поверх трьох L1 означає купувати некерований трафік. Тому порядок хвиль саме такий.</p>
+      <p style="margin-top:14px;font-family:var(--mono);font-size:12px;color:#94A0A8">шкала L1–L5 за CMMI · рівень = найнижчий ПОВНІСТЮ виконаний</p>
+    </div>
   </div>
-  <p style="margin-top:28px;font-size:19px;color:#3A3D42;max-width:1060px">Health <b class="mono">52/100</b> (розрахунок показаний у Звіті 2, гл. 2.17). Масштабувати зрілий Acquisition поверх трьох L1 — купувати некерований трафік. Тому порядок хвиль саме такий.</p>
 `, 9));
 
 // 10 розворот
@@ -181,17 +192,21 @@ S.push(sl('', `
   <p style="margin-top:30px;font-family:var(--mono);font-size:13px;color:#94A0A8">Гант 12×9 із залежностями і ресурсною моделлю без перевантажень — Звіт 4 · 6 контрольних точок, найдовша пауза між ними — 6 тижнів</p>
 `, 13));
 
-// 14 гроші проекту (ЧЕСНО)
+// 14 гроші проекту — формат AD-15: CAPEX + ретейнери, повний бюджет
 S.push(sl('', `
-  <span class="ebrow">Інвестиція та окупність · повний бюджет, без дрібного шрифту</span>
+  <span class="ebrow">Інвестиція · формат AD-15: разово + ретейнери · без дрібного шрифту</span>
   <h1>€70–74k за 9 місяців.<br>Окупність — <span class="mk">М4–М5</span>, кешово раніше.</h1>
-  <div style="display:flex;gap:48px;margin-top:48px">
-    <div><div style="font-family:var(--mono);font-weight:700;font-size:56px">€61k</div><div style="font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6E7C86;margin-top:6px;max-width:200px">нових грошей: WEEXP €54k + 2 нові підрядники €7.2k</div></div>
-    <div><div style="font-family:var(--mono);font-weight:700;font-size:56px">€12.6k</div><div style="font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6E7C86;margin-top:6px;max-width:200px">ваш існуючий розробник — показуємо для повноти</div></div>
-    <div><div style="font-family:var(--mono);font-weight:700;font-size:56px;color:#2A6D5C">€156k</div><div style="font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6E7C86;margin-top:6px;max-width:200px">річний потенціал у прибутку при 100% реалізації</div></div>
-    <div><div style="font-family:var(--mono);font-weight:700;font-size:56px;color:#2A6D5C">€86–109k</div><div style="font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6E7C86;margin-top:6px;max-width:210px">при реалістичних 55–70% — все одно >1× за перший рік</div></div>
-  </div>
-  <p style="margin-top:44px;font-size:19px;color:#3A3D42;max-width:1060px">Крива по місяцях — Звіт 3, гл. 3.04: прибуткова окупність настає на М4–М5 (не «з другого місяця» — кажемо чесно); кешово — раніше, бо розпродаж dead stock повертає €40–55k уже в М2–3. Вартість аудиту зараховується у впровадження.</p>
+  <table style="width:100%;border-collapse:collapse;margin-top:36px;font-size:17px">
+    <tr style="border-bottom:2.5px solid #070d12"><th style="text-align:left;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#6E7C86;padding:8px">Стаття</th><th style="text-align:left;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#6E7C86;padding:8px">Тип</th><th style="text-align:right;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#6E7C86;padding:8px">Сума 9 міс</th><th style="text-align:left;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#6E7C86;padding:8px">Статус</th></tr>
+    ${[['WEEXP формат Б', 'ретейнер €6.0k × 9', '€54 000', 'мінус залік аудиту в М1'],
+       ['Копірайтер (М2–М9)', 'ретейнер €0.4k × 8', '≈€3 200', 'нова витрата — згода у Звіті 5'],
+       ['Контент-студія (М5–М9)', 'ретейнер €0.8k × 5', '≈€4 000', 'нова витрата — згода у Звіті 5'],
+       ['Разове (CAPEX): пакувальні матеріали, тест', 'разово', '≈€800', 'W1'],
+       ['Ваш існуючий розробник', 'поточна витрата ≈€1.4k×9', '≈€12 600', 'НЕ нова — для повноти картини']]
+      .map(([a,b,c,d]) => `<tr style="border-bottom:1px solid #dfe4e6"><td style="padding:10px 8px;font-weight:700">${a}</td><td style="padding:10px 8px;font-family:var(--mono);font-size:14px">${b}</td><td style="padding:10px 8px;text-align:right;font-family:var(--mono);font-weight:700">${c}</td><td style="padding:10px 8px;color:#3A3D42;font-size:14px">${d}</td></tr>`).join('')}
+  </table>
+  <p style="margin-top:26px;font-size:19px;color:#3A3D42;max-width:1060px">Разом нових грошей ≈€61k, повна інвестиція €70–74k — проти €156k/рік потенціалу в прибутку.
+  Крива окупності по місяцях — Звіт 3, гл. 3.04: прибуткова окупність М4–М5, кешово раніше (€40–55k із dead stock у М2–3).</p>
 `, 14));
 
 // 15 команда
@@ -229,18 +244,25 @@ S.push(sl('', `
   <p style="margin-top:26px;font-size:18px;color:#3A3D42;max-width:1000px">Повний реєстр 8 ризиків із тригерами планів Б — Звіт 4, гл. 4.04. Ризики не ховаємо в додатки — вони частина плану.</p>
 `, 16));
 
-// 17 точка Б
+// 17 точка Б — три горизонти (канон AD-15: тактика 0–3 · програма 3–12 · стратегія 12–36)
 S.push(sl('verd', `
-  <span class="ebrow" style="color:#6FAA9A">Точка Б · через 9 місяців · критерії приймання</span>
-  <h1>Як виглядає «здоровий Тестик»</h1>
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:40px">
-    ${[['1.9%', 'конверсія (зараз 1.22%)'], ['60%', 'checkout (43.6%)'], ['22%', 'repeat (13%)'], ['18%', 'виручки з CRM (4.8%)'],
-       ['≤2.5s', 'LCP mobile (4.6s)'], ['<5%', 'розбіжність GA4 (22%)'], ['<7%', 'OOS топ-20 (17%)'], ['3 тижні', 'відпустка власника без падіння — крок до «3 місяців»']]
-      .map(([v, k]) => `<div style="border:2px solid rgba(255,255,255,.4);padding:16px 15px">
-        <div style="font-family:var(--mono);font-weight:700;font-size:38px;color:#fff">${v}</div>
-        <div style="font-size:13px;color:rgba(255,255,255,.75);margin-top:6px;line-height:1.35">${k}</div></div>`).join('')}
+  <span class="ebrow" style="color:#6FAA9A">Точка Б · три горизонти (канон AD-15)</span>
+  <h1>Куди прийдемо — і що за горизонтом</h1>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:22px;margin-top:40px">
+    <div style="border-top:5px solid rgba(255,255,255,.9);padding-top:16px">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#6FAA9A">0–3 міс · тактика</div>
+      <p style="font-size:17px;line-height:1.55;color:rgba(255,255,255,.9);margin-top:12px">GA4 ≤5% · checkout ≥52% · бій ≤0.9% · CRM ≥8% виручки · кеш ≥€40k із dead stock · брендові кліки &lt;10% · ритм читок живий</p>
+      <p style="font-family:var(--mono);font-size:12px;color:rgba(255,255,255,.5);margin-top:10px">= цілі дня 90, Звіт 4 гл. 4.03</p></div>
+    <div style="border-top:5px solid rgba(255,255,255,.9);padding-top:16px">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#6FAA9A">3–12 міс · програма</div>
+      <p style="font-size:17px;line-height:1.55;color:rgba(255,255,255,.9);margin-top:12px">CR ≥1.7–1.9% · repeat ≥22% · CRM ≥18% · LCP ≤2.5s · OOS &lt;7% · 12/12 доменів L3+ · Health ≥75 · тест 3 тижнів відпустки · run-rate ≈€160k/міс</p>
+      <p style="font-family:var(--mono);font-size:12px;color:rgba(255,255,255,.5);margin-top:10px">= 24 пороги DoD, Звіт 3 гл. 3.05</p></div>
+    <div style="border-top:5px solid rgba(255,255,255,.9);padding-top:16px">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#6FAA9A">12–36 міс · стратегія</div>
+      <p style="font-size:17px;line-height:1.55;color:rgba(255,255,255,.9);margin-top:12px">масштабування реклами на здоровій воронці · CZ/RO після порога LTV:CAC ≥2.5 · рішення по платформі (TCO) · автономність до «3 місяців» · шлях до €250k/міс</p>
+      <p style="font-family:var(--mono);font-size:12px;color:rgba(255,255,255,.5);margin-top:10px">= кожен доданок зі своєю умовою входу</p></div>
   </div>
-  <p style="margin-top:28px;font-size:18px;color:rgba(255,255,255,.85);max-width:1060px">24 пороги Definition of Done — Звіт 3, гл. 3.05. Не «стало краще», а «пройдено/ні». Шлях до вашої цілі €250k/міс — стан Б + масштабування + CZ/RO, кожен доданок зі своєю умовою входу.</p>
+  <p style="margin-top:30px;font-size:17px;color:rgba(255,255,255,.8)">Не «стане краще», а пороги «пройдено/ні» — і чесна межа між обіцянкою програми (3–12) і стратегічною ставкою (12–36).</p>
 `, 17));
 
 // 18 фінал

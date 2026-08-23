@@ -234,32 +234,84 @@ const REG = [
   ['12-01', 'SLA рішень власника (4–6 дн)', 'Organization', 8, 8, 6, 384, 'W1'],
   ['06-01', 'Фасетні дублі ×8 індексу', 'SEO', 7, 8, 6, 336, 'W3'],
 ];
+function radar(vals, size) {
+  // канон charts.ts svgRadar: 12 осей, max 5
+  const cx = size / 2, cy = size / 2, R = size / 2 - 42;
+  const pt = (i, r) => { const a = -Math.PI / 2 + (i * 2 * Math.PI) / vals.length; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; };
+  const grid = [1, 2, 3, 4, 5].map((lv) => '<polygon points="' + vals.map((_, i) => pt(i, (R * lv) / 5).map((x) => x.toFixed(1)).join(',')).join(' ') + '" fill="none" stroke="#dfe4e6" stroke-width="1"/>').join('');
+  const axes = vals.map((v, i) => { const [x, y] = pt(i, R); return '<line x1="' + cx + '" y1="' + cy + '" x2="' + x.toFixed(1) + '" y2="' + y.toFixed(1) + '" stroke="#dfe4e6"/>'; }).join('');
+  const poly = '<polygon points="' + vals.map((v, i) => pt(i, (R * v.l) / 5).map((x) => x.toFixed(1)).join(',')).join(' ') + '" fill="rgba(214,54,43,.14)" stroke="#D6362B" stroke-width="2"/>';
+  const dots = vals.map((v, i) => { const [x, y] = pt(i, (R * v.l) / 5); return '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="3" fill="' + (v.l <= 1 ? '#D6362B' : '#070d12') + '"/>'; }).join('');
+  const labs = vals.map((v, i) => { const [x, y] = pt(i, R + 17); return '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" font-family="IBM Plex Mono,monospace" font-size="8.5" fill="#6E7C86" text-anchor="middle">' + v.n + ' L' + v.l + '</text>'; }).join('');
+  return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '">' + grid + axes + poly + dots + labs + '</svg>';
+}
+const RADAR_VALS = [
+  { n: 'Bus', l: 2 }, { n: 'Mkt', l: 2 }, { n: 'Prod', l: 2 }, { n: 'Cust', l: 1 }, { n: 'Web', l: 2 }, { n: 'SEO', l: 2 },
+  { n: 'Acq', l: 3 }, { n: 'CRM', l: 1 }, { n: 'Anl', l: 1 }, { n: 'Ops', l: 2 }, { n: 'Tech', l: 2 }, { n: 'Org', l: 2 },
+];
+
 const FINAL = [
-  // 2.16 CJM
-  (p, n) => page('', 'Глава 2.16 · CJM', `
-    <span class="ebrow">Глава 2.16 · Карта шляху клієнта</span>
-    <h1 class="big" style="font-size:26pt">Шлях рветься двічі: на оплаті —<br>і в тиші після покупки.</h1>
-    <table class="t" style="margin-top:4mm;font-size:7.8pt">
-      <tr><th style="width:19mm">Етап</th><th>Дані етапу</th><th>Момент істини / розрив</th><th>Хто чинить (глава)</th></tr>
-      <tr><td><b>Виявлення</b></td><td>першй дотик: пошук 41% · реклама 34% · соцмережі 12% (опитування checkout з W2 — зараз оцінка)</td><td>бренд не відрізняється — «ще один магазин»</td><td>d02 позиція · d07 креативи</td></tr>
-      <tr><td><b>Вибір</b></td><td>PDP-глибина 52%; відгуки на 12% SKU; строк доставки під fold</td><td>нема причин довіряти → йде порівнювати</td><td>d05 PDP · d02 RTB</td></tr>
-      <tr class="hl"><td><b>Покупка</b></td><td>кошик 7% → checkout 2.8% → оплата 1.22%; completion 43.6%</td><td><span class="sev h">РОЗРИВ №1</span> доставка в кінці · 9 полів · mobile 4.6s</td><td>d05 повністю</td></tr>
-      <tr><td><b>Отримання</b></td><td>бій 2.1%; 62% негативу — доставка; OTIF не міряється</td><td>момент істини ніші: доїхав цілим або клієнта немає</td><td>d10 пакування · OTIF</td></tr>
-      <tr class="hl"><td><b>Повторна</b></td><td>медіана 2-ї — 96 дн; касань у вікні 30–60: нуль; repeat 13%</td><td><span class="sev h">РОЗРИВ №2</span> тиша при живій базі 41k</td><td>d08 flows · d04 сегменти</td></tr>
-      <tr><td><b>Адвокація</b></td><td>4.6 Allegro; NPS немає; реферальної механіки немає</td><td>потенціал не активований</td><td>d04 NPS · W3 механіка</td></tr>
+  // 2.16 CJM · канон cjmflow.ts: 15 етапів · 3 групи · readiness /10 · джерело
+  (p, n) => page('', 'Глава 2.16 · CJM 1/2', `
+    <span class="ebrow">Глава 2.16 · Customer Journey Audit · 15 етапів Awareness → Advocacy</span>
+    <h1 class="big" style="font-size:24pt">On-site шлях готовий на 5.6/10.<br>Рветься на оплаті — і в тиші після.</h1>
+    <div style="display:flex;gap:6mm;margin:3mm 0"><div class="kpi" style="flex:1"><div class="v bad">5.6/10</div><div class="k">on-site journey readiness</div></div>
+      <div class="kpi" style="flex:1"><div class="v bad">L1</div><div class="k">journey maturity floor — стелю тримає post-purchase</div></div>
+      <div class="kpi" style="flex:1"><div class="v">9/15</div><div class="k">етапів виміряно обходом+даними; 6 — «дані/дослідження»</div></div></div>
+    <table class="t" style="font-size:7.2pt">
+      <tr><th>Етап</th><th>Група</th><th>Мета клієнта</th><th class="num">Гот./10</th><th>Джерело</th><th>Friction → можливість</th><th>Пр.</th></tr>
+      <tr><td>1 Awareness</td><td>Pre-site</td><td>дізнатись, що бренд існує</td><td class="num">4</td><td class="src">дані/досл.</td><td>бренд «як усі» → позиція експерта (d02)</td><td class="mono">P2</td></tr>
+      <tr><td>2 Discovery</td><td>Pre-site</td><td>знайти в пошуку/рекламі</td><td class="num">6</td><td class="src">обхід+GSC</td><td>3/6 кластерів попиту без сторінок (d06)</td><td class="mono">P1</td></tr>
+      <tr><td>3 Consideration</td><td>Pre-site</td><td>порівняти магазини</td><td class="num">5</td><td class="src">обхід</td><td>RTB-доказів немає; відгуки на 12% SKU</td><td class="mono">P1</td></tr>
+      <tr><td>4 Search (on-site)</td><td>On-site</td><td>знайти товар на сайті</td><td class="num">5</td><td class="src">обхід+GA4</td><td>18% нульових видач → синоніми (d05)</td><td class="mono">P1</td></tr>
+      <tr><td>5 Product (PDP)</td><td>On-site</td><td>переконатись і обрати</td><td class="num">6</td><td class="src">обхід</td><td>строк доставки під fold; повернення у футері</td><td class="mono">P1</td></tr>
+      <tr><td>6 Cart</td><td>On-site</td><td>зібрати замовлення</td><td class="num">7</td><td class="src">обхід+GA4</td><td>кошик тримає ✓; підказки доставки відсутні</td><td class="mono">P2</td></tr>
+      <tr class="hl"><td><b>7 Checkout</b></td><td>On-site</td><td>оформити без болю</td><td class="num"><b>3</b></td><td class="src">обхід+GA4</td><td><b>РОЗРИВ №1:</b> доставка в кінці · 9 полів · completion 43.6%</td><td class="mono">P0</td></tr>
+      <tr class="hl"><td><b>8 Payment</b></td><td>On-site</td><td>заплатити звично</td><td class="num"><b>4</b></td><td class="src">обхід+бекенд</td><td>без BLIK для PL (−31% completion); Apple Pay невидимий для GA4</td><td class="mono">P0</td></tr>
+      <tr><td>9 Delivery</td><td>Post-purch.</td><td>отримати вчасно і цілим</td><td class="num">4</td><td class="src">дані (перевізники)</td><td>бій 2.1% · OTIF не міряється (d10)</td><td class="mono">P0</td></tr>
+      <tr><td>10 Receipt (розпакування)</td><td>Post-purch.</td><td>радість, не розчарування</td><td class="num">4</td><td class="src">дані (VoC)</td><td>62% негативу — доставка/бій; момент істини ніші</td><td class="mono">P0</td></tr>
+      <tr><td>11 Usage</td><td>Post-purch.</td><td>користуватись і доглядати</td><td class="num">3</td><td class="src">обхід</td><td>контенту догляду немає → привід контакту (d06/d08)</td><td class="mono">P1</td></tr>
+      <tr><td>12 Support</td><td>Post-purch.</td><td>швидко розвʼязати проблему</td><td class="num">5</td><td class="src">дані/досл.</td><td>час 1-ї відповіді не міряється (нове питання анкети)</td><td class="mono">P2</td></tr>
+      <tr class="hl"><td><b>13 Repeat</b></td><td>Post-purch.</td><td>повернутись за другою</td><td class="num"><b>2</b></td><td class="src">замовлення</td><td><b>РОЗРИВ №2:</b> вікно 30–60 дн порожнє; repeat 13%</td><td class="mono">P0</td></tr>
+      <tr><td>14 Loyalty</td><td>Post-purch.</td><td>мати причину лишатись</td><td class="num">2</td><td class="src">обхід</td><td>програми немає — після виміряних flows (W3)</td><td class="mono">P2</td></tr>
+      <tr><td>15 Advocacy</td><td>Post-purch.</td><td>порадити друзям</td><td class="num">3</td><td class="src">дані (4.6 Allegro)</td><td>потенціал не активований: NPS→реферальна механіка</td><td class="mono">P2</td></tr>
     </table>
-    <h2 class="st" style="font-size:12pt;margin-top:3mm">Емоційна крива і B2B-гілка</h2>
-    <p class="body" style="font-size:8.5pt">Емоційний пік — розпакування (посуд = тактильна покупка): саме там зараз ризик бою, і саме там W1-стандарт пакування
-    міняє досвід найшвидше. Друга вершина — «посуд живе на кухні щодня»: привід для контенту догляду (d06) і після-продажного циклу (d08).
-    <b>B2B-гілка (12% виручки):</b> коротший шлях (запит → прайс → рахунок), свій розрив — дебіторка й відсутність мінімального замовлення; розібрано в d01 §4,
-    задачі в беклозі r4 (не «в робочих матеріалах»).</p>
-    <div class="callout v" style="font-size:8.5pt"><b>Північна зірка шляху:</b> частка клієнтів із 2-ю покупкою ≤90 днів: 9% → 18% (пороги в Звіті 3).
-    Вона збирає весь шлях: чесна доставка + ціла посилка + вчасний лист.</div>
+    <p class="marg" style="margin-top:2mm">Readiness — з обходу вітрини і звірених даних; етапи «дані/дослідження» чесно позначені — цифри там не вигадуються (канон cjmflow). Пріоритети P0–P3 → задачі в беклозі (Звіт 4).</p>
+  `, p, n),
+  (p, n) => page('', 'Глава 2.16 · CJM 2/2', `
+    <span class="ebrow">Глава 2.16 · Журні-тест руками + емоційна крива</span>
+    <h1 class="big" style="font-size:24pt">Система пройшла шлях покупця сама.<br>10 кроків: 6 пройдено, 2 спотикання, 2 тупики.</h1>
+    <p class="body" style="font-size:8.4pt;margin-top:2mm">Канон journey-тесту: кожен крок = дія → очікування за еталоном → фактичний результат → статус,
+    із джерелом збою (сайт ≠ браузер/тест ≠ мережа) і відтворюваністю. Оплата не виконується — тест зупиняється на формі checkout.</p>
+    <table class="t" style="font-size:7.4pt">
+      <tr><th>#</th><th>Дія</th><th>Еталон (очікування)</th><th>Факт</th><th>Статус</th><th>Джерело · відтвор.</th></tr>
+      <tr><td class="num">1</td><td>Відкрити головну (mobile)</td><td>LCP ≤2.5s, оффер видно</td><td>4.6s; оффер ок</td><td><span class="sev m">спотикання</span></td><td class="src">сайт · 3/3</td></tr>
+      <tr><td class="num">2</td><td>Пошук «пательня гриль»</td><td>релевантна видача</td><td>«нічого не знайдено» (є «сковорода гриль»)</td><td><span class="sev h">тупик</span></td><td class="src">сайт · 3/3</td></tr>
+      <tr><td class="num">3</td><td>Каталог → фільтр за діаметром</td><td>фільтр звужує видачу</td><td>фільтр порожній (атрибути не заповнені)</td><td><span class="sev h">тупик</span></td><td class="src">сайт · 2/2</td></tr>
+      <tr><td class="num">4</td><td>Відкрити PDP hero-SKU</td><td>фото, ціна, наявність, строк</td><td>усе є; строк — дрібно під fold</td><td><span class="sev m">спотикання</span></td><td class="src">сайт · 3/3</td></tr>
+      <tr><td class="num">5</td><td>Додати в кошик</td><td>бейдж +1, товар у кошику</td><td>працює; бейдж оновився</td><td><span class="sev ok">пройдено</span></td><td class="src">— · 3/3</td></tr>
+      <tr><td class="num">6</td><td>Додати в обране</td><td>збереглось без реєстрації</td><td>працює</td><td><span class="sev ok">пройдено</span></td><td class="src">— · 2/2</td></tr>
+      <tr><td class="num">7</td><td>Кошик → доставка</td><td>вартість/строк видно в кошику</td><td>«розрахунок на наступному кроці»</td><td><span class="sev m">спотикання→P0</span></td><td class="src">сайт · 3/3</td></tr>
+      <tr><td class="num">8</td><td>Перейти в checkout</td><td>гостьове замовлення доступне</td><td>є</td><td><span class="sev ok">пройдено</span></td><td class="src">— · 3/3</td></tr>
+      <tr><td class="num">9</td><td>Заповнити форму</td><td>≤6 полів, автозаповнення</td><td>9 полів, без автозаповнення</td><td><span class="sev m">спотикання</span></td><td class="src">сайт · 3/3</td></tr>
+      <tr><td class="num">10</td><td>Неіснуюча сторінка /404-тест</td><td>корисна 404 з пошуком</td><td>404 веде на головну з пошуком</td><td><span class="sev ok">пройдено</span></td><td class="src">— · 2/2</td></tr>
+    </table>
+    <h2 class="st" style="font-size:11.5pt;margin-top:3mm">Емоційна крива (канон: точка → емоція → ризик)</h2>
+    <table class="t" style="font-size:7.8pt">
+      <tr><th>Точка</th><th>Емоція</th><th>Ризик</th><th>Що тримає / що чинити</th></tr>
+      <tr><td>Перший екран</td><td>Confusion → Interest</td><td><span class="sev ok">ні</span></td><td>оффер орієнтує; швидкість гальмує (W2)</td></tr>
+      <tr><td>Вибір товару</td><td>Interest → Confidence</td><td><span class="sev m">так</span></td><td>докази/відгуки лише на 12% SKU → W2</td></tr>
+      <tr class="hl"><td>Оплата</td><td>Confidence → <b>Anxiety</b></td><td><span class="sev h">так</span></td><td>несподівана доставка + 9 полів → W1/W2</td></tr>
+      <tr class="hl"><td>Розпакування</td><td>Anticipation → Joy / <b>Anger</b></td><td><span class="sev h">так</span></td><td>пік емоції ніші; бій 2.1% вбиває repeat ×0.5 → W1</td></tr>
+      <tr><td>Тиша після</td><td>Joy → Forgetting</td><td><span class="sev h">так</span></td><td>вікно 30–60 дн порожнє → flows W2</td></tr>
+    </table>
+    <div class="callout v" style="font-size:8.4pt"><b>Північна зірка шляху:</b> 2-га покупка ≤90 днів: 9% → 18% (пороги — Звіт 3). <b>B2B-гілка</b> (12% виручки):
+    короткий шлях запит→прайс→рахунок; розрив — дебіторка 45 дн і відсутність мінімалки (d01 §4, задачі в r4).</div>
   `, p, n),
   // 2.17 Матриця
   (p, n) => page('', 'Глава 2.17 · Матриця зрілості', `
     <span class="ebrow">Глава 2.17 · Матриця зрілості · зведення 12 аудитів</span>
-    <h1 class="big" style="font-size:26pt">Health 52/100. Стелю тримають<br>три L1: Customer, CRM, Analytics.</h1>
+    <div style="display:flex;gap:6mm;align-items:flex-start"><div style="flex:1"><h1 class="big" style="font-size:24pt">Health 52/100. Стелю тримають<br>три L1: Customer, CRM, Analytics.</h1></div><div>${radar(RADAR_VALS, 250)}</div></div>
     <table class="t" style="margin-top:4mm;font-size:7.8pt">
       <tr><th>Домен</th><th style="width:9mm">Рівень</th><th style="width:9mm">Вага*</th><th>Чому цей рівень (глава)</th><th>Ціль 9 міс</th></tr>
       ${DOMS.map(([d, l, why, tgt], i) => {
@@ -316,11 +368,11 @@ const chapters = [
   ['2.01', 'Контекст і цілі власника — рамка всіх рішень', 3],
   ['2.02', 'Методика, карта даних, обмеження — чому висновкам можна вірити', 4],
   ['2.03', 'Baseline експрес-аудиту — чесна точка «до»', 5],
-  ['2.04–2.15', '12 аудитів: Business · Market · Product · Customer · Website · SEO/GEO · Acquisition · CRM · Analytics · Operations · Technology · Organization — кожен: вердикт → методика → факти vs бенч → знахідки з розрахунками → рекомендації з власником → звʼязки → 90 днів', '6–29'],
-  ['2.16', 'Карта шляху клієнта — два розриви і північна зірка', 30],
-  ['2.17', 'Матриця зрілості — Health 52 з показаним розрахунком', 31],
-  ['2.18', 'Зведений реєстр знахідок — ICE з розкладкою I·C·E', 32],
-  ['2.19', 'Протокол якості — як аудит перевірив сам себе', 33],
+  ['2.04–2.15', '12 аудитів за спільним каркасом (вердикт → методика → факти vs бенч → знахідки з розрахунками → рекомендації → звʼязки → 90 днів) + додаток 2.08-А: AQC-стандарт (22 критерії · 11 доменів) і CRO-шар з гіпотезами ICE', '6–30'],
+  ['2.16', 'Customer Journey Audit: 15 етапів Awareness→Advocacy + журні-тест руками (10 кроків) + емоційна крива', '31–32'],
+  ['2.17', 'Матриця зрілості — радар 12 доменів, Health 52 з показаним розрахунком', 33],
+  ['2.18', 'Зведений реєстр знахідок — ICE з розкладкою I·C·E', 34],
+  ['2.19', 'Протокол якості — як аудит перевірив сам себе', 35],
 ];
 const total = PAGES.length + 2;
 const html = [

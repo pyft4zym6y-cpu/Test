@@ -299,6 +299,37 @@ export const D1_6 = [
     links: 'Найбільший донор Звіту 3. Залежить від d09 (чесне вимірювання ефектів) і d11 (staging для релізів). Атрибутика фільтрів — від d03.',
     d90: 'Checkout completion тижнево · LCP CrUX-тренд · CR mobile · нульові видачі пошуку.',
   }),
+  // 2.08-А · AQC-стандарт + CRO-шар (канон uxui.ts + croflow.ts)
+  (p, n) => page('', 'Глава 2.08 · AQC + CRO', `
+    <span class="ebrow">Глава 2.08 · Додаток: AQC-стандарт і CRO-шар</span>
+    <h1 class="big" style="font-size:24pt">UX — не смак. 22 атомарні критерії:<br>кожен або Pass, або Fail.</h1>
+    <p class="body" style="margin-top:3mm">Канон Commerce OS (AQC — Atomic Quality Criteria): 22 критерії в 11 доменах, кожен із умовою Pass;
+    факт-слой знімається детермінованим обходом, не думкою. Нижче — 12 критеріїв зі статусом Warn/Fail для «Тестик» (10 Pass — у робочих матеріалах).</p>
+    <table class="t" style="font-size:7.5pt">
+      <tr><th>AQC</th><th>Домен · Sev</th><th>Еталон (умова Pass)</th><th>Спостереження</th><th>Вердикт</th></tr>
+      <tr class="hl"><td class="num">VIS-0001</td><td>Visibility · Crit</td><td>Primary CTA видно &lt;2с, без скролу, контрастніше оточення</td><td>PDP: CTA у першому екрані ✓, кошик mobile: під fold</td><td><span class="sev m">warn</span></td></tr>
+      <tr class="hl"><td class="num">VIS-0003</td><td>Visibility · High</td><td>Вартість і строк доставки видно ДО checkout</td><td>зʼявляється лише на кроці оплати</td><td><span class="sev h">fail</span></td></tr>
+      <tr><td class="num">FORM-0001</td><td>Forms · High</td><td>≤6 обовʼязкових полів, автозаповнення адреси</td><td>9 полів, без автозаповнення</td><td><span class="sev h">fail</span></td></tr>
+      <tr><td class="num">MVIS-0001</td><td>Mobile Vis · Crit</td><td>LCP ≤2.5s (CrUX p75), тап-таргети ≥44px</td><td>LCP 4.6s; таргети фільтрів 32px</td><td><span class="sev h">fail</span></td></tr>
+      <tr><td class="num">TRUST-0001</td><td>Trust Vis · High</td><td>Повернення/гарантія — біля CTA на PDP</td><td>лише у футері</td><td><span class="sev h">fail</span></td></tr>
+      <tr><td class="num">DISC-0002</td><td>Discover · Med</td><td>Пошук пробачає синоніми/помилки, нульових видач ≤5%</td><td>18% нульових («пательня»≠«сковорода»)</td><td><span class="sev h">fail</span></td></tr>
+      <tr><td class="num">NAV-0001</td><td>Navigation · Med</td><td>До будь-якого товару ≤3 кліки з головної</td><td>hero-категорії 2–3 кліки ✓, хвіст 4–5</td><td><span class="sev m">warn</span></td></tr>
+      <tr><td class="num">COMP-0001</td><td>Comprehension · High</td><td>Ціна + наявність + строк — в одному блоці з CTA</td><td>наявність є, строк — під fold</td><td><span class="sev m">warn</span></td></tr>
+      <tr><td class="num">DEC-0001</td><td>Decision · Med</td><td>Фільтри по ключових атрибутах категорії працюють</td><td>46% SKU без атрибутів → фільтри порожні</td><td><span class="sev h">fail</span></td></tr>
+      <tr><td class="num">REC-0001</td><td>Recognition · Med</td><td>Кошик/обране — упізнавані патерни, бейдж кількості</td><td>патерни стандартні ✓, бейдж не оновлюється без reload</td><td><span class="sev m">warn</span></td></tr>
+      <tr><td class="num">IA-0001</td><td>Inf. Arch · Low</td><td>Хлібні крихти на PLP/PDP, звʼязні</td><td>є на PDP, немає на PLP-фільтрах</td><td><span class="sev m">warn</span></td></tr>
+      <tr><td class="num">ACC-0001</td><td>Access. Vis · Med</td><td>Контраст тексту ≥4.5:1, фокус видимий</td><td>сірий текст цін-знижок 3.2:1</td><td><span class="sev m">warn</span></td></tr>
+    </table>
+    <h2 class="st" style="font-size:11.5pt;margin-top:3mm">CRO-шар — окремо від UX (інтерфейс може бути зручним, але погано продавати)</h2>
+    <p class="body" style="font-size:8.2pt">Ланцюг: Traffic → Intent → Experience → Trust → Decision → Action → Conversion → Revenue. Гіпотези — канонічним форматом, пріоритет ICE:</p>
+    <table class="t" style="font-size:7.6pt">
+      <tr><th>Гіпотеза («Якщо X, то Y, бо Z»)</th><th class="num">I·C·E</th><th>Перевірка</th></tr>
+      <tr class="hl"><td><b>Якщо</b> показати вартість+строк доставки на PDP, <b>то</b> checkout completion зросте на 6–10 п.п., <b>бо</b> несподівані витрати — причина №1 відмов (Baymard)</td><td class="num">9·9·8</td><td>A/B після W1, метрика: completion</td></tr>
+      <tr><td><b>Якщо</b> скоротити форму до 5 полів, <b>то</b> completion +3–5 п.п., <b>бо</b> кожне зайве поле додає friction на mobile</td><td class="num">8·8·7</td><td>A/B W2, крок-аналітика форми</td></tr>
+      <tr><td><b>Якщо</b> підняти строк доставки над fold, <b>то</b> PDP→Cart +1–2 п.п., <b>бо</b> невизначеність строку блокує рішення подарункового сегмента</td><td class="num">7·7·9</td><td>A/B W1–W2</td></tr>
+      <tr><td><b>Якщо</b> додати блок «разом купують» (пари з d03), <b>то</b> AOV +€1.5–2.5, <b>бо</b> 23% кошиків уже містять природні пари</td><td class="num">6·8·7</td><td>A/B W2, AOV</td></tr>
+    </table>
+  `, p, n),
   ...auditChapter({
     num: '2.09', short: 'SEO/GEO', title: 'SEO / GEO: органічний попит', checks: 14, level: 2,
     verdictH: 'Індекс роздутий сміттям ×8. Половина попиту ніші — без нас.',
