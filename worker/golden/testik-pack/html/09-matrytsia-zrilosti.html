@@ -1,0 +1,173 @@
+<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>a09 · Матриця зрілості — Тестик</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink:#070d12; --ink8:#0F1A21; --ink6:#1E3038;
+  --verd:#1F5648; --verd7:#2A6D5C; --verd5:#6FAA9A;
+  --mark:#D6362B; --steel:#6E7C86; --steel6:#94A0A8; --steel4:#D3D9DC;
+  --vel:#E7EAE7; --paper:#fff; --hair:#dfe4e6;
+  --sans:'IBM Plex Sans','Golos Text',system-ui,Arial,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+html,body { background:#fff; }
+body { font-family:var(--sans); color:#26292e; }
+.mono, .num { font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:.02em; }
+
+/* ── Сторінка A4 ── */
+.pg { width: 210mm; height: 296mm; position: relative; overflow: hidden; page-break-after: always; background:#fff; padding: 16mm 16mm 14mm; display:flex; flex-direction:column; }
+.pg.ink { background: var(--ink); color: #E8ECEA; }
+.pg.verd { background: var(--verd); color: #EAF2EE; }
+
+/* шапка/підвал документа */
+.hd { display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid var(--ink); padding-bottom:4mm; margin-bottom:8mm; }
+.pg.ink .hd, .pg.verd .hd { border-color: rgba(255,255,255,.35); }
+.hd .l { font-family:var(--mono); font-size:8.5pt; letter-spacing:.16em; text-transform:uppercase; }
+.hd .r { font-family:var(--mono); font-size:8.5pt; color:var(--steel); }
+.pg.ink .hd .r, .pg.verd .hd .r { color:rgba(255,255,255,.55); }
+.ft { position:absolute; left:16mm; right:16mm; bottom:8mm; display:flex; justify-content:space-between; font-family:var(--mono); font-size:7.5pt; color:var(--steel6); border-top:1px solid var(--hair); padding-top:2.5mm; }
+.pg.ink .ft, .pg.verd .ft { color:rgba(255,255,255,.45); border-color:rgba(255,255,255,.2); }
+.proto { color:var(--mark); }
+
+/* типографіка */
+.ebrow { font-family:var(--mono); font-size:9pt; letter-spacing:.22em; text-transform:uppercase; color:var(--verd7); margin-bottom:5mm; }
+.pg.ink .ebrow { color:var(--verd5); }
+h1.big { font-weight:800; letter-spacing:-.03em; line-height:.98; font-size:34pt; color:var(--ink); }
+.pg.ink h1.big, .pg.verd h1.big { color:#fff; }
+h2.st { font-weight:800; letter-spacing:-.02em; font-size:16pt; color:var(--ink); margin:0 0 4mm; line-height:1.05; }
+.pg.ink h2.st { color:#fff; }
+p.lead { font-size:11pt; line-height:1.5; color:#3A3D42; max-width:150mm; }
+.pg.ink p.lead, .pg.verd p.lead { color:rgba(255,255,255,.82); }
+p.body { font-size:9.5pt; line-height:1.55; color:#33373c; margin-bottom:3mm; }
+.marg { font-family:var(--mono); font-size:7.5pt; color:var(--steel); line-height:1.45; }
+.src { font-family:var(--mono); font-size:7pt; color:var(--steel6); }
+.mark { color: var(--mark); }
+.verdc { color: var(--verd7); }
+
+/* число-герой */
+.hero { margin: 8mm 0 4mm; }
+.hero .n { font-family:var(--mono); font-weight:700; font-size:64pt; letter-spacing:-.04em; line-height:1; color:var(--ink); }
+.hero.m .n { color:var(--mark); } .hero.v .n { color:var(--verd7); }
+.pg.ink .hero .n { color:#fff; }
+.hero .cap { font-size:10pt; color:var(--steel); margin-top:2mm; max-width:120mm; }
+.pg.ink .hero .cap { color:rgba(255,255,255,.65); }
+
+/* KPI-ряд */
+.kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:4mm; margin:5mm 0; }
+.kpis.c3 { grid-template-columns:repeat(3,1fr); }
+.kpi { border:1.5px solid var(--ink); padding:3.5mm 4mm; }
+.kpi .v { font-family:var(--mono); font-weight:700; font-size:16pt; letter-spacing:-.02em; }
+.kpi .v.bad { color:var(--mark); } .kpi .v.ok { color:var(--verd7); }
+.kpi .k { font-family:var(--mono); font-size:7pt; letter-spacing:.1em; text-transform:uppercase; color:var(--steel); margin-top:1.5mm; }
+
+/* таблиці */
+table.t { width:100%; border-collapse:collapse; font-size:8.5pt; }
+table.t th { font-family:var(--mono); font-size:7pt; letter-spacing:.12em; text-transform:uppercase; color:var(--steel); text-align:left; border-bottom:1.5px solid var(--ink); padding:1.8mm 2mm; }
+table.t td { border-bottom:1px solid var(--hair); padding:1.9mm 2mm; vertical-align:top; line-height:1.35; }
+table.t td.num, table.t th.num { text-align:right; font-family:var(--mono); }
+table.t tr.hl td { background:#F4F6F5; }
+table.t td b { font-weight:700; color:var(--ink); }
+.sev { font-family:var(--mono); font-size:7pt; letter-spacing:.08em; padding:.5mm 1.5mm; border:1px solid; }
+.sev.h { color:var(--mark); border-color:var(--mark); }
+.sev.m { color:#a06a00; border-color:#a06a00; }
+.sev.l { color:var(--steel); border-color:var(--steel6); }
+.sev.ok { color:var(--verd7); border-color:var(--verd7); }
+
+/* шкала-бенчмарк (D1) */
+.bench { margin:3.5mm 0; }
+.bench .lab { display:flex; justify-content:space-between; font-size:8.5pt; margin-bottom:1.2mm; }
+.bench .lab .b { font-family:var(--mono); }
+.bench .bar { position:relative; height:5.5mm; background:var(--vel); }
+.bench .fill { position:absolute; left:0; top:0; bottom:0; background:var(--ink); }
+.bench .fill.bad { background:var(--mark); }
+.bench .tick { position:absolute; top:-1.2mm; bottom:-1.2mm; width:1px; background:var(--verd7); }
+.bench .tick i { position:absolute; top:100%; left:-14mm; width:28mm; text-align:center; font-family:var(--mono); font-style:normal; font-size:6.5pt; color:var(--verd7); }
+
+/* гант */
+.gantt { width:100%; border-collapse:collapse; font-size:8pt; }
+.gantt th { font-family:var(--mono); font-size:6.5pt; letter-spacing:.08em; color:var(--steel); border-bottom:1.5px solid var(--ink); padding:1.5mm 1mm; text-align:center; }
+.gantt th.rn { text-align:left; }
+.gantt td { border-bottom:1px solid var(--hair); padding:1.5mm 1mm; }
+.gantt td.rn { font-size:8pt; line-height:1.25; width:52mm; }
+.gantt .cell { height:4.5mm; }
+.gantt .on { background:var(--ink); } .gantt .on.w1 { background:var(--mark); } .gantt .on.w3 { background:var(--verd7); }
+
+/* блоки-виноски */
+.callout { border-left:3px solid var(--mark); padding:2.5mm 4mm; background:#FBF3F2; font-size:9pt; line-height:1.45; margin:3mm 0; }
+.callout.v { border-color:var(--verd7); background:#F1F6F4; }
+.cols2 { display:grid; grid-template-columns:1fr 1fr; gap:6mm; }
+.cols3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:5mm; }
+
+/* слайди 16:9 */
+.sl { width:1280px; height:720px; position:relative; overflow:hidden; page-break-after:always; background:var(--paper); padding:56px 64px; display:flex; flex-direction:column; }
+.sl.ink { background:var(--ink); color:#E8ECEA; }
+.sl.verd { background:var(--verd); color:#EAF2EE; }
+.sl .ebrow { font-size:12px; margin-bottom:18px; }
+.sl h1 { font-weight:800; letter-spacing:-.03em; line-height:.98; font-size:64px; color:var(--ink); max-width:1000px; }
+.sl.ink h1, .sl.verd h1 { color:#fff; }
+.sl h1 .mk { color:var(--mark); }
+.sl .heron { font-family:var(--mono); font-weight:700; font-size:220px; letter-spacing:-.05em; line-height:.95; }
+.sl .foot { position:absolute; left:64px; right:64px; bottom:28px; display:flex; justify-content:space-between; font-family:var(--mono); font-size:11px; color:var(--steel6); }
+.sl.ink .foot, .sl.verd .foot { color:rgba(255,255,255,.45); }
+@media print { .pg, .sl { break-inside: avoid; } }
+</style></head><body><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Синтез · Матриця зрілості · 23.08.2026</span></div>
+    <span class="ebrow">Документ a09 · 12 доменів · шкала L1–L5 (за CMMI)</span>
+    <h1 class="big">Health 52/100.<br>Стелю тримають <span class="mark">три L1</span>: Customer, CRM, Analytics.</h1>
+    <div class="hero"><div class="n">52<span style="font-size:28pt;color:#94A0A8">/100</span></div>
+      <div class="cap">Health Score — зважена сума 12 доменів з вагами важливості з анкети власника (матриця block_rate) · рівень домену = найнижчий ПОВНІСТЮ виконаний</div></div>
+    <table class="t">
+      <tr><th>Домен</th><th style="width:14mm">Рівень</th><th>Чому саме цей рівень (доказ)</th><th>Ціль 9 міс</th></tr>
+      
+        <tr><td><b>Business</b></td>
+        <td><span class="mono" style="font-weight:700;font-size:11pt;">L2</span></td>
+        <td>Юніт-економіка на рівні замовлення є, фінмоделі немає; каса — розриви «іноді»</td><td>L3: фінмодель 12 міс, щомісячний P&L-ритм</td></tr>
+        <tr><td><b>Market</b></td>
+        <td><span class="mono" style="font-weight:700;font-size:11pt;">L2</span></td>
+        <td>Конкурентів дивляться «по цінах»; позиціонування не відрізняється</td><td>L3: моніторинг + позиція експерта догляду</td></tr>
+        <tr><td><b>Product</b></td>
+        <td><span class="mono" style="font-weight:700;font-size:11pt;">L2</span></td>
+        <td>ABC не проводився; 33% dead stock; hero-SKU відомі інтуїтивно</td><td>L3: ABC/XYZ-квартал, правила знижок</td></tr>
+        <tr class="hl"><td><b>Customer</b></td>
+        <td><span class="mono" style="font-weight:700;font-size:11pt;color:var(--mark)">L1</span></td>
+        <td>Персон немає, NPS не вимірюється, VoC — «читаємо вибірково»</td><td>L3: сегменти + NPS + теговані відгуки</td></tr>
+        <tr><td><b>Website</b></td>
+        <td><span class="mono" style="font-weight:700;font-size:11pt;">L2</span></td>
+        <td>CR нижче бенчу, CWV червоні, але процес правок існує</td><td>L3: A/B-ритм, CWV зелені</td></tr>
+        <tr><td><b>SEO</b></td>
+        <td><span class="mono" style="font-weight:700;font-size:11pt;">L2</span></td>
+        <td>Технічна база слабка (фасети), контент дубльований</td><td>L3: чистий індекс + контент-ядро</td></tr>
+    </table>
+  <div class="ft"><span>a09 · Health Score і матриця зрілості</span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 1/2</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Синтез · Матриця зрілості · 23.08.2026</span></div>
+    <table class="t">
+      <tr><th>Домен</th><th style="width:14mm">Рівень</th><th>Чому саме цей рівень (доказ)</th><th>Ціль 9 міс</th></tr>
+      
+        <tr><td><b>Acquisition</b></td>
+        <td><span class="mono" style="font-weight:700;font-size:11pt;">L3</span></td>
+        <td>Кабінети керовані, ROAS видно; бренд-канібалізація й немає contribution-оптимізації</td><td>L4: біддинг по маржі</td></tr>
+        <tr class="hl"><td><b>CRM</b></td>
+        <td><span class="mono" style="font-weight:700;font-size:11pt;color:var(--mark)">L1</span></td>
+        <td>Один flow, немає сегментації, DMARC відсутній</td><td>L3: 4 flows + RFM + 15% виручки</td></tr>
+        <tr class="hl"><td><b>Analytics</b></td>
+        <td><span class="mono" style="font-weight:700;font-size:11pt;color:var(--mark)">L1</span></td>
+        <td>GA4 −22%, маржі немає, дашбордів немає</td><td>L3: звірка &lt;5%, щотижневий дашборд</td></tr>
+        <tr><td><b>Operations</b></td>
+        <td><span class="mono" style="font-weight:700;font-size:11pt;">L2</span></td>
+        <td>Склад працює, але OOS 17%, бій 2.1%, OTIF не міряється</td><td>L3: правила закупівель + стандарт пакування</td></tr>
+        <tr><td><b>Technology</b></td>
+        <td><span class="mono" style="font-weight:700;font-size:11pt;">L2</span></td>
+        <td>OpenCart кастом 8/10, 1 фрілансер, staging немає, бекапи не перевірені</td><td>L3: staging + перевірений бекап + SLA</td></tr>
+        <tr><td><b>Organization</b></td>
+        <td><span class="mono" style="font-weight:700;font-size:11pt;">L2</span></td>
+        <td>Все через власника; PM зʼявляється з проектом</td><td>L3: власники каналів + щотижневий ритм</td></tr>
+    </table>
+    <h2 class="st" style="margin-top:6mm">Читання матриці: чому не можна «просто підняти рекламу»</h2>
+    <p class="body">Acquisition — єдиний L3: реклама і так найзріліша частина системи. Масштабувати L3-канал поверх L1-аналітики
+    та L1-CRM — значить купувати трафік, який не вимірюється і не утримується. Тому роадмапа (a15) спершу піднімає три L1 до L3,
+    і лише потім розганяє придбання. Це і є відповідь на питання власника «чому не докинути бюджету в рекламу».</p>
+    <div class="callout v"><b>Правило переоцінки:</b> матриця переміряється на 90-й день (контрольна точка a16) і наприкінці хвилі 3.
+    Рівень вважається взятим лише при виконанні всіх критеріїв DoD відповідного домену (a17) — не «стало краще», а «пройдено поріг».</div>
+    <p class="marg" style="margin-top:5mm">Ваги доменів — з анкети власника (block_rate, 1–10). Найвищі ваги: Економіка 10, CRM 9,
+    Аналітика 9 — власник сам позначив зони найбільшої важливості; матриця показує, що саме там найнижча зрілість. Збіг ваги й розриву → пріоритет хвиль.</p>
+  <div class="ft"><span>a09 · Health Score і матриця зрілості</span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 2/2</span></div></div></body></html>

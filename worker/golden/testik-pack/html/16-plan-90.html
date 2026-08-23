@@ -1,0 +1,160 @@
+<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>a16 · План 90 днів — Тестик</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink:#070d12; --ink8:#0F1A21; --ink6:#1E3038;
+  --verd:#1F5648; --verd7:#2A6D5C; --verd5:#6FAA9A;
+  --mark:#D6362B; --steel:#6E7C86; --steel6:#94A0A8; --steel4:#D3D9DC;
+  --vel:#E7EAE7; --paper:#fff; --hair:#dfe4e6;
+  --sans:'IBM Plex Sans','Golos Text',system-ui,Arial,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+html,body { background:#fff; }
+body { font-family:var(--sans); color:#26292e; }
+.mono, .num { font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:.02em; }
+
+/* ── Сторінка A4 ── */
+.pg { width: 210mm; height: 296mm; position: relative; overflow: hidden; page-break-after: always; background:#fff; padding: 16mm 16mm 14mm; display:flex; flex-direction:column; }
+.pg.ink { background: var(--ink); color: #E8ECEA; }
+.pg.verd { background: var(--verd); color: #EAF2EE; }
+
+/* шапка/підвал документа */
+.hd { display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid var(--ink); padding-bottom:4mm; margin-bottom:8mm; }
+.pg.ink .hd, .pg.verd .hd { border-color: rgba(255,255,255,.35); }
+.hd .l { font-family:var(--mono); font-size:8.5pt; letter-spacing:.16em; text-transform:uppercase; }
+.hd .r { font-family:var(--mono); font-size:8.5pt; color:var(--steel); }
+.pg.ink .hd .r, .pg.verd .hd .r { color:rgba(255,255,255,.55); }
+.ft { position:absolute; left:16mm; right:16mm; bottom:8mm; display:flex; justify-content:space-between; font-family:var(--mono); font-size:7.5pt; color:var(--steel6); border-top:1px solid var(--hair); padding-top:2.5mm; }
+.pg.ink .ft, .pg.verd .ft { color:rgba(255,255,255,.45); border-color:rgba(255,255,255,.2); }
+.proto { color:var(--mark); }
+
+/* типографіка */
+.ebrow { font-family:var(--mono); font-size:9pt; letter-spacing:.22em; text-transform:uppercase; color:var(--verd7); margin-bottom:5mm; }
+.pg.ink .ebrow { color:var(--verd5); }
+h1.big { font-weight:800; letter-spacing:-.03em; line-height:.98; font-size:34pt; color:var(--ink); }
+.pg.ink h1.big, .pg.verd h1.big { color:#fff; }
+h2.st { font-weight:800; letter-spacing:-.02em; font-size:16pt; color:var(--ink); margin:0 0 4mm; line-height:1.05; }
+.pg.ink h2.st { color:#fff; }
+p.lead { font-size:11pt; line-height:1.5; color:#3A3D42; max-width:150mm; }
+.pg.ink p.lead, .pg.verd p.lead { color:rgba(255,255,255,.82); }
+p.body { font-size:9.5pt; line-height:1.55; color:#33373c; margin-bottom:3mm; }
+.marg { font-family:var(--mono); font-size:7.5pt; color:var(--steel); line-height:1.45; }
+.src { font-family:var(--mono); font-size:7pt; color:var(--steel6); }
+.mark { color: var(--mark); }
+.verdc { color: var(--verd7); }
+
+/* число-герой */
+.hero { margin: 8mm 0 4mm; }
+.hero .n { font-family:var(--mono); font-weight:700; font-size:64pt; letter-spacing:-.04em; line-height:1; color:var(--ink); }
+.hero.m .n { color:var(--mark); } .hero.v .n { color:var(--verd7); }
+.pg.ink .hero .n { color:#fff; }
+.hero .cap { font-size:10pt; color:var(--steel); margin-top:2mm; max-width:120mm; }
+.pg.ink .hero .cap { color:rgba(255,255,255,.65); }
+
+/* KPI-ряд */
+.kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:4mm; margin:5mm 0; }
+.kpis.c3 { grid-template-columns:repeat(3,1fr); }
+.kpi { border:1.5px solid var(--ink); padding:3.5mm 4mm; }
+.kpi .v { font-family:var(--mono); font-weight:700; font-size:16pt; letter-spacing:-.02em; }
+.kpi .v.bad { color:var(--mark); } .kpi .v.ok { color:var(--verd7); }
+.kpi .k { font-family:var(--mono); font-size:7pt; letter-spacing:.1em; text-transform:uppercase; color:var(--steel); margin-top:1.5mm; }
+
+/* таблиці */
+table.t { width:100%; border-collapse:collapse; font-size:8.5pt; }
+table.t th { font-family:var(--mono); font-size:7pt; letter-spacing:.12em; text-transform:uppercase; color:var(--steel); text-align:left; border-bottom:1.5px solid var(--ink); padding:1.8mm 2mm; }
+table.t td { border-bottom:1px solid var(--hair); padding:1.9mm 2mm; vertical-align:top; line-height:1.35; }
+table.t td.num, table.t th.num { text-align:right; font-family:var(--mono); }
+table.t tr.hl td { background:#F4F6F5; }
+table.t td b { font-weight:700; color:var(--ink); }
+.sev { font-family:var(--mono); font-size:7pt; letter-spacing:.08em; padding:.5mm 1.5mm; border:1px solid; }
+.sev.h { color:var(--mark); border-color:var(--mark); }
+.sev.m { color:#a06a00; border-color:#a06a00; }
+.sev.l { color:var(--steel); border-color:var(--steel6); }
+.sev.ok { color:var(--verd7); border-color:var(--verd7); }
+
+/* шкала-бенчмарк (D1) */
+.bench { margin:3.5mm 0; }
+.bench .lab { display:flex; justify-content:space-between; font-size:8.5pt; margin-bottom:1.2mm; }
+.bench .lab .b { font-family:var(--mono); }
+.bench .bar { position:relative; height:5.5mm; background:var(--vel); }
+.bench .fill { position:absolute; left:0; top:0; bottom:0; background:var(--ink); }
+.bench .fill.bad { background:var(--mark); }
+.bench .tick { position:absolute; top:-1.2mm; bottom:-1.2mm; width:1px; background:var(--verd7); }
+.bench .tick i { position:absolute; top:100%; left:-14mm; width:28mm; text-align:center; font-family:var(--mono); font-style:normal; font-size:6.5pt; color:var(--verd7); }
+
+/* гант */
+.gantt { width:100%; border-collapse:collapse; font-size:8pt; }
+.gantt th { font-family:var(--mono); font-size:6.5pt; letter-spacing:.08em; color:var(--steel); border-bottom:1.5px solid var(--ink); padding:1.5mm 1mm; text-align:center; }
+.gantt th.rn { text-align:left; }
+.gantt td { border-bottom:1px solid var(--hair); padding:1.5mm 1mm; }
+.gantt td.rn { font-size:8pt; line-height:1.25; width:52mm; }
+.gantt .cell { height:4.5mm; }
+.gantt .on { background:var(--ink); } .gantt .on.w1 { background:var(--mark); } .gantt .on.w3 { background:var(--verd7); }
+
+/* блоки-виноски */
+.callout { border-left:3px solid var(--mark); padding:2.5mm 4mm; background:#FBF3F2; font-size:9pt; line-height:1.45; margin:3mm 0; }
+.callout.v { border-color:var(--verd7); background:#F1F6F4; }
+.cols2 { display:grid; grid-template-columns:1fr 1fr; gap:6mm; }
+.cols3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:5mm; }
+
+/* слайди 16:9 */
+.sl { width:1280px; height:720px; position:relative; overflow:hidden; page-break-after:always; background:var(--paper); padding:56px 64px; display:flex; flex-direction:column; }
+.sl.ink { background:var(--ink); color:#E8ECEA; }
+.sl.verd { background:var(--verd); color:#EAF2EE; }
+.sl .ebrow { font-size:12px; margin-bottom:18px; }
+.sl h1 { font-weight:800; letter-spacing:-.03em; line-height:.98; font-size:64px; color:var(--ink); max-width:1000px; }
+.sl.ink h1, .sl.verd h1 { color:#fff; }
+.sl h1 .mk { color:var(--mark); }
+.sl .heron { font-family:var(--mono); font-weight:700; font-size:220px; letter-spacing:-.05em; line-height:.95; }
+.sl .foot { position:absolute; left:64px; right:64px; bottom:28px; display:flex; justify-content:space-between; font-family:var(--mono); font-size:11px; color:var(--steel6); }
+.sl.ink .foot, .sl.verd .foot { color:rgba(255,255,255,.45); }
+@media print { .pg, .sl { break-inside: avoid; } }
+</style></head><body><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">План · Перші 90 днів · 23.08.2026</span></div>
+    <span class="ebrow">Документ a16 · Три спринти по 30 днів · детально</span>
+    <h1 class="big">90 днів: полагодити, запустити,<br>показати перші гроші.</h1>
+    <div class="kpis" style="margin-top:6mm">
+      <div class="kpi"><div class="v ">30</div><div class="k">день: прилади чесні</div></div>
+      <div class="kpi"><div class="v ">60</div><div class="k">день: flows працюють</div></div>
+      <div class="kpi"><div class="v ">90</div><div class="k">день: перший зміряний ефект</div></div>
+      <div class="kpi"><div class="v ">≈€15k</div><div class="k">очікуваний ефект за 90 дн + кеш</div></div>
+    </div>
+    <h2 class="st">Спринт 1 · дні 1–30 · «Прилади і кровотечі»</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Тиждень</th><th>Роботи (з беклогу a12, хвиля 1)</th><th>Видимий результат</th></tr>
+      <tr><td class="num">1</td><td>кікоф · доступи · server-side purchase у розробку · DMARC p=none · бренд-виключення PMax · правило знижок підписано</td><td>брендові кліки падають одразу</td></tr>
+      <tr><td class="num">2</td><td>Consent Mode v2 · дедуплікація · стандарт пакування розроблено · Allegro: розрахунок беззбитковості 40 SKU</td><td>нова схема пакування в тесті</td></tr>
+      <tr><td class="num">3</td><td>звірка GA4↔бекенд (14 дн) · передоцінка Allegro запущена · доставка на PDP/кошик у розробці · план розпродажу dead stock</td><td>Allegro: збиткові SKU зупинені</td></tr>
+      <tr><td class="num">4</td><td>checkout: −4 поля · строк доставки над fold · тест 200 відправлень · бекап-тест · КТ-1</td><td><b>КТ-1: чесний GA4, бій ≤0.7% на тесті</b></td></tr>
+    </table>
+    <h2 class="st" style="margin-top:4mm">Спринт 2 · дні 31–60 · «Двигуни»</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Тиждень</th><th>Роботи</th><th>Видимий результат</th></tr>
+      <tr><td class="num">5–6</td><td>flow «кинутий кошик» (копірайт → верстка → запуск) · WebP + CDN для зображень · RFM-сегментація бази · розпродаж dead stock стартує</td><td>перші повернені кошики в дашборді</td></tr>
+      <tr><td class="num">7–8</td><td>післяпродажний flow · критичний CSS + ревізія GTM · правила закупівель топ-20 розроблені · staging піднято</td><td>LCP тренд вниз (28-денне вікно CrUX)</td></tr>
+    </table>
+  <div class="ft"><span>a16 · План перших 90 днів</span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 1/2</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">План · Перші 90 днів · 23.08.2026</span></div>
+    <h2 class="st">Спринт 3 · дні 61–90 · «Виміряти і показати»</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Тиждень</th><th>Роботи</th><th>Видимий результат</th></tr>
+      <tr><td class="num">9–10</td><td>реактиваційний flow · маржа у purchase-події · щотижневий дашборд v1 · BLIK-інтеграція в роботі</td><td>кампанії видно за contribution</td></tr>
+      <tr><td class="num">11–12</td><td>OOS-правила закупівель у дії · NPS-запуск · PDP: відгуки з розподілом · schema-зірки топ-40</td><td>OOS-тренд у дашборді</td></tr>
+      <tr><td class="num">13</td><td><b>КТ-2: переоблік матриці зрілості + звіт власнику</b> · перерахунок оцінки €433k за фактами 90 днів</td><td>факт проти плану, письмово</td></tr>
+    </table>
+    <h2 class="st" style="margin-top:5mm">Що власник побачить на день 90 — критерії, не обіцянки</h2>
+    <table class="t">
+      <tr><th>Метрика</th><th class="num">День 0</th><th class="num">Ціль день 90</th><th>Джерело виміру</th></tr>
+      <tr><td>Розбіжність GA4 ↔ бекенд</td><td class="num">22%</td><td class="num"><b>≤5%</b></td><td>щотижнева звірка</td></tr>
+      <tr><td>Checkout completion</td><td class="num">43.6%</td><td class="num"><b>≥52%</b></td><td>GA4 (уже чесний)</td></tr>
+      <tr><td>Бій у доставці</td><td class="num">2.1%</td><td class="num"><b>≤0.9%</b></td><td>звіти перевізників</td></tr>
+      <tr><td>LCP mobile</td><td class="num">4.6s</td><td class="num"><b>≤3.5s</b></td><td>CrUX 28 дн</td></tr>
+      <tr><td>Виручка з CRM-каналу</td><td class="num">4.8%</td><td class="num"><b>≥8%</b></td><td>бекенд + UTM</td></tr>
+      <tr><td>Кеш із dead stock</td><td class="num">€0</td><td class="num"><b>≥€40k</b></td><td>каса</td></tr>
+      <tr><td>Allegro contribution</td><td class="num">3%</td><td class="num"><b>≥6%</b></td><td>юніт-звіт каналу</td></tr>
+      <tr><td>Брендові кліки в платному</td><td class="num">31%</td><td class="num"><b>&lt;10%</b></td><td>search terms</td></tr>
+    </table>
+    <div class="callout v" style="margin-top:4mm"><b>Ритм:</b> щотижнева читка 45 хв (WEEXP фасилітує, власник присутній перші 4, далі — раз на 2 тижні).
+    Що потрібно від «Тестик»: PM fulltime з дня 1, розробник-підрядник за графіком, рішення власника в SLA 48 год.</div>
+  <div class="ft"><span>a16 · План перших 90 днів</span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 2/2</span></div></div></body></html>

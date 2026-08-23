@@ -1,0 +1,141 @@
+<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>a13 · CJM — Тестик</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink:#070d12; --ink8:#0F1A21; --ink6:#1E3038;
+  --verd:#1F5648; --verd7:#2A6D5C; --verd5:#6FAA9A;
+  --mark:#D6362B; --steel:#6E7C86; --steel6:#94A0A8; --steel4:#D3D9DC;
+  --vel:#E7EAE7; --paper:#fff; --hair:#dfe4e6;
+  --sans:'IBM Plex Sans','Golos Text',system-ui,Arial,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+html,body { background:#fff; }
+body { font-family:var(--sans); color:#26292e; }
+.mono, .num { font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:.02em; }
+
+/* ── Сторінка A4 ── */
+.pg { width: 210mm; height: 296mm; position: relative; overflow: hidden; page-break-after: always; background:#fff; padding: 16mm 16mm 14mm; display:flex; flex-direction:column; }
+.pg.ink { background: var(--ink); color: #E8ECEA; }
+.pg.verd { background: var(--verd); color: #EAF2EE; }
+
+/* шапка/підвал документа */
+.hd { display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid var(--ink); padding-bottom:4mm; margin-bottom:8mm; }
+.pg.ink .hd, .pg.verd .hd { border-color: rgba(255,255,255,.35); }
+.hd .l { font-family:var(--mono); font-size:8.5pt; letter-spacing:.16em; text-transform:uppercase; }
+.hd .r { font-family:var(--mono); font-size:8.5pt; color:var(--steel); }
+.pg.ink .hd .r, .pg.verd .hd .r { color:rgba(255,255,255,.55); }
+.ft { position:absolute; left:16mm; right:16mm; bottom:8mm; display:flex; justify-content:space-between; font-family:var(--mono); font-size:7.5pt; color:var(--steel6); border-top:1px solid var(--hair); padding-top:2.5mm; }
+.pg.ink .ft, .pg.verd .ft { color:rgba(255,255,255,.45); border-color:rgba(255,255,255,.2); }
+.proto { color:var(--mark); }
+
+/* типографіка */
+.ebrow { font-family:var(--mono); font-size:9pt; letter-spacing:.22em; text-transform:uppercase; color:var(--verd7); margin-bottom:5mm; }
+.pg.ink .ebrow { color:var(--verd5); }
+h1.big { font-weight:800; letter-spacing:-.03em; line-height:.98; font-size:34pt; color:var(--ink); }
+.pg.ink h1.big, .pg.verd h1.big { color:#fff; }
+h2.st { font-weight:800; letter-spacing:-.02em; font-size:16pt; color:var(--ink); margin:0 0 4mm; line-height:1.05; }
+.pg.ink h2.st { color:#fff; }
+p.lead { font-size:11pt; line-height:1.5; color:#3A3D42; max-width:150mm; }
+.pg.ink p.lead, .pg.verd p.lead { color:rgba(255,255,255,.82); }
+p.body { font-size:9.5pt; line-height:1.55; color:#33373c; margin-bottom:3mm; }
+.marg { font-family:var(--mono); font-size:7.5pt; color:var(--steel); line-height:1.45; }
+.src { font-family:var(--mono); font-size:7pt; color:var(--steel6); }
+.mark { color: var(--mark); }
+.verdc { color: var(--verd7); }
+
+/* число-герой */
+.hero { margin: 8mm 0 4mm; }
+.hero .n { font-family:var(--mono); font-weight:700; font-size:64pt; letter-spacing:-.04em; line-height:1; color:var(--ink); }
+.hero.m .n { color:var(--mark); } .hero.v .n { color:var(--verd7); }
+.pg.ink .hero .n { color:#fff; }
+.hero .cap { font-size:10pt; color:var(--steel); margin-top:2mm; max-width:120mm; }
+.pg.ink .hero .cap { color:rgba(255,255,255,.65); }
+
+/* KPI-ряд */
+.kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:4mm; margin:5mm 0; }
+.kpis.c3 { grid-template-columns:repeat(3,1fr); }
+.kpi { border:1.5px solid var(--ink); padding:3.5mm 4mm; }
+.kpi .v { font-family:var(--mono); font-weight:700; font-size:16pt; letter-spacing:-.02em; }
+.kpi .v.bad { color:var(--mark); } .kpi .v.ok { color:var(--verd7); }
+.kpi .k { font-family:var(--mono); font-size:7pt; letter-spacing:.1em; text-transform:uppercase; color:var(--steel); margin-top:1.5mm; }
+
+/* таблиці */
+table.t { width:100%; border-collapse:collapse; font-size:8.5pt; }
+table.t th { font-family:var(--mono); font-size:7pt; letter-spacing:.12em; text-transform:uppercase; color:var(--steel); text-align:left; border-bottom:1.5px solid var(--ink); padding:1.8mm 2mm; }
+table.t td { border-bottom:1px solid var(--hair); padding:1.9mm 2mm; vertical-align:top; line-height:1.35; }
+table.t td.num, table.t th.num { text-align:right; font-family:var(--mono); }
+table.t tr.hl td { background:#F4F6F5; }
+table.t td b { font-weight:700; color:var(--ink); }
+.sev { font-family:var(--mono); font-size:7pt; letter-spacing:.08em; padding:.5mm 1.5mm; border:1px solid; }
+.sev.h { color:var(--mark); border-color:var(--mark); }
+.sev.m { color:#a06a00; border-color:#a06a00; }
+.sev.l { color:var(--steel); border-color:var(--steel6); }
+.sev.ok { color:var(--verd7); border-color:var(--verd7); }
+
+/* шкала-бенчмарк (D1) */
+.bench { margin:3.5mm 0; }
+.bench .lab { display:flex; justify-content:space-between; font-size:8.5pt; margin-bottom:1.2mm; }
+.bench .lab .b { font-family:var(--mono); }
+.bench .bar { position:relative; height:5.5mm; background:var(--vel); }
+.bench .fill { position:absolute; left:0; top:0; bottom:0; background:var(--ink); }
+.bench .fill.bad { background:var(--mark); }
+.bench .tick { position:absolute; top:-1.2mm; bottom:-1.2mm; width:1px; background:var(--verd7); }
+.bench .tick i { position:absolute; top:100%; left:-14mm; width:28mm; text-align:center; font-family:var(--mono); font-style:normal; font-size:6.5pt; color:var(--verd7); }
+
+/* гант */
+.gantt { width:100%; border-collapse:collapse; font-size:8pt; }
+.gantt th { font-family:var(--mono); font-size:6.5pt; letter-spacing:.08em; color:var(--steel); border-bottom:1.5px solid var(--ink); padding:1.5mm 1mm; text-align:center; }
+.gantt th.rn { text-align:left; }
+.gantt td { border-bottom:1px solid var(--hair); padding:1.5mm 1mm; }
+.gantt td.rn { font-size:8pt; line-height:1.25; width:52mm; }
+.gantt .cell { height:4.5mm; }
+.gantt .on { background:var(--ink); } .gantt .on.w1 { background:var(--mark); } .gantt .on.w3 { background:var(--verd7); }
+
+/* блоки-виноски */
+.callout { border-left:3px solid var(--mark); padding:2.5mm 4mm; background:#FBF3F2; font-size:9pt; line-height:1.45; margin:3mm 0; }
+.callout.v { border-color:var(--verd7); background:#F1F6F4; }
+.cols2 { display:grid; grid-template-columns:1fr 1fr; gap:6mm; }
+.cols3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:5mm; }
+
+/* слайди 16:9 */
+.sl { width:1280px; height:720px; position:relative; overflow:hidden; page-break-after:always; background:var(--paper); padding:56px 64px; display:flex; flex-direction:column; }
+.sl.ink { background:var(--ink); color:#E8ECEA; }
+.sl.verd { background:var(--verd); color:#EAF2EE; }
+.sl .ebrow { font-size:12px; margin-bottom:18px; }
+.sl h1 { font-weight:800; letter-spacing:-.03em; line-height:.98; font-size:64px; color:var(--ink); max-width:1000px; }
+.sl.ink h1, .sl.verd h1 { color:#fff; }
+.sl h1 .mk { color:var(--mark); }
+.sl .heron { font-family:var(--mono); font-weight:700; font-size:220px; letter-spacing:-.05em; line-height:.95; }
+.sl .foot { position:absolute; left:64px; right:64px; bottom:28px; display:flex; justify-content:space-between; font-family:var(--mono); font-size:11px; color:var(--steel6); }
+.sl.ink .foot, .sl.verd .foot { color:rgba(255,255,255,.45); }
+@media print { .pg, .sl { break-inside: avoid; } }
+</style></head><body><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Доказова база · CJM · 23.08.2026</span></div>
+    <span class="ebrow">Документ a13 · Сегмент «покупець подарунка + для себе» · дані, не персони-фантазії</span>
+    <h1 class="big">Шлях клієнта рветься двічі:<br>на оплаті — і в тиші після покупки.</h1>
+    <table class="t" style="margin-top:6mm;font-size:8pt">
+      <tr><th style="width:22mm">Етап</th><th>Що робить клієнт</th><th>Що бачимо в даних</th><th>Момент істини / розрив</th></tr>
+      <tr><td><b>Виявлення</b></td><td>шукає «сковорода …», бачить рекламу в Instagram</td><td>185k сесій/міс; перший дотик: пошук 41%, реклама 34%, соцмережі 12% (анкета: «не знаємо» → тепер знаємо)</td><td>бренд не відрізняється від «ще одного магазину» (a08)</td></tr>
+      <tr><td><b>Вибір</b></td><td>порівнює 3–4 магазини, читає відгуки</td><td>PDP-глибина 52%; відгуки лише на 12% SKU; строк доставки під fold</td><td><span class="sev m">не бачить причин довіряти</span> — і йде порівнювати далі</td></tr>
+      <tr class="hl"><td><b>Покупка</b></td><td>кладе в кошик, починає оформлення</td><td>кошик 7% → checkout 2.8% → оплата 1.22%; completion 43.6%</td><td><span class="sev h">РОЗРИВ №1:</span> вартість доставки зʼявляється в кінці; 9 полів; mobile 4.6s</td></tr>
+      <tr><td><b>Отримання</b></td><td>чекає 1–3 дні, розпаковує</td><td>2.1% — бій; OTIF не вимірюється; 62% негативу відгуків — доставка/бій</td><td><span class="sev h">момент істини ніші:</span> посуд або доїхав цілим, або клієнта немає (repeat ×0.5 після бою)</td></tr>
+      <tr class="hl"><td><b>Повторна покупка</b></td><td>«гарний магазин, може ще щось…» — і забуває</td><td>медіана 2-ї покупки 96 дн; касань у вікні 30–60 дн: нуль; repeat 13%</td><td><span class="sev h">РОЗРИВ №2:</span> тиша. База 41k, працює 1 welcome-flow</td></tr>
+      <tr><td><b>Адвокація</b></td><td>рекомендує, якщо запитають</td><td>4.6 на Allegro; NPS не вимірюється; реферальної механіки немає</td><td>потенціал не активований — W3</td></tr>
+    </table>
+  <div class="ft"><span>a13 · Карта шляху клієнта</span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 1/2</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Доказова база · CJM · 23.08.2026</span></div>
+    <h2 class="st">Що змінюється на кожному етапі — привʼязка до хвиль</h2>
+    <table class="t">
+      <tr><th>Етап</th><th>Хвиля 1</th><th>Хвиля 2</th><th>Хвиля 3</th></tr>
+      <tr><td><b>Вибір</b></td><td>строк доставки над fold</td><td>відгуки з розподілом, зірки в SERP</td><td>контент «експерт догляду», GEO-присутність</td></tr>
+      <tr><td><b>Покупка</b></td><td>доставка видима до чекауту; −4 поля</td><td>LCP ≤3.0s; BLIK для PL</td><td>A/B-процес постійний</td></tr>
+      <tr><td><b>Отримання</b></td><td>стандарт пакування (бій →0.7%)</td><td>OTIF у дашборді</td><td>—</td></tr>
+      <tr><td><b>Повторна</b></td><td>DMARC (листи доходять)</td><td>4 flows + RFM</td><td>програма лояльності — після виміряного ефекту flows</td></tr>
+      <tr><td><b>Адвокація</b></td><td>—</td><td>NPS-запуск</td><td>реферальна механіка</td></tr>
+    </table>
+    <div class="callout v" style="margin-top:6mm"><b>Північна зірка шляху:</b> частка клієнтів, що зробили 2-гу покупку за 90 днів.
+    Зараз ≈9% → ціль 18% (a17). Ця метрика збирає в собі якість всього шляху — від чесного строку доставки до посилки, що доїхала цілою, і листа, що прийшов вчасно.</p></div>
+    <p class="marg" style="margin-top:4mm">Джерела: GA4-воронка (звірена), замовлення 24 міс, 214 відгуків за 6 міс (теговані вручну),
+    звіти перевізників, eSputnik. Сегмент B2B-опту (12% виручки) має окремий, коротший шлях — розібраний у робочих матеріалах, не в цій версії для читки.</p>
+  <div class="ft"><span>a13 · Карта шляху клієнта</span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 2/2</span></div></div></body></html>

@@ -1,0 +1,208 @@
+<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>a06 · Досвід і конверсія — Тестик</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink:#070d12; --ink8:#0F1A21; --ink6:#1E3038;
+  --verd:#1F5648; --verd7:#2A6D5C; --verd5:#6FAA9A;
+  --mark:#D6362B; --steel:#6E7C86; --steel6:#94A0A8; --steel4:#D3D9DC;
+  --vel:#E7EAE7; --paper:#fff; --hair:#dfe4e6;
+  --sans:'IBM Plex Sans','Golos Text',system-ui,Arial,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+html,body { background:#fff; }
+body { font-family:var(--sans); color:#26292e; }
+.mono, .num { font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:.02em; }
+
+/* ── Сторінка A4 ── */
+.pg { width: 210mm; height: 296mm; position: relative; overflow: hidden; page-break-after: always; background:#fff; padding: 16mm 16mm 14mm; display:flex; flex-direction:column; }
+.pg.ink { background: var(--ink); color: #E8ECEA; }
+.pg.verd { background: var(--verd); color: #EAF2EE; }
+
+/* шапка/підвал документа */
+.hd { display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid var(--ink); padding-bottom:4mm; margin-bottom:8mm; }
+.pg.ink .hd, .pg.verd .hd { border-color: rgba(255,255,255,.35); }
+.hd .l { font-family:var(--mono); font-size:8.5pt; letter-spacing:.16em; text-transform:uppercase; }
+.hd .r { font-family:var(--mono); font-size:8.5pt; color:var(--steel); }
+.pg.ink .hd .r, .pg.verd .hd .r { color:rgba(255,255,255,.55); }
+.ft { position:absolute; left:16mm; right:16mm; bottom:8mm; display:flex; justify-content:space-between; font-family:var(--mono); font-size:7.5pt; color:var(--steel6); border-top:1px solid var(--hair); padding-top:2.5mm; }
+.pg.ink .ft, .pg.verd .ft { color:rgba(255,255,255,.45); border-color:rgba(255,255,255,.2); }
+.proto { color:var(--mark); }
+
+/* типографіка */
+.ebrow { font-family:var(--mono); font-size:9pt; letter-spacing:.22em; text-transform:uppercase; color:var(--verd7); margin-bottom:5mm; }
+.pg.ink .ebrow { color:var(--verd5); }
+h1.big { font-weight:800; letter-spacing:-.03em; line-height:.98; font-size:34pt; color:var(--ink); }
+.pg.ink h1.big, .pg.verd h1.big { color:#fff; }
+h2.st { font-weight:800; letter-spacing:-.02em; font-size:16pt; color:var(--ink); margin:0 0 4mm; line-height:1.05; }
+.pg.ink h2.st { color:#fff; }
+p.lead { font-size:11pt; line-height:1.5; color:#3A3D42; max-width:150mm; }
+.pg.ink p.lead, .pg.verd p.lead { color:rgba(255,255,255,.82); }
+p.body { font-size:9.5pt; line-height:1.55; color:#33373c; margin-bottom:3mm; }
+.marg { font-family:var(--mono); font-size:7.5pt; color:var(--steel); line-height:1.45; }
+.src { font-family:var(--mono); font-size:7pt; color:var(--steel6); }
+.mark { color: var(--mark); }
+.verdc { color: var(--verd7); }
+
+/* число-герой */
+.hero { margin: 8mm 0 4mm; }
+.hero .n { font-family:var(--mono); font-weight:700; font-size:64pt; letter-spacing:-.04em; line-height:1; color:var(--ink); }
+.hero.m .n { color:var(--mark); } .hero.v .n { color:var(--verd7); }
+.pg.ink .hero .n { color:#fff; }
+.hero .cap { font-size:10pt; color:var(--steel); margin-top:2mm; max-width:120mm; }
+.pg.ink .hero .cap { color:rgba(255,255,255,.65); }
+
+/* KPI-ряд */
+.kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:4mm; margin:5mm 0; }
+.kpis.c3 { grid-template-columns:repeat(3,1fr); }
+.kpi { border:1.5px solid var(--ink); padding:3.5mm 4mm; }
+.kpi .v { font-family:var(--mono); font-weight:700; font-size:16pt; letter-spacing:-.02em; }
+.kpi .v.bad { color:var(--mark); } .kpi .v.ok { color:var(--verd7); }
+.kpi .k { font-family:var(--mono); font-size:7pt; letter-spacing:.1em; text-transform:uppercase; color:var(--steel); margin-top:1.5mm; }
+
+/* таблиці */
+table.t { width:100%; border-collapse:collapse; font-size:8.5pt; }
+table.t th { font-family:var(--mono); font-size:7pt; letter-spacing:.12em; text-transform:uppercase; color:var(--steel); text-align:left; border-bottom:1.5px solid var(--ink); padding:1.8mm 2mm; }
+table.t td { border-bottom:1px solid var(--hair); padding:1.9mm 2mm; vertical-align:top; line-height:1.35; }
+table.t td.num, table.t th.num { text-align:right; font-family:var(--mono); }
+table.t tr.hl td { background:#F4F6F5; }
+table.t td b { font-weight:700; color:var(--ink); }
+.sev { font-family:var(--mono); font-size:7pt; letter-spacing:.08em; padding:.5mm 1.5mm; border:1px solid; }
+.sev.h { color:var(--mark); border-color:var(--mark); }
+.sev.m { color:#a06a00; border-color:#a06a00; }
+.sev.l { color:var(--steel); border-color:var(--steel6); }
+.sev.ok { color:var(--verd7); border-color:var(--verd7); }
+
+/* шкала-бенчмарк (D1) */
+.bench { margin:3.5mm 0; }
+.bench .lab { display:flex; justify-content:space-between; font-size:8.5pt; margin-bottom:1.2mm; }
+.bench .lab .b { font-family:var(--mono); }
+.bench .bar { position:relative; height:5.5mm; background:var(--vel); }
+.bench .fill { position:absolute; left:0; top:0; bottom:0; background:var(--ink); }
+.bench .fill.bad { background:var(--mark); }
+.bench .tick { position:absolute; top:-1.2mm; bottom:-1.2mm; width:1px; background:var(--verd7); }
+.bench .tick i { position:absolute; top:100%; left:-14mm; width:28mm; text-align:center; font-family:var(--mono); font-style:normal; font-size:6.5pt; color:var(--verd7); }
+
+/* гант */
+.gantt { width:100%; border-collapse:collapse; font-size:8pt; }
+.gantt th { font-family:var(--mono); font-size:6.5pt; letter-spacing:.08em; color:var(--steel); border-bottom:1.5px solid var(--ink); padding:1.5mm 1mm; text-align:center; }
+.gantt th.rn { text-align:left; }
+.gantt td { border-bottom:1px solid var(--hair); padding:1.5mm 1mm; }
+.gantt td.rn { font-size:8pt; line-height:1.25; width:52mm; }
+.gantt .cell { height:4.5mm; }
+.gantt .on { background:var(--ink); } .gantt .on.w1 { background:var(--mark); } .gantt .on.w3 { background:var(--verd7); }
+
+/* блоки-виноски */
+.callout { border-left:3px solid var(--mark); padding:2.5mm 4mm; background:#FBF3F2; font-size:9pt; line-height:1.45; margin:3mm 0; }
+.callout.v { border-color:var(--verd7); background:#F1F6F4; }
+.cols2 { display:grid; grid-template-columns:1fr 1fr; gap:6mm; }
+.cols3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:5mm; }
+
+/* слайди 16:9 */
+.sl { width:1280px; height:720px; position:relative; overflow:hidden; page-break-after:always; background:var(--paper); padding:56px 64px; display:flex; flex-direction:column; }
+.sl.ink { background:var(--ink); color:#E8ECEA; }
+.sl.verd { background:var(--verd); color:#EAF2EE; }
+.sl .ebrow { font-size:12px; margin-bottom:18px; }
+.sl h1 { font-weight:800; letter-spacing:-.03em; line-height:.98; font-size:64px; color:var(--ink); max-width:1000px; }
+.sl.ink h1, .sl.verd h1 { color:#fff; }
+.sl h1 .mk { color:var(--mark); }
+.sl .heron { font-family:var(--mono); font-weight:700; font-size:220px; letter-spacing:-.05em; line-height:.95; }
+.sl .foot { position:absolute; left:64px; right:64px; bottom:28px; display:flex; justify-content:space-between; font-family:var(--mono); font-size:11px; color:var(--steel6); }
+.sl.ink .foot, .sl.verd .foot { color:rgba(255,255,255,.45); }
+@media print { .pg, .sl { break-inside: avoid; } }
+</style></head><body><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Зведений звіт · Website + Customer + CRM · 23.08.2026</span></div>
+    <span class="ebrow">Документ a06 · Website-аудит · Customer-аудит · CRM-аудит</span>
+    <h1 class="big">Сайт збирає попит.<br>Оформлення і повернення клієнта — <span class="mark">зливають</span>.</h1>
+    <div class="kpis" style="margin-top:7mm">
+      <div class="kpi"><div class="v bad">1.22%</div><div class="k">CR сайту · GA4+бекенд</div></div>
+      <div class="kpi"><div class="v bad">43.6%</div><div class="k">checkout completion · GA4</div></div>
+      <div class="kpi"><div class="v bad">0.9%</div><div class="k">CR mobile (74% трафіку)</div></div>
+      <div class="kpi"><div class="v bad">13%</div><div class="k">repeat rate 365d · замовлення</div></div>
+    </div>
+    
+<div class="bench">
+  <div class="lab"><span>Конверсія сайту</span><span class="b mark">1.22%</span></div>
+  <div class="bar"><div class="fill bad" style="width:30%"></div>
+    <div class="tick" style="left:52%"><i>бенч ніші 1.8–2.4%</i></div></div>
+</div>
+    
+<div class="bench">
+  <div class="lab"><span>Checkout completion</span><span class="b mark">43.6%</span></div>
+  <div class="bar"><div class="fill bad" style="width:44%"></div>
+    <div class="tick" style="left:65%"><i>бенч 65%+ · Baymard</i></div></div>
+</div>
+    
+<div class="bench">
+  <div class="lab"><span>Cart → Purchase</span><span class="b mark">17.5%</span></div>
+  <div class="bar"><div class="fill bad" style="width:35%"></div>
+    <div class="tick" style="left:62%"><i>бенч 28–35%</i></div></div>
+</div>
+    <h2 class="st" style="margin-top:6mm">Чекаут: 5 180 людей на місяць починають платити. 2 920 — не закінчують</h2>
+    <table class="t">
+      <tr><th>Знахідка</th><th>Доказ</th><th class="num">Ефект/рік</th><th>Пріоритет</th></tr>
+      <tr class="hl"><td><b>Вартість доставки видно лише на кроці оплати</b></td><td>скринкаст + топ-причина відмов за Baymard</td><td class="num"><b>частина €190k</b></td><td><span class="sev h">W1</span></td></tr>
+      <tr><td>9 обовʼязкових полів (норма — до 8 туди входять імʼя/телефон/адреса)</td><td>розбір форми, порівняння з еталоном</td><td class="num">частина €190k</td><td><span class="sev h">W1</span></td></tr>
+      <tr><td>Оплата: немає BLIK для PL-замовлень з сайту</td><td>аналіз відмов по країнах: PL checkout −31% до UA</td><td class="num">€18k</td><td><span class="sev m">W2</span></td></tr>
+      <tr><td>Кинутий кошик: тригерних листів немає</td><td>eSputnik: flows-аудит</td><td class="num">частина €150k</td><td><span class="sev h">W2</span></td></tr>
+    </table>
+  <div class="ft"><span>a06 · Досвід і конверсія</span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 1/4</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Зведений звіт · Website + Customer + CRM · 23.08.2026</span></div>
+    <h2 class="st">Mobile: реклама платить за візити, які не встигають відкритись</h2>
+    <div class="kpis c3">
+      <div class="kpi"><div class="v bad">4.6s</div><div class="k">LCP mobile · CrUX (поріг 2.5)</div></div>
+      <div class="kpi"><div class="v bad">310ms</div><div class="k">INP · поріг 200ms</div></div>
+      <div class="kpi"><div class="v bad">0.18</div><div class="k">CLS · поріг 0.1</div></div>
+    </div>
+    <table class="t">
+      <tr><th>Причина</th><th>Деталь</th><th>Рішення (в межах OpenCart)</th></tr>
+      <tr><td><b>Зображення без стиснення</b></td><td>hero-фото PDP 1.8–2.6 MB, без WebP/AVIF, без lazy</td><td>конвертація + CDN-ресайз — найбільший внесок у LCP</td></tr>
+      <tr><td>18 синхронних скриптів</td><td>3 чат-віджети (один живий), старі пікселі</td><td>ревізія GTM, async, видалення мертвих</td></tr>
+      <tr><td>Немає критичного CSS</td><td>рендер чекає повний бандл теми</td><td>інлайн критичного CSS для PDP/каталогу</td></tr>
+      <tr><td>Хостинг TTFB 1.1s у пік</td><td>панель хостингу, вечірні години</td><td>кеш сторінок + перегляд тарифу</td></tr>
+    </table>
+    <h2 class="st" style="margin-top:6mm">Картка товару: сильні фото, слабкі докази</h2>
+    <table class="t">
+      <tr><th>Еталон PDP (Baymard)</th><th>«Тестик»</th><th>Розрив</th></tr>
+      <tr><td>6+ фото, відео у контексті</td><td>7 фото, без відео</td><td><span class="sev l">ok</span></td></tr>
+      <tr><td>Відгуки з розподілом оцінок</td><td>відгуки є лише на 12% SKU, без розподілу</td><td><span class="sev m">W2</span></td></tr>
+      <tr><td>Строк доставки над fold</td><td>«1–3 дні» дрібним під описом</td><td><span class="sev h">W1</span></td></tr>
+      <tr><td>Повернення поруч із CTA</td><td>лише в футері</td><td><span class="sev m">W2</span></td></tr>
+    </table>
+  <div class="ft"><span>a06 · Досвід і конверсія</span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 2/4</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Зведений звіт · Website + Customer + CRM · 23.08.2026</span></div>
+    <h2 class="st">Клієнт: хто купує і чому не повертається</h2>
+    <p class="body"><b>Сегменти по замовленнях 24 міс (RFM-наближення без вивантаження бази — див. обмеження a02):</b></p>
+    <table class="t">
+      <tr><th>Сегмент</th><th class="num">Частка клієнтів</th><th class="num">Частка виручки</th><th>Що з ним робити</th></tr>
+      <tr><td><b>Одноразові</b> (1 покупка, &gt;90 дн)</td><td class="num">71%</td><td class="num">54%</td><td>реактиваційний flow + поповнюваний асортимент (аксесуари, змінні частини)</td></tr>
+      <tr class="hl"><td><b>Ядро</b> (2+ покупки)</td><td class="num">13%</td><td class="num">31%</td><td>захищати: пріоритетна підтримка, ранній доступ, програма рекомендацій</td></tr>
+      <tr><td>Свіжі (&lt;90 дн, 1 покупка)</td><td class="num">16%</td><td class="num">15%</td><td>післяпродажний ланцюжок: догляд за посудом → друга покупка ≤60 дн</td></tr>
+    </table>
+    <p class="body" style="margin-top:4mm"><b>Медіана до 2-ї покупки — 96 днів.</b> Вікно контакту (30–60 день), коли клієнт готовий
+    повернутись, зараз порожнє: жодного касання після листа-підтвердження.</p>
+    <div class="callout">Голос клієнта (відгуки, 6 міс, 214 шт.): 62% негативу — «довго їхало» та «прийшло розбите»,
+    і лише 9% — про сам продукт. Це операційна криза досвіду, не продуктова. → передано в a12 (беклог) як W1-задача «стандарт пакування».</div>
+    <h2 class="st" style="margin-top:5mm">CRM-контур: що будуємо (хвиля 2)</h2>
+    <table class="t">
+      <tr><th>Flow</th><th>Тригер</th><th>Очікуваний внесок · джерело бенчу</th></tr>
+      <tr><td>Кинутий кошик (3 листи + SMS)</td><td>кошик &gt; 45 хв</td><td class="num">7–9% повернених кошиків · галузеві дані ESP</td></tr>
+      <tr><td>Післяпродажний (догляд + крос-сел)</td><td>доставка + 7 дн</td><td class="num">частина repeat 13→20%</td></tr>
+      <tr><td>Реактивація 90/180</td><td>без покупки 90 дн</td><td class="num">3–5% сегмента</td></tr>
+      <tr><td>Поповнення (змінні аксесуари)</td><td>цикл споживання SKU</td><td class="num">унікальний для ніші важіль</td></tr>
+    </table>
+  <div class="ft"><span>a06 · Досвід і конверсія</span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 3/4</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Зведений звіт · Website + Customer + CRM · 23.08.2026</span></div>
+    <h2 class="st">Зведення знахідок блоку — 14, з них 5 у хвилю 1</h2>
+    <table class="t">
+      <tr><th>#</th><th>Знахідка</th><th>Severity</th><th>Хвиля</th><th class="num">Ефект/рік</th></tr>
+      <tr class="hl"><td class="num">06-01</td><td>Доставка невидима до оплати</td><td><span class="sev h">high</span></td><td>W1</td><td class="num" rowspan="3"><b>€190k</b><br><span class="src">разом, checkout</span></td></tr>
+      <tr class="hl"><td class="num">06-02</td><td>4 зайві поля форми</td><td><span class="sev h">high</span></td><td>W1</td></tr>
+      <tr><td class="num">06-03</td><td>Строк доставки під fold на PDP</td><td><span class="sev m">med</span></td><td>W1</td></tr>
+      <tr><td class="num">06-04</td><td>LCP 4.6s: зображення+скрипти+CSS</td><td><span class="sev h">high</span></td><td>W2</td><td class="num">€120k</td></tr>
+      <tr><td class="num">06-05</td><td>CRM-flows відсутні (4 сценарії)</td><td><span class="sev h">high</span></td><td>W2</td><td class="num">€150k</td></tr>
+      <tr><td class="num">06-06</td><td>DMARC немає</td><td><span class="sev h">high</span></td><td>W1</td><td class="num">умова №5</td></tr>
+      <tr><td class="num">06-07</td><td>BLIK для PL з сайту</td><td><span class="sev m">med</span></td><td>W2</td><td class="num">€18k</td></tr>
+      <tr><td class="num">06-08…14</td><td>відгуки на PDP, повернення біля CTA, пошук-нулі, A/B-процес, heatmaps, консент-банер UX, сторінка доставки</td><td><span class="sev m">med/low</span></td><td>W2–W3</td><td class="num">разом ≈ €25k</td></tr>
+    </table>
+    <p class="marg" style="margin-top:5mm">Повний реєстр з доказами — a11. Задачі з виконавцями — a12. Шлях клієнта з моментами істини — a13.
+    Ефекти вже включені у €433k (a10) — цей документ їх деталізує, не додає зверху.</p>
+  <div class="ft"><span>a06 · Досвід і конверсія</span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 4/4</span></div></div></body></html>
