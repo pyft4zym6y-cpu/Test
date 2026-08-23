@@ -127,7 +127,8 @@ const fmtE = (n) => '€' + n.toLocaleString('uk-UA').replace(/ /g, ' ');
 // ── хелпери розмітки ──
 const DATE = '23.08.2026';
 let docNo = '';
-const hd = (sub) => `<div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">${sub} · ${DATE}</span></div>`;
+const ASOF = 'дані станом на 20.08.2026 · вивантаження TSK-0820';
+const hd = (sub) => `<div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">${sub} · ${ASOF}</span></div>`;
 const ft = (p, n) => `<div class="ft"><span>${docNo}</span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. ${p}/${n}</span></div>`;
 const page = (cls, sub, body, p, n) => `<div class="pg ${cls}">${hd(sub)}${body}${ft(p, n)}</div>`;
 
@@ -149,5 +150,20 @@ function doc(file, title, html) {
   console.log('✓', file);
 }
 
-export { doc, page, hd, ft, bench, kpi, fmtE, esc, CSS, OUT };
+const cover = (num, title, value, meta) => `<div class="pg ink">
+  <div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">${ASOF}</span></div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+    <span class="ebrow">Звіт ${num} із 5</span>
+    <h1 class="big" style="font-size:40pt">${title}</h1>
+    <p class="lead" style="margin-top:8mm">${value}</p>
+    <p class="marg" style="margin-top:10mm;color:rgba(255,255,255,.5)">${meta}</p>
+  </div>
+  ${ft(1, '·')}</div>`;
+const toc = (rows, pageNo, total) => page('', 'Зміст', `
+  <span class="ebrow">Зміст звіту</span>
+  <table class="t" style="margin-top:4mm">
+    <tr><th style="width:16mm">Глава</th><th>Назва — і що вона дає</th><th class="num" style="width:14mm">стор.</th></tr>
+    ${rows.map(([n, t2, p2]) => `<tr><td class="num"><b>${n}</b></td><td>${t2}</td><td class="num">${p2}</td></tr>`).join('')}
+  </table>`, pageNo, total);
+export { doc, page, hd, ft, bench, kpi, fmtE, esc, CSS, OUT, cover, toc };
 export const setDocNo = (s) => { docNo = s; };

@@ -1,0 +1,392 @@
+<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>Звіт 1 · Презентація аудиту — Тестик</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink:#070d12; --ink8:#0F1A21; --ink6:#1E3038;
+  --verd:#1F5648; --verd7:#2A6D5C; --verd5:#6FAA9A;
+  --mark:#D6362B; --steel:#6E7C86; --steel6:#94A0A8; --steel4:#D3D9DC;
+  --vel:#E7EAE7; --paper:#fff; --hair:#dfe4e6;
+  --sans:'IBM Plex Sans','Golos Text',system-ui,Arial,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+html,body { background:#fff; }
+body { font-family:var(--sans); color:#26292e; }
+.mono, .num { font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:.02em; }
+
+/* ── Сторінка A4 ── */
+.pg { width: 210mm; height: 296mm; position: relative; overflow: hidden; page-break-after: always; background:#fff; padding: 16mm 16mm 14mm; display:flex; flex-direction:column; }
+.pg.ink { background: var(--ink); color: #E8ECEA; }
+.pg.verd { background: var(--verd); color: #EAF2EE; }
+
+/* шапка/підвал документа */
+.hd { display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid var(--ink); padding-bottom:4mm; margin-bottom:8mm; }
+.pg.ink .hd, .pg.verd .hd { border-color: rgba(255,255,255,.35); }
+.hd .l { font-family:var(--mono); font-size:8.5pt; letter-spacing:.16em; text-transform:uppercase; }
+.hd .r { font-family:var(--mono); font-size:8.5pt; color:var(--steel); }
+.pg.ink .hd .r, .pg.verd .hd .r { color:rgba(255,255,255,.55); }
+.ft { position:absolute; left:16mm; right:16mm; bottom:8mm; display:flex; justify-content:space-between; font-family:var(--mono); font-size:7.5pt; color:var(--steel6); border-top:1px solid var(--hair); padding-top:2.5mm; }
+.pg.ink .ft, .pg.verd .ft { color:rgba(255,255,255,.45); border-color:rgba(255,255,255,.2); }
+.proto { color:var(--mark); }
+
+/* типографіка */
+.ebrow { font-family:var(--mono); font-size:9pt; letter-spacing:.22em; text-transform:uppercase; color:var(--verd7); margin-bottom:5mm; }
+.pg.ink .ebrow { color:var(--verd5); }
+h1.big { font-weight:800; letter-spacing:-.03em; line-height:.98; font-size:34pt; color:var(--ink); }
+.pg.ink h1.big, .pg.verd h1.big { color:#fff; }
+h2.st { font-weight:800; letter-spacing:-.02em; font-size:16pt; color:var(--ink); margin:0 0 4mm; line-height:1.05; }
+.pg.ink h2.st { color:#fff; }
+p.lead { font-size:11pt; line-height:1.5; color:#3A3D42; max-width:150mm; }
+.pg.ink p.lead, .pg.verd p.lead { color:rgba(255,255,255,.82); }
+p.body { font-size:9.5pt; line-height:1.55; color:#33373c; margin-bottom:3mm; }
+.marg { font-family:var(--mono); font-size:7.5pt; color:var(--steel); line-height:1.45; }
+.src { font-family:var(--mono); font-size:7pt; color:var(--steel6); }
+.mark { color: var(--mark); }
+.verdc { color: var(--verd7); }
+
+/* число-герой */
+.hero { margin: 8mm 0 4mm; }
+.hero .n { font-family:var(--mono); font-weight:700; font-size:64pt; letter-spacing:-.04em; line-height:1; color:var(--ink); }
+.hero.m .n { color:var(--mark); } .hero.v .n { color:var(--verd7); }
+.pg.ink .hero .n { color:#fff; }
+.hero .cap { font-size:10pt; color:var(--steel); margin-top:2mm; max-width:120mm; }
+.pg.ink .hero .cap { color:rgba(255,255,255,.65); }
+
+/* KPI-ряд */
+.kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:4mm; margin:5mm 0; }
+.kpis.c3 { grid-template-columns:repeat(3,1fr); }
+.kpi { border:1.5px solid var(--ink); padding:3.5mm 4mm; }
+.kpi .v { font-family:var(--mono); font-weight:700; font-size:16pt; letter-spacing:-.02em; }
+.kpi .v.bad { color:var(--mark); } .kpi .v.ok { color:var(--verd7); }
+.kpi .k { font-family:var(--mono); font-size:7pt; letter-spacing:.1em; text-transform:uppercase; color:var(--steel); margin-top:1.5mm; }
+
+/* таблиці */
+table.t { width:100%; border-collapse:collapse; font-size:8.5pt; }
+table.t th { font-family:var(--mono); font-size:7pt; letter-spacing:.12em; text-transform:uppercase; color:var(--steel); text-align:left; border-bottom:1.5px solid var(--ink); padding:1.8mm 2mm; }
+table.t td { border-bottom:1px solid var(--hair); padding:1.9mm 2mm; vertical-align:top; line-height:1.35; }
+table.t td.num, table.t th.num { text-align:right; font-family:var(--mono); }
+table.t tr.hl td { background:#F4F6F5; }
+table.t td b { font-weight:700; color:var(--ink); }
+.sev { font-family:var(--mono); font-size:7pt; letter-spacing:.08em; padding:.5mm 1.5mm; border:1px solid; }
+.sev.h { color:var(--mark); border-color:var(--mark); }
+.sev.m { color:#a06a00; border-color:#a06a00; }
+.sev.l { color:var(--steel); border-color:var(--steel6); }
+.sev.ok { color:var(--verd7); border-color:var(--verd7); }
+
+/* шкала-бенчмарк (D1) */
+.bench { margin:3.5mm 0; }
+.bench .lab { display:flex; justify-content:space-between; font-size:8.5pt; margin-bottom:1.2mm; }
+.bench .lab .b { font-family:var(--mono); }
+.bench .bar { position:relative; height:5.5mm; background:var(--vel); }
+.bench .fill { position:absolute; left:0; top:0; bottom:0; background:var(--ink); }
+.bench .fill.bad { background:var(--mark); }
+.bench .tick { position:absolute; top:-1.2mm; bottom:-1.2mm; width:1px; background:var(--verd7); }
+.bench .tick i { position:absolute; top:100%; left:-14mm; width:28mm; text-align:center; font-family:var(--mono); font-style:normal; font-size:6.5pt; color:var(--verd7); }
+
+/* гант */
+.gantt { width:100%; border-collapse:collapse; font-size:8pt; }
+.gantt th { font-family:var(--mono); font-size:6.5pt; letter-spacing:.08em; color:var(--steel); border-bottom:1.5px solid var(--ink); padding:1.5mm 1mm; text-align:center; }
+.gantt th.rn { text-align:left; }
+.gantt td { border-bottom:1px solid var(--hair); padding:1.5mm 1mm; }
+.gantt td.rn { font-size:8pt; line-height:1.25; width:52mm; }
+.gantt .cell { height:4.5mm; }
+.gantt .on { background:var(--ink); } .gantt .on.w1 { background:var(--mark); } .gantt .on.w3 { background:var(--verd7); }
+
+/* блоки-виноски */
+.callout { border-left:3px solid var(--mark); padding:2.5mm 4mm; background:#FBF3F2; font-size:9pt; line-height:1.45; margin:3mm 0; }
+.callout.v { border-color:var(--verd7); background:#F1F6F4; }
+.cols2 { display:grid; grid-template-columns:1fr 1fr; gap:6mm; }
+.cols3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:5mm; }
+
+/* слайди 16:9 */
+.sl { width:1280px; height:720px; position:relative; overflow:hidden; page-break-after:always; background:var(--paper); padding:56px 64px; display:flex; flex-direction:column; }
+.sl.ink { background:var(--ink); color:#E8ECEA; }
+.sl.verd { background:var(--verd); color:#EAF2EE; }
+.sl .ebrow { font-size:12px; margin-bottom:18px; }
+.sl h1 { font-weight:800; letter-spacing:-.03em; line-height:.98; font-size:64px; color:var(--ink); max-width:1000px; }
+.sl.ink h1, .sl.verd h1 { color:#fff; }
+.sl h1 .mk { color:var(--mark); }
+.sl .heron { font-family:var(--mono); font-weight:700; font-size:220px; letter-spacing:-.05em; line-height:.95; }
+.sl .foot { position:absolute; left:64px; right:64px; bottom:28px; display:flex; justify-content:space-between; font-family:var(--mono); font-size:11px; color:var(--steel6); }
+.sl.ink .foot, .sl.verd .foot { color:rgba(255,255,255,.45); }
+@media print { .pg, .sl { break-inside: avoid; } }
+</style></head><body><div class="sl ink">
+  <span class="ebrow">Звіт 1 із 5 · Читка результатів</span>
+  <h1 style="font-size:84px">«Тестик»: де бізнес втрачає<br><span class="mk">€433k виручки</span> —<br>≈€156k прибутку на рік</h1>
+  <p style="margin-top:32px;font-family:var(--mono);font-size:15px;color:rgba(255,255,255,.55)">12 аудитів · 163 перевірки · 14 відкритих систем · 24 місяці замовлень · усі розрахунки — у Звітах 2–3</p>
+<div class="foot"><span>WEEXP · Глибокий аудит · «Тестик» · дані станом на 20.08.2026</span><span style="color:#D6362B">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>01 / 18</span></div></div><div class="sl ">
+  <span class="ebrow">Головний висновок</span>
+  <h1>Попиту достатньо.<br>Гроші зливаються <span class="mk">після кліку</span>.</h1>
+  <p style="margin-top:40px;font-size:24px;line-height:1.45;color:#3A3D42;max-width:1050px">
+    Реклама окупається (LTV:CAC 3.4). Але з тих, хто почав оформлення, платить лише 43.6%.
+    Друга покупка — у 13% клієнтів проти 25–30% у ніші. І компанія цього не бачить:
+    аналітика розходиться з реальністю на 22%.</p>
+  <p style="margin-top:28px;font-family:var(--mono);font-size:13px;color:#94A0A8">джерела: бекенд-замовлення 24 міс · GA4 · кабінети · метод Baymard · Звіт 2, глави 2.08 / 2.11 / 2.12</p>
+<div class="foot"><span>WEEXP · Глибокий аудит · «Тестик» · дані станом на 20.08.2026</span><span style="color:#D6362B">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>02 / 18</span></div></div><div class="sl ink">
+  <span class="ebrow">Розрив у грошах · без подвійного рахунку</span>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+    <div class="heron" style="color:#D6362B;font-size:190px">€433k</div>
+    <p style="margin-top:6px;font-size:24px;color:rgba(255,255,255,.85)">виручки на рік · <b style="color:#fff">у прибутку (contribution) це ≈€156k</b></p>
+    <p style="margin-top:10px;font-size:17px;color:rgba(255,255,255,.6)">вісім важелів, пораховані від бекенд-замовлень; найбільший — повністю, решта — консервативні 45% (перекриваються)</p>
+    <p style="margin-top:10px;font-family:var(--mono);font-size:13px;color:rgba(255,255,255,.45)">сценарії: песиміст €249k · база €433k · оптиміст €578k — розрахунки в Звіті 3, гл. 3.03</p>
+  </div>
+<div class="foot"><span>WEEXP · Глибокий аудит · «Тестик» · дані станом на 20.08.2026</span><span style="color:#D6362B">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>03 / 18</span></div></div><div class="sl ">
+  <span class="ebrow">Доказ №1 · Воронка сайту, місяць</span>
+  <h1>З 185 000 візитів платять 2 260.<br>Втрата — <span class="mk">у кроці оплати</span>.</h1>
+  <div style="display:flex;gap:8px;align-items:flex-end;margin-top:52px;height:260px">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%">
+        <div style="font-family:var(--mono);font-size:16px;margin-bottom:6px;">185 000</div>
+        <div style="height:100%;background:#070d12"></div>
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6E7C86;margin-top:8px">Сесії</div></div><div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%">
+        <div style="font-family:var(--mono);font-size:16px;margin-bottom:6px;">96 200</div>
+        <div style="height:52%;background:#070d12"></div>
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6E7C86;margin-top:8px">Картка товару</div></div><div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%">
+        <div style="font-family:var(--mono);font-size:16px;margin-bottom:6px;">12 950</div>
+        <div style="height:7%;background:#070d12"></div>
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6E7C86;margin-top:8px">Кошик</div></div><div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%">
+        <div style="font-family:var(--mono);font-size:16px;margin-bottom:6px;">5 180</div>
+        <div style="height:2.8%;background:#070d12"></div>
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6E7C86;margin-top:8px">Checkout</div></div><div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%">
+        <div style="font-family:var(--mono);font-size:16px;margin-bottom:6px;color:#D6362B;font-weight:700">2 260</div>
+        <div style="height:2.2%;background:#D6362B"></div>
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6E7C86;margin-top:8px">Покупка</div></div>
+  </div>
+  <p style="margin-top:24px;font-family:var(--mono);font-size:13px;color:#94A0A8">checkout completion 43.6% — бенчмарк 65%+ (Baymard) · GA4, звірено з бекендом · Звіт 2, гл. 2.08</p>
+<div class="foot"><span>WEEXP · Глибокий аудит · «Тестик» · дані станом на 20.08.2026</span><span style="color:#D6362B">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>04 / 18</span></div></div><div class="sl ">
+  <span class="ebrow">Доказ №2 · Мобільна швидкість</span>
+  <h1>74% трафіку — mobile.<br>Він вантажиться <span class="mk">4.6 секунди</span>.</h1>
+  <div style="display:flex;gap:64px;margin-top:56px">
+    <div><div style="font-family:var(--mono);font-weight:700;font-size:110px;letter-spacing:-.04em;color:#D6362B">0.9%</div>
+      <div style="font-family:var(--mono);font-size:13px;color:#6E7C86;letter-spacing:.1em;text-transform:uppercase;margin-top:6px">конверсія mobile</div></div>
+    <div style="align-self:center;font-size:38px;color:#94A0A8">проти</div>
+    <div><div style="font-family:var(--mono);font-weight:700;font-size:110px;letter-spacing:-.04em;color:#070d12">2.1%</div>
+      <div style="font-family:var(--mono);font-size:13px;color:#6E7C86;letter-spacing:.1em;text-transform:uppercase;margin-top:6px">конверсія desktop</div></div>
+  </div>
+  <p style="margin-top:40px;font-size:20px;color:#3A3D42;max-width:1000px">LCP 4.6s · INP 310ms · CLS 0.18 — всі три метрики Google червоні (пороги 2.5s / 200ms / 0.1). Причини відомі: зображення, скрипти, CSS, кеш — усе лікується в межах OpenCart.</p>
+  <p style="margin-top:16px;font-family:var(--mono);font-size:13px;color:#94A0A8">CrUX p75 · розкладка причин — Звіт 2, гл. 2.08 §4</p>
+<div class="foot"><span>WEEXP · Глибокий аудит · «Тестик» · дані станом на 20.08.2026</span><span style="color:#D6362B">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>05 / 18</span></div></div><div class="sl ">
+  <span class="ebrow">Доказ №3 · Утримання</span>
+  <h1>Кожен клієнт купує <span class="mk">1.15 раза</span>.<br>База на 41 000 контактів мовчить.</h1>
+  <div style="margin-top:52px;max-width:1050px">
+    <div style="margin-bottom:34px">
+        <div style="display:flex;justify-content:space-between;font-size:18px;margin-bottom:8px"><span>Повторні покупки, 365 дн</span><span style="font-family:var(--mono);font-weight:700;color:#D6362B">13%</span></div>
+        <div style="position:relative;height:26px;background:#E7EAE7">
+          <div style="position:absolute;left:0;top:0;bottom:0;width:31.2%;background:#D6362B"></div>
+          <div style="position:absolute;left:64.8%;top:-6px;bottom:-6px;width:2px;background:#2A6D5C"></div>
+          <span style="position:absolute;left:65.8%;top:-30px;font-family:var(--mono);font-size:12px;color:#2A6D5C">бенч ніші 25–30%</span>
+        </div></div><div style="margin-bottom:34px">
+        <div style="display:flex;justify-content:space-between;font-size:18px;margin-bottom:8px"><span>Частка виручки з email/CRM</span><span style="font-family:var(--mono);font-weight:700;color:#D6362B">4.8%</span></div>
+        <div style="position:relative;height:26px;background:#E7EAE7">
+          <div style="position:absolute;left:0;top:0;bottom:0;width:11.52%;background:#D6362B"></div>
+          <div style="position:absolute;left:60%;top:-6px;bottom:-6px;width:2px;background:#2A6D5C"></div>
+          <span style="position:absolute;left:61%;top:-30px;font-family:var(--mono);font-size:12px;color:#2A6D5C">зрілий D2C: 25%+</span>
+        </div></div>
+  </div>
+  <p style="font-size:20px;color:#3A3D42;max-width:1020px">Один welcome-ланцюжок із шести потрібних. Вікно повернення (30–60 день) — порожнє. І застереження: базу будитимемо обережно — 62% адрес старші двох років, різка реактивація спалить домен.</p>
+  <p style="margin-top:12px;font-family:var(--mono);font-size:13px;color:#94A0A8">замовлення 24 міс · eSputnik · план прогріву — Звіт 2, гл. 2.11</p>
+<div class="foot"><span>WEEXP · Глибокий аудит · «Тестик» · дані станом на 20.08.2026</span><span style="color:#D6362B">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>06 / 18</span></div></div><div class="sl ink">
+  <span class="ebrow">Доказ №4 · Аналітика</span>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+    <div class="heron" style="color:#fff">22%</div>
+    <p style="margin-top:6px;font-size:26px;color:rgba(255,255,255,.85);max-width:1000px">замовлень <span style="color:#F08379">невидимі для GA4</span>.
+    Минулорічна «оптимізація» різала найплатоспроможніших клієнтів — бо їх не бачила.</p>
+    <p style="margin-top:16px;font-family:var(--mono);font-size:13px;color:rgba(255,255,255,.45)">Apple Pay redirect ≈13% + consent ≈7% + дублі · звірка по днях, 6 міс · фікс ≈30 год у хвилі 1 · Звіт 2, гл. 2.12</p>
+  </div>
+<div class="foot"><span>WEEXP · Глибокий аудит · «Тестик» · дані станом на 20.08.2026</span><span style="color:#D6362B">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>07 / 18</span></div></div><div class="sl ">
+  <span class="ebrow">Доказ №5 · Канали</span>
+  <h1>Сайт заробляє 12% з обороту.<br>Allegro — <span class="mk">3%</span>. Ніхто не рахував.</h1>
+  <div style="display:flex;gap:10px;margin-top:60px;max-width:900px">
+    <div style="flex:95"><div style="height:160px;background:#070d12;position:relative"><span style="position:absolute;bottom:10px;left:14px;color:#fff;font-family:var(--mono);font-size:15px">сайт · €95k/міс</span></div>
+      <div style="font-family:var(--mono);font-size:15px;margin-top:10px">contribution <b>12%</b></div></div>
+    <div style="flex:28"><div style="height:160px;background:#D6362B;position:relative"><span style="position:absolute;bottom:10px;left:14px;color:#fff;font-family:var(--mono);font-size:15px">Allegro · €28k</span></div>
+      <div style="font-family:var(--mono);font-size:15px;margin-top:10px;color:#D6362B">contribution <b>3%</b></div></div>
+  </div>
+  <p style="margin-top:36px;font-size:20px;color:#3A3D42;max-width:1020px">Канал не закриваємо — лікуємо: спершу тест цін на 10 SKU (2 тижні), потім розкат на 40, потім логістика. Якщо обсяг просяде понад 15% — відкат (ризик R5 у реєстрі).</p>
+  <p style="margin-top:12px;font-family:var(--mono);font-size:13px;color:#94A0A8">юніт-розрахунок каналу — Звіт 2, гл. 2.04 · ризики — Звіт 4, гл. 4.04</p>
+<div class="foot"><span>WEEXP · Глибокий аудит · «Тестик» · дані станом на 20.08.2026</span><span style="color:#D6362B">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>08 / 18</span></div></div><div class="sl ">
+  <span class="ebrow">Системний діагноз · Матриця зрілості, 12 аудитів</span>
+  <h1>Хвороба не в маркетингу.<br>У <span class="mk">даних і організації</span>.</h1>
+  <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:44px">
+    <div style="border:2px solid #070d12;padding:13px 12px">
+        <div style="font-family:var(--mono);font-weight:700;font-size:32px;">L2</div>
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#6E7C86;margin-top:4px">Business</div>
+        <div style="display:flex;gap:3px;margin-top:8px"><span style="flex:1;height:5px;background:#070d12"></span><span style="flex:1;height:5px;background:#070d12"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span></div>
+      </div><div style="border:2px solid #070d12;padding:13px 12px">
+        <div style="font-family:var(--mono);font-weight:700;font-size:32px;">L2</div>
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#6E7C86;margin-top:4px">Market</div>
+        <div style="display:flex;gap:3px;margin-top:8px"><span style="flex:1;height:5px;background:#070d12"></span><span style="flex:1;height:5px;background:#070d12"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span></div>
+      </div><div style="border:2px solid #070d12;padding:13px 12px">
+        <div style="font-family:var(--mono);font-weight:700;font-size:32px;">L2</div>
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#6E7C86;margin-top:4px">Product</div>
+        <div style="display:flex;gap:3px;margin-top:8px"><span style="flex:1;height:5px;background:#070d12"></span><span style="flex:1;height:5px;background:#070d12"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span></div>
+      </div><div style="border:2px solid #D6362B;padding:13px 12px">
+        <div style="font-family:var(--mono);font-weight:700;font-size:32px;color:#D6362B">L1</div>
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#6E7C86;margin-top:4px">Customer</div>
+        <div style="display:flex;gap:3px;margin-top:8px"><span style="flex:1;height:5px;background:#D6362B"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span></div>
+      </div><div style="border:2px solid #070d12;padding:13px 12px">
+        <div style="font-family:var(--mono);font-weight:700;font-size:32px;">L2</div>
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#6E7C86;margin-top:4px">Website</div>
+        <div style="display:flex;gap:3px;margin-top:8px"><span style="flex:1;height:5px;background:#070d12"></span><span style="flex:1;height:5px;background:#070d12"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span></div>
+      </div><div style="border:2px solid #070d12;padding:13px 12px">
+        <div style="font-family:var(--mono);font-weight:700;font-size:32px;">L2</div>
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#6E7C86;margin-top:4px">SEO</div>
+        <div style="display:flex;gap:3px;margin-top:8px"><span style="flex:1;height:5px;background:#070d12"></span><span style="flex:1;height:5px;background:#070d12"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span></div>
+      </div><div style="border:2px solid #070d12;padding:13px 12px">
+        <div style="font-family:var(--mono);font-weight:700;font-size:32px;">L3</div>
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#6E7C86;margin-top:4px">Acquisition</div>
+        <div style="display:flex;gap:3px;margin-top:8px"><span style="flex:1;height:5px;background:#070d12"></span><span style="flex:1;height:5px;background:#070d12"></span><span style="flex:1;height:5px;background:#070d12"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span></div>
+      </div><div style="border:2px solid #D6362B;padding:13px 12px">
+        <div style="font-family:var(--mono);font-weight:700;font-size:32px;color:#D6362B">L1</div>
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#6E7C86;margin-top:4px">CRM</div>
+        <div style="display:flex;gap:3px;margin-top:8px"><span style="flex:1;height:5px;background:#D6362B"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span></div>
+      </div><div style="border:2px solid #D6362B;padding:13px 12px">
+        <div style="font-family:var(--mono);font-weight:700;font-size:32px;color:#D6362B">L1</div>
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#6E7C86;margin-top:4px">Analytics</div>
+        <div style="display:flex;gap:3px;margin-top:8px"><span style="flex:1;height:5px;background:#D6362B"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span></div>
+      </div><div style="border:2px solid #070d12;padding:13px 12px">
+        <div style="font-family:var(--mono);font-weight:700;font-size:32px;">L2</div>
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#6E7C86;margin-top:4px">Operations</div>
+        <div style="display:flex;gap:3px;margin-top:8px"><span style="flex:1;height:5px;background:#070d12"></span><span style="flex:1;height:5px;background:#070d12"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span></div>
+      </div><div style="border:2px solid #070d12;padding:13px 12px">
+        <div style="font-family:var(--mono);font-weight:700;font-size:32px;">L2</div>
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#6E7C86;margin-top:4px">Technology</div>
+        <div style="display:flex;gap:3px;margin-top:8px"><span style="flex:1;height:5px;background:#070d12"></span><span style="flex:1;height:5px;background:#070d12"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span></div>
+      </div><div style="border:2px solid #070d12;padding:13px 12px">
+        <div style="font-family:var(--mono);font-weight:700;font-size:32px;">L2</div>
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#6E7C86;margin-top:4px">Organization</div>
+        <div style="display:flex;gap:3px;margin-top:8px"><span style="flex:1;height:5px;background:#070d12"></span><span style="flex:1;height:5px;background:#070d12"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span><span style="flex:1;height:5px;background:#E7EAE7"></span></div>
+      </div>
+  </div>
+  <p style="margin-top:28px;font-size:19px;color:#3A3D42;max-width:1060px">Health <b class="mono">52/100</b> (розрахунок показаний у Звіті 2, гл. 2.17). Масштабувати зрілий Acquisition поверх трьох L1 — купувати некерований трафік. Тому порядок хвиль саме такий.</p>
+<div class="foot"><span>WEEXP · Глибокий аудит · «Тестик» · дані станом на 20.08.2026</span><span style="color:#D6362B">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>09 / 18</span></div></div><div class="sl verd">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+    <span class="ebrow" style="color:#6FAA9A">Від діагнозу — до маршруту</span>
+    <h1 style="font-size:76px;max-width:1050px">Нічого з цього не лікується<br>«ще одним підрядником».<br>Лікується системою.</h1>
+  </div>
+<div class="foot"><span>WEEXP · Глибокий аудит · «Тестик» · дані станом на 20.08.2026</span><span style="color:#D6362B">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>10 / 18</span></div></div><div class="sl ">
+  <span class="ebrow">Вісім важелів · виручка на рік · сценарій «база»</span>
+  <h1>Один важіль — повністю.<br>Решта — консервативні 45%.</h1>
+  <div style="margin-top:40px;max-width:1080px">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px">
+        <span style="width:330px;font-size:16px">Checkout 43.6% → 60%</span>
+        <div style="flex:1;height:21px;background:#E7EAE7;position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:100%;background:#D6362B"></div></div>
+        <span style="font-family:var(--mono);font-weight:700;font-size:17px;width:80px;text-align:right">€190k</span>
+        <span style="font-family:var(--mono);font-size:11px;color:#2A6D5C;width:40px">high</span></div><div style="display:flex;align-items:center;gap:16px;margin-bottom:12px">
+        <span style="width:330px;font-size:16px">Retention 13% → 20%</span>
+        <div style="flex:1;height:21px;background:#E7EAE7;position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:78.94736842105263%;background:#070d12"></div></div>
+        <span style="font-family:var(--mono);font-weight:700;font-size:17px;width:80px;text-align:right">€150k</span>
+        <span style="font-family:var(--mono);font-size:11px;color:#2A6D5C;width:40px">high</span></div><div style="display:flex;align-items:center;gap:16px;margin-bottom:12px">
+        <span style="width:330px;font-size:16px">Mobile LCP 4.6 → 2.5s</span>
+        <div style="flex:1;height:21px;background:#E7EAE7;position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:63.1578947368421%;background:#070d12"></div></div>
+        <span style="font-family:var(--mono);font-weight:700;font-size:17px;width:80px;text-align:right">€120k</span>
+        <span style="font-family:var(--mono);font-size:11px;color:#a06a00;width:40px">med</span></div><div style="display:flex;align-items:center;gap:16px;margin-bottom:12px">
+        <span style="width:330px;font-size:16px">OOS топ-20: 17% → 7%</span>
+        <div style="flex:1;height:21px;background:#E7EAE7;position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:50%;background:#070d12"></div></div>
+        <span style="font-family:var(--mono);font-weight:700;font-size:17px;width:80px;text-align:right">€95k</span>
+        <span style="font-family:var(--mono);font-size:11px;color:#2A6D5C;width:40px">high</span></div><div style="display:flex;align-items:center;gap:16px;margin-bottom:12px">
+        <span style="width:330px;font-size:16px">SEO: фасети, кластери, зірки</span>
+        <div style="flex:1;height:21px;background:#E7EAE7;position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:44.73684210526316%;background:#070d12"></div></div>
+        <span style="font-family:var(--mono);font-weight:700;font-size:17px;width:80px;text-align:right">€85k</span>
+        <span style="font-family:var(--mono);font-size:11px;color:#a06a00;width:40px">med</span></div><div style="display:flex;align-items:center;gap:16px;margin-bottom:12px">
+        <span style="width:330px;font-size:16px">Allegro: ціни й логістика</span>
+        <div style="flex:1;height:21px;background:#E7EAE7;position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:31.57894736842105%;background:#070d12"></div></div>
+        <span style="font-family:var(--mono);font-weight:700;font-size:17px;width:80px;text-align:right">€60k</span>
+        <span style="font-family:var(--mono);font-size:11px;color:#2A6D5C;width:40px">high</span></div><div style="display:flex;align-items:center;gap:16px;margin-bottom:12px">
+        <span style="width:330px;font-size:16px">Бій 2.1% → 0.7%</span>
+        <div style="flex:1;height:21px;background:#E7EAE7;position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:16.315789473684212%;background:#070d12"></div></div>
+        <span style="font-family:var(--mono);font-weight:700;font-size:17px;width:80px;text-align:right">€31k</span>
+        <span style="font-family:var(--mono);font-size:11px;color:#2A6D5C;width:40px">high</span></div>
+  </div>
+  <p style="margin-top:20px;font-family:var(--mono);font-size:13.5px;color:#6E7C86">разом: <b style="color:#070d12">€433k виручки ≈ €156k прибутку/рік</b> · + €55k кешу з dead stock (одноразово) · кожен важіль із трьома сценаріями — Звіт 3, гл. 3.03</p>
+<div class="foot"><span>WEEXP · Глибокий аудит · «Тестик» · дані станом на 20.08.2026</span><span style="color:#D6362B">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>11 / 18</span></div></div><div class="sl ink">
+  <span class="ebrow">Ціна бездіяльності</span>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+    <h1 style="font-size:64px">Не вирішувати — теж рішення.<br>Воно коштує <span class="mk">€13k прибутку на місяць</span>.</h1>
+    <div style="display:flex;gap:56px;margin-top:48px">
+      <div><div style="font-family:var(--mono);font-weight:700;font-size:54px;color:#F08379">−€13k</div><div style="font-size:14px;color:rgba(255,255,255,.65);margin-top:6px">contribution щомісяця, поки витік триває</div></div>
+      <div><div style="font-family:var(--mono);font-weight:700;font-size:54px;color:#F08379">+8–12%</div><div style="font-size:14px;color:rgba(255,255,255,.65);margin-top:6px">річне подорожчання CAC у ніші — вхід потім дорожчий</div></div>
+      <div><div style="font-family:var(--mono);font-weight:700;font-size:54px;color:#F08379">11/48</div><div style="font-size:14px;color:rgba(255,255,255,.65);margin-top:6px">AI-відповідей уже займає конкурент №2 — нова полиця закривається</div></div>
+    </div>
+    <p style="margin-top:44px;font-size:19px;color:rgba(255,255,255,.8);max-width:1000px">І найголовніше: Q4 (38% річної виручки) повториться на хворій системі — з OOS 26%, боєм на подвоєному обсязі та касою в овердрафті.</p>
+  </div>
+<div class="foot"><span>WEEXP · Глибокий аудит · «Тестик» · дані станом на 20.08.2026</span><span style="color:#D6362B">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>12 / 18</span></div></div><div class="sl ">
+  <span class="ebrow">Роадмапа · 9 місяців, три хвилі</span>
+  <h1>Спочатку прилади. Потім гроші.<br>Потім масштаб.</h1>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-top:44px">
+    <div style="border-top:6px solid #D6362B;padding-top:16px">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#D6362B">Хвиля 1 · дні 1–30 · по тижнях</div>
+      <div style="font-size:21px;font-weight:700;margin:10px 0 10px">Полагодити й зупинити</div>
+      <p style="font-size:15.5px;line-height:1.5;color:#3A3D42">GA4-фікс · DMARC · пакування · доставка видима до оплати · Allegro-тест цін · бренд-виключення · розпродаж dead stock · політики делегування</p></div>
+    <div style="border-top:6px solid #070d12;padding-top:16px">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#6E7C86">Хвиля 2 · дні 31–120</div>
+      <div style="font-size:21px;font-weight:700;margin:10px 0 10px">Запустити двигуни</div>
+      <p style="font-size:15.5px;line-height:1.5;color:#3A3D42">checkout-поля · 6 CRM-flows із прогрівом · LCP-пакет · закупівлі під OOS · щотижневий дашборд · staging · прайс-тест ядра</p></div>
+    <div style="border-top:6px solid #2A6D5C;padding-top:16px">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#2A6D5C">Хвиля 3 · міс 4–9</div>
+      <div style="font-size:21px;font-weight:700;margin:10px 0 10px">Система і масштаб</div>
+      <p style="font-size:15.5px;line-height:1.5;color:#3A3D42">SEO-фасети й контент-ядро · юніт-економіка PL → поріг CZ/RO · власники каналів · тест відпустки (М6–7) · Q4-план</p></div>
+  </div>
+  <p style="margin-top:30px;font-family:var(--mono);font-size:13px;color:#94A0A8">Гант 12×9 із залежностями і ресурсною моделлю без перевантажень — Звіт 4 · 6 контрольних точок, найдовша пауза між ними — 6 тижнів</p>
+<div class="foot"><span>WEEXP · Глибокий аудит · «Тестик» · дані станом на 20.08.2026</span><span style="color:#D6362B">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>13 / 18</span></div></div><div class="sl ">
+  <span class="ebrow">Інвестиція та окупність · повний бюджет, без дрібного шрифту</span>
+  <h1>€70–74k за 9 місяців.<br>Окупність — <span class="mk">М4–М5</span>, кешово раніше.</h1>
+  <div style="display:flex;gap:48px;margin-top:48px">
+    <div><div style="font-family:var(--mono);font-weight:700;font-size:56px">€61k</div><div style="font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6E7C86;margin-top:6px;max-width:200px">нових грошей: WEEXP €54k + 2 нові підрядники €7.2k</div></div>
+    <div><div style="font-family:var(--mono);font-weight:700;font-size:56px">€12.6k</div><div style="font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6E7C86;margin-top:6px;max-width:200px">ваш існуючий розробник — показуємо для повноти</div></div>
+    <div><div style="font-family:var(--mono);font-weight:700;font-size:56px;color:#2A6D5C">€156k</div><div style="font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6E7C86;margin-top:6px;max-width:200px">річний потенціал у прибутку при 100% реалізації</div></div>
+    <div><div style="font-family:var(--mono);font-weight:700;font-size:56px;color:#2A6D5C">€86–109k</div><div style="font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6E7C86;margin-top:6px;max-width:210px">при реалістичних 55–70% — все одно >1× за перший рік</div></div>
+  </div>
+  <p style="margin-top:44px;font-size:19px;color:#3A3D42;max-width:1060px">Крива по місяцях — Звіт 3, гл. 3.04: прибуткова окупність настає на М4–М5 (не «з другого місяця» — кажемо чесно); кешово — раніше, бо розпродаж dead stock повертає €40–55k уже в М2–3. Вартість аудиту зараховується у впровадження.</p>
+<div class="foot"><span>WEEXP · Глибокий аудит · «Тестик» · дані станом на 20.08.2026</span><span style="color:#D6362B">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>14 / 18</span></div></div><div class="sl ">
+  <span class="ebrow">Команда · хто що закриває</span>
+  <h1>Ми не «робимо за вас».<br>Ми будуємо систему разом.</h1>
+  <table style="width:100%;border-collapse:collapse;margin-top:40px;font-size:16px">
+    <tr style="border-bottom:2.5px solid #070d12"><th style="text-align:left;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#6E7C86;padding:9px 8px">Напрям</th>
+      <th style="text-align:left;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#6E7C86;padding:9px 8px">WEEXP</th>
+      <th style="text-align:left;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#6E7C86;padding:9px 8px">Підрядники</th>
+      <th style="text-align:left;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#6E7C86;padding:9px 8px">Команда «Тестик»</th></tr>
+    <tr style="border-bottom:1px solid #dfe4e6"><td style="padding:10px 8px;font-weight:700">Аналітика</td><td style="padding:10px 8px">архітектура, дашборд, звірка</td><td style="padding:10px 8px;color:#3A3D42">—</td><td style="padding:10px 8px;color:#3A3D42">PM: доступи, приймання</td></tr><tr style="border-bottom:1px solid #dfe4e6"><td style="padding:10px 8px;font-weight:700">CRO / mobile</td><td style="padding:10px 8px">гіпотези, ТЗ, аналіз</td><td style="padding:10px 8px;color:#3A3D42">ваш розробник (≤40 год/міс — перевірено)</td><td style="padding:10px 8px;color:#3A3D42">PM: релізи через staging</td></tr><tr style="border-bottom:1px solid #dfe4e6"><td style="padding:10px 8px;font-weight:700">CRM / retention</td><td style="padding:10px 8px">сценарії, прогрів, запуск</td><td style="padding:10px 8px;color:#3A3D42">копірайтер (новий, €400/міс)</td><td style="padding:10px 8px;color:#3A3D42">маркетолог 25%</td></tr><tr style="border-bottom:1px solid #dfe4e6"><td style="padding:10px 8px;font-weight:700">SEO / контент (W3)</td><td style="padding:10px 8px">стратегія, ТЗ</td><td style="padding:10px 8px;color:#3A3D42">студія (нова, з М5, €800/міс)</td><td style="padding:10px 8px;color:#3A3D42">контентник</td></tr><tr style="border-bottom:1px solid #dfe4e6"><td style="padding:10px 8px;font-weight:700">Операції</td><td style="padding:10px 8px">правила, консультації</td><td style="padding:10px 8px;color:#3A3D42">—</td><td style="padding:10px 8px;color:#3A3D42">ops-лід</td></tr><tr style="border-bottom:1px solid #dfe4e6"><td style="padding:10px 8px;font-weight:700">Ритм і PM</td><td style="padding:10px 8px">фасилітація · роль PM у М1 до найму</td><td style="padding:10px 8px;color:#3A3D42">—</td><td style="padding:10px 8px;color:#3A3D42">PM з тижня 5–6 · власник 2 год/тиж</td></tr>
+  </table>
+  <p style="margin-top:20px;font-family:var(--mono);font-size:13px;color:#94A0A8">ресурсна модель по місяцях, жодної ролі понад ємність — Звіт 4, гл. 4.02</p>
+<div class="foot"><span>WEEXP · Глибокий аудит · «Тестик» · дані станом на 20.08.2026</span><span style="color:#D6362B">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>15 / 18</span></div></div><div class="sl ">
+  <span class="ebrow">Ризики · ми їх бачимо і тримаємо</span>
+  <h1>8 ризиків плану.<br>У кожного — мітигація і план Б.</h1>
+  <table style="width:100%;border-collapse:collapse;margin-top:36px;font-size:15.5px">
+    <tr style="border-bottom:2.5px solid #070d12"><th style="text-align:left;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#6E7C86;padding:8px">Топ-4 ризики</th><th style="text-align:left;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#6E7C86;padding:8px">Мітигація</th></tr>
+    <tr style="border-bottom:1px solid #dfe4e6"><td style="padding:11px 8px;font-weight:700">Розробник один на всю платформу</td><td style="padding:11px 8px;color:#3A3D42">SLA + документація (W2) · другий підрядник «на підхваті» з М3</td></tr><tr style="border-bottom:1px solid #dfe4e6"><td style="padding:11px 8px;font-weight:700">PM не найнято вчасно</td><td style="padding:11px 8px;color:#3A3D42">WEEXP тримає роль у М1 · найм стартує до кікофу</td></tr><tr style="border-bottom:1px solid #dfe4e6"><td style="padding:11px 8px;font-weight:700">Реактивація бази палить домен</td><td style="padding:11px 8px;color:#3A3D42">прогрів 15%/тиждень · стоп-правило: скарги >0.2%</td></tr><tr style="border-bottom:1px solid #dfe4e6"><td style="padding:11px 8px;font-weight:700">Allegro-ціни просаджують обсяг</td><td style="padding:11px 8px;color:#3A3D42">тест на 10 SKU 2 тижні до розкату · відкат при −15%</td></tr>
+  </table>
+  <p style="margin-top:26px;font-size:18px;color:#3A3D42;max-width:1000px">Повний реєстр 8 ризиків із тригерами планів Б — Звіт 4, гл. 4.04. Ризики не ховаємо в додатки — вони частина плану.</p>
+<div class="foot"><span>WEEXP · Глибокий аудит · «Тестик» · дані станом на 20.08.2026</span><span style="color:#D6362B">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>16 / 18</span></div></div><div class="sl verd">
+  <span class="ebrow" style="color:#6FAA9A">Точка Б · через 9 місяців · критерії приймання</span>
+  <h1>Як виглядає «здоровий Тестик»</h1>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:40px">
+    <div style="border:2px solid rgba(255,255,255,.4);padding:16px 15px">
+        <div style="font-family:var(--mono);font-weight:700;font-size:38px;color:#fff">1.9%</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.75);margin-top:6px;line-height:1.35">конверсія (зараз 1.22%)</div></div><div style="border:2px solid rgba(255,255,255,.4);padding:16px 15px">
+        <div style="font-family:var(--mono);font-weight:700;font-size:38px;color:#fff">60%</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.75);margin-top:6px;line-height:1.35">checkout (43.6%)</div></div><div style="border:2px solid rgba(255,255,255,.4);padding:16px 15px">
+        <div style="font-family:var(--mono);font-weight:700;font-size:38px;color:#fff">22%</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.75);margin-top:6px;line-height:1.35">repeat (13%)</div></div><div style="border:2px solid rgba(255,255,255,.4);padding:16px 15px">
+        <div style="font-family:var(--mono);font-weight:700;font-size:38px;color:#fff">18%</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.75);margin-top:6px;line-height:1.35">виручки з CRM (4.8%)</div></div><div style="border:2px solid rgba(255,255,255,.4);padding:16px 15px">
+        <div style="font-family:var(--mono);font-weight:700;font-size:38px;color:#fff">≤2.5s</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.75);margin-top:6px;line-height:1.35">LCP mobile (4.6s)</div></div><div style="border:2px solid rgba(255,255,255,.4);padding:16px 15px">
+        <div style="font-family:var(--mono);font-weight:700;font-size:38px;color:#fff"><5%</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.75);margin-top:6px;line-height:1.35">розбіжність GA4 (22%)</div></div><div style="border:2px solid rgba(255,255,255,.4);padding:16px 15px">
+        <div style="font-family:var(--mono);font-weight:700;font-size:38px;color:#fff"><7%</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.75);margin-top:6px;line-height:1.35">OOS топ-20 (17%)</div></div><div style="border:2px solid rgba(255,255,255,.4);padding:16px 15px">
+        <div style="font-family:var(--mono);font-weight:700;font-size:38px;color:#fff">3 тижні</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.75);margin-top:6px;line-height:1.35">відпустка власника без падіння — крок до «3 місяців»</div></div>
+  </div>
+  <p style="margin-top:28px;font-size:18px;color:rgba(255,255,255,.85);max-width:1060px">24 пороги Definition of Done — Звіт 3, гл. 3.05. Не «стало краще», а «пройдено/ні». Шлях до вашої цілі €250k/міс — стан Б + масштабування + CZ/RO, кожен доданок зі своєю умовою входу.</p>
+<div class="foot"><span>WEEXP · Глибокий аудит · «Тестик» · дані станом на 20.08.2026</span><span style="color:#D6362B">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>17 / 18</span></div></div><div class="sl ink">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+    <span class="ebrow">Наступний крок</span>
+    <h1 style="font-size:70px">30 днів — і перші важелі<br>вже працюють.</h1>
+    <p style="margin-top:34px;font-size:22px;color:rgba(255,255,255,.8);max-width:980px">Читка пакета (4 години включено) → старт хвилі 1 → КТ-1 через 30 днів.
+    Гарантія на КТ-2 — з нашим коштом (Звіт 5). Вартість аудиту зараховується у впровадження.</p>
+    <p style="margin-top:36px;font-family:var(--mono);font-size:15px;color:rgba(255,255,255,.55)">hello@weexp.agency · weexp.agency</p>
+  </div>
+<div class="foot"><span>WEEXP · Глибокий аудит · «Тестик» · дані станом на 20.08.2026</span><span style="color:#D6362B">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>18 / 18</span></div></div></body></html>
