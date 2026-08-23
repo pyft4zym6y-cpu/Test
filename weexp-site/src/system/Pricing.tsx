@@ -166,7 +166,7 @@ export function Pricing() {
               <p className="pric-txt">{m.terms}</p>
 
               <p className="pric-resp">{m.resp}</p>
-              <Link to={lp('/contact')} className={'sysx-cta pric-cta' + (m.featured ? ' is-primary' : '')}>{t('Обговорити формат', 'Discuss format')} {m.n} →</Link>
+              <Link to={`${lp('/contact')}?format=${Number(m.n)}`} className={'sysx-cta pric-cta' + (m.featured ? ' is-primary' : '')}>{t('Обговорити формат', 'Discuss format')} {m.n} →</Link>
             </article>
           ))}
         </div>

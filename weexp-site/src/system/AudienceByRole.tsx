@@ -43,6 +43,7 @@ export function AudienceByRole() {
 
   return (
     <section className="abr sysx" aria-label={t('Ваша роль — ваш результат', 'Your role — your result')}>
+      <div className="sysx-field" aria-hidden="true" />
       <div className="abr-in">
         <div className="abr-head">
           <span className="sysx-kick">{t('Кому це · за роллю', 'Who it’s for · by role')}</span>

@@ -525,7 +525,10 @@
 @media (max-width: 540px) { .cred-method, .cred-steps { grid-template-columns: 1fr; } }
 
 /* ── «Ваша роль — ваш результат» (меседжинг за ЛПР) ── */
-.abr { background: var(--warm-white); padding: clamp(56px, 8vw, 110px) 0; }
+/* Фон блоку — фірмова точкова сітка, як на всьому сайті (без окремої підложки). */
+.abr { position: relative; background: var(--cream); padding: clamp(56px, 8vw, 110px) 0; }
+.abr > .sysx-field { -webkit-mask-image: none; mask-image: none; }
+.abr-in { position: relative; z-index: 1; }
 .abr-in { max-width: 1080px; margin: 0 auto; padding: 0 clamp(18px, 5vw, 40px); }
 .abr-head { max-width: 56ch; margin-bottom: clamp(26px, 4vw, 44px); }
 .abr-h { font-size: clamp(32px, 5.4vw, 66px); margin: 12px 0 14px; }
@@ -1746,8 +1749,10 @@
 /* ============================================================
    Формати та ціни (Pricing) — світла сторінка, монохром + синій акцент
    ============================================================ */
-/* Фон — єдина система сайту: крем + точкова сітка (.sysx-field), без окремої підложки. */
-.pric { position: relative; }
+/* Фон — єдина система сайту: крем + точкова сітка (.sysx-field), без окремої підложки.
+   Маску-затухання прибираємо, щоб сітка не гасла внизу довгої сторінки. */
+.pric { position: relative; background: var(--cream); }
+.pric > .sysx-field { -webkit-mask-image: none; mask-image: none; }
 .pric-in { position: relative; z-index: 1; max-width: 1160px; margin: 0 auto;
   padding: calc(96px + env(safe-area-inset-top)) clamp(18px, 5vw, 44px) clamp(60px, 9vw, 110px); }
 .pric-head { max-width: 760px; margin-bottom: clamp(28px, 4vw, 48px); }

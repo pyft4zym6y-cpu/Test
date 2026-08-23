@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useT, useLp } from '@/i18n';
 import { useLiteVisuals } from '@/lib/liteVisuals';
 import { sendLead } from '@/lib/leads';
@@ -25,9 +25,19 @@ export function ContactFilm() {
   const lp = useLp();
   const lite = useLiteVisuals();
   // Коротка форма: імʼя + телефон обовʼязкові, решта — необовʼязкова.
+  const loc = useLocation();
   const [status, setStatus] = useState<Status>('idle');
   const [emailErr, setEmailErr] = useState('');   // мʼяка інлайн-підказка по email
   const [phoneErr, setPhoneErr] = useState('');
+  // «Формат співпраці»: необовʼязковий select; префіл з ?format=1|2|3 (кнопки
+  // «Обговорити формат N» на /pricing). Користувач може змінити вручну.
+  const FORMATS = [t('Формат 1 — Аудит', 'Format 1 — Audit'), t('Формат 2 — Консалтинг і супровід', 'Format 2 — Consulting & support'), t('Формат 3 — Управління під ключ', 'Format 3 — Turnkey management')];
+  const [format, setFormat] = useState('');
+  useEffect(() => {
+    const m = new URLSearchParams(loc.search).get('format');
+    if (m && /^[123]$/.test(m)) setFormat(FORMATS[Number(m) - 1]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loc.search]);
   const [diag, setDiag] = useState('');
   const [keepDiag, setKeepDiag] = useState(false);   // ЗА ЗАМОВЧУВАННЯМ не додаємо — клієнт вирішує чекбоксом
 
@@ -51,6 +61,7 @@ export function ContactFilm() {
       name: String(f.get('name') || ''), email: String(f.get('email') || ''),
       phone: String(f.get('phone') || ''), store: String(f.get('store') || ''),
       site: String(f.get('site') || ''), comment: String(f.get('comment') || ''),
+      task: format || undefined,   // обраний формат співпраці → колонка «Задача» заявки
       diag: attach || undefined, company_website: String(f.get('company_website') || ''),
     };
     setStatus('sending');
@@ -98,6 +109,12 @@ export function ContactFilm() {
               </div>
             )}
             <form className="ctf-form" onSubmit={submit}>
+              <label className="ctf-field ctf-full"><span className="mono">{t('Формат співпраці ', 'Cooperation format ')}<i className="ctf-opt">{t('(необовʼязково)', '(optional)')}</i></span>
+                <select value={format} onChange={(e) => setFormat(e.target.value)}>
+                  <option value="">{t('— не обрано —', '— not selected —')}</option>
+                  {FORMATS.map((o) => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </label>
               <label className="ctf-field"><span className="mono">{t("Ім'я", 'Name')} *</span><input name="name" required autoComplete="name" /></label>
               <label className="ctf-field"><span className="mono">{t('Телефон', 'Phone')} *</span>
                 <input name="phone" type="tel" required autoComplete="tel" aria-invalid={!!phoneErr}
