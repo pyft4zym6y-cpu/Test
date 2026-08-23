@@ -65,6 +65,44 @@ export const PACK_REPORTS: PackReport[] = [
   },
 ];
 
+
+/* ── Робочі томи пакета (посторінкові) + Гант: канон 11 документів ──
+   scope: 'both' — входить в обидва аудити ($2,900 і $4,900);
+          'dept' — лише в аудит відділу e-commerce ($4,900). */
+export type PackVolume = {
+  id: string; uk: string; en: string;
+  descUk: string; descEn: string;
+  vol: string;                 // обсяг (стор./листи)
+  scope: 'both' | 'dept';
+};
+export const PACK_VOLUMES: PackVolume[] = [
+  { id: 'tomA', uk: 'Том A · UX/UI посторінково', en: 'Volume A · Page-by-page UX/UI',
+    descUk: 'Кожна сторінка комерційного шляху поблочно з оцінкою 0–5 + макети всіх 49 блоків «зараз → як треба» з дельтами; відсутні блоки відрисовані з нуля.',
+    descEn: 'Every page of the commercial path block-by-block, scored 0–5, + mock-ups of all 49 blocks "now → should be" with deltas; missing blocks drawn from scratch.',
+    vol: '40 стор.', scope: 'both' },
+  { id: 'tomB', uk: 'Том B · Контент посторінково', en: 'Volume B · Page-by-page content',
+    descUk: '5 критеріїв × усі сторінки + 6 цільових текстів-зразків «зараз → як треба», з яких працює копірайтер.',
+    descEn: '5 criteria × all pages + 6 target sample texts "now → should be" a copywriter works from.',
+    vol: '8 стор.', scope: 'both' },
+  { id: 'tomC', uk: 'Том C · SEO і дерево сайта', en: 'Volume C · SEO & site tree',
+    descUk: 'Карта індексації (реальні сторінки проти сміття), семантика кластерами, on-page по шаблонах + 6 SEO-шаблонів «зараз → як треба», перелінковка, GEO-протокол.',
+    descEn: 'Indexation map (real pages vs junk), clustered semantics, on-page by template + 6 SEO templates "now → should be", internal linking, GEO protocol.',
+    vol: '9 стор.', scope: 'both' },
+  { id: 'tomE', uk: 'Том E · Шлях клієнта посторінково', en: 'Volume E · Customer journey',
+    descUk: '15 етапів Awareness → Advocacy парами «зараз → як треба» з готовністю /10 і власниками + 2 журні-тести руками, які повторюються на контрольних точках.',
+    descEn: '15 stages Awareness → Advocacy as "now → should be" pairs with /10 readiness and owners + 2 hands-on journey tests repeated at checkpoints.',
+    vol: '14 стор.', scope: 'both' },
+  { id: 'tomD', uk: 'Том D · Стартові шаблони', en: 'Volume D · Starter templates',
+    descUk: 'Готові робочі документи для запуску: вакансія PM із процесом найму, політика знижок із заповненим розрахунком, сценарій щотижневої читки на 45 хвилин.',
+    descEn: 'Ready working documents for kickoff: a PM job description with hiring process, a discount policy with a worked example, a 45-minute weekly review script.',
+    vol: '5 стор.', scope: 'dept' },
+  { id: 'gantt', uk: 'Гант-план (Excel)', en: 'Gantt plan (Excel)',
+    descUk: 'Повноробочий інструмент, не ілюстрація: задачі з відповідальними (R/A), попередниками, тижневою сіткою і DoD + листи «Легенда», «Підрядники», «Ресурси».',
+    descEn: 'A fully working tool, not an illustration: tasks with owners (R/A), predecessors, a weekly grid and DoD + "Legend", "Contractors", "Resources" sheets.',
+    vol: '4 листи', scope: 'both' },
+];
+export const PACK_DOC_COUNT = PACK_REPORTS.length + PACK_VOLUMES.length; // 11 документів
+
 export const PACK_CHAPTERS: PackChapter[] = [
   // ── r1 · Презентація ──
   { id: 'a04', report: 'r1', uk: 'Дека 16:9: діагноз → докази → маршрут → гроші → команда → точка Б', en: 'The 16:9 deck', source: 'worker' },

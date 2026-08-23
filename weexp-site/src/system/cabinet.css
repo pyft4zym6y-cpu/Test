@@ -1130,3 +1130,7 @@
 .cab-file-st.st-uploaded { color: #1F6E4E; font-weight: 700; }
 .cab-file-st.st-wait { color: #C58A00; }
 @media (max-width: 900px) { .cab-mp-row, .cab-file-row { grid-template-columns: 1fr 1fr; } }
+
+.cab-file-row.is-req { border-left: 3px solid var(--red); }
+.cab-file-req { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--graphite); white-space: nowrap; }
+.cab-file-why { grid-column: 1 / -1; font-size: 11px; color: var(--graphite); }

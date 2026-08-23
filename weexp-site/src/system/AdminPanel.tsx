@@ -144,7 +144,8 @@ export function AdminPanel() {
   const [selLeads, setSelLeads] = useState<Set<string>>(new Set()); // мультивибір заявок (має бути ДО ранніх return — правило хуків)
   const [userSeg, setUserSeg] = useState<'clients' | 'admins' | 'all'>('clients'); // підрозділ «Користувачі»
   const [auditSeg, setAuditSeg] = useState<'all' | 'express' | 'express_reg' | 'deep_req' | 'deep_work' | 'deep_done' | 'builder'>('all'); // підрозділи «Аудити»
-  const [projSeg, setProjSeg] = useState<'list' | 'office'>('list'); // підрозділи «Проекти»
+  const [projSeg, setProjSeg] = useState<'list' | 'office'>('list');
+  const [projNewFor, setProjNewFor] = useState(''); // підрозділи «Проекти»
 
   const load = () => {
     listAllDiagnostics().then(setRows);
@@ -579,8 +580,30 @@ export function AdminPanel() {
               <button role="tab" className={projSeg === 'list' ? 'on' : ''} onClick={() => setProjSeg('list')}>Проекти клієнтів <b>{withProj.length}</b></button>
               <button role="tab" className={projSeg === 'office' ? 'on' : ''} onClick={() => setProjSeg('office')}>Команда і ставки</button>
             </div>
+            {projSeg === 'list' && (
+              <div className="adm-proj-new">
+                <span className="mono adm-hint">Завести проект вручну — для будь-якого клієнта, не чекаючи аудиту:</span>
+                <select className="ab-sel" value={projNewFor} onChange={(e) => setProjNewFor(e.target.value)}>
+                  <option value="">— оберіть клієнта —</option>
+                  {(rows || []).map((r) => <option key={r.userId} value={r.userId}>{r.email}{r.company ? ` · ${r.company}` : ''}</option>)}
+                </select>
+                <button className="sysx-cta is-primary" disabled={!projNewFor || busy === 'proj-new'} onClick={async () => {
+                  const row = (rows || []).find((x) => x.userId === projNewFor);
+                  if (!row) return;
+                  setBusy('proj-new');
+                  const existing = getProjects(row.record);
+                  const np = emptyProject();
+                  np.title = `Проект ${existing.length + 1} · ${row.company || row.email}`;
+                  const res = await saveProjectsFor(row.userId, [...existing, np]);
+                  setBusy('');
+                  if (res.ok) { setProjNewFor(''); setOpenUser(row.userId); }
+                  else alert('Не вдалося створити проект: ' + (res.error || ''));
+                }}>{busy === 'proj-new' ? 'Створюємо…' : '+ Новий проєкт'}</button>
+                <span className="mono adm-hint">далі в картці клієнта: назва і строки → команда з довідника «Команда і ставки» → задачі по хвилях → бюджет-матриця → публікація клієнту</span>
+              </div>
+            )}
             {projSeg === 'office' ? <PmOffice /> : (
-              rows === null ? <p className="mc-msg mono">Завантаження…</p> : withProj.length === 0 ? <EmptyState icon="📁" text="Сформованих проектів поки немає. Проект створюється в картці клієнта після аудиту." /> : (
+              rows === null ? <p className="mc-msg mono">Завантаження…</p> : withProj.length === 0 ? <EmptyState icon="📁" text="Сформованих проектів поки немає. Заведіть перший кнопкою «+ Новий проєкт» вище — або з картки клієнта." /> : (
                 <div className="adm-table adm-tr-proj">
                   <div className="adm-tr adm-tr-proj adm-th"><span>Клієнт</span><span>Проект</span><span>Задач</span><span>Оновлено</span><span></span></div>
                   {withProj.map(({ r, projects }) => (

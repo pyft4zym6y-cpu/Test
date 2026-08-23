@@ -297,15 +297,75 @@ export const AUDIT_FRAMEWORK: AuditTemplate = {
   ],
 };
 
-/* ── Пресети фреймворку під тип бізнесу ──
-   Кожен пресет = підмножина 12 модулів у своєму порядку (скоуп під тип
-   замовника). Адмін вантажить пресет як стартову структуру й доопрацьовує. */
+/* ── Дошивка фреймворку під документи пакета ──
+   Кожне питання/файл нижче ЖИВИТЬ конкретний документ фінального пакета
+   (томи A–E, звіти 1–5, Гант) — щоб зібрати максимально вичерпну інформацію
+   без другого кола питань до клієнта. hint показує, куди йде відповідь. */
+const PACK_EXTRA: Record<string, [string, string, QType, (Partial<Question> | undefined)?][]> = {
+  business: [
+    ['pl24', 'P&L помісячно за 24 місяці (Excel / Google Sheets)', 'file', { required: true, hint: '→ Звіт 3: міст P&L, окупність, сезонність' }],
+    ['cashflow', 'Cash Flow / рух коштів за 12 місяців', 'file', { hint: '→ Звіт 3: каса, підготовка Q4' }],
+    ['goal12', 'Ціль на 12 міс одним числом (виручка або прибуток / міс) + що для вас «успіх»', 'text', { required: true, hint: '→ Звіт 1: точка Б у горизонтах' }],
+    ['attempts', 'Що вже пробували за останні 2 роки (агентства, редизайни, проєкти) і чим закінчилось', 'longtext', { required: true, hint: '→ Звіти 1/2: розділ «що вже пробували» — не радимо провалене повторно' }],
+  ],
+  market: [
+    ['competitors3', 'Топ-3 прямі конкуренти (посилання на сайти)', 'text', { required: true, hint: '→ Том A: порівняння з еталоном · Звіт 2, Market' }],
+    ['bench', 'На кого рівняєтесь у ніші — найкращий приклад магазину/бренду', 'text', { hint: '→ еталони для поблочних порівнянь' }],
+  ],
+  product: [
+    ['top_sku', 'Топ-20 SKU за виручкою: вивантаження з цінами й залишками', 'file', { required: true, hint: '→ Том A: вибірка карток · Звіт 2, Product' }],
+    ['cost_sku', 'Повна собівартість топ-SKU (закупівля + логістика + пакування)', 'file', { hint: '→ Звіт 3: юніт-економіка й важелі маржі' }],
+  ],
+  customer: [
+    ['voc', 'Експорт відгуків за 6–12 міс (усі майданчики, з оцінками й датами)', 'file', { hint: '→ Том E: VoC, момент розпакування · Звіт 2, Customer' }],
+    ['support_dialogs', 'Вибірка листувань підтримки: 20–30 діалогів (знеособлено)', 'file', { hint: '→ Том A: Q&A на картці · Том E: етап Support' }],
+    ['nps_state', 'Чи міряєте NPS/задоволеність? Якщо так — останні результати', 'text', { hint: '→ Том E: етап Advocacy, baseline' }],
+  ],
+  website: [
+    ['key_pages', 'Ключові сторінки для посторінкового розбору: головна, топ-3 категорії, топ-5 карток, кошик, checkout (URL списком)', 'longtext', { required: true, hint: '→ Том A: поблочний розбір 0–5 і макети «зараз → як треба»' }],
+    ['ab_history', 'Що тестували на сайті за рік (A/B, редизайни) і з яким результатом', 'longtext', { hint: '→ Том A: щоб не рекомендувати вже провалене' }],
+  ],
+  seo: [
+    ['sem_export', 'Вивантаження семантики / позицій (якщо ведеться: Ahrefs/Semrush/Serpstat)', 'file', { hint: '→ Том C: кластери, покриття, пріоритети' }],
+    ['blog_state', 'Стан блогу/гайдів: скільки матеріалів, хто і як часто пише', 'text', { hint: '→ Томи B/C: контент-план' }],
+  ],
+  acquisition: [
+    ['creatives', 'Приклади рекламних креативів за 3 міс: топ-3 і 3 провальні', 'file', { hint: '→ Звіт 2, Acquisition: що працює в креативі' }],
+  ],
+  crm: [
+    ['letters', 'Приклади листів: транзакційні + маркетингові (5–10 штук, скрини або html)', 'file', { hint: '→ Том B: цільові тексти листів «зараз → як треба»' }],
+    ['flows_list', 'Які автоланцюжки (flows) налаштовані зараз — список із тригерами', 'longtext', { required: true, hint: '→ Том E: етап Repeat — вікно 30–60 днів' }],
+  ],
+  analytics: [
+    ['orders24', 'Вивантаження замовлень з бекенда за 24 міс (CSV: дата, сума, id клієнта, канал, статус)', 'file', { required: true, hint: '→ звірка GA4 ↔ бекенд, когорти, повторні — Звіти 2/3' }],
+  ],
+  operations: [
+    ['carriers', 'Звіти перевізників за 6–12 міс: строки, статуси, пошкодження/бій', 'file', { hint: '→ Том E: доставка й розпакування · Звіт 2, Operations' }],
+    ['stock', 'Залишки та обіговість по SKU (вивантаження зі складу/ERP)', 'file', { hint: '→ Звіт 2, Operations: OOS і dead stock у грошах' }],
+  ],
+  technology: [
+    ['releases', 'Як релізиться сайт: хто, як часто, чи є staging/бекапи', 'text', { hint: '→ Звіт 2, Technology · Гант W2: staging' }],
+  ],
+  organization: [
+    ['contractors', 'Підрядники: хто, за що відповідає, бюджет/міс, строк договору', 'longtext', { required: true, hint: '→ Гант: лист «Підрядники» + тендерний блок' }],
+    ['capacity', 'Ємність команди: ролі × годин на тиждень, доступних на проєкт', 'longtext', { hint: '→ Звіт 4: ресурсна модель без перевантажень' }],
+    ['decisions', 'Які рішення ухвалює ЛИШЕ власник (список типів рішень)', 'longtext', { hint: '→ Звіт 4: лінія автономності, політики делегування' }],
+  ],
+};
+for (const b of AUDIT_FRAMEWORK.blocks) {
+  const ex = PACK_EXTRA[b.key];
+  if (!ex) continue;
+  for (const [k, label, type, extra] of ex) {
+    if (!b.questions.some((q) => q.key === `${b.key}_${k}`)) b.questions.push({ key: `${b.key}_${k}`, label, type, ...(extra || {}) });
+  }
+}
+
+/* ── Єдиний фреймворк ──
+   Пресетів за типом бізнесу немає свідомо: аудит завжди стартує з максимально
+   вичерпного набору (принцип «краще надлишковий максимум інформації»);
+   адмін прибирає нерелевантне вручну, а не вгадує наперед. */
 export const FRAMEWORK_PRESETS: { id: string; label: string; modules: string[] }[] = [
-  { id: 'full', label: 'Повний (D2C / e-commerce)', modules: ['business', 'market', 'product', 'customer', 'website', 'seo', 'acquisition', 'crm', 'analytics', 'operations', 'technology', 'organization'] },
-  { id: 'b2b', label: 'B2B', modules: ['business', 'market', 'product', 'customer', 'website', 'seo', 'acquisition', 'crm', 'analytics', 'technology', 'organization'] },
-  { id: 'marketplace', label: 'Marketplace', modules: ['business', 'market', 'product', 'customer', 'acquisition', 'analytics', 'operations', 'technology', 'organization'] },
-  { id: 'omnichannel', label: 'Omnichannel retail', modules: ['business', 'market', 'product', 'customer', 'website', 'seo', 'acquisition', 'crm', 'analytics', 'operations', 'technology', 'organization'] },
-  { id: 'services', label: 'Послуги / SaaS', modules: ['business', 'market', 'customer', 'website', 'seo', 'acquisition', 'crm', 'analytics', 'technology', 'organization'] },
+  { id: 'full', label: 'Єдиний повний фреймворк (12 модулів)', modules: ['business', 'market', 'product', 'customer', 'website', 'seo', 'acquisition', 'crm', 'analytics', 'operations', 'technology', 'organization'] },
 ];
 /** Свіжий блок «Customer Archetype» (CA1…CAn) — окремий набір питань під портрет аудиторії. */
 export function customerArchetypeBlock(n: number): Block {

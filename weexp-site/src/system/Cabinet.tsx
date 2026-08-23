@@ -7,7 +7,7 @@ import {
   type DiagUser, type DiagRecord, type CompanyProfile, type TierStatus, type TierEvent, type AuditAnswer, type ExtraQ, type AccessState,
   type MarketplaceAccess, type ClientFile,
 } from '@/lib/supa';
-import { ACCESS_CATALOG, AUDIT_EMAIL, DATA_EMAIL, ACCESS_METHOD_LABEL, CONN_STATUS_LABEL, MARKETPLACE_PRESETS, MARKETPLACE_SCOPES, REPORT_TYPES, EXPORT_TYPES, type AccessMethod } from '@/data/accessCatalog';
+import { ACCESS_CATALOG, AUDIT_EMAIL, DATA_EMAIL, ACCESS_METHOD_LABEL, CONN_STATUS_LABEL, MARKETPLACE_PRESETS, MARKETPLACE_SCOPES, REPORT_TYPES, EXPORT_TYPES, REQUIRED_FILES, type AccessMethod } from '@/data/accessCatalog';
 import { AuditForm } from './AuditForm';
 import { ProjectView } from './ProjectView';
 import { loadTemplate, CLIENT_ROLES, type AuditTemplate, type Question } from './auditTemplate';
@@ -359,8 +359,21 @@ function FilesBlock({ user, rec, onSaved }: { user: DiagUser; rec: DiagRecord | 
   const t = useT();
   const [rows, setRows] = useState<ClientFile[]>(rec?.clientFiles || []);
   const [busy, setBusy] = useState<string | null>(null);
+  const seeded = useRef(false);
   useEffect(() => { setRows(rec?.clientFiles || []); }, [rec]);
   const persist = async (next: ClientFile[]) => { setRows(next); await saveDiag(user, { clientFiles: next }); onSaved(); };
+  // Вичерпний чекліст: обовʼязкові файли зʼявляються самі зі статусом «Очікується».
+  useEffect(() => {
+    if (seeded.current || !rec) return;
+    const have = new Set((rec.clientFiles || []).map((r) => r.reqId).filter(Boolean));
+    const missing = REQUIRED_FILES.filter((rf) => !have.has(rf.reqId));
+    if (missing.length === 0) { seeded.current = true; return; }
+    seeded.current = true;
+    void persist([
+      ...(rec.clientFiles || []),
+      ...missing.map((rf) => ({ id: `cf-${rf.reqId}`, reqId: rf.reqId, group: rf.group, type: rf.type, title: rf.title, period: rf.period, why: rf.why, status: 'wait' as const, at: new Date().toISOString() })),
+    ]);
+  }, [rec]); // eslint-disable-line react-hooks/exhaustive-deps
   const add = (group: ClientFile['group']) => void persist([...rows, { id: `cf-${Date.now()}`, group, status: 'wait', at: new Date().toISOString() }]);
   const upd = (id: string, patch: Partial<ClientFile>) => void persist(rows.map((r) => (r.id === id ? { ...r, ...patch, at: new Date().toISOString() } : r)));
   const del = (id: string) => void persist(rows.filter((r) => r.id !== id));
@@ -378,12 +391,15 @@ function FilesBlock({ user, rec, onSaved }: { user: DiagUser; rec: DiagRecord | 
     };
     inp.click();
   };
-  const groupRows = (group: ClientFile['group'], types: string[], title: string, lead: string) => (
+  const groupRows = (group: ClientFile['group'], types: string[], title: string, lead: string) => {
+    const g = rows.filter((r) => r.group === group);
+    const done = g.filter((r) => r.status === 'uploaded').length;
+    return (
     <div className="cab-acc-cat">
-      <span className="cab-acc-cat-h mono">{title}</span>
+      <span className="cab-acc-cat-h mono">{title} · {done}/{g.length}</span>
       <p className="cab-sub">{lead}</p>
       {rows.filter((r) => r.group === group).map((r) => (
-        <div key={r.id} className={'cab-acc-card cab-file-row' + (r.status === 'uploaded' ? ' is-done' : '')}>
+        <div key={r.id} className={'cab-acc-card cab-file-row' + (r.status === 'uploaded' ? ' is-done' : '') + (r.reqId ? ' is-req' : '')}>
           <select value={r.type || ''} onChange={(e) => upd(r.id, { type: e.target.value })}>
             <option value="">{t('— тип —', '— type —')}</option>
             {types.map((x) => <option key={x} value={x}>{x}</option>)}
@@ -394,12 +410,16 @@ function FilesBlock({ user, rec, onSaved }: { user: DiagUser; rec: DiagRecord | 
             {busy === r.id ? t('Завантаження…', 'Uploading…') : r.status === 'uploaded' ? t('✓ Завантажено · замінити', '✓ Uploaded · replace') : t('⬆ Завантажити файл', '⬆ Upload file')}
           </button>
           <span className={'cab-file-st mono st-' + (r.status || 'wait')}>{r.status === 'uploaded' ? t('Завантажено', 'Uploaded') : t('Очікується', 'Pending')}</span>
-          <button type="button" className="cab-del" onClick={() => del(r.id)} aria-label={t('Прибрати', 'Remove')}>✕</button>
+          {r.reqId
+            ? <span className="cab-file-req mono" title={r.why || ''}>{t('обовʼязковий', 'required')}</span>
+            : <button type="button" className="cab-del" onClick={() => del(r.id)} aria-label={t('Прибрати', 'Remove')}>✕</button>}
+          {r.why && <span className="cab-file-why mono">{r.why}</span>}
         </div>
       ))}
       <button type="button" className="sysx-cta" onClick={() => add(group)}>+ {t('Додати файл', 'Add file')}</button>
     </div>
-  );
+    );
+  };
   return (
     <>
       {groupRows('report', REPORT_TYPES, t('Управлінська звітність', 'Management reporting'), t('P&L, Cash Flow, звіти по продажах/маржі/категоріях/каналах — усе, чим ви реально керуєте.', 'P&L, Cash Flow, sales/margin/category/channel reports — whatever you actually manage by.'))}

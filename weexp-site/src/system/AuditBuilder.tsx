@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  loadTemplate, saveTemplate, uid, Q_TYPES, CLIENT_ROLES, FRAMEWORK_PRESETS, frameworkFor, customerArchetypeBlock,
+  loadTemplate, saveTemplate, uid, Q_TYPES, CLIENT_ROLES, frameworkFor, customerArchetypeBlock,
   type AuditTemplate, type Block, type Question, type QType,
 } from './auditTemplate';
 
@@ -17,7 +17,7 @@ export function AuditBuilder() {
   const [tpl, setTpl] = useState<AuditTemplate | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
-  const [preset, setPreset] = useState<string>('full');
+
   const [ws, setWs] = useState<Workspace>('questions');
 
   useEffect(() => { loadTemplate().then(setTpl); }, []);
@@ -53,10 +53,9 @@ export function AuditBuilder() {
   });
 
   const loadFramework = () => {
-    const p = FRAMEWORK_PRESETS.find((x) => x.id === preset) || FRAMEWORK_PRESETS[0];
-    if (!confirm(`Замінити поточні блоки пресетом «${p.label}» (${p.modules.length} модулів)? Поточні незбережені блоки буде втрачено. Збереження — окремою кнопкою «Зберегти нову версію».`)) return;
-    setTpl((t) => ({ ...frameworkFor(preset), version: t?.version || 1 }));
-    setMsg(`Завантажено пресет «${p.label}» (${p.modules.length} модулів). Перевірте й натисніть «Зберегти нову версію».`);
+    if (!confirm('Замінити поточні блоки ЄДИНИМ повним фреймворком (12 модулів, включно з питаннями під усі документи пакета)? Поточні незбережені блоки буде втрачено. Збереження — окремою кнопкою «Зберегти нову версію».')) return;
+    setTpl((t) => ({ ...frameworkFor('full'), version: t?.version || 1 }));
+    setMsg('Завантажено повний фреймворк (12 модулів). Перевірте й натисніть «Зберегти нову версію».');
   };
 
   const save = async () => {
@@ -73,15 +72,12 @@ export function AuditBuilder() {
       <div className="adm-sec-head">
         <div><h1 className="sysx-display adm-h1">Конструктор аудиту</h1><span className="mono adm-hint">Активна версія v{tpl.version} · {tpl.blocks.length} блоків</span></div>
         <div className="adm-head-r">
-          <select className="ab-sel" value={preset} onChange={(e) => setPreset(e.target.value)} title="Тип бізнесу — пресет фреймворку">
-            {FRAMEWORK_PRESETS.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
-          </select>
-          <button className="sysx-cta" onClick={loadFramework} title="Замінити блоки обраним пресетом C-level фреймворку">↺ Завантажити пресет</button>
+          <button className="sysx-cta" onClick={loadFramework} title="Єдиний максимально повний фреймворк — без пресетів за типом бізнесу">↺ Повний фреймворк</button>
           <button className="sysx-cta is-primary" onClick={save} disabled={busy}>{busy ? 'Зберігаємо…' : 'Зберегти нову версію →'}</button>
         </div>
       </div>
       {msg && <p className="adm-code-banner-l mono" style={{ color: 'var(--ok,#1F9D55)' }}>{msg}</p>}
-      <p className="adm-hint mono">Один аудит — єдина сутність із трьома робочими просторами: питання, доступи, файли. Клієнт бачить це як єдину послугу «Глибокий аудит». Роль на блоці обмежує, хто з команди замовника заповнює.</p>
+      <p className="adm-hint mono">Один аудит — ЄДИНА максимально вичерпна сутність (без пресетів за типом бізнесу) із трьома робочими просторами: питання, доступи, файли. Кожне питання живить конкретний документ пакета — куди саме, показує підказка (hint) питання. Роль на блоці обмежує, хто з команди замовника заповнює.</p>
 
       {(() => {
         const counts = { questions: 0, access: 0, files: 0 };

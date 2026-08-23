@@ -215,6 +215,8 @@ export type MarketplaceAccess = {
 /** Файл клієнта (управлінська звітність / вивантаження) — динамічний список. */
 export type ClientFile = {
   id: string;
+  reqId?: string;                     // привʼязка до обовʼязкового чекліста (REQUIRED_FILES)
+  why?: string;                       // навіщо цей файл (з чекліста)
   group: 'report' | 'export';         // управлінська звітність | вивантаження/файли
   type?: string;                      // P&L / Cash Flow / звіт по продажах / …
   title?: string;
