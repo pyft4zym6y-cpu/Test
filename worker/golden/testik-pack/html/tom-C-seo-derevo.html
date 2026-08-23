@@ -136,6 +136,26 @@ table.t td b { font-weight:700; color:var(--ink); }
 .wf .mrow { display:grid; gap:1.2mm; margin-bottom:1.2mm; }
 .wf .note { font-size:6.6pt; color:var(--steel); line-height:1.35; margin-top:1mm; }
 .wf .lnk { color:var(--verd7); font-weight:700; }
+/* ── Поблочні пари (канон Fragstore): нумерований блок, chips, анотації, дельта ── */
+.wfb { margin:0 0 3.2mm; break-inside:avoid; }
+.wfb .bh { display:flex; align-items:baseline; gap:2mm; margin-bottom:1mm; }
+.wfb .bh .n { font-family:var(--mono); font-size:7.5pt; font-weight:700; color:#fff; background:var(--ink); padding:.4mm 1.6mm; }
+.wfb .bh .tt { font-size:10pt; font-weight:700; letter-spacing:-.01em; }
+.wfb .bh .sb { font-size:7pt; color:var(--steel); }
+.wf .m.miss { border:1.5px dashed var(--mark); background:none; color:var(--mark); text-align:center; padding:5mm 2mm; font-weight:700; }
+.wf .cards { display:grid; gap:1mm; margin-bottom:1.2mm; }
+.wf .c2 { grid-template-columns:1fr 1fr; } .wf .c3 { grid-template-columns:1fr 1fr 1fr; } .wf .c4 { grid-template-columns:1fr 1fr 1fr 1fr; }
+.wf .card { border:1px solid var(--steel4); background:#fff; padding:1.2mm 1.4mm; font-size:5.9pt; line-height:1.25; }
+.wf .card b { font-size:6.3pt; display:block; }
+.wf .card .ph { height:6mm; background:#E8ECEA; margin-bottom:.8mm; }
+.wf.should .card.nw { border-color:var(--verd7); }
+.wf .ch { display:inline-block; border:1px solid var(--steel4); padding:.4mm 1.4mm; font-size:5.9pt; margin:0 .8mm .8mm 0; background:#fff; }
+.wf .ch.g { border-color:var(--verd7); color:var(--verd7); font-weight:700; }
+.wf .ann { font-size:6.2pt; line-height:1.3; padding:.8mm 1.5mm; border-left:2.5px solid; margin:1mm 0; }
+.wf .ann.bad { border-color:var(--mark); color:var(--mark); background:#FBF0EF; }
+.wf .ann.good { border-color:var(--verd7); color:var(--verd7); background:#EFF5F2; }
+.wfd { font-family:var(--mono); font-size:7pt; font-weight:700; color:var(--verd7); margin-top:1mm; }
+.wfd .neg { color:var(--mark); }
 
 /* ── Дерево сайта ── */
 .tree { font-family:var(--mono); font-size:7.2pt; line-height:1.55; }
@@ -149,14 +169,14 @@ table.t td b { font-weight:700; color:var(--ink); }
     <span class="ebrow">Звіт 2·C із 5</span>
     <h1 class="big" style="font-size:40pt">Робочий том C:<br>SEO і дерево сайта</h1>
     <p class="lead" style="margin-top:8mm">Самостійний SEO-аудит: повне дерево сайта з картою індексації (реальні сторінки проти сміття ×8.6), семантичне покриття 6 кластерів, on-page посторінково по всіх шаблонах, технічні дірки і GEO-панель із чесним протоколом вимірювання.</p>
-    <p class="marg" style="margin-top:10mm;color:rgba(255,255,255,.5)">6 сторінок · дерево + семантика + on-page + техніка + GEO</p>
+    <p class="marg" style="margin-top:10mm;color:rgba(255,255,255,.5)">9 сторінок · дерево + семантика + on-page + техніка + GEO · 6 шаблонів ЗАРАЗ→ЯК ТРЕБА</p>
   </div>
   <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 1/·</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Зміст · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
   <span class="ebrow">Зміст звіту</span>
   <table class="t" style="margin-top:4mm">
     <tr><th style="width:16mm">Глава</th><th>Назва — і що вона дає</th><th class="num" style="width:14mm">стор.</th></tr>
-    <tr><td class="num"><b>C.1</b></td><td>Дерево сайта і карта індексації: 1 097 реальних проти 8 315 сміття · цільове дерево</td><td class="num">3</td></tr><tr><td class="num"><b>C.2</b></td><td>Семантика: 6 кластерів × покриття · бренд/небренд · план контент-ядра</td><td class="num">4</td></tr><tr><td class="num"><b>C.3</b></td><td>On-page посторінково: title/H1/meta/schema по всіх шаблонах + перелінковка кроулом</td><td class="num">5</td></tr><tr><td class="num"><b>C.4</b></td><td>Техніка (фасети, OOS, canonical, CWV, sitemap) · GEO-панель з протоколом · пріоритети</td><td class="num">6</td></tr>
-  </table><div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 2/6</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">C.1 · Дерево та індекс · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <tr><td class="num"><b>C.1</b></td><td>Дерево сайта і карта індексації: 1 097 реальних проти 8 315 сміття · цільове дерево</td><td class="num">3</td></tr><tr><td class="num"><b>C.2</b></td><td>Семантика: 6 кластерів × покриття · бренд/небренд · план контент-ядра</td><td class="num">4</td></tr><tr><td class="num"><b>C.3</b></td><td>On-page посторінково: title/H1/meta/schema по всіх шаблонах + перелінковка кроулом</td><td class="num">5</td></tr><tr><td class="num"><b>C.4</b></td><td>Техніка (фасети, OOS, canonical, CWV, sitemap) · GEO-панель з протоколом · пріоритети</td><td class="num">6</td></tr><tr><td class="num"><b>C.5</b></td><td>SEO ЗАРАЗ → ЯК ТРЕБА: 6 цільових шаблонів (title/meta, дерево, сніпет, хаби, перелінковка, GEO) + «було→стане»</td><td class="num">7–9</td></tr>
+  </table><div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 2/9</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">C.1 · Дерево та індекс · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
     <span class="ebrow">Глава C.1 · Дерево сайта і карта індексації</span>
     <h1 class="big" style="font-size:23pt">1 097 сторінок будують бізнес.<br>8 315 URL сміття їх ховають.</h1>
     <div class="cols2" style="margin-top:3mm">
@@ -192,7 +212,7 @@ table.t td b { font-weight:700; color:var(--ink); }
         (доступ не надано) — посилальний профіль оцінено відкритими джерелами, позначено рівнем доказовості 4.</p>
       </div>
     </div>
-  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 3/6</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">C.2 · Семантика · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 3/9</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">C.2 · Семантика · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
     <span class="ebrow">Глава C.2 · Семантичне покриття: 6 кластерів попиту</span>
     <h1 class="big" style="font-size:23pt">Половина попиту ніші — повз сайт.</h1>
     <table class="t" style="margin-top:3mm;font-size:8pt">
@@ -215,7 +235,7 @@ table.t td b { font-weight:700; color:var(--ink); }
       <tr><td>Брендові запити («тестик» ± варіації)</td><td class="num">≈9 400</td><td class="num">41%</td><td class="mono">+9% (бренд живий)</td></tr>
       <tr class="hl"><td><b>Небрендові (справжнє SEO)</b></td><td class="num">≈13 500</td><td class="num">59%</td><td class="mono" style="color:var(--mark)">+2% — повільніше ринку</td></tr>
     </table>
-  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 4/6</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">C.3 · On-page · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 4/9</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">C.3 · On-page · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
     <span class="ebrow">Глава C.3 · On-page посторінково: title / H1 / meta / schema / перелінковка</span>
     <h1 class="big" style="font-size:23pt">On-page: шаблони писали один раз —<br>і жодного разу не перечитували.</h1>
     <table class="bt" style="margin-top:2mm">
@@ -235,7 +255,7 @@ table.t td b { font-weight:700; color:var(--ink); }
       <tr><td>Вихідні посилання з PDP вниз</td><td class="num" style="color:var(--mark)">0</td><td class="num">4–8</td><td>теги добірок (том A, блок 12)</td></tr>
       <tr><td>Блог → категорії</td><td class="num" style="color:var(--mark)">2 посилання на 12 статей</td><td class="num">3–5/стаття</td><td>редполітика перелінковки</td></tr>
     </table>
-  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 5/6</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">C.4 · Техніка і GEO · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 5/9</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">C.4 · Техніка і GEO · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
     <span class="ebrow">Глава C.4 · Технічне SEO, GEO/AEO і пріоритети тома</span>
     <h1 class="big" style="font-size:23pt">Техніка: три системні дірки.<br>GEO: полиця, яку ще можна зайняти.</h1>
     <table class="t" style="margin-top:3mm;font-size:8pt">
@@ -264,4 +284,68 @@ table.t td b { font-weight:700; color:var(--ink); }
       <tr><td class="num">6</td><td>Сироти й глибина: перелінковка з тома A</td><td><span class="sev m">Середня</span></td><td>W2–W3</td></tr>
     </table>
     <p class="marg" style="margin-top:2mm">Ефект тома C зашитий у воронкову модель (вузол «органічний трафік ×1.018 програма / ×1.12 стеля») — консервативно, бо SEO-ефекти повільні; стеля розкривається у 2027.</p>
-  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 6/6</span></div></div></body></html>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 6/9</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">C.5 · Пари 1/3 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава C.5 · SEO ЗАРАЗ → ЯК ТРЕБА: 6 шаблонів і структур · 1/3</span>
+    <h1 class="big" style="font-size:20pt">Не «покращити SEO» — ось цільові шаблони.</h1>
+    <p class="body" style="font-size:8.4pt;margin-top:2mm"><b>Як читати:</b> зліва — фактичний стан (шаблон, сніпет, дерево), справа — цільовий зразок, готовий до впровадження. Кожна пара замаплена на задачі Ганта і, де є, на грошовий вивід SEO-важеля (гл. 3.03-Д: фасети 30 + OOS 20 + кластери 25 + зірки 10 = €85k/рік валового потенціалу).</p>
+    <div class="wfb">
+  <div class="bh"><span class="n">С-01</span><span class="tt">Title / meta — шаблон PDP</span><span class="sb">множиться на 640 карток</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m "><b>title:</b> «Сковорода гриль 26 см — купити в інтернет-магазині Тестик»</div><div class="m "><b>meta:</b> «Сковорода гриль 26 см за вигідною ціною. Швидка доставка. Замовляйте!»</div><div class="ann bad">title без покриття (головний критерій запиту) · meta-штамп без ціни і причини клікнути · 128 карток — дубльовані title (варіанти, C.3)</div><p class="note">Шаблон «назва — купити в магазині» не виграє ні в кого: у видачі 10 однакових обіцянок.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m "><b>title:</b> «Сковорода гриль чавунна 26 см — €46, відправка сьогодні | Тестик»</div><div class="m "><b>meta:</b> «Чавун 5 мм, усі плити включно з індукцією. ★4.8 (12 відгуків). Безкоштовна доставка від €50, повернення 14 днів.»</div><div class="ann good">формула title: [назва+матеріал+розмір] — [ціна, диференціатор] | бренд · meta = факти+докази, не заклики · генерується з довідника атрибутів</div><p class="note">Title відповідає на запит точніше за конкурентів, meta дає причини клікнути ще у видачі. Обидва — з даних, не руками.</p></div>
+  </div>
+  <div class="wfd">CTR у видачі: ціль +15–20% на позиціях · дублі 128 → 0 (после П-04) · задача: шаблон у CMS, W2</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">С-02</span><span class="tt">Дерево сайта й індексація</span><span class="sb">фундамент всього SEO</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">В індексі: <b>9 412 URL</b> · реальних сторінок: 1 097</div><div style="margin-bottom:1mm"><span class="ch">?color=red&size=26&page=3</span><span class="ch">?sort=price&filter=...</span><span class="ch">/search?q=…</span><span class="ch">session-URL, UTM-дублі</span></div><div class="ann bad">×8.6 сміття: краулінговий бюджет спалюється на фасетах і параметрах · частина реальних категорій НЕ переіндексовується тижнями</div><p class="note">Google бачить смітник, у якому губляться товари. Це причина, чому навіть хороші сторінки ранжуються нижче.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">В індексі: <b>≤1 300 URL</b> — тільки сторінки з цінністю</div><div class="m "><b>Правила (задача 60):</b> фасети → canonical на категорію · параметри → robots disallow · пошук/сесії → noindex · пагінація → self-canonical + правила</div><div class="m ">Цільове дерево: Головна → 8 категорій → 24 підкатегорії/теги-хаби → 640 PDP → гайди/добірки</div><div class="ann good">sitemap = дзеркало реального дерева · моніторинг індексу щотижня в дашборді (нове число → алерт)</div><p class="note">Індекс = каталог, а не звалище. Бюджет краулінгу повертається на сторінки, які продають.</p></div>
+  </div>
+  <div class="wfd">Індекс 9 412 → ≤1 300 · переіндексація категорій: тижні → дні · ефект +8–10% органіки на комерційні (гл. 3.03-Д)</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 7/9</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">C.5 · Пари 2/3 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава C.5 · SEO ЗАРАЗ → ЯК ТРЕБА · 2/3</span>
+    <div class="wfb">
+  <div class="bh"><span class="n">С-03</span><span class="tt">Сніпет у видачі</span><span class="sb">як виглядає картка в Google</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m "><span style="color:#1a0dab;font-size:8pt">Сковорода гриль 26 см — купити в інтернет-магазині…</span><br><span style="color:#006621;font-size:7pt">testik.ua › skovorody › ...</span><br><span style="font-size:7pt;color:#545454">Сковорода гриль 26 см за вигідною ціною. Швидка доставка…</span></div><div class="ann bad">без зірок · без ціни/наявності · без крихт — голий синій рядок серед конкурентів із зірками</div><p class="note">У видачі наш сніпет — найбідніший у топ-10. Клікають туди, де зірки і ціна.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m "><span style="color:#1a0dab;font-size:8pt">Сковорода гриль чавунна 26 см — €46, відправка сьогодні | Тестик</span><br><span style="color:#006621;font-size:7pt">testik.ua › Сковороди › Чавунні</span><br><span style="font-size:7pt">★★★★★ 4.8 · 12 відгуків · <b>€46</b> · В наявності</span><br><span style="font-size:7pt;color:#545454">Чавун 5 мм, усі плити включно з індукцією. Безкоштовна доставка від €50…</span></div><div class="ann good">AggregateRating + Offer (задача 50, топ-40 SKU спершу) · BreadcrumbList → людські крихти замість URL</div><p class="note">Зірки + ціна + наявність прямо у видачі: +12–18% CTR на тих самих позиціях — найдешевший трафік-важіль тома.</p></div>
+  </div>
+  <div class="wfd">Rich-результати 0 → топ-40 SKU (W2) → всі 640 (W3) · складова SEO-важеля €10k/рік (гл. 3.03-Д)</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">С-04</span><span class="tt">Категорія як хаб кластера</span><span class="sb">3 кластери з 6 — без сторінок</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m miss">ХАБІВ НЕМАЄ</div><div style="margin-bottom:1mm"><span class="ch">«подарунковий набір посуду» 22k/міс — немає</span><span class="ch">«як обрати сковороду» 74k — немає</span><span class="ch">«догляд за чавуном» 9.9k — немає</span></div><div class="ann bad">половина попиту ніші йде конкурентам, бо в нас фізично немає сторінок під ці запити</div><p class="note">Кластери без сторінок = попит без дверей (Е-02). Категорії зараз — лише полиці, не хаби.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m "><b>Хаб = категорія/добірка + гайд-блок + теги-плитки + FAQ:</b></div><div class="m ">«Подарункові набори» → добірки за бюджетом/приводом (Г-03) + гайд «що подарувати» + FAQ подарунка</div><div class="m ">«Як обрати» → гайд-хаб з таблицями (Б-06) → веде в категорії · «Догляд» → гайди + засоби догляду (крос-сел)</div><div class="ann good">черга W2–W3 за обсягом попиту · кожен хаб = існуюча механіка тома A (К-08) + контент тома B</div><p class="note">Шість кластерів — шість хабів. Кожен збирає свій попит і роздає його в каталог.</p></div>
+  </div>
+  <div class="wfd">Кластери з покриттям 3/6 → 6/6 · +85k запитів/міс адресовано · SEO-важіль €25k/рік (кластери, гл. 3.03-Д)</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 8/9</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">C.5 · Пари 3/3 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава C.5 · SEO ЗАРАЗ → ЯК ТРЕБА · 3/3</span>
+    <div class="wfb">
+  <div class="bh"><span class="n">С-05</span><span class="tt">Перелінковка</span><span class="sb">118 сиріт · глибина до 6 кліків</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">Головна → категорія → PDP — і все: 118 сторінок-сиріт (гайди старого блогу, добірки) · частина PDP на глибині 5–6 кліків</div><div class="ann bad">вага не тече: найтрафіковіші PDP нікуди не посилаються (П-12), сироти не отримують ваги взагалі</div><p class="note">Внутрішні посилання — безкоштовний ранжуючий ресурс, який зараз просто не використовується.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m "><b>Правило: будь-яка сторінка ≤3 кліки від головної.</b></div><div class="m ">Механіки вже в макетах: популярні запити (Г-09) · теги-плитки (К-08) · низ PLP (К-10) · теги PDP (П-12) · суміжні категорії</div><div class="ann good">сироти: підключити до хабів або 301 на релевантні · карта посилань — авточек у дашборді (нова сирота → алерт)</div><p class="note">Перелінковка збирається з уже спроєктованих блоків тома A — окремої «роботи по перелінковці» майже немає.</p></div>
+  </div>
+  <div class="wfd">Сироти 118 → 0 · глибина ≤3 кліків · +75–91 внутрішніх посилань (зведення A.8)</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">С-06</span><span class="tt">GEO — видимість в AI-відповідях</span><span class="sb">бренд 0/48 запитів панелі</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">ChatGPT/Perplexity: «порадь чавунну сковороду в Україні» → конкуренти №2 і №4 цитуються, <b>Тестик — 0 згадок з 48 запитів</b></div><div class="ann bad">llms.txt немає · відповіді-факти на сайті не витягуються (іконки, вода) · нова видача формується БЕЗ нас</div><p class="note">AI-видача — це видача 2027 року. Зараз у ній нас не існує.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m "><b>llms.txt</b> + структуровані факти: довіра-картки (Г-05), Q&A (П-09), FAQ-хаб, «Про нас» з цифрами (Б-03)</div><div class="m "><b>Вимірювання чесне (протокол C.4):</b> 48 запитів × ≥3 прогони × медіана, щомісяця, тренд — не абсолют</div><div class="ann good">джерело цитат — ті самі AEO-блоки з томів A/B: окремого «GEO-контенту» не пишемо</div><p class="note">Машині віддаємо те, що вже зробили для людей — структуровані відповіді. Панель міряє тренд входження в AI-видачу.</p></div>
+  </div>
+  <div class="wfd">Згадки 0/48 → тренд ↑ 3 заміри поспіль (DoD) · GEO-актив = побічний продукт томів A/B</div>
+</div>
+    <h2 class="st" style="font-size:11pt;margin-top:2mm">Що дають 6 шаблонів разом — було → стане</h2>
+    <table class="t" style="font-size:7.8pt">
+      <tr><th>Показник</th><th class="num">Було</th><th class="num">Стане</th><th>Пара</th></tr>
+      <tr class="hl"><td><b>URL в індексі</b></td><td class="num">9 412</td><td class="num"><b>≤1 300</b></td><td>С-02 · W2</td></tr>
+      <tr><td>Кластери з хабами</td><td class="num">3/6</td><td class="num">6/6</td><td>С-04 · W2–W3</td></tr>
+      <tr><td>Rich-сніпети (зірки+ціна)</td><td class="num">0</td><td class="num">топ-40 → 640</td><td>С-03 · W2</td></tr>
+      <tr><td>Сторінки-сироти / глибина</td><td class="num">118 / до 6</td><td class="num">0 / ≤3</td><td>С-05</td></tr>
+      <tr><td>Дублі title</td><td class="num">128</td><td class="num">0</td><td>С-01 + П-04</td></tr>
+      <tr><td>Згадки в AI-видачі (панель 48)</td><td class="num">0</td><td class="num">тренд ↑ 3 заміри</td><td>С-06</td></tr>
+    </table>
+    <p class="marg" style="margin-top:1.5mm">Приймання — лише вимірне: індекс по GSC, сніпети по звіту rich-результатів, сироти по кроулу, GEO по протоколу C.4. Ефект у грошах консервативно зашитий у воронку (×1.018 програма) — стеля важеля розкривається у 2027 (гл. 3.03-Д).</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 9/9</span></div></div></body></html>
