@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  currentUser, signOut, loadDiag, saveDiag, CONFIGURED, isCloudUser,
+  currentUser, signOut, loadDiag, saveDiag, CONFIGURED, isCloudUser, isManager,
   signInWithGoogle, onAuth, signTierFile, uploadTierFile,
   ensureAudit, findAuditIdByCode, loadAuditAnswers, loadAuditExtra, getProjects,
   type DiagUser, type DiagRecord, type CompanyProfile, type TierStatus, type TierEvent, type AuditAnswer, type ExtraQ, type AccessState,
@@ -194,6 +194,11 @@ export function Cabinet() {
           ))}
         </nav>
         <div className="cab-side-foot">
+          {isManager(user) && (
+            <Link to={lp('/admin')} className="cab-admin-link mono" title={t('Перейти в адмін-панель WEEXP', 'Open the WEEXP admin panel')}>
+              {t('⚙ Адмін-панель', '⚙ Admin panel')} →
+            </Link>
+          )}
           <span className="cab-user mono" title={user.email}>{user.email}</span>
           <span className="cab-user-mode mono">{isCloudUser(user) ? t('☁ хмара', '☁ cloud') : t('● локально', '● local')}</span>
           <div className="cab-side-foot-row">

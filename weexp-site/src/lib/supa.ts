@@ -640,11 +640,28 @@ export async function saveAuditExtra(code: string, extra: ExtraQ[]): Promise<{ o
 /** Стадія ліда в міні-CRM (воронка продажів). */
 /** Статуси заявки. Основні 6 — за процесом; proposal/won/lost — легасі старих записів. */
 export type LeadStatus = 'new' | 'qualified' | 'unqualified' | 'progress' | 'done' | 'archive' | 'proposal' | 'won' | 'lost';
+/** Чек-лист угоди в картці заявки (зберігається в leads.deal jsonb). */
+export type LeadDeal = {
+  /** Тип співпраці: audit / consulting / full / other */
+  coopType?: string;
+  /** Форма співпраці (вільний текст: розово, помісячно, фікс...) */
+  coopForm?: string;
+  /** До чого домовились */
+  agreed?: string;
+  /** Договір укладено */
+  contractSigned?: boolean;
+  /** Первинна оплата отримана */
+  paidFirst?: boolean;
+  /** ID проєкту, створеного із заявки (звʼязка заявка↔проєкт) */
+  projectId?: string;
+  /** user_id кабінету клієнта, куди перенесено проєкт */
+  projectUserId?: string;
+};
 /** Лід (заявка з форм). Пишеться в таблицю `leads` (див. INFRA/SQL); для адмінки. */
 export type LeadRow = {
   id?: string; at?: string; source?: string; email?: string; name?: string; phone?: string;
   role?: string; store?: string; turnover?: string; task?: string; timeline?: string; budget?: string;
-  comment?: string; diag?: string; calc?: string; status?: LeadStatus;
+  comment?: string; diag?: string; calc?: string; status?: LeadStatus; deal?: LeadDeal;
 };
 export async function listLeads(): Promise<LeadRow[]> {
   if (!CONFIGURED) return [];
@@ -656,6 +673,7 @@ export async function listLeads(): Promise<LeadRow[]> {
       id: String(r.id ?? ''), at: s(r.created_at), source: s(r.source), email: s(r.email), name: s(r.name), phone: s(r.phone),
       role: s(r.role), store: s(r.store), turnover: s(r.turnover), task: s(r.task), timeline: s(r.timeline), budget: s(r.budget),
       comment: s(r.comment), diag: s(r.diag), calc: s(r.calc), status: (s(r.status) as LeadStatus) || 'new',
+      deal: (r.deal && typeof r.deal === 'object') ? (r.deal as LeadDeal) : undefined,
     }));
   } catch { return []; }
 }
@@ -668,6 +686,16 @@ export async function setLeadStatus(id: string, status: LeadStatus): Promise<{ o
     const { data, error } = await supabase.from('leads').update({ status }).eq('id', id).select('id');
     if (error) return { ok: false, error: error.message };
     if (!data || data.length === 0) return { ok: false, error: 'Оновлення не застосовано — додайте UPDATE-політику для адмінів на таблицю leads (RLS). Див. чат/INFRA.' };
+    return { ok: true };
+  } catch (e) { return { ok: false, error: String(e) }; }
+}
+/** Зберегти чек-лист угоди в картці заявки (leads.deal jsonb). */
+export async function setLeadDeal(id: string, deal: LeadDeal): Promise<{ ok: boolean; error?: string }> {
+  if (!CONFIGURED) return { ok: false, error: 'not_configured' };
+  try {
+    const { data, error } = await supabase.from('leads').update({ deal }).eq('id', id).select('id');
+    if (error) return { ok: false, error: error.message };
+    if (!data || data.length === 0) return { ok: false, error: 'Не збережено — виконайте в Supabase: alter table leads add column if not exists deal jsonb; (і перевірте UPDATE-політику RLS для адмінів).' };
     return { ok: true };
   } catch (e) { return { ok: false, error: String(e) }; }
 }

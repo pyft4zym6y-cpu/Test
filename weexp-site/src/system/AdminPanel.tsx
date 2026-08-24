@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, deleteLead, deleteDiagnostics, signTierFile, CONFIGURED,
+  currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, setLeadDeal, deleteLead, deleteDiagnostics, signTierFile, CONFIGURED,
   findAuditIdByCode, loadAuditAnswers, loadAuditExtra, saveAuditExtra,
   saveProjectsFor, saveAssessmentFor, savePatchFor, runWorkerAudit, uploadAdminFile, deleteAdminFile, maturityToAssessment, sendFindingReviews, loadLearningSnapshot, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject, aiScoreAudit, aiSufficiency, type SufficiencyVerdict, type SharedDoc,
   type ModuleScore, type DiagRecord, type AccessState, type ProjectNote, type AuditJobRef, type AdminFile, type WorkerMaturity, type ReviewableFinding, type FindingReview, type LearningSnapshot, type AuditDoc, type AuditDocSection, type AuditDocVersion, type PackState,
-  MANAGER_EMAILS, TEAM_ROLES, ROLE_LABEL, roleOf, can, teamApi, MATURITY_DOMAIN_MODULE, type Role, type TeamMember, type DiagUser, type AdminRow, type LeadRow, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
+  MANAGER_EMAILS, TEAM_ROLES, ROLE_LABEL, roleOf, can, teamApi, MATURITY_DOMAIN_MODULE, type Role, type TeamMember, type DiagUser, type AdminRow, type LeadRow, type LeadDeal, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
   type Project, type ProjTask, type ProjMember, type ProjPayment, type ProjMonth, type ProjTariffItem,
   type PmDirectory, type PmSpecialist, type PmRoleRate,
 } from '@/lib/supa';
@@ -85,6 +85,14 @@ const LEAD_STAGES: { k: LeadStatus; l: string; cls: string }[] = [
   { k: 'done', l: 'Завершена', cls: 'ok' },
   { k: 'archive', l: 'Архів', cls: 'none' },
 ];
+// Типи співпраці для чек-листа угоди в картці заявки.
+const COOP_TYPES: { k: string; l: string }[] = [
+  { k: 'audit', l: 'Аудит' },
+  { k: 'consulting', l: 'Консалтинг' },
+  { k: 'full', l: 'Повний супровід' },
+  { k: 'other', l: 'Інше' },
+];
+const coopLabel = (k?: string) => COOP_TYPES.find((c) => c.k === k)?.l || k || '';
 const stageOf = (l: LeadRow): LeadStatus => {
   const s = l.status || 'new';
   return s === 'proposal' ? 'progress' : s === 'won' ? 'done' : s === 'lost' ? 'unqualified' : s;
@@ -233,6 +241,16 @@ export function AdminPanel() {
   const applyStatus = async (userId: string, tier: string, status: TierStatus, reason?: string) => {
     setBusy(`${userId}:${tier}`);
     const res = await setTierStatusFor(userId, tier, status, reason);
+    // «Глибокий аудит = проект»: доступ надано → аудит стартував → одразу
+    // заводимо проект клієнту (якщо його ще немає), щоб робота велась у «Проектах».
+    if (res.ok && status === 'granted') {
+      const row = (rows || []).find((r) => r.userId === userId);
+      if (row && getProjects(row.record).length === 0) {
+        const p = { ...emptyProject(), title: `Глибокий аудит · ${row.company || row.email}`, startMonth: new Date().toISOString().slice(0, 7) };
+        const pr = await saveProjectsFor(userId, [p]);
+        if (pr.ok) toast('✓ Створено проект «' + p.title + '»');
+      }
+    }
     setBusy('');
     if (!res.ok) { toast('Не вдалося: ' + (res.error || ''), 'err'); return; }
     toast('✓ Статус оновлено'); load();
@@ -266,6 +284,37 @@ export function AdminPanel() {
     if (!res.ok) { toast('Не вдалося видалити: ' + (res.error || ''), 'err'); return; }
     toast('✓ Заявку видалено'); setLeads((ls) => (ls || []).filter((l) => l.id !== id));
     setOpenLead(null);
+  };
+  // Чек-лист угоди в картці заявки → leads.deal (jsonb).
+  const saveDeal = async (id: string, deal: LeadDeal) => {
+    setBusy('deal:' + id);
+    const res = await setLeadDeal(id, deal);
+    setBusy('');
+    if (!res.ok) { toast('Не збережено: ' + (res.error || ''), 'err'); return; }
+    toast('✓ Чек-лист угоди збережено');
+    setLeads((ls) => (ls || []).map((l) => (l.id === id ? { ...l, deal } : l)));
+  };
+  // «Завершена» → перевести заявку в проект: створюємо проект у кабінеті клієнта
+  // з даними угоди, звʼязуємо заявку з проектом (deal.projectId), заявку не видаляємо.
+  const leadToProject = async (lead: LeadRow) => {
+    if (!lead.id) return;
+    const client = lead.email ? (rows || []).find((r) => (r.email || '').toLowerCase() === lead.email!.toLowerCase()) : undefined;
+    if (!client) { toast('Немає кабінету з email заявки — попросіть клієнта зареєструватись або створіть проект вручну у «Проектах».', 'err'); return; }
+    if (lead.deal?.projectId) { toast('Проект уже створено з цієї заявки — відкриваю картку клієнта'); setOpenLead(null); setTab('projects'); setOpenUser(client.userId); return; }
+    setBusy('conv:' + lead.id);
+    const existing = getProjects(client.record);
+    const title = `${coopLabel(lead.deal?.coopType) || 'Проект'} · ${client.company || lead.name || lead.email}`;
+    const p = { ...emptyProject(), title, startMonth: new Date().toISOString().slice(0, 7) };
+    const res = await saveProjectsFor(client.userId, [...existing, p]);
+    if (!res.ok) { setBusy(''); toast('Не вдалося створити проект: ' + (res.error || ''), 'err'); return; }
+    const deal: LeadDeal = { ...(lead.deal || {}), projectId: p.id, projectUserId: client.userId };
+    const dr = await setLeadDeal(lead.id, deal);
+    setBusy('');
+    if (!dr.ok) toast('Проект створено, але звʼязку в заявці не збережено: ' + (dr.error || ''), 'err');
+    else toast('✓ Проект «' + title + '» створено і звʼязано з заявкою');
+    setLeads((ls) => (ls || []).map((l) => (l.id === lead.id ? { ...l, deal } : l)));
+    load();
+    setOpenLead(null); setTab('projects'); setOpenUser(client.userId);
   };
   // Масові дії над заявками (мультивибір).
   const toggleSel = (id: string) => setSelLeads((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
@@ -349,8 +398,10 @@ export function AdminPanel() {
       </aside>
 
       <main className="adm-main">
+        {/* ── Повна сторінка клієнта (замість бокового drawer) ── */}
+        {detail && <UserDetail row={detail} leads={leads} canDelete={can(user, 'delete_data')} selfEmail={user.email} onClose={() => setOpenUser(null)} openFile={openFile} onStatus={setStatus} onDelete={removeUser} busy={busy} />}
         {/* ── Дашборд ── */}
-        {curTab === 'overview' && (
+        {!detail && curTab === 'overview' && (
           <section className="adm-sec">
             <div className="adm-sec-head">
               <h1 className="sysx-display adm-h1">Дашборд</h1>
@@ -447,7 +498,7 @@ export function AdminPanel() {
         )}
 
         {/* ── Користувачі ── */}
-        {curTab === 'users' && (() => {
+        {!detail && curTab === 'users' && (() => {
           const isAdm = (email: string) => MANAGER_EMAILS.map((e) => e.toLowerCase()).includes((email || '').toLowerCase());
           const nAdmins = sorted.filter((r) => isAdm(r.email)).length;
           const nClients = sorted.length - nAdmins;
@@ -493,7 +544,7 @@ export function AdminPanel() {
         })()}
 
         {/* ── Аудити: єдина клієнтська воронка ── */}
-        {curTab === 'audits' && (() => {
+        {!detail && curTab === 'audits' && (() => {
           const base = (rows || []).filter((r) => !q || r.email.toLowerCase().includes(q.toLowerCase()) || (r.company || '').toLowerCase().includes(q.toLowerCase()));
           const withStage = base.map((r) => ({ r, stage: funnelStage(r) }));
           // Підрозділи: Всі (будь-яка аудит-активність) · Експрес (всі, вкл. незареєстрованих
@@ -567,7 +618,7 @@ export function AdminPanel() {
         })()}
 
         {/* ── Проекти: робочий простір сформованих проектів ── */}
-        {curTab === 'projects' && (() => {
+        {!detail && curTab === 'projects' && (() => {
           const withProj = (rows || [])
             .map((r) => ({ r, projects: getProjects(r.record) }))
             .filter((x) => x.projects.length)
@@ -624,7 +675,7 @@ export function AdminPanel() {
         })()}
 
         {/* ── Глибокий аудит: воронка запитів і стадії ── */}
-        {curTab === 'deep' && (() => {
+        {!detail && curTab === 'deep' && (() => {
           type DStage = 'requested' | 'data' | 'granted' | 'work' | 'done' | 'rejected';
           const stageOf = (rec: DiagRecord | null | undefined): DStage | null => {
             const st = Object.values(rec?.funnel?.tierStatus || {});
@@ -761,7 +812,7 @@ export function AdminPanel() {
         )}
 
         {/* ── Заявки · міні-CRM ── */}
-        {curTab === 'leads' && (
+        {!detail && curTab === 'leads' && (
           <section className="adm-sec">
             <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Заявки</h1>
               {(leads || []).some((l) => !ACCESS_SOURCES.includes(l.source || '')) && (
@@ -841,7 +892,7 @@ export function AdminPanel() {
         {/* ── Проект-офіс: довідник команди та ставок ── */}
 
         {/* ── Налаштування ── */}
-        {curTab === 'settings' && (
+        {!detail && curTab === 'settings' && (
           <section className="adm-sec">
             <h1 className="sysx-display adm-h1">Налаштування</h1>
 
@@ -872,10 +923,8 @@ export function AdminPanel() {
         )}
       </main>
 
-      {/* Панель деталей користувача */}
-      {detail && <UserDetail row={detail} leads={leads} canDelete={can(user, 'delete_data')} selfEmail={user.email} onClose={() => setOpenUser(null)} openFile={openFile} onStatus={setStatus} onDelete={removeUser} busy={busy} />}
       {/* Панель деталей заявки */}
-      {openLead && leads && <LeadDetail lead={leads.find((l) => l.id === openLead)} allRows={rows || []} onClose={() => setOpenLead(null)} onStatus={moveLead} onDelete={removeLead} busy={busy} onOpenClient={(uid) => { setOpenLead(null); setTab('users'); setOpenUser(uid); }} />}
+      {openLead && leads && <LeadDetail lead={leads.find((l) => l.id === openLead)} allRows={rows || []} onClose={() => setOpenLead(null)} onStatus={moveLead} onDeal={saveDeal} onConvert={leadToProject} onDelete={removeLead} busy={busy} onOpenClient={(uid) => { setOpenLead(null); setTab('users'); setOpenUser(uid); }} />}
 
       {/* Модалка причини (замість browser prompt) */}
       {ask && (
@@ -898,9 +947,14 @@ export function AdminPanel() {
   );
 }
 
-function LeadDetail({ lead, allRows, onClose, onStatus, onOpenClient, onDelete, busy }: { lead?: LeadRow; allRows: AdminRow[]; onClose: () => void; onStatus: (id: string, s: LeadStatus) => void; onOpenClient: (userId: string) => void; onDelete: (id: string) => void; busy: string }) {
+function LeadDetail({ lead, allRows, onClose, onStatus, onDeal, onConvert, onOpenClient, onDelete, busy }: { lead?: LeadRow; allRows: AdminRow[]; onClose: () => void; onStatus: (id: string, s: LeadStatus) => void; onDeal: (id: string, d: LeadDeal) => void; onConvert: (l: LeadRow) => void; onOpenClient: (userId: string) => void; onDelete: (id: string) => void; busy: string }) {
+  // Локальний чернетковий стан чек-листа угоди — зберігається кнопкою.
+  const [deal, setDeal] = useState<LeadDeal>(lead?.deal || {});
+  const [dirty, setDirty] = useState(false);
+  useEffect(() => { setDeal(lead?.deal || {}); setDirty(false); }, [lead?.id]);
   if (!lead) return null;
-  const cur = lead.status || 'new';
+  const cur = stageOf(lead);
+  const patchDeal = (p: Partial<LeadDeal>) => { setDeal((d) => ({ ...d, ...p })); setDirty(true); };
   // Звʼязок «заявка → клієнт»: шукаємо зареєстрований акаунт за email заявки.
   const client = lead.email ? allRows.find((r) => (r.email || '').toLowerCase() === lead.email!.toLowerCase()) : undefined;
   const ex = client?.record?.express;
@@ -933,6 +987,67 @@ function LeadDetail({ lead, allRows, onClose, onStatus, onOpenClient, onDelete, 
               ))}
             </div>
           </Block>
+
+          <Block title="Чек-лист угоди">
+            <div className="adm-deal">
+              <label className="adm-deal-row">
+                <span className="adm-deal-l mono">Тип співпраці</span>
+                <div className="adm-deal-opts">
+                  {COOP_TYPES.map((c) => (
+                    <button key={c.k} className={`mc-btn sm${deal.coopType === c.k ? ' ok' : ''}`} onClick={() => patchDeal({ coopType: deal.coopType === c.k ? undefined : c.k })}>{c.l}</button>
+                  ))}
+                </div>
+              </label>
+              {deal.coopType === 'other' && (
+                <label className="adm-deal-row">
+                  <span className="adm-deal-l mono">Який саме</span>
+                  <input className="adm-deal-inp" value={deal.coopForm || ''} onChange={(e) => patchDeal({ coopForm: e.target.value })} placeholder="Напр.: SEO-супровід, розробка…" />
+                </label>
+              )}
+              {deal.coopType !== 'other' && (
+                <label className="adm-deal-row">
+                  <span className="adm-deal-l mono">Форма співпраці</span>
+                  <input className="adm-deal-inp" value={deal.coopForm || ''} onChange={(e) => patchDeal({ coopForm: e.target.value })} placeholder="Напр.: фікс за пакет / помісячний retainer" />
+                </label>
+              )}
+              <label className="adm-deal-row">
+                <span className="adm-deal-l mono">До чого домовились</span>
+                <textarea className="adm-deal-ta" rows={3} value={deal.agreed || ''} onChange={(e) => patchDeal({ agreed: e.target.value })} placeholder="Обсяг, строки, ціна, наступний крок…" />
+              </label>
+              <div className="adm-deal-flags">
+                <button className={`mc-btn sm${deal.contractSigned ? ' ok' : ''}`} onClick={() => patchDeal({ contractSigned: !deal.contractSigned })}>
+                  {deal.contractSigned ? '✓ Договір укладено' : 'Договір не укладено'}
+                </button>
+                <button className={`mc-btn sm${deal.paidFirst ? ' ok' : ''}`} onClick={() => patchDeal({ paidFirst: !deal.paidFirst })}>
+                  {deal.paidFirst ? '✓ Первинна оплата отримана' : 'Первинна оплата відсутня'}
+                </button>
+              </div>
+              <div className="adm-deal-save">
+                <button className="mc-btn ok" disabled={!dirty || busy === 'deal:' + lead.id} onClick={() => { onDeal(lead.id || '', deal); setDirty(false); }}>
+                  {busy === 'deal:' + lead.id ? 'Зберігаємо…' : dirty ? 'Зберегти чек-лист' : '✓ Збережено'}
+                </button>
+                {deal.projectId && <span className="mono adm-deal-linked">🔗 Звʼязано з проектом</span>}
+              </div>
+            </div>
+          </Block>
+
+          {cur === 'done' && (
+            <Block title="Наступний крок">
+              {deal.projectId ? (
+                <div className="adm-deal-conv">
+                  <p className="mono adm-empty">Проект уже створено з цієї заявки.</p>
+                  <button className="mc-btn ok" onClick={() => onConvert(lead)}>Відкрити проект клієнта →</button>
+                </div>
+              ) : (
+                <div className="adm-deal-conv">
+                  <p className="mono adm-empty">Заявка завершена — переведіть її в проект: створимо проект у «Проектах», підтягнемо клієнта, компанію і умови угоди. Заявка залишиться в CRM.</p>
+                  <button className="mc-btn ok" disabled={busy === 'conv:' + lead.id} onClick={() => onConvert(lead)}>
+                    {busy === 'conv:' + lead.id ? 'Створюємо проект…' : '⇢ Перевести в проєкти'}
+                  </button>
+                </div>
+              )}
+            </Block>
+          )}
           <Block title="Заявка">
             <ul className="adm-kv">
               {rows.filter(([, v]) => v).map(([k, v]) => <li key={k}><i>{k}</i><span>{v}</span></li>)}
@@ -1169,34 +1284,68 @@ ${asmKeys.length ? `<h2>C-level оцінка модулів${asmAvg != null ? ` 
   w.document.open(); w.document.write(html); w.document.close();
 }
 
+// Горизонтальні вкладки повної сторінки клієнта (замість бокового drawer).
+type UTab = 'over' | 'comp' | 'express' | 'deep' | 'docs' | 'team' | 'proj';
+const U_TABS: { id: UTab; l: string }[] = [
+  { id: 'over', l: 'Огляд' },
+  { id: 'comp', l: 'Компанія' },
+  { id: 'express', l: 'Експрес-аудит' },
+  { id: 'deep', l: 'Глибокий аудит' },
+  { id: 'docs', l: 'Документи' },
+  { id: 'team', l: 'Команда' },
+  { id: 'proj', l: 'Проект' },
+];
+
 function UserDetail({ row, leads, canDelete, selfEmail, onClose, openFile, onStatus, onDelete, busy }: { row: AdminRow; leads: LeadRow[] | null; canDelete: boolean; selfEmail: string; onClose: () => void; openFile: (p: string) => void; onStatus: (userId: string, tier: string, status: TierStatus) => void; onDelete: (userId: string, email: string) => void; busy: string }) {
+  const [utab, setUtab] = useState<UTab>('over');
+  useEffect(() => { setUtab('over'); }, [row.userId]);
   const rec = row.record || {};
   const company = rec.company;
   const money = rec.stage1Money;
   const tiers = Object.entries(row.funnel?.tierStatus || {});
   const files = Object.entries(row.funnel?.tierFiles || {});
   const code = row.funnel?.accessCode;
+  const projects = getProjects(rec);
+  // Дані для шапки: угода з заявки, відповідальний PM, дата старту, етап глибокого аудиту.
+  const myLead = (leads || []).find((l) => l.deal && (l.email || '').toLowerCase() === row.email.toLowerCase());
+  const deal = myLead?.deal;
+  const pm = projects.flatMap((p) => p.team || []).find((m) => /pm|проект|менедж/i.test(m.role || ''));
+  const startAt = projects.map((p) => p.startMonth).filter(Boolean).sort()[0];
+  const deepSt = (row.funnel?.tierStatus || {})['DEEP'];
+  const st = FUNNEL.find((x) => x.k === funnelStage(row))!;
   return (
-    <div className="adm-drawer-wrap" onClick={onClose}>
-      <aside className="adm-drawer" onClick={(e) => e.stopPropagation()}>
-        <div className="adm-drawer-head">
-          <div className="adm-drawer-head-id">
+    <section className="adm-userpage">
+      <div className="adm-uhead">
+        <div className="adm-uhead-top">
+          <button className="mc-btn adm-uback" onClick={onClose}>← Назад</button>
+          <div className="adm-uhead-id">
+            <b className="adm-uhead-name">{company?.name || row.email}</b>
             <a className="adm-email adm-mail" href={`mailto:${row.email}`}>{row.email}</a>
-            {(() => { const st = FUNNEL.find((x) => x.k === funnelStage(row))!; return <span className={`cab-badge mono tst-${st.cls} adm-drawer-stage`}>{st.l}</span>; })()}
           </div>
-          <div className="adm-drawer-head-act">
-            <button className="mc-btn" onClick={() => openClientDossier(row)} title="Сформувати PDF-досьє клієнта">📄 Досьє PDF</button>
-            <button className="adm-x" onClick={onClose} aria-label="Закрити" title="Закрити">✕</button>
-          </div>
+          <span className={`cab-badge mono tst-${st.cls} adm-drawer-stage`}>{st.l}</span>
+          <button className="mc-btn" onClick={() => openClientDossier(row)} title="Сформувати PDF-досьє клієнта">📄 Досьє PDF</button>
         </div>
-        <div className="adm-drawer-body">
-          {code && (
+        <div className="adm-uhead-kv">
+          <div className="adm-uhead-cell"><i className="mono">Контакт</i><b>{company?.contactName ? `${company.contactName}${company.contactPhone ? ' · ' + company.contactPhone : ''}` : '—'}</b></div>
+          <div className="adm-uhead-cell"><i className="mono">Відп. менеджер</i><b>{pm?.name || '—'}</b></div>
+          <div className="adm-uhead-cell"><i className="mono">Тип співпраці</i><b>{coopLabel(deal?.coopType) || deal?.coopForm || (deepSt ? 'Глибокий аудит' : '—')}</b></div>
+          <div className="adm-uhead-cell"><i className="mono">Дата початку</i><b>{startAt || (row.updatedAt ? new Date(row.updatedAt).toLocaleDateString('uk-UA') : '—')}</b></div>
+          <div className="adm-uhead-cell"><i className="mono">Етап</i><b>{deepSt ? (ST[deepSt]?.txt ?? deepSt) : st.l}</b></div>
+        </div>
+        <nav className="adm-utabs">
+          {U_TABS.map((tb) => (
+            <button key={tb.id} className={`adm-utab${utab === tb.id ? ' on' : ''}`} onClick={() => setUtab(tb.id)}>{tb.l}</button>
+          ))}
+        </nav>
+      </div>
+      <div className="adm-upage-body">
+          {utab === 'over' && code && (
             <Block title="Код доступу">
               <button className="adm-code adm-code-lg" onClick={() => navigator.clipboard?.writeText(code)} title="Скопіювати">🔑 {code}</button>
               <span className="mono adm-empty">клієнт вводить його у «Глибокому аудиті»</span>
             </Block>
           )}
-          <Block title="Компанія">{(company?.name || company?.industry) ? (
+          {utab === 'comp' && <Block title="Компанія">{(company?.name || company?.industry) ? (
             <ul className="adm-kv">
               {company.name && <li><i>Назва</i><span>{company.name}</span></li>}
               {company.industry && <li><i>Сфера</i><span>{company.industry}</span></li>}
@@ -1219,9 +1368,32 @@ function UserDetail({ row, leads, canDelete, selfEmail, onClose, openFile, onSta
               {company.contactName && <li><i>Контакт</i><span>{company.contactName} {company.contactPhone || ''}</span></li>}
               {company.notes && <li><i>Коментар</i><span>{company.notes}</span></li>}
             </ul>
-          ) : <p className="mono adm-empty">профіль не заповнено</p>}</Block>
+          ) : <p className="mono adm-empty">профіль не заповнено</p>}</Block>}
 
-          <Block title="Експрес-аудит">{(() => {
+          {(utab === 'team' || utab === 'comp') && (
+            <Block title="Команда клієнта">
+              {(company?.team?.length ?? 0) > 0 ? (
+                <ul className="adm-kv">
+                  {company!.team!.map((m, i) => (
+                    <li key={i}><i>{m.role || 'роль не вказана'}</i><span>{m.name || '—'}{m.email ? ` · ${m.email}` : ''}{m.phone ? ` · ${m.phone}` : ''}</span></li>
+                  ))}
+                </ul>
+              ) : <p className="mono adm-empty">клієнт ще не додав команду у «Дані компанії»</p>}
+            </Block>
+          )}
+          {utab === 'team' && (
+            <Block title="Команда WEEXP на проекті">
+              {projects.flatMap((p) => p.team || []).length ? (
+                <ul className="adm-kv">
+                  {projects.flatMap((p) => (p.team || []).map((m) => ({ p: p.title, ...m }))).map((m, i) => (
+                    <li key={i}><i>{m.role}</i><span>{m.name}{m.p ? ` · ${m.p}` : ''}</span></li>
+                  ))}
+                </ul>
+              ) : <p className="mono adm-empty">команда призначається у вкладці «Проект» (довідник — у «Проектах → Проект-офіс»)</p>}
+            </Block>
+          )}
+
+          {utab === 'express' && <Block title="Експрес-аудит">{(() => {
             const ex = rec.express;
             if (ex) {
               const inp = ex.input || {};
@@ -1286,29 +1458,29 @@ function UserDetail({ row, leads, canDelete, selfEmail, onClose, openFile, onSta
             }
             if (money) return <p className="adm-money">{eur(money[0])} – {eur(money[1])} <i>/ рік</i></p>;
             return <p className="mono adm-empty">{row.hasExpress ? 'є' : 'не рахували'}</p>;
-          })()}</Block>
+          })()}</Block>}
 
-          <Block title="Глибокий аудит">{row.hasDeep ? <p className="mono">у роботі</p> : <p className="mono adm-empty">не почато</p>}</Block>
+          {utab === 'deep' && <Block title="Глибокий аудит">{row.hasDeep ? <p className="mono">у роботі</p> : <p className="mono adm-empty">не почато</p>}</Block>}
 
-          <Block title="Аудит рушієм Commerce OS"><WorkerAudit userId={row.userId} code={code} rec={rec} reviewer={selfEmail} /></Block>
+          {utab === 'deep' && <Block title="Аудит рушієм Commerce OS"><WorkerAudit userId={row.userId} code={code} rec={rec} reviewer={selfEmail} /></Block>}
 
-          <Block title="Оцінка модулів (C-level) — внутрішнє"><ModuleScoring userId={row.userId} initial={rec.assessment || {}} code={code} rec={rec} /></Block>
+          {utab === 'deep' && <Block title="Оцінка модулів (C-level) — внутрішнє"><ModuleScoring userId={row.userId} initial={rec.assessment || {}} code={code} rec={rec} /></Block>}
 
-          <Block title="Каталог доступів клієнта"><AccessCatalog userId={row.userId} initial={rec.accessLog || {}} /></Block>
+          {utab === 'docs' && <Block title="Каталог доступів клієнта"><AccessCatalog userId={row.userId} initial={rec.accessLog || {}} /></Block>}
 
-          <Block title="Аналітика клієнта (GA4 · GSC · PageSpeed)"><GaPreview userId={row.userId} siteUrl={company?.site || rec.site || ''} /></Block>
+          {utab === 'docs' && <Block title="Аналітика клієнта (GA4 · GSC · PageSpeed)"><GaPreview userId={row.userId} siteUrl={company?.site || rec.site || ''} /></Block>}
 
-          <Block title="Внутрішні нотатки команди"><NotesPanel userId={row.userId} initial={rec.notes || []} author={selfEmail} /></Block>
+          {utab === 'over' && <Block title="Внутрішні нотатки команди"><NotesPanel userId={row.userId} initial={rec.notes || []} author={selfEmail} /></Block>}
 
-          <Block title="Модерація опитувальника"><ModerationPanel userId={row.userId} code={code} rec={rec} /></Block>
+          {utab === 'deep' && <Block title="Модерація опитувальника"><ModerationPanel userId={row.userId} code={code} rec={rec} /></Block>}
 
-          <Block title="Пакет аудиту — 5 звітів"><PackChecklist userId={row.userId} email={row.email} rec={rec} /></Block>
+          {utab === 'deep' && <Block title="Пакет аудиту — 5 звітів"><PackChecklist userId={row.userId} email={row.email} rec={rec} /></Block>}
 
-          <Block title="Документ аудиту (редагований)"><AuditDocEditor userId={row.userId} email={row.email} rec={rec} /></Block>
+          {utab === 'deep' && <Block title="Документ аудиту (редагований)"><AuditDocEditor userId={row.userId} email={row.email} rec={rec} /></Block>}
 
-          <Block title="Мої файли та передача клієнту"><AdminFiles userId={row.userId} initial={rec.adminFiles || []} sharedInitial={rec.sharedDocs || []} author={selfEmail} openFile={openFile} /></Block>
+          {utab === 'docs' && <Block title="Мої файли та передача клієнту"><AdminFiles userId={row.userId} initial={rec.adminFiles || []} sharedInitial={rec.sharedDocs || []} author={selfEmail} openFile={openFile} /></Block>}
 
-          <Block title="Запити доступів">{tiers.length ? (
+          {utab === 'deep' && <Block title="Запити доступів">{tiers.length ? (
             <div className="adm-drawer-tiers">
               {tiers.map(([tid, s]) => {
                 const b = `${row.userId}:${tid}`;
@@ -1324,18 +1496,18 @@ function UserDetail({ row, leads, canDelete, selfEmail, onClose, openFile, onSta
                 );
               })}
             </div>
-          ) : <p className="mono adm-empty">немає запитів</p>}</Block>
+          ) : <p className="mono adm-empty">немає запитів</p>}</Block>}
 
-          {code && (
+          {utab === 'deep' && code && (
             <Block title="Заповнення аудиту"><AuditFill code={code} /></Block>
           )}
-          {code && (
+          {utab === 'deep' && code && (
             <Block title="Уточнення (Крок 2)"><ExtraEditor code={code} /></Block>
           )}
 
-          <Block title="Мій проект (ведення)"><ProjectsManager userId={row.userId} initial={getProjects(rec)} code={code} company={company?.name} /></Block>
+          {utab === 'proj' && <Block title="Проект (ведення)"><ProjectsManager userId={row.userId} initial={getProjects(rec)} code={code} company={company?.name} /></Block>}
 
-          {files.length > 0 && (
+          {utab === 'docs' && files.length > 0 && (
             <Block title="Файли">
               <ul className="adm-files">{files.flatMap(([tid, arr]) => arr.map((f, i) => (
                 <li key={tid + i}><button className="mono adm-file" onClick={() => openFile(f.path)}>📎 {tid}: {f.name}</button></li>
@@ -1343,15 +1515,15 @@ function UserDetail({ row, leads, canDelete, selfEmail, onClose, openFile, onSta
             </Block>
           )}
 
-          <Block title="Заявки клієнта">{(() => {
+          {utab === 'over' && <Block title="Заявки клієнта">{(() => {
             const mine = (leads || []).filter((l) => !ACCESS_SOURCES.includes(l.source || '') && (l.email || '').toLowerCase() === row.email.toLowerCase());
             if (!mine.length) return <p className="mono adm-empty">заявок від цього email немає</p>;
             return <ul className="adm-kv">{mine.map((l) => (
               <li key={l.id}><i>{rel(l.at)}{l.source ? ` · ${l.source}` : ''}</i><span>{l.task || l.comment || '—'}{l.status ? ` · ${LEAD_STAGES.find((s) => s.k === (l.status as LeadStatus))?.l || l.status}` : ''}</span></li>
             ))}</ul>;
-          })()}</Block>
+          })()}</Block>}
 
-          <Block title="Історія активності">{(() => {
+          {utab === 'over' && <Block title="Історія активності">{(() => {
             const ev: { at: string; t: string }[] = [];
             if (row.record?.express?.at) ev.push({ at: row.record.express.at, t: `Пройдено експрес-аудит · ${eur(row.record.express.total)}/рік` });
             Object.entries(row.funnel?.tierHistory || {}).forEach(([tid, list]) => (list || []).forEach((e) => ev.push({ at: e.at, t: `${tierLabel(tid)} → ${ST[e.st]?.txt ?? e.st}${e.by === 'manager' ? ' · менеджер' : ''}` })));
@@ -1362,9 +1534,9 @@ function UserDetail({ row, leads, canDelete, selfEmail, onClose, openFile, onSta
             return <ul className="adm-activity">{ev.slice(0, 20).map((e, i) => (
               <li key={i}><span className="adm-act-dot" /><span className="adm-act-t">{e.t}</span><span className="mono adm-act-at">{rel(e.at)}</span></li>
             ))}</ul>;
-          })()}</Block>
+          })()}</Block>}
 
-          {canDelete && (
+          {utab === 'over' && canDelete && (
             <div className="adm-danger">
               <span className="mono adm-empty">Небезпечна зона — прибирання тестових даних:</span>
               <button className="mc-btn bad" disabled={busy === 'del:' + row.userId} onClick={() => onDelete(row.userId, row.email)}>
@@ -1373,8 +1545,7 @@ function UserDetail({ row, leads, canDelete, selfEmail, onClose, openFile, onSta
             </div>
           )}
         </div>
-      </aside>
-    </div>
+    </section>
   );
 }
 

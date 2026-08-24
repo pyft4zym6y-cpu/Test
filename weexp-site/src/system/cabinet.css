@@ -306,6 +306,9 @@
   border: 2px solid var(--silver); border-radius: 0; padding: 2px 7px; font-style: normal; }
 .cab-nav-i.on .cab-soon { color: var(--yellow); border-color: rgba(255,255,255,.4); }
 .cab-side-foot { display: grid; gap: 4px; padding: 16px 6px 0; margin-top: 12px; border-top: 2.5px solid var(--deep); }
+.cab-admin-link { display: inline-block; justify-self: start; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--cream, #fdf6ec); background: var(--deep); border: 2px solid var(--deep); padding: 6px 10px; margin-bottom: 6px; text-decoration: none; }
+.cab-admin-link:hover { background: var(--red); border-color: var(--red); color: #fff; }
 .cab-user { font-weight: 600; font-size: 12px; color: var(--charcoal); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cab-user-mode { font-size: 10.5px; font-weight: 700; color: var(--graphite); }
 .cab-signout { justify-self: start; background: none; border: none; cursor: pointer; color: var(--graphite);
@@ -890,6 +893,39 @@
 .adm-tiers-row { display: flex; gap: 6px; flex-wrap: wrap; }
 .adm-files { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .adm-file { background: none; border: 0; color: var(--red); font-weight: 700; font-size: 13px; cursor: pointer; padding: 0; text-align: left; }
+
+/* ── Повна сторінка клієнта (замість drawer) ── */
+.adm-userpage { display: flex; flex-direction: column; gap: 0; }
+.adm-uhead { background: var(--deep); color: var(--cream); border: var(--bd); border-bottom: 0; }
+.adm-uhead-top { display: flex; align-items: center; gap: 14px; padding: 16px 20px 10px; flex-wrap: wrap; }
+.adm-uback { flex: 0 0 auto; }
+.adm-uhead-id { display: flex; flex-direction: column; gap: 2px; min-width: 0; margin-right: auto; }
+.adm-uhead-name { font-family: var(--display); font-weight: 900; font-size: 20px; line-height: 1.1; }
+.adm-uhead-id .adm-email { color: var(--cream); opacity: .8; font-size: 12.5px; font-weight: 600; }
+.adm-uhead-kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: rgba(255,255,255,.14); border-top: 1px solid rgba(255,255,255,.14); }
+.adm-uhead-cell { background: var(--deep); padding: 10px 20px; display: flex; flex-direction: column; gap: 2px; }
+.adm-uhead-cell i { font-style: normal; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; opacity: .55; }
+.adm-uhead-cell b { font-size: 13px; font-weight: 700; }
+.adm-utabs { display: flex; gap: 0; overflow-x: auto; border-top: 1px solid rgba(255,255,255,.14); }
+.adm-utab { flex: 0 0 auto; background: none; border: 0; border-right: 1px solid rgba(255,255,255,.14); color: var(--cream);
+  font: inherit; font-weight: 800; font-size: 12.5px; text-transform: uppercase; letter-spacing: .05em; padding: 12px 18px; cursor: pointer; opacity: .6; }
+.adm-utab:hover { opacity: 1; }
+.adm-utab.on { opacity: 1; background: var(--cream); color: var(--deep); }
+.adm-upage-body { background: var(--cream); border: var(--bd); border-top: 0; padding: 24px; display: flex; flex-direction: column; gap: 20px; max-width: 100%; }
+@media (max-width: 640px) { .adm-uhead-top { padding: 12px 14px 8px; } .adm-uhead-cell { padding: 8px 14px; } .adm-upage-body { padding: 16px; } }
+
+/* ── Чек-лист угоди в картці заявки ── */
+.adm-deal { display: flex; flex-direction: column; gap: 12px; }
+.adm-deal-row { display: flex; flex-direction: column; gap: 5px; }
+.adm-deal-l { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--graphite); }
+.adm-deal-opts { display: flex; gap: 6px; flex-wrap: wrap; }
+.adm-deal-inp, .adm-deal-ta { border: 2px solid var(--silver); background: var(--pure-white); color: var(--deep); font: inherit; font-size: 13.5px; padding: 8px 10px; }
+.adm-deal-inp:focus, .adm-deal-ta:focus { outline: none; border-color: var(--deep); }
+.adm-deal-ta { resize: vertical; }
+.adm-deal-flags { display: flex; gap: 8px; flex-wrap: wrap; }
+.adm-deal-save { display: flex; align-items: center; gap: 12px; }
+.adm-deal-linked { font-size: 11.5px; font-weight: 700; color: var(--graphite); }
+.adm-deal-conv { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
 
 @media (max-width: 860px) {
   .adm { grid-template-columns: 1fr; }
