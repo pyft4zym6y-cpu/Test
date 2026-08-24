@@ -13,6 +13,73 @@ import {
 type Workspace = 'questions' | 'access' | 'files';
 const WS_OF = (t: QType): Workspace => (t === 'access' ? 'access' : t === 'file' ? 'files' : 'questions');
 
+
+/** Брендований PDF усього опитувальника (через вікно друку браузера). */
+function exportTemplatePdf(tpl: AuditTemplate) {
+  const w = window.open('', '_blank');
+  if (!w) { alert('Дозвольте спливаючі вікна, щоб зберегти PDF.'); return; }
+  const esc = (x: unknown) => String(x ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const typeLabel = (t: QType) => (Q_TYPES.find((x) => x.v === t)?.label || t).replace(/Відкрите — /, '');
+  const counts = { q: 0, a: 0, f: 0 };
+  for (const b of tpl.blocks) for (const qq of b.questions) { const ws = WS_OF(qq.type); if (ws === 'access') counts.a++; else if (ws === 'files') counts.f++; else counts.q++; }
+  const toc = tpl.blocks.map((b, i) => `<tr><td class="n">${String(i + 1).padStart(2, '0')}</td><td>${esc(b.title)}</td><td class="r">${esc(b.role || '—')}</td><td class="c">${b.questions.length}</td></tr>`).join('');
+  const qHtml = (qq: Question, idx: number) => {
+    const ws = WS_OF(qq.type);
+    const badge = ws === 'access' ? '<span class="tag acc">доступ</span>' : ws === 'files' ? '<span class="tag file">файл</span>' : `<span class="tag">${esc(typeLabel(qq.type))}</span>`;
+    const opts = (qq.options || []).length ? `<div class="opts">${(qq.options || []).map((o) => `<span class="opt">${esc(o)}</span>`).join('')}</div>` : '';
+    const cond = qq.condQKey ? `<div class="hint">↳ показується, якщо «${esc(qq.condQKey)}» = «${esc(qq.condValue)}»</div>` : '';
+    const hint = qq.hint ? `<div class="hint">${esc(qq.hint)}</div>` : '';
+    return `<div class="q${qq.required ? ' req' : ''}">
+      <div class="q-top"><span class="q-n">${idx}</span><span class="q-l">${esc(qq.label)}${qq.required ? ' <b class="star">*</b>' : ''}</span>${badge}</div>
+      ${opts}${hint}${cond}
+    </div>`;
+  };
+  const blocks = tpl.blocks.map((b, i) => `
+    <section class="mod">
+      <div class="mod-h"><span class="mod-n">${String(i + 1).padStart(2, '0')}</span>
+        <div><h2>${esc(b.title)}</h2><span class="mod-meta">${esc(b.role ? 'заповнює: ' + b.role : '')} · ${b.questions.length} позицій</span></div></div>
+      ${b.questions.map((qq, qi) => qHtml(qq, qi + 1)).join('')}
+    </section>`).join('');
+  const html = `<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>Опитувальник глибокого аудиту — WEEXP</title><style>
+@page{margin:14mm}body{font-family:"IBM Plex Sans","Segoe UI",system-ui,Arial,sans-serif;color:#141210;margin:0;font-size:12px;line-height:1.5}
+.bar{height:8px;background:#F5301C}.wrap{padding:24px 30px;max-width:800px;margin:0 auto}
+.top{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #141210;padding-bottom:12px;margin-bottom:6px}
+.logo{font-weight:800;font-size:22px}.logo span{color:#F5301C}
+.meta{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#6B675E;text-align:right}
+h1{font-size:24px;letter-spacing:-.01em;margin:14px 0 4px}
+.lead{color:#3d3a35;max-width:64ch;margin:0 0 14px}
+.kpis{display:flex;gap:10px;margin:0 0 18px}
+.kpi{border:1.5px solid #141210;padding:8px 14px}.kpi b{font-size:18px;display:block}.kpi span{font-size:10px;color:#6B675E;letter-spacing:.08em;text-transform:uppercase}
+table.toc{border-collapse:collapse;width:100%;margin-bottom:8px}
+.toc td{border-bottom:1px solid #EEE7D6;padding:5px 8px}.toc .n{width:30px;font-family:monospace;color:#F5301C;font-weight:700}.toc .r{width:110px;color:#6B675E;font-size:11px}.toc .c{width:40px;text-align:right;font-family:monospace}
+.mod{page-break-inside:avoid;margin-top:20px;border-top:2px solid #141210;padding-top:10px}
+.mod{page-break-before:auto}.mod-h{display:flex;gap:12px;align-items:baseline;margin-bottom:10px}
+.mod-n{font-family:monospace;font-weight:800;font-size:20px;color:#F5301C}
+.mod-h h2{margin:0;font-size:16px}.mod-meta{font-family:monospace;font-size:10.5px;color:#6B675E}
+.q{padding:7px 0 7px 10px;border-bottom:1px solid #F0EADB;page-break-inside:avoid}
+.q.req{border-left:3px solid #F5301C;padding-left:10px}
+.q-top{display:flex;gap:8px;align-items:baseline}
+.q-n{font-family:monospace;font-size:10px;color:#9a9488;min-width:18px}
+.q-l{flex:1;font-size:12.5px;font-weight:600}.star{color:#F5301C}
+.tag{font-family:monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;border:1px solid #C9C2B2;border-radius:100px;padding:2px 8px;color:#6B675E;white-space:nowrap}
+.tag.acc{border-color:#7E9DFF;color:#3d5bbd}.tag.file{border-color:#1F6E4E;color:#1F6E4E}
+.opts{margin:5px 0 0 26px}.opt{display:inline-block;border:1px solid #E3D9C0;border-radius:100px;padding:2px 9px;margin:0 5px 5px 0;font-size:10.5px}
+.hint{margin:3px 0 0 26px;font-size:10.5px;color:#6B675E}
+.foot{margin-top:26px;padding-top:12px;border-top:1px solid #E3D9C0;color:#9a9488;font-size:10px}
+@media print{.noprint{display:none}}
+</style></head><body><div class="bar"></div><div class="wrap">
+<div class="top"><div class="logo">WEEXP<span>.</span></div><div class="meta">версія шаблону v${tpl.version || 1}<br>сформовано ${esc(new Date().toLocaleDateString('uk-UA'))}</div></div>
+<h1>Опитувальник глибокого аудиту</h1>
+<p class="lead">Єдиний вичерпний фреймворк діагностики e-commerce: ${tpl.blocks.length} модулів. Зірочка * — обовʼязкове; бейдж показує тип позиції; сірим — куди йде відповідь у пакеті документів.</p>
+<div class="kpis"><div class="kpi"><b>${tpl.blocks.length}</b><span>модулів</span></div><div class="kpi"><b>${counts.q}</b><span>питань</span></div><div class="kpi"><b>${counts.a}</b><span>доступів</span></div><div class="kpi"><b>${counts.f}</b><span>файлів</span></div></div>
+<table class="toc">${toc}</table>
+<button class="noprint" onclick="window.print()" style="margin:6px 0;background:#F5301C;color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer">🖨 Друк / зберегти в PDF</button>
+${blocks}
+<div class="foot">WEEXP — Commerce OS · weexp.agency · Внутрішній робочий документ: повний перелік питань, доступів і файлів глибокого аудиту.</div>
+</div><scr${''}ipt>window.onload=function(){setTimeout(function(){window.print()},400)}</scr${''}ipt></body></html>`;
+  w.document.open(); w.document.write(html); w.document.close();
+}
+
 export function AuditBuilder() {
   const [tpl, setTpl] = useState<AuditTemplate | null>(null);
   const [busy, setBusy] = useState(false);
@@ -73,6 +140,7 @@ export function AuditBuilder() {
         <div><h1 className="sysx-display adm-h1">Конструктор аудиту</h1><span className="mono adm-hint">Активна версія v{tpl.version} · {tpl.blocks.length} блоків</span></div>
         <div className="adm-head-r">
           <button className="sysx-cta" onClick={loadFramework} title="Єдиний максимально повний фреймворк — без пресетів за типом бізнесу">↺ Повний фреймворк</button>
+          <button className="sysx-cta" onClick={() => tpl && exportTemplatePdf(tpl)} title="Красиво оформлений список усіх питань, доступів і файлів — у PDF">📄 Завантажити PDF</button>
           <button className="sysx-cta is-primary" onClick={save} disabled={busy}>{busy ? 'Зберігаємо…' : 'Зберегти нову версію →'}</button>
         </div>
       </div>
