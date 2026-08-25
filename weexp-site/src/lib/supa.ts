@@ -346,6 +346,25 @@ export async function aiSufficiency(payload: { answers: Record<string, unknown>;
 }
 
 /** Довідник проект-офісу зберігається у записі менеджера (diagnostics.data.pmDir). */
+/**
+ * Лист власнику про подію в аудиті (через /api/notify → Resend). Ніколи не кидає
+ * виняток і не блокує сценарій клієнта: якщо пошта не налаштована — тихо
+ * повертає error, а сама дія клієнта вже збережена.
+ */
+export async function notifyAdmin(subject: string, text: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const r = await fetch('/api/notify', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ subject, text }),
+    });
+    const j = await r.json().catch(() => ({}));
+    return j?.error ? { ok: false, error: String(j.error) } : { ok: true };
+  } catch (e) {
+    return { ok: false, error: String(e) };
+  }
+}
+
 export async function loadPmDirectory(): Promise<PmDirectory> {
   const u = await currentUser();
   if (!u) return { specialists: [], roleRates: [] };

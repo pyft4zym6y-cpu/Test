@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   currentUser, signOut, loadDiag, saveDiag, CONFIGURED, isCloudUser, isManager,
   signInWithGoogle, onAuth, signTierFile, uploadTierFile,
-  ensureAudit, findAuditIdByCode, loadAuditAnswers, loadAuditExtra, getProjects,
+  ensureAudit, findAuditIdByCode, loadAuditAnswers, loadAuditExtra, getProjects, notifyAdmin,
   type DiagUser, type DiagRecord, type CompanyProfile, type TierStatus, type TierEvent, type AuditAnswer, type ExtraQ, type AccessState,
   type MarketplaceAccess, type ClientFile,
 } from '@/lib/supa';
@@ -975,7 +975,23 @@ function DeepAudit({ user, rec, express, onDone, onClose, go }: { user: DiagUser
                 <div className="cab-mod-submit">
                   <button className="sysx-cta is-primary" disabled={busy} onClick={async () => {
                     setBusy(true);
+                    const prevMod = rec?.deepModeration?.status;
                     await saveDiag(user, { deepModeration: { status: 'submitted', at: new Date().toISOString() } });
+                    // Сигнал власнику. Без нього надсилання йшло «в порожнечу»: про
+                    // готову анкету менеджер дізнавався, лише зайшовши в адмінку.
+                    // Лист не блокує клієнта — відповіді вже збережені вище.
+                    void notifyAdmin(
+                      `Глибокий аудит: ${rec?.company?.name || user.email} — ${prevMod === 'clarify' ? 'відповіді на уточнення' : prevMod === 'submitted' ? 'оновлені відповіді' : 'анкету надіслано на модерацію'}`,
+                      [
+                        `Клієнт: ${rec?.company?.name || '—'}`,
+                        `Email: ${user.email}`,
+                        rec?.company?.site ? `Сайт: ${rec.company.site}` : '',
+                        `Відповідей в анкеті: ${Object.keys(answers || {}).length}`,
+                        `Подія: ${prevMod === 'clarify' ? 'клієнт відповів на уточнення' : prevMod === 'submitted' ? 'клієнт оновив надіслані відповіді' : 'перше надсилання на модерацію'}`,
+                        '',
+                        `Адмінка: ${typeof window !== 'undefined' ? window.location.origin : 'https://weexp.agency'}/admin`,
+                      ].filter(Boolean).join('\n'),
+                    );
                     setBusy(false); onDone();
                     toast(t('✓ Надіслано на модерацію. Ми повідомимо подальші кроки.', '✓ Submitted for review. We will let you know the next steps.'));
                   }}>
