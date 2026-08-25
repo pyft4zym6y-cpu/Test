@@ -292,3 +292,15 @@ body,
     transition: none;
   }
 }
+
+/* ── Друк оглядового аудиту (кнопка «Завантажити PDF» → Зберегти як PDF) ── */
+@media print {
+  body.printing-audit * { visibility: hidden !important; }
+  body.printing-audit #audit-report,
+  body.printing-audit #audit-report * { visibility: visible !important; }
+  body.printing-audit #audit-report {
+    position: absolute; left: 0; top: 0; width: 100%; max-width: 100%;
+    margin: 0; padding: 0;
+  }
+  body.printing-audit .no-print { display: none !important; }
+}

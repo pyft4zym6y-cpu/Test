@@ -1,0 +1,853 @@
+<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>Том A · UX/UI постор інково — Тестик</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink:#070d12; --ink8:#0F1A21; --ink6:#1E3038;
+  --verd:#1F5648; --verd7:#2A6D5C; --verd5:#6FAA9A;
+  --mark:#D6362B; --steel:#6E7C86; --steel6:#94A0A8; --steel4:#D3D9DC;
+  --vel:#E7EAE7; --paper:#fff; --hair:#dfe4e6;
+  --sans:'IBM Plex Sans','Golos Text',system-ui,Arial,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+html,body { background:#fff; }
+body { font-family:var(--sans); color:#26292e; }
+.mono, .num { font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:.02em; }
+
+/* ── Сторінка A4 ── */
+.pg { width: 210mm; height: 296mm; position: relative; overflow: hidden; page-break-after: always; background:#fff; padding: 16mm 16mm 14mm; display:flex; flex-direction:column; }
+.pg.ink { background: var(--ink); color: #E8ECEA; }
+.pg.verd { background: var(--verd); color: #EAF2EE; }
+
+/* шапка/підвал документа */
+.hd { display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid var(--ink); padding-bottom:4mm; margin-bottom:8mm; }
+.pg.ink .hd, .pg.verd .hd { border-color: rgba(255,255,255,.35); }
+.hd .l { font-family:var(--mono); font-size:8.5pt; letter-spacing:.16em; text-transform:uppercase; }
+.hd .r { font-family:var(--mono); font-size:8.5pt; color:var(--steel); }
+.pg.ink .hd .r, .pg.verd .hd .r { color:rgba(255,255,255,.55); }
+.ft { position:absolute; left:16mm; right:16mm; bottom:8mm; display:flex; justify-content:space-between; font-family:var(--mono); font-size:7.5pt; color:var(--steel6); border-top:1px solid var(--hair); padding-top:2.5mm; }
+.pg.ink .ft, .pg.verd .ft { color:rgba(255,255,255,.45); border-color:rgba(255,255,255,.2); }
+.proto { color:var(--mark); }
+
+/* типографіка */
+.ebrow { font-family:var(--mono); font-size:9pt; letter-spacing:.22em; text-transform:uppercase; color:var(--verd7); margin-bottom:5mm; }
+.pg.ink .ebrow { color:var(--verd5); }
+h1.big { font-weight:800; letter-spacing:-.03em; line-height:.98; font-size:34pt; color:var(--ink); }
+.pg.ink h1.big, .pg.verd h1.big { color:#fff; }
+h2.st { font-weight:800; letter-spacing:-.02em; font-size:16pt; color:var(--ink); margin:0 0 4mm; line-height:1.05; }
+.pg.ink h2.st { color:#fff; }
+p.lead { font-size:11pt; line-height:1.5; color:#3A3D42; max-width:150mm; }
+.pg.ink p.lead, .pg.verd p.lead { color:rgba(255,255,255,.82); }
+p.body { font-size:9.5pt; line-height:1.55; color:#33373c; margin-bottom:3mm; }
+.marg { font-family:var(--mono); font-size:7.5pt; color:var(--steel); line-height:1.45; }
+.src { font-family:var(--mono); font-size:7pt; color:var(--steel6); }
+.mark { color: var(--mark); }
+.verdc { color: var(--verd7); }
+
+/* число-герой */
+.hero { margin: 8mm 0 4mm; }
+.hero .n { font-family:var(--mono); font-weight:700; font-size:64pt; letter-spacing:-.04em; line-height:1; color:var(--ink); }
+.hero.m .n { color:var(--mark); } .hero.v .n { color:var(--verd7); }
+.pg.ink .hero .n { color:#fff; }
+.hero .cap { font-size:10pt; color:var(--steel); margin-top:2mm; max-width:120mm; }
+.pg.ink .hero .cap { color:rgba(255,255,255,.65); }
+
+/* KPI-ряд */
+.kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:4mm; margin:5mm 0; }
+.kpis.c3 { grid-template-columns:repeat(3,1fr); }
+.kpi { border:1.5px solid var(--ink); padding:3.5mm 4mm; }
+.kpi .v { font-family:var(--mono); font-weight:700; font-size:16pt; letter-spacing:-.02em; }
+.kpi .v.bad { color:var(--mark); } .kpi .v.ok { color:var(--verd7); }
+.kpi .k { font-family:var(--mono); font-size:7pt; letter-spacing:.1em; text-transform:uppercase; color:var(--steel); margin-top:1.5mm; }
+
+/* таблиці */
+table.t { width:100%; border-collapse:collapse; font-size:8.5pt; }
+table.t th { font-family:var(--mono); font-size:7pt; letter-spacing:.12em; text-transform:uppercase; color:var(--steel); text-align:left; border-bottom:1.5px solid var(--ink); padding:1.8mm 2mm; }
+table.t td { border-bottom:1px solid var(--hair); padding:1.9mm 2mm; vertical-align:top; line-height:1.35; }
+table.t td.num, table.t th.num { text-align:right; font-family:var(--mono); }
+table.t tr.hl td { background:#F4F6F5; }
+table.t td b { font-weight:700; color:var(--ink); }
+.sev { font-family:var(--mono); font-size:7pt; letter-spacing:.08em; padding:.5mm 1.5mm; border:1px solid; }
+.sev.h { color:var(--mark); border-color:var(--mark); }
+.sev.m { color:#a06a00; border-color:#a06a00; }
+.sev.l { color:var(--steel); border-color:var(--steel6); }
+.sev.ok { color:var(--verd7); border-color:var(--verd7); }
+
+/* шкала-бенчмарк (D1) */
+.bench { margin:3.5mm 0; }
+.bench .lab { display:flex; justify-content:space-between; font-size:8.5pt; margin-bottom:1.2mm; }
+.bench .lab .b { font-family:var(--mono); }
+.bench .bar { position:relative; height:5.5mm; background:var(--vel); }
+.bench .fill { position:absolute; left:0; top:0; bottom:0; background:var(--ink); }
+.bench .fill.bad { background:var(--mark); }
+.bench .tick { position:absolute; top:-1.2mm; bottom:-1.2mm; width:1px; background:var(--verd7); }
+.bench .tick i { position:absolute; top:100%; left:-14mm; width:28mm; text-align:center; font-family:var(--mono); font-style:normal; font-size:6.5pt; color:var(--verd7); }
+
+/* гант */
+.gantt { width:100%; border-collapse:collapse; font-size:8pt; }
+.gantt th { font-family:var(--mono); font-size:6.5pt; letter-spacing:.08em; color:var(--steel); border-bottom:1.5px solid var(--ink); padding:1.5mm 1mm; text-align:center; }
+.gantt th.rn { text-align:left; }
+.gantt td { border-bottom:1px solid var(--hair); padding:1.5mm 1mm; }
+.gantt td.rn { font-size:8pt; line-height:1.25; width:52mm; }
+.gantt .cell { height:4.5mm; }
+.gantt .on { background:var(--ink); } .gantt .on.w1 { background:var(--mark); } .gantt .on.w3 { background:var(--verd7); }
+
+/* блоки-виноски */
+.callout { border-left:3px solid var(--mark); padding:2.5mm 4mm; background:#FBF3F2; font-size:9pt; line-height:1.45; margin:3mm 0; }
+.callout.v { border-color:var(--verd7); background:#F1F6F4; }
+.cols2 { display:grid; grid-template-columns:1fr 1fr; gap:6mm; }
+.cols3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:5mm; }
+
+/* слайди 16:9 */
+.sl { width:1280px; height:720px; position:relative; overflow:hidden; page-break-after:always; background:var(--paper); padding:56px 64px; display:flex; flex-direction:column; }
+.sl.ink { background:var(--ink); color:#E8ECEA; }
+.sl.verd { background:var(--verd); color:#EAF2EE; }
+.sl .ebrow { font-size:12px; margin-bottom:18px; }
+.sl h1 { font-weight:800; letter-spacing:-.03em; line-height:.98; font-size:64px; color:var(--ink); max-width:1000px; }
+.sl.ink h1, .sl.verd h1 { color:#fff; }
+.sl h1 .mk { color:var(--mark); }
+.sl .heron { font-family:var(--mono); font-weight:700; font-size:220px; letter-spacing:-.05em; line-height:.95; }
+.sl .foot { position:absolute; left:64px; right:64px; bottom:28px; display:flex; justify-content:space-between; font-family:var(--mono); font-size:11px; color:var(--steel6); }
+.sl.ink .foot, .sl.verd .foot { color:rgba(255,255,255,.45); }
+
+/* ── Постраничный разбор: блок-таблиця з оцінкою 0–5 ── */
+.bt { width:100%; border-collapse:collapse; font-size:7.4pt; }
+.bt th { font-family:var(--mono); font-size:6.6pt; letter-spacing:.1em; text-transform:uppercase; color:var(--steel); text-align:left; border-bottom:1.5px solid var(--ink); padding:1.5mm 1.8mm; }
+.bt td { border-bottom:1px solid var(--hair); padding:1.7mm 1.8mm; vertical-align:top; line-height:1.35; }
+.bt .bnum { font-family:var(--mono); font-weight:700; white-space:nowrap; }
+.bt .score { font-family:var(--mono); font-weight:700; font-size:10pt; text-align:center; width:10mm; }
+.bt .sc5 { color:var(--verd7); } .bt .sc4 { color:var(--ink); } .bt .sc2, .bt .sc3 { color:#a06a00; } .bt .sc0, .bt .sc1 { color:var(--mark); }
+.tag { font-family:var(--mono); font-size:5.8pt; letter-spacing:.06em; border:1px solid var(--steel6); color:var(--steel); padding:.3mm 1mm; margin-right:.8mm; }
+.okm { color:var(--verd7); font-weight:700; } .badm { color:var(--mark); font-weight:700; }
+
+/* ── Wireframe ЗАРАЗ / ЯК ТРЕБА ── */
+.wf2 { display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin:2.5mm 0; }
+.wf { border:2px solid; padding:2.5mm; }
+.wf.cur { border-color:var(--mark); } .wf.should { border-color:var(--verd7); }
+.wf .wfh { font-family:var(--mono); font-size:6.8pt; letter-spacing:.14em; margin-bottom:1.6mm; }
+.wf.cur .wfh { color:var(--mark); } .wf.should .wfh { color:var(--verd7); }
+.wf .m { background:#F4F6F5; border:1px solid var(--steel4); padding:1.6mm 2mm; margin-bottom:1.2mm; font-size:6.8pt; line-height:1.3; }
+.wf .m b { font-size:7.2pt; }
+.wf .m.ghost { border-style:dashed; color:var(--steel6); text-align:center; }
+.wf .m.cta { background:var(--ink); color:#fff; text-align:center; font-weight:700; }
+.wf .m.cta.mk { background:var(--mark); }
+.wf .mrow { display:grid; gap:1.2mm; margin-bottom:1.2mm; }
+.wf .note { font-size:6.6pt; color:var(--steel); line-height:1.35; margin-top:1mm; }
+.wf .lnk { color:var(--verd7); font-weight:700; }
+/* ── Поблочні пари (канон Fragstore): нумерований блок, chips, анотації, дельта ── */
+.wfb { margin:0 0 3.2mm; break-inside:avoid; }
+.wfb .bh { display:flex; align-items:baseline; gap:2mm; margin-bottom:1mm; }
+.wfb .bh .n { font-family:var(--mono); font-size:7.5pt; font-weight:700; color:#fff; background:var(--ink); padding:.4mm 1.6mm; }
+.wfb .bh .tt { font-size:10pt; font-weight:700; letter-spacing:-.01em; }
+.wfb .bh .sb { font-size:7pt; color:var(--steel); }
+.wf .m.miss { border:1.5px dashed var(--mark); background:none; color:var(--mark); text-align:center; padding:5mm 2mm; font-weight:700; }
+.wf .cards { display:grid; gap:1mm; margin-bottom:1.2mm; }
+.wf .c2 { grid-template-columns:1fr 1fr; } .wf .c3 { grid-template-columns:1fr 1fr 1fr; } .wf .c4 { grid-template-columns:1fr 1fr 1fr 1fr; }
+.wf .card { border:1px solid var(--steel4); background:#fff; padding:1.2mm 1.4mm; font-size:5.9pt; line-height:1.25; }
+.wf .card b { font-size:6.3pt; display:block; }
+.wf .card .ph { height:6mm; background:#E8ECEA; margin-bottom:.8mm; }
+.wf.should .card.nw { border-color:var(--verd7); }
+.wf .ch { display:inline-block; border:1px solid var(--steel4); padding:.4mm 1.4mm; font-size:5.9pt; margin:0 .8mm .8mm 0; background:#fff; }
+.wf .ch.g { border-color:var(--verd7); color:var(--verd7); font-weight:700; }
+.wf .ann { font-size:6.2pt; line-height:1.3; padding:.8mm 1.5mm; border-left:2.5px solid; margin:1mm 0; }
+.wf .ann.bad { border-color:var(--mark); color:var(--mark); background:#FBF0EF; }
+.wf .ann.good { border-color:var(--verd7); color:var(--verd7); background:#EFF5F2; }
+.wfd { font-family:var(--mono); font-size:7pt; font-weight:700; color:var(--verd7); margin-top:1mm; }
+.wfd .neg { color:var(--mark); }
+
+/* ── Дерево сайта ── */
+.tree { font-family:var(--mono); font-size:7.2pt; line-height:1.55; }
+.tree b { font-size:7.6pt; }
+.tree .lvl1 { margin-left:5mm; } .tree .lvl2 { margin-left:10mm; color:#33373c; }
+.tree .cnt { color:var(--steel6); } .tree .warn { color:var(--mark); font-weight:700; } .tree .good { color:var(--verd7); }
+@media print { .pg, .sl { break-inside: avoid; } }
+</style></head><body><div class="pg ink">
+  <div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+    <span class="ebrow">Звіт 2·A із 5</span>
+    <h1 class="big" style="font-size:40pt">Робочий том A:<br>UX/UI посторінково</h1>
+    <p class="lead" style="margin-top:8mm">Кожна сторінка комерційного шляху — поблочно проти еталона з оцінкою 0–5, а потім МАКЕТ кожного з 49 блоків: зліва «зараз», справа «як треба»; 12 відсутніх блоків відрисовано з нуля; у кожного — дельта висоти, посилань і механіки. Плюс дерево сайта і 11 службових сторінок.</p>
+    <p class="marg" style="margin-top:10mm;color:rgba(255,255,255,.5)">40 сторінок · 49 макетів блоків ЗАРАЗ→ЯК ТРЕБА · 11 службових · зведення «було→стане» · підсумок 126/245</p>
+  </div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 1/·</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Зміст · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+  <span class="ebrow">Зміст звіту</span>
+  <table class="t" style="margin-top:4mm">
+    <tr><th style="width:16mm">Глава</th><th>Назва — і що вона дає</th><th class="num" style="width:14mm">стор.</th></tr>
+    <tr><td class="num"><b>A.1</b></td><td>Дерево сайта: 1 097 сторінок, скоуп і глибина розбору</td><td class="num">3</td></tr><tr><td class="num"><b>A.2</b></td><td>Головна — 10 блоків проти еталона · 27/50</td><td class="num">4–5</td></tr><tr><td class="num"><b>A.3</b></td><td>Каталог (PLP) — 10 блоків · 24/50 · фільтри, що брешуть</td><td class="num">6–7</td></tr><tr><td class="num"><b>A.4</b></td><td>PDP — 13 блоків + вибірка 5 SKU · 36/65</td><td class="num">8–9</td></tr><tr><td class="num"><b>A.5</b></td><td>Кошик — 8 блоків · 21/40</td><td class="num">10</td></tr><tr><td class="num"><b>A.6</b></td><td>Checkout — 8 блоків · 18/40</td><td class="num">11</td></tr><tr><td class="num"><b>A.7</b></td><td>Службові сторінки (11) — стан/еталон · системна знахідка про 3 пороги</td><td class="num">12</td></tr><tr><td class="num"><b>A.8</b></td><td>Макети ВСІХ 49 блоків: ЗАРАЗ → ЯК ТРЕБА · 12 відсутніх відрисовано з нуля · дельти px/посилання · зведення «було→стане» + порядок хвиль</td><td class="num">13–39</td></tr><tr><td class="num"><b>A.9</b></td><td>Зведення тома: 126/245 · топ-10 доробок з привʼязкою до Ганта</td><td class="num">40</td></tr>
+  </table><div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 2/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.1 · Дерево сайта · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.1 · Дерево сайта і скоуп розбору</span>
+    <h1 class="big" style="font-size:24pt">1 097 реальних сторінок.<br>Гроші робить 21. Розбираємо всі типи.</h1>
+    <div class="cols2" style="margin-top:3mm">
+      <div class="tree">
+        <b>testik.ua</b> <span class="cnt">· 1 097 реальних сторінок · 9 412 URL в індексі <span class="warn">(×8.6 сміття — том C)</span></span><br>
+        <div class="lvl1">├ <b>Головна</b> <span class="cnt">/ · 31% входів</span> — <span class="warn">розбір A.2</span></div>
+        <div class="lvl1">├ <b>Каталог</b> <span class="cnt">8 категорій · 24 підкатегорії</span> — <span class="warn">розбір A.3</span></div>
+        <div class="lvl2">│ ├ Сковороди <span class="cnt">142 SKU · 34% виручки</span> · Каструлі <span class="cnt">118 · 21%</span></div>
+        <div class="lvl2">│ ├ Ножі <span class="cnt">96 · 12%</span> · Форми для випікання <span class="cnt">64 · 8%</span></div>
+        <div class="lvl2">│ ├ Аксесуари <span class="cnt">88 · 9%</span> · Кришки <span class="cnt">42 · 4%</span></div>
+        <div class="lvl2">│ └ Догляд <span class="cnt">18 · 3%</span> · Подарункові набори <span class="cnt">26 · 9%</span></div>
+        <div class="lvl1">├ <b>PDP</b> <span class="cnt">640 карток</span> — <span class="warn">розбір A.4 (шаблон + вибірка 5)</span></div>
+        <div class="lvl1">├ <b>Кошик → Checkout → Дякуємо</b> — <span class="warn">розбори A.5–A.6</span></div>
+        <div class="lvl1">├ Службові <span class="cnt">11 сторінок</span> — <span class="warn">розбір A.7</span></div>
+        <div class="lvl2">│ ├ Про нас · Доставка і оплата · Повернення · Гарантія</div>
+        <div class="lvl2">│ ├ Контакти · Пошук · 404 · Особистий кабінет <span class="cnt">4 екрани</span></div>
+        <div class="lvl2">│ └ <span class="warn">FAQ — сторінки НЕМАЄ</span> · <span class="warn">Аутлет — НЕМАЄ (потрібен для розпродажу W1)</span></div>
+        <div class="lvl1">└ <b>Блог</b> <span class="cnt">12 статей · остання 8 міс тому</span> — розбір у томі B (контент)</div>
+      </div>
+      <div>
+        <table class="t" style="font-size:7.6pt">
+          <tr><th>Тип сторінки</th><th class="num">Входи</th><th class="num">Виручка-вплив*</th><th>Глибина розбору</th></tr>
+          <tr><td>Головна</td><td class="num">31%</td><td class="num">транзитна</td><td>поблочно, 10 блоків + wireframe</td></tr>
+          <tr class="hl"><td><b>Категорії (PLP)</b></td><td class="num">24%</td><td class="num">высока</td><td>поблочно, 10 блоків</td></tr>
+          <tr class="hl"><td><b>PDP</b></td><td class="num">38%</td><td class="num"><b>критична</b></td><td>поблочно, 13 блоків + вибірка 5 SKU + wireframe</td></tr>
+          <tr class="hl"><td><b>Кошик + Checkout</b></td><td class="num">—</td><td class="num"><b>критична</b></td><td>поблочно, 8+8 блоків + wireframe</td></tr>
+          <tr><td>Службові (11)</td><td class="num">7%</td><td class="num">довіра</td><td>таблиця: стан/помилка/еталон</td></tr>
+        </table>
+        <p class="marg" style="margin-top:2mm">*вплив на шлях до покупки. Оцінка блоків 0–5: 5 — закрито за еталоном · 4 — сильно ·
+        2–3 — частково/слабко · 1 — критично · 0 — блока немає. Еталони: канон AQC (22 критерії) + категорійні еталони ніші
+        (посуд купують на дотик → медіа і масштаб важать більше за середнє).</p>
+        <p class="marg"><b>Скоуп чесно:</b> mobile-версія кожної сторінки оцінена в тих самих блоках (позначка 📱 де розрив
+        desktop/mobile суттєвий). Скриншоти всіх розібраних сторінок — у робочих матеріалах, посилання в кожному блоці за ID.</p>
+      </div>
+    </div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 3/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.2 · Головна 1/2 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.2 · Головна · поблочний розбір проти еталона · 1/2</span>
+    <h1 class="big" style="font-size:23pt">Головна: вітрина є, продавця немає.</h1>
+    
+  <div style="display:flex;gap:4mm;margin:2.5mm 0">
+    <div class="kpi" style="flex:1.2"><div class="v bad">27 / 50</div><div class="k">підсумок сторінки</div></div>
+    <div class="kpi" style="flex:1"><div class="v ok">2</div><div class="k">закрито</div></div>
+    <div class="kpi" style="flex:1"><div class="v" style="color:#a06a00">5</div><div class="k">частково</div></div>
+    <div class="kpi" style="flex:1"><div class="v bad">3</div><div class="k">відсутні</div></div>
+  </div>
+  <p class="marg" style="margin-bottom:2mm">Головна показує товар, але не веде: нуль сегментних входів, довіра іконками без відповідей, жодного входу в довгий хвіст. Найдорожче — блок довіри (wireframe A.8) і відсутність входів за сценаріями покупки.</p>
+    <table class="bt"><tr><th style="width:20mm">Блок еталона</th><th>Що на сторінці зараз</th><th style="width:44mm">Що має бути</th><th style="width:16mm">Дисц.</th><th>0–5</th></tr><tr><td class="bnum">01 · Шапка<br><span class="src">навігація, пошук, кошик</span></td><td><span class="okm">✅</span> Логотип, меню 8 категорій, пошук, кошик з бейджем, телефон. <span class="badm">🔴</span> Бейдж кошика не оновлюється без перезавантаження (AQC REC-0001) · 📱 меню mobile ховає пошук за двома тапами</td><td>Пошук завжди видимий (mobile — окремий рядок); бейдж live</td><td><span class="tag">UX</span><span class="tag">MOB</span></td><td class="score sc3">3</td></tr><tr><td class="bnum">02 · Hero-блок<br><span class="src">оффер + дія</span></td><td><span class="okm">✅</span> Слайдер 3 банери: акція −20%, нова колекція, безкошт. доставка від €50. <span class="badm">🔴</span> Усі 3 CTA ведуть на ЗАГАЛЬНИЙ каталог; оффер «Якісний посуд для дому» — під ним підпишеться будь-який конкурент (тест d02)</td><td>1 статичний оффер з RTB (шо саме і чому ми) + CTA у категорію-героя; слайдер — геть (CTR 2-го слайда 0.4%)</td><td><span class="tag">CRO</span><span class="tag">COMM</span></td><td class="score sc2">2</td></tr><tr class="hl"><td class="bnum">03 · Сегментні входи<br><span class="src">«для кого / для чого»</span></td><td><span class="badm">🔴 Блока немає.</span> Одразу сітка категорій. Два сегменти з різними сценаріями (подарунок / для себе — d04) заходять в одні двері</td><td>Два входи: «Подарунок» (добірки за бюджетом/приводом) і «Для кухні» (за типом готування)</td><td><span class="tag">CRO</span><span class="tag">SEO</span></td><td class="score sc0">0</td></tr><tr><td class="bnum">04 · Категорійна сітка<br><span class="src">8 плиток</span></td><td><span class="okm">✅</span> 8 категорій з фото і назвами, клікабельні. <span class="badm">🔴</span> Без цін «від», без кількості товарів; порядок не за виручкою (Кришки 4% — на 3-й позиції)</td><td>Порядок за виручкою/сезоном; на плитці: «від €XX · N товарів»</td><td><span class="tag">UX</span><span class="tag">COMM</span></td><td class="score sc4">4</td></tr><tr class="hl"><td class="bnum">05 · Блоки довіри<br><span class="src">заперечення</span></td><td><span class="badm">🔴</span> 4 іконки з підписом у 2 слова: «Оригінал», «Доставка 1–3 дні», «Повернення 14 дн», «Гарантія 2 роки». Машина не витягне відповідь; людина — теж. Нуль посилань</td><td>4 картки: заголовок + речення конкретики + посилання (wireframe A.8)</td><td><span class="tag">AEO</span><span class="tag">COMM</span><span class="tag">LINK</span></td><td class="score sc1">1</td></tr><tr><td class="bnum">06 · Хіти / новинки<br><span class="src">товарні каруселі</span></td><td><span class="okm">✅</span> Дві каруселі по 8 SKU з цінами і наявністю. <span class="badm">🔴</span> 3 з 8 «хітів» зараз OOS (замкнене коло d10); немає бейджів соціального доказу («куплено N разів»)</td><td>Автовиключення OOS з каруселей; бейдж продажів; кнопка в кошик прямо з картки</td><td><span class="tag">CRO</span><span class="tag">TECH</span></td><td class="score sc3">3</td></tr></table>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 4/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.2 · Головна 2/2 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <table class="bt"><tr><th style="width:20mm">Блок еталона</th><th>Що на сторінці зараз</th><th style="width:44mm">Що має бути</th><th style="width:16mm">Дисц.</th><th>0–5</th></tr><tr class="hl"><td class="bnum">07 · Виробництво / бренд<br><span class="src">чому ми</span></td><td><span class="badm">🔴</span> Абзац «Ми любимо посуд і працюємо з 2016 року» + фото складу. Жодної цифри, жодного доказу (сертифікати, контроль якості, вовна-абощо)</td><td>Блок з 3 цифрами-доказами + посилання «Про виробництво»; це ж джерело RTB для реклами (d02)</td><td><span class="tag">COMM</span><span class="tag">GEO</span></td><td class="score sc1">1</td></tr><tr><td class="bnum">08 · Відгуки на головній<br><span class="src">соціальний доказ</span></td><td><span class="okm">✅</span> Карусель 6 відгуків. <span class="badm">🔴</span> Без фото, без привʼязки до товарів, без дат — виглядають написаними</td><td>Відгуки з фото покупців + товар + дата + посилання на всі відгуки</td><td><span class="tag">COMM</span><span class="tag">AEO</span></td><td class="score sc2">2</td></tr><tr class="hl"><td class="bnum">09 · Популярні запити<br><span class="src">вхід у довгий хвіст</span></td><td><span class="badm">🔴 Блока немає.</span> Після відгуків одразу футер. Для ніші з 6 кластерами попиту (74k+61k+48k+22k+18k+9.9k запитів/міс — том C) це основний нереалізований вхід</td><td>12–16 текстових посилань за кластерами (тільки на існуючі сторінки!)</td><td><span class="tag">SEO</span><span class="tag">LINK</span></td><td class="score sc0">0</td></tr><tr><td class="bnum">10 · Футер<br><span class="src">службова навігація</span></td><td><span class="okm">✅</span> Повний: категорії, службові, контакти, соцмережі. <span class="badm">🔴</span> Поріг безкошт. доставки тут «від €50», у hero-банері «від €40» — <b>дві різні цифри на одній сторінці</b></td><td>Один поріг скрізь (задача W2 з тесту порога, d02); юрдані повні</td><td><span class="tag">COMM</span><span class="tag">LAW</span></td><td class="score sc3">3</td></tr></table>
+    <h2 class="st" style="font-size:11pt;margin-top:3mm">Що головна робить сильно</h2>
+    <p class="body" style="font-size:8.4pt">Категорійна сітка чиста і клікабельна; каруселі з реальними цінами й наявністю; футер повний.
+    Каркас правильний — сторінці бракує продавця: сегментних входів, доказів і виходів у хвіст.</p>
+    <h2 class="st" style="font-size:11pt">Пріоритет доробок головної</h2>
+    <table class="t" style="font-size:7.8pt">
+      <tr><th>№</th><th>Що зробити</th><th>Критичність</th><th>Чому саме це</th></tr>
+      <tr class="hl"><td class="num">1</td><td>Блоки довіри → 4 картки з відповідями і посиланнями (wireframe A.8)</td><td><span class="sev h">Висока</span></td><td>заперечення «оригінал/доставка/повернення» знімаються ДО каталогу; + AEO-витягуваність</td></tr>
+      <tr><td class="num">2</td><td>Слайдер → 1 оффер з RTB + CTA в категорію-героя</td><td><span class="sev h">Висока</span></td><td>CTR слайдів 2–3 разом 0.6%; оффер зараз не відрізняє (d02)</td></tr>
+      <tr><td class="num">3</td><td>Сегментні входи «Подарунок / Для кухні»</td><td><span class="sev m">Середня</span></td><td>два сценарії покупки з різною логікою вибору (d04)</td></tr>
+      <tr><td class="num">4</td><td>Популярні запити перед футером</td><td><span class="sev m">Середня</span></td><td>вхід у 3 непокриті кластери; слот закладається зараз, наповнюється з семантики (том C)</td></tr>
+      <tr><td class="num">5</td><td>OOS-виключення з каруселей + єдиний поріг доставки</td><td><span class="sev m">Середня</span></td><td>вітрина не має продавати те, чого немає; два пороги = недовіра</td></tr>
+    </table>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 5/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.3 · Каталог 1/2 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.3 · Каталог (PLP, шаблон 8 категорій) · 1/2</span>
+    <h1 class="big" style="font-size:23pt">Каталог: полиця є — консультанта немає.</h1>
+    
+  <div style="display:flex;gap:4mm;margin:2.5mm 0">
+    <div class="kpi" style="flex:1.2"><div class="v bad">24 / 50</div><div class="k">підсумок сторінки</div></div>
+    <div class="kpi" style="flex:1"><div class="v ok">1</div><div class="k">закрито</div></div>
+    <div class="kpi" style="flex:1"><div class="v" style="color:#a06a00">6</div><div class="k">частково</div></div>
+    <div class="kpi" style="flex:1"><div class="v bad">3</div><div class="k">відсутні</div></div>
+  </div>
+  <p class="marg" style="margin-bottom:2mm">Лістинг працює, але не допомагає обрати: фільтри порожні через атрибутику, сортування ховає маржинальні товари, категорійного контенту нуль. Розбір на шаблоні категорії «Сковороди» (34% виручки) — дефекти шаблонні, множаться на всі 8.</p>
+    <table class="bt"><tr><th style="width:20mm">Блок еталона</th><th>Що на сторінці зараз</th><th style="width:44mm">Що має бути</th><th style="width:16mm">Дисц.</th><th>0–5</th></tr><tr><td class="bnum">01 · Крихти та H1<br><span class="src">орієнтація</span></td><td><span class="okm">✅</span> Крихти Головна › Сковороди; H1 = назва категорії. <span class="badm">🔴</span> Без кількості товарів; H1 без комерційного розширення</td><td>H1 «Сковороди — N моделей від €X»; крихти зі schema BreadcrumbList</td><td><span class="tag">SEO</span><span class="tag">UX</span></td><td class="score sc4">4</td></tr><tr class="hl"><td class="bnum">02 · Категорійний опис<br><span class="src">консультація + SEO</span></td><td><span class="badm">🔴</span> 2 рядки «Великий вибір сковорід...» під H1, згорнуто. Нуль користі: ні як обрати діаметр, ні чим відрізняються покриття</td><td>Гайд-блок «як обрати» (діаметр/покриття/плита) з якорями + повний гайд у блозі; це і є AEO-відповіді</td><td><span class="tag">CONT</span><span class="tag">AEO</span><span class="tag">SEO</span></td><td class="score sc1">1</td></tr><tr class="hl"><td class="bnum">03 · Фільтри<br><span class="src">головний інструмент вибору</span></td><td><span class="badm">🔴 Найдорожчий дефект каталогу.</span> Фільтри є (діаметр, покриття, матеріал, ціна), але 46% SKU без атрибутів → фільтр «діаметр 24 см» показує 12 з 38 реальних. Покупець впевнений, що бачить усе. 📱 на mobile фільтри за 2 тапами, таргети 32px (AQC MVIS)</td><td>Атрибутика 100% (задача 48 Ганта) → фільтри чесні; mobile: панель фільтрів знизу, таргети ≥44px</td><td><span class="tag">TECH</span><span class="tag">UX</span><span class="tag">CRO</span></td><td class="score sc1">1</td></tr><tr><td class="bnum">04 · Сортування<br><span class="src">за замовчуванням</span></td><td><span class="badm">🔴</span> Дефолт «за новизною» → перші рядки: новинки без відгуків, 2 з них OOS. Hero-SKU (58% виручки категорії) — на 2-му екрані</td><td>Дефолт «за популярністю» (продажі × наявність); OOS — у кінець</td><td><span class="tag">CRO</span><span class="tag">COMM</span></td><td class="score sc2">2</td></tr><tr><td class="bnum">05 · Картка в лістингу<br><span class="src">міні-PDP</span></td><td><span class="okm">✅</span> Фото, назва, ціна, наявність, рейтинг. <span class="badm">🔴</span> Без ключових атрибутів (діаметр/покриття — критерії №1 вибору); без «в кошик» з лістингу; ховер-фото немає</td><td>Атрибути-badge на картці; швидке додавання; друге фото на ховер</td><td><span class="tag">UX</span><span class="tag">CRO</span></td><td class="score sc3">3</td></tr><tr><td class="bnum">06 · OOS у лістингу<br><span class="src">керування наявністю</span></td><td><span class="badm">🔴</span> OOS-товари виглядають як живі (сіра плашка малопомітна), клік веде на мертву PDP без дати поставки й підписки</td><td>OOS: в кінець видачі + на PDP «повідомити про наявність» (живить базу, d08)</td><td><span class="tag">CRO</span><span class="tag">CRM</span><span class="tag">SEO</span></td><td class="score sc2">2</td></tr></table>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 6/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.3 · Каталог 2/2 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <table class="bt"><tr><th style="width:20mm">Блок еталона</th><th>Що на сторінці зараз</th><th style="width:44mm">Що має бути</th><th style="width:16mm">Дисц.</th><th>0–5</th></tr><tr><td class="bnum">07 · Пагінація / підвантаження<br><span class="src">довгі категорії</span></td><td><span class="okm">✅</span> Пагінація класична, працює. <span class="badm">🔴</span> Сторінки ?page=N відкриті до індексації без правил (частина ×8-сміття, том C)</td><td>rel-логіка + canonical-правила (задача 60 Ганта)</td><td><span class="tag">SEO</span><span class="tag">TECH</span></td><td class="score sc3">3</td></tr><tr class="hl"><td class="bnum">08 · Підкатегорії / теги<br><span class="src">звуження вибору</span></td><td><span class="badm">🔴</span> Підкатегорії є в меню, але на PLP немає плиток-тегів (гриль / млинцеві / індукція) — популярні звуження живуть лише у фільтрах, які зламані (блок 03)</td><td>Ряд тегів-плиток зверху PLP = і UX-звуження, і майбутні SEO-хаби</td><td><span class="tag">UX</span><span class="tag">SEO</span><span class="tag">LINK</span></td><td class="score sc1">1</td></tr><tr class="hl"><td class="bnum">09 · Довіра на PLP<br><span class="src">м’які заперечення</span></td><td><span class="badm">🔴</span> Жодного трасту: ні порогу безкошт. доставки, ні повернення, ні «оригінал». Все лишилось на головній</td><td>Тонка смуга під фільтрами: доставка / повернення / гарантія</td><td><span class="tag">COMM</span></td><td class="score sc0">0</td></tr><tr class="hl"><td class="bnum">10 · Низ PLP<br><span class="src">перелінковка</span></td><td><span class="badm">🔴</span> Під пагінацією одразу футер: ні суміжних категорій, ні популярних запитів, ні виходу на гайд</td><td>Суміжні категорії + топ-запити кластера + гайд «як обрати»</td><td><span class="tag">SEO</span><span class="tag">LINK</span></td><td class="score sc0">0</td></tr></table>
+    <h2 class="st" style="font-size:11pt;margin-top:3mm">Сильне</h2>
+    <p class="body" style="font-size:8.4pt">Чиста сітка, швидка пагінація, чесні ціни й рейтинги на картках. Технічний каркас лістингу здоровий — зламані дані (атрибутика) і відсутній «консультант».</p>
+    <h2 class="st" style="font-size:11pt">Пріоритет доробок каталогу</h2>
+    <table class="t" style="font-size:7.8pt">
+      <tr><th>№</th><th>Що зробити</th><th>Критичність</th><th>Чому</th></tr>
+      <tr class="hl"><td class="num">1</td><td>Атрибутика топ-200 → чесні фільтри</td><td><span class="sev h">Блокуюча</span></td><td>фільтр, що бреше — гірший за відсутній; це ж дефект фідів (d07)</td></tr>
+      <tr><td class="num">2</td><td>Сортування за популярністю + OOS у кінець</td><td><span class="sev h">Висока</span></td><td>перший екран = 58% виручки категорії, зараз там новинки без відгуків</td></tr>
+      <tr><td class="num">3</td><td>Гайд-блок «як обрати» на кожній категорії</td><td><span class="sev h">Висока</span></td><td>консультація = конверсія + AEO + вхід кластера «догляд/вибір»</td></tr>
+      <tr><td class="num">4</td><td>Теги-плитки підкатегорій</td><td><span class="sev m">Середня</span></td><td>звуження без фільтрів + каркас майбутніх SEO-хабів</td></tr>
+      <tr><td class="num">5</td><td>Траст-смуга + низ PLP з перелінковкою</td><td><span class="sev m">Середня</span></td><td>заперечення і виходи вглиб там, де обирають</td></tr>
+    </table>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 7/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.4 · PDP 1/2 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.4 · Картка товару (шаблон + вибірка 5 SKU) · 1/2</span>
+    <h1 class="big" style="font-size:23pt">PDP: найсильніша сторінка сайту —<br>і найдорожчі з її дірок.</h1>
+    
+  <div style="display:flex;gap:4mm;margin:2.5mm 0">
+    <div class="kpi" style="flex:1.2"><div class="v ">36 / 65</div><div class="k">підсумок сторінки</div></div>
+    <div class="kpi" style="flex:1"><div class="v ok">3</div><div class="k">закрито</div></div>
+    <div class="kpi" style="flex:1"><div class="v" style="color:#a06a00">7</div><div class="k">частково</div></div>
+    <div class="kpi" style="flex:1"><div class="v bad">3</div><div class="k">відсутні</div></div>
+  </div>
+  <p class="marg" style="margin-bottom:2mm">Розбір на hero-SKU «Сковорода гриль 26 см» + звірка вибірки: чавунна каструля 4л, ніж шеф 20см, форма для випікання, подарунковий набір. Профіль однаковий: сильні характеристики і фото, слабкі — доставка-біля-CTA, масштаб/докази на дотик, Q&A і виходи вниз.</p>
+    <table class="bt"><tr><th style="width:20mm">Блок еталона</th><th>Що на сторінці зараз</th><th style="width:44mm">Що має бути</th><th style="width:16mm">Дисц.</th><th>0–5</th></tr><tr><td class="bnum">01 · Крихти та H1</td><td><span class="okm">✅</span> Крихти повні; H1 = назва + діаметр. Рейтинг і кількість відгуків біля H1. <span class="badm">🔴</span> Без матеріалу/покриття в H1 — головного критерію вибору</td><td>H1 = назва + покриття + діаметр</td><td><span class="tag">SEO</span><span class="tag">AEO</span></td><td class="score sc4">4</td></tr><tr><td class="bnum">02 · Галерея<br><span class="src">5 типів медіа</span></td><td><span class="badm">🔴</span> 4 фото: 3 предметні + 1 упаковка. Немає: інтерʼєрного (масштаб!), макро поверхні, відео, фото покупців. Для товару «на дотик» — головна втрата картки. 📱 зум на mobile не працює</td><td>Пʼять типів: предметне, інтерʼєр, макро, відео 20–30с, UGC; mobile-зум</td><td><span class="tag">CRO</span><span class="tag">COMM</span><span class="tag">PERF</span></td><td class="score sc2">2</td></tr><tr><td class="bnum">03 · Блок покупки<br><span class="src">ціна, наявність, CTA</span></td><td><span class="okm">✅</span> Ціна, наявність, кількість, «Купити» + «Купити в 1 клік». <span class="badm">🔴</span> Строк і вартість доставки — ВІДСУТНІ біля кнопки (головна знахідка 05-01, W1-фікс уже в Ганті, задача 23); мікро-довіри під CTA немає</td><td>Строк+вартість доставки і повернення — в блоці покупки (wireframe A.8)</td><td><span class="tag">CRO</span><span class="tag">COMM</span></td><td class="score sc2">2</td></tr><tr class="hl"><td class="bnum">04 · Варіанти<br><span class="src">діаметри як структура</span></td><td><span class="badm">🔴</span> Діаметри 24/26/28 — окремі URL-картки: відгуки роздроблені (7+3+2 замість 12), канібалізація у видачі, дубль-контент ×3</td><td>Одна модель, варіанти всередині, спільні відгуки, canonical + hasVariant</td><td><span class="tag">TECH</span><span class="tag">SEO</span><span class="tag">COMM</span></td><td class="score sc1">1</td></tr><tr><td class="bnum">05 · Характеристики</td><td><span class="okm">✅</span> 8 параметрів: діаметр, покриття, матеріал, вага, плити, кришка, гарантія. <span class="badm">🔴</span> «Індукція: так/ні» — технічно; без перекладу на мову рішення («підходить для всіх плит»)</td><td>Кожна характеристика + переклад вигодою; атрибути з довідника</td><td><span class="tag">CONT</span><span class="tag">AEO</span><span class="tag">UX</span></td><td class="score sc4">4</td></tr><tr class="hl"><td class="bnum">06 · Масштаб і тактильність<br><span class="src">заперечення №1 ніші</span></td><td><span class="badm">🔴 Блока немає.</span> 26 см — цифра без відчуття: скільки це порцій? Важка чи ні в руці? Це прямий корінь повернень «не той розмір» (частина 5.8%, d10)</td><td>Фото «на плиті поруч із тарілкою» + «порцій: 2–3» + вага в руці словами</td><td><span class="tag">CRO</span><span class="tag">UX</span><span class="tag">COMM</span></td><td class="score sc0">0</td></tr><tr><td class="bnum">07 · Догляд<br><span class="src">заперечення №2</span></td><td><span class="okm">✅</span> Аккордеон «Догляд» є і корисний. <span class="badm">🔴</span> Ключове правило сховано в аккордеоні; посилання на повний гайд немає (гайдів взагалі немає — том B)</td><td>Головне правило назовні + вихід у гайд догляду (кластер 9.9k запитів)</td><td><span class="tag">AEO</span><span class="tag">CONT</span><span class="tag">LINK</span></td><td class="score sc3">3</td></tr></table>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 8/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.4 · PDP 2/2 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <table class="bt"><tr><th style="width:20mm">Блок еталона</th><th>Що на сторінці зараз</th><th style="width:44mm">Що має бути</th><th style="width:16mm">Дисц.</th><th>0–5</th></tr><tr><td class="bnum">08 · Відгуки</td><td><span class="okm">✅</span> Є, з датами, є відповіді магазину на негатив. <span class="badm">🔴</span> Без фото покупців, без розбивки 5/4/3, роздроблені по варіантах (блок 04); запит відгуку після доставки не автоматизовано (W2, задача 53)</td><td>Фото у відгуках + розбивка + спільні на модель + автозбір</td><td><span class="tag">COMM</span><span class="tag">AEO</span><span class="tag">CRO</span></td><td class="score sc3">3</td></tr><tr class="hl"><td class="bnum">09 · Q&A<br><span class="src">питання покупців</span></td><td><span class="badm">🔴 Немає.</span> «Чи підходить для індукції?», «Чи можна в посудомийку?» — питання, що зупиняють покупку, живуть лише в чаті підтримки і вмирають там</td><td>Публічні Q&A з розміткою QAPage; джерело — реальні питання підтримки</td><td><span class="tag">AEO</span><span class="tag">GEO</span><span class="tag">COMM</span></td><td class="score sc0">0</td></tr><tr><td class="bnum">10 · Доставка й оплата в картці</td><td><span class="badm">🔴</span> Аккордеон є, але поріг безкошт. доставки тут «від €40» проти «€50» у футері — <b>той самий конфлікт даних, що й на головній</b>: дефект джерела, множиться на всі 640 карток</td><td>Єдине джерело порога (конфіг), однакове скрізь</td><td><span class="tag">COMM</span><span class="tag">LAW</span><span class="tag">TECH</span></td><td class="score sc2">2</td></tr><tr><td class="bnum">11 · Допродаж<br><span class="src">пари з d03</span></td><td><span class="badm">🔴</span> «Схожі товари» — 8 випадкових SKU тієї ж категорії. Природні пари (кришка 26см — 23% спільних покупок, засіб догляду — 11%) не використані</td><td>Три блоки: «підійде кришка» (точна) · «з цим купують» · «схожі»</td><td><span class="tag">CRO</span><span class="tag">LINK</span><span class="tag">PRICE</span></td><td class="score sc2">2</td></tr><tr class="hl"><td class="bnum">12 · Перелінковка вниз</td><td><span class="badm">🔴 Немає.</span> Під відгуками одразу футер. Картка з найбільшим органічним трафіком нікуди його не роздає</td><td>Теги: за діаметром, покриттям, серією; крихти внизу</td><td><span class="tag">SEO</span><span class="tag">LINK</span></td><td class="score sc0">0</td></tr><tr><td class="bnum">13 · Schema/розмітка</td><td><span class="okm">✅</span> Product+Offer є. <span class="badm">🔴</span> Без AggregateRating (зірок у SERP немає — W2, задача 50), без FAQ/QAPage</td><td>Повний набір: Product, Offer, AggregateRating, QAPage</td><td><span class="tag">SEO</span><span class="tag">AEO</span></td><td class="score sc3">3</td></tr></table>
+    <p class="body" style="font-size:8.3pt;margin-top:2mm"><b>Вибірка 5 SKU — звірка шаблону:</b> профіль підтверджено на 5/5; додатково знайдено:
+    у подарункового набору немає складу комплекту списком (тільки фото) — для подарунка це блокер вибору; у ножа шеф відсутня
+    інформація про сталь/твердість — критерій №1 цієї підкатегорії. <b>Знахідка поза сторінкою:</b> конфлікт порога доставки і
+    «індукція так/ні без перекладу» — дефекти ДАНИХ, не сторінок: правити в джерелі (конфіг/довідник), інакше повернеться.</p>
+    <h2 class="st" style="font-size:11pt">Пріоритет доробок PDP</h2>
+    <table class="t" style="font-size:7.8pt">
+      <tr><th>№</th><th>Що</th><th>Критичність</th><th>Чому</th></tr>
+      <tr class="hl"><td class="num">1</td><td>Доставка в блок покупки (строк+вартість) — W1</td><td><span class="sev h">Блокуюча</span></td><td>знахідка 05-01: причина №1 покинутих оформлень</td></tr>
+      <tr class="hl"><td class="num">2</td><td>Варіанти в одну модель (canonical + спільні відгуки)</td><td><span class="sev h">Блокуюча</span></td><td>дроблення доказу і канібалізація; чим пізніше — тим дорожче</td></tr>
+      <tr><td class="num">3</td><td>Блок масштабу/тактильності + макро-медіа</td><td><span class="sev h">Висока</span></td><td>заперечення №1 ніші і корінь повернень «не той розмір»</td></tr>
+      <tr><td class="num">4</td><td>Q&A з QAPage</td><td><span class="sev m">Середня</span></td><td>реальні питання підтримки → конверсія + AEO</td></tr>
+      <tr><td class="num">5</td><td>Пари в допродаж + перелінковка вниз</td><td><span class="sev m">Середня</span></td><td>AOV (+€1.5–2.5) і роздача органічного трафіку</td></tr>
+    </table>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 9/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.5 · Кошик · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.5 · Кошик · поблочний розбір</span>
+    <h1 class="big" style="font-size:23pt">Кошик тримає товар — і мовчить<br>про єдине, що цікавить: «скільки разом?»</h1>
+    
+  <div style="display:flex;gap:4mm;margin:2.5mm 0">
+    <div class="kpi" style="flex:1.2"><div class="v bad">21 / 40</div><div class="k">підсумок сторінки</div></div>
+    <div class="kpi" style="flex:1"><div class="v ok">2</div><div class="k">закрито</div></div>
+    <div class="kpi" style="flex:1"><div class="v" style="color:#a06a00">4</div><div class="k">частково</div></div>
+    <div class="kpi" style="flex:1"><div class="v bad">2</div><div class="k">відсутні</div></div>
+  </div>
+  <p class="marg" style="margin-bottom:2mm">Кошик технічно справний (зберігається, редагується), але не відповідає на головне питання етапу — повна вартість з доставкою — і не підштовхує до порога безкоштовної доставки.</p>
+    <table class="bt"><tr><th style="width:20mm">Блок еталона</th><th>Що на сторінці зараз</th><th style="width:44mm">Що має бути</th><th style="width:16mm">Дисц.</th><th>0–5</th></tr><tr><td class="bnum">01 · Склад кошика</td><td><span class="okm">✅</span> Фото, назва, варіант, ціна, кількість +/-, видалити. Кошик зберігається між сесіями</td><td>так само + «зберегти на потім»</td><td><span class="tag">UX</span></td><td class="score sc4">4</td></tr><tr class="hl"><td class="bnum">02 · Доставка в кошику</td><td><span class="badm">🔴</span> «Вартість доставки — на наступному кроці». Це і є момент відвалу (журні-тест, крок 7). W1-фікс у Ганті (задача 23)</td><td>Калькулятор: місто → вартість і строк ДО checkout</td><td><span class="tag">CRO</span><span class="tag">COMM</span></td><td class="score sc1">1</td></tr><tr class="hl"><td class="bnum">03 · Прогрес до безкошт. доставки</td><td><span class="badm">🔴 Немає.</span> Поріг існує (€40? €50? — див. конфлікт), але кошик не показує «додайте ще €12»</td><td>Прогрес-бар до порога + підказка товарів-добивок</td><td><span class="tag">CRO</span><span class="tag">PRICE</span></td><td class="score sc0">0</td></tr><tr class="hl"><td class="bnum">04 · Допродаж у кошику</td><td><span class="badm">🔴</span> Немає зовсім. Кришка до сковороди, засіб догляду — природні добивки саме тут</td><td>Ряд «до вашого кошика пасує» (пари з d03)</td><td><span class="tag">CRO</span></td><td class="score sc0">0</td></tr><tr><td class="bnum">05 · Промокод</td><td><span class="okm">✅</span> Поле є, працює. <span class="badm">🔴</span> Розгорнуте завжди — запрошує піти шукати знижку (класичний відтік у купонники)</td><td>Згорнути в посилання «маю промокод»</td><td><span class="tag">CRO</span></td><td class="score sc3">3</td></tr><tr class="hl"><td class="bnum">06 · Довіра на кроці</td><td><span class="badm">🔴</span> Нуль: ні повернення, ні гарантії, ні безпеки оплати</td><td>Смуга: повернення 14 дн · оригінал · безпечна оплата</td><td><span class="tag">COMM</span></td><td class="score sc0">0</td></tr><tr><td class="bnum">07 · CTA до оформлення</td><td><span class="okm">✅</span> Помітна кнопка. 📱 на mobile — під сгибом при 2+ товарах</td><td>Sticky-CTA на mobile</td><td><span class="tag">MOB</span><span class="tag">CRO</span></td><td class="score sc3">3</td></tr><tr class="hl"><td class="bnum">08 · Порожній кошик</td><td><span class="badm">🔴</span> «Ваш кошик порожній» і все. Глухий кут</td><td>Хіти + нещодавно переглянуті + вхід у категорії</td><td><span class="tag">UX</span><span class="tag">CRO</span></td><td class="score sc1">1</td></tr></table>
+    <p class="marg" style="margin-top:2mm">Пріоритет: доставка в кошику (W1, іде) → прогрес-бар порога + пари (W2) → sticky-CTA mobile і порожній стан (W2). Разом ці чотири правки — основна маса важеля «кошик→checkout 40→42%+» воронкової моделі.</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 10/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.6 · Checkout · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.6 · Checkout · поблочний розбір</span>
+    <h1 class="big" style="font-size:23pt">Оформлення: 9 полів, 2 кроки,<br>і сюрприз із доставкою в кінці.</h1>
+    
+  <div style="display:flex;gap:4mm;margin:2.5mm 0">
+    <div class="kpi" style="flex:1.2"><div class="v bad">18 / 40</div><div class="k">підсумок сторінки</div></div>
+    <div class="kpi" style="flex:1"><div class="v ok">1</div><div class="k">закрито</div></div>
+    <div class="kpi" style="flex:1"><div class="v" style="color:#a06a00">5</div><div class="k">частково</div></div>
+    <div class="kpi" style="flex:1"><div class="v bad">2</div><div class="k">відсутні</div></div>
+  </div>
+  <p class="marg" style="margin-bottom:2mm">Completion 43.6% проти 65%+ бенчу — сторінка-чемпіон із втрат грошей. Гостьове оформлення є (добре), решта — класичний список Baymard-помилок. Всі фікси вже в Ганті (задачі 23, 30, 51).</p>
+    <table class="bt"><tr><th style="width:20mm">Блок еталона</th><th>Що на сторінці зараз</th><th style="width:44mm">Що має бути</th><th style="width:16mm">Дисц.</th><th>0–5</th></tr><tr><td class="bnum">01 · Гостьове оформлення</td><td><span class="okm">✅</span> Є, без примусової реєстрації. Після покупки — пропозиція створити акаунт</td><td>так само</td><td><span class="tag">CRO</span></td><td class="score sc5">5</td></tr><tr class="hl"><td class="bnum">02 · Кількість полів</td><td><span class="badm">🔴</span> 9 обовʼязкових: імʼя, прізвище, телефон, email, місто, відділення, вулиця?, коментар*, як дізнались* (*обовʼязкові!). Опитування «як дізнались» — обовʼязкове поле на КРОЦІ ОПЛАТИ</td><td>5 полів: імʼя, телефон, email, місто, відділення; «як дізнались» — опційно ПІСЛЯ покупки (d04)</td><td><span class="tag">CRO</span><span class="tag">UX</span></td><td class="score sc1">1</td></tr><tr class="hl"><td class="bnum">03 · Автозаповнення</td><td><span class="badm">🔴</span> Місто/відділення — ручний ввід без підказок НП; автозаповнення браузера зламане кастомними полями</td><td>API Нової Пошти: підказки міст/відділень; autocomplete-атрибути</td><td><span class="tag">UX</span><span class="tag">TECH</span></td><td class="score sc1">1</td></tr><tr class="hl"><td class="bnum">04 · Вартість доставки</td><td><span class="badm">🔴</span> Зʼявляється ТІЛЬКИ тут, після заповнення адреси. Топ-причина відмов за Baymard — підтверджено воронкою (43.6%)</td><td>Відома ще з кошика (задача 23); тут — лише підтвердження</td><td><span class="tag">CRO</span><span class="tag">COMM</span></td><td class="score sc1">1</td></tr><tr><td class="bnum">05 · Способи оплати</td><td><span class="okm">✅</span> Карта, Apple Pay, накладений платіж. <span class="badm">🔴</span> Без BLIK для PL (−31% completion PL, задача 51); Apple Pay redirect губить GA4-purchase (W1-фікс, задача 10)</td><td>+BLIK; server-side purchase</td><td><span class="tag">CRO</span><span class="tag">TECH</span></td><td class="score sc3">3</td></tr><tr><td class="bnum">06 · Підсумок замовлення</td><td><span class="okm">✅</span> Видимий, з фото. <span class="badm">🔴</span> Редагування кількості веде назад у кошик зі втратою введених полів</td><td>Редагування inline без втрати стану</td><td><span class="tag">UX</span></td><td class="score sc3">3</td></tr><tr class="hl"><td class="bnum">07 · Довіра на оплаті</td><td><span class="badm">🔴</span> Нуль трасту біля кнопки «Оплатити»: ні замка/безпеки, ні повернення</td><td>Мікро-траст під кнопкою: безпечна оплата · повернення 14 дн</td><td><span class="tag">COMM</span></td><td class="score sc0">0</td></tr><tr class="hl"><td class="bnum">08 · Сторінка «Дякуємо»</td><td><span class="badm">🔴</span> «Дякуємо за замовлення №». Глухий кут: ні що далі, ні трекінг, ні першого кроку CRM</td><td>Що буде далі (3 кроки) + трекінг + мʼякий вхід у підписку/акаунт</td><td><span class="tag">CRM</span><span class="tag">UX</span></td><td class="score sc0">0</td></tr></table>
+    <p class="marg" style="margin-top:2mm">Пріоритет: поля+автозаповнення (W2, задача 30) і доставка з кошика (W1) — ядро важеля checkout 43.6→52–55%.
+    «Дякуємо»-сторінка — дешевий вхід у retention (перший лист циклу d08 з неї ж).</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 11/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.7 · Службові сторінки · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.7 · Службові сторінки (усі 11) — стан проти еталона</span>
+    <h1 class="big" style="font-size:23pt">Службові сторінки: там, де мають<br>зніматися заперечення, — заглушки.</h1>
+    <table class="bt" style="margin-top:2mm">
+      <tr><th style="width:23mm">Сторінка</th><th>Стан зараз</th><th style="width:47mm">Еталон</th><th>0–5</th></tr>
+      <tr><td class="bnum">Про нас</td><td>3 абзаци історії + фото складу. Без цифр, команди, сертифікатів. Не відповідає «чому вам довіряти»</td><td>Цифри-докази, команда з фото, сертифікати, виробництво — сторінка-фундамент E-E-A-T і RTB</td><td class="score sc1">1</td></tr>
+      <tr><td class="bnum">Доставка і оплата</td><td>Таблиця перевізників і способів — коректна. <span class="badm">Третій варіант порога безкошт. доставки (€45!)</span></td><td>Єдиний поріг; калькулятор строку за містом; FAQ-розмітка</td><td class="score sc2">2</td></tr>
+      <tr><td class="bnum">Повернення</td><td>Юридичний текст 14 днів суцільним полотном. Без покрокової інструкції</td><td>Кроки 1-2-3 з формою; окремо — «якщо прийшло з боєм» (2.1%!): фото → заміна без повернення</td><td class="score sc2">2</td></tr>
+      <tr><td class="bnum">Гарантія</td><td>Абзац «гарантія 2 роки». Без процедури і строків розгляду</td><td>Що покриває / не покриває, як звернутись, строк рішення</td><td class="score sc1">1</td></tr>
+      <tr><td class="bnum">Контакти</td><td><span class="okm">✅</span> Телефон, email, графік, месенджери. Карта самовивозу</td><td>+ час відповіді в месенджерах (обіцянка = метрика d04)</td><td class="score sc4">4</td></tr>
+      <tr class="hl"><td class="bnum">FAQ</td><td><span class="badm">🔴 Сторінки немає.</span> Питання розкидані по аккордеонах карток</td><td>Хаб FAQ за темами з FAQPage-розміткою — базовий AEO-актив</td><td class="score sc0">0</td></tr>
+      <tr><td class="bnum">Пошук (сторінка)</td><td>Видача без фільтрів; нульова видача — глухий кут без порад (18% запитів!)</td><td>Фільтри у видачі; нульова: синоніми, хіти, категорії</td><td class="score sc2">2</td></tr>
+      <tr><td class="bnum">404</td><td><span class="okm">✅</span> Людяний текст + пошук + кнопка на головну</td><td>+ популярні категорії</td><td class="score sc4">4</td></tr>
+      <tr><td class="bnum">Особистий кабінет</td><td>Замовлення і адреси є. Без трекінгу доставки, без бонусів/балів (програми немає), повторне замовлення в 1 клік відсутнє</td><td>Трекінг, повтор замовлення, збережені набори — база майбутньої лояльності (W3)</td><td class="score sc2">2</td></tr>
+      <tr class="hl"><td class="bnum">Аутлет</td><td><span class="badm">🔴 Немає.</span> Розпродаж dead stock (задача 22 Ганта, ≥€40k кешу) не має вітрини</td><td>Розділ «Аутлет» з чесним поясненням знижок — W1, до старту розпродажу</td><td class="score sc0">0</td></tr>
+      <tr><td class="bnum">Блог</td><td>12 статей, остання 8 міс тому; без структури кластерів</td><td>Повний розбір — том B (контент) і том C (SEO)</td><td class="score sc1">1</td></tr>
+    </table>
+    <p class="marg" style="margin-top:2mm"><b>Системна знахідка:</b> поріг безкоштовної доставки має ТРИ значення на сайті (€40 hero / €50 футер+PDP-конфлікт / €45 сторінка доставки).
+    Це не помилки сторінок — це відсутність єдиного джерела правди в конфігурації. Правиться один раз у джерелі (W2), інакше повертається на кожній новій сторінці.</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 12/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · Як читати макети · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети всіх блоків: ЗАРАЗ → ЯК ТРЕБА — методика і карта</span>
+    <h1 class="big" style="font-size:22pt">49 блоків пʼяти сторінок.<br>Кожен — «зараз» і «як треба». Без винятків.</h1>
+    <p class="body" style="margin-top:2mm">Це візуальна специфікація до розборів A.2–A.6: зліва (червона рамка) — поточний стан блока,
+    справа (зелена) — що саме має зʼявитися. <b>Якщо блока немає — він відрисований з нуля</b> (зліва пунктирна плашка «БЛОКА НЕМАЄ»).
+    Під кожною парою — дельта: приріст висоти в px, нові посилання, зміна механіки. Правки згруповані по типу: ті, що додають виходи
+    вглиб · ті, що перебудовують існуючі блоки · ті, що міняють механіку без зміни вигляду.</p>
+    <table class="t" style="font-size:7.7pt;margin-top:2mm">
+      <tr><th>Сторінка</th><th class="num">Блоків</th><th class="num">З них немає — малюємо з нуля</th><th class="num">Нових посилань</th><th class="num">Δ висоти</th><th>Сторінки глави</th></tr>
+      <tr><td><b>Головна</b></td><td class="num">10</td><td class="num">2 <span class="src">(сегментні входи, популярні запити)</span></td><td class="num">+34–40</td><td class="num">≈ +240 px</td><td>2 блоки/стор.</td></tr>
+      <tr><td><b>Каталог (PLP)</b></td><td class="num">10</td><td class="num">3 <span class="src">(теги, довіра, низ PLP)</span></td><td class="num">+20–24</td><td class="num">≈ +270 px</td><td>2/стор.</td></tr>
+      <tr><td><b>PDP</b></td><td class="num">13</td><td class="num">3 <span class="src">(масштаб, Q&A, перелінковка)</span></td><td class="num">+12–15</td><td class="num">≈ +540 px</td><td>2/стор.</td></tr>
+      <tr><td><b>Кошик</b></td><td class="num">8</td><td class="num">3 <span class="src">(прогрес-бар, допродаж, довіра)</span></td><td class="num">+6–9</td><td class="num">≈ +250 px</td><td>2/стор.</td></tr>
+      <tr><td><b>Checkout</b></td><td class="num">8</td><td class="num">1 <span class="src">(довіра на оплаті)</span></td><td class="num">+3</td><td class="num">≈ −70 px <span class="src">(коротшає!)</span></td><td>2/стор.</td></tr>
+      <tr class="hl"><td><b>Разом</b></td><td class="num"><b>49</b></td><td class="num"><b>12</b></td><td class="num"><b>+75–91</b></td><td colspan="2">повна карта → зведення наприкінці глави</td></tr>
+    </table>
+    <h2 class="st" style="font-size:11pt;margin-top:2.5mm">Три правила, які діють у кожному макеті</h2>
+    <p class="body" style="font-size:8.4pt"><b>1. Посилання — тільки на існуючі сторінки.</b> Слот під тег/запит без живої сторінки лишається порожнім, доки сторінка
+    не зʼявиться (черга — том C). <b>2. Дані правляться в джерелі.</b> Поріг доставки, атрибути, наявність — конфіг/довідник/ERP, не текст руками:
+    інакше дефект повертається. <b>3. Кожен блок відповідає на питання свого моменту.</b> Блок, який не відповідає — декорація, його місце віддається тому, хто відповідає.</p>
+    <p class="marg">Оцінки блоків 0–5 і докази — у главах A.2–A.6; тут — цільовий вигляд і дельта. Всі «ЯК ТРЕБА» замаплені на задачі Ганта в зведенні глави.</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 13/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · Головна 1/5 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети поблочно · Головна · 1/5</span>
+    <h1 class="big" style="font-size:20pt">Головна · 10 блоків: що міняємо і як це виглядає.</h1>
+    <div class="wfb">
+  <div class="bh"><span class="n">Г-01</span><span class="tt">Шапка</span><span class="sb">навігація · пошук · кошик</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m "><b>ЛОГО</b> · Каталог ▾ · Акції · Про нас · Контакти · ☎ &nbsp; [🔍] [👤] [🛒 2*]</div><div class="ann bad">бейдж кошика не оновлюється без перезавантаження · 📱 пошук на mobile — за 2 тапами</div><p class="note">Каркас правильний. Два дефекти механіки: мертвий бейдж (покупець не бачить, що товар додався) і схований пошук на mobile — 65% трафіку.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m "><b>ЛОГО</b> · Каталог ▾ · Акції · <span class="lnk">Аутлет</span> · Про нас &nbsp; [👤] [🛒 2 live]</div><div class="m ">🔍 [ Пошук: «сковорода для індукції…» __________________ ]</div><div class="ann good">пошук окремим рядком, завжди видимий 📱 · бейдж live · +пункт «Аутлет» (W1, задача 22)</div><p class="note">Пошук назовні — у ніші з 6 кластерами попиту це навігація №1 на mobile. Live-бейдж знімає «чи додалось?». Аутлет отримує вхід з кожної сторінки.</p></div>
+  </div>
+  <div class="wfd">Висота: +44 px (рядок пошуку 📱) · +1 внутрішнє посилання · механіка: live-бейдж</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">Г-02</span><span class="tt">Hero-блок</span><span class="sb">оффер + перша дія</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">◀ БАНЕР 1/3: «Якісний посуд для дому» · [До каталогу] ▶</div><div class="m "><span style="color:#6E7C86">• ○ ○ — слайди 2–3: CTR 0.4% і 0.2%</span></div><div class="ann bad">оффер «якісний посуд» — під ним підпишеться будь-який конкурент (тест d02) · всі 3 CTA → ЗАГАЛЬНИЙ каталог</div><p class="note">Слайдер зʼїдає перший екран на банери, які майже ніхто не гортає, а єдина дія веде «кудись у каталог».</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m "><b>Посуд, з яким готують щодня — і дарують на роки.</b><br>Прямі контракти з виробництвами · 4.8★ на 2 400+ відгуків · відправка сьогодні до 15:00</div><div class="m cta mk">ДО СКОВОРІД — ХІТІВ СЕЗОНУ →</div><div class="m "><span class="lnk">Подарунковий набір до Дня матері →</span> (сезонний слот, змінюється календарем)</div><p class="note">Один статичний оффер з RTB і доказом (рейтинг, відправка сьогодні) + CTA у категорію-героя (34% виручки) + сезонний слот замість слайдів 2–3.</p></div>
+  </div>
+  <div class="wfd">Висота: −180 px (слайдер геть) · +2 глибокі посилання · CTR першого екрана — метрика W2</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 14/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · Головна 2/5 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети поблочно · Головна · 2/5</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">Г-03</span><span class="tt">Сегментні входи «для кого/для чого»</span><span class="sb">блока немає — відрисовано з нуля</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m miss">БЛОКА НЕМАЄ</div><div class="m ghost">після hero — одразу категорійна сітка</div><div class="ann bad">два сценарії покупки з різною логікою (подарунок / для себе — d04) заходять в одні двері</div><p class="note">Покупець подарунка не думає категоріями «сковороди/каструлі» — він думає «бюджет, привід, кому». Цього входу немає взагалі.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="cards c2"><div class="card nw"><b>🎁 Обираєте подарунок?</b>Добірки за бюджетом (€25/€50/€100), приводом і адресатом. Упаковка + листівка — безкоштовно<br><span class="lnk">До подарункових наборів →</span></div><div class="card nw"><b>🍳 Для своєї кухні</b>За типом плити (індукція/газ), покриттям і розміром сімʼї. Гайд «як обрати» всередині<br><span class="lnk">Підібрати за плитою →</span></div></div><p class="note">Два входи = два сценарії з d04. Подарунковий веде на добірки (готуються в W2 з семантики), кухонний — на фільтровані категорії з гайдом.</p></div>
+  </div>
+  <div class="wfd">Висота: +160 px · +2 сегментні входи · +6–10 посилань углиб (добірки)</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">Г-04</span><span class="tt">Категорійна сітка</span><span class="sb">8 плиток</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="cards c4"><div class="card"><div class="ph"></div><b>Сковороди</b></div><div class="card"><div class="ph"></div><b>Каструлі</b></div><div class="card"><div class="ph"></div><b>Кришки</b></div><div class="card"><div class="ph"></div><b>Ножі</b></div></div><div class="ann bad">без цін «від» і кількості · порядок не за виручкою: Кришки (4%) на 3-й позиції, Подарункові набори (9%) — останні</div><p class="note">Плитки клікабельні і з фото — база хороша. Але сітка не підказує, з чого почати, і не називає ціну входу.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="cards c4"><div class="card nw"><div class="ph"></div><b>Сковороди</b>від €19 · 142 моделі</div><div class="card nw"><div class="ph"></div><b>Каструлі</b>від €24 · 118</div><div class="card nw"><div class="ph"></div><b>Подарункові</b>від €25 · 26</div><div class="card nw"><div class="ph"></div><b>Ножі</b>від €12 · 96</div></div><div class="ann good">порядок за виручкою/сезоном (конфіг, не хардкод) · на плитці ціна «від» + кількість</div><p class="note">Порядок за грошима і сезоном; «від €X · N моделей» знімає страх ціни до кліку і додає конкретики машині (AEO).</p></div>
+  </div>
+  <div class="wfd">Висота: без змін · механіка: сортування плиток конфігом · +8 фактів-відповідей</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 15/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · Головна 3/5 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети поблочно · Головна · 3/5</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">Г-05</span><span class="tt">Блоки довіри</span><span class="sb">заперечення до каталогу</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="cards c4"><div class="card">▣<br><b>Оригінал</b></div><div class="card">▣<br><b>Доставка 1–3 дні</b></div><div class="card">▣<br><b>Повернення 14 дн</b></div><div class="card">▣<br><b>Гарантія 2 роки</b></div></div><div class="ann bad">іконка + два слова: ні людина, ні машина не витягнуть відповідь · нуль посилань</div><p class="note">Заперечення лише НАЗВАНІ, не зняті. «Оригінал?» — а звідки видно? Нуль внутрішніх посилань зі смуги довіри.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="cards c2"><div class="card nw"><b>Тільки офіційний товар</b>Прямі контракти з виробництвами; кожна позиція з сертифікатом<br><span class="lnk">Сертифікати →</span></div><div class="card nw"><b>Доставка 1–3 дні</b>Відправка сьогодні до 15:00; вартість видно ще в кошику<br><span class="lnk">Умови →</span></div></div><div class="cards c2"><div class="card nw"><b>Повернення 14 днів</b>Без пояснення причин. Бій — заміна за фото, без пересилки<br><span class="lnk">Як повернути →</span></div><div class="card nw"><b>Гарантія 2 роки</b>Покриття і ручки; рішення до 3 робочих днів<br><span class="lnk">Умови гарантії →</span></div></div><p class="note">Чотири витягувані відповіді (AEO) · 4 посилання на службові сторінки · заперечення зняті ДО каталогу.</p></div>
+  </div>
+  <div class="wfd">Висота: +90 px · +4 посилання · +4 AEO-відповіді</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">Г-06</span><span class="tt">Хіти / новинки</span><span class="sb">товарні каруселі</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="cards c4"><div class="card"><div class="ph"></div><b>Сковорода гриль</b>€46 ★4.8</div><div class="card"><div class="ph"></div><b>Каструля 4л</b><span style="color:#D6362B">Немає</span></div><div class="card"><div class="ph"></div><b>Ніж шеф</b>€28 ★4.9</div><div class="card"><div class="ph"></div><b>Форма</b><span style="color:#D6362B">Немає</span></div></div><div class="ann bad">3 з 8 «хітів» зараз OOS — вітрина продає те, чого немає (замкнене коло d10) · без соціального доказу</div><p class="note">Каруселі з реальними цінами — добре. Але OOS-товари займають місця хітів, і картки без доказу попиту.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="cards c4"><div class="card nw"><div class="ph"></div><b>Сковорода гриль</b>€46 ★4.8 · 240+ купили [🛒]</div><div class="card nw"><div class="ph"></div><b>Ніж шеф</b>€28 ★4.9 · 180+ [🛒]</div><div class="card nw"><div class="ph"></div><b>Набір каструль</b>€89 ★4.7 · 95+ [🛒]</div><div class="card nw"><div class="ph"></div><b>Кришка 26</b>€9 · пара до хіта [🛒]</div></div><div class="ann good">OOS автоматично випадає з каруселі · бейдж «N+ купили» · кнопка в кошик з картки</div><p class="note">Автовиключення OOS (правило, не ручна праця), соціальний доказ на картці, покупка без переходу.</p></div>
+  </div>
+  <div class="wfd">Висота: без змін · механіка: OOS-фільтр + міні-кошик · +8 доказів попиту</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 16/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · Головна 4/5 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети поблочно · Головна · 4/5</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">Г-07</span><span class="tt">Виробництво / бренд</span><span class="sb">«чому ми»</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">«Ми любимо посуд і працюємо з 2016 року…» — абзац тексту</div><div class="m "><div class="ph"></div><span style="color:#6E7C86">фото складу</span></div><div class="ann bad">жодної цифри, жодного доказу — текст, який нічого не стверджує</div><p class="note">Блок є, але не працює: «любимо посуд» не відповідає на «чому купити у вас».</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="cards c3"><div class="card nw"><b>9 років</b>прямих контрактів з 4 виробництвами</div><div class="card nw"><b>2 400+</b>відгуків, середня 4.8★</div><div class="card nw"><b>0.7%</b>браку ціль W1 — і публікуємо факт</div></div><div class="m "><span class="lnk">Як ми обираємо і перевіряємо посуд → (сторінка «Про виробництво»)</span></div><p class="note">Три цифри-докази + вихід на сторінку виробництва. Це ж джерело RTB для реклами (d02) і матеріал для GEO-відповідей.</p></div>
+  </div>
+  <div class="wfd">Висота: −40 px (стисліше) · +1 посилання · +3 факти-докази</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">Г-08</span><span class="tt">Відгуки на головній</span><span class="sb">соціальний доказ</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">◀ «Все чудово, рекомендую!» — Ольга ▶</div><div class="m "><span style="color:#6E7C86">без фото · без товару · без дати</span></div><div class="ann bad">відгуки виглядають написаними — анонімний текст без привʼязки</div><p class="note">Соціальний доказ, який не доводить: ні хто, ні коли, ні про що.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="cards c2"><div class="card nw"><div class="ph"></div><b>Катерина · 12.08 · ★★★★★</b>«Гриль 26: стейки як з ресторану, мию губкою» · <span class="lnk">Сковорода гриль 26 →</span></div><div class="card nw"><div class="ph"></div><b>Андрій · 04.08 · ★★★★★</b>«Набір — подарунок дружині, упаковка розкішна» · <span class="lnk">Набір каструль →</span></div></div><div class="m "><span class="lnk">Всі 2 400+ відгуків →</span></div><p class="note">Фото + дата + товар + посилання на картку: доказ стає перевірюваним і веде в товар. Мінімум 2 посилання з блока замість нуля.</p></div>
+  </div>
+  <div class="wfd">Висота: +55 px · +3 посилання · відгуки → вхідні двері в PDP</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 17/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · Головна 5/5 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети поблочно · Головна · 5/5</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">Г-09</span><span class="tt">Популярні запити</span><span class="sb">блока немає — відрисовано з нуля</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m miss">БЛОКА НЕМАЄ</div><div class="m ghost">після відгуків — одразу футер</div><div class="ann bad">6 кластерів попиту (233k запитів/міс сумарно — том C) не мають жодного входу з головної</div><p class="note">Довгий хвіст — головний нереалізований вхід сайта. Людина з конкретним запитом не знаходить конкретних дверей.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m "><b>Часто шукають</b></div><div style="margin-bottom:1mm"><span class="ch g">сковорода для індукції</span><span class="ch g">чавунна сковорода гриль</span><span class="ch g">каструля з товстим дном</span><span class="ch g">набір каструль на подарунок</span><span class="ch g">ніж шеф-кухаря</span><span class="ch g">форма для хліба</span></div><div style="margin-bottom:1mm"><span class="ch g">як обрати сковороду — гайд</span><span class="ch g">догляд за чавуном — гайд</span><span class="ch g">подарунок кухареві до €50</span><span class="ch g">аутлет: знижки до −40%</span></div><div class="ann good">12–16 посилань ТІЛЬКИ на існуючі сторінки; наповнюється з семантики тома C; тег без сторінки не ставиться</div><p class="note">Текстові посилання за кластерами: UX-вхід у хвіст + внутрішня вага на хаби. Правило: посилання веде на сторінку, що вже існує — інакше слот чекає.</p></div>
+  </div>
+  <div class="wfd">Висота: +90 px · +12–16 посилань углиб · вхід у 3 непокриті кластери</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">Г-10</span><span class="tt">Футер</span><span class="sb">службова навігація</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">Категорії · Службові · Контакти · Соцмережі</div><div class="ann bad">поріг безкошт. доставки у футері «від €50», у hero-банері — «від €40»: дві цифри на одній сторінці</div><p class="note">Футер повний і клікабельний — дефект не в структурі, а в даних: конфлікт порога доставки прямо на головній.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">Категорії · Службові (+FAQ, +Аутлет) · Контакти · Соцмережі</div><div class="m "><b>Безкоштовна доставка від €50</b> — значення з ЄДИНОГО конфіга, те саме скрізь</div><div class="ann good">+2 посилання (FAQ, Аутлет) · поріг із конфіга — задача W2</div><p class="note">Один поріг з одного джерела правди на всіх 640+ сторінках. Футер додає входи в нові сторінки (FAQ, Аутлет).</p></div>
+  </div>
+  <div class="wfd">Висота: без змін · +2 посилання · механіка: поріг із конфіга</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 18/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · Каталог 1/5 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети поблочно · Каталог · 1/5</span>
+    <h1 class="big" style="font-size:20pt">Каталог (PLP) · 10 блоків: полиця стає консультантом.</h1>
+    <div class="wfb">
+  <div class="bh"><span class="n">К-01</span><span class="tt">Крихти та H1</span><span class="sb">орієнтація</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">Головна › Сковороди</div><div class="m "><b>H1: Сковороди</b></div><p class="note">Коректно, але сухо: без кількості й цінового входу; крихти без розмітки.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">Головна › Сковороди <span style="color:#6E7C86">(+ schema BreadcrumbList)</span></div><div class="m "><b>H1: Сковороди — 142 моделі від €19</b></div><p class="note">H1 з кількістю і ціною «від» відповідає на два перші питання відвідувача ще до скролу — і дає витягуваний факт для машини.</p></div>
+  </div>
+  <div class="wfd">Висота: без змін · +2 факти в H1 · schema BreadcrumbList</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">К-02</span><span class="tt">Категорійний опис</span><span class="sb">консультація + SEO</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m "><span style="color:#6E7C86">«Великий вибір сковорід за вигідними цінами…» — 2 рядки, згорнуто</span></div><div class="ann bad">нуль користі: ні як обрати діаметр, ні чим відрізняються покриття</div><p class="note">Текст заради тексту. Не консультує людину і не відповідає машині.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m "><b>Як обрати сковороду за 3 кроки</b></div><div style="margin-bottom:1mm"><span class="ch g">1. Плита: індукція/газ/скло</span><span class="ch g">2. Покриття: чавун/кераміка/антипригар</span><span class="ch g">3. Діаметр: 20–28 см = порції</span></div><div class="m "><span class="lnk">Повний гайд з таблицею порівняння покриттів → (блог, кластер 74k)</span></div><p class="note">Гайд-блок з якорями: 3 критерії вибору одним екраном + вихід на повний гайд. Це і є AEO-відповідь категорії.</p></div>
+  </div>
+  <div class="wfd">Висота: +110 px · +4 посилання (якоря + гайд) · вхід у кластер «як обрати»</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 19/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · Каталог 2/5 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети поблочно · Каталог · 2/5</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">К-03</span><span class="tt">Фільтри</span><span class="sb">найдорожчий дефект каталогу</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">Фільтри: Діаметр ▾ · Покриття ▾ · Матеріал ▾ · Ціна ▾</div><div class="ann bad">46% SKU без атрибутів → «діаметр 24 см» показує 12 із 38 реальних. Фільтр БРЕШЕ, покупець впевнений, що бачить усе · 📱 фільтри за 2 тапами, таргети 32px</div><p class="note">Механіка фільтрів справна — брешуть ДАНІ. Це дефект джерела (довідник атрибутів), він же ламає фіди Merchant (d07).</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">Фільтри: Діаметр ▾ · Покриття ▾ · Плита ▾ · Ціна ▾ <span style="color:#2A6D5C">— 38/38 у видачі</span></div><div class="m ">📱 [Фільтри] — панель знизу одним тапом, таргети ≥44px, обраний фільтр — chip зверху</div><div class="ann good">передумова: атрибутика топ-200 SKU = 100% (Гант, задача 48) — фільтр чесний лише після даних</div><p class="note">Спершу дані (задача 48), потім UX: панель знизу на mobile, chips обраного, лічильник результатів на кнопці.</p></div>
+  </div>
+  <div class="wfd">Висота: без змін · механіка: чесні фільтри 📱 · розблоковує так само фіди d07</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">К-04</span><span class="tt">Сортування за замовчуванням</span><span class="sb">перший екран = гроші</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">Сортувати: <b>за новизною ▾</b></div><div class="ann bad">перший ряд: новинки без відгуків, 2 з них OOS · hero-SKU (58% виручки категорії) — на 2-му екрані</div><p class="note">Дефолт «за новизною» ховає товари, які реально купують, і показує порожні картки без доказів.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">Сортувати: <b>за популярністю ▾</b> (продажі × наявність)</div><div class="ann good">OOS — автоматично в кінець видачі · hero-SKU на першому екрані</div><p class="note">Перший екран продає найкраще, що є в наявності. Правило «OOS у кінець» — механіка, не ручне сортування.</p></div>
+  </div>
+  <div class="wfd">Висота: без змін · механіка: дефолт популярність + OOS-демоушен</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 20/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · Каталог 3/5 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети поблочно · Каталог · 3/5</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">К-05</span><span class="tt">Картка в лістингу</span><span class="sb">міні-PDP</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="cards c3"><div class="card"><div class="ph"></div><b>Сковорода гриль 26</b>€46 · ★4.8 · В наявності</div><div class="card"><div class="ph"></div><b>Млинцева 22</b>€24 · ★4.6 · В наявності</div><div class="card"><div class="ph"></div><b>Wok 28</b>€52 · ★4.7 · В наявності</div></div><div class="ann bad">без атрибутів-критеріїв вибору (діаметр/покриття) · без «в кошик» · без 2-го фото на ховер</div><p class="note">Картка називає товар, але не дає порівняти по головних критеріях без відкриття PDP.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="cards c3"><div class="card nw"><div class="ph"></div><b>Сковорода гриль 26</b>€46 ★4.8<br>чавун · 26 см · всі плити [🛒]</div><div class="card nw"><div class="ph"></div><b>Млинцева 22</b>€24 ★4.6<br>антипригар · 22 см · газ/скло [🛒]</div><div class="card nw"><div class="ph"></div><b>Wok 28</b>€52 ★4.7<br>сталь · 28 см · індукція [🛒]</div></div><div class="ann good">атрибути-бейджі з довідника · швидке додавання · друге фото на ховер</div><p class="note">Три атрибути-бейджі роблять лістинг порівнюваним; міні-кошик прибирає зайвий перехід для тих, хто вже обрав.</p></div>
+  </div>
+  <div class="wfd">Висота: +30 px/картка · механіка: quick-add · порівнюваність без PDP</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">К-06</span><span class="tt">OOS у лістингу</span><span class="sb">керування наявністю</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m "><div class="ph"></div><b>Каструля 4л</b> €38 <span style="color:#6E7C86">(сіра плашка «немає»)</span> → клік → мертва PDP</div><div class="ann bad">OOS виглядає як живий товар; на PDP — ні дати поставки, ні підписки</div><p class="note">Клік у нікуди: покупець втрачений, попит не зафіксований.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m "><div class="ph"></div><b>Каструля 4л</b> €38 · <span style="color:#D6362B">закінчилась</span> · <span class="lnk">[Повідомити про наявність]</span></div><div class="ann good">OOS в кінці видачі (К-04) · кнопка підписки ловить попит у базу (живить CRM, d08) · очікувана дата, якщо є в ERP</div><p class="note">OOS перестає бути тупиком: попит конвертується в підписку — це і trigger-лист CRM, і сигнал закупівлі (d10).</p></div>
+  </div>
+  <div class="wfd">Висота: без змін · механіка: підписка на наявність · +лід у базу з кожного OOS-кліку</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 21/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · Каталог 4/5 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети поблочно · Каталог · 4/5</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">К-07</span><span class="tt">Пагінація</span><span class="sb">довгі категорії</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">← 1 <b>2</b> 3 … 8 →</div><div class="ann bad">сторінки ?page=N відкриті до індексації без правил — частина сміття ×8.6 (том C)</div><p class="note">UX справний; дефект — SEO-гігієна пагінації.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">← 1 <b>2</b> 3 … 8 → <span style="color:#6E7C86">+ canonical-правила, задача 60</span></div><p class="note">Та сама пагінація з правилами індексації: сміття закривається, вага збирається на категорії.</p></div>
+  </div>
+  <div class="wfd">Висота: без змін · механіка: canonical/rel-правила (том C, задача 60)</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">К-08</span><span class="tt">Підкатегорії / теги</span><span class="sb">звуження вибору</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m miss">ПЛИТОК-ТЕГІВ НЕМАЄ</div><div class="m ghost">підкатегорії живуть тільки в меню і в зламаних фільтрах (К-03)</div><div class="ann bad">популярні звуження (гриль / млинцеві / індукція) не мають своїх дверей</div><p class="note">Найчастіші сценарії звуження вибору не існують як сторінки — ні для людей, ні для пошуку.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div style="margin-bottom:1mm"><span class="ch g">Гриль (18)</span><span class="ch g">Млинцеві (12)</span><span class="ch g">Для індукції (44)</span><span class="ch g">Чавунні (26)</span><span class="ch g">Wok (9)</span><span class="ch g">Набори (14)</span></div><div class="ann good">ряд плиток зверху PLP: UX-звуження одним тапом + каркас майбутніх SEO-хабів (том C, кластери)</div><p class="note">Плитки-теги = двері в найчастіші звуження. Кожна згодом стає хабом з власним гайд-блоком (W3).</p></div>
+  </div>
+  <div class="wfd">Висота: +50 px · +6 посилань · каркас 6 майбутніх хабів</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 22/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · Каталог 5/5 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети поблочно · Каталог · 5/5</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">К-09</span><span class="tt">Довіра на PLP</span><span class="sb">блока немає — відрисовано з нуля</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m miss">БЛОКА НЕМАЄ</div><div class="m ghost">весь траст лишився на головній — 24% входів заходять повз неї</div><div class="ann bad">людина з реклами/пошуку потрапляє на PLP і не бачить жодної причини довіряти</div><p class="note">Чверть трафіку входить одразу в каталог — і для них сайт «без обличчя».</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m "><span style="text-align:center;display:block">✓ безкошт. доставка від €50 · ✓ повернення 14 дн · ✓ офіційний товар — <span class="lnk">детальніше</span></span></div><p class="note">Тонка смуга під фільтрами: три відповіді + одне посилання. Не зʼїдає висоту, знімає базову недовіру на вході.</p></div>
+  </div>
+  <div class="wfd">Висота: +28 px · +1 посилання · траст для 24% прямих входів</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">К-10</span><span class="tt">Низ PLP</span><span class="sb">блока немає — відрисовано з нуля</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m miss">БЛОКА НЕМАЄ</div><div class="m ghost">після пагінації — одразу футер</div><div class="ann bad">категорія з найбільшим трафіком нікуди його не передає</div><p class="note">Тупик: ні суміжних категорій, ні запитів кластера, ні виходу на гайд.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m "><b>Суміжні категорії:</b> Кришки до сковорід · Засоби догляду · Кухонні лопатки</div><div style="margin-bottom:1mm"><span class="ch g">сковорода гриль чавунна</span><span class="ch g">для індукції 24 см</span><span class="ch g">млинцева з низьким бортом</span><span class="ch g">як обрати покриття — гайд</span></div><div class="ann good">суміжні категорії (пари з d03) + топ-запити кластера + гайд</div><p class="note">Низ сторінки роздає вагу і трафік: суміжні категорії за парами покупок, запити — тільки на існуючі сторінки.</p></div>
+  </div>
+  <div class="wfd">Висота: +85 px · +7–9 посилань углиб</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 23/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · PDP 1/7 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети поблочно · PDP · 1/7</span>
+    <h1 class="big" style="font-size:20pt">PDP · 13 блоків: картка, яка замінює «помацати».</h1>
+    <div class="wfb">
+  <div class="bh"><span class="n">П-01</span><span class="tt">Крихти та H1</span><span class="sb">ідентифікація товару</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">Головна › Сковороди › <b>H1: Сковорода гриль 26 см</b> · ★4.8 (7)</div><p class="note">Добре: крихти повні, рейтинг біля H1. Бракує головного критерію вибору — покриття.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">Головна › Сковороди › Чавунні › <b>H1: Сковорода гриль чавунна 26 см</b> · ★4.8 (12 на модель)</div><p class="note">H1 з покриттям = запит, яким шукають; крихти через підкатегорію (К-08); рейтинг спільний на модель (П-04).</p></div>
+  </div>
+  <div class="wfd">Висота: без змін · H1 = пошуковий запит · +1 рівень крихт</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">П-02</span><span class="tt">Галерея</span><span class="sb">5 типів медіа</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="cards c4"><div class="card"><div class="ph"></div>предметне</div><div class="card"><div class="ph"></div>предметне</div><div class="card"><div class="ph"></div>предметне</div><div class="card"><div class="ph"></div>упаковка</div></div><div class="ann bad">немає: інтерʼєрного (масштаб!), макро поверхні, відео, фото покупців · 📱 зум не працює</div><p class="note">Для товару «на дотик» галерея — головний продавець, і вона показує лише «як виглядає», не «яке воно».</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="cards c4"><div class="card nw"><div class="ph"></div>предметне ×3</div><div class="card nw"><div class="ph"></div><b>інтерʼєр:</b> на плиті, поруч тарілка</div><div class="card nw"><div class="ph"></div><b>макро:</b> поверхня, ручка</div><div class="card nw"><div class="ph"></div><b>відео 25с</b> + UGC з відгуків</div></div><div class="ann good">пʼять типів медіа · mobile-зум · UGC підтягується з відгуків (Г-08/П-08)</div><p class="note">Інтерʼєрне фото відповідає на «який розмір насправді», макро — на «яка поверхня», відео — на «як воно в руці». Це прямий важіль проти повернень «не той розмір» (5.8%).</p></div>
+  </div>
+  <div class="wfd">Висота: без змін · +4 типи медіа · 📱 зум · важіль повернень</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 24/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · PDP 2/7 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети поблочно · PDP · 2/7</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">П-03</span><span class="tt">Блок покупки</span><span class="sb">ціна · наявність · CTA</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m "><b>€46</b> · <span style="color:#2A6D5C">Є в наявності</span></div><div class="m ">Кількість: [− 1 +]</div><div class="m cta mk">КУПИТИ</div><div class="ann bad">строк і вартість доставки — ВІДСУТНІ біля кнопки (знахідка 05-01) · мікро-довіри під CTA немає</div><p class="note">Рішення ухвалюється тут, а відповіді «коли отримаю і скільки разом» — за три екрани, у checkout.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m "><b>€46</b> · <span style="color:#2A6D5C">В наявності · відправимо сьогодні до 15:00</span></div><div class="m "><b>Доставка у <u>Київ</u>: 1–2 дні · €3 · безкоштовно від €50</b></div><div class="m cta mk">КУПИТИ</div><div class="m "><span style="text-align:center;display:block">✓ повернення 14 дн · ✓ оригінал · ✓ безпечна оплата</span></div><p class="note">Строк+вартість доставки в блоці покупки (W1, задача 23) + рядок мікро-довіри під CTA. Найдорожчий фікс тома — вже в Ганті.</p></div>
+  </div>
+  <div class="wfd">Висота: +60 px · +3 відповіді в момент рішення · W1, задача 23</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">П-04</span><span class="tt">Варіанти (діаметри)</span><span class="sb">структура моделі</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">Окремі картки-URL: <span class="ch">24 см · ★7 відг.</span> <span class="ch">26 см · ★3</span> <span class="ch">28 см · ★2</span></div><div class="ann bad">відгуки роздроблені (7+3+2 замість 12) · канібалізація у видачі · дубль-контент ×3</div><p class="note">Три сторінки конкурують між собою і діляють доказ на трьох. Чим довше — тим дорожче зшивати.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">Одна модель: <b>Сковорода гриль чавунна</b> · діаметр: <span class="ch g">24</span> <span class="ch g">26 ✓</span> <span class="ch g">28</span></div><div class="ann good">спільні відгуки (12) · canonical + hasVariant · вибір діаметра без перезавантаження</div><p class="note">Одна картка з перемикачем: доказ складається, видача не канібалізується, покупець бачить всі розміри одразу.</p></div>
+  </div>
+  <div class="wfd">Висота: −0 px · механіка: варіанти в моделі · +5 відгуків до доказу одразу</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 25/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · PDP 3/7 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети поблочно · PDP · 3/7</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">П-05</span><span class="tt">Характеристики</span><span class="sb">8 параметрів</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">Діаметр: 26 см · Покриття: чавун · Індукція: так · Вага: 2.9 кг · …</div><div class="ann bad">«Індукція: так» — технічно; без перекладу на мову рішення</div><p class="note">Дані повні (сильний блок), але говорять мовою складу, не покупця.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">Діаметр: 26 см — <b>2–3 порції</b> · Покриття: чавун — <b>служить десятиліттями, любить олію</b> · Плити: <b>всі, включно з індукцією</b> · Вага: 2.9 кг — <b>відчутна, тримає жар</b></div><p class="note">Кожен параметр + вигода поруч. Джерело — довідник атрибутів (той самий, що чинить фільтри К-03 і фіди d07).</p></div>
+  </div>
+  <div class="wfd">Висота: +40 px · 8 перекладів вигодою · AEO-витягуваність</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">П-06</span><span class="tt">Масштаб і тактильність</span><span class="sb">блока немає — відрисовано з нуля</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m miss">БЛОКА НЕМАЄ</div><div class="m ghost">«26 см» — цифра без відчуття: скільки порцій? важка?</div><div class="ann bad">прямий корінь повернень «не той розмір» (частина 5.8%, d10)</div><p class="note">Найдорожче відсутнє: покупець не може «взяти в руки» — а сайт навіть не намагається це замінити.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m "><div class="ph"></div><b>Фото на плиті поруч зі стандартною тарілкою 24 см</b></div><div class="cards c3"><div class="card nw"><b>Порції:</b> 2–3</div><div class="card nw"><b>У руці:</b> відчутно важка — це норма чавуну</div><div class="card nw"><b>Плита:</b> займе одну конфорку 22+ см</div></div><div class="ann good">масштаб + вага словами + порції: три відповіді на «яке воно насправді»</div><p class="note">Блок «як це в житті»: інтерʼєрне фото з еталоном розміру + три факти. Найдешевший важіль проти повернень.</p></div>
+  </div>
+  <div class="wfd">Висота: +140 px · −повернення «не той розмір» · 3 AEO-факти</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 26/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · PDP 4/7 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети поблочно · PDP · 4/7</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">П-07</span><span class="tt">Догляд</span><span class="sb">заперечення №2</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">▸ Догляд (аккордеон, згорнуто)</div><div class="ann bad">ключове правило сховано · виходу на гайд немає</div><p class="note">Відповідь існує, але захована — і не веде нікуди далі.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m "><b>Головне: не мити агресивною хімією, прожарювати з олією раз на місяць.</b> ▸ повний догляд</div><div class="m "><span class="lnk">Гайд «Догляд за чавуном» → (кластер 9.9k запитів/міс)</span></div><p class="note">Головне правило назовні (знімає страх «складно доглядати»), решта в аккордеоні, вихід на гайд — вхід кластера.</p></div>
+  </div>
+  <div class="wfd">Висота: +25 px · +1 посилання · вхід у кластер догляду</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">П-08</span><span class="tt">Відгуки</span><span class="sb">доказ на моделі</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">★4.8 · 7 відгуків (тільки цього діаметра) · з датами · відповіді магазину є</div><div class="ann bad">без фото покупців · без розбивки 5/4/3 · збір не автоматизовано</div><p class="note">Гігієна хороша (дати, відповіді), але доказ слабший, ніж міг би: без фото і роздроблений по варіантах.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">★4.8 · <b>12 на модель</b> · розбивка: 5★ ×9 · 4★ ×2 · 3★ ×1</div><div class="cards c2"><div class="card nw"><div class="ph"></div><b>Катерина · 12.08</b>фото стейків · «мию звичайною губкою»</div><div class="card nw"><div class="ph"></div><b>Ігор · 29.07</b>фото на плиті · «важка, але жар тримає ідеально»</div></div><div class="ann good">фото у відгуках · спільні на модель (П-04) · автозапит після доставки (W2, задача 53)</div><p class="note">Фото-відгуки замінюють «помацати», розбивка чесна, автозбір живить доказ без ручної праці.</p></div>
+  </div>
+  <div class="wfd">Висота: +90 px · +UGC у галерею · автозбір з W2</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 27/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · PDP 5/7 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети поблочно · PDP · 5/7</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">П-09</span><span class="tt">Q&A</span><span class="sb">блока немає — відрисовано з нуля</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m miss">БЛОКА НЕМАЄ</div><div class="m ghost">«чи підходить для індукції?», «можна в посудомийку?» — живуть у чаті підтримки і вмирають там</div><div class="ann bad">питання, що зупиняють покупку, не мають публічних відповідей</div><p class="note">Кожне питання в чаті — сигнал: цієї відповіді немає на сторінці. Зараз сигнал викидається.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m "><b>Питання і відповіді (4)</b></div><div class="m "><b>— Чи підходить для індукції?</b><br>— Так, для всіх плит. Дно 5 мм, феромагнітне. <span style="color:#6E7C86">· магазин, 08.08</span></div><div class="m "><b>— Можна мити в посудомийці?</b><br>— Не варто: чавун втратить прожарку. Губка + олія. <span style="color:#6E7C86">· магазин, 01.08</span></div><div class="ann good">розмітка QAPage · джерело — реальні питання підтримки · форма «поставити питання»</div><p class="note">Публічні Q&A: конверсія (заперечення зняте на місці) + AEO/GEO (машина цитує готові відповіді).</p></div>
+  </div>
+  <div class="wfd">Висота: +120 px · +QAPage-розмітка · чат підтримки → контент</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">П-10</span><span class="tt">Доставка й оплата в картці</span><span class="sb">аккордеон</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">▸ Доставка і оплата: «безкоштовно від €40»</div><div class="ann bad">у футері — €50, на сторінці доставки — €45: ТРИ значення порога на сайті · дефект джерела, множиться на 640 карток</div><p class="note">Класика розсинхрону: текст набитий руками в трьох місцях.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">▸ Доставка і оплата: «безкоштовно від <b>€50</b>» <span style="color:#6E7C86">— значення з конфіга</span></div><div class="ann good">єдине джерело правди (конфіг) · правка в одному місці міняє всі 640 карток</div><p class="note">Поріг живе в конфігурації і рендериться скрізь однаково. Правиться раз — працює всюди (W2).</p></div>
+  </div>
+  <div class="wfd">Висота: без змін · механіка: конфіг-джерело · знімає конфлікт ×640</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 28/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · PDP 6/7 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети поблочно · PDP · 6/7</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">П-11</span><span class="tt">Допродаж</span><span class="sb">пари з d03</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">«Схожі товари» — 8 випадкових SKU тієї ж категорії</div><div class="ann bad">природні пари (кришка 26 см — 23% спільних покупок, догляд — 11%) не використані</div><p class="note">«Схожі» показують конкурентів товару замість доповнень до нього.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m "><b>Підійде кришка:</b> Кришка скляна 26 см · €9 [+ у кошик]</div><div class="m "><b>З цим купують:</b> Засіб догляду €6 · Лопатка деревʼяна €4</div><div class="m "><span style="color:#6E7C86">Схожі товари — нижче, третім рядом</span></div><p class="note">Три ряди за силою звʼязку: точна пара → часті доповнення → схожі. Дані пар уже порахонані в d03.</p></div>
+  </div>
+  <div class="wfd">Висота: +70 px · AOV +€1.5–2.5 (оцінка d03) · пари замість випадковості</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">П-12</span><span class="tt">Перелінковка вниз</span><span class="sb">блока немає — відрисовано з нуля</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m miss">БЛОКА НЕМАЄ</div><div class="m ghost">під відгуками — одразу футер</div><div class="ann bad">картка з найбільшим органічним трафіком нікуди його не роздає</div><p class="note">PDP збирає трафік і ховає його у футер.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div style="margin-bottom:1mm"><span class="ch g">Чавунні сковороди</span><span class="ch g">Гриль 24–28 см</span><span class="ch g">Для індукції</span><span class="ch g">Серія «Класика»</span><span class="ch g">Гайд: догляд за чавуном</span></div><div class="ann good">теги за діаметром/покриттям/серією — тільки на існуючі сторінки + крихти внизу</div><p class="note">Ряд тегів роздає вагу на підкатегорії і гайди; правило те саме: посилання лише на живі сторінки.</p></div>
+  </div>
+  <div class="wfd">Висота: +45 px · +5 посилань углиб</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 29/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · PDP 7/7 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети поблочно · PDP · 7/7</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">П-13</span><span class="tt">Schema-розмітка</span><span class="sb">невидимий блок</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">Product + Offer ✓</div><div class="ann bad">без AggregateRating (зірок у SERP немає) · без QAPage/FAQ</div><p class="note">База є; без зірок картка програє CTR конкурентам у видачі.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">Product + Offer + <b>AggregateRating</b> + <b>QAPage</b> ✓ <span style="color:#6E7C86">(W2, задача 50 — топ-40 SKU спершу)</span></div><p class="note">Повний набір розмітки: зірки в SERP (+CTR 12–18% на позиціях) і Q&A для AI-видач.</p></div>
+  </div>
+  <div class="wfd">Висота: 0 px (невидимий) · +зірки в SERP · +QAPage</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 30/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · Кошик 1/4 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети поблочно · Кошик · 1/4</span>
+    <h1 class="big" style="font-size:20pt">Кошик · 8 блоків: тупик стає маршрутом до порога.</h1>
+    <div class="wfb">
+  <div class="bh"><span class="n">КШ-01</span><span class="tt">Склад кошика</span><span class="sb">позиції</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">🖼 Сковорода гриль 26 · €46 · [− 1 +] · ✕</div><div class="m "><span style="color:#6E7C86">зберігається між сесіями ✓</span></div><p class="note">Сильний блок: редагування, збереження, варіант видно. Мінімальний апгрейд.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">🖼 Сковорода гриль 26 · €46 · [− 1 +] · ✕ · <span class="lnk">зберегти на потім</span></div><p class="note">«Зберегти на потім» ловить тих, хто «ще подумає» — товар не зникає, а список живить retention-лист (d08).</p></div>
+  </div>
+  <div class="wfd">Висота: +18 px · +список відкладеного → CRM</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">КШ-02</span><span class="tt">Доставка в кошику</span><span class="sb">момент відвалу</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">Разом: <b>€46</b></div><div class="m "><span style="color:#6E7C86">«Вартість доставки — на наступному кроці»</span></div><div class="ann bad">це і є момент відвалу — журні-тест, крок 7 · головне питання етапу без відповіді</div><p class="note">Кошик мовчить про повну суму — і покупець іде «порахувати потім», тобто ніколи.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">Доставка у <u>Київ ▾</u>: НП 1–2 дні · <b>€3</b> (безкоштовно від €50)</div><div class="m ">Разом з доставкою: <b>€49</b></div><p class="note">Місто визначається гео/останнім замовленням, вартість і строк — ДО checkout. W1, задача 24.</p></div>
+  </div>
+  <div class="wfd">Висота: +45 px · відповідь на головне питання етапу · W1</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 31/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · Кошик 2/4 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети поблочно · Кошик · 2/4</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">КШ-03</span><span class="tt">Прогрес до безкошт. доставки</span><span class="sb">блока немає — відрисовано з нуля</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m miss">БЛОКА НЕМАЄ</div><div class="m ghost">поріг існує (€40? €45? €50?) — кошик про нього мовчить</div><div class="ann bad">найдешевший AOV-важіль e-commerce не використаний</div><p class="note">Покупцю з кошиком €46 бракує €4 до безкоштовної доставки — і він про це не знає.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m "><b>До безкоштовної доставки — €4</b> &nbsp; ▓▓▓▓▓▓▓▓▓░ 92%</div><div class="m ">Добивка: Кришка скляна 26 см €9 [+] · Засіб догляду €6 [+]</div><p class="note">Прогрес-бар + добивки з пар d03 (не випадкові товари). Класична механіка з найшвидшою окупністю.</p></div>
+  </div>
+  <div class="wfd">Висота: +55 px · AOV-важіль · добивки з пар d03</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">КШ-04</span><span class="tt">Допродаж у кошику</span><span class="sb">блока немає — відрисовано з нуля</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m miss">БЛОКА НЕМАЄ</div><div class="ann bad">кришка до сковороди і догляд — природні добивки саме тут — відсутні</div><p class="note">Момент «вже купую» — найкращий для доповнень; зараз він порожній.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m "><b>До вашого кошика пасує:</b></div><div class="cards c3"><div class="card nw"><div class="ph"></div><b>Кришка 26 см</b>€9 [+]</div><div class="card nw"><div class="ph"></div><b>Засіб догляду</b>€6 [+]</div><div class="card nw"><div class="ph"></div><b>Лопатка</b>€4 [+]</div></div><p class="note">Один ряд, тільки пари до складу кошика (d03), додавання одним тапом без перезавантаження.</p></div>
+  </div>
+  <div class="wfd">Висота: +70 px · AOV +€1.5–2.5 разом з КШ-03</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 32/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · Кошик 3/4 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети поблочно · Кошик · 3/4</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">КШ-05</span><span class="tt">Промокод</span><span class="sb">поле-пастка</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">Промокод: [__________] [Застосувати]</div><div class="ann bad">розгорнуте завжди — запрошення піти шукати знижку в купонники</div><p class="note">Відкрите поле промокода = «десь є знижка, якої у вас немає». Класичний відтік.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m "><span class="lnk">маю промокод ▾</span> <span style="color:#6E7C86">(розгортається кліком)</span></div><p class="note">Згорнуто в посилання: хто має код — знайде, хто не має — не піде шукати.</p></div>
+  </div>
+  <div class="wfd">Висота: −30 px · −відтік у купонники</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">КШ-06</span><span class="tt">Довіра на кроці</span><span class="sb">блока немає — відрисовано з нуля</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m miss">БЛОКА НЕМАЄ</div><div class="ann bad">ні повернення, ні гарантії, ні безпеки оплати в момент рішення</div><p class="note">Останні сумніви перед оформленням — і жодної відповіді поруч.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m "><span style="text-align:center;display:block">✓ повернення 14 дн · ✓ офіційний товар · ✓ безпечна оплата (3-D Secure)</span></div><p class="note">Один рядок мікро-довіри між сумою і CTA. Не зʼїдає екран.</p></div>
+  </div>
+  <div class="wfd">Висота: +22 px · 3 відповіді в момент сумніву</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 33/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · Кошик 4/4 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети поблочно · Кошик · 4/4</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">КШ-07</span><span class="tt">CTA до оформлення</span><span class="sb">шлях далі</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m cta">ОФОРМИТИ ЗАМОВЛЕННЯ</div><div class="ann bad">📱 при 2+ товарах кнопка — під сгибом</div><p class="note">Кнопка помітна на desktop; на mobile зникає під списком товарів.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m cta mk">ОФОРМИТИ — РАЗОМ €49</div><div class="m "><span style="color:#6E7C86">📱 sticky знизу екрана, завжди видима, сума в кнопці</span></div><p class="note">Sticky-CTA на mobile із сумою прямо в кнопці: рішення і його ціна в одному місці.</p></div>
+  </div>
+  <div class="wfd">Висота: без змін · механіка: 📱 sticky + сума в CTA</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">КШ-08</span><span class="tt">Порожній кошик</span><span class="sb">глухий кут</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m "><span style="text-align:center;display:block;color:#6E7C86">Ваш кошик порожній</span></div><div class="ann bad">і все. Нуль виходів</div><p class="note">Стан, у який потрапляє кожен другий відвідувач кошика — і це тупик.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m "><b>Кошик порожній — ось з чого почати:</b></div><div class="cards c3"><div class="card nw"><div class="ph"></div><b>Хіти тижня</b></div><div class="card nw"><div class="ph"></div><b>Ви дивились</b>Сковорода гриль 26</div><div class="card nw"><div class="ph"></div><b>Аутлет −40%</b></div></div><div class="ann good">хіти + нещодавно переглянуті + вхід в Аутлет</div><p class="note">Порожній стан продає: переглянуте повертає до наміру, хіти і Аутлет дають новий.</p></div>
+  </div>
+  <div class="wfd">Висота: +90 px · +3–5 посилань · тупик → вітрина</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 34/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · Checkout 1/4 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети поблочно · Checkout · 1/4</span>
+    <h1 class="big" style="font-size:20pt">Checkout · 8 блоків: нуль сюрпризів до кнопки «Оплатити».</h1>
+    <div class="wfb">
+  <div class="bh"><span class="n">Ч-01</span><span class="tt">Гостьове оформлення</span><span class="sb">єдина пʼятірка</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">Оформити без реєстрації ✓ · після покупки — пропозиція акаунта</div><div class="ann good">еталонна механіка — не чіпати</div><p class="note">Рідкісний випадок: блок уже еталонний.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">Без змін. Після оплати: «Створити акаунт одним кліком — замовлення вже в ньому»</div><p class="note">Залишаємо як є; підсилюємо лише пост-оплатну пропозицію (звʼязка з Ч-08).</p></div>
+  </div>
+  <div class="wfd">Висота: без змін · зразковий блок</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">Ч-02</span><span class="tt">Поля форми</span><span class="sb">9 → 5</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">Імʼя* · Прізвище* · Телефон* · Email* · Місто* · Відділення* · Вулиця* · Коментар* · <b>«Як дізнались?»*</b></div><div class="ann bad">9 обовʼязкових · опитування «як дізнались» — обовʼязкове поле НА КРОЦІ ОПЛАТИ</div><p class="note">Кожне зайве поле — мінус до completion; опитування на оплаті — класична самострільна механіка.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">Імʼя* · Телефон* · Email* · Місто* · Відділення*</div><div class="m "><span style="color:#6E7C86">«Як дізнались?» — опційне питання ПІСЛЯ оплати, на сторінці «Дякуємо» (d04)</span></div><p class="note">5 полів — мінімум для НП-доставки. Опитування переїжджає туди, де вже нічого не зірве.</p></div>
+  </div>
+  <div class="wfd">Висота: −120 px · −4 поля · W2, задача 30</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 35/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · Checkout 2/4 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети поблочно · Checkout · 2/4</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">Ч-03</span><span class="tt">Автозаповнення</span><span class="sb">місто · відділення</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">Місто: [ручний ввід] · Відділення: [ручний ввід]</div><div class="ann bad">без підказок НП · autocomplete браузера зламаний кастомними полями</div><p class="note">Покупець друкує «Київ» руками і вгадує номер відділення по памʼяті.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">Місто: [Ки… → <b>Київ</b> ▾] · Відділення: [№12, вул. … ▾ — 3 найближчі за гео]</div><div class="ann good">API Нової Пошти + autocomplete-атрибути · збережені адреси для повторних</div><p class="note">Підказки НП з гео-сортуванням: два поля заповнюються за чотири тапи.</p></div>
+  </div>
+  <div class="wfd">Висота: без змін · механіка: НП-API + autocomplete · W2, задача 30</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">Ч-04</span><span class="tt">Вартість доставки</span><span class="sb">сюрприз у кінці</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">…заповнили адресу… → <b>+ Доставка: €3</b></div><div class="ann bad">вартість зʼявляється ТІЛЬКИ тут — топ-причина відмов Baymard, підтверджено воронкою (43.6%)</div><p class="note">Сюрприз на останньому кроці — головний вбивця completion.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">Доставка: <b>€3 · 1–2 дні</b> — <span style="color:#2A6D5C">відома ще з кошика (КШ-02), тут лише підтверджується</span></div><p class="note">Ніяких нових цифр у checkout: усе назване раніше, крок оплати лише підтверджує.</p></div>
+  </div>
+  <div class="wfd">Висота: без змін · нуль сюрпризів · звʼязка з КШ-02</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 36/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · Checkout 3/4 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети поблочно · Checkout · 3/4</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">Ч-05</span><span class="tt">Способи оплати</span><span class="sb">карта · AP · накладений</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">💳 Карта · 🍎 Apple Pay · 📦 Накладений платіж</div><div class="ann bad">без BLIK для PL (−31% completion PL) · Apple Pay redirect губить GA4-purchase</div><p class="note">Набір правильний для UA; для PL бракує локального стандарту, а вимірювання дірке.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">💳 Карта · 🍎 Apple Pay · <b>🇵🇱 BLIK</b> · 📦 Накладений платіж</div><div class="ann good">+BLIK (задача 51) · server-side purchase-подія — Apple Pay більше не губиться (W1, задача 10)</div><p class="note">BLIK — must-have польського чекаута; server-side події лагодять і вимірювання, і аудиторії реклами.</p></div>
+  </div>
+  <div class="wfd">Висота: +30 px · +BLIK · чесний purchase у GA4</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">Ч-06</span><span class="tt">Підсумок замовлення</span><span class="sb">контроль перед оплатою</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">🖼 Гриль 26 · 1 шт · €46 &nbsp; [змінити → назад у кошик]</div><div class="ann bad">редагування веде назад у кошик зі ВТРАТОЮ введених полів</div><p class="note">Помітив помилку в кількості — плати повторним заповненням усієї форми.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">🖼 Гриль 26 · [− 1 +] · €46 <span style="color:#6E7C86">— редагування inline, поля форми зберігаються</span></div><p class="note">Кількість правиться на місці; стан форми недоторканий.</p></div>
+  </div>
+  <div class="wfd">Висота: без змін · механіка: inline-редагування</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 37/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · Checkout 4/4 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Макети поблочно · Checkout · 4/4</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">Ч-07</span><span class="tt">Довіра на оплаті</span><span class="sb">блока немає — відрисовано з нуля</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m miss">БЛОКА НЕМАЄ</div><div class="ann bad">нуль трасту біля кнопки «Оплатити»</div><p class="note">Момент введення карти — пік недовіри, і саме тут порожньо.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m cta mk">ОПЛАТИТИ €49</div><div class="m "><span style="text-align:center;display:block">🔒 безпечна оплата (3-D Secure) · повернення 14 дн · чек на email</span></div><p class="note">Рядок під кнопкою: безпека + повернення + що прийде. Три страхи — три відповіді.</p></div>
+  </div>
+  <div class="wfd">Висота: +20 px · траст у піковий момент</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">Ч-08</span><span class="tt">Сторінка «Дякуємо»</span><span class="sb">глухий кут → вхід у retention</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">«Дякуємо за замовлення №1234»</div><div class="ann bad">ні що далі, ні трекінг, ні першого кроку CRM</div><p class="note">Найлояльніша секунда клієнта — витрачена на порожню сторінку.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m "><b>Замовлення №1234 прийнято ✓</b></div><div class="cards c3"><div class="card nw"><b>1.</b> Збираємо сьогодні</div><div class="card nw"><b>2.</b> ТТН на email до 18:00</div><div class="card nw"><b>3.</b> Доставка 1–2 дні · трекінг →</div></div><div class="m ">Порада до покупки: <span class="lnk">як прожарити чавун перед першим використанням →</span></div><div class="m ">«Як дізнались про нас?» ▾ (опційно) · <span class="lnk">створити акаунт одним кліком</span></div><p class="note">«Що далі» знімає тривогу; порада — перший контентний дотик (d08); сюди ж переїхало опитування з Ч-02.</p></div>
+  </div>
+  <div class="wfd">Висота: +150 px · вхід у retention · опитування без шкоди</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 38/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.8 · Що дає пакет · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.8 · Що дає весь пакет доробок — було → стане</span>
+    <h1 class="big" style="font-size:22pt">49 правок разом: сайт-візитка<br>стає сайтом-продавцем.</h1>
+    <table class="t" style="margin-top:3mm;font-size:8pt">
+      <tr><th>Показник</th><th class="num">Було</th><th class="num">Стане</th><th>За рахунок чого</th></tr>
+      <tr class="hl"><td><b>Внутрішні посилання з 5 комерційних сторінок</b></td><td class="num">≈38</td><td class="num"><b>≈115–125</b></td><td>довіра-картки, теги, популярні запити, низ PLP/PDP, суміжні</td></tr>
+      <tr><td>Блоки-нулі (немає взагалі)</td><td class="num">12</td><td class="num"><b>0</b></td><td>усі 12 відрисовані і поставлені в чергу W1–W3</td></tr>
+      <tr><td>AEO-витягувані відповіді на шляху</td><td class="num">≈6</td><td class="num"><b>40+</b></td><td>довіра-картки, гайд-блоки, Q&A, переклади характеристик</td></tr>
+      <tr><td>Сегментні входи (подарунок/кухня)</td><td class="num">0</td><td class="num"><b>2</b></td><td>Г-03; добірки наповнюються у W2</td></tr>
+      <tr><td>Входи в довгий хвіст (233k запитів/міс)</td><td class="num">0</td><td class="num"><b>30+</b></td><td>Г-09, К-08, К-10, П-12 — лише на існуючі сторінки</td></tr>
+      <tr><td>Значень порога безкошт. доставки</td><td class="num" style="color:var(--mark)"><b>3</b></td><td class="num"><b>1</b></td><td>конфіг-джерело (Г-10, П-10, КШ-02)</td></tr>
+      <tr><td>Полів у checkout</td><td class="num">9</td><td class="num"><b>5</b></td><td>Ч-02; опитування → «Дякуємо» (Ч-08)</td></tr>
+      <tr><td>Відповідь «скільки разом з доставкою» до checkout</td><td class="num">ні</td><td class="num"><b>у кошику</b></td><td>КШ-02/03 + П-03 — ядро важеля checkout ×1.15</td></tr>
+    </table>
+    <h2 class="st" style="font-size:11.5pt;margin-top:3mm">Порядок впровадження — уже розкладений у Гант</h2>
+    <table class="t" style="font-size:7.9pt">
+      <tr><th>Хвиля</th><th>Блоки з цієї глави</th><th>Задачі Ганта</th></tr>
+      <tr class="hl"><td><b>W1 (дні 0–30)</b></td><td>П-03 доставка в блоці покупки · КШ-02 доставка в кошику · Ч-05 server-side purchase · Г-01 Аутлет-пункт</td><td class="mono">23, 24, 10, 22</td></tr>
+      <tr><td><b>W2 (дні 21–120)</b></td><td>Ч-02/03 поля+НП-API · К-03 фільтри (після атрибутики) · Г-05 довіра-картки · КШ-03/04 прогрес+пари · П-13 schema · Г-10/П-10 конфіг порога · Ч-08 «Дякуємо»</td><td class="mono">30, 48, 50, 53, +беклог A8</td></tr>
+      <tr><td><b>W3 (дні 105–270)</b></td><td>Г-03 сегментні входи · Г-09/К-10 хвости (після хабів тома C) · П-04 варіанти в модель · П-06 масштаб-блок · К-08 теги-хаби</td><td class="mono">55–66, +беклог A8</td></tr>
+    </table>
+    <p class="marg" style="margin-top:2mm">Нові позиції з цієї глави входять у беклог Звіту 4 з ID блоків (Г-01…Ч-08) наступною ревізією; пріоритет — за звʼязкою з важелями Звіту 3 (checkout → mobile → AOV → хвіст). Скриншоти поточного стану кожного блока — у робочих матеріалах тома A.</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 39/40</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">A.9 · Зведення · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава A.9 · Зведення тома A</span>
+    <h1 class="big" style="font-size:24pt">126 із 245. Сайт розповідає про товар —<br>і не допомагає його купити.</h1>
+    <table class="t" style="margin-top:3mm;font-size:8.3pt">
+      <tr><th>Сторінка</th><th class="num">Бал</th><th class="num">Закрито</th><th class="num">Частково</th><th class="num">Відсутні</th><th>Головний дефект</th></tr>
+      <tr><td>Головна</td><td class="num"><b>27/50</b></td><td class="num">2</td><td class="num">5</td><td class="num">3</td><td>довіра іконками; нуль сегментних входів і виходів у хвіст</td></tr>
+      <tr><td>Каталог (PLP)</td><td class="num"><b>24/50</b></td><td class="num">1</td><td class="num">6</td><td class="num">3</td><td>фільтри брешуть (атрибутика 46%); сортування ховає hero-SKU</td></tr>
+      <tr class="hl"><td><b>PDP</b></td><td class="num"><b>36/65</b></td><td class="num">3</td><td class="num">7</td><td class="num">3</td><td>доставка не в блоці покупки; варіанти дроблять модель; масштабу немає</td></tr>
+      <tr class="hl"><td><b>Кошик</b></td><td class="num"><b>21/40</b></td><td class="num">2</td><td class="num">4</td><td class="num">2</td><td>повна сума з доставкою невідома; порога-прогресу немає</td></tr>
+      <tr class="hl"><td><b>Checkout</b></td><td class="num"><b>18/40</b></td><td class="num">1</td><td class="num">5</td><td class="num">2</td><td>9 полів; доставка-сюрприз; «як дізнались» обов'язкове на оплаті</td></tr>
+      <tr><td colspan="6" class="src">+ службові 11 сторінок (гл. A.7): середнє 1.7/5 · FAQ і Аутлет відсутні як сторінки</td></tr>
+      <tr class="hl"><td><b>Разом комерційний шлях</b></td><td class="num"><b>126/245 · 51%</b></td><td colspan="4">профіль стабільний: сильна товарна частина, слабкі — відповіді на заперечення і виходи вглиб</td></tr>
+    </table>
+    <h2 class="st" style="font-size:11.5pt;margin-top:3mm">Топ-10 доробок тома A (всі вже в Ганті або додаються в беклог)</h2>
+    <table class="t" style="font-size:7.9pt">
+      <tr><th>#</th><th>Доробка</th><th>Сторінки</th><th>Критичність</th><th>Гант</th></tr>
+      <tr class="hl"><td class="num">1</td><td>Доставка: строк+вартість у блоці покупки і в кошику</td><td>PDP · Кошик</td><td><span class="sev h">Блокуюча</span></td><td class="mono">23, 24</td></tr>
+      <tr class="hl"><td class="num">2</td><td>Checkout: 5 полів + автозаповнення НП</td><td>Checkout</td><td><span class="sev h">Блокуюча</span></td><td class="mono">30</td></tr>
+      <tr class="hl"><td class="num">3</td><td>Атрибутика → чесні фільтри і фіди</td><td>PLP · фіди</td><td><span class="sev h">Блокуюча</span></td><td class="mono">48</td></tr>
+      <tr><td class="num">4</td><td>Варіанти PDP в одну модель (canonical, спільні відгуки)</td><td>PDP</td><td><span class="sev h">Висока</span></td><td class="mono">+беклог W3</td></tr>
+      <tr><td class="num">5</td><td>Єдине джерело порога доставки (зараз 3 значення)</td><td>всі</td><td><span class="sev h">Висока</span></td><td class="mono">+беклог W2</td></tr>
+      <tr><td class="num">6</td><td>Блоки довіри → картки з відповідями (wireframe)</td><td>Головна</td><td><span class="sev h">Висока</span></td><td class="mono">+беклог W2</td></tr>
+      <tr><td class="num">7</td><td>Прогрес-бар порога + пари в кошику</td><td>Кошик</td><td><span class="sev h">Висока</span></td><td class="mono">+беклог W2</td></tr>
+      <tr><td class="num">8</td><td>Масштаб/тактильність PDP + макро-медіа</td><td>PDP</td><td><span class="sev m">Середня</span></td><td class="mono">+беклог W2–3</td></tr>
+      <tr><td class="num">9</td><td>Сторінки FAQ і Аутлет (аутлет — до розпродажу W1!)</td><td>нові</td><td><span class="sev m">Середня</span></td><td class="mono">22, +беклог</td></tr>
+      <tr><td class="num">10</td><td>«Дякуємо»-сторінка як вхід у retention</td><td>Checkout</td><td><span class="sev m">Середня</span></td><td class="mono">+беклог W2</td></tr>
+    </table>
+    <p class="marg" style="margin-top:2mm">Нові позиції (4–10 без номера) додаються в беклог Звіту 4 наступною ревізією з ID знахідок цього тома (A2-01…A9-10). Оцінки перераховуються на КТ-2 після W1-фіксів.</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 40/40</span></div></div></body></html>

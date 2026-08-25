@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { TEAM, localizeRole } from '@/data/team';
 import { shortOf } from '@/data/xray';
 import { useT, useLp, useLang } from '@/i18n';
+import { useLiteVisuals } from '@/lib/liteVisuals';
 import { band, seg, setLayer as set, useScrollScene } from '@/lib/scene';
 import './system.css';
 
@@ -31,6 +32,7 @@ export function PeopleFilm() {
   const t = useT();
   const lp = useLp();
   const lang = useLang();
+  const lite = useLiteVisuals();
   const fnd = localizeRole(FOUNDER, lang);
   const STANDARD = buildStandard(t);
   const sec = useRef<HTMLElement>(null);
@@ -52,7 +54,7 @@ export function PeopleFilm() {
     <section ref={sec} className="sysx sysx-film sysx-people" aria-label={t('WEEXP — люди: у кожної системи є власник', 'WEEXP — people: every system has an owner')}>
       <div className="sysx-stage">
         <span className="sysx-field" aria-hidden="true" />
-        <div className="pf-bg"><Suspense fallback={null}><CommerceSystem3D fixedProgress={0.56} /></Suspense></div>
+        <div className={'pf-bg' + (lite ? ' is-lite' : '')} aria-hidden="true">{!lite && <Suspense fallback={null}><CommerceSystem3D fixedProgress={0.56} /></Suspense>}</div>
 
         {/* INTRO — теза */}
         <div ref={intro} className="sysx-scene sysx-void">

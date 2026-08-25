@@ -5,9 +5,11 @@
 const DEFAULT_NOTIFY_EMAIL = 'pashasidorenko18@gmail.com';
 
 // Запись лида в Supabase (REST, service-role) — ЭТО и есть «заявка в системе»,
-// которую видит админка /admin. Приём env как в team.js: SUPABASE_URL или
-// VITE_SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY. Возвращает true при успехе.
+// которую видит админка /admin. Требует env SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY.
+// Возвращает true при успешной записи, false при отсутствии env или ошибке.
 async function saveLeadToDb(row) {
+  // Той самий набір env, що й у team.js (який уже працює): приймаємо і VITE_-варіант,
+  // інакше з VITE_SUPABASE_URL заявки тихо не зберігались, хоч команда працює.
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) return false;
@@ -18,20 +20,25 @@ async function saveLeadToDb(row) {
       headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
       body: JSON.stringify(payload),
     });
-    return r.ok;
+    return r.ok ? { ok: true } : { ok: false, status: r.status, body: await r.text().catch(() => '') };
   };
   try {
-    if (await post(row)) return true;
-    // Таблица в старшей форме без части колонок — не теряем заявку: пишем ядро,
-    // а дополнительные поля сворачиваем в comment.
+    // 1) Повна вставка з усіма полями.
+    const full = await post(row);
+    if (full.ok) return true;
+    // 2) Якщо таблиця у старішій формі й бракує колонок (PostgREST 400/PGRST204),
+    //    не втрачаємо заявку — пишемо гарантований мінімум ядра. Так адмінка
+    //    отримає лід навіть без міграції leads.sql.
     const CORE = ['source', 'email', 'phone', 'name', 'comment', 'status'];
     const minimal = {};
     for (const k of CORE) if (row[k] != null) minimal[k] = row[k];
-    const EXTRA = { role: 'Роль', store: 'Магазин', turnover: 'Оборот', task: 'Задача', timeline: 'Терміни', budget: 'Бюджет' };
+    // Додаткові поля (роль/задача/бюджет тощо) складаємо у comment, щоб не втратити.
+    const EXTRA = { role: 'Роль', store: 'Магазин', site: 'Сайт', turnover: 'Оборот', task: 'Задача', timeline: 'Терміни', budget: 'Бюджет' };
     const tail = Object.entries(EXTRA).filter(([k]) => row[k]).map(([k, lbl]) => `${lbl}: ${row[k]}`).join(' · ');
     if (tail) minimal.comment = [minimal.comment, tail].filter(Boolean).join(' — ');
     if (row.diag) minimal.comment = [minimal.comment, `\n${row.diag}`].filter(Boolean).join('');
-    return await post(minimal);
+    const fb = await post(minimal);
+    return fb.ok;
   } catch {
     return false;
   }
@@ -64,12 +71,14 @@ export default async function handler(req, res) {
   const clip = (v, n) => (v ? String(v).slice(0, n) : null);
   const dbOk = await saveLeadToDb({
     source, email: email || null, phone: phone || null,
-    name: clip(b.name, 120), role: clip(b.role, 80), store: clip(b.store, 200),
+    name: clip(b.name, 120), role: clip(b.role, 80), store: clip(b.store, 200), site: clip(b.site, 200),
     turnover: clip(b.turnover, 60), task: clip(b.task, 200), timeline: clip(b.timeline, 80),
     budget: clip(b.budget, 60), comment: clip(b.comment, 2000),
     diag: clip(b.diag, 4000), calc: clip(b.calc, 3000), status: 'new',
   });
 
+  // Уведомление на почту — best-effort. Не настроен Resend → не ошибка,
+  // если заявка уже записана в БД.
   let emailOk = false;
   const lines = [
     `Джерело: ${source}`,
@@ -77,7 +86,8 @@ export default async function handler(req, res) {
     phone && `Телефон: ${phone}`,
     b.name && `Імʼя: ${String(b.name).slice(0, 120)}`,
     b.role && `Роль: ${String(b.role).slice(0, 80)}`,
-    b.store && `Магазин / сайт: ${String(b.store).slice(0, 200)}`,
+    b.store && `Магазин: ${String(b.store).slice(0, 200)}`,
+    b.site && `Сайт: ${String(b.site).slice(0, 200)}`,
     b.turnover && `Оборот / міс: ${String(b.turnover).slice(0, 60)}`,
     b.task && `Задача: ${String(b.task).slice(0, 120)}`,
     b.timeline && `Терміни: ${String(b.timeline).slice(0, 80)}`,
@@ -93,7 +103,7 @@ export default async function handler(req, res) {
         method: 'POST',
         headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          from: NOTIFY_FROM || 'weexp.agency <onboarding@resend.dev>',
+          from: NOTIFY_FROM || 'WEEXP <no-reply@weexp.agency>',
           to: [NOTIFY_EMAIL],
           ...(email ? { reply_to: email } : {}),
           subject: `Лід із сайту · ${source}${b.name ? ` · ${String(b.name).slice(0, 60)}` : ''}`,
@@ -107,6 +117,7 @@ export default async function handler(req, res) {
 
   // Успех, если заявка записана в систему ИЛИ отправлено уведомление.
   if (dbOk || emailOk) { res.status(200).json({ ok: true, stored: dbOk, notified: emailOk }); return; }
+  // Ни БД, ни почта не сконфигурированы/недоступны.
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY && !RESEND_API_KEY) { res.status(200).json({ error: 'not_configured' }); return; }
   res.status(200).json({ error: 'save_failed' });
 }

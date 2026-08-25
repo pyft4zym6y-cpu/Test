@@ -90,12 +90,23 @@ const REQUIREMENTS: Partial<Record<PageKind, ReqRow[]>> = {
 
 // ✅ есть-и-по-эталону · ◑ есть-но-слабо (наличие ≠ правильно) · ⚪ проверить (скрыто/JS) · 🔴 нет
 export type BlockState = 'ok' | 'weak' | 'check' | 'gap';
+export type BlockAxis = { label: string; score: number }; // 0..5
 export type BlockRow = {
   key: string; // ключ блока эталона (для вайрфрейм-скелета «як треба»)
   name: string; role: string; chapter: string; weight: Weight; dims: Dim[];
   state: BlockState; score: number; max: number; wordVerdict: string;
   now: string;    // что сейчас — фактическое наблюдение с измерениями обхода
   should: string; // что должно быть — детальный эталон (Частина А референса)
+  // Анатомія картки блоку (Fragstore-стиль): проблема → оцінка за осями → рекомендація → пріоритет → ефект.
+  problem?: string;              // що конкретно не так
+  axes?: BlockAxis[];            // UX/UI/CRO-оцінка за 5 осями (0..5)
+  overall?: number;             // підсумкова оцінка блока X/5
+  recommendation?: string;       // конкретна правка
+  internalLinks?: string[];      // внутрішні посилання, яких бракує
+  priority?: 'P0' | 'P1' | 'P2' | 'P3';
+  effect?: string;               // очікуваний ефект
+  impact?: string[];             // на що впливає: UX / AEO / Конверсія / SEO / Довіра
+  heightHint?: string;           // приріст / економія висоти
 };
 export type PageReport = {
   kind: PageKind; title: string; chapter: string; principle?: string; url: string;
@@ -243,6 +254,86 @@ const KIND_LABEL: Record<PageKind, string> = {
   home: 'Головна', plp: 'Каталог', pdp: 'Картка', cart: 'Кошик', checkout: 'Оформлення', content: 'Контент', faq: 'FAQ', other: 'Інше',
 };
 
+// ── Анатомія картки блоку (Fragstore-стиль), детермінована ──
+const STATE_SCORE: Record<BlockState, number> = { ok: 5, weak: 3, check: 2.5, gap: 1 };
+const AXES: { label: string; dims: Dim[] }[] = [
+  { label: 'Інформативність', dims: ['CONT', 'COMM', 'AEO'] },
+  { label: 'Користь для клієнта', dims: ['UX', 'CRO', 'GEO'] },
+  { label: 'Візуал і ієрархія', dims: ['UX', 'MOB'] },
+  { label: 'Навігація і посилання', dims: ['LINK', 'SEO', 'UX'] },
+  { label: 'Конверсія / довіра', dims: ['CRO', 'COMM', 'SEC', 'MKT'] },
+];
+const half = (n: number) => Math.round(Math.max(0, Math.min(5, n)) * 2) / 2;
+// Внутрішні посилання, яких зазвичай бракує блоку (для перелінковки/AEO).
+const LINKS_BY_BLOCK: Record<string, string[]> = {
+  trust: ['/dostavka', '/oplata', '/garantiya', '/vozvrat'],
+  faq: ['/dostavka', '/oplata', '/garantiya'],
+  footer_contacts: ['/about', '/contacts', '/dostavka', '/oplata', '/oferta', '/privacy'],
+  breadcrumbs: ['категорія', 'підкатегорія'],
+  related: ['схожі товари', 'аксесуари'],
+  category_description: ['підкатегорії', 'гайди'],
+  nav: ['основні категорії', 'акції', 'бренди'],
+  reviews: ['усі відгуки', 'фото покупців'],
+};
+// Орієнтовна висота блоку (px) — для «приросту/економії висоти».
+const BLOCK_HEIGHT: Record<string, number> = {
+  hero: 420, usp_bar: 90, trust: 110, reviews: 260, faq: 320, product_grid: 520, newsletter: 140,
+  footer_contacts: 220, breadcrumbs: 44, category_description: 180, filters: 60, related: 280,
+  gallery: 400, price: 80, add_to_cart: 70, delivery: 90, payment: 70, description: 300, specifications: 220,
+  qa: 260, video: 240, variants: 90, order_summary: 180, contact_form: 300,
+};
+
+function enrichBlock(row: BlockRow): BlockRow {
+  const { state, weight, dims } = row;
+  if (state === 'ok') { row.overall = STATE_SCORE.ok; return row; } // сильний блок — без правок
+
+  const base = STATE_SCORE[state];
+  const axes: BlockAxis[] = AXES.map((a) => {
+    const relevant = a.dims.some((d) => dims.includes(d));
+    return { label: a.label, score: half(relevant ? base : base + 1.5) };
+  });
+  row.axes = axes;
+  row.overall = half(axes.reduce((s, a) => s + a.score, 0) / axes.length);
+
+  row.problem = state === 'gap' ? `Блок відсутній — ${row.role.toLowerCase()}`
+    : state === 'weak' ? (row.now.match(/Слабко:\s*(.+)$/)?.[1] ?? 'є, але не за еталоном')
+    : 'не підтверджено обходом (можливо приховано / за JS / табом)';
+
+  row.recommendation = state === 'gap' ? `Додати блок «${row.name}»: ${row.should}`
+    : state === 'weak' ? `Довести до еталона: ${row.should}`
+    : `Перевірити наявність і винести у HTML: ${row.should}`;
+
+  const links = LINKS_BY_BLOCK[row.key];
+  if (links && state !== 'check') row.internalLinks = links;
+
+  const rank = (state === 'gap' || state === 'weak')
+    ? (weight === 'core' ? 0 : weight === 'important' ? 1 : 2)
+    : (weight === 'core' ? 1 : weight === 'important' ? 2 : 3);
+  row.priority = (['P0', 'P1', 'P2', 'P3'] as const)[rank];
+
+  // На що впливає — з вимірів блока.
+  const tags: string[] = [];
+  if (dims.some((d) => d === 'AEO' || d === 'GEO')) tags.push('AEO/AI-видача');
+  if (dims.includes('CRO')) tags.push('Конверсія');
+  if (dims.some((d) => d === 'SEO' || d === 'LINK')) tags.push('SEO/перелінковка');
+  if (dims.some((d) => d === 'COMM' || d === 'SEC')) tags.push('Довіра');
+  if (dims.includes('UX') && !tags.length) tags.push('UX');
+  row.impact = tags.slice(0, 3);
+
+  const effBits: string[] = [];
+  if (dims.some((d) => d === 'AEO' || d === 'GEO')) effBits.push('потрапляння в прямі відповіді та AI-цитування');
+  if (dims.includes('CRO')) effBits.push('вища конверсія блоку');
+  if (dims.some((d) => d === 'SEO' || d === 'LINK')) effBits.push('краща індексація й перелінковка');
+  if (dims.some((d) => d === 'COMM' || d === 'SEC')) effBits.push('зняті заперечення, більше довіри');
+  row.effect = effBits.length ? effBits.slice(0, 2).join('; ') : 'менше тертя на кроці, вищий прохід далі';
+
+  const h = BLOCK_HEIGHT[row.key];
+  if (h && state === 'gap') row.heightHint = `≈ +${h} px (додається блок)`;
+  else if (h && state === 'weak' && (row.key === 'description' || row.key === 'category_description' || row.key === 'specifications')) row.heightHint = `≈ −${Math.round(h * 0.3)} px при ущільненні`;
+
+  return row;
+}
+
 function buildPage(p: PageAudit): PageReport | null {
   const ref = REFERENCE[p.kind];
   if (!ref) return null;
@@ -264,7 +355,7 @@ function buildPage(p: PageAudit): PageReport | null {
     const score = state === 'ok' ? max : state === 'weak' ? Math.max(1, Math.round(max / 2)) : state === 'check' ? 1 : 0;
     const word = wordFor(state, b.weight);
     if (state === 'check' && /^Не виявлено/.test(now)) now += ' — можливо за табом/JS, перевірити';
-    return { key: b.key, name: b.name, role: b.role, chapter: b.chapter, weight: b.weight, dims: DIM_BY_BLOCK[b.key] ?? ['UX'], state, score, max, wordVerdict: word, now, should };
+    return enrichBlock({ key: b.key, name: b.name, role: b.role, chapter: b.chapter, weight: b.weight, dims: DIM_BY_BLOCK[b.key] ?? ['UX'], state, score, max, wordVerdict: word, now, should });
   });
   const score = rows.reduce((s, r) => s + r.score, 0);
   const max = rows.reduce((s, r) => s + r.max, 0);
@@ -434,7 +525,7 @@ function buildPageFromVision(vp: VisionPageInput): PageReport | null {
     const max = MAX_BY_WEIGHT[b.weight];
     const score = state === 'ok' ? max : state === 'weak' ? Math.max(1, Math.round(max / 2)) : state === 'check' ? 1 : 0;
     const now = v?.now || (state === 'gap' ? 'На екрані не видно' : state === 'check' ? 'Не впевнено (можливо, поза кадром)' : 'Видно');
-    return { key: b.key, name: b.name, role: b.role, chapter: b.chapter, weight: b.weight, dims: DIM_BY_BLOCK[b.key] ?? ['UX'], state, score, max, wordVerdict: wordFor(state, b.weight), now, should: b.detail ?? b.role };
+    return enrichBlock({ key: b.key, name: b.name, role: b.role, chapter: b.chapter, weight: b.weight, dims: DIM_BY_BLOCK[b.key] ?? ['UX'], state, score, max, wordVerdict: wordFor(state, b.weight), now, should: b.detail ?? b.role });
   });
   const score = rows.reduce((s, r) => s + r.score, 0);
   const max = rows.reduce((s, r) => s + r.max, 0);

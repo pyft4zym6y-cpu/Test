@@ -1,0 +1,415 @@
+<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>Том E · Аудит шляху клієнта — Тестик</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink:#070d12; --ink8:#0F1A21; --ink6:#1E3038;
+  --verd:#1F5648; --verd7:#2A6D5C; --verd5:#6FAA9A;
+  --mark:#D6362B; --steel:#6E7C86; --steel6:#94A0A8; --steel4:#D3D9DC;
+  --vel:#E7EAE7; --paper:#fff; --hair:#dfe4e6;
+  --sans:'IBM Plex Sans','Golos Text',system-ui,Arial,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+html,body { background:#fff; }
+body { font-family:var(--sans); color:#26292e; }
+.mono, .num { font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:.02em; }
+
+/* ── Сторінка A4 ── */
+.pg { width: 210mm; height: 296mm; position: relative; overflow: hidden; page-break-after: always; background:#fff; padding: 16mm 16mm 14mm; display:flex; flex-direction:column; }
+.pg.ink { background: var(--ink); color: #E8ECEA; }
+.pg.verd { background: var(--verd); color: #EAF2EE; }
+
+/* шапка/підвал документа */
+.hd { display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid var(--ink); padding-bottom:4mm; margin-bottom:8mm; }
+.pg.ink .hd, .pg.verd .hd { border-color: rgba(255,255,255,.35); }
+.hd .l { font-family:var(--mono); font-size:8.5pt; letter-spacing:.16em; text-transform:uppercase; }
+.hd .r { font-family:var(--mono); font-size:8.5pt; color:var(--steel); }
+.pg.ink .hd .r, .pg.verd .hd .r { color:rgba(255,255,255,.55); }
+.ft { position:absolute; left:16mm; right:16mm; bottom:8mm; display:flex; justify-content:space-between; font-family:var(--mono); font-size:7.5pt; color:var(--steel6); border-top:1px solid var(--hair); padding-top:2.5mm; }
+.pg.ink .ft, .pg.verd .ft { color:rgba(255,255,255,.45); border-color:rgba(255,255,255,.2); }
+.proto { color:var(--mark); }
+
+/* типографіка */
+.ebrow { font-family:var(--mono); font-size:9pt; letter-spacing:.22em; text-transform:uppercase; color:var(--verd7); margin-bottom:5mm; }
+.pg.ink .ebrow { color:var(--verd5); }
+h1.big { font-weight:800; letter-spacing:-.03em; line-height:.98; font-size:34pt; color:var(--ink); }
+.pg.ink h1.big, .pg.verd h1.big { color:#fff; }
+h2.st { font-weight:800; letter-spacing:-.02em; font-size:16pt; color:var(--ink); margin:0 0 4mm; line-height:1.05; }
+.pg.ink h2.st { color:#fff; }
+p.lead { font-size:11pt; line-height:1.5; color:#3A3D42; max-width:150mm; }
+.pg.ink p.lead, .pg.verd p.lead { color:rgba(255,255,255,.82); }
+p.body { font-size:9.5pt; line-height:1.55; color:#33373c; margin-bottom:3mm; }
+.marg { font-family:var(--mono); font-size:7.5pt; color:var(--steel); line-height:1.45; }
+.src { font-family:var(--mono); font-size:7pt; color:var(--steel6); }
+.mark { color: var(--mark); }
+.verdc { color: var(--verd7); }
+
+/* число-герой */
+.hero { margin: 8mm 0 4mm; }
+.hero .n { font-family:var(--mono); font-weight:700; font-size:64pt; letter-spacing:-.04em; line-height:1; color:var(--ink); }
+.hero.m .n { color:var(--mark); } .hero.v .n { color:var(--verd7); }
+.pg.ink .hero .n { color:#fff; }
+.hero .cap { font-size:10pt; color:var(--steel); margin-top:2mm; max-width:120mm; }
+.pg.ink .hero .cap { color:rgba(255,255,255,.65); }
+
+/* KPI-ряд */
+.kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:4mm; margin:5mm 0; }
+.kpis.c3 { grid-template-columns:repeat(3,1fr); }
+.kpi { border:1.5px solid var(--ink); padding:3.5mm 4mm; }
+.kpi .v { font-family:var(--mono); font-weight:700; font-size:16pt; letter-spacing:-.02em; }
+.kpi .v.bad { color:var(--mark); } .kpi .v.ok { color:var(--verd7); }
+.kpi .k { font-family:var(--mono); font-size:7pt; letter-spacing:.1em; text-transform:uppercase; color:var(--steel); margin-top:1.5mm; }
+
+/* таблиці */
+table.t { width:100%; border-collapse:collapse; font-size:8.5pt; }
+table.t th { font-family:var(--mono); font-size:7pt; letter-spacing:.12em; text-transform:uppercase; color:var(--steel); text-align:left; border-bottom:1.5px solid var(--ink); padding:1.8mm 2mm; }
+table.t td { border-bottom:1px solid var(--hair); padding:1.9mm 2mm; vertical-align:top; line-height:1.35; }
+table.t td.num, table.t th.num { text-align:right; font-family:var(--mono); }
+table.t tr.hl td { background:#F4F6F5; }
+table.t td b { font-weight:700; color:var(--ink); }
+.sev { font-family:var(--mono); font-size:7pt; letter-spacing:.08em; padding:.5mm 1.5mm; border:1px solid; }
+.sev.h { color:var(--mark); border-color:var(--mark); }
+.sev.m { color:#a06a00; border-color:#a06a00; }
+.sev.l { color:var(--steel); border-color:var(--steel6); }
+.sev.ok { color:var(--verd7); border-color:var(--verd7); }
+
+/* шкала-бенчмарк (D1) */
+.bench { margin:3.5mm 0; }
+.bench .lab { display:flex; justify-content:space-between; font-size:8.5pt; margin-bottom:1.2mm; }
+.bench .lab .b { font-family:var(--mono); }
+.bench .bar { position:relative; height:5.5mm; background:var(--vel); }
+.bench .fill { position:absolute; left:0; top:0; bottom:0; background:var(--ink); }
+.bench .fill.bad { background:var(--mark); }
+.bench .tick { position:absolute; top:-1.2mm; bottom:-1.2mm; width:1px; background:var(--verd7); }
+.bench .tick i { position:absolute; top:100%; left:-14mm; width:28mm; text-align:center; font-family:var(--mono); font-style:normal; font-size:6.5pt; color:var(--verd7); }
+
+/* гант */
+.gantt { width:100%; border-collapse:collapse; font-size:8pt; }
+.gantt th { font-family:var(--mono); font-size:6.5pt; letter-spacing:.08em; color:var(--steel); border-bottom:1.5px solid var(--ink); padding:1.5mm 1mm; text-align:center; }
+.gantt th.rn { text-align:left; }
+.gantt td { border-bottom:1px solid var(--hair); padding:1.5mm 1mm; }
+.gantt td.rn { font-size:8pt; line-height:1.25; width:52mm; }
+.gantt .cell { height:4.5mm; }
+.gantt .on { background:var(--ink); } .gantt .on.w1 { background:var(--mark); } .gantt .on.w3 { background:var(--verd7); }
+
+/* блоки-виноски */
+.callout { border-left:3px solid var(--mark); padding:2.5mm 4mm; background:#FBF3F2; font-size:9pt; line-height:1.45; margin:3mm 0; }
+.callout.v { border-color:var(--verd7); background:#F1F6F4; }
+.cols2 { display:grid; grid-template-columns:1fr 1fr; gap:6mm; }
+.cols3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:5mm; }
+
+/* слайди 16:9 */
+.sl { width:1280px; height:720px; position:relative; overflow:hidden; page-break-after:always; background:var(--paper); padding:56px 64px; display:flex; flex-direction:column; }
+.sl.ink { background:var(--ink); color:#E8ECEA; }
+.sl.verd { background:var(--verd); color:#EAF2EE; }
+.sl .ebrow { font-size:12px; margin-bottom:18px; }
+.sl h1 { font-weight:800; letter-spacing:-.03em; line-height:.98; font-size:64px; color:var(--ink); max-width:1000px; }
+.sl.ink h1, .sl.verd h1 { color:#fff; }
+.sl h1 .mk { color:var(--mark); }
+.sl .heron { font-family:var(--mono); font-weight:700; font-size:220px; letter-spacing:-.05em; line-height:.95; }
+.sl .foot { position:absolute; left:64px; right:64px; bottom:28px; display:flex; justify-content:space-between; font-family:var(--mono); font-size:11px; color:var(--steel6); }
+.sl.ink .foot, .sl.verd .foot { color:rgba(255,255,255,.45); }
+
+/* ── Постраничный разбор: блок-таблиця з оцінкою 0–5 ── */
+.bt { width:100%; border-collapse:collapse; font-size:7.4pt; }
+.bt th { font-family:var(--mono); font-size:6.6pt; letter-spacing:.1em; text-transform:uppercase; color:var(--steel); text-align:left; border-bottom:1.5px solid var(--ink); padding:1.5mm 1.8mm; }
+.bt td { border-bottom:1px solid var(--hair); padding:1.7mm 1.8mm; vertical-align:top; line-height:1.35; }
+.bt .bnum { font-family:var(--mono); font-weight:700; white-space:nowrap; }
+.bt .score { font-family:var(--mono); font-weight:700; font-size:10pt; text-align:center; width:10mm; }
+.bt .sc5 { color:var(--verd7); } .bt .sc4 { color:var(--ink); } .bt .sc2, .bt .sc3 { color:#a06a00; } .bt .sc0, .bt .sc1 { color:var(--mark); }
+.tag { font-family:var(--mono); font-size:5.8pt; letter-spacing:.06em; border:1px solid var(--steel6); color:var(--steel); padding:.3mm 1mm; margin-right:.8mm; }
+.okm { color:var(--verd7); font-weight:700; } .badm { color:var(--mark); font-weight:700; }
+
+/* ── Wireframe ЗАРАЗ / ЯК ТРЕБА ── */
+.wf2 { display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin:2.5mm 0; }
+.wf { border:2px solid; padding:2.5mm; }
+.wf.cur { border-color:var(--mark); } .wf.should { border-color:var(--verd7); }
+.wf .wfh { font-family:var(--mono); font-size:6.8pt; letter-spacing:.14em; margin-bottom:1.6mm; }
+.wf.cur .wfh { color:var(--mark); } .wf.should .wfh { color:var(--verd7); }
+.wf .m { background:#F4F6F5; border:1px solid var(--steel4); padding:1.6mm 2mm; margin-bottom:1.2mm; font-size:6.8pt; line-height:1.3; }
+.wf .m b { font-size:7.2pt; }
+.wf .m.ghost { border-style:dashed; color:var(--steel6); text-align:center; }
+.wf .m.cta { background:var(--ink); color:#fff; text-align:center; font-weight:700; }
+.wf .m.cta.mk { background:var(--mark); }
+.wf .mrow { display:grid; gap:1.2mm; margin-bottom:1.2mm; }
+.wf .note { font-size:6.6pt; color:var(--steel); line-height:1.35; margin-top:1mm; }
+.wf .lnk { color:var(--verd7); font-weight:700; }
+/* ── Поблочні пари (канон Fragstore): нумерований блок, chips, анотації, дельта ── */
+.wfb { margin:0 0 3.2mm; break-inside:avoid; }
+.wfb .bh { display:flex; align-items:baseline; gap:2mm; margin-bottom:1mm; }
+.wfb .bh .n { font-family:var(--mono); font-size:7.5pt; font-weight:700; color:#fff; background:var(--ink); padding:.4mm 1.6mm; }
+.wfb .bh .tt { font-size:10pt; font-weight:700; letter-spacing:-.01em; }
+.wfb .bh .sb { font-size:7pt; color:var(--steel); }
+.wf .m.miss { border:1.5px dashed var(--mark); background:none; color:var(--mark); text-align:center; padding:5mm 2mm; font-weight:700; }
+.wf .cards { display:grid; gap:1mm; margin-bottom:1.2mm; }
+.wf .c2 { grid-template-columns:1fr 1fr; } .wf .c3 { grid-template-columns:1fr 1fr 1fr; } .wf .c4 { grid-template-columns:1fr 1fr 1fr 1fr; }
+.wf .card { border:1px solid var(--steel4); background:#fff; padding:1.2mm 1.4mm; font-size:5.9pt; line-height:1.25; }
+.wf .card b { font-size:6.3pt; display:block; }
+.wf .card .ph { height:6mm; background:#E8ECEA; margin-bottom:.8mm; }
+.wf.should .card.nw { border-color:var(--verd7); }
+.wf .ch { display:inline-block; border:1px solid var(--steel4); padding:.4mm 1.4mm; font-size:5.9pt; margin:0 .8mm .8mm 0; background:#fff; }
+.wf .ch.g { border-color:var(--verd7); color:var(--verd7); font-weight:700; }
+.wf .ann { font-size:6.2pt; line-height:1.3; padding:.8mm 1.5mm; border-left:2.5px solid; margin:1mm 0; }
+.wf .ann.bad { border-color:var(--mark); color:var(--mark); background:#FBF0EF; }
+.wf .ann.good { border-color:var(--verd7); color:var(--verd7); background:#EFF5F2; }
+.wfd { font-family:var(--mono); font-size:7pt; font-weight:700; color:var(--verd7); margin-top:1mm; }
+.wfd .neg { color:var(--mark); }
+
+/* ── Дерево сайта ── */
+.tree { font-family:var(--mono); font-size:7.2pt; line-height:1.55; }
+.tree b { font-size:7.6pt; }
+.tree .lvl1 { margin-left:5mm; } .tree .lvl2 { margin-left:10mm; color:#33373c; }
+.tree .cnt { color:var(--steel6); } .tree .warn { color:var(--mark); font-weight:700; } .tree .good { color:var(--verd7); }
+@media print { .pg, .sl { break-inside: avoid; } }
+</style></head><body><div class="pg ink">
+  <div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+    <span class="ebrow">Звіт 2·E із 5</span>
+    <h1 class="big" style="font-size:40pt">Робочий том E:<br>шлях клієнта посторінково</h1>
+    <p class="lead" style="margin-top:8mm">Всі 15 етапів Awareness → Advocacy як пари «ЗАРАЗ → ЯК ТРЕБА»: що клієнт реально проживає (готовність /10, джерело виміру) проти цільового досвіду з власником і задачами. Відсутні етапи відрисовані з нуля. Плюс два журні-тести руками і зведення «було → стане».</p>
+    <p class="marg" style="margin-top:10mm;color:rgba(255,255,255,.5)">14 сторінок · 15 етапів · 2 розриви P0 · 2 журні-тести · крива 4.2 → 7.8</p>
+  </div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 1/·</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Зміст · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+  <span class="ebrow">Зміст звіту</span>
+  <table class="t" style="margin-top:4mm">
+    <tr><th style="width:16mm">Глава</th><th>Назва — і що вона дає</th><th class="num" style="width:14mm">стор.</th></tr>
+    <tr><td class="num"><b>E.1</b></td><td>Карта шляху: 15 етапів · дві криві (зараз 4.2 / ціль 7.8) · два розриви P0</td><td class="num">3</td></tr><tr><td class="num"><b>E.2</b></td><td>Етапи ЗАРАЗ → ЯК ТРЕБА: до сайту (1–3) · на сайті (4–8) · після покупки (9–15); Repeat і Loyalty відрисовані з нуля</td><td class="num">4–11</td></tr><tr><td class="num"><b>E.3</b></td><td>Журні-тест №1 «Подарунок з mobile»: 12 кроків руками — 3 пройдено · 6 спотикань · 3 тупики</td><td class="num">12</td></tr><tr><td class="num"><b>E.4</b></td><td>Журні-тест №2 «Повторна покупка»: 8 кроків — тиша CRM, OOS улюбленого, повтор без полегш</td><td class="num">13</td></tr><tr><td class="num"><b>E.5</b></td><td>Зведення «було → стане» + порядок зашивання по хвилях + звʼязка з грошима</td><td class="num">14</td></tr>
+  </table><div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 2/14</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">E.1 · Карта шляху · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава E.1 · Карта шляху: 15 етапів, дві криві і два розриви</span>
+    <h1 class="big" style="font-size:22pt">Шлях клієнта готовий на 4.2/10.<br>Рветься на оплаті — і в тиші після.</h1>
+    <div class="kpis" style="margin-top:2mm">
+      <div class="kpi"><div class="v bad">4.2/10</div><div class="k">середня готовність 15 етапів (зараз)</div></div>
+      <div class="kpi"><div class="v ok">7.8/10</div><div class="k">ціль дня 270 — крива нижче</div></div>
+      <div class="kpi"><div class="v ">2</div><div class="k">розриви P0: checkout+payment · repeat</div></div>
+      <div class="kpi"><div class="v ">9/15</div><div class="k">етапів виміряно обходом+даними; 6 — дані/дослідж.</div></div>
+    </div>
+    <div style="margin:2mm 0"><svg width="720" height="190" viewBox="0 0 720 190" style="max-width:100%">
+    <line x1="46" y1="156" x2="708" y2="156" stroke="#E3E8E6" stroke-width="1"/><text x="40" y="159" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="8" fill="#94A0A8">0</text><line x1="46" y1="128" x2="708" y2="128" stroke="#E3E8E6" stroke-width="1"/><text x="40" y="131" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="8" fill="#94A0A8">2</text><line x1="46" y1="100" x2="708" y2="100" stroke="#E3E8E6" stroke-width="1"/><text x="40" y="103" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="8" fill="#94A0A8">4</text><line x1="46" y1="72" x2="708" y2="72" stroke="#E3E8E6" stroke-width="1"/><text x="40" y="75" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="8" fill="#94A0A8">6</text><line x1="46" y1="44" x2="708" y2="44" stroke="#E3E8E6" stroke-width="1"/><text x="40" y="47" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="8" fill="#94A0A8">8</text><line x1="46" y1="16" x2="708" y2="16" stroke="#E3E8E6" stroke-width="1"/><text x="40" y="19" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="8" fill="#94A0A8">10</text>
+    <rect x="310.8" y="16" width="85.1142857142857" height="140" fill="#D6362B" opacity=".06"/>
+    <rect x="594.5142857142857" y="16" width="37.828571428571536" height="140" fill="#D6362B" opacity=".06"/>
+    <polyline points="46.0,58.0 93.3,44.0 140.6,44.0 187.9,44.0 235.1,30.0 282.4,30.0 329.7,44.0 377.0,44.0 424.3,44.0 471.6,30.0 518.9,58.0 566.1,44.0 613.4,58.0 660.7,72.0 708.0,58.0" fill="none" stroke="#2A6D5C" stroke-width="2.2"/>
+    <polyline points="46.0,100.0 93.3,72.0 140.6,86.0 187.9,86.0 235.1,72.0 282.4,58.0 329.7,114.0 377.0,100.0 424.3,100.0 471.6,100.0 518.9,114.0 566.1,86.0 613.4,128.0 660.7,128.0 708.0,114.0" fill="none" stroke="#D6362B" stroke-width="2.2" stroke-dasharray="none"/>
+    <circle cx="46" cy="100" r="2.6" fill="#D6362B"/><circle cx="93.28571428571428" cy="72" r="2.6" fill="#D6362B"/><circle cx="140.57142857142856" cy="86" r="2.6" fill="#D6362B"/><circle cx="187.85714285714286" cy="86" r="2.6" fill="#D6362B"/><circle cx="235.14285714285714" cy="72" r="2.6" fill="#D6362B"/><circle cx="282.42857142857144" cy="58" r="2.6" fill="#D6362B"/><circle cx="329.7142857142857" cy="114" r="2.6" fill="#D6362B"/><circle cx="377" cy="100" r="2.6" fill="#D6362B"/><circle cx="424.2857142857143" cy="100" r="2.6" fill="#D6362B"/><circle cx="471.57142857142856" cy="100" r="2.6" fill="#D6362B"/><circle cx="518.8571428571429" cy="114" r="2.6" fill="#D6362B"/><circle cx="566.1428571428571" cy="86" r="2.6" fill="#D6362B"/><circle cx="613.4285714285714" cy="128" r="2.6" fill="#D6362B"/><circle cx="660.7142857142857" cy="128" r="2.6" fill="#D6362B"/><circle cx="708" cy="114" r="2.6" fill="#D6362B"/>
+    <circle cx="46" cy="58" r="2.6" fill="#2A6D5C"/><circle cx="93.28571428571428" cy="44" r="2.6" fill="#2A6D5C"/><circle cx="140.57142857142856" cy="44" r="2.6" fill="#2A6D5C"/><circle cx="187.85714285714286" cy="44" r="2.6" fill="#2A6D5C"/><circle cx="235.14285714285714" cy="30" r="2.6" fill="#2A6D5C"/><circle cx="282.42857142857144" cy="30" r="2.6" fill="#2A6D5C"/><circle cx="329.7142857142857" cy="44" r="2.6" fill="#2A6D5C"/><circle cx="377" cy="44" r="2.6" fill="#2A6D5C"/><circle cx="424.2857142857143" cy="44" r="2.6" fill="#2A6D5C"/><circle cx="471.57142857142856" cy="30" r="2.6" fill="#2A6D5C"/><circle cx="518.8571428571429" cy="58" r="2.6" fill="#2A6D5C"/><circle cx="566.1428571428571" cy="44" r="2.6" fill="#2A6D5C"/><circle cx="613.4285714285714" cy="58" r="2.6" fill="#2A6D5C"/><circle cx="660.7142857142857" cy="72" r="2.6" fill="#2A6D5C"/><circle cx="708" cy="58" r="2.6" fill="#2A6D5C"/>
+    <text x="46" y="172" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7" fill="#6E7C86" font-weight="400">1</text><text x="46" y="182" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="6.5" fill="#94A0A8">Aware</text><text x="93.28571428571428" y="172" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7" fill="#6E7C86" font-weight="400">2</text><text x="93.28571428571428" y="182" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="6.5" fill="#94A0A8">Discov</text><text x="140.57142857142856" y="172" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7" fill="#6E7C86" font-weight="400">3</text><text x="140.57142857142856" y="182" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="6.5" fill="#94A0A8">Consid</text><text x="187.85714285714286" y="172" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7" fill="#6E7C86" font-weight="400">4</text><text x="187.85714285714286" y="182" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="6.5" fill="#94A0A8">Search</text><text x="235.14285714285714" y="172" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7" fill="#6E7C86" font-weight="400">5</text><text x="235.14285714285714" y="182" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="6.5" fill="#94A0A8">PDP</text><text x="282.42857142857144" y="172" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7" fill="#6E7C86" font-weight="400">6</text><text x="282.42857142857144" y="182" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="6.5" fill="#94A0A8">Cart</text><text x="329.7142857142857" y="172" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7" fill="#D6362B" font-weight="700">7</text><text x="329.7142857142857" y="182" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="6.5" fill="#D6362B">Chkout</text><text x="377" y="172" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7" fill="#D6362B" font-weight="700">8</text><text x="377" y="182" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="6.5" fill="#D6362B">Pay</text><text x="424.2857142857143" y="172" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7" fill="#6E7C86" font-weight="400">9</text><text x="424.2857142857143" y="182" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="6.5" fill="#94A0A8">Deliv</text><text x="471.57142857142856" y="172" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7" fill="#6E7C86" font-weight="400">10</text><text x="471.57142857142856" y="182" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="6.5" fill="#94A0A8">Unbox</text><text x="518.8571428571429" y="172" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7" fill="#6E7C86" font-weight="400">11</text><text x="518.8571428571429" y="182" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="6.5" fill="#94A0A8">Usage</text><text x="566.1428571428571" y="172" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7" fill="#6E7C86" font-weight="400">12</text><text x="566.1428571428571" y="182" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="6.5" fill="#94A0A8">Supp</text><text x="613.4285714285714" y="172" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7" fill="#D6362B" font-weight="700">13</text><text x="613.4285714285714" y="182" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="6.5" fill="#D6362B">Repeat</text><text x="660.7142857142857" y="172" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7" fill="#6E7C86" font-weight="400">14</text><text x="660.7142857142857" y="182" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="6.5" fill="#94A0A8">Loyal</text><text x="708" y="172" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7" fill="#6E7C86" font-weight="400">15</text><text x="708" y="182" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="6.5" fill="#94A0A8">Advoc</text>
+    <text x="708" y="24" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="8" fill="#2A6D5C" font-weight="700">ціль день 270 · сер. 7.8/10</text>
+    <text x="708" y="36" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="8" fill="#D6362B" font-weight="700">зараз · сер. 4.2/10</text>
+  </svg></div>
+    <p class="body" style="font-size:8.4pt"><b>Як читати том:</b> кожен етап — пара «ЗАРАЗ → ЯК ТРЕБА»: зліва що клієнт реально проживає (з готовністю /10 і джерелом виміру за каноном
+    cjmflow), справа — цільовий досвід з механіками, власником і задачами Ганта. Етапи, яких фактично немає (Repeat, Loyalty, сегментний вхід) — відрисовані з нуля.
+    Червоні зони кривої — розриви P0. On-site етапи (5–8) специфіковані макетами тома A — тут показано їх місце в шляху, без дублювання.</p>
+    <table class="t" style="font-size:7.8pt">
+      <tr><th>Група</th><th class="num">Готовність зараз</th><th class="num">Ціль д.270</th><th>Що тримає групу внизу</th><th>Північна зірка групи</th></tr>
+      <tr><td>До сайту (1–3)</td><td class="num">5.0/10</td><td class="num">7.7</td><td>бренд «як усі», 3/6 кластерів без сторінок</td><td>небрендова органіка +25%</td></tr>
+      <tr><td>На сайті (4–8)</td><td class="num">5.0/10</td><td class="num">8.4</td><td><b>розрив №1:</b> checkout 43.6% + payment без BLIK</td><td>completion ≥55%</td></tr>
+      <tr class="hl"><td><b>Після покупки (9–15)</b></td><td class="num"><b>3.3/10</b></td><td class="num">7.4</td><td><b>розрив №2:</b> вікно 30–60 дн порожнє · бій 2.1% у момент істини</td><td><b>2-га покупка ≤90 дн: 9% → 18%</b></td></tr>
+    </table>
+    <p class="marg" style="margin-top:1.5mm">Готовності звірені з главою 2.16 Звіту 2 (той самий обхід і дані). Пріоритет хвиль йде за грошима розривів: №1 −€190k/рік, №2 −€150k/рік (Звіт 3).</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 3/14</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">E.2 · Етапи 1–2 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава E.2 · Етапи шляху ЗАРАЗ → ЯК ТРЕБА · До сайту (етапи 1–3) · 1/8</span>
+    <h1 class="big" style="font-size:20pt">15 етапів: що клієнт проживає зараз —<br>і що має проживати.</h1>
+    <div class="wfb">
+  <div class="bh"><span class="n">Е-01</span><span class="tt">Awareness — дізнатись, що бренд існує</span><span class="sb">готовність 4/10 · джерело: дані/дослідження</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">Реклама: «Якісний посуд для дому» — той самий меседж, що у 4 конкурентів</div><div class="m ">Соцмережі: пости-каталог без експертизи · блог мертвий 8 міс</div><div class="ann bad">бренд «як усі»: у сліпому тесті d02 оффер не відрізнили від конкурентів · брендовий попит росте повільніше за ринок</div><p class="note">Першого дотику, який ЗАПАМʼЯТОВУЄТЬСЯ, немає: обіцянка загальна, експертиза не показана.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">Позиція: <b>«експерт догляду за посудом»</b> — RTB з d02 у кожному креативі</div><div class="cards c2"><div class="card nw"><b>Креативи-докази</b>«стейк без пригорання: 3 правила» — контент, що вчить</div><div class="card nw"><b>Гайди як магніт</b>вхід кластера 74k запитів «як обрати» — безкоштовна експертиза</div></div><div class="ann good">позиція затверджується W2 (задача d02) · креативи 4+/міс · GEO: бренд у AI-відповідях (панель 48 запитів)</div><p class="note">Бренд, який вчить обирати і доглядати — його згадують, коли треба порадити. Джерело міряння: brand search + AI-панель.</p></div>
+  </div>
+  <div class="wfd">Готовність 4 → 7/10 · власник: маркетолог · Гант: W2 (позиція, креативи) · метрика: брендовий попит +20%</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">Е-02</span><span class="tt">Discovery — знайти в пошуку/рекламі</span><span class="sb">готовність 6/10 · джерело: обхід + GSC</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">Пошук «сковорода гриль» → сайт у топ-5 ✓</div><div class="m ">Пошук «подарунок кухареві» → сайту НЕМАЄ (кластер без сторінок)</div><div class="ann bad">3 з 6 кластерів попиту (85k запитів/міс) без сторінок · реклама платить за брендові кліки (31%)</div><p class="note">Половина попиту не має дверей: людина шукає «подарунок» або «як обрати» — і знаходить конкурентів.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">6/6 кластерів мають хаби: категорії + добірки + гайди (том C, W2–W3)</div><div class="m ">Бренд-запити — органічно; реклама — тільки небрендові (правило d07)</div><div class="ann good">хаби з тома C · бренд <10% платних кліків · зірки у сніпетах топ-40 (+CTR 12–18%)</div><p class="note">Кожен кластер попиту має свою посадкову. Рекламний бюджет перестає купувати тих, хто і так шукав нас.</p></div>
+  </div>
+  <div class="wfd">Готовність 6 → 8/10 · власники: SEO-виконавець + маркетолог · Гант: 50, 55–66 · метрика: небрендова органіка +25%</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 4/14</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">E.2 · Етапи 3–4 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава E.2 · Етапи шляху ЗАРАЗ → ЯК ТРЕБА · До сайту (етапи 1–3) · 2/8</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">Е-03</span><span class="tt">Consideration — порівняти магазини</span><span class="sb">готовність 5/10 · джерело: обхід</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">Вкладки покупця: Тестик · конкурент А (−5% ціна) · конкурент Б (відгуки скрізь)</div><div class="ann bad">RTB-доказів немає: «чому саме тут» не сформульовано · відгуки лише на 12% SKU · доставка/повернення глибоко в службових</div><p class="note">На етапі порівняння сайт програє тим, хто голосніше доводить. Ціна у нас не найнижча — а інших аргументів не видно.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="cards c3"><div class="card nw"><b>Докази скрізь</b>відгуки на топ-200 SKU (автозбір W2) + фото покупців</div><div class="card nw"><b>RTB на кожній сторінці</b>довіра-картки (Г-05) + «Про виробництво» з цифрами</div><div class="card nw"><b>Порівняння чесне</b>гайд «як обрати» називає критерії — і ми по них виграємо</div></div><div class="ann good">автозбір відгуків (задача 53) · сторінка виробництва · сервісні переваги: відправка сьогодні, заміна бою за фото</div><p class="note">Ми не деремось у цінову війну — ми міняємо критерії порівняння: докази, сервіс, експертиза.</p></div>
+  </div>
+  <div class="wfd">Готовність 5 → 8/10 · власник: маркетолог · Гант: 53, +A8 · метрика: CR нових відвідувачів</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">Е-04</span><span class="tt">Search on-site — знайти товар на сайті</span><span class="sb">готовність 5/10 · джерело: обхід + GA4</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">🔍 «пательня гриль» → <b>«нічого не знайдено»</b> (є «сковорода гриль»)</div><div class="ann bad">18% пошуків — нульова видача · синонімів немає · нульова видача = глухий кут без порад</div><p class="note">Пошук карає за «неправильне» слово. Кожен пʼятий пошук закінчується нічим.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">🔍 «пательня гриль» → 12 результатів (словник синонімів: пательня=сковорода, кастрюля=каструля…)</div><div class="m ">Нульова видача: «Не знайшли? Ось хіти категорії + напишіть нам — додамо»</div><div class="ann good">словник синонімів UA/RU-запитів (W2) · нульова видача продає · запити логуються → семантика</div><p class="note">Пошук розуміє людську мову; порожня видача стає вітриною і джерелом семантики.</p></div>
+  </div>
+  <div class="wfd">Готовність 5 → 8/10 · власник: розробник · Гант: W2 (беклог A8) · метрика: нульові видачі 18% → <5%</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 5/14</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">E.2 · Етапи 5–6 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава E.2 · Етапи шляху ЗАРАЗ → ЯК ТРЕБА · На сайті (етапи 4–8) · 3/8</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">Е-05</span><span class="tt">PDP — переконатись і обрати</span><span class="sb">готовність 6/10 · джерело: обхід</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">Фото ×4 · характеристики ✓ · ціна/наявність ✓</div><div class="ann bad">строк доставки — дрібно під fold · масштаб товару не відчути · Q&A немає (детально — том A, П-01…П-13)</div><p class="note">Найсильніша сторінка шляху — але рішення гальмують три діри: доставка, масштаб, питання.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">Блок покупки з доставкою і мікро-довірою (П-03) · масштаб-блок «порцій: 2–3» (П-06) · Q&A з чату підтримки (П-09)</div><div class="ann good">повна специфікація — том A, глава A.8 (13 макетів PDP) · W1: доставка в блоці покупки — задача 23</div><p class="note">Етап закривається макетами тома A: тут його місце в шляху — точка, де Confidence або народжується, або ні.</p></div>
+  </div>
+  <div class="wfd">Готовність 6 → 9/10 · власник: розробник · Гант: 23, W2–W3 · метрика: PDP→кошик 8.9% → 11%</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">Е-06</span><span class="tt">Cart — зібрати замовлення</span><span class="sb">готовність 7/10 · джерело: обхід + GA4</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">Кошик зберігається ✓ · редагування ✓</div><div class="ann bad">повна сума з доставкою невідома · прогрес до порога і добивки відсутні (том A, КШ-01…КШ-08)</div><p class="note">Найздоровіший on-site етап — але мовчить про «скільки разом» і не допомагає дозібрати.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">Доставка з міста ще в кошику (КШ-02) · прогрес-бар до €50 + добивки-пари (КШ-03/04)</div><div class="ann good">W1: задача 24 · повна специфікація — том A, глава A.8</div><p class="note">Кошик відповідає на головне питання етапу і мʼяко піднімає чек. Кошик→checkout 40% → 42%+.</p></div>
+  </div>
+  <div class="wfd">Готовність 7 → 9/10 · власник: розробник · Гант: 24, +A8 · метрика: кошик→checkout +2 п.п.</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 6/14</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">E.2 · Етапи 7–8 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава E.2 · Етапи шляху ЗАРАЗ → ЯК ТРЕБА · На сайті (етапи 4–8) · 4/8</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">Е-07</span><span class="tt">Checkout — оформити без болю</span><span class="sb">РОЗРИВ №1 · готовність 3/10 · P0</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">9 полів · «як дізнались?»* обовʼязкове · доставка-сюрприз наприкінці</div><div class="ann bad">completion 43.6% проти 65%+ бенчу — найдорожча точка втрат шляху: −€190k/рік виручки (Звіт 3)</div><p class="note">Тут шлях РВЕТЬСЯ: 56 зі 100 людей, які почали оформлення, не закінчують його.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">5 полів + підказки НП (Ч-02/03) · доставка відома з кошика (Ч-04) · inline-редагування (Ч-06)</div><div class="ann good">повна специфікація — том A, глава A.8 (8 макетів checkout) · W2: задача 30</div><p class="note">Мета етапу: жодної нової інформації і жодного зайвого поля між «хочу» і «оплатив».</p></div>
+  </div>
+  <div class="wfd">Готовність 3 → 8/10 · власник: розробник · Гант: 30, 23 · метрика: completion 43.6% → ≥52% (д.90) → ≥55%</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">Е-08</span><span class="tt">Payment — заплатити звично</span><span class="sb">РОЗРИВ №1 (продовження) · готовність 4/10 · P0</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">Карта · Apple Pay · накладений — UA ок</div><div class="ann bad">PL без BLIK: −31% completion польських замовлень · Apple Pay-покупки невидимі для GA4 (частина розбіжності −22%)</div><p class="note">Польський покупець не знаходить свій звичний спосіб оплати; аналітика не бачить частину оплат узагалі.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">+ <b>BLIK</b> для PL (задача 51) · server-side purchase (задача 10, W1)</div><div class="m ">Мікро-траст під кнопкою: 🔒 3-D Secure · повернення 14 дн (Ч-07)</div><div class="ann good">W1: чесний purchase у GA4 → уся воронка вимірюється правильно</div><p class="note">Оплата звичним способом + виміряна оплата. Без цього КТ-1 (звірка ≤5%) не проходиться.</p></div>
+  </div>
+  <div class="wfd">Готовність 4 → 8/10 · власники: розробник + фінвідділ · Гант: 51, 10 · метрика: PL completion +31%</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 7/14</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">E.2 · Етапи 9–10 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава E.2 · Етапи шляху ЗАРАЗ → ЯК ТРЕБА · Після покупки (етапи 9–15) · 5/8</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">Е-09</span><span class="tt">Delivery — отримати вчасно і цілим</span><span class="sb">готовність 4/10 · джерело: дані перевізників</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">Відправка: зазвичай наступного дня · трекінг: лише СМС від НП</div><div class="ann bad">бій 2.1% (бенч ≤0.7%) · OTIF не міряється взагалі · клієнт між оплатою і дверима — наодинці з перевізником</div><p class="note">Найважливіший для ніші відрізок шляху нічий: ні метрики, ні комунікації, ні відповідального.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">Пакування: стандарт з тестом (W1, задача 15) — бій ≤0.7%</div><div class="m ">Лист «зібрали → ТТН → їде → завтра у вас» (4 тригери від статусів НП)</div><div class="m ">OTIF ≥95% — метрика ops-ліда в дашборді (задача 41)</div><div class="ann good">W1: пакувальний тест — найшвидший важіль (+€25k/рік прибутку) · власник відрізка: ops-лід</div><p class="note">Доставка стає керованим процесом з власником, метрикою і голосом. Клієнт знає, де його посилка, без СМС-квесту.</p></div>
+  </div>
+  <div class="wfd">Готовність 4 → 8/10 · власник: ops-лід · Гант: 15, 41 · метрика: бій ≤0.7% · OTIF ≥95%</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">Е-10</span><span class="tt">Receipt / розпакування — момент істини</span><span class="sb">готовність 4/10 · джерело: VoC</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">Коробка перевізника → мʼята упаковка → 2.1% з боєм</div><div class="ann bad">62% негативних відгуків — про доставку/бій · відгук №147: «подарунок дружині — розбита каструля до свята» · пік емоції ніші зараз працює ПРОТИ бренду</div><p class="note">Посуд купують руками і серцем. Якщо перша зустріч — скотч і уламки, жодна реклама цього не перекриє.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">Упаковка-стандарт: подвійний гофрокартон + кутники (тест W1)</div><div class="m ">Всередині: листівка «якщо щось не так — фото нам, заміна без пересилки» + правило першого догляду</div><div class="m ">Подарункове замовлення: крафт-упаковка + листівка з текстом покупця (сценарій d04)</div><div class="ann good">бій → заміна за фото БЕЗ повернення (правило-стандарт) · подарунковий сценарій = діфференціатор</div><p class="note">Розпакування проєктується як продукт: цілий товар, зрозумілий перший крок, у подарунковому сценарії — вау замість сорому.</p></div>
+  </div>
+  <div class="wfd">Готовність 4 → 9/10 · власник: ops-лід · Гант: 15, 22 · метрика: негатив про доставку 62% → <25% VoC</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 8/14</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">E.2 · Етапи 11–12 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава E.2 · Етапи шляху ЗАРАЗ → ЯК ТРЕБА · Після покупки (етапи 9–15) · 6/8</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">Е-11</span><span class="tt">Usage — користуватись і доглядати</span><span class="sb">готовність 3/10 · джерело: обхід</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">Після покупки: інструкцій немає · гайдів догляду немає (блог мертвий)</div><div class="ann bad">чавун без прожарки псується → негатив «пригорає» → повернення і погані відгуки, хоча товар справний</div><p class="note">Клієнт лишається сам на сам з товаром — і частина «браку» насправді неправильний перший крок.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">Лист +3 дні: «перший запуск за 5 хвилин» (для категорії товару)</div><div class="m ">Гайди догляду на сайті (кластер 9.9k) + QR на листівці в коробці</div><div class="ann good">листи-цикл d08 (W2) · контент — копірайтер з М2 · привід контакту без продажу = довіра</div><p class="note">Навчання після покупки: менше хибних «браків», більше приводів згадати бренд добром.</p></div>
+  </div>
+  <div class="wfd">Готовність 3 → 7/10 · власники: маркетолог + копірайтер · Гант: 34–37 · метрика: звернення «пригорає/зіпсувалось» −50%</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">Е-12</span><span class="tt">Support — швидко розвʼязати проблему</span><span class="sb">готовність 5/10 · джерело: дані/дослідження</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">Канали: телефон, email, месенджери ✓ · відповіді по суті ✓</div><div class="ann bad">час першої відповіді НЕ міряється · обіцянки швидкості на сайті немає · питання з чатів вмирають у чатах (не стають Q&A — П-09)</div><p class="note">Підтримка працює «на совість», але без метрики і без сліду: кожна відповідь допомагає одному замість тисяч.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">Обіцянка на сайті: «відповідаємо ≤2 год у робочий час» — і метрика цієї обіцянки в дашборді</div><div class="m ">Правило: 2+ однакові питання → відповідь їде в Q&A картки або FAQ-хаб</div><div class="ann good">час 1-ї відповіді — нове питання анкети (виміряти baseline W1) · FAQ-хаб — задача A8</div><p class="note">Підтримка з обіцянкою, метрикою і накопиченням: кожна відповідь стає контентом.</p></div>
+  </div>
+  <div class="wfd">Готовність 5 → 8/10 · власник: власник каналу підтримки · Гант: W2 · метрика: 1-ша відповідь ≤2 год</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 9/14</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">E.2 · Етапи 13–14 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава E.2 · Етапи шляху ЗАРАЗ → ЯК ТРЕБА · Після покупки (етапи 9–15) · 7/8</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">Е-13</span><span class="tt">Repeat — повернутись за другою покупкою</span><span class="sb">РОЗРИВ №2 · готовність 2/10 · P0</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m miss">ЕТАПУ ФАКТИЧНО НЕМАЄ</div><div class="m ghost">вікно 30–60 днів після покупки — ТИША: один flow (кинутий кошик), 4.8% виручки з CRM</div><div class="ann bad">repeat 13% проти 25–30% бенчу · база 41k контактів спить · −€150k/рік (Звіт 3, важіль CRM)</div><p class="note">Найдорожчий відсутній етап шляху: клієнт, який уже повірив і купив, не отримує ЖОДНОГО приводу повернутись.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">Цикл 6 flows (d08, W2): підтвердження з очікуваннями → +3 дні перший запуск → +14 запит відгуку → +30 догляд + пара до покупки → +60 добірка за історією → +90 реактивація</div><div class="m ">У ЛК: «повторити замовлення» одним кліком + підписка на OOS-улюблене</div><div class="ann good">деліверабіліті спершу: DMARC (W1, задача 9) → прогрів 15%/тиждень · сегменти RFM (задача 33)</div><p class="note">Вікно 30–60 днів наповнюється корисними дотиками (не знижками!). Північна зірка шляху: 2-га покупка ≤90 дн 9% → 18%.</p></div>
+  </div>
+  <div class="wfd">Готовність 2 → 7/10 · власник: маркетолог (канал CRM) · Гант: 9, 33–37 · метрика: CRM ≥18% виручки · repeat ≥22%</div>
+</div><div class="wfb">
+  <div class="bh"><span class="n">Е-14</span><span class="tt">Loyalty — мати причину лишатись</span><span class="sb">готовність 2/10 · свідомо W3</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m miss">ПРОГРАМИ НЕМАЄ</div><div class="ann bad">але це НЕ перший пріоритет: лояльність без працюючого repeat-контуру — фасад</div><p class="note">Чесно: етап відкладено свідомо. Спершу базовий контур повернення (Е-13), потім програма.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">W3 (після виміряних flows): проста механіка «кожна 5-та покупка −15%» або клуб догляду</div><div class="m ">База механіки — RFM-сегменти і виміряний LTV (дані з Е-13)</div><div class="ann good">рішення на КТ-3 за фактами flows · не запускаємо бали заради балів</div><p class="note">Програма будується на виміряному контурі, а не замість нього. Тому ціль етапу скромна — 6/10 на день 270.</p></div>
+  </div>
+  <div class="wfd">Готовність 2 → 6/10 · власник: маркетолог · Гант: W3 (рішення КТ-3) · метрика: частка 3+ покупок</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 10/14</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">E.2 · Етапи 15 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава E.2 · Етапи шляху ЗАРАЗ → ЯК ТРЕБА · Після покупки (етапи 9–15) · 8/8</span>
+    
+    <div class="wfb">
+  <div class="bh"><span class="n">Е-15</span><span class="tt">Advocacy — порадити друзям</span><span class="sb">готовність 3/10 · джерело: 4.6★ Allegro</span></div>
+  <div class="wf2">
+    <div class="wf cur"><div class="wfh">ЗАРАЗ</div><div class="m ">4.6★ на Allegro · добрі відгуки Є — але живуть лише там</div><div class="ann bad">NPS не міряється · реферальної механіки немає · задоволені клієнти мовчать, бо їх не питають</div><p class="note">Потенціал адвокації реальний (оцінки високі) — просто ніхто не просить рекомендувати.</p></div>
+    <div class="wf should"><div class="wfh">ЯК ТРЕБА</div><div class="m ">NPS-замір ×2/рік (W2, задача 39) → промоутерам: «подаруйте другу €5 знижки — і собі €5»</div><div class="m ">Запит відгуку з фото після доставки (+14 дн, цикл Е-13) → відгуки живлять сайт (Е-03) і рейтинги</div><div class="ann good">реферальна механіка W3 — після NPS-baseline · UGC-фото → PDP і соцмережі</div><p class="note">Замкнене коло: задоволення міряється → відгуки збираються → рекомендація винагороджується → нові клієнти дешевшають.</p></div>
+  </div>
+  <div class="wfd">Готовність 3 → 7/10 · власник: маркетолог · Гант: 39, W3 · метрика: NPS baseline → +10 п. · частка реферальних замовлень</div>
+</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 11/14</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">E.3 · Журні-тест №1 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава E.3 · Журні-тест №1: «Подарунок з mobile» — новий клієнт, від реклами до листа</span>
+    <h1 class="big" style="font-size:21pt">Ми пройшли шлях покупця руками.<br>12 кроків: 3 пройдено · 6 спотикань · 3 тупики.</h1>
+    <p class="body" style="font-size:8.3pt;margin-top:1.5mm">Канон journey-тесту: дія → еталон → факт → статус · джерело збою (сайт / браузер-тест / мережа) · відтворюваність.
+    Сценарій навмисно найкомерційніший: подарунок до €50, mobile, новий відвідувач з Instagram. Оплата тестова, замовлення скасовано одразу.</p>
+    <table class="t" style="font-size:7.2pt">
+      <tr><th>#</th><th>Дія</th><th>Еталон</th><th>Факт</th><th>Статус</th><th>Джерело · відтв.</th></tr>
+      <tr><td class="num">1</td><td>Клік з Instagram-реклами набору</td><td>LCP ≤2.5s</td><td>4.6s, банер стрибає</td><td><span class="sev m">спотикання</span></td><td class="src">сайт · 3/3</td></tr>
+      <tr><td class="num">2</td><td>Зрозуміти оффер за 5 секунд</td><td>що/чому/для кого</td><td>оффер видно, але загальний</td><td><span class="sev ok">пройдено</span></td><td class="src">— · 3/3</td></tr>
+      <tr class="hl"><td class="num">3</td><td>Знайти «подарунок до €50»</td><td>сегментний вхід (Г-03)</td><td>входу немає — вручну по категоріях</td><td><span class="sev h">тупик</span></td><td class="src">сайт · 3/3</td></tr>
+      <tr><td class="num">4</td><td>Пошук «подарунковий набір»</td><td>релевантна видача</td><td>12 SKU, ок</td><td><span class="sev ok">пройдено</span></td><td class="src">— · 3/3</td></tr>
+      <tr><td class="num">5</td><td>PDP набору: що в комплекті?</td><td>склад списком</td><td>лише фото — складу немає (A.4)</td><td><span class="sev m">спотикання</span></td><td class="src">сайт · 3/3</td></tr>
+      <tr class="hl"><td class="num">6</td><td>«Чи буде подарункова упаковка?»</td><td>відповідь на PDP</td><td>ніде; тільки питати в чат</td><td><span class="sev h">тупик</span></td><td class="src">сайт · 3/3</td></tr>
+      <tr><td class="num">7</td><td>Кошик: скільки разом з доставкою</td><td>сума видна (КШ-02)</td><td>«на наступному кроці»</td><td><span class="sev m">спотик. → P0</span></td><td class="src">сайт · 3/3</td></tr>
+      <tr><td class="num">8</td><td>Checkout з mobile</td><td>≤6 полів, автозаповнення</td><td>9 полів + «як дізнались»*</td><td><span class="sev m">спотикання</span></td><td class="src">сайт · 3/3</td></tr>
+      <tr><td class="num">9</td><td>Оплата Apple Pay</td><td>успіх + purchase у GA4</td><td>оплата ок; подія загублена</td><td><span class="sev m">спотик. (невидиме)</span></td><td class="src">сайт · 2/2</td></tr>
+      <tr class="hl"><td class="num">10</td><td>Сторінка «Дякуємо»</td><td>що далі + трекінг (Ч-08)</td><td>«Дякуємо №1234» — глухий кут</td><td><span class="sev h">тупик</span></td><td class="src">сайт · 3/3</td></tr>
+      <tr><td class="num">11</td><td>Лист-підтвердження</td><td>миттєво, з очікуваннями</td><td>через ~4 год, шаблон платформи</td><td><span class="sev m">спотикання</span></td><td class="src">сайт · 2/2</td></tr>
+      <tr><td class="num">12</td><td>Питання в Direct: «встигне до пʼятниці?»</td><td>відповідь ≤2 год</td><td>відповідь через ~9 год</td><td><span class="sev m">спотикання</span></td><td class="src">дані/досл. · 1/1</td></tr>
+    </table>
+    <p class="body" style="font-size:8.3pt;margin-top:1.5mm"><b>Читання тесту:</b> покупка МОЖЛИВА — тому воронка взагалі працює. Але подарунковий сценарій
+    (пік сезону і чека!) проходить крізь 3 тупики, кожен з яких закривається конкретним макетом: Г-03 (сегментний вхід), П-09/A.7 (Q&A + FAQ), Ч-08 («Дякуємо»).
+    Всі 12 кроків відтворні — це системні властивості, не разові збої.</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 12/14</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">E.4 · Журні-тест №2 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава E.4 · Журні-тест №2: «Повторна покупка через 90 днів» — клієнт, який ХОЧЕ повернутись</span>
+    <h1 class="big" style="font-size:21pt">Повторна покупка: 8 кроків,<br>1 пройдено · 5 спотикань · 2 тупики.</h1>
+    <p class="body" style="font-size:8.3pt;margin-top:1.5mm">Сценарій: клієнтка купила сковороду 3 місяці тому, задоволена, хоче каструлю тієї ж серії.
+    Найлегші гроші бізнесу — і ось що вона проживає:</p>
+    <table class="t" style="font-size:7.3pt">
+      <tr><th>#</th><th>Дія</th><th>Еталон</th><th>Факт</th><th>Статус</th><th>Джерело · відтв.</th></tr>
+      <tr class="hl"><td class="num">1</td><td>90 днів після покупки: що прийшло на пошту?</td><td>цикл корисних листів (Е-13)</td><td><b>нуль листів</b> (тільки чек)</td><td><span class="sev h">тупик → P0</span></td><td class="src">дані ESP · 100%</td></tr>
+      <tr><td class="num">2</td><td>Згадала бренд → Google «тестик посуд»</td><td>сайт №1 органічно</td><td>сайт №1, але клік — через платну (бренд 31%)</td><td><span class="sev m">спотик. (платимо за своє)</span></td><td class="src">дані · 3/3</td></tr>
+      <tr><td class="num">3</td><td>Вхід у кабінет</td><td>замовлення видно</td><td>так, історія на місці</td><td><span class="sev ok">пройдено</span></td><td class="src">— · 3/3</td></tr>
+      <tr><td class="num">4</td><td>«Повторити замовлення» / серія улюбленого</td><td>повтор 1 кліком (A.7 ЛК)</td><td>кнопки немає — шукай заново</td><td><span class="sev m">спотикання</span></td><td class="src">сайт · 3/3</td></tr>
+      <tr class="hl"><td class="num">5</td><td>Каструля серії у наявності?</td><td>є, або підписка на поставку</td><td><b>OOS</b> (топ-20: 17% часу) · підписки немає (К-06)</td><td><span class="sev h">тупик</span></td><td class="src">сайт+ERP · 2/3</td></tr>
+      <tr><td class="num">6</td><td>Підібрати заміну</td><td>рекомендації по серії/сумісності</td><td>«схожі» — випадкові 8 SKU (П-11)</td><td><span class="sev m">спотикання</span></td><td class="src">сайт · 3/3</td></tr>
+      <tr><td class="num">7</td><td>Бонус за лояльність?</td><td>механіка або хоча б подяка</td><td>немає (Е-14 — свідомо W3, але клієнт цього не знає)</td><td><span class="sev m">спотикання</span></td><td class="src">— · 3/3</td></tr>
+      <tr><td class="num">8</td><td>Checkout знайомого клієнта</td><td>дані передзаповнені</td><td>всі 9 полів заново</td><td><span class="sev m">спотикання</span></td><td class="src">сайт · 3/3</td></tr>
+    </table>
+    <div class="callout" style="font-size:8.4pt;margin-top:2mm"><b>Головний висновок тома — з цього тесту:</b> бізнес втрачає не «трафік». Він втрачає людей,
+    які ВЖЕ повірили: тиша після покупки (крок 1) + OOS улюбленого (крок 5) + повтор без єдиної полегші (кроки 4, 8). Саме тому repeat 13% при
+    задоволеності 4.6★ — і саме тому важіль CRM (€150k/рік) реалізується без жодного нового відвідувача.</div>
+    <p class="marg">Обидва тести повторюються на КТ-2 і КТ-5 тими самими кроками — прогрес шляху міряється, а не відчувається.</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 13/14</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">E.5 · Що дає пакет · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава E.5 · Що дає перебудова шляху — було → стане</span>
+    <h1 class="big" style="font-size:22pt">Шлях 4.2 → 7.8. Два розриви зашито.<br>Клієнт більше не зникає після оплати.</h1>
+    <table class="t" style="margin-top:2.5mm;font-size:8pt">
+      <tr><th>Показник шляху</th><th class="num">Було</th><th class="num">Стане (д.270)</th><th>Етапи-важелі</th></tr>
+      <tr class="hl"><td><b>Середня готовність 15 етапів</b></td><td class="num">4.2/10</td><td class="num"><b>7.8/10</b></td><td>всі; найбільший стрибок — після покупки (3.3→7.4)</td></tr>
+      <tr class="hl"><td><b>Checkout completion (розрив №1)</b></td><td class="num">43.6%</td><td class="num"><b>≥55%</b></td><td>Е-06…Е-08 + макети тома A</td></tr>
+      <tr class="hl"><td><b>2-га покупка ≤90 дн (розрив №2)</b></td><td class="num">9%</td><td class="num"><b>≥18%</b></td><td>Е-13 цикл flows · Е-10 розпакування · Е-15 NPS</td></tr>
+      <tr><td>Виручка з CRM</td><td class="num">4.8%</td><td class="num">≥18%</td><td>Е-13 (6 flows, RFM)</td></tr>
+      <tr><td>Бій у доставці (момент істини)</td><td class="num">2.1%</td><td class="num">≤0.7%</td><td>Е-09/Е-10 (пакувальний стандарт W1)</td></tr>
+      <tr><td>Негатив VoC про доставку</td><td class="num">62%</td><td class="num"><25%</td><td>Е-09/Е-10</td></tr>
+      <tr><td>Нульові видачі пошуку</td><td class="num">18%</td><td class="num"><5%</td><td>Е-04 (синоніми)</td></tr>
+      <tr><td>NPS</td><td class="num">не міряється</td><td class="num">2 заміри + реферали</td><td>Е-15</td></tr>
+      <tr><td>Етапи-«нулі» (фактично відсутні)</td><td class="num" style="color:var(--mark)"><b>2</b> (Repeat, Loyalty)</td><td class="num"><b>0</b></td><td>Е-13 W2 · Е-14 W3 свідомо після</td></tr>
+    </table>
+    <h2 class="st" style="font-size:11pt;margin-top:2.5mm">Порядок зашивання шляху — по хвилях</h2>
+    <table class="t" style="font-size:7.8pt">
+      <tr><th>Хвиля</th><th>Етапи</th><th>Задачі Ганта</th></tr>
+      <tr class="hl"><td><b>W1</b></td><td>Е-09/10 пакування + OTIF · Е-08 server-side purchase · Е-13 DMARC (підготовка бази)</td><td class="mono">15, 41, 10, 9</td></tr>
+      <tr><td><b>W2</b></td><td>Е-07/08 checkout+BLIK · Е-13 цикл 6 flows + RFM · Е-04 синоніми · Е-12 метрика підтримки · Е-15 NPS · Е-01/02 позиція+хаби</td><td class="mono">30, 51, 33–37, 39, 50</td></tr>
+      <tr><td><b>W3</b></td><td>Е-14 програма лояльності (рішення КТ-3) · Е-15 реферальна механіка · Е-02 добірки/хаби решта</td><td class="mono">55–66, КТ-3</td></tr>
+    </table>
+    <p class="body" style="font-size:8.4pt;margin-top:2mm"><b>Звʼязка з грошима (Звіт 3, гл. 3.00):</b> розрив №1 — це множник checkout ×1.15 воронкової моделі;
+    розрив №2 — множник repeat ×1.046 плюс прямий ефект CRM. Перебудова шляху — це і є та сама програма €156k/рік, показана очима клієнта, а не таблиць.</p>
+    <p class="marg">Прогрес шляху перевіряється журні-тестами E.3/E.4 на КТ-2 і КТ-5 — тими самими кроками, з тими самими еталонами. Не «стало краще», а «крок 5 тепер пройдено».</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 14/14</span></div></div></body></html>

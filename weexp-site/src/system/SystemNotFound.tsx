@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { usePageSeo } from '@/lib/seo';
+import { track } from '@/lib/analytics';
 import { useT, useLp } from '@/i18n';
 import './system.css';
 
@@ -13,6 +15,8 @@ export function SystemNotFound() {
   const t = useT();
   const lp = useLp();
   usePageSeo(t('Сторінку не знайдено · WEEXP', 'Page not found · WEEXP'), t('Такої сторінки немає.', 'This page does not exist.'), pathname, true);
+  // Трекінг 404 — щоб бачити биті посилання (шлях + звідки прийшли).
+  useEffect(() => { track('page_not_found', { path: pathname, ref: typeof document !== 'undefined' ? document.referrer : '' }); }, [pathname]);
   return (
     <section className="sysx sysx-404" aria-label={t('Сторінку не знайдено', 'Page not found')}>
       <div className="sysx-404-in">
@@ -21,9 +25,17 @@ export function SystemNotFound() {
         <p className="sysx-lead">{t('Можливо, посилання застаріло. Повернімося на головну або подивимось докази в цифрах.', 'The link may be outdated. Go back to the homepage or see the proof in numbers.')}</p>
         <div className="sysx-cta-row">
           <Link to={lp('/')} className="sysx-cta is-primary">{t('На головну', 'Home')} →</Link>
-          <Link to={lp('/proof')} className="sysx-cta">{t('Дивитись докази', 'See proof')} →</Link>
-          <Link to={lp('/diagnose')} className="sysx-cta">{t('Діагностика', 'Diagnostics')} →</Link>
+          <Link to={lp('/diagnose')} className="sysx-cta">{t('Експрес-аудит', 'Express audit')} →</Link>
+          <Link to={lp('/contact')} className="sysx-cta">{t('Написати нам', 'Contact us')} →</Link>
         </div>
+        <nav className="sysx-404-nav mono" aria-label={t('Популярні сторінки', 'Popular pages')}>
+          <span>{t('Куди далі:', 'Where to next:')}</span>
+          <Link to={lp('/proof')}>{t('Докази', 'Proof')}</Link>
+          <Link to={lp('/expansion')}>{t('Експансія', 'Expansion')}</Link>
+          <Link to={lp('/people')}>{t('Про нас', 'About')}</Link>
+          <Link to={lp('/pricing')}>{t('Формати і ціни', 'Pricing')}</Link>
+          <Link to={lp('/cabinet')}>{t('Кабінет', 'Cabinet')}</Link>
+        </nav>
       </div>
     </section>
   );

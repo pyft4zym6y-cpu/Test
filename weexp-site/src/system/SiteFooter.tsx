@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useT, useLp } from '@/i18n';
 import './system.css';
@@ -15,11 +16,29 @@ const NAV = [
   { to: '/cabinet', uk: 'Кабінет', en: 'Cabinet' },
 ];
 const MAIL = 'hello@weexp.agency';
+// DMCA Protection Badge — ID з dmca.com (статичний бейдж, без зовнішнього helper-скрипта → CSP не чіпаємо).
+const DMCA_ID = '715d145d-fa76-4b19-a69c-9143c8af7f20';
+// Shopify Partner — вмикається ПІСЛЯ реєстрації в partners.shopify.com (безкоштовно, миттєво).
+// Текстовий бейдж «Shopify Partner» за бренд-гайдами дозволено партнерам. Не заявляти до факту.
+const SHOPIFY_PARTNER = false;
+// Сертифікати (HubSpot / Google Skillshop тощо) — додати запис після складання іспиту.
+// href = публічне посилання на сертифікат (перевіряється клієнтом). icon — емодзі.
+const CERT_BADGES: { icon: string; label: string; href: string }[] = [
+  // { icon: '🎓', label: 'HubSpot Certified', href: 'https://app.hubspot.com/academy/...' },
+  // { icon: '📊', label: 'Google Analytics Certified', href: 'https://skillshop.exceedlms.com/...' },
+];
 
 export function SiteFooter() {
   const year = 2026;
   const t = useT();
   const lp = useLp();
+  // Helper DMCA реєструє адресу сторінки в dmca.com → сканування → статус «Protected».
+  useEffect(() => {
+    if (!DMCA_ID || document.getElementById('dmca-badge-helper')) return;
+    const s = document.createElement('script');
+    s.id = 'dmca-badge-helper'; s.src = 'https://images.dmca.com/Badges/DMCABadgeHelper.min.js'; s.async = true;
+    document.body.appendChild(s);
+  }, []);
   return (
     <footer className="sfoot sysx">
       <div className="sfoot-in">
@@ -41,12 +60,28 @@ export function SiteFooter() {
           <a href={`mailto:${MAIL}`} className="sfoot-mail">{MAIL}</a>
           <span className="sfoot-legal">
             <a href="/privacy.html">{t('Політика', 'Privacy')}</a>
+            <a href="/cookies.html">{t('Cookie', 'Cookies')}</a>
             <a href="/oferta.html">{t('Оферта', 'Terms')}</a>
           </span>
         </div>
       </div>
+      <div className="sfoot-trust mono">
+        <span className="sfoot-trust-i">🇺🇦 {t('Зроблено в Україні', 'Made in Ukraine')}</span>
+        <span className="sfoot-trust-i">⚡ {t('Відповідь ≤ 1 робочого дня', 'Reply ≤ 1 business day')}</span>
+        <span className="sfoot-trust-i">🔒 {t('SSL / захищене зʼєднання', 'SSL / secure connection')}</span>
+        <span className="sfoot-trust-i">🇪🇺 GDPR-ready</span>
+        {SHOPIFY_PARTNER && <a className="sfoot-trust-i sfoot-trust-a" href="https://www.shopify.com/partners" target="_blank" rel="noopener noreferrer" title="Shopify Partner">🛍 Shopify Partner <i aria-hidden="true">↗</i></a>}
+        {CERT_BADGES.map((c) => <a key={c.label} className="sfoot-trust-i sfoot-trust-a" href={c.href} target="_blank" rel="noopener noreferrer" title={c.label}>{c.icon} {c.label} <i aria-hidden="true">↗</i></a>)}
+        <a className="sfoot-trust-i sfoot-trust-a" href="https://securityheaders.com/?q=https%3A%2F%2Fweexp.agency&followRedirects=on" target="_blank" rel="noopener noreferrer" title="Security Headers scan">🛡 {t('Security Headers', 'Security Headers')} <i aria-hidden="true">↗</i></a>
+      </div>
       <div className="sfoot-bottom mono">
         <span>© {year} WEEXP</span>
+        {DMCA_ID && (
+          <a href={`https://www.dmca.com/Protection/Status.aspx?ID=${DMCA_ID}`} target="_blank" rel="noopener noreferrer"
+            title="DMCA.com Protection Status" className="sfoot-dmca dmca-badge">
+            <img src={`https://images.dmca.com/Badges/dmca_protected_sml_120m.png?ID=${DMCA_ID}`} alt="DMCA.com Protection Status" width="121" height="20" loading="lazy" />
+          </a>
+        )}
       </div>
     </footer>
   );

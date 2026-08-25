@@ -1,7 +1,49 @@
-import { lazy, Suspense, useEffect } from 'react';
+import { Component, lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { RouteSeo } from '@/lib/seo';
+import { Engagement } from '@/lib/engagement';
+import { Toaster } from '@/lib/toast';
 import '@/lib/primitives.css';
+
+/**
+ * Запобіжник від «білого екрана»: будь-яка помилка рендера всередині маршрутів
+ * ловиться тут і показує зрозумілий екран із діями, а не порожню сторінку без
+ * можливості продовжити. Chunk-помилки (застарілий бандл) обробляє main.tsx —
+ * тут ловимо решту (краш компонента), щоб клієнт міг перезавантажити або піти на сайт.
+ */
+class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  state = { error: null as Error | null };
+  static getDerivedStateFromError(error: Error) { return { error }; }
+  componentDidCatch(error: Error) {
+    // Застарілий бандл після деплою → тихе перезавантаження (guard від циклу).
+    if (/dynamically imported module|Loading chunk|ChunkLoadError|module script failed/i.test(String(error?.message))) {
+      try {
+        const now = Date.now(); const last = Number(sessionStorage.getItem('weexp-eb-reload') || 0);
+        if (now - last > 20000) { sessionStorage.setItem('weexp-eb-reload', String(now)); location.reload(); }
+      } catch { /* ignore */ }
+    }
+  }
+  render() {
+    if (!this.state.error) return this.props.children;
+    return (
+      <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center', padding: '40px 20px', fontFamily: 'Golos Text, system-ui, sans-serif', color: '#141210' }}>
+        <div style={{ maxWidth: 460, border: '2.5px solid #141210', boxShadow: '6px 6px 0 #141210', background: '#fff', padding: '28px 26px' }}>
+          <b style={{ display: 'block', fontSize: 22, marginBottom: 8 }}>Сторінка не завантажилась</b>
+          <p style={{ color: '#6B675E', marginBottom: 18, fontSize: 14, lineHeight: 1.5 }}>Стався технічний збій. Ваші дані збережені — перезавантажте сторінку або поверніться на сайт, нічого не втрачено.</p>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <button onClick={() => location.reload()} style={{ border: '2.5px solid #141210', background: '#FFD200', padding: '10px 18px', fontWeight: 700, cursor: 'pointer' }}>Перезавантажити</button>
+            <a href="/" style={{ border: '2.5px solid #141210', background: '#fff', padding: '10px 18px', fontWeight: 700, textDecoration: 'none', color: '#141210' }}>На головну</a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
+
+// Легкий індикатор замість порожнечі, поки вантажиться lazy-чанк сторінки.
+function RouteLoading() {
+  return <div style={{ minHeight: '50vh', display: 'grid', placeItems: 'center', color: '#6B675E', fontFamily: 'JetBrains Mono, monospace', fontSize: 13 }}>Завантаження…</div>;
+}
 
 // Нова сторінка — на початок (щоб перехід, напр. «Формати і ціни», відкривався
 // зверху, а не з середини/низу через відновлення позиції скролу). Хеш — не чіпаємо.
@@ -44,6 +86,7 @@ const Cabinet = lazy(() => import('@/system/Cabinet').then((m) => ({ default: m.
 const AdminPanel = lazy(() => import('@/system/AdminPanel').then((m) => ({ default: m.AdminPanel })));
 const ServicePage = lazy(() => import('@/system/ServicePage').then((m) => ({ default: m.ServicePage })));
 const Pricing = lazy(() => import('@/system/Pricing').then((m) => ({ default: m.Pricing })));
+const AuditPackPage = lazy(() => import('@/system/AuditPackPage').then((m) => ({ default: m.AuditPackPage })));
 
 // /challenges/:slug (легасі) → відповідна світла сторінка системи /systems/:slug
 // (слаги збігаються), щоб зберегти глибокі посилання, а не кидати все на індекс.
@@ -62,6 +105,7 @@ const PAGES: { path: string; el: JSX.Element }[] = [
   { path: '/expansion/:slug', el: <Expertise /> },
   { path: '/diagnose', el: <LossCalculator /> },
   { path: '/pricing', el: <Pricing /> },
+  { path: '/audit-pack', el: <AuditPackPage /> },
   { path: '/systems/:slug', el: <ServicePage /> },
   { path: '/contact', el: <ContactFilm /> },
 ];
@@ -70,9 +114,11 @@ export default function App() {
   return (
     <BrowserRouter>
       <RouteSeo />
+      <Engagement />
       <ScrollToTop />
       <ScrollToHash />
-      <Suspense fallback={null}>
+      <ErrorBoundary>
+      <Suspense fallback={<RouteLoading />}>
         <Routes>
           {/* Реальні сторінки — усі під спільною світлою оболонкою (одна айдентика).
               Кожна сторінка монтується двічі: українською (типово) і англійською
@@ -114,6 +160,8 @@ export default function App() {
           <Route path="/diagnose/full" element={<Navigate to="/diagnose" replace />} />
         </Routes>
       </Suspense>
+      </ErrorBoundary>
+      <Toaster />
     </BrowserRouter>
   );
 }

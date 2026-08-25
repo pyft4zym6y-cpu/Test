@@ -15,6 +15,8 @@ import {
 } from './reportShell.js';
 import { svgDonut } from './charts.js';
 import { blockCard, WIREFRAME_CSS } from './wireframes.js';
+import { buildUxFlow, type UxFlowReport } from '../uxflow.js';
+import type { UxUiReport, Severity } from '../uxui.js';
 
 const STATE_MARK: Record<BlockState, string> = { ok: '✓', weak: '◑', check: '◐', gap: '✕' };
 const STATE_CLS: Record<BlockState, string> = { ok: 'ok', weak: 'weak', check: 'check', gap: 'gap' };
@@ -374,7 +376,80 @@ const EXTRA_CSS = `
   .bs-warn{font-size:8.5px;font-weight:700;color:var(--weak);border:1px solid var(--weak);border-radius:10px;padding:1px 6px;}
 `;
 
-export function renderAuditHtml(r: SiteAuditReport): string {
+const SEV_CLS: Record<Severity, string> = { Critical: 'gap', High: 'weak', Medium: 'check', Low: 'ok' };
+const SEV_LABEL: Record<Severity, string> = { Critical: 'критично', High: 'високий', Medium: 'середній', Low: 'низький' };
+
+/** Спайн методології: порядок аудиту A0→A4 і принцип «не змішуємо UX/UI/CRO». */
+function flowSpineSection(flow: UxFlowReport): string {
+  const steps = [
+    ['A0', 'Підготовка й дані', 'Цілі бізнесу й сайту, ЦА, аналітика (GA4/CRM/heatmaps), конкуренти, доступи.'],
+    ['A1', 'Структура (IA)', 'Дерево сайту, навігація, меню, пошук, фільтри, звʼязки сторінок.'],
+    ['A2', 'UX', 'User Journey → сценарії → сторінки → форми → checkout → тертя.'],
+    ['A3', 'UI', 'Візуальна ієрархія, типографіка, компоненти, адаптив, accessibility.'],
+    ['A4', 'CRO і результат', 'Конверсія, довіра, заперечення → Impact/Effort → пріоритети → roadmap → ТЗ.'],
+  ];
+  const rows = steps.map(([id, t, d]) =>
+    `<tr><td class="flow-id">${esc(id)}</td><td class="flow-step">${esc(t)}</td><td class="flow-desc">${esc(d)}</td></tr>`).join('');
+  return `<section class="block">
+    <h2>Порядок аудиту: послідовність, а не список зауважень</h2>
+    <p class="lead">UX, UI і CRO дивимось <b>окремо й по порядку</b>. Поганий UI часто — лише візуальний прояв глибшої UX-проблеми, а UX-проблема — наслідок кривої бізнес- чи інформаційної архітектури. Тож спершу структура, потім досвід, потім візуал, і лише тоді конверсія.</p>
+    <table class="flow-spine">${rows}</table>
+    <p class="muted small">Нижче знахідки згруповані саме за цими шарами (${flow.totalFindings} шт.), кожна — у форматі <b>Проблема → Причина → Наслідок → Рекомендація → Очікуваний ефект</b>.</p>
+  </section>`;
+}
+
+/** Знахідки за шарами (UX / UI / CRO окремо), кожна — послідовністю причинності. */
+function flowFindingsSection(flow: UxFlowReport): string {
+  if (!flow.layers.length) return '';
+  const layers = flow.layers.map((L) => {
+    const cards = L.findings.map((f) => `
+      <div class="flow-find">
+        <div class="flow-find-head">
+          <span class="flow-badge ${SEV_CLS[f.severity]}">${SEV_LABEL[f.severity]}</span>
+          <b>${esc(f.problem)}</b>
+          <span class="flow-pages">${f.pages} стор.</span>
+        </div>
+        <dl class="flow-chain">
+          <dt>Причина</dt><dd>${esc(f.cause)}</dd>
+          <dt>Наслідок</dt><dd>${esc(f.consequence)}</dd>
+          <dt>Рекомендація</dt><dd>${esc(f.recommendation)}</dd>
+          <dt>Очікуваний ефект</dt><dd class="flow-eff">${esc(f.effect)}</dd>
+        </dl>
+      </div>`).join('');
+    return `<div class="flow-layer">
+      <h3 class="flow-layer-h">${esc(L.title)}</h3>
+      <p class="flow-principle">${esc(L.principle)}</p>
+      ${cards}
+    </div>`;
+  }).join('');
+  return `<section class="block flow-block">
+    <h2>Знахідки за шарами: UX → UI → CRO окремо</h2>
+    ${layers}
+  </section>`;
+}
+
+const FLOW_CSS = `
+.flow-spine{width:100%;border-collapse:collapse;margin-top:8px;}
+.flow-spine td{padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top;font-size:10.5px;}
+.flow-id{font-weight:800;color:#2f4fd0;width:34px;white-space:nowrap;}
+.flow-step{font-weight:700;width:150px;}
+.flow-desc{color:var(--muted);}
+.flow-layer{margin-top:14px;break-inside:avoid;}
+.flow-layer-h{font-size:13px;margin:0 0 3px;}
+.flow-principle{font-size:10px;color:var(--muted);margin:0 0 8px;font-style:italic;}
+.flow-find{border:1px solid var(--line);border-radius:8px;padding:9px 11px;margin-bottom:7px;break-inside:avoid;}
+.flow-find-head{display:flex;align-items:baseline;gap:8px;margin-bottom:6px;}
+.flow-find-head b{font-size:11px;flex:1;}
+.flow-badge{font-size:8.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:2px 7px;border-radius:20px;color:#fff;white-space:nowrap;}
+.flow-badge.gap{background:#dc2626;} .flow-badge.weak{background:#ea580c;} .flow-badge.check{background:#d97706;} .flow-badge.ok{background:#16a34a;}
+.flow-pages{font-size:9px;color:var(--muted);white-space:nowrap;}
+.flow-chain{display:grid;grid-template-columns:88px 1fr;gap:2px 10px;margin:0;font-size:10px;}
+.flow-chain dt{color:var(--muted);font-weight:700;}
+.flow-chain dd{margin:0;color:var(--ink);}
+.flow-chain dd.flow-eff{color:#16a34a;font-weight:600;}
+`;
+
+export function renderAuditHtml(r: SiteAuditReport, uxui?: UxUiReport | null): string {
   const cov = r.tree.length;
   const cs = consultSections(r);
   const coverHtml = cover({
@@ -388,19 +463,23 @@ export function renderAuditHtml(r: SiteAuditReport): string {
 
   const footer = pageFooter('Зовнішній обхід вітрини без доступів. Оцінки — спостереження за клієнтською частиною, а не факт за даними клієнта; відсутність даних не видається за факт і не приховується.');
 
+  const flow = uxui ? buildUxFlow(uxui) : null;
+
   const body = coverHtml
     + summarySheet(r)
     + platformSection(r)
     + designSection(r)
     + cs.meth
+    + (flow ? flowSpineSection(flow) : '')
     + treeSection(r)
     + pageTypesSection(r)
     + r.pages.map(pageSection).join('')
+    + (flow ? flowFindingsSection(flow) : '')
     + systemicSection(r)
     + cs.sw
     + cs.recs
     + cs.concl
     + footer;
 
-  return doc(`UX/UI-аудит · ${r.client}`, body, EXTRA_CSS);
+  return doc(`UX/UI-аудит · ${r.client}`, body, EXTRA_CSS + FLOW_CSS);
 }

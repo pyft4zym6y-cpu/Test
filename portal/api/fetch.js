@@ -1,17 +1,22 @@
 // Vercel serverless: качает HTML чужого сайта для L0-скрининга (обход CORS браузера).
 // GET /api/fetch?url=https://example.com — только http(s), максимум 400 КБ HTML.
+// SSRF-защита: URL от клиента проверяется (без приватных/внутренних адресов), редиректы
+// валидируются на каждом хопе (portal/api/_ssrfGuard.js).
+import { assertPublicUrl, safeFetch } from './_ssrfGuard.js';
+
 export default async function handler(req, res) {
   const url = req.query.url;
   if (!url || !/^https?:\/\//i.test(url)) {
     res.status(400).json({ error: 'Нужен параметр url (http/https)' });
     return;
   }
+  try { await assertPublicUrl(url); }
+  catch (e) { res.status(400).json({ error: 'URL отклонён SSRF-защитой', code: String(e.message || e) }); return; }
   try {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 12000);
-    const r = await fetch(url, {
+    const r = await safeFetch(url, {
       signal: ctrl.signal,
-      redirect: 'follow',
       headers: {
         'User-Agent':
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36 weexp-audit',

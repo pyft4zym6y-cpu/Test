@@ -7,7 +7,7 @@
  * показали число ще до входу; профіль і воронка — у DiagRecord (Supabase/local).
  */
 import type { LossInput, LossResult } from './lossModel';
-import type { DiagRecord } from '@/lib/supa';
+import { loadDiag, saveDiag, type DiagRecord, type DiagUser } from '@/lib/supa';
 
 const EXPRESS_KEY = 'weexp:express-audit-v1';
 
@@ -17,14 +17,21 @@ export type ExpressAudit = {
   total: number;
   range: [number, number];
   primary: string;
+  secondary?: string;
   overallHealth: number;
+  health?: { key: string; score: number }[];   // здоров'я 8 систем
+  leaks?: { key: string; amount: number }[];    // джерела витоку, €/рік
+  actions?: string[];                            // ключі рекомендацій
 };
 
-/** Калькулятор викликає це на кроці «витік» — знімок для розділу «Мої аудити». */
+/** Калькулятор викликає це на кроці «витік» — повний знімок для кабінету й адмінки. */
 export function saveExpressAudit(input: LossInput, res: LossResult): void {
   const rec: ExpressAudit = {
     at: new Date().toISOString(), input,
-    total: res.total, range: res.range, primary: res.primary, overallHealth: res.overallHealth,
+    total: res.total, range: res.range, primary: res.primary, secondary: res.secondary, overallHealth: res.overallHealth,
+    health: res.health.map((h) => ({ key: h.key, score: h.score })),
+    leaks: res.leaks.map((l) => ({ key: l.key, amount: l.amount })),
+    actions: res.actions.map((a) => a.key),
   };
   try { localStorage.setItem(EXPRESS_KEY, JSON.stringify(rec)); } catch { /* noop */ }
 }
@@ -36,6 +43,35 @@ export function getExpressAudit(): ExpressAudit | null {
 /** Видалити збережений експрес-аудит (кнопка «Видалити» в кабінеті). */
 export function clearExpressAudit(): void {
   try { localStorage.removeItem(EXPRESS_KEY); } catch { /* noop */ }
+}
+
+/**
+ * Прив'язати локальний експрес-аудит до акаунту: записати знімок у DiagRecord
+ * (Supabase/local), щоб клієнт бачив свій аудит після реєстрації на будь-якому
+ * пристрої, а адмін — у панелі. Викликається, щойно в кабінеті з'являється user.
+ * Ідемпотентно: якщо той самий знімок (за `at`) вже в записі — не перезаписує.
+ */
+export async function syncExpressToAccount(user: DiagUser | null): Promise<boolean> {
+  if (!user) return false;
+  const ex = getExpressAudit();
+  if (!ex) return false;
+  try {
+    const rec = await loadDiag(user);
+    if (rec.express?.at === ex.at) return false;   // вже синхронізовано
+    await saveDiag(user, {
+      express: {
+        at: ex.at, total: ex.total, range: ex.range, primary: ex.primary, secondary: ex.secondary,
+        overallHealth: ex.overallHealth, symptoms: ex.input.symptoms, source: 'cabinet',
+        input: {
+          monthlyRevenue: ex.input.monthlyRevenue, aov: ex.input.aov, conversion: ex.input.conversion,
+          repeatRate: ex.input.repeatRate, returnsRate: ex.input.returnsRate, grossMargin: ex.input.grossMargin, cac: ex.input.cac,
+        },
+        health: ex.health, leaks: ex.leaks, actions: ex.actions,
+      },
+      stage1Money: ex.range,
+    });
+    return true;
+  } catch { return false; }
 }
 
 export type JourneyStep = { id: string; label: string; hint: string; done: boolean; current: boolean };

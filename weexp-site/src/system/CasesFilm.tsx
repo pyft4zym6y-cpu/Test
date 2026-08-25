@@ -1,9 +1,11 @@
 import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CASES, localizeCase } from '@/data/cases';
+import { CASES, localizeCase, caseTeam } from '@/data/cases';
 import { SHORT } from '@/data/xray';
 import { band, seg, setLayer as set, useScrollScene } from '@/lib/scene';
 import { useT, useLp, useLang } from '@/i18n';
+import { ShareButton } from '@/system/ShareButton';
+import { ProofTrust } from '@/system/ProofTrust';
 import './system.css';
 
 /**
@@ -50,6 +52,7 @@ export function CasesFilm() {
   });
 
   return (
+    <>
     <section ref={sec} className="sysx sysx-film sysx-proof" aria-label={t('WEEXP — докази: трансформації в цифрах', 'WEEXP — proof: transformations in numbers')}>
       <div className="sysx-stage">
         <span className="sysx-field" aria-hidden="true" />
@@ -93,6 +96,10 @@ export function CasesFilm() {
               ))}
               <p className="cf-learn"><b className="mono">{t('Урок:', 'Lesson:')}</b> {lc.learning}</p>
               <div className="cf-verified mono"><span aria-hidden="true">✓</span> {lc.verified || t('Кожна дельта звірена з CRM / ERP / GA4 клієнта', 'Every delta verified against the client\'s CRM / ERP / GA4')}</div>
+              <div className="cf-team">
+                <span className="cf-team-h mono">{t('Над кейсом працювали', 'Who worked on this case')}</span>
+                <div className="cf-team-roles">{caseTeam(lc, lang).map((r) => <span key={r} className="cf-team-role mono">{r}</span>)}</div>
+              </div>
               {lc.testimonial && (
                 <blockquote className="cf-quote">
                   <p>«{lc.testimonial.quote}»</p>
@@ -112,9 +119,12 @@ export function CasesFilm() {
           <div className="sysx-cta-row">
             <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Знайти свою дельту →', 'Find your delta →')}</Link>
             <Link to={lp('/contact')} className="sysx-cta">{t('Написати нам', 'Contact us')} →</Link>
+            <ShareButton title={t('WEEXP — докази в цифрах', 'WEEXP — proof in numbers')} />
           </div>
         </div>
       </div>
     </section>
+    <ProofTrust />
+    </>
   );
 }

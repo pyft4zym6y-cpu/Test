@@ -1,10 +1,11 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { computeLoss, eur, project, localizeSys, sysLabel, leakLabel, actionText, type LossInput, type LossResult, type SysKey } from './lossModel';
+import { computeLoss, eur, project, localizeSys, sysLabel, leakLabel, actionText, NICHES, type LossInput, type LossResult, type SysKey, type NicheKey, type Season, type Signals } from './lossModel';
 import { saveExpressAudit } from './cabinetData';
 import { sendLead } from '@/lib/leads';
 import { shortOf } from '@/data/xray';
 import { useT, useLp, useLang } from '@/i18n';
+import { useLiteVisuals } from '@/lib/liteVisuals';
 import './system.css';
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
@@ -18,11 +19,37 @@ const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m)
  */
 const HW = (s: number) => (s >= 65 ? 'ok' : s >= 40 ? 'warn' : 'bad');
 
+/**
+ * Людяне резюме результату (замість «сирих» метрик): ключова проблема, поточний
+ * рівень словами, потенціал, головний витік і що робити далі. Використовується у
+ * формі заявки, щоб клієнт бачив зрозумілий підсумок, а не вивід системи.
+ */
+function HumanSummary({ res, lang, t }: { res: LossResult; lang: 'uk' | 'en'; t: (uk: string, en: string) => string }) {
+  const hw = res.overallHealth >= 65 ? t('добрий', 'good') : res.overallHealth >= 40 ? t('середній', 'moderate') : t('слабкий', 'weak');
+  const action = res.actions?.[0] ? actionText(res.actions[0].key, lang) : '';
+  const leak = res.leaks?.[0];
+  const Row = ({ k, v }: { k: string; v: React.ReactNode }) => (
+    <div className="calc-human-row"><span className="calc-human-k">{k}</span><span className="calc-human-v">{v}</span></div>
+  );
+  return (
+    <div className="calc-human">
+      <span className="calc-human-h">{t('Ваш результат коротко', 'Your result in brief')}</span>
+      <Row k={t('Ключова проблема', 'Key problem')} v={<b>{sysLabel(res.primary, lang)}</b>} />
+      <Row k={t('Поточний рівень', 'Current level')} v={<><b>{hw}</b> <i>({res.overallHealth}/100)</i></>} />
+      <Row k={t('Потенціал повернення', 'Recovery potential')} v={<>{t('до', 'up to')} <b>{eur(res.total)}</b>/{t('рік', 'yr')}</>} />
+      {leak && <Row k={t('Головний витік', 'Biggest leak')} v={<>{leakLabel(leak, lang)} — {eur(leak.amount)}/{t('рік', 'yr')}</>} />}
+      {action && <Row k={t('Що радимо далі', 'Recommended next step')} v={action} />}
+    </div>
+  );
+}
+
 export function LossCalculator() {
   const t = useT();
+  const lite = useLiteVisuals();
   const lp = useLp();
   const lang = useLang();
-  const FIELDS: { k: keyof Omit<LossInput, 'symptoms'>; label: string; unit: string; hint?: string }[] = [
+  type NumKey = 'monthlyRevenue' | 'aov' | 'conversion' | 'repeatRate' | 'returnsRate' | 'grossMargin' | 'cac';
+  const FIELDS: { k: NumKey; label: string; unit: string; hint?: string }[] = [
     { k: 'monthlyRevenue', label: t('Онлайн-виторг', 'Online revenue'), unit: t('€ / міс', '€ / mo') },
     { k: 'aov', label: t('Середній чек', 'Average order value (AOV)'), unit: '€' },
     { k: 'conversion', label: t('Конверсія', 'Conversion'), unit: '%' },
@@ -42,15 +69,24 @@ export function LossCalculator() {
     expansion: t('Уперлися в стелю ринку', 'Hit the market ceiling'),
   };
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [inp, setInp] = useState<LossInput>({ monthlyRevenue: 0, aov: 0, conversion: 0, repeatRate: 0, returnsRate: 0, grossMargin: 0, cac: 0, symptoms: [] });
+  const CALC_KEY = 'weexp:calc-inp-v1';
+  const [inp, setInp] = useState<LossInput>(() => {
+    // Відновлюємо введені цифри, щоб оновлення сторінки не скидало прогрес.
+    try { const r = localStorage.getItem(CALC_KEY); if (r) return { monthlyRevenue: 0, aov: 0, conversion: 0, repeatRate: 0, returnsRate: 0, grossMargin: 0, cac: 0, symptoms: [], ...JSON.parse(r) }; } catch { /* ignore */ }
+    return { monthlyRevenue: 0, aov: 0, conversion: 0, repeatRate: 0, returnsRate: 0, grossMargin: 0, cac: 0, symptoms: [] };
+  });
+  useEffect(() => { try { localStorage.setItem(CALC_KEY, JSON.stringify(inp)); } catch { /* ignore */ } }, [inp]);
   const [res, setRes] = useState<LossResult | null>(null);
   const [leadBusy, setLeadBusy] = useState(false);
-  const [leadSent, setLeadSent] = useState(false);
-  const [orderOpen, setOrderOpen] = useState(false);
+  const [orderStep, setOrderStep] = useState<null | 'form' | 'sent'>(null);
   const [oName, setOName] = useState('');
   const [oEmail, setOEmail] = useState('');
   const [oPhone, setOPhone] = useState('');
+  const [oMsg, setOMsg] = useState('');
+  const [oHp, setOHp] = useState(''); // honeypot — у людей завжди порожнє
   const [oErr, setOErr] = useState('');
+  // Заявка йде саме за результатом експрес-аудиту — тип фіксований, без «вибору послуги».
+  const REQUEST_LABEL = t('Заявка за експрес-аудитом', 'Request from express audit');
   const alerts = useRef<number[]>([]);
   const panelRef = useRef<HTMLDivElement>(null);
   // Зміна кроку — підводимо панель до верху вьюпорта (щоб екран не «стрибав» посередині форми)
@@ -60,28 +96,53 @@ export function LossCalculator() {
     window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
   }, [step]);
 
-  const setNum = (k: keyof Omit<LossInput, 'symptoms'>) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setInp((s) => ({ ...s, [k]: parseFloat(e.target.value) || 0 }));
+  // Сирий текст полів: дозволяє «0.5» / «0,6» і проміжні стани («0.», порожнє).
+  const [rawNum, setRawNum] = useState<Record<string, string>>({});
+  const PCT_KEYS: NumKey[] = ['conversion', 'repeatRate', 'returnsRate', 'grossMargin'];
+  const setNum = (k: NumKey) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = e.target.value.replace(',', '.').replace(/\s+/g, '');
+    if (!/^\d*\.?\d*$/.test(v)) return;
+    const n = parseFloat(v);
+    if (PCT_KEYS.includes(k) && Number.isFinite(n) && n > 100) return;
+    setRawNum((r) => ({ ...r, [k]: v }));
+    setInp((s) => ({ ...s, [k]: Number.isFinite(n) ? n : 0 }));
+  };
   const toggle = (k: SysKey) => setInp((s) => ({ ...s, symptoms: s.symptoms.includes(k) ? s.symptoms.filter((x) => x !== k) : [...s.symptoms, k] }));
+  // Швидкі так/ні: повторний клік по тій самій відповіді знімає її (undefined).
+  const setSig = (k: keyof Signals, v: boolean) =>
+    setInp((s) => ({ ...s, signals: { ...s.signals, [k]: s.signals?.[k] === v ? undefined : v } }));
+  const SIGNALS: { k: keyof Signals; q: string }[] = [
+    { k: 'mgmtCycle', q: t('Чи є регулярний управлінський цикл: цілі → план → факт → рішення?', 'Do you run a regular management cycle: goals → plan → actuals → decisions?') },
+    { k: 'analytics', q: t('Чи є наскрізна аналітика — одна правда в цифрах для всіх рішень?', 'Do you have end-to-end analytics — one source of truth for decisions?') },
+    { k: 'ownerFree', q: t('Чи пропрацює бізнес 2+ тижні без власника, не втрачаючи темп?', 'Would the business run 2+ weeks without the owner at full pace?') },
+    { k: 'exportSales', q: t('Чи продаєте вже за межі України?', 'Do you already sell outside your home market?') },
+  ];
   const compute = () => { const r = computeLoss(inp); setRes(r); alerts.current = r.bottleneckNodes; saveExpressAudit(inp, r); setStep(3); };
-  const restart = () => { alerts.current = []; setRes(null); setLeadSent(false); setStep(1); };
+  const restart = () => { alerts.current = []; setRes(null); setOrderStep(null); setStep(1); };
   const primaryLabel = (k: SysKey) => sysLabel(k, lang);
 
-  // «Замовити аудит» — збираємо контакт (щоб було куди відповісти) + дані аудиту,
-  // надсилаємо лід команді й показуємо зрозуміле підтвердження з наступними кроками.
-  const orderAudit = async (e: React.FormEvent) => {
+  // Замовлення аудиту — повноцінний сценарій: форма → перевірка даних → надсилання.
+  const openOrder = () => { setOErr(''); setOrderStep('form'); };
+  const submitForm = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!res) return;
+    const phone = oPhone.trim();
     const email = oEmail.trim();
-    if (!email || !/.+@.+\..+/.test(email)) { setOErr(t('Вкажіть коректний email — щоб ми надіслали план аудиту.', 'Enter a valid email — so we can send you the audit plan.')); return; }
-    setOErr(''); setLeadBusy(true);
+    if (phone.replace(/\D/g, '').length < 9) { setOErr(t('Вкажіть коректний телефон — менеджер звʼяжеться з вами.', 'Enter a valid phone — the manager will contact you.')); return; }
+    if (email && !/.+@.+\..+/.test(email)) { setOErr(t('Email виглядає некоректно — виправте або лишіть поле порожнім.', 'The email looks invalid — fix it or leave the field empty.')); return; }
+    setOErr('');
+    void submitOrder();
+  };
+  const submitOrder = async () => {
+    if (!res) return;
+    setLeadBusy(true);
     await sendLead({
-      source: 'calc-order-audit', role: 'calc', name: oName.trim() || undefined, email, phone: oPhone.trim() || undefined,
-      task: t('Заявка на повний аудит з калькулятора', 'Full-audit request from calculator'),
-      comment: `${t('Витік', 'Leak')}: ${eur(res.total)}/${t('рік', 'yr')} · bottleneck: ${sysLabel(res.primary, lang)} · Health ${res.overallHealth}/100`,
+      source: 'calc-order-audit', role: 'calc', name: oName.trim() || undefined, email: oEmail.trim() || undefined, phone: oPhone.trim(),
+      company_website: oHp,
+      task: REQUEST_LABEL,
+      comment: `${oMsg.trim() ? oMsg.trim() + ' · ' : ''}${t('Витік', 'Leak')}: ${eur(res.total)}/${t('рік', 'yr')} · bottleneck: ${sysLabel(res.primary, lang)} · Health ${res.overallHealth}/100`,
       calc: `total=${res.total};range=${res.range[0]}-${res.range[1]};bottleneck=${res.primary};health=${res.overallHealth}`,
     });
-    setLeadBusy(false); setLeadSent(true); setOrderOpen(false);
+    setLeadBusy(false); setOrderStep('sent');
   };
 
   // Брендований PDF результату — самодостатня друкована сторінка (нова вкладка → друк/зберегти в PDF).
@@ -135,7 +196,7 @@ ${projRows ? `<div class="card"><h2>${esc(t('Зараз → куди можем�
   return (
     <section className="sysx sysx-calc">
       <div className="sysx-field" aria-hidden="true" />
-      <div className="sysx-calc-bg"><Suspense fallback={null}><CommerceSystem3D fixedProgress={0.72} alerts={alerts} /></Suspense></div>
+      <div className={'sysx-calc-bg' + (lite ? ' is-lite' : '')} aria-hidden="true">{!lite && <Suspense fallback={null}><CommerceSystem3D fixedProgress={0.72} alerts={alerts} /></Suspense>}</div>
 
       <div className="sysx-calc-panel" ref={panelRef}>
         {step !== 3 && (
@@ -150,11 +211,30 @@ ${projRows ? `<div class="card"><h2>${esc(t('Зараз → куди можем�
         {step === 1 && (
           <div className="sysx-card">
             <div className="sysx-grid">
+              <label className="sysx-inp">
+                <span className="sysx-inp-l">{t('Ніша', 'Niche')}<i> · {t('обирає еталони порівняння', 'picks the benchmarks')}</i></span>
+                <span className="sysx-inp-row">
+                  <select value={inp.niche || ''} onChange={(e) => setInp((s) => ({ ...s, niche: (e.target.value || undefined) as NicheKey | undefined }))}>
+                    <option value="">{t('— оберіть нішу —', '— select a niche —')}</option>
+                    {NICHES.map((n) => <option key={n.key} value={n.key}>{t(n.uk, n.en)}</option>)}
+                  </select>
+                </span>
+              </label>
+              <label className="sysx-inp">
+                <span className="sysx-inp-l">{t('Цей місяць за виторгом', 'This month vs typical')}<i> · {t('корекція сезонності', 'seasonality correction')}</i></span>
+                <span className="sysx-inp-row">
+                  <select value={inp.seasonal || 'typical'} onChange={(e) => setInp((s) => ({ ...s, seasonal: e.target.value as Season }))}>
+                    <option value="typical">{t('Типовий', 'Typical')}</option>
+                    <option value="high">{t('Вище типового (сезон/пік)', 'Above typical (peak season)')}</option>
+                    <option value="low">{t('Нижче типового', 'Below typical')}</option>
+                  </select>
+                </span>
+              </label>
               {FIELDS.map((f) => (
                 <label key={f.k} className="sysx-inp">
                   <span className="sysx-inp-l">{f.label}{f.hint && <i> · {f.hint}</i>}</span>
                   <span className="sysx-inp-row">
-                    <input type="number" inputMode="decimal" min={0} value={inp[f.k] || ''} onChange={setNum(f.k)} placeholder="0" />
+                    <input type="text" inputMode="decimal" value={rawNum[f.k] ?? (inp[f.k] || '')} onChange={setNum(f.k)} placeholder="0" />
                     <span className="sysx-inp-u mono">{f.unit}</span>
                   </span>
                 </label>
@@ -177,6 +257,21 @@ ${projRows ? `<div class="card"><h2>${esc(t('Зараз → куди можем�
                 </button>
               ))}
             </div>
+            <div className="sysx-sig">
+              <p className="sysx-sig-h mono">{t('І чотири швидкі «так / ні» — вони оживляють оцінку систем управління:', 'And four quick “yes / no” — they bring the management systems to life:')}</p>
+              {SIGNALS.map((sg) => {
+                const v = inp.signals?.[sg.k];
+                return (
+                  <div key={sg.k} className="sysx-sig-row">
+                    <span className="sysx-sig-q">{sg.q}</span>
+                    <span className="sysx-sig-btns">
+                      <button className={'sysx-sig-b' + (v === true ? ' on-yes' : '')} onClick={() => setSig(sg.k, true)}>{t('Так', 'Yes')}</button>
+                      <button className={'sysx-sig-b' + (v === false ? ' on-no' : '')} onClick={() => setSig(sg.k, false)}>{t('Ні', 'No')}</button>
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
             <div className="sysx-calc-actions">
               <button className="sysx-cta" onClick={() => setStep(1)}>{t('← Назад', '← Back')}</button>
               <button className="sysx-cta is-primary" onClick={compute}>{t('Показати витік →', 'Show the leak →')}</button>
@@ -190,6 +285,11 @@ ${projRows ? `<div class="card"><h2>${esc(t('Зараз → куди можем�
             <div className="sysx-total">
               <span className="sysx-total-big sysx-display">{eur(res.total)}<span>{t('/ рік', '/ year')}</span></span>
               <span className="sysx-total-cap mono">{t('оцінена можливість · діапазон ', 'estimated opportunity · range ')}{eur(res.range[0])}–{eur(res.range[1])}</span>
+              {res.confidence !== 'high' && (
+                <span className="sysx-total-conf mono">{res.confidence === 'medium'
+                  ? t('⚠ середня впевненість: заповнено не всі показники — вилка розширена. Додайте цифри, щоб уточнити.', '⚠ medium confidence: not all metrics filled — the range is widened. Add numbers to refine.')
+                  : t('⚠ низька впевненість: замало даних — це лише орієнтир. Заповніть більше показників.', '⚠ low confidence: too little data — treat as a rough guide. Fill in more metrics.')}</span>
+              )}
             </div>
 
             <div className="sysx-leaks">
@@ -259,11 +359,11 @@ ${projRows ? `<div class="card"><h2>${esc(t('Зараз → куди можем�
               <p className="sysx-next2-lead">{t('Число у вас є. Заберіть брендований PDF або ', 'You have the number. Take the branded PDF or ')}<b>{t('замовте повний аудит', 'order the full audit')}</b>{t(' — ми підтвердимо цифру вашими даними (CRM/ERP/GA4), знайдемо ', ' — we confirm the figure with your data (CRM/ERP/GA4), find ')}<b>{t('де саме', 'exactly where')}</b>{t(' витікає виторг і складемо план повернення під Definition of Done.', ' revenue leaks and build a recovery plan under a Definition of Done.')}</p>
             </div>
 
-            {leadSent ? (
-              <div className="calc-ordered">
+            {orderStep === 'sent' ? (
+              <div className="calc-order calc-ordered">
                 <span className="sysx-kick">{t('✓ Заявку надіслано', '✓ Request sent')}</span>
                 <b className="sysx-display calc-ordered-h">{oName ? `${t('Дякуємо, ', 'Thank you, ')}${oName}!` : t('Дякуємо!', 'Thank you!')}</b>
-                <p className="calc-ordered-p">{t('Ми отримали вашу заявку на повний аудит разом із результатом експрес-витоку ', 'We received your full-audit request together with your express-leak result ')}<b>{eur(res.total)}/{t('рік', 'yr')}</b>{t(' і головним вузлом «', ' and the main bottleneck «')}{primaryLabel(res.primary)}».</p>
+                <p className="calc-ordered-p">{t('Ми отримали вашу заявку разом із результатом експрес-аудиту ', 'We received your request together with your express-audit result ')}<b>{eur(res.total)}/{t('рік', 'yr')}</b>{t(' і ключовою проблемою «', ' and the key problem «')}{primaryLabel(res.primary)}».</p>
                 <div className="calc-ordered-next">
                   <span className="mono">{t('Що далі', "What's next")}:</span>
                   <ol>
@@ -272,36 +372,41 @@ ${projRows ? `<div class="card"><h2>${esc(t('Зараз → куди можем�
                     <li>{t('Надішлемо план і формат аудиту під ваш випадок.', 'We send an audit plan and format tailored to your case.')}</li>
                   </ol>
                 </div>
+                <div className="calc-order-cabhint mono">{t('Порада: збережіть цей аудит у кабінет — після реєстрації він закріпиться за акаунтом, і ви одразу зможете запросити доступ до глибокого аудиту.', 'Tip: save this audit to your cabinet — after signup it links to your account and you can request deep-audit access right away.')}</div>
                 <div className="sysx-calc-actions">
+                  <Link className="sysx-cta is-primary" to={lp('/cabinet?from=express')}>{t('Зберегти в кабінет', 'Save to cabinet')} →</Link>
                   <button className="sysx-cta" onClick={downloadBrandedPdf}>{t('Завантажити PDF', 'Download PDF')} ↓</button>
-                  <Link className="sysx-cta" to={lp('/cabinet')}>{t('Зберегти в кабінет', 'Save to cabinet')} →</Link>
                 </div>
               </div>
-            ) : orderOpen ? (
-              <form className="calc-order-form" onSubmit={orderAudit}>
-                <span className="sysx-kick">{t('Замовити повний аудит', 'Order the full audit')}</span>
-                <p className="calc-order-lead">{t('Лишіть контакт — надішлемо план повного аудиту й звʼяжемося протягом робочого дня. Результат вашого експрес-витоку додається до заявки автоматично.', 'Leave your contact — we\'ll send the full-audit plan and get in touch within a business day. Your express-leak result is attached to the request automatically.')}</p>
+            ) : orderStep === 'form' ? (
+              <form className="calc-order" onSubmit={submitForm}>
+                <div className="calc-order-steps mono"><span className="on">1 · {t('Дані', 'Details')}</span><span>2 · {t('Готово', 'Done')}</span></div>
+                <span className="sysx-kick">{t('Замовити аудит', 'Order the audit')}</span>
+                <p className="calc-order-lead">{t('Лишіть контакт — менеджер WEEXP звʼяжеться протягом робочого дня. Результат вашого експрес-аудиту додається до заявки автоматично.', 'Leave your contact — a WEEXP manager will reach out within one business day. Your express-audit result is attached automatically.')}</p>
                 <div className="calc-order-row">
                   <label className="sysx-inp"><span className="sysx-inp-l">{t("Ім'я", 'Name')}</span><input value={oName} onChange={(e) => setOName(e.target.value)} placeholder={t('Ваше імʼя', 'Your name')} /></label>
-                  <label className="sysx-inp"><span className="sysx-inp-l">Email *</span><input type="email" value={oEmail} onChange={(e) => setOEmail(e.target.value)} placeholder="you@company.com" required /></label>
-                  <label className="sysx-inp"><span className="sysx-inp-l">{t('Телефон', 'Phone')}</span><input type="tel" value={oPhone} onChange={(e) => setOPhone(e.target.value)} placeholder="+380…" /></label>
+                  <label className="sysx-inp"><span className="sysx-inp-l">{t('Телефон', 'Phone')} *</span><input type="tel" value={oPhone} onChange={(e) => setOPhone(e.target.value)} placeholder="+380…" required /></label>
+                  <label className="sysx-inp"><span className="sysx-inp-l">Email</span><input type="email" value={oEmail} onChange={(e) => setOEmail(e.target.value)} placeholder="you@company.com" /></label>
                 </div>
+                <label className="sysx-inp"><span className="sysx-inp-l">{t('Коментар (необовʼязково)', 'Note (optional)')}</span><input value={oMsg} onChange={(e) => setOMsg(e.target.value)} placeholder={t('Що для вас важливо?', 'What matters most to you?')} /></label>
+                <input name="company_website" tabIndex={-1} autoComplete="off" aria-hidden="true" value={oHp} onChange={(e) => setOHp(e.target.value)} style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }} />
+                <HumanSummary res={res} lang={lang} t={t} />
                 {oErr && <span className="s3-err mono">{oErr}</span>}
                 <div className="sysx-calc-actions">
-                  <button className="sysx-cta is-primary" type="submit" disabled={leadBusy}>{leadBusy ? t('Надсилаємо…', 'Sending…') : t('Надіслати заявку', 'Send the request')} →</button>
-                  <button className="sysx-cta" type="button" onClick={() => setOrderOpen(false)}>{t('Скасувати', 'Cancel')}</button>
+                  <button className="sysx-cta is-primary" type="submit" disabled={leadBusy}>{leadBusy ? t('Надсилаємо…', 'Sending…') : t('Надіслати заявку', 'Send request')} →</button>
+                  <button className="sysx-cta" type="button" onClick={() => setOrderStep(null)}>{t('Скасувати', 'Cancel')}</button>
                 </div>
               </form>
             ) : (
               <div className="sysx-calc-actions">
-                <button className="sysx-cta is-primary" onClick={() => setOrderOpen(true)}>{t('Замовити аудит', 'Order the audit')} →</button>
+                <button className="sysx-cta is-primary" onClick={openOrder}>{t('Замовити аудит', 'Order the audit')} →</button>
                 <button className="sysx-cta" onClick={downloadBrandedPdf}>{t('Завантажити PDF', 'Download PDF')} ↓</button>
-                <Link className="sysx-cta" to={lp('/pricing')}>{t('Формати і ціни', 'Formats & pricing')} →</Link>
-                <Link className="sysx-cta" to={lp('/cabinet')}>{t('Зберегти в кабінет', 'Save to cabinet')} →</Link>
+                <a className="sysx-cta" href={lp('/pricing')} target="_blank" rel="noopener noreferrer">{t('Формати і ціни', 'Formats & pricing')} ↗</a>
+                <Link className="sysx-cta" to={lp('/cabinet?from=express')}>{t('Зберегти в кабінет', 'Save to cabinet')} →</Link>
                 <button className="sysx-cta" onClick={restart}>{t('Перерахувати', 'Recalculate')}</button>
               </div>
             )}
-            <span className="sysx-note mono">{t('Оцінка за наданими даними. Не фінансовий аудит. Точну карту «де саме й чому» дає глибокий аудит (за кодом від менеджера).', 'An estimate based on your data. Not a financial audit. A precise map of “exactly where and why” comes from the deep audit (with a code from your manager).')}</span>
+            <span className="sysx-note mono">{t('Оцінка за наданими даними. Не фінансовий аудит. Точну карту «де саме й чому» дає глибокий аудит — окрема послуга: запросіть доступ у кабінеті, менеджер підтвердить і відкриє розбір.', 'An estimate based on your data. Not a financial audit. A precise map of “exactly where and why” comes from the deep audit — a separate service: request access in your cabinet, the manager confirms and opens the analysis.')}</span>
           </div>
         )}
       </div>

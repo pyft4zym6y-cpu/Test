@@ -1,5 +1,8 @@
 node_modules/
 results/
+proto-out/
 *.log
 .env
 .DS_Store
+learning/*.jsonl
+learning/learning-core.json

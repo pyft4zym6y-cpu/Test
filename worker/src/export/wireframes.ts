@@ -102,6 +102,34 @@ const STATE_TAG: Record<BlockState, { t: string; c: string }> = {
 };
 
 /** Карточка блока: ЗАРАЗ ↔ ЯК ТРЕБА зі скелетами + вердикт (як в еталоні). */
+const PRI_CLS: Record<string, string> = { P0: 'gap', P1: 'weak', P2: 'check', P3: 'ok' };
+const stars = (v: number) => `<span class="wfa-stars" style="--v:${v}"><i></i></span>`;
+
+/** Анатомія оцінки блока (Fragstore-стиль): проблема · осі · рекомендація · пріоритет · ефект. */
+function auditPanel(r: BlockRow): string {
+  if (r.state === 'ok' || !r.axes?.length) return '';
+  const axes = r.axes.map((a) => `<div class="wfa-axis"><span class="wfa-ax-l">${esc(a.label)}</span>${stars(a.score)}<b>${a.score.toFixed(1)}</b></div>`).join('');
+  const links = r.internalLinks?.length ? `<div class="wfa-links"><b>Внутрішні посилання:</b> ${r.internalLinks.map(esc).join(' · ')}</div>` : '';
+  const impact = (r.impact ?? []).map((t) => `<span class="wfa-tag">${esc(t)}</span>`).join('');
+  const height = r.heightHint ? `<span class="wfa-h">${esc(r.heightHint)}</span>` : '';
+  return `<div class="wfc-audit">
+    <div class="wfa-cols">
+      <div class="wfa-score-box">
+        <div class="wfa-cap">UX/UI/CRO-оцінка</div>
+        ${axes}
+        <div class="wfa-overall">Підсумок <b>${(r.overall ?? 0).toFixed(1)}</b><i>/5</i></div>
+      </div>
+      <div class="wfa-reco-box">
+        <div class="wfa-line"><span class="wfa-lbl">Проблема</span><span>${esc(r.problem ?? '')}</span></div>
+        <div class="wfa-line"><span class="wfa-lbl">Рекомендація</span><span>${esc(r.recommendation ?? '')}</span></div>
+        ${links}
+        <div class="wfa-meta"><span class="wfa-pri ${PRI_CLS[r.priority ?? 'P3']}">${esc(r.priority ?? '')}</span>${impact}${height}</div>
+        <div class="wfa-line"><span class="wfa-lbl">Ефект</span><span class="wfa-eff">${esc(r.effect ?? '')}</span></div>
+      </div>
+    </div>
+  </div>`;
+}
+
 export function blockCard(row0: BlockRow, i: number): string {
   const tag = STATE_TAG[row0.state];
   const showBoth = row0.state !== 'ok'; // якщо все за еталоном — не дублюємо
@@ -112,6 +140,7 @@ export function blockCard(row0: BlockRow, i: number): string {
       ${showBoth ? `<div class="wfc-col wfc-now"><div class="wfc-lbl">ЗАРАЗ</div>${currentSkeleton(row0)}<p class="wfc-note">${esc(row0.now)}</p></div>` : ''}
       <div class="wfc-col wfc-should"><div class="wfc-lbl good">ЯК ТРЕБА</div>${idealSkeleton(row0.key)}<p class="wfc-note">${esc(row0.should)}</p></div>
     </div>
+    ${auditPanel(row0)}
   </div>`;
 }
 
@@ -149,4 +178,29 @@ export const WIREFRAME_CSS = `
   .wf-sum .wf-line{background:#e2e5ea;} .wf-empty{border:1px dashed var(--gap);border-radius:5px;color:var(--gap);text-align:center;padding:16px 8px;font-size:9px;font-weight:700;}
   .wf-empty.wf-hidden{border-color:var(--check);color:var(--check);} .wf-empty span{font-weight:400;font-size:8px;}
   .wf-okmini{opacity:.85;}
+  /* ── Анатомія оцінки блока (Fragstore-стиль) ── */
+  .wfc-audit{border-top:1px solid #eceef1;margin-top:8px;padding-top:8px;}
+  .wfa-cols{display:flex;gap:12px;align-items:flex-start;}
+  .wfa-score-box{flex:0 0 190px;border:1px solid #eceef1;border-radius:6px;padding:8px 10px;background:#fafbfc;}
+  .wfa-reco-box{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;}
+  .wfa-cap{font-size:8px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#9ca3af;margin-bottom:5px;}
+  .wfa-axis{display:flex;align-items:center;gap:6px;margin:2px 0;font-size:8.5px;}
+  .wfa-ax-l{flex:1;color:#4b5563;}
+  .wfa-axis b{font-size:8.5px;color:#374151;width:20px;text-align:right;}
+  .wfa-stars{--v:0;position:relative;display:inline-block;font-size:9px;line-height:1;color:#dcdfe4;letter-spacing:.5px;white-space:nowrap;}
+  .wfa-stars::before{content:'★★★★★';}
+  .wfa-stars i{position:absolute;left:0;top:0;overflow:hidden;color:#f5a623;width:calc(var(--v) / 5 * 100%);}
+  .wfa-stars i::before{content:'★★★★★';}
+  .wfa-overall{margin-top:6px;padding-top:5px;border-top:1px solid #eceef1;font-size:9px;color:#6b7280;}
+  .wfa-overall b{font-size:15px;color:#111827;font-weight:800;} .wfa-overall i{font-style:normal;color:#9ca3af;font-size:10px;}
+  .wfa-line{display:flex;gap:7px;font-size:9px;line-height:1.4;}
+  .wfa-lbl{flex:0 0 78px;color:#9ca3af;font-weight:700;}
+  .wfa-line span:last-child{color:#1f2937;}
+  .wfa-eff{color:#16a34a !important;font-weight:600;}
+  .wfa-links{font-size:8.5px;color:#4b5563;} .wfa-links b{color:#6b7280;}
+  .wfa-meta{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:1px 0;}
+  .wfa-pri{font-size:8px;font-weight:800;color:#fff;padding:2px 8px;border-radius:12px;}
+  .wfa-pri.gap{background:#dc2626;} .wfa-pri.weak{background:#ea580c;} .wfa-pri.check{background:#d97706;} .wfa-pri.ok{background:#16a34a;}
+  .wfa-tag{font-size:8px;color:#374151;background:#eef1f5;border:1px solid #dfe3e8;border-radius:12px;padding:2px 8px;}
+  .wfa-h{font-size:8px;color:#2f4fd0;background:#eef2ff;border:1px solid #c9d4ff;border-radius:12px;padding:2px 8px;font-weight:700;}
 `;

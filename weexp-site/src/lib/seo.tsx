@@ -64,6 +64,18 @@ export function applySeo(title: string, description: string, path: string, noind
   setRobots(noindex);
 }
 
+/** Впорснути/оновити JSON-LD скрипт за id (для FAQPage, BreadcrumbList тощо). Знімається при демонтажі. */
+export function useJsonLd(id: string, data: unknown | null) {
+  useEffect(() => {
+    const sid = 'jsonld-' + id;
+    let el = document.getElementById(sid) as HTMLScriptElement | null;
+    if (!data) { if (el) el.remove(); return; }
+    if (!el) { el = document.createElement('script'); el.id = sid; el.type = 'application/ld+json'; document.head.appendChild(el); }
+    el.textContent = JSON.stringify(data);
+    return () => { const e = document.getElementById(sid); if (e) e.remove(); };
+  }, [id, data]);
+}
+
 /** Хелпер для сторінок з динамічним заголовком (SystemPage, CaseDetail, NotFound). */
 export function usePageSeo(title: string, description: string, path: string, noindex = false) {
   useEffect(() => { applySeo(title, description, path, noindex); }, [title, description, path, noindex]);
@@ -102,6 +114,10 @@ const META: Record<string, Meta2> = {
   '/contact': {
     uk: [`Контакт — запит на діагноз${SUFFIX}`, 'Залиште контакт — повернемося з планом діагностики у грошах. Для e-commerce виробників і D2C-брендів $0.5–10M.'],
     en: [`Contact — request a diagnosis${ES}`, 'Leave your contact — we come back with a diagnosis plan in money. For e-commerce makers and D2C brands $0.5–10M.'],
+  },
+  '/audit-pack': {
+    uk: [`Склад пакета аудиту — 5 звітів${SUFFIX}`, 'Повний зміст глибокого аудиту WEEXP: 5 звітів — презентація, 12 аудитів, фінансовий звіт із мостом P&L, роадмапа впровадження, пропозиція та передача.'],
+    en: [`Audit pack contents — 5 reports${ES}`, 'The full contents of the WEEXP deep audit: 5 reports — the presentation, the 12 audits, the financial report with the P&L bridge, the implementation roadmap, the proposal & handover.'],
   },
   '/pricing': {
     uk: [`Початок співпраці — формати та ціни${SUFFIX}`, 'Три формати співпраці WEEXP — аудит, консалтинг і супровід, управління під ключ. Відкриті ціни; різниця — у тому, хто відповідає за результат.'],

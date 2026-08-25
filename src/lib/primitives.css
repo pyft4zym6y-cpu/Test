@@ -1,0 +1,15 @@
+
+/* Тости (глобальні, монтуються в App) */
+.toaster { position: fixed; right: 16px; bottom: 16px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; max-width: min(92vw, 380px); }
+.toast { pointer-events: auto; display: flex; align-items: flex-start; gap: 10px; background: #141210; color: #FAF5E9; border: 2.5px solid #141210; box-shadow: 5px 5px 0 rgba(20,18,16,.22); padding: 12px 14px; font-size: 13.5px; line-height: 1.4; animation: toast-in .18s ease-out; }
+.toast-ic { flex: 0 0 20px; width: 20px; height: 20px; display: grid; place-items: center; border: 2px solid currentColor; font-weight: 800; font-size: 12px; margin-top: 1px; }
+.toast.t-ok { border-left: 6px solid #1F9D55; }
+.toast.t-ok .toast-ic { color: #35d07f; }
+.toast.t-err { border-left: 6px solid #F5301C; }
+.toast.t-err .toast-ic { color: #ff6a58; }
+.toast.t-info { border-left: 6px solid #FFD200; }
+.toast.t-info .toast-ic { color: #FFD200; }
+.toast-msg { flex: 1; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (max-width: 560px) { .toaster { left: 12px; right: 12px; bottom: 12px; max-width: none; } }
+@media (prefers-reduced-motion: reduce) { .toast { animation: none; } }

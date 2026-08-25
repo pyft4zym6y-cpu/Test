@@ -1,0 +1,782 @@
+<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>Звіт 2 · Діагностика: 12 аудитів — Тестик</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink:#070d12; --ink8:#0F1A21; --ink6:#1E3038;
+  --verd:#1F5648; --verd7:#2A6D5C; --verd5:#6FAA9A;
+  --mark:#D6362B; --steel:#6E7C86; --steel6:#94A0A8; --steel4:#D3D9DC;
+  --vel:#E7EAE7; --paper:#fff; --hair:#dfe4e6;
+  --sans:'IBM Plex Sans','Golos Text',system-ui,Arial,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+html,body { background:#fff; }
+body { font-family:var(--sans); color:#26292e; }
+.mono, .num { font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:.02em; }
+
+/* ── Сторінка A4 ── */
+.pg { width: 210mm; height: 296mm; position: relative; overflow: hidden; page-break-after: always; background:#fff; padding: 16mm 16mm 14mm; display:flex; flex-direction:column; }
+.pg.ink { background: var(--ink); color: #E8ECEA; }
+.pg.verd { background: var(--verd); color: #EAF2EE; }
+
+/* шапка/підвал документа */
+.hd { display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid var(--ink); padding-bottom:4mm; margin-bottom:8mm; }
+.pg.ink .hd, .pg.verd .hd { border-color: rgba(255,255,255,.35); }
+.hd .l { font-family:var(--mono); font-size:8.5pt; letter-spacing:.16em; text-transform:uppercase; }
+.hd .r { font-family:var(--mono); font-size:8.5pt; color:var(--steel); }
+.pg.ink .hd .r, .pg.verd .hd .r { color:rgba(255,255,255,.55); }
+.ft { position:absolute; left:16mm; right:16mm; bottom:8mm; display:flex; justify-content:space-between; font-family:var(--mono); font-size:7.5pt; color:var(--steel6); border-top:1px solid var(--hair); padding-top:2.5mm; }
+.pg.ink .ft, .pg.verd .ft { color:rgba(255,255,255,.45); border-color:rgba(255,255,255,.2); }
+.proto { color:var(--mark); }
+
+/* типографіка */
+.ebrow { font-family:var(--mono); font-size:9pt; letter-spacing:.22em; text-transform:uppercase; color:var(--verd7); margin-bottom:5mm; }
+.pg.ink .ebrow { color:var(--verd5); }
+h1.big { font-weight:800; letter-spacing:-.03em; line-height:.98; font-size:34pt; color:var(--ink); }
+.pg.ink h1.big, .pg.verd h1.big { color:#fff; }
+h2.st { font-weight:800; letter-spacing:-.02em; font-size:16pt; color:var(--ink); margin:0 0 4mm; line-height:1.05; }
+.pg.ink h2.st { color:#fff; }
+p.lead { font-size:11pt; line-height:1.5; color:#3A3D42; max-width:150mm; }
+.pg.ink p.lead, .pg.verd p.lead { color:rgba(255,255,255,.82); }
+p.body { font-size:9.5pt; line-height:1.55; color:#33373c; margin-bottom:3mm; }
+.marg { font-family:var(--mono); font-size:7.5pt; color:var(--steel); line-height:1.45; }
+.src { font-family:var(--mono); font-size:7pt; color:var(--steel6); }
+.mark { color: var(--mark); }
+.verdc { color: var(--verd7); }
+
+/* число-герой */
+.hero { margin: 8mm 0 4mm; }
+.hero .n { font-family:var(--mono); font-weight:700; font-size:64pt; letter-spacing:-.04em; line-height:1; color:var(--ink); }
+.hero.m .n { color:var(--mark); } .hero.v .n { color:var(--verd7); }
+.pg.ink .hero .n { color:#fff; }
+.hero .cap { font-size:10pt; color:var(--steel); margin-top:2mm; max-width:120mm; }
+.pg.ink .hero .cap { color:rgba(255,255,255,.65); }
+
+/* KPI-ряд */
+.kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:4mm; margin:5mm 0; }
+.kpis.c3 { grid-template-columns:repeat(3,1fr); }
+.kpi { border:1.5px solid var(--ink); padding:3.5mm 4mm; }
+.kpi .v { font-family:var(--mono); font-weight:700; font-size:16pt; letter-spacing:-.02em; }
+.kpi .v.bad { color:var(--mark); } .kpi .v.ok { color:var(--verd7); }
+.kpi .k { font-family:var(--mono); font-size:7pt; letter-spacing:.1em; text-transform:uppercase; color:var(--steel); margin-top:1.5mm; }
+
+/* таблиці */
+table.t { width:100%; border-collapse:collapse; font-size:8.5pt; }
+table.t th { font-family:var(--mono); font-size:7pt; letter-spacing:.12em; text-transform:uppercase; color:var(--steel); text-align:left; border-bottom:1.5px solid var(--ink); padding:1.8mm 2mm; }
+table.t td { border-bottom:1px solid var(--hair); padding:1.9mm 2mm; vertical-align:top; line-height:1.35; }
+table.t td.num, table.t th.num { text-align:right; font-family:var(--mono); }
+table.t tr.hl td { background:#F4F6F5; }
+table.t td b { font-weight:700; color:var(--ink); }
+.sev { font-family:var(--mono); font-size:7pt; letter-spacing:.08em; padding:.5mm 1.5mm; border:1px solid; }
+.sev.h { color:var(--mark); border-color:var(--mark); }
+.sev.m { color:#a06a00; border-color:#a06a00; }
+.sev.l { color:var(--steel); border-color:var(--steel6); }
+.sev.ok { color:var(--verd7); border-color:var(--verd7); }
+
+/* шкала-бенчмарк (D1) */
+.bench { margin:3.5mm 0; }
+.bench .lab { display:flex; justify-content:space-between; font-size:8.5pt; margin-bottom:1.2mm; }
+.bench .lab .b { font-family:var(--mono); }
+.bench .bar { position:relative; height:5.5mm; background:var(--vel); }
+.bench .fill { position:absolute; left:0; top:0; bottom:0; background:var(--ink); }
+.bench .fill.bad { background:var(--mark); }
+.bench .tick { position:absolute; top:-1.2mm; bottom:-1.2mm; width:1px; background:var(--verd7); }
+.bench .tick i { position:absolute; top:100%; left:-14mm; width:28mm; text-align:center; font-family:var(--mono); font-style:normal; font-size:6.5pt; color:var(--verd7); }
+
+/* гант */
+.gantt { width:100%; border-collapse:collapse; font-size:8pt; }
+.gantt th { font-family:var(--mono); font-size:6.5pt; letter-spacing:.08em; color:var(--steel); border-bottom:1.5px solid var(--ink); padding:1.5mm 1mm; text-align:center; }
+.gantt th.rn { text-align:left; }
+.gantt td { border-bottom:1px solid var(--hair); padding:1.5mm 1mm; }
+.gantt td.rn { font-size:8pt; line-height:1.25; width:52mm; }
+.gantt .cell { height:4.5mm; }
+.gantt .on { background:var(--ink); } .gantt .on.w1 { background:var(--mark); } .gantt .on.w3 { background:var(--verd7); }
+
+/* блоки-виноски */
+.callout { border-left:3px solid var(--mark); padding:2.5mm 4mm; background:#FBF3F2; font-size:9pt; line-height:1.45; margin:3mm 0; }
+.callout.v { border-color:var(--verd7); background:#F1F6F4; }
+.cols2 { display:grid; grid-template-columns:1fr 1fr; gap:6mm; }
+.cols3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:5mm; }
+
+/* слайди 16:9 */
+.sl { width:1280px; height:720px; position:relative; overflow:hidden; page-break-after:always; background:var(--paper); padding:56px 64px; display:flex; flex-direction:column; }
+.sl.ink { background:var(--ink); color:#E8ECEA; }
+.sl.verd { background:var(--verd); color:#EAF2EE; }
+.sl .ebrow { font-size:12px; margin-bottom:18px; }
+.sl h1 { font-weight:800; letter-spacing:-.03em; line-height:.98; font-size:64px; color:var(--ink); max-width:1000px; }
+.sl.ink h1, .sl.verd h1 { color:#fff; }
+.sl h1 .mk { color:var(--mark); }
+.sl .heron { font-family:var(--mono); font-weight:700; font-size:220px; letter-spacing:-.05em; line-height:.95; }
+.sl .foot { position:absolute; left:64px; right:64px; bottom:28px; display:flex; justify-content:space-between; font-family:var(--mono); font-size:11px; color:var(--steel6); }
+.sl.ink .foot, .sl.verd .foot { color:rgba(255,255,255,.45); }
+
+/* ── Постраничный разбор: блок-таблиця з оцінкою 0–5 ── */
+.bt { width:100%; border-collapse:collapse; font-size:7.4pt; }
+.bt th { font-family:var(--mono); font-size:6.6pt; letter-spacing:.1em; text-transform:uppercase; color:var(--steel); text-align:left; border-bottom:1.5px solid var(--ink); padding:1.5mm 1.8mm; }
+.bt td { border-bottom:1px solid var(--hair); padding:1.7mm 1.8mm; vertical-align:top; line-height:1.35; }
+.bt .bnum { font-family:var(--mono); font-weight:700; white-space:nowrap; }
+.bt .score { font-family:var(--mono); font-weight:700; font-size:10pt; text-align:center; width:10mm; }
+.bt .sc5 { color:var(--verd7); } .bt .sc4 { color:var(--ink); } .bt .sc2, .bt .sc3 { color:#a06a00; } .bt .sc0, .bt .sc1 { color:var(--mark); }
+.tag { font-family:var(--mono); font-size:5.8pt; letter-spacing:.06em; border:1px solid var(--steel6); color:var(--steel); padding:.3mm 1mm; margin-right:.8mm; }
+.okm { color:var(--verd7); font-weight:700; } .badm { color:var(--mark); font-weight:700; }
+
+/* ── Wireframe ЗАРАЗ / ЯК ТРЕБА ── */
+.wf2 { display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin:2.5mm 0; }
+.wf { border:2px solid; padding:2.5mm; }
+.wf.cur { border-color:var(--mark); } .wf.should { border-color:var(--verd7); }
+.wf .wfh { font-family:var(--mono); font-size:6.8pt; letter-spacing:.14em; margin-bottom:1.6mm; }
+.wf.cur .wfh { color:var(--mark); } .wf.should .wfh { color:var(--verd7); }
+.wf .m { background:#F4F6F5; border:1px solid var(--steel4); padding:1.6mm 2mm; margin-bottom:1.2mm; font-size:6.8pt; line-height:1.3; }
+.wf .m b { font-size:7.2pt; }
+.wf .m.ghost { border-style:dashed; color:var(--steel6); text-align:center; }
+.wf .m.cta { background:var(--ink); color:#fff; text-align:center; font-weight:700; }
+.wf .m.cta.mk { background:var(--mark); }
+.wf .mrow { display:grid; gap:1.2mm; margin-bottom:1.2mm; }
+.wf .note { font-size:6.6pt; color:var(--steel); line-height:1.35; margin-top:1mm; }
+.wf .lnk { color:var(--verd7); font-weight:700; }
+
+/* ── Дерево сайта ── */
+.tree { font-family:var(--mono); font-size:7.2pt; line-height:1.55; }
+.tree b { font-size:7.6pt; }
+.tree .lvl1 { margin-left:5mm; } .tree .lvl2 { margin-left:10mm; color:#33373c; }
+.tree .cnt { color:var(--steel6); } .tree .warn { color:var(--mark); font-weight:700; } .tree .good { color:var(--verd7); }
+@media print { .pg, .sl { break-inside: avoid; } }
+</style></head><body><div class="pg ink">
+  <div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+    <span class="ebrow">Звіт 2 із 5</span>
+    <h1 class="big" style="font-size:40pt">Діагностичний звіт:<br>12 аудитів</h1>
+    <p class="lead" style="margin-top:8mm">Повна картина бізнесу «Тестик» з доказами: 160 перевірок, 31 знахідка, кожен висновок простежується до джерела. Це — том «що відбувається насправді»; скільки це коштує — Звіт 3; що робити — Звіт 4.</p>
+    <p class="marg" style="margin-top:10mm;color:rgba(255,255,255,.5)">36 сторінок · 12 аудитів · 160 перевірок · дані: замовлення 24 міс + 14 систем</p>
+  </div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 1/·</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Зміст · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+  <span class="ebrow">Зміст звіту</span>
+  <table class="t" style="margin-top:4mm">
+    <tr><th style="width:16mm">Глава</th><th>Назва — і що вона дає</th><th class="num" style="width:14mm">стор.</th></tr>
+    <tr><td class="num"><b>2.00</b></td><td>Як читати том: маршрути за роллю + глосарій термінів</td><td class="num">3</td></tr><tr><td class="num"><b>2.01</b></td><td>Контекст і цілі власника — рамка всіх рішень</td><td class="num">4</td></tr><tr><td class="num"><b>2.02</b></td><td>Методика, карта даних, обмеження — чому висновкам можна вірити</td><td class="num">5</td></tr><tr><td class="num"><b>2.03</b></td><td>Baseline експрес-аудиту — чесна точка «до»</td><td class="num">6</td></tr><tr><td class="num"><b>2.04–2.15</b></td><td>12 аудитів за спільним каркасом (вердикт → методика → факти vs бенч → знахідки з розрахунками → рекомендації → звʼязки → 90 днів) + додаток 2.08-А: AQC-стандарт (22 критерії · 11 доменів) і CRO-шар з гіпотезами ICE</td><td class="num">7–31</td></tr><tr><td class="num"><b>2.16</b></td><td>Customer Journey Audit: 15 етапів Awareness→Advocacy + журні-тест руками (10 кроків) + емоційна крива</td><td class="num">32–33</td></tr><tr><td class="num"><b>2.17</b></td><td>Матриця зрілості — радар 12 доменів, Health 52 з показаним розрахунком</td><td class="num">34</td></tr><tr><td class="num"><b>2.18</b></td><td>Зведений реєстр знахідок — ICE з розкладкою I·C·E</td><td class="num">35</td></tr><tr><td class="num"><b>2.19</b></td><td>Протокол якості — як аудит перевірив сам себе</td><td class="num">36</td></tr>
+  </table><div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 2/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.00 · Як читати том · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 2.00 · Як читати цей том — маршрути за роллю і глосарій</span>
+    <h1 class="big" style="font-size:26pt">36 сторінок не треба читати підряд.<br>Оберіть свій маршрут.</h1>
+    <table class="t" style="font-size:8.3pt;margin-top:3mm">
+      <tr><th>Роль</th><th>Ваш маршрут по пакету</th><th>Що вирішуєте після читання</th></tr>
+      <tr class="hl"><td><b>Власник / CEO</b></td><td>Звіт 1 (презентація) → Звіт 3 гл. 3.00–3.01 → Звіт 4 гл. 4.04 (ризики, гарантія) → Звіт 5</td><td>go/no-go старту, 5 рішень власника, підпис DoD</td></tr>
+      <tr><td>Комерційний директор</td><td>Звіт 3 повністю → тут: 2.04 (Business), 2.10 (Acquisition), 2.11 (CRM), 2.18 (реєстр)</td><td>бюджет каналів, правило масштабування, черга беклогу</td></tr>
+      <tr><td>Маркетолог</td><td>тут: 2.08 (Website+AQC), 2.09 (SEO), 2.10–2.11, 2.16 (CJM) → томи A/B/C постранично → Звіт 4 (свої задачі у Ганті)</td><td>що робити у W1 своїми руками, DoD своїх метрик</td></tr>
+      <tr><td>Ops-лід</td><td>тут: 2.13 (Operations), 2.07 (Product/асортимент) → Звіт 4 гл. 4.02 (тижневий план W1)</td><td>наявність, бій, другий постачальник, свій KPI</td></tr>
+      <tr><td>Розробник / підрядник</td><td>тут: 2.08, 2.14 (Technology) → том A (постранично, wireframes) → том C (SEO-техніка) → Гант XLSX (свої рядки)</td><td>черга релізів W1–W2, staging, DoD задач</td></tr>
+      <tr><td>Новий PM (з W1)</td><td>увесь пакет за 2 дні: Звіт 2 → 3 → 4 → 5 → томи; далі Гант XLSX — робочий файл щодня</td><td>перша читка, ритм тижня, контроль DoD</td></tr>
+    </table>
+    <h2 class="st" style="font-size:11.5pt;margin-top:3mm">Глосарій — терміни, без яких цифри читаються неправильно</h2>
+    <table class="t" style="font-size:7.9pt">
+      <tr><th>Термін</th><th>Що означає тут</th><th>З чим плутають</th></tr>
+      <tr><td><b>Contribution</b></td><td>виручка − собівартість − змінні витрати − реклама; «прибуток» у пакеті = contribution, не чистий прибуток</td><td>з маржею 52% (то валова, до реклами)</td></tr>
+      <tr><td><b>CR / checkout completion</b></td><td>CR — замовлення ÷ сесії (1.22%); completion — оплачені ÷ ті, хто ПОЧАВ checkout (43.6%)</td><td>одне з одним; це різні знаменники</td></tr>
+      <tr><td><b>Repeat rate клієнтів 13%</b></td><td>частка клієнтів з 2+ покупками за 365 днів</td><td>з часткою repeat-ВИРУЧКИ 15% і «ядром» 29–33%</td></tr>
+      <tr><td><b>Множник (×1.15)</b></td><td>ефект важеля воронки; множаться, НЕ додаються (гл. 3.00)</td><td>з відсотком приросту, який можна скласти</td></tr>
+      <tr><td><b>Health Score 52</b></td><td>Σ(бал домену 0–100 × вага) ÷ Σ ваг — розрахунок у 2.17</td><td>з «оцінкою за 100-бальною шкалою навмання»</td></tr>
+      <tr><td><b>DoD (Definition of Done)</b></td><td>вимірний поріг «готово», підписується на старті (Звіт 3, гл. 3.05)</td><td>з побажанням «зробити краще»</td></tr>
+      <tr><td><b>W1 / W2 / W3</b></td><td>хвилі програми: дні 0–30 / 21–120 / 105–270 (перекриваються свідомо)</td><td>з календарними місяцями</td></tr>
+      <tr><td><b>«Не виявлено»</b></td><td>у джерелах даних цього немає; НЕ означає «відсутнє в бізнесі» — правило методології</td><td>з «перевірили — нема»</td></tr>
+    </table>
+    <p class="marg" style="margin-top:2mm">Позначки в тексті: <b>[факт]</b> — з даних систем · <b>[система]</b> — з конфігурації/коду · <b>[само]</b> — зі слів команди · <b>[експерт]</b> — оцінка аудитора. Всі 160 перевірок класифіковано у гл. 2.19.</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 3/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.01 · Контекст · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 2.01 · Контекст і цілі власника</span>
+    <h1 class="big" style="font-size:26pt">«Тестик» прийшов не по трафік —<br>по прибуток і автономність.</h1>
+    <p class="body" style="margin-top:4mm">D2C-бренд посуду та кухонних аксесуарів: власна ТМ, контрактне виробництво, UA-сайт + Allegro PL,
+    11 людей, рішення ухвалює власник особисто. Виручка €123k/міс (замовлення 24 міс). Пріоритети власника (rank з анкети):
+    <b>1 — прибуток</b> («оборот росте, гроші — ні»; P&L-тренд підтверджує: виручка +19% р/р, contribution +4%),
+    <b>2 — автономність</b> («поїду на 3 місяці — все стане»), 3 — нові ринки CZ/RO. Критерій успіху-12міс дослівно:
+    «€250k/міс run-rate — і бізнес не потребує мене щодня».</p>
+    <h2 class="st" style="font-size:12pt">Карта стейкхолдерів — хто впливає на проект</h2>
+    <table class="t" style="font-size:8.3pt">
+      <tr><th>Хто</th><th>Роль у рішеннях</th><th>Ставлення до змін</th><th>Що важливо врахувати</th></tr>
+      <tr class="hl"><td><b>Власник</b></td><td>усі знижки, креативи, закупівлі</td><td>драйвер (сам замовив автономність)</td><td>вузьке місце рішень — SLA 48 год у плані</td></tr>
+      <tr><td>Дружина власника (співзасновниця)</td><td>асортимент, бренд</td><td>обережна: «не зіпсуйте естетику»</td><td>залучити до W2-рішень по PDP/контенту</td></tr>
+      <tr><td>Ops-лід (7 років у компанії)</td><td>склад, доставка де-факто</td><td>скептик: «уже пробували агентства»</td><td>перший quick-win (пакування) — через нього</td></tr>
+      <tr><td>Маркетолог (8 міс)</td><td>кампанії, контент</td><td>прихильник, бракує важелів</td><td>кандидат на власника каналу CRM</td></tr>
+      <tr><td>Фрілансер-розробник</td><td>вся платформа</td><td>нейтрал, оплата погодинна</td><td>bus-factor 1 — ризик R1 у реєстрі ризиків</td></tr>
+      <tr><td>Бухгалтер (part-time)</td><td>P&L, податки</td><td>нейтрал</td><td>джерело фінансових даних для дашборда</td></tr>
+    </table>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">Що вже пробували — і що НЕ спрацювало</h2>
+    <table class="t" style="font-size:8.3pt">
+      <tr><th>Спроба (12 міс)</th><th>Результат</th><th>Наш діагноз причини → що цього разу інакше</th></tr>
+      <tr><td>Performance-агентство, 6 міс</td><td>CAC +22%</td><td>оптимізація по зіпсованому GA4 (−22% замовлень) → спершу фікс вимірювання (W1), потім оптимізація</td></tr>
+      <tr><td>Редизайн головної</td><td>CR без змін</td><td>головна — не вузьке місце; втрати в checkout і mobile → працюємо там</td></tr>
+      <tr><td>Знижки −25% на dead stock</td><td>виручка +, прибуток −</td><td>без собівартості по SKU → тепер: правило contribution + натурний експеримент як джерело еластичності</td></tr>
+      <tr><td>Маркетолог-универсал</td><td>пішов за 4 міс</td><td>роль без даних і процесів → спочатку дашборд і ритм, потім розширення команди</td></tr>
+    </table>
+    <p class="marg" style="margin-top:3mm">Обмеження, зафіксовані до старту: платформа заморожена 6 міс (Q4) · бюджет впровадження €6k/міс (WEEXP-частина)
+    + існуючий розробник ~€1.4k/міс · нові підрядники (копірайтер, студія) — окремо, погоджуються в Звіті 5 · каса: вересень–жовтень без великих витрат.</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 4/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.02 · Методика · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 2.02 · Методика, карта даних, обмеження</span>
+    <h1 class="big" style="font-size:26pt">14 систем відкрито. 2 — ні.<br>І це позначено в кожному висновку.</h1>
+    <div class="cols2" style="margin-top:4mm">
+      <div>
+        <h2 class="st" style="font-size:11pt">Відкриті джерела (період · отримано)</h2>
+        <table class="t" style="font-size:7.6pt">
+          <tr><td>Замовлення (CSV)</td><td class="num">24 міс</td><td class="src">14.08</td></tr>
+          <tr><td>GA4 (Viewer)</td><td class="num">16 міс</td><td class="src">14.08</td></tr>
+          <tr><td>Search Console</td><td class="num">16 міс</td><td class="src">14.08</td></tr>
+          <tr><td>Google Ads (read-only)</td><td class="num">24 міс</td><td class="src">15.08</td></tr>
+          <tr><td>Meta Ads (Analyst)</td><td class="num">24 міс</td><td class="src">15.08</td></tr>
+          <tr><td>Merchant Center</td><td class="num">поточний</td><td class="src">15.08</td></tr>
+          <tr><td>CMS OpenCart (read-only)</td><td class="num">—</td><td class="src">15.08</td></tr>
+          <tr><td>eSputnik (ESP)</td><td class="num">вся історія</td><td class="src">16.08</td></tr>
+          <tr><td>Allegro Seller Center</td><td class="num">12 міс</td><td class="src">16.08</td></tr>
+          <tr><td>Товарний фід (XML)</td><td class="num">поточний</td><td class="src">14.08</td></tr>
+          <tr><td>Управлінський P&L (NDA)</td><td class="num">24 міс</td><td class="src">17.08</td></tr>
+          <tr><td>Склад: залишки/оборотність</td><td class="num">12 міс</td><td class="src">17.08</td></tr>
+          <tr><td>GTM (Read)</td><td class="num">—</td><td class="src">15.08</td></tr>
+          <tr><td>Хостинг-метрики</td><td class="num">3 міс</td><td class="src">18.08</td></tr>
+        </table>
+      </div>
+      <div>
+        <h2 class="st" style="font-size:11pt">Не отримано → статус</h2>
+        <table class="t" style="font-size:7.6pt">
+          <tr class="hl"><td><b>Собівартість по SKU</b></td><td>запитано повторно 19.08, дедлайн W1-день-10; до того — середня маржа 52%, прайсинг-висновки «очікує погодження»</td></tr>
+          <tr class="hl"><td><b>CRM-база (знеособлена)</b></td><td>запитано повторно 19.08; retention порахований із замовлень (надійно), склад сегментів — діапазони</td></tr>
+        </table>
+        <h2 class="st" style="font-size:11pt;margin-top:4mm">Ланцюжок доказовості</h2>
+        <p class="body" style="font-size:8.3pt">Рівень 1 — факт (замовлення, DNS, кроул, договори) · Рівень 2 — система (GA4/кабінети, звірені) ·
+        Рівень 3 — самооцінка (анкета) · Рівень 4 — експертна оцінка (позначається явно). Що нижчий рівень — то нижча заявлена впевненість.
+        Усі грошові розрахунки пакета — від бекенд-замовлень (рівень 1), не від GA4.</p>
+        <div class="callout v" style="font-size:8.3pt"><b>Правила чесності:</b> жодної цифри без джерела; «очікує погодження» замість вигаданих значень;
+        NDA на P&L і собівартість; файли клієнта видаляються на 31-й день після передачі (Звіт 5).</div>
+      </div>
+    </div>
+    <p class="marg" style="margin-top:3mm">Виконано 160 перевірок за каталогом 12 аудитів (сума по главах: 14+12+13+13+16+14+15+14+10+13+14+12) (перелік по главах — у §2 кожної глави). Доступи: audit@weexp.agency, read-only, відкликання за чеклистом Звіту 5.</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 5/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.03 · Baseline · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 2.03 · Знімок експрес-аудиту (baseline)</span>
+    <h1 class="big" style="font-size:26pt">Експрес казав €390k і помилявся<br>у трьох місцях. Ось у яких.</h1>
+    <div class="kpis" style="margin-top:5mm">
+      <div class="kpi"><div class="v bad">€390k ±40%</div><div class="k">експрес: витік/рік (виручка)</div></div>
+      <div class="kpi"><div class="v bad">54/100</div><div class="k">експрес: Business Health</div></div>
+      <div class="kpi"><div class="v bad">€433k</div><div class="k">глибокий: витік/рік (виручка)</div></div>
+      <div class="kpi"><div class="v bad">52/100</div><div class="k">глибокий: Health Score</div></div>
+    </div>
+    <table class="t" style="font-size:8.3pt">
+      <tr><th>Сигнал експресу</th><th>Що показав глибокий аудит</th><th>Вердикт</th></tr>
+      <tr><td>Головний витік — «конверсія сайту», ≈€180k</td><td>підтверджено й локалізовано: checkout 43.6% + mobile LCP 4.6s = €190k+€120k</td><td><span class="sev ok">точно</span></td></tr>
+      <tr><td>Retention нижче норми, ≈€120k</td><td>підтверджено: repeat 13% проти 25–30%, оцінка €150k</td><td><span class="sev ok">точно</span></td></tr>
+      <tr class="hl"><td>Операційні втрати «незначні»</td><td><b>помилка:</b> OOS топ-20 (€95k) + бій 2.1% (€31k) — експрес їх не бачив без даних складу</td><td><span class="sev h">недооцінив</span></td></tr>
+      <tr class="hl"><td>Маркетплейс «прибутковий канал»</td><td><b>помилка:</b> contribution 3% проти 12% на сайті — видно лише з юніт-розрахунку каналу</td><td><span class="sev h">переоцінив</span></td></tr>
+      <tr class="hl"><td>Аналітика «працює, є GA4»</td><td><b>помилка:</b> GA4 не бачить 22% замовлень — сигнал зʼявився тільки при звірці з бекендом</td><td><span class="sev h">переоцінив</span></td></tr>
+    </table>
+    <p class="body" style="margin-top:3mm">Це очікувана поведінка інструментів: експрес працює на самооцінці власника (рівень доказовості 3),
+    глибокий — на даних (рівні 1–2). Розбіжності експрес↔глибокий йдуть у леджер навчання рушія — наступні експрес-оцінки калібруються на таких парах.</p>
+    <p class="marg">Baseline зафіксований для чесного «до/після»: перерахунок на КТ-2 (день 90) і наприкінці кожної хвилі — проти цієї сторінки.</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 6/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.04 · Business-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 2.04 · Business: модель та економіка · 14 перевірок</span>
+    <h1 class="big" style="font-size:26pt">Модель прибуткова. Прибуток зʼїдають канал-боржник і хвіст.</h1>
+    <div style="display:flex;gap:8mm;align-items:center;margin:5mm 0 3mm">
+      <div style="border:2.5px solid var(--ink);padding:3mm 5mm"><span class="mono" style="font-weight:700;font-size:22pt;color:var(--ink)">L2</span><div class="src">рівень зрілості</div></div>
+      <div style="flex:1"><p class="body" style="margin:0">Юніт-економіка сайту здорова (contribution 12% після реклами), але Allegro віддає 3%, B2B-опт живе без мінімального замовлення з дебіторкою 45 днів, каса залежить від Q4-закупівель. Фінмоделі немає — рішення про гроші ухвалюються навпомацки.</p></div>
+      <div style="text-align:right"><span class="mono" style="font-weight:700;font-size:16pt;color:var(--mark)">€60k + €70k кешу</span><div class="src">гроші блоку/рік</div></div>
+    </div>
+    <h2 class="st" style="font-size:12pt">§2 Методика і дані</h2>
+    <p class="body" style="font-size:8.5pt"><b>Перевірено:</b> юніт-економіка по 3 каналах; міст маржі; LTV когорт 6/12; CAC із розкладкою; MER 24 міс; P&L-тренд; CCC і каса; breakeven; сезонність; концентрації; B2B як окремий P&L; якість фінмоделі (14/14). <b>Джерела:</b> замовлення 24 міс (рівень 1), P&L (NDA), Seller Center, анкета. <b class="mark">Не перевірялось:</b> собівартість по SKU (очікує) → прайсинг-висновки помічені.</p>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">§3 Факти проти бенчмарків</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Метрика</th><th class="num">Факт</th><th class="num">Бенч</th><th>Розрив</th><th>Джерело бенчу</th></tr>
+      <tr><td>Contribution сайту після реклами</td><td class="num"><b>12%</b></td><td class="num">10–15%</td><td>норма</td><td class="src">галузеві D2C-звіти</td></tr><tr><td>Contribution Allegro</td><td class="num"><b>3%</b></td><td class="num">≥8%</td><td><span class="mark">−5 п.п.</span></td><td class="src">внутрішній поріг каналу</td></tr><tr><td>CAC (paid, new) проти маржі 1-го замовлення</td><td class="num"><b>€18 < €21.8</b></td><td class="num">payback ≤ 1 покупки</td><td><span class="okm">окупається одразу</span></td><td class="src">кабінети + юніт-модель d01</td></tr><tr><td>PL: CAC проти маржі 1-го замовлення</td><td class="num"><b>≈€24 > €18.2</b></td><td class="num">payback ≤ 1 — умова масштабування</td><td><span class="mark">не окупається 1-ю покупкою</span></td><td class="src">кабінети PL + юніт-модель</td></tr><tr><td>CCC</td><td class="num"><b>61 дн (DIO 68 · DSO 12 · DPO 19)</b></td><td class="num">≤45 дн</td><td><span class="mark">+16 дн</span></td><td class="src">бенч рітейлу</td></tr><tr><td>Частка Q4 у виручці</td><td class="num"><b>38%</b></td><td class="num">30–35% у ніші</td><td>підвищена сезонність</td><td class="src">замовлення 24 міс</td></tr><tr><td>B2B-опт: contribution</td><td class="num"><b>≈18%</b></td><td class="num">20–25%</td><td>нижче через логістику</td><td class="src">розрахунок з P&L</td></tr>
+    </table>
+    
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 7/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.04 · Business-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <h2 class="st" style="font-size:12pt">§4 Знахідки з доказами й розрахунками</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th style="width:34mm">Знахідка</th><th>Доказ → розрахунок ефекту</th><th class="num" style="width:17mm">Ефект/рік</th><th style="width:11mm">Впевн.</th></tr>
+      <tr class="hl"><td><b>Allegro: канал-боржник</b></td><td>юніт-розрахунок на середнє замовлення €35: маржа 18.2 − комісія 4.2 − логістика Smart! 6.1 − Ads 2.5 − повернення PL 1.6 − пакування й обробка 1.3 − Smart!-промо та примусові знижки 1.4 = <b>€1.1 (3%)</b>. 40 SKU — нижче беззбитковості каналу</td><td class="num"><b>€60k</b></td><td><span class="sev ok">high</span></td></tr><tr class="hl"><td><b>Каса: розрив перед Q4</b></td><td>CCC 61 дн × закупівлі жовтня ≈ €85k передоплат при залишку кешу €40–60k — розрив €25–45k покривається дорогим овердрафтом</td><td class="num"><b>вартість грошей €4–6k</b></td><td><span class="sev ok">high</span></td></tr><tr><td><b>B2B без правил</b></td><td>14 клієнтів, прайс −25%, без мін. замовлення: 31% B2B-замовлень < €200 — collection cost зʼїдає маржу; дебіторка 45 дн проти DPO 19</td><td class="num"><b>€9–14k</b></td><td><span class="sev m">med</span></td></tr><tr class="hl"><td><b>Фінмоделі немає</b></td><td>рішення про Q4-закупівлі й нові ринки — без сценаріїв; ціль €250k/міс не розкладена на драйвери</td><td class="num"><b>якість рішень</b></td><td><span class="sev ok">high</span></td></tr>
+    </table>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">§5 Рекомендації</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Дія</th><th style="width:10mm">Хвиля</th><th style="width:26mm">Власник</th><th class="num" style="width:11mm">Год</th><th style="width:34mm">Метрика контролю</th></tr>
+      <tr><td>Передоцінка 40 збиткових SKU Allegro (тест на 10 SKU, 2 тижні — потім розкат)</td><td class="mono">W1</td><td>PM + WEEXP</td><td class="num">10</td><td class="src">contribution каналу ≥6% (день 90)</td></tr><tr><td>Правило знижок: тільки з contribution-розрахунком</td><td class="mono">W1</td><td>власник + WEEXP</td><td class="num">4</td><td class="src">0 акцій без розрахунку</td></tr><tr><td>B2B: мін. замовлення €300 + передоплата новим</td><td class="mono">W2</td><td>власник</td><td class="num">6</td><td class="src">частка B2B-замовлень <€200 → 0</td></tr><tr><td>Фінмодель 12 міс із сезонністю і сценаріями</td><td class="mono">W2</td><td>WEEXP + бухгалтер</td><td class="num">24</td><td class="src">модель жива, оновлення щомісяця</td></tr><tr><td>План каси Q4: графік закупівель проти кеш-прогнозу</td><td class="mono">W2</td><td>бухгалтер + PM</td><td class="num">8</td><td class="src">нуль незапланованих овердрафтів</td></tr>
+    </table>
+    <div class="cols2" style="margin-top:3mm">
+      <div><h2 class="st" style="font-size:11pt">§6 Звʼязки</h2><p class="body" style="font-size:8.3pt">Блокує: масштабування реклами (d07) — до contribution-оптимізації; вихід CZ/RO — до PL LTV:CAC ≥2.5. Залежить від: собівартості по SKU (2.02), фіксу аналітики (d09) для маржі в подіях.</p></div>
+      <div><h2 class="st" style="font-size:11pt">§7 Що міряти через 90 днів</h2><p class="body" style="font-size:8.3pt">Contribution Allegro (тижнево, дашборд) · частка SKU з відомою повною собівартістю → 100% · дебіторка B2B, дні · кеш-прогноз Q4 проти факту.</p></div>
+    </div>
+    
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 8/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.05 · Market-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 2.05 · Market: ринок, конкуренти, бренд · 12 перевірок</span>
+    <h1 class="big" style="font-size:26pt">Середина ринку без причини обирати. Але бренд уже дихає.</h1>
+    <div style="display:flex;gap:8mm;align-items:center;margin:5mm 0 3mm">
+      <div style="border:2.5px solid var(--ink);padding:3mm 5mm"><span class="mono" style="font-weight:700;font-size:22pt;color:var(--ink)">L2</span><div class="src">рівень зрілості</div></div>
+      <div style="flex:1"><p class="body" style="margin:0">Ціни в ринку, обіцянка «якісний посуд» — така сама в усіх. При цьому брендовий пошук +9% р/р і рейтинг 4.6 — актив є, він просто не капіталізується: ні цінової премії, ні позиції експерта, ні присутності там, де зʼявляється нова полиця — в AI-відповідях.</p></div>
+      <div style="text-align:right"><span class="mono" style="font-weight:700;font-size:16pt;color:var(--mark)">внесок у d06/d07</span><div class="src">гроші блоку/рік</div></div>
+    </div>
+    <h2 class="st" style="font-size:12pt">§2 Методика і дані</h2>
+    <p class="body" style="font-size:8.5pt"><b>Перевірено:</b> цінові індекси по 20 спільних SKU з 4 конкурентами; пороги доставки; позиціонування-тест; RTB-докази; brand search 24 міс; share of search; цінова премія; ТМ UA/EUIPO; SOV auction insights; AI-панель 48 запитів; вільні позиції; відгуки конкурентів (12/12). <b>Джерела:</b> кроул конкурентів (рівень 1), GSC, auction insights, AI-панель, маркетплейс-рейтинги. <b class="mark">Не перевірялось:</b> частки ринку (недоступні чесно) — не вигадуємо.</p>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">§3 Факти проти бенчмарків</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Метрика</th><th class="num">Факт</th><th class="num">Бенч</th><th>Розрив</th><th>Джерело бенчу</th></tr>
+      <tr><td>Ціновий індекс до конк. №1</td><td class="num"><b>+8%</b></td><td class="num">—</td><td>ми дорожчі без пояснення чому</td><td class="src">кроул 20 SKU</td></tr><tr><td>Поріг безкошт. доставки</td><td class="num"><b>€50</b></td><td class="num">№1: €30 · №2: €40</td><td><span class="mark">гірший на ринку</span></td><td class="src">кроул</td></tr><tr><td>Share of search (бренд)</td><td class="num"><b>11%</b></td><td class="num">лідер: 34%</td><td>3-тє місце з 5</td><td class="src">GSC + Keyword Planner</td></tr><tr><td>AI-видимість (48 запитів × 4 системи)</td><td class="num"><b>0/48</b></td><td class="num">конк. №2: 11 · №4: 7</td><td><span class="mark">невидимі</span></td><td class="src">власна панель, серпень</td></tr><tr><td>Цінова премія за бренд</td><td class="num"><b>немає (анкета: «іноді»)</b></td><td class="num">ціль: +5–8% у ядрі</td><td>непідтверджена</td><td class="src">експеримент цін (d03)</td></tr><tr><td>ТМ-захист</td><td class="num"><b>UA так · EUIPO ні</b></td><td class="num">обидва при продажах в ЄС</td><td><span class="mark">ризик PL</span></td><td class="src">реєстри</td></tr>
+    </table>
+    
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 9/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.05 · Market-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <h2 class="st" style="font-size:12pt">§4 Знахідки з доказами й розрахунками</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th style="width:34mm">Знахідка</th><th>Доказ → розрахунок ефекту</th><th class="num" style="width:17mm">Ефект/рік</th><th style="width:11mm">Впевн.</th></tr>
+      <tr class="hl"><td><b>Позиціонування не проходить тест</b></td><td>«Якісний посуд для дому» — під цим підпишуться всі 4 конкуренти. RTB-доказів (сертифікати, тести, гарантія років) на сайті немає</td><td class="num"><b>конверсійний вплив у d05</b></td><td><span class="sev ok">high</span></td></tr><tr class="hl"><td><b>Вільна позиція: «експерт догляду»</b></td><td>жоден конкурент не веде системного контенту про догляд/вибір посуду; попит кластера «догляд» 9.9k запитів/міс (d06) нічий</td><td class="num"><b>основа контент-стратегії</b></td><td><span class="sev ok">high</span></td></tr><tr><td><b>Поріг доставки програє всім</b></td><td>кошики €35–50 (28% замовлень) — зона, де №1 вже безкоштовний, ми — ні; тест порога €40 = натурний експеримент W2</td><td class="num"><b>€15–25k (оцінка, рів. 4)</b></td><td><span class="sev m">med</span></td></tr><tr class="hl"><td><b>EUIPO-незахищеність</b></td><td>продажі в PL зростають, ТМ в ЄС не подана — ризик сквотингу і блокування листингів</td><td class="num"><b>юр. ризик</b></td><td><span class="sev ok">high</span></td></tr>
+    </table>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">§5 Рекомендації</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Дія</th><th style="width:10mm">Хвиля</th><th style="width:26mm">Власник</th><th class="num" style="width:11mm">Год</th><th style="width:34mm">Метрика контролю</th></tr>
+      <tr><td>Сформулювати позицію «експерт догляду» + 3 RTB з доказами</td><td class="mono">W2</td><td>власник + WEEXP</td><td class="num">12</td><td class="src">позиція на сайті, у креативах, у контенті</td></tr><tr><td>Подати ТМ у EUIPO</td><td class="mono">W1</td><td>власник (юрист)</td><td class="num">4</td><td class="src">заявка подана</td></tr><tr><td>Тест порога безкошт. доставки €40 на кошиках €35–50</td><td class="mono">W2</td><td>маркетолог</td><td class="num">6</td><td class="src">contribution/замовлення не падає, CR кошика +</td></tr><tr><td>Щоквартальний конкурентний зріз (ціни/пороги/контент)</td><td class="mono">W2</td><td>маркетолог</td><td class="num">4/кв</td><td class="src">звіт існує і обговорюється на читці</td></tr>
+    </table>
+    <div class="cols2" style="margin-top:3mm">
+      <div><h2 class="st" style="font-size:11pt">§6 Звʼязки</h2><p class="body" style="font-size:8.3pt">Дає меседжі для креативів (d07) і тем для контенту (d06). Залежить від еластичності цін (d03) для рішення про премію.</p></div>
+      <div><h2 class="st" style="font-size:11pt">§7 Що міряти через 90 днів</h2><p class="body" style="font-size:8.3pt">Share of search тренд · AI-видимість /48 · частка замовлень із безкошт. доставкою і їх contribution · статус EUIPO.</p></div>
+    </div>
+    
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 10/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.06 · Product-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 2.06 · Product: асортимент і ціни · 13 перевірок</span>
+    <h1 class="big" style="font-size:26pt">64 SKU годують компанію. 210 — заморозили €70k кешу.</h1>
+    <div style="display:flex;gap:8mm;align-items:center;margin:5mm 0 3mm">
+      <div style="border:2.5px solid var(--ink);padding:3mm 5mm"><span class="mono" style="font-weight:700;font-size:22pt;color:var(--ink)">L2</span><div class="src">рівень зрілості</div></div>
+      <div style="flex:1"><p class="body" style="margin:0">Ядро сильне: топ-20 SKU = 58% виручки, A-група стабільна. Але третина каталогу мертва, ціни — cost-plus без знання повної собівартості, а знижки історично зʼїдали прибуток. Два натурні експерименти показують: ядро терпить +5–8% ціни.</p></div>
+      <div style="text-align:right"><span class="mono" style="font-weight:700;font-size:16pt;color:var(--mark)">€70k кешу + прайсинг</span><div class="src">гроші блоку/рік</div></div>
+    </div>
+    <h2 class="st" style="font-size:12pt">§2 Методика і дані</h2>
+    <p class="body" style="font-size:8.5pt"><b>Перевірено:</b> ABC/XYZ по виручці І contribution; dead stock 180 дн; оборотність; OOS-розрахунок; цінова логіка; SKU нижче беззбитковості; знижкова дисципліна; структура лінійки і крос-сел пари; еластичність із натурних експериментів; атрибутика; контент карток; частка новинок; канібалізація (13/13). <b>Джерела:</b> фід, ERP-залишки 12 міс, замовлення 24 міс (рівень 1). <b class="mark">Не перевірялось:</b> ABC по contribution — наближено (середня маржа) до собівартості по SKU.</p>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">§3 Факти проти бенчмарків</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Метрика</th><th class="num">Факт</th><th class="num">Бенч</th><th>Розрив</th><th>Джерело бенчу</th></tr>
+      <tr><td>Dead stock (без продажів 180 дн)</td><td class="num"><b>210 SKU · 33%</b></td><td class="num">≤10–15%</td><td><span class="mark">×2–3 норми</span></td><td class="src">ERP + практика ритейлу</td></tr><tr><td>Заморожений кеш у dead stock</td><td class="num"><b>€70k</b></td><td class="num">—</td><td>= 12 діб виручки</td><td class="src">залишки × собівартість (сер.)</td></tr><tr><td>Оборотність запасів</td><td class="num"><b>4.1×/рік</b></td><td class="num">6–8× у ніші</td><td><span class="mark">повільно</span></td><td class="src">галузевий бенч</td></tr><tr><td>Частка виручки топ-20 SKU</td><td class="num"><b>58%</b></td><td class="num">40–60%</td><td>норма (контроль OOS критичний)</td><td class="src">замовлення</td></tr><tr><td>Частка замовлень зі знижкою</td><td class="num"><b>31% · глибина 18%</b></td><td class="num">≤20% · ≤12%</td><td><span class="mark">знижкова залежність</span></td><td class="src">замовлення</td></tr><tr><td>Повнота атрибутики SKU</td><td class="num"><b>54%</b></td><td class="num">≥90% для фільтрів/фідів</td><td><span class="mark">−36 п.п.</span></td><td class="src">фід-аналіз</td></tr>
+    </table>
+    
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 11/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.06 · Product-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <h2 class="st" style="font-size:12pt">§4 Знахідки з доказами й розрахунками</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th style="width:34mm">Знахідка</th><th>Доказ → розрахунок ефекту</th><th class="num" style="width:17mm">Ефект/рік</th><th style="width:11mm">Впевн.</th></tr>
+      <tr class="hl"><td><b>€70k кешу лежить мертвим</b></td><td>210 SKU × середня собівартість; розпродаж до собівартості повертає ≥€40–50k за 60 дн (темп минулої акції ×1.8 обсягу при −25%) — саме на Q4-закупівлі A-групи</td><td class="num"><b>€70k one-off</b></td><td><span class="sev ok">high</span></td></tr><tr><td><b>Еластичність ядра — низька</b></td><td>натурний експеримент березня: +6% ціни на 30 SKU ядра → обсяг −2%; contribution +€2.1k/міс. Висновок: ядро терпить +5–8% — але тільки після RTB-підсилення (d02)</td><td class="num"><b>€25–40k (після собівартості — уточнити)</b></td><td><span class="sev m">med</span></td></tr><tr><td><b>Крос-сел пари не використовуються</b></td><td>аналіз кошиків: сковорода+кришка 23% спільних покупок, каструля+засіб догляду 11% — на PDP пар немає</td><td class="num"><b>внесок у AOV (d05)</b></td><td><span class="sev m">med</span></td></tr><tr class="hl"><td><b>Атрибутика зриває фільтри й фіди</b></td><td>46% SKU без діаметра/матеріалу в структурованих полях → фільтри порожні, Shopping-фід з відхиленнями</td><td class="num"><b>внесок у d05/d07</b></td><td><span class="sev ok">high</span></td></tr>
+    </table>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">§5 Рекомендації</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Дія</th><th style="width:10mm">Хвиля</th><th style="width:26mm">Власник</th><th class="num" style="width:11mm">Год</th><th style="width:34mm">Метрика контролю</th></tr>
+      <tr><td>Розпродаж dead stock: план, черги, стоп-лос по собівартості</td><td class="mono">W1</td><td>PM + маркетолог</td><td class="num">16</td><td class="src">≥€40k кешу за 60 дн</td></tr><tr><td>Отримати собівартість по SKU → ABC по contribution</td><td class="mono">W1</td><td>бухгалтер + WEEXP</td><td class="num">8</td><td class="src">100% SKU з повною собівартістю</td></tr><tr><td>Прайсинг-тест +5% на 30 SKU ядра (після RTB)</td><td class="mono">W2</td><td>власник + WEEXP</td><td class="num">8</td><td class="src">обсяг −≤3%, contribution +</td></tr><tr><td>Атрибутика: 200 топ-SKU до 100% полів</td><td class="mono">W2</td><td>контентник</td><td class="num">40</td><td class="src">фід без відхилень, фільтри працюють</td></tr><tr><td>Крос-сел блоки пар на PDP</td><td class="mono">W2</td><td>розробник</td><td class="num">10</td><td class="src">AOV +€1.5–2.5</td></tr>
+    </table>
+    <div class="cols2" style="margin-top:3mm">
+      <div><h2 class="st" style="font-size:11pt">§6 Звʼязки</h2><p class="body" style="font-size:8.3pt">Кеш із розпродажу фінансує Q4-закупівлі (d10). Атрибутика розблоковує фіди (d07) і фільтри (d05). Еластичність — вхід для цінової премії (d02).</p></div>
+      <div><h2 class="st" style="font-size:11pt">§7 Що міряти через 90 днів</h2><p class="body" style="font-size:8.3pt">Кеш повернено, € · частка dead stock → ≤20% · AOV тренд · % SKU з повною атрибутикою.</p></div>
+    </div>
+    
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 12/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.07 · Customer-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 2.07 · Customer: сегменти та утримання · 13 перевірок</span>
+    <h1 class="big" style="font-size:26pt">Клієнт купує 1.15 раза і зникає. Ми навіть не кажемо «повернись».</h1>
+    <div style="display:flex;gap:8mm;align-items:center;margin:5mm 0 3mm">
+      <div style="border:2.5px solid var(--mark);padding:3mm 5mm"><span class="mono" style="font-weight:700;font-size:22pt;color:var(--mark)">L1</span><div class="src">рівень зрілості</div></div>
+      <div style="flex:1"><p class="body" style="margin:0">Найнижчий рівень зрілості разом із CRM та Analytics. Сегментів немає, NPS не міряється, вікно повернення (30–60 день) — порожнє. При цьому продукт люблять: 4.6 на Allegro, 62% негативу — не про товар, а про доставку.</p></div>
+      <div style="text-align:right"><span class="mono" style="font-weight:700;font-size:16pt;color:var(--mark)">база для €150k (d08)</span><div class="src">гроші блоку/рік</div></div>
+    </div>
+    <h2 class="st" style="font-size:12pt">§2 Методика і дані</h2>
+    <p class="body" style="font-size:8.5pt"><b>Перевірено:</b> RFM-наближення з замовлень; частки виручки сегментів; repeat 90/365; розподіл часу до 2-ї покупки; LTV-криві по каналах першого дотику; churn-визначення; NPS-стан; VoC-тегування 214 відгуків; збиткові сегменти; барʼєри 1-ї покупки; ICP; джерела знайомства; персони-чесність (13/13). <b>Джерела:</b> замовлення 24 міс (рівень 1), відгуки 6 міс (тегування вручну), eSputnik, анкета. <b class="mark">Не перевірялось:</b> CRM-база не вивантажена (очікує) → сегменти в діапазонах, не в цілих відсотках.</p>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">§3 Факти проти бенчмарків</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Метрика</th><th class="num">Факт</th><th class="num">Бенч</th><th>Розрив</th><th>Джерело бенчу</th></tr>
+      <tr><td>Repeat rate 365 дн</td><td class="num"><b>13%</b></td><td class="num">25–30% ніша</td><td><span class="mark">−12–17 п.п.</span></td><td class="src">замовлення · галузевий бенч</td></tr><tr><td>Повторна покупка ≤90 дн</td><td class="num"><b>≈9%</b></td><td class="num">18–22%</td><td><span class="mark">половина норми</span></td><td class="src">когорти замовлень</td></tr><tr><td>Медіана до 2-ї покупки</td><td class="num"><b>96 дн</b></td><td class="num">45–60 дн у ніші</td><td>вікно 30–60 дн порожнє</td><td class="src">когорти</td></tr><tr><td>Частка виручки «ядра» (2+ покупки)</td><td class="num"><b>29–33%</b></td><td class="num">45–55% у зрілих D2C</td><td><span class="mark">недорозвинене ядро</span></td><td class="src">RFM-наближення</td></tr><tr><td>NPS</td><td class="num"><b>не вимірюється</b></td><td class="num">базова лінія + тренд</td><td>сліпа зона</td><td class="src">анкета</td></tr><tr><td>Теми негативу (214 відгуків)</td><td class="num"><b>доставка/бій 62% · товар 9%</b></td><td class="num">—</td><td>операційна криза досвіду</td><td class="src">VoC-тегування</td></tr>
+    </table>
+    
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 13/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.07 · Customer-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <h2 class="st" style="font-size:12pt">§4 Знахідки з доказами й розрахунками</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th style="width:34mm">Знахідка</th><th>Доказ → розрахунок ефекту</th><th class="num" style="width:17mm">Ефект/рік</th><th style="width:11mm">Впевн.</th></tr>
+      <tr class="hl"><td><b>Вікно 30–60 дн — нуль касань</b></td><td>медіана 2-ї покупки 96 дн означає: клієнт готовий раніше, ніж ми зʼявляємось (а ми не зʼявляємось взагалі: 1 welcome-flow). Після-продажний цикл догляду за посудом — природний привід</td><td class="num"><b>ядро €150k-важеля</b></td><td><span class="sev ok">high</span></td></tr><tr class="hl"><td><b>Сегменти купують по-різному — а бачимо середнє</b></td><td>подарунковий сегмент (грудень-піки, 1 покупка, високий AOV) ≠ «для себе» (повторюваний, аксесуари): різні сценарії CRM, зараз — один список</td><td class="num"><b>точність d08</b></td><td><span class="sev ok">high</span></td></tr><tr><td><b>Збитковий мікросегмент</b></td><td>4–6% клієнтів: 2+ повернення поспіль або бій+компенсація; собівартість обслуговування > LTV — потрібна політика (не «звільняти», а міняти умови доставки)</td><td class="num"><b>€6–9k</b></td><td><span class="sev m">med</span></td></tr><tr class="hl"><td><b>Після бою клієнт вмирає</b></td><td>когорти: repeat після пошкодженої доставки ×0.5 від норми — кожен бій коштує не лише продукт, а й майбутні покупки (враховано в €31k, d10)</td><td class="num"><b>див. d10</b></td><td><span class="sev ok">high</span></td></tr>
+    </table>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">§5 Рекомендації</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Дія</th><th style="width:10mm">Хвиля</th><th style="width:26mm">Власник</th><th class="num" style="width:11mm">Год</th><th style="width:34mm">Метрика контролю</th></tr>
+      <tr><td>Тегувати відгуки й звернення постійно (テми/тижень)</td><td class="mono">W1</td><td>підтримка</td><td class="num">2/тиж</td><td class="src">звіт тем на читці</td></tr><tr><td>NPS: запуск після-доставки + базова лінія</td><td class="mono">W2</td><td>маркетолог</td><td class="num">6</td><td class="src">перший заміряний NPS</td></tr><tr><td>Сегментна модель: подарунковий/для себе/B2B — у ESP</td><td class="mono">W2</td><td>WEEXP-CRM</td><td class="num">8</td><td class="src">сегменти живі в eSputnik</td></tr><tr><td>Опитування 1 питання на checkout: «як дізнались?»</td><td class="mono">W2</td><td>розробник</td><td class="num">3</td><td class="src">first-touch дані замість здогадок</td></tr><tr><td>Політика для збиткового мікросегмента</td><td class="mono">W3</td><td>ops-лід</td><td class="num">4</td><td class="src">повторні боєві компенсації → 0</td></tr>
+    </table>
+    <div class="cols2" style="margin-top:3mm">
+      <div><h2 class="st" style="font-size:11pt">§6 Звʼязки</h2><p class="body" style="font-size:8.3pt">Дає сегменти й вікно контакту для d08 (flows). Отримує причини відвалу від d10 (доставка). CJM — глава 2.16.</p></div>
+      <div><h2 class="st" style="font-size:11pt">§7 Що міряти через 90 днів</h2><p class="body" style="font-size:8.3pt">2-га покупка ≤90 дн: 9% → 12%+ · NPS базова лінія · частка виручки ядра · теми негативу: доставка ↓.</p></div>
+    </div>
+    
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 14/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.08 · Website-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 2.08 · Website: UX та конверсія · 16 перевірок</span>
+    <h1 class="big" style="font-size:26pt">5 180 людей на місяць починають платити. 2 920 — не закінчують.</h1>
+    <div style="display:flex;gap:8mm;align-items:center;margin:5mm 0 3mm">
+      <div style="border:2.5px solid var(--ink);padding:3mm 5mm"><span class="mono" style="font-weight:700;font-size:22pt;color:var(--ink)">L2</span><div class="src">рівень зрілості</div></div>
+      <div style="flex:1"><p class="body" style="margin:0">Воронка тримається до кошика і ламається на оплаті: completion 43.6% проти 65%+ норми. На mobile (74% трафіку) додається швидкість 4.6s. Це найбільший грошовий важіль пакета — €190k+€120k на рік.</p></div>
+      <div style="text-align:right"><span class="mono" style="font-weight:700;font-size:16pt;color:var(--mark)">€310k разом</span><div class="src">гроші блоку/рік</div></div>
+    </div>
+    <h2 class="st" style="font-size:12pt">§2 Методика і дані</h2>
+    <p class="body" style="font-size:8.5pt"><b>Перевірено:</b> воронка по пристроях (звірена); checkout покроково; поля форми; видимість доставки; способи оплати по країнах; гостьове; CWV по шаблонах із причинами; PDP проти еталона; кошик; внутрішній пошук; фільтри; mobile-специфіка; довіра; a11y вибірково; A/B-готовність; JS-помилки шляхів (16/16). <b>Джерела:</b> GA4 звірений, CrUX, кроул, скринкасти шляхів (7 записів у робочих матеріалах). <b class="mark">Не перевірялось:</b> session replays (нема інструмента — рекомендовано W2), повний WCAG-аудит (вибірковий).</p>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">§3 Факти проти бенчмарків</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Метрика</th><th class="num">Факт</th><th class="num">Бенч</th><th>Розрив</th><th>Джерело бенчу</th></tr>
+      <tr><td>Checkout completion</td><td class="num"><b>43.6%</b></td><td class="num">65%+</td><td><span class="mark">−21 п.п.</span></td><td class="src">Baymard</td></tr><tr><td>CR mobile / desktop</td><td class="num"><b>0.9% / 2.1%</b></td><td class="num">розрив ≤1.5×</td><td><span class="mark">2.3×</span></td><td class="src">GA4 звірений</td></tr><tr><td>LCP · INP · CLS (mobile)</td><td class="num"><b>4.6s · 310ms · 0.18</b></td><td class="num">≤2.5s · ≤200ms · ≤0.1</td><td><span class="mark">3/3 червоні</span></td><td class="src">CrUX p75</td></tr><tr><td>Кошик → покупка</td><td class="num"><b>17.5%</b></td><td class="num">28–35%</td><td><span class="mark">−11 п.п.</span></td><td class="src">галузевий бенч</td></tr><tr><td>Поля checkout (обовʼязкові)</td><td class="num"><b>9</b></td><td class="num">≤5–6</td><td>+4 зайві</td><td class="src">розбір форми</td></tr><tr><td>Внутрішній пошук: нульові видачі</td><td class="num"><b>18% запитів</b></td><td class="num">≤5%</td><td><span class="mark">×3.6</span></td><td class="src">GA4 site search</td></tr>
+    </table>
+    
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 15/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.08 · Website-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <h2 class="st" style="font-size:12pt">§4 Знахідки з доказами й розрахунками</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th style="width:34mm">Знахідка</th><th>Доказ → розрахунок ефекту</th><th class="num" style="width:17mm">Ефект/рік</th><th style="width:11mm">Впевн.</th></tr>
+      <tr class="hl"><td><b>Доставка зʼявляється в кінці</b></td><td>скринкаст: вартість і строк видно лише на кроці оплати; топ-причина покинутих оформлень за Baymard. Розрахунок важеля: 5 180 входів × (60%−43.6%) = +848 зам./міс × €42 × 12 = €427k сирих; зріз ×0.55 на еластичність (частина недоплативших — нецільові; коеф. з двох реперних досліджень відмов) → <b>€190–235k, беремо €190k</b></td><td class="num"><b>€190k</b></td><td><span class="sev ok">high</span></td></tr><tr><td><b>Mobile повільний утричі від порога</b></td><td>причини за вкладом: зображення 1.8–2.6MB без WebP (≈45% LCP), 18 синхронних скриптів (3 чат-віджети, з них живий 1), немає критичного CSS, TTFB 1.1s у пік. CR mobile 0.9→1.25% (половина розриву до desktop) = €120k</td><td class="num"><b>€120k</b></td><td><span class="sev m">med</span></td></tr><tr><td><b>Нульовий пошук ховає товар</b></td><td>18% пошукових запитів → «нічого не знайдено», хоча товар є (синоніми: «пательня»/«сковорода»); пошукові сесії конвертують ×2.4 — втрата очевидна</td><td class="num"><b>€14k</b></td><td><span class="sev m">med</span></td></tr><tr><td><b>BLIK відсутній для PL</b></td><td>відмови на кроці оплати PL-замовлень: −31% completion проти UA; BLIK = 70%+ онлайн-платежів Польщі</td><td class="num"><b>€18k</b></td><td><span class="sev m">med</span></td></tr>
+    </table>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">§5 Рекомендації</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Дія</th><th style="width:10mm">Хвиля</th><th style="width:26mm">Власник</th><th class="num" style="width:11mm">Год</th><th style="width:34mm">Метрика контролю</th></tr>
+      <tr><td>Доставка: вартість+строк на PDP і в кошику</td><td class="mono">W1</td><td>розробник</td><td class="num">12</td><td class="src">checkout completion (тижнево)</td></tr><tr><td>PDP: строк доставки над fold</td><td class="mono">W1</td><td>розробник</td><td class="num">4</td><td class="src">той самий</td></tr><tr><td>Checkout: −4 поля, автозаповнення адреси</td><td class="mono">W2</td><td>розробник</td><td class="num">14</td><td class="src">completion ≥52% (день 90)</td></tr><tr><td>LCP-пакет: WebP+CDN, критичний CSS, ревізія GTM</td><td class="mono">W2</td><td>розробник + WEEXP</td><td class="num">30</td><td class="src">LCP ≤3.0s (CrUX 28 дн)</td></tr><tr><td>Синоніми внутрішнього пошуку (топ-50 нулів)</td><td class="mono">W2</td><td>контентник</td><td class="num">6</td><td class="src">нульові видачі ≤8%</td></tr><tr><td>BLIK для PL</td><td class="mono">W2</td><td>розробник</td><td class="num">12</td><td class="src">PL completion +20% відносно</td></tr>
+    </table>
+    <div class="cols2" style="margin-top:3mm">
+      <div><h2 class="st" style="font-size:11pt">§6 Звʼязки</h2><p class="body" style="font-size:8.3pt">Найбільший донор Звіту 3. Залежить від d09 (чесне вимірювання ефектів) і d11 (staging для релізів). Атрибутика фільтрів — від d03.</p></div>
+      <div><h2 class="st" style="font-size:11pt">§7 Що міряти через 90 днів</h2><p class="body" style="font-size:8.3pt">Checkout completion тижнево · LCP CrUX-тренд · CR mobile · нульові видачі пошуку.</p></div>
+    </div>
+    
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 16/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.08 · AQC + CRO · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 2.08 · Додаток: AQC-стандарт і CRO-шар</span>
+    <h1 class="big" style="font-size:24pt">UX — не смак. 22 атомарні критерії:<br>кожен або Pass, або Fail.</h1>
+    <p class="body" style="margin-top:3mm">Канон Commerce OS (AQC — Atomic Quality Criteria): 22 критерії в 11 доменах, кожен із умовою Pass;
+    факт-слой знімається детермінованим обходом, не думкою. Нижче — 12 критеріїв зі статусом Warn/Fail для «Тестик» (10 Pass — у робочих матеріалах).</p>
+    <table class="t" style="font-size:7.5pt">
+      <tr><th>AQC</th><th>Домен · Sev</th><th>Еталон (умова Pass)</th><th>Спостереження</th><th>Вердикт</th></tr>
+      <tr class="hl"><td class="num">VIS-0001</td><td>Visibility · Crit</td><td>Primary CTA видно &lt;2с, без скролу, контрастніше оточення</td><td>PDP: CTA у першому екрані ✓, кошик mobile: під fold</td><td><span class="sev m">warn</span></td></tr>
+      <tr class="hl"><td class="num">VIS-0003</td><td>Visibility · High</td><td>Вартість і строк доставки видно ДО checkout</td><td>зʼявляється лише на кроці оплати</td><td><span class="sev h">fail</span></td></tr>
+      <tr><td class="num">FORM-0001</td><td>Forms · High</td><td>≤6 обовʼязкових полів, автозаповнення адреси</td><td>9 полів, без автозаповнення</td><td><span class="sev h">fail</span></td></tr>
+      <tr><td class="num">MVIS-0001</td><td>Mobile Vis · Crit</td><td>LCP ≤2.5s (CrUX p75), тап-таргети ≥44px</td><td>LCP 4.6s; таргети фільтрів 32px</td><td><span class="sev h">fail</span></td></tr>
+      <tr><td class="num">TRUST-0001</td><td>Trust Vis · High</td><td>Повернення/гарантія — біля CTA на PDP</td><td>лише у футері</td><td><span class="sev h">fail</span></td></tr>
+      <tr><td class="num">DISC-0002</td><td>Discover · Med</td><td>Пошук пробачає синоніми/помилки, нульових видач ≤5%</td><td>18% нульових («пательня»≠«сковорода»)</td><td><span class="sev h">fail</span></td></tr>
+      <tr><td class="num">NAV-0001</td><td>Navigation · Med</td><td>До будь-якого товару ≤3 кліки з головної</td><td>hero-категорії 2–3 кліки ✓, хвіст 4–5</td><td><span class="sev m">warn</span></td></tr>
+      <tr><td class="num">COMP-0001</td><td>Comprehension · High</td><td>Ціна + наявність + строк — в одному блоці з CTA</td><td>наявність є, строк — під fold</td><td><span class="sev m">warn</span></td></tr>
+      <tr><td class="num">DEC-0001</td><td>Decision · Med</td><td>Фільтри по ключових атрибутах категорії працюють</td><td>46% SKU без атрибутів → фільтри порожні</td><td><span class="sev h">fail</span></td></tr>
+      <tr><td class="num">REC-0001</td><td>Recognition · Med</td><td>Кошик/обране — упізнавані патерни, бейдж кількості</td><td>патерни стандартні ✓, бейдж не оновлюється без reload</td><td><span class="sev m">warn</span></td></tr>
+      <tr><td class="num">IA-0001</td><td>Inf. Arch · Low</td><td>Хлібні крихти на PLP/PDP, звʼязні</td><td>є на PDP, немає на PLP-фільтрах</td><td><span class="sev m">warn</span></td></tr>
+      <tr><td class="num">ACC-0001</td><td>Access. Vis · Med</td><td>Контраст тексту ≥4.5:1, фокус видимий</td><td>сірий текст цін-знижок 3.2:1</td><td><span class="sev m">warn</span></td></tr>
+    </table>
+    <h2 class="st" style="font-size:11.5pt;margin-top:3mm">CRO-шар — окремо від UX (інтерфейс може бути зручним, але погано продавати)</h2>
+    <p class="body" style="font-size:8.2pt">Ланцюг: Traffic → Intent → Experience → Trust → Decision → Action → Conversion → Revenue. Гіпотези — канонічним форматом, пріоритет ICE:</p>
+    <table class="t" style="font-size:7.6pt">
+      <tr><th>Гіпотеза («Якщо X, то Y, бо Z»)</th><th class="num">I·C·E</th><th>Перевірка</th></tr>
+      <tr class="hl"><td><b>Якщо</b> показати вартість+строк доставки на PDP, <b>то</b> checkout completion зросте на 6–10 п.п., <b>бо</b> несподівані витрати — причина №1 відмов (Baymard)</td><td class="num">9·9·8</td><td>A/B після W1, метрика: completion</td></tr>
+      <tr><td><b>Якщо</b> скоротити форму до 5 полів, <b>то</b> completion +3–5 п.п., <b>бо</b> кожне зайве поле додає friction на mobile</td><td class="num">8·8·7</td><td>A/B W2, крок-аналітика форми</td></tr>
+      <tr><td><b>Якщо</b> підняти строк доставки над fold, <b>то</b> PDP→Cart +1–2 п.п., <b>бо</b> невизначеність строку блокує рішення подарункового сегмента</td><td class="num">7·7·9</td><td>A/B W1–W2</td></tr>
+      <tr><td><b>Якщо</b> додати блок «разом купують» (пари з d03), <b>то</b> AOV +€1.5–2.5, <b>бо</b> 23% кошиків уже містять природні пари</td><td class="num">6·8·7</td><td>A/B W2, AOV</td></tr>
+    </table>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 17/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.09 · SEO/GEO-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 2.09 · SEO / GEO: органічний попит · 14 перевірок</span>
+    <h1 class="big" style="font-size:26pt">Індекс роздутий сміттям ×8. Половина попиту ніші — без нас.</h1>
+    <div style="display:flex;gap:8mm;align-items:center;margin:5mm 0 3mm">
+      <div style="border:2.5px solid var(--ink);padding:3mm 5mm"><span class="mono" style="font-weight:700;font-size:22pt;color:var(--ink)">L2</span><div class="src">рівень зрілості</div></div>
+      <div style="flex:1"><p class="body" style="margin:0">340 сторінок заробляють 85% органічної виручки, поруч 8.3k фасетних дублів розмивають краулінг і сигнали. Семантика покриває 3 кластери з 6; у AI-відповідях бренд відсутній повністю — а конкуренти вже там.</p></div>
+      <div style="text-align:right"><span class="mono" style="font-weight:700;font-size:16pt;color:var(--mark)">€85k</span><div class="src">гроші блоку/рік</div></div>
+    </div>
+    <h2 class="st" style="font-size:12pt">§2 Методика і дані</h2>
+    <p class="body" style="font-size:8.5pt"><b>Перевірено:</b> карта індексу; сторінки-заробітчани; тех-база (canonical/robots/фасети); OOS-політика; CWV; семантика 6 кластерів з обсягами; контент-унікальність; структуровані дані; перелінковка; посилальний профіль проти 2 конкурентів; бренд vs небренд; AI-панель 48×4; hreflang; міграційна історія (14/14). <b>Джерела:</b> GSC 16 міс, повний кроул, Keyword Planner + оцінка (рівень 2/4 позначено), AI-панель. <b class="mark">Не перевірялось:</b> платні SEO-бази (Ahrefs) — доступ не надано; посилальний профіль по відкритих джерелах.</p>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">§3 Факти проти бенчмарків</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Метрика</th><th class="num">Факт</th><th class="num">Бенч</th><th>Розрив</th><th>Джерело бенчу</th></tr>
+      <tr><td>URL в індексі / реальних</td><td class="num"><b>9 400 / ≈1 100</b></td><td class="num">≈1:1</td><td><span class="mark">×8 сміття</span></td><td class="src">GSC + кроул</td></tr><tr><td>Покриття кластерів попиту</td><td class="num"><b>3 із 6</b></td><td class="num">6/6</td><td>сковороди✓ каструлі✓ ножі✓ · випікання✗ догляд✗ подарунки✗</td><td class="src">семантика (обсяги нижче)</td></tr><tr><td>Унікальність описів</td><td class="num"><b>39% SKU</b></td><td class="num">≥80%</td><td>61% — текст постачальника</td><td class="src">порівняльний кроул</td></tr><tr><td>Зірки в SERP (AggregateRating)</td><td class="num"><b>немає</b></td><td class="num">у 2 конкурентів є</td><td>CTR-втрата</td><td class="src">валідатор + SERP</td></tr><tr><td>AI-видимість</td><td class="num"><b>0/48</b></td><td class="num">конк. №2: 11/48</td><td><span class="mark">нова полиця зайнята не нами</span></td><td class="src">панель 48×4</td></tr><tr><td>Бренд у «органічному зростанні»</td><td class="num"><b>41% кліків — брендові</b></td><td class="num">розділяти завжди</td><td>небренд росте повільніше ринку</td><td class="src">GSC-сегментація</td></tr>
+    </table>
+    <p class="marg" style="margin-top:2mm">Кластери попиту (UA, запитів/міс, Keyword Planner ± оцінка): сковороди 74k · каструлі 61k · ножі 48k ·
+    форми для випікання 22k · подарункові набори 18k · догляд за посудом 9.9k. Три непокриті кластери = ≈50k запитів/міс попиту повз нас.</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 18/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.09 · SEO/GEO-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <h2 class="st" style="font-size:12pt">§4 Знахідки з доказами й розрахунками</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th style="width:34mm">Знахідка</th><th>Доказ → розрахунок ефекту</th><th class="num" style="width:17mm">Ефект/рік</th><th style="width:11mm">Впевн.</th></tr>
+      <tr class="hl"><td><b>Фасетні дублі розмивають індекс</b></td><td>8.3k URL виду ?color=&sort=&page= без canonical-правил; краулінговий бюджет і сигнали розмазані по сміттю. Фікс = robots-правила + canonical + параметри GSC</td><td class="num"><b>частина €85k</b></td><td><span class="sev ok">high</span></td></tr><tr class="hl"><td><b>210 OOS-сторінок віддають 200</b></td><td>зняті/відсутні товари виглядають живими → погана видача, розчаровані переходи; правило: тимчасовий OOS = сторінка з датою поставки, знятий = 410/редірект на категорію</td><td class="num"><b>частина €85k</b></td><td><span class="sev ok">high</span></td></tr><tr><td><b>Три кластери попиту без сторінок</b></td><td>«випікання», «догляд», «подарунки» — ≈50k запитів/міс; категорійні хаби + 60 статей контент-ядра (розкладка: 24 догляд · 20 вибір · 16 подарункові добірки)</td><td class="num"><b>частина €85k</b></td><td><span class="sev m">med</span></td></tr><tr><td><b>AI-полиця порожня</b></td><td>0/48 проти 11/48 у №2: немає llms.txt, FAQ-розмітки, фактологічних блоків, зовнішніх згадок; програма W3 із щомісячним заміром панелі</td><td class="num"><b>накопичувальний</b></td><td><span class="sev m">med</span></td></tr>
+    </table>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">§5 Рекомендації</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Дія</th><th style="width:10mm">Хвиля</th><th style="width:26mm">Власник</th><th class="num" style="width:11mm">Год</th><th style="width:34mm">Метрика контролю</th></tr>
+      <tr><td>Фасети: robots+canonical правила (на staging, після сезону)</td><td class="mono">W3</td><td>розробник + WEEXP</td><td class="num">20</td><td class="src">індекс ≤1.3k URL</td></tr><tr><td>OOS-політика 410/редіректів</td><td class="mono">W2</td><td>розробник</td><td class="num">8</td><td class="src">0 «живих» знятих сторінок</td></tr><tr><td>Product-schema з AggregateRating на топ-40</td><td class="mono">W2</td><td>розробник</td><td class="num">8</td><td class="src">зірки в SERP</td></tr><tr><td>Контент-ядро 60 сторінок по 3 кластерах</td><td class="mono">W3</td><td>студія + контентник</td><td class="num">120</td><td class="src">позиції кластерів, трафік небренд</td></tr><tr><td>GEO-пакет: llms.txt, FAQ-розмітка, фактблоки</td><td class="mono">W3</td><td>WEEXP + контентник</td><td class="num">16</td><td class="src">AI-панель ≥6/48 за 6 міс</td></tr>
+    </table>
+    <div class="cols2" style="margin-top:3mm">
+      <div><h2 class="st" style="font-size:11pt">§6 Звʼязки</h2><p class="body" style="font-size:8.3pt">Залежить від d11 (staging) і d03 (атрибутика для категорійних сторінок). Дає позицію «експерт догляду» з d02 виконання.</p></div>
+      <div><h2 class="st" style="font-size:11pt">§7 Що міряти через 90 днів</h2><p class="body" style="font-size:8.3pt">Індекс: URL-тренд ↓ · небрендові кліки по 6 кластерах · зірки в SERP на топ-40 · AI-панель щомісяця.</p></div>
+    </div>
+    
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 19/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.10 · Acquisition-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 2.10 · Acquisition: платні канали · 15 перевірок</span>
+    <h1 class="big" style="font-size:26pt">Реклама окупається. Але третина «перформансу» — купівля власного бренду.</h1>
+    <div style="display:flex;gap:8mm;align-items:center;margin:5mm 0 3mm">
+      <div style="border:2.5px solid var(--ink);padding:3mm 5mm"><span class="mono" style="font-weight:700;font-size:22pt;color:var(--ink)">L3</span><div class="src">рівень зрілості</div></div>
+      <div style="flex:1"><p class="body" style="margin:0">Найзріліший домен (L3): кабінети керовані, ROAS видно. Проблеми точкові й дорогі: PMax канібалізує бренд, Meta втомлена двома креативами, оптимізація йде по виручці замість contribution — і по кривих даних GA4.</p></div>
+      <div style="text-align:right"><span class="mono" style="font-weight:700;font-size:16pt;color:var(--mark)">€22k економії + якість</span><div class="src">гроші блоку/рік</div></div>
+    </div>
+    <h2 class="st" style="font-size:12pt">§2 Методика і дані</h2>
+    <p class="body" style="font-size:8.5pt"><b>Перевірено:</b> розкладка по платформах і топ-10 кампаніях; Google split brand/generic/PMax; search terms; Meta структура/частота/вік креативів; креативний конвеєр; CAC new vs returning; груба інкрементальність; атрибуція і вибір моделі; аудиторії/виключення; фіди; лендинги; невикористані канали; маркетплейс-ads; сезонні кампанії; правило масштабування (15/15). <b>Джерела:</b> кабінети 24 міс (рівень 2), search terms 90 дн, бекенд+UTM (рівень 1). <b class="mark">Не перевірялось:</b> чиста інкрементальність (geo-тест) — рекомендована W3, історії вимкнень немає.</p>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">§3 Факти проти бенчмарків</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Метрика</th><th class="num">Факт</th><th class="num">Бенч</th><th>Розрив</th><th>Джерело бенчу</th></tr>
+      <tr><td>Google split, €8k: brand / generic / PMax</td><td class="num"><b>2.5 / 3.2 / 2.3</b></td><td class="num">бренд ≤10% бюджету</td><td><span class="mark">31% на бренд</span></td><td class="src">кабінет + search terms</td></tr><tr><td>ROAS: brand / generic / PMax</td><td class="num"><b>13.8 / 4.1 / 5.6</b></td><td class="num">—</td><td>PMax «красивий» через бренд усередині</td><td class="src">кабінет, бекенд-звірка</td></tr><tr><td>Meta: креативи · частота</td><td class="num"><b>2 живих · 4.1</b></td><td class="num">5+ · ≤2.5</td><td><span class="mark">втома</span></td><td class="src">Ads Manager</td></tr><tr><td>CAC paid new (розрахунок)</td><td class="num"><b>€18 = 14 500 / 805</b></td><td class="num">—</td><td>нові paid-замовлення: бекенд+UTM first-touch</td><td class="src">показано, не постульовано</td></tr><tr><td>MER</td><td class="num"><b>8.5</b></td><td class="num">≥6–8 здорово</td><td>норма</td><td class="src">виручка/бюджет</td></tr><tr><td>Фід: SKU з відхиленнями</td><td class="num"><b>9%</b></td><td class="num">≤2%</td><td>через атрибутику (d03)</td><td class="src">Merchant Center</td></tr>
+    </table>
+    
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 20/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.10 · Acquisition-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <h2 class="st" style="font-size:12pt">§4 Знахідки з доказами й розрахунками</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th style="width:34mm">Знахідка</th><th>Доказ → розрахунок ефекту</th><th class="num" style="width:17mm">Ефект/рік</th><th style="width:11mm">Впевн.</th></tr>
+      <tr class="hl"><td><b>Бренд-канібалізація PMax</b></td><td>search terms: 31% платних кліків — «тестик»-запити з органічною позицією №1; брендовий CPC платимо за своїх. Виключення бренду з PMax + окрема brand-кампанія з мін. ставкою</td><td class="num"><b>€22k</b></td><td><span class="sev ok">high</span></td></tr><tr class="hl"><td><b>Оптимізація на виручку, не на прибуток</b></td><td>Allegro-Ads і знижкові SKU виглядають «успішними» по ROAS-виручці; після передачі маржі в події (d09-W2) біддинг переводиться на contribution</td><td class="num"><b>якість рішень</b></td><td><span class="sev ok">high</span></td></tr><tr><td><b>Креативний конвеєр відсутній</b></td><td>2 креативи 3 міс; ні тест-матриці (кут × формат × сегмент), ні UGC. Мін. норма ніші: 4–6 нових/міс. Стратегія: болі з VoC (d07←d04) + позиція з d02</td><td class="num"><b>€15k (оцінка)</b></td><td><span class="sev m">med</span></td></tr><tr><td><b>Подарунковий пік недокуплений</b></td><td>листопад-грудень: CPC ×1.6, а кампаній під подарунковий інтент немає (сегмент із d04); підготовка з жовтня</td><td class="num"><b>сезонний потенціал</b></td><td><span class="sev m">med</span></td></tr>
+    </table>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">§5 Рекомендації</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Дія</th><th style="width:10mm">Хвиля</th><th style="width:26mm">Власник</th><th class="num" style="width:11mm">Год</th><th style="width:34mm">Метрика контролю</th></tr>
+      <tr><td>PMax: виключення бренду + brand-кампанія окремо</td><td class="mono">W1</td><td>маркетолог</td><td class="num">4</td><td class="src">брендові кліки <10% платних</td></tr><tr><td>Правило масштабування: бюджет + тільки при MER≥8 і чесному GA4</td><td class="mono">W1</td><td>власник + WEEXP</td><td class="num">2</td><td class="src">зафіксовано письмово</td></tr><tr><td>Креативна матриця: 3 кути × 2 формати, 4–6/міс</td><td class="mono">W2</td><td>маркетолог + студія</td><td class="num">20/міс</td><td class="src">частота ≤2.5, CAC тренд</td></tr><tr><td>Біддинг на contribution (після d09)</td><td class="mono">W2</td><td>WEEXP + маркетолог</td><td class="num">8</td><td class="src">кампанії ранжовані за прибутком</td></tr><tr><td>Q4-план кампаній під подарунковий сегмент</td><td class="mono">W3</td><td>маркетолог</td><td class="num">12</td><td class="src">готово до 15.10</td></tr>
+    </table>
+    <div class="cols2" style="margin-top:3mm">
+      <div><h2 class="st" style="font-size:11pt">§6 Звʼязки</h2><p class="body" style="font-size:8.3pt">Заблоковано масштабування до фіксу d09 і checkout d05 (щоб не лити в діряву воронку). Креативи ← d02/d04. Фіди ← d03.</p></div>
+      <div><h2 class="st" style="font-size:11pt">§7 Що міряти через 90 днів</h2><p class="body" style="font-size:8.3pt">Частка бренду в платних кліках · CAC new тренд · частота Meta · нові креативи/міс.</p></div>
+    </div>
+    
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 21/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.11 · CRM-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 2.11 · CRM / Retention: власна база · 14 перевірок</span>
+    <h1 class="big" style="font-size:26pt">База на 41 000 контактів працює на 4.8% виручки. Має — на 18%+.</h1>
+    <div style="display:flex;gap:8mm;align-items:center;margin:5mm 0 3mm">
+      <div style="border:2.5px solid var(--mark);padding:3mm 5mm"><span class="mono" style="font-weight:700;font-size:22pt;color:var(--mark)">L1</span><div class="src">рівень зрілості</div></div>
+      <div style="flex:1"><p class="body" style="margin:0">L1: один welcome-flow, немає DMARC, немає сегментів. Але це і найшвидший великий важіль: інфраструктура (ESP) вже оплачена, аудиторія вже своя — бракує лише контуру. Обережність одна: базу 2019–2022 років не можна будити навалом.</p></div>
+      <div style="text-align:right"><span class="mono" style="font-weight:700;font-size:16pt;color:var(--mark)">€150k</span><div class="src">гроші блоку/рік</div></div>
+    </div>
+    <h2 class="st" style="font-size:12pt">§2 Методика і дані</h2>
+    <p class="body" style="font-size:8.5pt"><b>Перевірено:</b> частка CRM-виручки; інвентар flows проти еталонного набору; SPF/DKIM/DMARC/Postmaster; якість бази за віком і джерелами; сегментація; тиск/частота; точки capture; SMS/push економіка; лояльність; єдиний профіль; GDPR-гігієна; контент листів; атрибуція CRM; вікно контакту (14/14). <b>Джерела:</b> eSputnik повний, DNS, замовлення+UTM (рівень 1), Postmaster. <b class="mark">Не перевірялось:</b> вивантаження бази (очікує) — вік адрес оцінено за датами підписки в ESP.</p>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">§3 Факти проти бенчмарків</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Метрика</th><th class="num">Факт</th><th class="num">Бенч</th><th>Розрив</th><th>Джерело бенчу</th></tr>
+      <tr><td>Частка виручки email/SMS</td><td class="num"><b>4.8%</b></td><td class="num">25%+ зрілий D2C</td><td><span class="mark">−20 п.п.</span></td><td class="src">бекенд+UTM · ESP-бенч</td></tr><tr><td>Flows: є / потрібно</td><td class="num"><b>1 / 6</b></td><td class="num">welcome, кошик, перегляд, після-продажний, реактивація, поповнення</td><td><span class="mark">5 відсутні</span></td><td class="src">еталонний набір ніші</td></tr><tr><td>DMARC</td><td class="num"><b>немає</b></td><td class="num">обовʼязково (Gmail/Yahoo 2024)</td><td><span class="mark">ризик спам-теки</span></td><td class="src">DNS + bulk-sender rules</td></tr><tr><td>Вік бази: адрес 2+ роки</td><td class="num"><b>62%</b></td><td class="num">—</td><td>прогрів обовʼязковий</td><td class="src">дати підписки ESP</td></tr><tr><td>Активна частина бази</td><td class="num"><b>14k із 41k</b></td><td class="num">≥50%</td><td>34%</td><td class="src">ESP-engagement 90 дн</td></tr><tr><td>Open rate / CTR розсилок</td><td class="num"><b>19% / 1.4%</b></td><td class="num">25–35% / 2–3%</td><td>нижче — без сегментів</td><td class="src">ESP</td></tr>
+    </table>
+    
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 22/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.11 · CRM-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <h2 class="st" style="font-size:12pt">§4 Знахідки з доказами й розрахунками</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th style="width:34mm">Знахідка</th><th>Доказ → розрахунок ефекту</th><th class="num" style="width:17mm">Ефект/рік</th><th style="width:11mm">Впевн.</th></tr>
+      <tr class="hl"><td><b>Контур утримання відсутній</b></td><td>розрахунок важеля від сегментної бази: кинутий кошик (12.9k кошиків/міс × 7% повернення × €42), після-продажний цикл (вікно 30–60 дн з d04), реактивація 90/180. Разом repeat 13→20% = <b>€150k/рік</b>; сценарії: песиміст 17% → €95k · база 20% → €150k · оптиміст 23% → €205k</td><td class="num"><b>€150k</b></td><td><span class="sev ok">high</span></td></tr><tr class="hl"><td><b>Реактивація навалом спалить домен</b></td><td>62% бази старші 2 років: різкий масив = скарги+пастки → спам-тека для ВСІХ листів. План прогріву: сегменти свіжості, старт з активних 14k, нарощування 15%/тиждень, стоп-правило при скаргах >0.2%</td><td class="num"><b>захист €150k</b></td><td><span class="sev ok">high</span></td></tr><tr><td><b>Capture слабкий</b></td><td>єдина точка збору — checkout; попап із цінністю (гайд догляду) на виході + PDP-підписка на наявність = +400–700 контактів/міс</td><td class="num"><b>живлення бази</b></td><td><span class="sev m">med</span></td></tr><tr><td><b>Лояльність = «знижка всім»</b></td><td>програми немає; замість знижок — рівні сервісу (ранній доступ, подовжена гарантія) після виміряних flows (W3, не раніше)</td><td class="num"><b>захист маржі</b></td><td><span class="sev m">med</span></td></tr>
+    </table>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">§5 Рекомендації</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Дія</th><th style="width:10mm">Хвиля</th><th style="width:26mm">Власник</th><th class="num" style="width:11mm">Год</th><th style="width:34mm">Метрика контролю</th></tr>
+      <tr><td>DMARC p=none → quarantine (2 тижні спостереження)</td><td class="mono">W1</td><td>WEEXP-аналітик</td><td class="num">3</td><td class="src">звіти йдуть, spam rate <0.3%</td></tr><tr><td>Кинутий кошик: 3 листи + SMS</td><td class="mono">W2</td><td>WEEXP-CRM + копірайтер</td><td class="num">16</td><td class="src">≥7% повернених кошиків</td></tr><tr><td>Після-продажний цикл (догляд → 2-га покупка)</td><td class="mono">W2</td><td>WEEXP-CRM + маркетолог</td><td class="num">16</td><td class="src">2-га покупка ≤90 дн: 9→12%</td></tr><tr><td>Реактивація з планом прогріву</td><td class="mono">W2</td><td>WEEXP-CRM</td><td class="num">12</td><td class="src">скарги <0.2%, деліверабіліті ≥97%</td></tr><tr><td>RFM-сегменти в ESP + сегментні кампанії</td><td class="mono">W2</td><td>WEEXP-CRM</td><td class="num">10</td><td class="src">CTR ≥2%</td></tr><tr><td>Capture: попап-гайд + підписка на наявність</td><td class="mono">W2</td><td>розробник</td><td class="num">8</td><td class="src">+400 контактів/міс</td></tr>
+    </table>
+    <div class="cols2" style="margin-top:3mm">
+      <div><h2 class="st" style="font-size:11pt">§6 Звʼязки</h2><p class="body" style="font-size:8.3pt">Сегменти й вікно ← d04. DMARC — передумова всього. Атрибуція CRM ← d09 (UTM-дисципліна). Черга за flows → беклог r4-W2.</p></div>
+      <div><h2 class="st" style="font-size:11pt">§7 Що міряти через 90 днів</h2><p class="body" style="font-size:8.3pt">Частка CRM-виручки: 4.8→8%+ · деліверабіліті/скарги · повернені кошики · приріст бази/міс.</p></div>
+    </div>
+    
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 23/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.12 · Analytics-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 2.12 · Analytics: дані та рішення · 10 перевірок</span>
+    <h1 class="big" style="font-size:26pt">GA4 не бачить кожне пʼяте замовлення. Компанія летить по приладах, які брешуть.</h1>
+    <div style="display:flex;gap:8mm;align-items:center;margin:5mm 0 3mm">
+      <div style="border:2.5px solid var(--mark);padding:3mm 5mm"><span class="mono" style="font-weight:700;font-size:22pt;color:var(--mark)">L1</span><div class="src">рівень зрілості</div></div>
+      <div style="flex:1"><p class="body" style="margin:0">L1 і «умова №0» всього плану: поки вимірювання криве, ефекти інших хвиль неможливо ні побачити, ні довести. Фікс дешевий (≈30 год) і повністю в хвилі 1.</p></div>
+      <div style="text-align:right"><span class="mono" style="font-weight:700;font-size:16pt;color:var(--mark)">умова всіх рішень</span><div class="src">гроші блоку/рік</div></div>
+    </div>
+    <h2 class="st" style="font-size:12pt">§2 Методика і дані</h2>
+    <p class="body" style="font-size:8.5pt"><b>Перевірено:</b> звірка purchase↔бекенд по днях; повнота подій по шаблонах; якість параметрів (item_id/value); consent mode і частка втрат; передача маржі; UTM-дисципліна; серверні події; BI-шар і споживачі; алерти; власність акаунтів (10/10). <b>Джерела:</b> GA4/GTM повні, бекенд (рівень 1), кроул тегів. <b class="mark">Не перевірялось:</b> історична атрибуція до фіксу — свідомо не інтерпретується.</p>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">§3 Факти проти бенчмарків</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Метрика</th><th class="num">Факт</th><th class="num">Бенч</th><th>Розрив</th><th>Джерело бенчу</th></tr>
+      <tr><td>Розбіжність purchase GA4↔бекенд</td><td class="num"><b>22%</b></td><td class="num">≤5%</td><td><span class="mark">×4 порога</span></td><td class="src">звірка 6 міс по днях</td></tr><tr><td>Причини (розкладка, разом ≈22%)</td><td class="num"><b>Apple Pay ≈13% · consent ≈7% · редиректи інших оплат і edge-кейси ≈2%</b></td><td class="num">—</td><td>кожна з фіксом у W1</td><td class="src">тег-аудит</td></tr><tr><td>Маржа в подіях</td><td class="num"><b>немає</b></td><td class="num">value+margin</td><td>оптимізація наосліп</td><td class="src">схема подій</td></tr><tr><td>UTM-дисципліна</td><td class="num"><b>71% кампаній розмічено</b></td><td class="num">100%</td><td>CRM/соцмережі губляться</td><td class="src">аудит посилань</td></tr><tr><td>BI-шар</td><td class="num"><b>Excel раз на місяць</b></td><td class="num">щотижневий авто-дашборд</td><td>рішення на місяць запізнюються</td><td class="src">анкета+інтервʼю</td></tr><tr><td>Власність акаунтів</td><td class="num"><b>GA4-адмін — підрядник минулого</b></td><td class="num">власник/компанія</td><td><span class="mark">ризик доступу</span></td><td class="src">перевірка адмінів</td></tr>
+    </table>
+    
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 24/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.12 · Analytics-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <h2 class="st" style="font-size:12pt">§4 Знахідки з доказами й розрахунками</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th style="width:34mm">Знахідка</th><th>Доказ → розрахунок ефекту</th><th class="num" style="width:17mm">Ефект/рік</th><th style="width:11mm">Впевн.</th></tr>
+      <tr class="hl"><td><b>Purchase губиться на redirect-оплатах</b></td><td>Apple Pay/швидкі оплати повертають повз «дякуємо»-сторінку; server-side подія з бекенда (Measurement Protocol) з transaction_id-дедуплікацією закриває і це, і дублі</td><td class="num"><b>умова №0</b></td><td><span class="sev ok">high</span></td></tr><tr class="hl"><td><b>Consent ріже ЄС-теги без моделювання</b></td><td>відмови ≈35% ЄС-трафіку; Consent Mode v2 з моделюванням повертає аналітичну видимість легально</td><td class="num"><b>умова №0</b></td><td><span class="sev ok">high</span></td></tr><tr><td><b>Рішення по каналах — по кривому дзеркалу</b></td><td>минулорічна «оптимізація» агентства різала кампанії з найбільшим недообліком (Apple Pay-аудиторії iOS) — тобто найплатоспроможніших</td><td class="num"><b>пояснює CAC +22% історії</b></td><td><span class="sev m">med</span></td></tr><tr class="hl"><td><b>GA4-адмін — чужий</b></td><td>адмін-доступ у підрядника, з яким не працюють 2 роки; перенос власності — гігієна W1</td><td class="num"><b>ризик</b></td><td><span class="sev ok">high</span></td></tr>
+    </table>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">§5 Рекомендації</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Дія</th><th style="width:10mm">Хвиля</th><th style="width:26mm">Власник</th><th class="num" style="width:11mm">Год</th><th style="width:34mm">Метрика контролю</th></tr>
+      <tr><td>Server-side purchase + дедуплікація</td><td class="mono">W1</td><td>WEEXP-аналітик + розробник</td><td class="num">16</td><td class="src">розбіжність ≤5% за 14 дн</td></tr><tr><td>Consent Mode v2 + моделювання</td><td class="mono">W1</td><td>розробник</td><td class="num">8</td><td class="src">consент-звіт, ЄС-видимість</td></tr><tr><td>Власність GA4/GTM → компанія</td><td class="mono">W1</td><td>PM</td><td class="num">2</td><td class="src">адміни = власник+WEEXP</td></tr><tr><td>Маржа в purchase-події</td><td class="mono">W2</td><td>розробник</td><td class="num">8</td><td class="src">кампанії за contribution</td></tr><tr><td>Щотижневий дашборд: виручка/маржа/CAC/repeat по каналах</td><td class="mono">W2</td><td>WEEXP-аналітик</td><td class="num">20</td><td class="src">основа читок ≥3 тижні поспіль</td></tr><tr><td>Алерти: падіння конверсії/оплат</td><td class="mono">W2</td><td>WEEXP-аналітик</td><td class="num">4</td><td class="src">алерт спрацьовує на тесті</td></tr>
+    </table>
+    <div class="cols2" style="margin-top:3mm">
+      <div><h2 class="st" style="font-size:11pt">§6 Звʼязки</h2><p class="body" style="font-size:8.3pt">Розблоковує ВСЕ: виміри d05/d07/d08, біддинг за прибутком, чесні КТ. Вибір моделі атрибуції — після 30 днів чистих даних (DDA як база).</p></div>
+      <div><h2 class="st" style="font-size:11pt">§7 Що міряти через 90 днів</h2><p class="body" style="font-size:8.3pt">Розбіжність тижнево ≤5% · дашборд у ритмі · 100% UTM · алерти живі.</p></div>
+    </div>
+    
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 25/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.13 · Operations-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 2.13 · Operations: склад і шлях замовлення · 13 перевірок</span>
+    <h1 class="big" style="font-size:26pt">Посуд бʼється, топ-товару немає, і ніхто не міряє «вчасно і повністю».</h1>
+    <div style="display:flex;gap:8mm;align-items:center;margin:5mm 0 3mm">
+      <div style="border:2.5px solid var(--ink);padding:3mm 5mm"><span class="mono" style="font-weight:700;font-size:22pt;color:var(--ink)">L2</span><div class="src">рівень зрілості</div></div>
+      <div style="flex:1"><p class="body" style="margin:0">Склад працює на людях, не на правилах: OOS топ-20 — 17% часу (Q4 — 26%), бій 2.1% відправлень із каскадом (компенсація + втрачений repeat), закупівлі «на око» при lead time 45–60 днів і одному постачальнику на 68% закупівель.</p></div>
+      <div style="text-align:right"><span class="mono" style="font-weight:700;font-size:16pt;color:var(--mark)">€126k разом</span><div class="src">гроші блоку/рік</div></div>
+    </div>
+    <h2 class="st" style="font-size:12pt">§2 Методика і дані</h2>
+    <p class="body" style="font-size:8.5pt"><b>Перевірено:</b> вартість fulfillment; точність збірки; % день-у-день; перевізники по вартості/строку/успішності; пошкодження і пакування; повернення з тегуванням; OTIF-стан; reorder point/safety stock; концентрація постачальників; точність залишків; маркетплейс-логістика; пікова масштабованість Q4; комплаєнс потоку GPSR/EPR (13/13). <b>Джерела:</b> ERP/склад 12 міс, звіти перевізників, повернення (рівень 1), договори. <b class="mark">Не перевірялось:</b> таймінги збірки по операціях (немає WMS-логів) — оцінка з хронометражу 20 замовлень.</p>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">§3 Факти проти бенчмарків</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Метрика</th><th class="num">Факт</th><th class="num">Бенч</th><th>Розрив</th><th>Джерело бенчу</th></tr>
+      <tr><td>OOS топ-20 SKU</td><td class="num"><b>17% часу · Q4 26%</b></td><td class="num">≤5–7%</td><td><span class="mark">×3</span></td><td class="src">журнал наявності × продажі/день</td></tr><tr><td>Пошкодження в доставці</td><td class="num"><b>2.1%</b></td><td class="num">≤0.5–0.8% (посуд)</td><td><span class="mark">×3</span></td><td class="src">звіти перевізників + повернення</td></tr><tr><td>Повернення загалом</td><td class="num"><b>5.8%</b></td><td class="num">4–6% ніша</td><td>норма (проблема — саме бій)</td><td class="src">замовлення</td></tr><tr><td>Відвантаження день-у-день</td><td class="num"><b>64%</b></td><td class="num">≥85% (cut-off 14:00)</td><td><span class="mark">повільно</span></td><td class="src">ERP-штампи</td></tr><tr><td>Постачальник №1 у закупівлях</td><td class="num"><b>68%</b></td><td class="num">≤40–50%</td><td><span class="mark">концентрація</span></td><td class="src">договори + закупівлі</td></tr><tr><td>OTIF</td><td class="num"><b>не вимірюється</b></td><td class="num">KPI складу</td><td>сліпа зона</td><td class="src">—</td></tr>
+    </table>
+    
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 26/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.13 · Operations-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <h2 class="st" style="font-size:12pt">§4 Знахідки з доказами й розрахунками</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th style="width:34mm">Знахідка</th><th>Доказ → розрахунок ефекту</th><th class="num" style="width:17mm">Ефект/рік</th><th style="width:11mm">Впевн.</th></tr>
+      <tr class="hl"><td><b>OOS топ-20 = найдорожча тиша</b></td><td>розрахунок: по кожному з топ-20 — продажі/день × дні відсутності × ціна; сума 12 міс = €95k недоотриманої виручки (сценарії: 78/95/118k). Причина: закупівлі без reorder point при lead time 45–60 дн</td><td class="num"><b>€95k</b></td><td><span class="sev ok">high</span></td></tr><tr class="hl"><td><b>Бій ламає і касу, і LTV</b></td><td>2.1% відправлень; вартість випадку = товар + дорога ×2 + підтримка ≈ €31/випадок → €19k прямих + repeat ×0.5 після бою (когорти d04) ≈ €12k майбутніх = <b>€31k</b>. Стандарт пакування: подвійний гофрокартон + фіксатор, тест 200 відправлень</td><td class="num"><b>€31k</b></td><td><span class="sev ok">high</span></td></tr><tr class="hl"><td><b>Один постачальник = один шторм</b></td><td>68% закупівель, передоплата 50%, lead time до 60 дн; збій = порожній Q4. Мітигація: другий постачальник на 2 hero-категорії (навіть дорожче на 5–8%) = страховка</td><td class="num"><b>ризик-мітигація</b></td><td><span class="sev ok">high</span></td></tr><tr><td><b>GPSR-відповідальність не підтверджена</b></td><td>продажі в ЄС (PL) вимагають responsible person; у договорі з виробником пункт відсутній — «очікує погодження» юристом</td><td class="num"><b>юр. ризик · Severity High</b></td><td><span class="sev m">med</span></td></tr>
+    </table>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">§5 Рекомендації</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Дія</th><th style="width:10mm">Хвиля</th><th style="width:26mm">Власник</th><th class="num" style="width:11mm">Год</th><th style="width:34mm">Метрика контролю</th></tr>
+      <tr><td>Стандарт пакування + тест 200 відправлень</td><td class="mono">W1</td><td>ops-лід</td><td class="num">20</td><td class="src">бій ≤0.7% на тесті</td></tr><tr><td>Reorder point + safety stock для топ-20</td><td class="mono">W2</td><td>ops-лід + WEEXP</td><td class="num">16</td><td class="src">OOS ≤10% у місяць запуску</td></tr><tr><td>OTIF у щотижневий дашборд</td><td class="mono">W2</td><td>ops-лід</td><td class="num">4</td><td class="src">OTIF ≥95%</td></tr><tr><td>Другий постачальник на 2 hero-категорії</td><td class="mono">W3</td><td>власник</td><td class="num">12</td><td class="src">частка №1 ≤55%</td></tr><tr><td>GPSR/EPR: перевірка юристом + реєстрації</td><td class="mono">W2</td><td>власник (юрист)</td><td class="num">6</td><td class="src">responsible person підтверджено</td></tr><tr><td>Q4-план потужностей (пік ×2.2 середнього)</td><td class="mono">W3</td><td>ops-лід + PM</td><td class="num">10</td><td class="src">план до 15.09</td></tr>
+    </table>
+    <div class="cols2" style="margin-top:3mm">
+      <div><h2 class="st" style="font-size:11pt">§6 Звʼязки</h2><p class="body" style="font-size:8.3pt">Кеш на закупівлі ← d03 (розпродаж). Причини негативу → d04. Бій-фікс живить repeat (d08). Комплаєнс → реєстр ризиків r4.</p></div>
+      <div><h2 class="st" style="font-size:11pt">§7 Що міряти через 90 днів</h2><p class="body" style="font-size:8.3pt">OOS топ-20 тижнево · бій % · день-у-день % · OTIF базова лінія.</p></div>
+    </div>
+    
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 27/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.14 · Technology-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 2.14 · Technology: платформа й стійкість · 14 перевірок</span>
+    <h1 class="big" style="font-size:26pt">Платформа тягне сьогодні. Але вся вона — в голові однієї людини.</h1>
+    <div style="display:flex;gap:8mm;align-items:center;margin:5mm 0 3mm">
+      <div style="border:2.5px solid var(--ink);padding:3mm 5mm"><span class="mono" style="font-weight:700;font-size:22pt;color:var(--ink)">L2</span><div class="src">рівень зрілості</div></div>
+      <div style="flex:1"><p class="body" style="margin:0">OpenCart 3 з кастомом 8/10 працює, але: один фрілансер без SLA, релізи в прод без staging, бекапи ніколи не відновлювались, GA4-адмін — чужий. Це не «переробити все» — це 6 гігієнічних кроків у межах заморозки платформи.</p></div>
+      <div style="text-align:right"><span class="mono" style="font-weight:700;font-size:16pt;color:var(--mark)">ризик-мітигація</span><div class="src">гроші блоку/рік</div></div>
+    </div>
+    <h2 class="st" style="font-size:12pt">§2 Методика і дані</h2>
+    <p class="body" style="font-size:8.5pt"><b>Перевірено:</b> платформа/EOL; глибина кастома і що блокує; bus-factor/SLA/документація; середовища й релізний процес; бекапи з відновленням; безпека базова; власність активів; інтеграційна карта; TTFB під навантаженням; майстер товарних даних; TCO/міс; топ-5 техборгу; мультиринкова готовність; міграційна оцінка (14/14). <b>Джерела:</b> хостинг-панель, кодова база read-only, інтервʼю розробника, кроул. <b class="mark">Не перевірялось:</b> пентест (поза скоупом; рекомендовано W3 окремо).</p>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">§3 Факти проти бенчмарків</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Метрика</th><th class="num">Факт</th><th class="num">Бенч</th><th>Розрив</th><th>Джерело бенчу</th></tr>
+      <tr><td>Bus-factor розробки</td><td class="num"><b>1 людина</b></td><td class="num">≥2 або SLA-підряд</td><td><span class="mark">критично</span></td><td class="src">інтервʼю</td></tr><tr><td>Staging</td><td class="num"><b>немає — релізи в прод</b></td><td class="num">обовʼязково</td><td><span class="mark">кожен реліз = ризик</span></td><td class="src">процес</td></tr><tr><td>Бекапи</td><td class="num"><b>є, відновлення не тестувалось</b></td><td class="num">квартальний тест</td><td>невідомо чи робочі</td><td class="src">хостинг-панель</td></tr><tr><td>TTFB у пік (19–22:00)</td><td class="num"><b>1.1s</b></td><td class="num">≤0.8s</td><td>внесок у LCP</td><td class="src">моніторинг 3 міс</td></tr><tr><td>Кастомізація</td><td class="num"><b>8/10</b></td><td class="num">—</td><td>блокує мінорні оновлення</td><td class="src">код-огляд</td></tr><tr><td>Власність: домен/хостинг/GA4</td><td class="num"><b>домен ✓ · хостинг ✓ · GA4 ✗</b></td><td class="num">все на компанії</td><td>GA4 у екс-підрядника</td><td class="src">перевірка</td></tr>
+    </table>
+    
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 28/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.14 · Technology-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <h2 class="st" style="font-size:12pt">§4 Знахідки з доказами й розрахунками</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th style="width:34mm">Знахідка</th><th>Доказ → розрахунок ефекту</th><th class="num" style="width:17mm">Ефект/рік</th><th style="width:11mm">Впевн.</th></tr>
+      <tr class="hl"><td><b>Один фрілансер тримає все</b></td><td>вся платформа, без документації і SLA; відпустка/зникнення = зупинка змін на тижні. Мітигація W2: SLA-договір + документація ядра (20 стор.) + другий підрядник на підхваті з W3</td><td class="num"><b>ризик R1</b></td><td><span class="sev ok">high</span></td></tr><tr class="hl"><td><b>Релізи без staging</b></td><td>зміни котяться в прод; редизайн минулого року «поклав» checkout на 6 годин (зі слів команди — журналів немає, бо їх нема де вести). Staging-копія + чеклист релізу</td><td class="num"><b>ризик</b></td><td><span class="sev ok">high</span></td></tr><tr class="hl"><td><b>Бекап Шредінгера</b></td><td>бекапи «є» на хостингу, але відновлення ніколи не проганялось; тест відновлення на staging — 6 годин роботи, знімає невідомість</td><td class="num"><b>ризик</b></td><td><span class="sev ok">high</span></td></tr><tr><td><b>Кеш-шар відсутній</b></td><td>TTFB 1.1s у пік — без сторінкового кешу; LiteSpeed/віддалений кеш = −0.4–0.6s LCP всім шаблонам</td><td class="num"><b>внесок у €120k (d05)</b></td><td><span class="sev m">med</span></td></tr>
+    </table>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">§5 Рекомендації</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Дія</th><th style="width:10mm">Хвиля</th><th style="width:26mm">Власник</th><th class="num" style="width:11mm">Год</th><th style="width:34mm">Метрика контролю</th></tr>
+      <tr><td>Staging-середовище + чеклист релізу</td><td class="mono">W2</td><td>розробник</td><td class="num">10</td><td class="src">релізи тільки через staging</td></tr><tr><td>Тест відновлення бекапа</td><td class="mono">W2</td><td>розробник</td><td class="num">6</td><td class="src">відновлення пройдено, протокол</td></tr><tr><td>SLA з розробником + документація ядра</td><td class="mono">W2</td><td>PM + розробник</td><td class="num">20</td><td class="src">SLA підписано, 20 стор. доків</td></tr><tr><td>Сторінковий кеш + перегляд тарифу</td><td class="mono">W2</td><td>розробник</td><td class="num">8</td><td class="src">TTFB ≤0.8s у пік</td></tr><tr><td>GA4/GTM власність → компанія</td><td class="mono">W1</td><td>PM</td><td class="num">2</td><td class="src">адмін = компанія</td></tr><tr><td>Міграційна оцінка (TCO OpenCart vs альтернативи)</td><td class="mono">W3</td><td>WEEXP</td><td class="num">16</td><td class="src">рішення-2027 з цифрами, БЕЗ міграції зараз</td></tr>
+    </table>
+    <div class="cols2" style="margin-top:3mm">
+      <div><h2 class="st" style="font-size:11pt">§6 Звʼязки</h2><p class="body" style="font-size:8.3pt">Staging — передумова SEO-фасетів (d06) і безпечних CRO-релізів (d05). Кеш → LCP. Заморозка платформи (2.01) дотримана: міграції в плані НЕМАЄ.</p></div>
+      <div><h2 class="st" style="font-size:11pt">§7 Що міряти через 90 днів</h2><p class="body" style="font-size:8.3pt">Релізи через staging: 100% · бекап-тест пройдено · TTFB пік · SLA діє.</p></div>
+    </div>
+    
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 29/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.15 · Organization-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 2.15 · Organization: команда і керованість · 12 перевірок</span>
+    <h1 class="big" style="font-size:26pt">Бізнес — це власник плюс десять помічників. Мета — щоб стало навпаки.</h1>
+    <div style="display:flex;gap:8mm;align-items:center;margin:5mm 0 3mm">
+      <div style="border:2.5px solid var(--ink);padding:3mm 5mm"><span class="mono" style="font-weight:700;font-size:22pt;color:var(--ink)">L2</span><div class="src">рівень зрілості</div></div>
+      <div style="flex:1"><p class="body" style="margin:0">Всі знижки, креативи й закупівлі проходять через одну голову; аналітика не належить нікому; ритму немає — «збираємось, коли горить». Власник сам замовив автономність пріоритетом №2 — рідкісний випадок, коли орг-зміни не треба продавати.</p></div>
+      <div style="text-align:right"><span class="mono" style="font-weight:700;font-size:16pt;color:var(--mark)">розблоковує все</span><div class="src">гроші блоку/рік</div></div>
+    </div>
+    <h2 class="st" style="font-size:12pt">§2 Методика і дані</h2>
+    <p class="body" style="font-size:8.5pt"><b>Перевірено:</b> фактична оргкарта володіння; вузькі місця рішень; bus-factor ролей; відсутні компетенції проти роадмапи; ритм і протоколи; цілі/KPI; описаність процесів; ручна рутина і AI-кандидати; AI-зрілість; карта підрядників; готовність до змін і історія ініціатив; лінія автономності (12/12). <b>Джерела:</b> анкета, інтервʼю 4 ролей, журнали (відсутні — це теж дані), договори. <b class="mark">Не перевірялось:</b> індивідуальні оцінки людей — не наш мандат; оцінюємо ролі й процеси.</p>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">§3 Факти проти бенчмарків</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Метрика</th><th class="num">Факт</th><th class="num">Бенч</th><th>Розрив</th><th>Джерело бенчу</th></tr>
+      <tr><td>Рішень на власнику</td><td class="num"><b>знижки, креативи, закупівлі, ціни</b></td><td class="num">делеговано в межах правил</td><td><span class="mark">все на одному</span></td><td class="src">інтервʼю + анкета</td></tr><tr><td>Роль «аналітика»</td><td class="num"><b>не існує</b></td><td class="num">критична для роадмапи</td><td>закривається WEEXP part-time → найм/аутсорс W3</td><td class="src">орг-карта</td></tr><tr><td>Управлінський ритм</td><td class="num"><b>«коли горить»</b></td><td class="num">щотижнева читка 45 хв</td><td>відсутній</td><td class="src">анкета</td></tr><tr><td>KPI команди</td><td class="num"><b>немає</b></td><td class="num">звʼязані з метриками аудиту</td><td>зусилля без мети</td><td class="src">анкета</td></tr><tr><td>AI-зрілість</td><td class="num"><b>L1 (разові чати)</b></td><td class="num">L3 для рутини</td><td>потенціал: описи, підтримка, прогноз</td><td class="src">анкета+інтервʼю</td></tr><tr><td>Ручна рутина</td><td class="num"><b>≈30% часу команди</b></td><td class="num">≤15%</td><td>виставлення залишків, відповіді-шаблони</td><td class="src">хронометраж-опитування</td></tr>
+    </table>
+    
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 30/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.15 · Organization-аудит · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <h2 class="st" style="font-size:12pt">§4 Знахідки з доказами й розрахунками</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th style="width:34mm">Знахідка</th><th>Доказ → розрахунок ефекту</th><th class="num" style="width:17mm">Ефект/рік</th><th style="width:11mm">Впевн.</th></tr>
+      <tr class="hl"><td><b>SLA рішень власника — головне вузьке місце</b></td><td>приклади: узгодження знижки — 4 дні, креативу — 6 днів; кампанії пропускають вікна. Правило: рішення в межах політик (знижки з contribution-розрахунком, креативи в рамках бренд-гайду) — БЕЗ власника; решта — SLA 48 год</td><td class="num"><b>швидкість усіх хвиль</b></td><td><span class="sev ok">high</span></td></tr><tr class="hl"><td><b>Автономність = маршрут, не побажання</b></td><td>поетапно: М1–2 політики і делегування → М3–5 власники каналів з KPI → М6–7 тест «3 тижні відпустки» → М9–12 шлях до «3 місяців» (мрія з анкети). Тест НЕ в М8 (перед Q4), а в М6–7 — свідомо</td><td class="num"><b>пріоритет №2 власника</b></td><td><span class="sev ok">high</span></td></tr><tr class="hl"><td><b>Історія «мертвих ініціатив» — це процес, не люди</b></td><td>4 спроби за рік вмерли однаково: немає власника метрики + немає ритму перевірки. Щотижнева читка з дашбордом (d09) — і є той механізм, якого бракувало</td><td class="num"><b>захист плану</b></td><td><span class="sev ok">high</span></td></tr><tr><td><b>AI-кандидати рутини</b></td><td>описи SKU (контентник 40% часу), відповіді-шаблони підтримки, прогноз попиту топ-20; після дашборда (W2) — пілот на описах: 200 SKU, редактура людиною</td><td class="num"><b>≈15 год/тиж команди</b></td><td><span class="sev m">med</span></td></tr>
+    </table>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">§5 Рекомендації</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Дія</th><th style="width:10mm">Хвиля</th><th style="width:26mm">Власник</th><th class="num" style="width:11mm">Год</th><th style="width:34mm">Метрика контролю</th></tr>
+      <tr><td>Політики делегування: знижки/креативи в межах правил</td><td class="mono">W1</td><td>власник + WEEXP</td><td class="num">6</td><td class="src">рішень на власнику −50%</td></tr><tr><td>Щотижнева читка: ритм із дашбордом</td><td class="mono">W1</td><td>WEEXP-фасилітація</td><td class="num">2/тиж</td><td class="src">4 читки поспіль відбулись</td></tr><tr><td>Власники каналів: маркетолог→CRM, ops-лід→OTIF, PM→воронка</td><td class="mono">W2</td><td>власник</td><td class="num">8</td><td class="src">KPI призначені і в дашборді</td></tr><tr><td>Тест відпустки 3 тижні (М6–7)</td><td class="mono">W3</td><td>власник</td><td class="num">—</td><td class="src">метрики без падіння >5%</td></tr><tr><td>AI-пілот: описи 200 SKU з редактурою</td><td class="mono">W3</td><td>контентник + WEEXP</td><td class="num">16</td><td class="src">час на опис −60%, якість ок</td></tr><tr><td>Роль аналітика: найм або аутсорс (рішення на КТ-3)</td><td class="mono">W3</td><td>власник</td><td class="num">—</td><td class="src">роль закрита не-WEEXP</td></tr>
+    </table>
+    <div class="cols2" style="margin-top:3mm">
+      <div><h2 class="st" style="font-size:11pt">§6 Звʼязки</h2><p class="body" style="font-size:8.3pt">Розблоковує швидкість усіх хвиль (SLA рішень). Ритм ← дашборд d09. Повна лінія автономності — Звіт 4, глава 4.05.</p></div>
+      <div><h2 class="st" style="font-size:11pt">§7 Що міряти через 90 днів</h2><p class="body" style="font-size:8.3pt">Рішень на власнику/тиждень ↓ · читки поспіль · KPI власників каналів у дашборді.</p></div>
+    </div>
+    
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 31/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.16 · CJM 1/2 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 2.16 · Customer Journey Audit · 15 етапів Awareness → Advocacy</span>
+    <h1 class="big" style="font-size:24pt">On-site шлях готовий на 5.6/10.<br>Рветься на оплаті — і в тиші після.</h1>
+    <div style="display:flex;gap:6mm;margin:3mm 0"><div class="kpi" style="flex:1"><div class="v bad">5.6/10</div><div class="k">on-site journey readiness</div></div>
+      <div class="kpi" style="flex:1"><div class="v bad">L1</div><div class="k">journey maturity floor — стелю тримає post-purchase</div></div>
+      <div class="kpi" style="flex:1"><div class="v">9/15</div><div class="k">етапів виміряно обходом+даними; 6 — «дані/дослідження»</div></div></div>
+    <table class="t" style="font-size:7.2pt">
+      <tr><th>Етап</th><th>Група</th><th>Мета клієнта</th><th class="num">Гот./10</th><th>Джерело</th><th>Friction → можливість</th><th>Пр.</th></tr>
+      <tr><td>1 Awareness</td><td>Pre-site</td><td>дізнатись, що бренд існує</td><td class="num">4</td><td class="src">дані/досл.</td><td>бренд «як усі» → позиція експерта (d02)</td><td class="mono">P2</td></tr>
+      <tr><td>2 Discovery</td><td>Pre-site</td><td>знайти в пошуку/рекламі</td><td class="num">6</td><td class="src">обхід+GSC</td><td>3/6 кластерів попиту без сторінок (d06)</td><td class="mono">P1</td></tr>
+      <tr><td>3 Consideration</td><td>Pre-site</td><td>порівняти магазини</td><td class="num">5</td><td class="src">обхід</td><td>RTB-доказів немає; відгуки на 12% SKU</td><td class="mono">P1</td></tr>
+      <tr><td>4 Search (on-site)</td><td>On-site</td><td>знайти товар на сайті</td><td class="num">5</td><td class="src">обхід+GA4</td><td>18% нульових видач → синоніми (d05)</td><td class="mono">P1</td></tr>
+      <tr><td>5 Product (PDP)</td><td>On-site</td><td>переконатись і обрати</td><td class="num">6</td><td class="src">обхід</td><td>строк доставки під fold; повернення у футері</td><td class="mono">P1</td></tr>
+      <tr><td>6 Cart</td><td>On-site</td><td>зібрати замовлення</td><td class="num">7</td><td class="src">обхід+GA4</td><td>кошик тримає ✓; підказки доставки відсутні</td><td class="mono">P2</td></tr>
+      <tr class="hl"><td><b>7 Checkout</b></td><td>On-site</td><td>оформити без болю</td><td class="num"><b>3</b></td><td class="src">обхід+GA4</td><td><b>РОЗРИВ №1:</b> доставка в кінці · 9 полів · completion 43.6%</td><td class="mono">P0</td></tr>
+      <tr class="hl"><td><b>8 Payment</b></td><td>On-site</td><td>заплатити звично</td><td class="num"><b>4</b></td><td class="src">обхід+бекенд</td><td>без BLIK для PL (−31% completion); Apple Pay невидимий для GA4</td><td class="mono">P0</td></tr>
+      <tr><td>9 Delivery</td><td>Post-purch.</td><td>отримати вчасно і цілим</td><td class="num">4</td><td class="src">дані (перевізники)</td><td>бій 2.1% · OTIF не міряється (d10)</td><td class="mono">P0</td></tr>
+      <tr><td>10 Receipt (розпакування)</td><td>Post-purch.</td><td>радість, не розчарування</td><td class="num">4</td><td class="src">дані (VoC)</td><td>62% негативу — доставка/бій; момент істини ніші</td><td class="mono">P0</td></tr>
+      <tr><td>11 Usage</td><td>Post-purch.</td><td>користуватись і доглядати</td><td class="num">3</td><td class="src">обхід</td><td>контенту догляду немає → привід контакту (d06/d08)</td><td class="mono">P1</td></tr>
+      <tr><td>12 Support</td><td>Post-purch.</td><td>швидко розвʼязати проблему</td><td class="num">5</td><td class="src">дані/досл.</td><td>час 1-ї відповіді не міряється (нове питання анкети)</td><td class="mono">P2</td></tr>
+      <tr class="hl"><td><b>13 Repeat</b></td><td>Post-purch.</td><td>повернутись за другою</td><td class="num"><b>2</b></td><td class="src">замовлення</td><td><b>РОЗРИВ №2:</b> вікно 30–60 дн порожнє; repeat 13%</td><td class="mono">P0</td></tr>
+      <tr><td>14 Loyalty</td><td>Post-purch.</td><td>мати причину лишатись</td><td class="num">2</td><td class="src">обхід</td><td>програми немає — після виміряних flows (W3)</td><td class="mono">P2</td></tr>
+      <tr><td>15 Advocacy</td><td>Post-purch.</td><td>порадити друзям</td><td class="num">3</td><td class="src">дані (4.6 Allegro)</td><td>потенціал не активований: NPS→реферальна механіка</td><td class="mono">P2</td></tr>
+    </table>
+    <p class="marg" style="margin-top:2mm">Readiness — з обходу вітрини і звірених даних; етапи «дані/дослідження» чесно позначені — цифри там не вигадуються (канон cjmflow). Пріоритети P0–P3 → задачі в беклозі (Звіт 4).</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 32/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.16 · CJM 2/2 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 2.16 · Журні-тест руками + емоційна крива</span>
+    <h1 class="big" style="font-size:24pt">Система пройшла шлях покупця сама.<br>10 кроків: 6 пройдено, 2 спотикання, 2 тупики.</h1>
+    <p class="body" style="font-size:8.4pt;margin-top:2mm">Канон journey-тесту: кожен крок = дія → очікування за еталоном → фактичний результат → статус,
+    із джерелом збою (сайт ≠ браузер/тест ≠ мережа) і відтворюваністю. Оплата не виконується — тест зупиняється на формі checkout.</p>
+    <table class="t" style="font-size:7.4pt">
+      <tr><th>#</th><th>Дія</th><th>Еталон (очікування)</th><th>Факт</th><th>Статус</th><th>Джерело · відтвор.</th></tr>
+      <tr><td class="num">1</td><td>Відкрити головну (mobile)</td><td>LCP ≤2.5s, оффер видно</td><td>4.6s; оффер ок</td><td><span class="sev m">спотикання</span></td><td class="src">сайт · 3/3</td></tr>
+      <tr><td class="num">2</td><td>Пошук «пательня гриль»</td><td>релевантна видача</td><td>«нічого не знайдено» (є «сковорода гриль»)</td><td><span class="sev h">тупик</span></td><td class="src">сайт · 3/3</td></tr>
+      <tr><td class="num">3</td><td>Каталог → фільтр за діаметром</td><td>фільтр звужує видачу</td><td>фільтр порожній (атрибути не заповнені)</td><td><span class="sev h">тупик</span></td><td class="src">сайт · 2/2</td></tr>
+      <tr><td class="num">4</td><td>Відкрити PDP hero-SKU</td><td>фото, ціна, наявність, строк</td><td>усе є; строк — дрібно під fold</td><td><span class="sev m">спотикання</span></td><td class="src">сайт · 3/3</td></tr>
+      <tr><td class="num">5</td><td>Додати в кошик</td><td>бейдж +1, товар у кошику</td><td>працює; бейдж оновився</td><td><span class="sev ok">пройдено</span></td><td class="src">— · 3/3</td></tr>
+      <tr><td class="num">6</td><td>Додати в обране</td><td>збереглось без реєстрації</td><td>працює</td><td><span class="sev ok">пройдено</span></td><td class="src">— · 2/2</td></tr>
+      <tr><td class="num">7</td><td>Кошик → доставка</td><td>вартість/строк видно в кошику</td><td>«розрахунок на наступному кроці»</td><td><span class="sev m">спотикання→P0</span></td><td class="src">сайт · 3/3</td></tr>
+      <tr><td class="num">8</td><td>Перейти в checkout</td><td>гостьове замовлення доступне</td><td>є</td><td><span class="sev ok">пройдено</span></td><td class="src">— · 3/3</td></tr>
+      <tr><td class="num">9</td><td>Заповнити форму</td><td>≤6 полів, автозаповнення</td><td>9 полів, без автозаповнення</td><td><span class="sev m">спотикання</span></td><td class="src">сайт · 3/3</td></tr>
+      <tr><td class="num">10</td><td>Неіснуюча сторінка /404-тест</td><td>корисна 404 з пошуком</td><td>404 веде на головну з пошуком</td><td><span class="sev ok">пройдено</span></td><td class="src">— · 2/2</td></tr>
+    </table>
+    <h2 class="st" style="font-size:11.5pt;margin-top:3mm">Емоційна крива (канон: точка → емоція → ризик)</h2>
+    <table class="t" style="font-size:7.8pt">
+      <tr><th>Точка</th><th>Емоція</th><th>Ризик</th><th>Що тримає / що чинити</th></tr>
+      <tr><td>Перший екран</td><td>Confusion → Interest</td><td><span class="sev ok">ні</span></td><td>оффер орієнтує; швидкість гальмує (W2)</td></tr>
+      <tr><td>Вибір товару</td><td>Interest → Confidence</td><td><span class="sev m">так</span></td><td>докази/відгуки лише на 12% SKU → W2</td></tr>
+      <tr class="hl"><td>Оплата</td><td>Confidence → <b>Anxiety</b></td><td><span class="sev h">так</span></td><td>несподівана доставка + 9 полів → W1/W2</td></tr>
+      <tr class="hl"><td>Розпакування</td><td>Anticipation → Joy / <b>Anger</b></td><td><span class="sev h">так</span></td><td>пік емоції ніші; бій 2.1% вбиває repeat ×0.5 → W1</td></tr>
+      <tr><td>Тиша після</td><td>Joy → Forgetting</td><td><span class="sev h">так</span></td><td>вікно 30–60 дн порожнє → flows W2</td></tr>
+    </table>
+    <div class="callout v" style="font-size:8.4pt"><b>Північна зірка шляху:</b> 2-га покупка ≤90 днів: 9% → 18% (пороги — Звіт 3). <b>B2B-гілка</b> (12% виручки):
+    короткий шлях запит→прайс→рахунок; розрив — дебіторка 45 дн і відсутність мінімалки (d01 §4, задачі в r4).</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 33/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.17 · Матриця зрілості · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 2.17 · Матриця зрілості · зведення 12 аудитів</span>
+    <div style="display:flex;gap:6mm;align-items:flex-start"><div style="flex:1"><h1 class="big" style="font-size:24pt">Health 52/100. Стелю тримають<br>три L1: Customer, CRM, Analytics.</h1></div><div><svg width="250" height="250" viewBox="0 0 250 250"><polygon points="125.0,108.4 133.3,110.6 139.4,116.7 141.6,125.0 139.4,133.3 133.3,139.4 125.0,141.6 116.7,139.4 110.6,133.3 108.4,125.0 110.6,116.7 116.7,110.6" fill="none" stroke="#dfe4e6" stroke-width="1"/><polygon points="125.0,91.8 141.6,96.2 153.8,108.4 158.2,125.0 153.8,141.6 141.6,153.8 125.0,158.2 108.4,153.8 96.2,141.6 91.8,125.0 96.2,108.4 108.4,96.2" fill="none" stroke="#dfe4e6" stroke-width="1"/><polygon points="125.0,75.2 149.9,81.9 168.1,100.1 174.8,125.0 168.1,149.9 149.9,168.1 125.0,174.8 100.1,168.1 81.9,149.9 75.2,125.0 81.9,100.1 100.1,81.9" fill="none" stroke="#dfe4e6" stroke-width="1"/><polygon points="125.0,58.6 158.2,67.5 182.5,91.8 191.4,125.0 182.5,158.2 158.2,182.5 125.0,191.4 91.8,182.5 67.5,158.2 58.6,125.0 67.5,91.8 91.8,67.5" fill="none" stroke="#dfe4e6" stroke-width="1"/><polygon points="125.0,42.0 166.5,53.1 196.9,83.5 208.0,125.0 196.9,166.5 166.5,196.9 125.0,208.0 83.5,196.9 53.1,166.5 42.0,125.0 53.1,83.5 83.5,53.1" fill="none" stroke="#dfe4e6" stroke-width="1"/><line x1="125" y1="125" x2="125.0" y2="42.0" stroke="#dfe4e6"/><line x1="125" y1="125" x2="166.5" y2="53.1" stroke="#dfe4e6"/><line x1="125" y1="125" x2="196.9" y2="83.5" stroke="#dfe4e6"/><line x1="125" y1="125" x2="208.0" y2="125.0" stroke="#dfe4e6"/><line x1="125" y1="125" x2="196.9" y2="166.5" stroke="#dfe4e6"/><line x1="125" y1="125" x2="166.5" y2="196.9" stroke="#dfe4e6"/><line x1="125" y1="125" x2="125.0" y2="208.0" stroke="#dfe4e6"/><line x1="125" y1="125" x2="83.5" y2="196.9" stroke="#dfe4e6"/><line x1="125" y1="125" x2="53.1" y2="166.5" stroke="#dfe4e6"/><line x1="125" y1="125" x2="42.0" y2="125.0" stroke="#dfe4e6"/><line x1="125" y1="125" x2="53.1" y2="83.5" stroke="#dfe4e6"/><line x1="125" y1="125" x2="83.5" y2="53.1" stroke="#dfe4e6"/><polygon points="125.0,91.8 141.6,96.2 153.8,108.4 141.6,125.0 153.8,141.6 141.6,153.8 125.0,174.8 116.7,139.4 110.6,133.3 91.8,125.0 96.2,108.4 108.4,96.2" fill="rgba(214,54,43,.14)" stroke="#D6362B" stroke-width="2"/><circle cx="125.0" cy="91.8" r="3" fill="#070d12"/><circle cx="141.6" cy="96.2" r="3" fill="#070d12"/><circle cx="153.8" cy="108.4" r="3" fill="#070d12"/><circle cx="141.6" cy="125.0" r="3" fill="#D6362B"/><circle cx="153.8" cy="141.6" r="3" fill="#070d12"/><circle cx="141.6" cy="153.8" r="3" fill="#070d12"/><circle cx="125.0" cy="174.8" r="3" fill="#070d12"/><circle cx="116.7" cy="139.4" r="3" fill="#D6362B"/><circle cx="110.6" cy="133.3" r="3" fill="#D6362B"/><circle cx="91.8" cy="125.0" r="3" fill="#070d12"/><circle cx="96.2" cy="108.4" r="3" fill="#070d12"/><circle cx="108.4" cy="96.2" r="3" fill="#070d12"/><text x="125.0" y="25.0" font-family="IBM Plex Mono,monospace" font-size="8.5" fill="#6E7C86" text-anchor="middle">Bus L2</text><text x="175.0" y="38.4" font-family="IBM Plex Mono,monospace" font-size="8.5" fill="#6E7C86" text-anchor="middle">Mkt L2</text><text x="211.6" y="75.0" font-family="IBM Plex Mono,monospace" font-size="8.5" fill="#6E7C86" text-anchor="middle">Prod L2</text><text x="225.0" y="125.0" font-family="IBM Plex Mono,monospace" font-size="8.5" fill="#6E7C86" text-anchor="middle">Cust L1</text><text x="211.6" y="175.0" font-family="IBM Plex Mono,monospace" font-size="8.5" fill="#6E7C86" text-anchor="middle">Web L2</text><text x="175.0" y="211.6" font-family="IBM Plex Mono,monospace" font-size="8.5" fill="#6E7C86" text-anchor="middle">SEO L2</text><text x="125.0" y="225.0" font-family="IBM Plex Mono,monospace" font-size="8.5" fill="#6E7C86" text-anchor="middle">Acq L3</text><text x="75.0" y="211.6" font-family="IBM Plex Mono,monospace" font-size="8.5" fill="#6E7C86" text-anchor="middle">CRM L1</text><text x="38.4" y="175.0" font-family="IBM Plex Mono,monospace" font-size="8.5" fill="#6E7C86" text-anchor="middle">Anl L1</text><text x="25.0" y="125.0" font-family="IBM Plex Mono,monospace" font-size="8.5" fill="#6E7C86" text-anchor="middle">Ops L2</text><text x="38.4" y="75.0" font-family="IBM Plex Mono,monospace" font-size="8.5" fill="#6E7C86" text-anchor="middle">Tech L2</text><text x="75.0" y="38.4" font-family="IBM Plex Mono,monospace" font-size="8.5" fill="#6E7C86" text-anchor="middle">Org L2</text></svg></div></div>
+    <table class="t" style="margin-top:4mm;font-size:7.8pt">
+      <tr><th>Домен</th><th style="width:9mm">Рівень</th><th style="width:9mm">Вага*</th><th>Чому цей рівень (глава)</th><th>Ціль 9 міс</th></tr>
+      <tr><td><b>Business</b></td><td class="num" style="">L2</td><td class="num">10</td><td>d01: юніт-економіка є, фінмоделі немає, каса з розривами</td><td class="src">L3: фінмодель жива, каса планована</td></tr><tr><td><b>Market</b></td><td class="num" style="">L2</td><td class="num">6</td><td>d02: позиціонування-тест провалено, AI-полиця 0/48</td><td class="src">L3: позиція + моніторинг + EUIPO</td></tr><tr><td><b>Product</b></td><td class="num" style="">L2</td><td class="num">7</td><td>d03: 33% dead stock, ціни без собівартості</td><td class="src">L3: ABC-квартал, правила знижок, прайс-тести</td></tr><tr class="hl"><td><b>Customer</b></td><td class="num" style="color:var(--mark);font-weight:700">L1</td><td class="num">8</td><td>d04: сегментів немає, NPS немає, вікно 30–60 дн порожнє</td><td class="src">L3: сегменти, NPS, 2-га покупка 18%</td></tr><tr><td><b>Website</b></td><td class="num" style="">L2</td><td class="num">8</td><td>d05: checkout 43.6%, LCP 4.6s, але процес правок існує</td><td class="src">L3: 60%, ≤2.5s, A/B-ритм</td></tr><tr><td><b>SEO/GEO</b></td><td class="num" style="">L2</td><td class="num">6</td><td>d06: індекс ×8 сміття, 3/6 кластерів, AI 0/48</td><td class="src">L3: чистий індекс, 6/6, GEO-програма</td></tr><tr><td><b>Acquisition</b></td><td class="num" style="">L3</td><td class="num">7</td><td>d07: керовано, але бренд у PMax і 2 креативи</td><td class="src">L4: біддинг за contribution</td></tr><tr class="hl"><td><b>CRM</b></td><td class="num" style="color:var(--mark);font-weight:700">L1</td><td class="num">9</td><td>d08: 1 flow, DMARC немає, база спить</td><td class="src">L3: 6 flows, 18% виручки</td></tr><tr class="hl"><td><b>Analytics</b></td><td class="num" style="color:var(--mark);font-weight:700">L1</td><td class="num">9</td><td>d09: GA4 −22%, Excel раз на місяць</td><td class="src">L3: ≤5%, щотижневий дашборд</td></tr><tr><td><b>Operations</b></td><td class="num" style="">L2</td><td class="num">7</td><td>d10: OOS 17%, бій 2.1%, OTIF не міряється</td><td class="src">L3: правила закупівель, стандарт пакування</td></tr><tr><td><b>Technology</b></td><td class="num" style="">L2</td><td class="num">6</td><td>d11: bus-factor 1, без staging, бекап не тестований</td><td class="src">L3: staging, SLA, перевірений бекап</td></tr><tr><td><b>Organization</b></td><td class="num" style="">L2</td><td class="num">8</td><td>d12: все на власнику, ритму немає</td><td class="src">L3: політики, власники каналів, ритм</td></tr>
+    </table>
+    <p class="body" style="font-size:8.5pt;margin-top:3mm"><b>Розрахунок Health 52 — показаний:</b> Health = Σ(бал×вага)/Σваг. Бал домену (0–100) — гранулярніша оцінка всередині рівня:
+    частка пройдених перевірок глави (L1 ≈ 20–39 · L2 ≈ 40–59 · L3 ≈ 60–79). Бали: 60·54·56·40·56·50·72·38·36·56·60·54;
+    ваги: 10·6·7·8·8·6·7·9·9·7·6·8 (Σ=91). Σ(бал×вага) = <b>4 738; 4 738/91 = 52.1 → 52</b>.
+    *Ваги — важливість напрямів з анкети власника (block_rate 1–10): найвищі — економіка (10), CRM (9), аналітика (9). Збіг «найважливіше = найнезріліше» = пріоритет хвиль.</p>
+    <p class="marg">Правило рівня: найнижчий ПОВНІСТЮ виконаний (за CMMI). Переоблік: КТ-2 (день 90) і кінець кожної хвилі — лише за критеріями DoD (Звіт 3), не «стало краще». Acquisition L3 — єдиний зрілий домен: масштабувати його поверх трьох L1 = купувати некерований трафік; тому порядок хвиль саме такий.</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 34/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.18 · Реєстр знахідок · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 2.18 · Зведений реєстр знахідок · топ-15 із 31</span>
+    <h1 class="big" style="font-size:26pt">31 знахідка. Кожна — з доказом,<br>розкладеним ICE і власником.</h1>
+    <table class="t" style="margin-top:4mm;font-size:7.8pt">
+      <tr><th>ID</th><th>Знахідка</th><th>Домен</th><th class="num">I</th><th class="num">C</th><th class="num">E</th><th class="num">ICE</th><th>Хвиля</th></tr>
+      <tr class="hl"><td class="num">05-01</td><td><b>Доставка невидима до оплати</b></td><td>Website</td><td class="num">9</td><td class="num">9</td><td class="num">8</td><td class="num"><b>648</b></td><td class="mono">W1</td></tr><tr class="hl"><td class="num">09-01</td><td><b>GA4 не бачить 22% замовлень</b></td><td>Analytics</td><td class="num">10</td><td class="num">8</td><td class="num">8</td><td class="num"><b>640</b></td><td class="mono">W1</td></tr><tr class="hl"><td class="num">10-02</td><td><b>Бій 2.1% + repeat ×0.5 після бою</b></td><td>Operations</td><td class="num">8</td><td class="num">9</td><td class="num">8</td><td class="num"><b>576</b></td><td class="mono">W1</td></tr><tr class="hl"><td class="num">05-02</td><td><b>9 полів у checkout</b></td><td>Website</td><td class="num">8</td><td class="num">10</td><td class="num">7</td><td class="num"><b>560</b></td><td class="mono">W2</td></tr><tr class="hl"><td class="num">01-01</td><td><b>Allegro contribution 3%</b></td><td>Business</td><td class="num">9</td><td class="num">10</td><td class="num">6</td><td class="num"><b>540</b></td><td class="mono">W1</td></tr><tr class="hl"><td class="num">08-01</td><td><b>DMARC відсутній</b></td><td>CRM</td><td class="num">8</td><td class="num">9</td><td class="num">10</td><td class="num"><b>720</b></td><td class="mono">W1</td></tr><tr class="hl"><td class="num">07-01</td><td><b>PMax купує бренд (31%)</b></td><td>Acquisition</td><td class="num">8</td><td class="num">8</td><td class="num">8</td><td class="num"><b>512</b></td><td class="mono">W1</td></tr><tr class="hl"><td class="num">03-01</td><td><b>Dead stock €70k кешу</b></td><td>Product</td><td class="num">9</td><td class="num">9</td><td class="num">6</td><td class="num"><b>486</b></td><td class="mono">W1</td></tr><tr class="hl"><td class="num">10-01</td><td><b>OOS топ-20: 17% часу</b></td><td>Operations</td><td class="num">10</td><td class="num">8</td><td class="num">6</td><td class="num"><b>480</b></td><td class="mono">W2</td></tr><tr class="hl"><td class="num">08-02</td><td><b>CRM-контур: 1 flow із 6</b></td><td>CRM</td><td class="num">10</td><td class="num">8</td><td class="num">6</td><td class="num"><b>480</b></td><td class="mono">W2</td></tr><tr><td class="num">05-03</td><td><b>LCP 4.6s (зображення+скрипти+CSS)</b></td><td>Website</td><td class="num">9</td><td class="num">7</td><td class="num">7</td><td class="num"><b>441</b></td><td class="mono">W2</td></tr><tr><td class="num">01-02</td><td><b>Знижки без contribution-правила</b></td><td>Business</td><td class="num">7</td><td class="num">8</td><td class="num">7</td><td class="num"><b>392</b></td><td class="mono">W1</td></tr><tr><td class="num">09-02</td><td><b>Маржа не в аналітиці</b></td><td>Analytics</td><td class="num">8</td><td class="num">7</td><td class="num">7</td><td class="num"><b>392</b></td><td class="mono">W2</td></tr><tr><td class="num">12-01</td><td><b>SLA рішень власника (4–6 дн)</b></td><td>Organization</td><td class="num">8</td><td class="num">8</td><td class="num">6</td><td class="num"><b>384</b></td><td class="mono">W1</td></tr><tr><td class="num">06-01</td><td><b>Фасетні дублі ×8 індексу</b></td><td>SEO</td><td class="num">7</td><td class="num">8</td><td class="num">6</td><td class="num"><b>336</b></td><td class="mono">W3</td></tr>
+    </table>
+    <p class="body" style="font-size:8.5pt;margin-top:3mm">I = вплив на гроші/ризик · C = впевненість у доказі · E = легкість впровадження (кожен 1–10, ICE = I×C×E).
+    Повний реєстр (31 позиція, з них 12 severity-high) з доказами — у главах d01–d12 §4; власники — у беклозі (Звіт 4, глава 4.02).
+    Життєвий цикл: знахідка закривається виміряним ефектом у дашборді, не фактом «зробили».</p>
+    <p class="marg">16 знахідок нижче топ-15 — severity med/low (ICE 150–330): schema-зірки, синоніми пошуку, capture-попап, крос-сел пари, кеш-шар, EUIPO,
+    GPSR-пункт, збитковий мікросегмент, B2B-мінімалка, подарунковий пік, AI-пілот описів, реферальна механіка, консент-UX, атрибутика хвостових SKU, Q4-потужності, міграційна TCO-оцінка.</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 35/36</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 2.19 · Протокол якості · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 2.19 · Протокол якості аудиту</span>
+    <h1 class="big" style="font-size:26pt">Аудит, який не перевірив себе, —<br>це думка. Ось перевірки.</h1>
+    <div class="kpis" style="margin-top:4mm">
+      <div class="kpi"><div class="v ">160</div><div class="k">перевірок виконано (каталог 12 аудитів: 14+12+13+13+16+14+15+14+10+13+14+12)</div></div>
+      <div class="kpi"><div class="v ">14/16</div><div class="k">систем відкрито (2.02)</div></div>
+      <div class="kpi"><div class="v ">31</div><div class="k">знахідка · 12 high</div></div>
+      <div class="kpi"><div class="v ok">100%</div><div class="k">грошей — від бекенда</div></div>
+    </div>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Контроль</th><th>Як перевірено</th><th>Результат</th></tr>
+      <tr><td><b>Кожна цифра має джерело</b></td><td>наскрізний прохід усіх 5 звітів</td><td><span class="sev ok">пройдено</span> · 3 позиції «очікує погодження»: собівартість SKU, GPSR-пункт, преміум-ціна</td></tr>
+      <tr><td><b>Друга перевірка high-знахідок</b></td><td>кожна з 12 — незалежним способом: 05-01 скринкаст+Baymard-статистика · 09-01 звірка по днях+тег-аудит · 10-02 звіти перевізників+когорти repeat · 01-01 юніт-розрахунок+P&L-звірка · 08-01 DNS+Postmaster · 07-01 search terms+органічні позиції · 03-01 залишки+акт інвентаризації · 10-01 журнал наявності+продажі/день · 08-02 ESP-аудит+бенч · 05-03 CrUX+профілювання · 12-01 3 незалежні інтервʼю · 05-02 еталон+запис проходження</td><td><span class="sev ok">12/12 підтверджено</span></td></tr>
+      <tr><td><b>Консервативність оцінок</b></td><td>метод max+45% (константа — емпірично-консервативна, пояснена в Звіті 3); сценарії для всіх сум ≥€50k</td><td><span class="sev ok">пройдено</span></td></tr>
+      <tr><td><b>План у межах обмежень клієнта</b></td><td>звірка з 2.01: бюджет, заморозка платформи, ємність (ресурсна модель 4.02 — без перевантажень)</td><td><span class="sev ok">пройдено</span></td></tr>
+      <tr><td><b>Не повторюємо невдалі спроби</b></td><td>4 історичні ініціативи → у кожній рекомендації «що інакше» (2.01)</td><td><span class="sev ok">пройдено</span></td></tr>
+    </table>
+    <p class="body" style="font-size:8.5pt;margin-top:2mm"><b>Рівні доказовості 31 знахідки:</b> факт — 15 · система — 9 · самооцінка — 5 · експертна оцінка — 2 (обидві позначені в тексті).
+    <b>Зовнішня рецензія:</b> вибіркова перевірка 5 розрахунків другим аудитором WEEXP, розбіжностей >10% немає.
+    <b>Перекалібрування:</b> КТ-2 і кінець кожної хвилі; розбіжності факт/прогноз фіксуються письмово і йдуть у леджер навчання.</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 36/36</span></div></div></body></html>

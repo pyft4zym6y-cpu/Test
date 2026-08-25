@@ -1,0 +1,319 @@
+<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>Звіт 4 · Роадмапа впровадження — Тестик</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink:#070d12; --ink8:#0F1A21; --ink6:#1E3038;
+  --verd:#1F5648; --verd7:#2A6D5C; --verd5:#6FAA9A;
+  --mark:#D6362B; --steel:#6E7C86; --steel6:#94A0A8; --steel4:#D3D9DC;
+  --vel:#E7EAE7; --paper:#fff; --hair:#dfe4e6;
+  --sans:'IBM Plex Sans','Golos Text',system-ui,Arial,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+html,body { background:#fff; }
+body { font-family:var(--sans); color:#26292e; }
+.mono, .num { font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:.02em; }
+
+/* ── Сторінка A4 ── */
+.pg { width: 210mm; height: 296mm; position: relative; overflow: hidden; page-break-after: always; background:#fff; padding: 16mm 16mm 14mm; display:flex; flex-direction:column; }
+.pg.ink { background: var(--ink); color: #E8ECEA; }
+.pg.verd { background: var(--verd); color: #EAF2EE; }
+
+/* шапка/підвал документа */
+.hd { display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid var(--ink); padding-bottom:4mm; margin-bottom:8mm; }
+.pg.ink .hd, .pg.verd .hd { border-color: rgba(255,255,255,.35); }
+.hd .l { font-family:var(--mono); font-size:8.5pt; letter-spacing:.16em; text-transform:uppercase; }
+.hd .r { font-family:var(--mono); font-size:8.5pt; color:var(--steel); }
+.pg.ink .hd .r, .pg.verd .hd .r { color:rgba(255,255,255,.55); }
+.ft { position:absolute; left:16mm; right:16mm; bottom:8mm; display:flex; justify-content:space-between; font-family:var(--mono); font-size:7.5pt; color:var(--steel6); border-top:1px solid var(--hair); padding-top:2.5mm; }
+.pg.ink .ft, .pg.verd .ft { color:rgba(255,255,255,.45); border-color:rgba(255,255,255,.2); }
+.proto { color:var(--mark); }
+
+/* типографіка */
+.ebrow { font-family:var(--mono); font-size:9pt; letter-spacing:.22em; text-transform:uppercase; color:var(--verd7); margin-bottom:5mm; }
+.pg.ink .ebrow { color:var(--verd5); }
+h1.big { font-weight:800; letter-spacing:-.03em; line-height:.98; font-size:34pt; color:var(--ink); }
+.pg.ink h1.big, .pg.verd h1.big { color:#fff; }
+h2.st { font-weight:800; letter-spacing:-.02em; font-size:16pt; color:var(--ink); margin:0 0 4mm; line-height:1.05; }
+.pg.ink h2.st { color:#fff; }
+p.lead { font-size:11pt; line-height:1.5; color:#3A3D42; max-width:150mm; }
+.pg.ink p.lead, .pg.verd p.lead { color:rgba(255,255,255,.82); }
+p.body { font-size:9.5pt; line-height:1.55; color:#33373c; margin-bottom:3mm; }
+.marg { font-family:var(--mono); font-size:7.5pt; color:var(--steel); line-height:1.45; }
+.src { font-family:var(--mono); font-size:7pt; color:var(--steel6); }
+.mark { color: var(--mark); }
+.verdc { color: var(--verd7); }
+
+/* число-герой */
+.hero { margin: 8mm 0 4mm; }
+.hero .n { font-family:var(--mono); font-weight:700; font-size:64pt; letter-spacing:-.04em; line-height:1; color:var(--ink); }
+.hero.m .n { color:var(--mark); } .hero.v .n { color:var(--verd7); }
+.pg.ink .hero .n { color:#fff; }
+.hero .cap { font-size:10pt; color:var(--steel); margin-top:2mm; max-width:120mm; }
+.pg.ink .hero .cap { color:rgba(255,255,255,.65); }
+
+/* KPI-ряд */
+.kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:4mm; margin:5mm 0; }
+.kpis.c3 { grid-template-columns:repeat(3,1fr); }
+.kpi { border:1.5px solid var(--ink); padding:3.5mm 4mm; }
+.kpi .v { font-family:var(--mono); font-weight:700; font-size:16pt; letter-spacing:-.02em; }
+.kpi .v.bad { color:var(--mark); } .kpi .v.ok { color:var(--verd7); }
+.kpi .k { font-family:var(--mono); font-size:7pt; letter-spacing:.1em; text-transform:uppercase; color:var(--steel); margin-top:1.5mm; }
+
+/* таблиці */
+table.t { width:100%; border-collapse:collapse; font-size:8.5pt; }
+table.t th { font-family:var(--mono); font-size:7pt; letter-spacing:.12em; text-transform:uppercase; color:var(--steel); text-align:left; border-bottom:1.5px solid var(--ink); padding:1.8mm 2mm; }
+table.t td { border-bottom:1px solid var(--hair); padding:1.9mm 2mm; vertical-align:top; line-height:1.35; }
+table.t td.num, table.t th.num { text-align:right; font-family:var(--mono); }
+table.t tr.hl td { background:#F4F6F5; }
+table.t td b { font-weight:700; color:var(--ink); }
+.sev { font-family:var(--mono); font-size:7pt; letter-spacing:.08em; padding:.5mm 1.5mm; border:1px solid; }
+.sev.h { color:var(--mark); border-color:var(--mark); }
+.sev.m { color:#a06a00; border-color:#a06a00; }
+.sev.l { color:var(--steel); border-color:var(--steel6); }
+.sev.ok { color:var(--verd7); border-color:var(--verd7); }
+
+/* шкала-бенчмарк (D1) */
+.bench { margin:3.5mm 0; }
+.bench .lab { display:flex; justify-content:space-between; font-size:8.5pt; margin-bottom:1.2mm; }
+.bench .lab .b { font-family:var(--mono); }
+.bench .bar { position:relative; height:5.5mm; background:var(--vel); }
+.bench .fill { position:absolute; left:0; top:0; bottom:0; background:var(--ink); }
+.bench .fill.bad { background:var(--mark); }
+.bench .tick { position:absolute; top:-1.2mm; bottom:-1.2mm; width:1px; background:var(--verd7); }
+.bench .tick i { position:absolute; top:100%; left:-14mm; width:28mm; text-align:center; font-family:var(--mono); font-style:normal; font-size:6.5pt; color:var(--verd7); }
+
+/* гант */
+.gantt { width:100%; border-collapse:collapse; font-size:8pt; }
+.gantt th { font-family:var(--mono); font-size:6.5pt; letter-spacing:.08em; color:var(--steel); border-bottom:1.5px solid var(--ink); padding:1.5mm 1mm; text-align:center; }
+.gantt th.rn { text-align:left; }
+.gantt td { border-bottom:1px solid var(--hair); padding:1.5mm 1mm; }
+.gantt td.rn { font-size:8pt; line-height:1.25; width:52mm; }
+.gantt .cell { height:4.5mm; }
+.gantt .on { background:var(--ink); } .gantt .on.w1 { background:var(--mark); } .gantt .on.w3 { background:var(--verd7); }
+
+/* блоки-виноски */
+.callout { border-left:3px solid var(--mark); padding:2.5mm 4mm; background:#FBF3F2; font-size:9pt; line-height:1.45; margin:3mm 0; }
+.callout.v { border-color:var(--verd7); background:#F1F6F4; }
+.cols2 { display:grid; grid-template-columns:1fr 1fr; gap:6mm; }
+.cols3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:5mm; }
+
+/* слайди 16:9 */
+.sl { width:1280px; height:720px; position:relative; overflow:hidden; page-break-after:always; background:var(--paper); padding:56px 64px; display:flex; flex-direction:column; }
+.sl.ink { background:var(--ink); color:#E8ECEA; }
+.sl.verd { background:var(--verd); color:#EAF2EE; }
+.sl .ebrow { font-size:12px; margin-bottom:18px; }
+.sl h1 { font-weight:800; letter-spacing:-.03em; line-height:.98; font-size:64px; color:var(--ink); max-width:1000px; }
+.sl.ink h1, .sl.verd h1 { color:#fff; }
+.sl h1 .mk { color:var(--mark); }
+.sl .heron { font-family:var(--mono); font-weight:700; font-size:220px; letter-spacing:-.05em; line-height:.95; }
+.sl .foot { position:absolute; left:64px; right:64px; bottom:28px; display:flex; justify-content:space-between; font-family:var(--mono); font-size:11px; color:var(--steel6); }
+.sl.ink .foot, .sl.verd .foot { color:rgba(255,255,255,.45); }
+
+/* ── Постраничный разбор: блок-таблиця з оцінкою 0–5 ── */
+.bt { width:100%; border-collapse:collapse; font-size:7.4pt; }
+.bt th { font-family:var(--mono); font-size:6.6pt; letter-spacing:.1em; text-transform:uppercase; color:var(--steel); text-align:left; border-bottom:1.5px solid var(--ink); padding:1.5mm 1.8mm; }
+.bt td { border-bottom:1px solid var(--hair); padding:1.7mm 1.8mm; vertical-align:top; line-height:1.35; }
+.bt .bnum { font-family:var(--mono); font-weight:700; white-space:nowrap; }
+.bt .score { font-family:var(--mono); font-weight:700; font-size:10pt; text-align:center; width:10mm; }
+.bt .sc5 { color:var(--verd7); } .bt .sc4 { color:var(--ink); } .bt .sc2, .bt .sc3 { color:#a06a00; } .bt .sc0, .bt .sc1 { color:var(--mark); }
+.tag { font-family:var(--mono); font-size:5.8pt; letter-spacing:.06em; border:1px solid var(--steel6); color:var(--steel); padding:.3mm 1mm; margin-right:.8mm; }
+.okm { color:var(--verd7); font-weight:700; } .badm { color:var(--mark); font-weight:700; }
+
+/* ── Wireframe ЗАРАЗ / ЯК ТРЕБА ── */
+.wf2 { display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin:2.5mm 0; }
+.wf { border:2px solid; padding:2.5mm; }
+.wf.cur { border-color:var(--mark); } .wf.should { border-color:var(--verd7); }
+.wf .wfh { font-family:var(--mono); font-size:6.8pt; letter-spacing:.14em; margin-bottom:1.6mm; }
+.wf.cur .wfh { color:var(--mark); } .wf.should .wfh { color:var(--verd7); }
+.wf .m { background:#F4F6F5; border:1px solid var(--steel4); padding:1.6mm 2mm; margin-bottom:1.2mm; font-size:6.8pt; line-height:1.3; }
+.wf .m b { font-size:7.2pt; }
+.wf .m.ghost { border-style:dashed; color:var(--steel6); text-align:center; }
+.wf .m.cta { background:var(--ink); color:#fff; text-align:center; font-weight:700; }
+.wf .m.cta.mk { background:var(--mark); }
+.wf .mrow { display:grid; gap:1.2mm; margin-bottom:1.2mm; }
+.wf .note { font-size:6.6pt; color:var(--steel); line-height:1.35; margin-top:1mm; }
+.wf .lnk { color:var(--verd7); font-weight:700; }
+
+/* ── Дерево сайта ── */
+.tree { font-family:var(--mono); font-size:7.2pt; line-height:1.55; }
+.tree b { font-size:7.6pt; }
+.tree .lvl1 { margin-left:5mm; } .tree .lvl2 { margin-left:10mm; color:#33373c; }
+.tree .cnt { color:var(--steel6); } .tree .warn { color:var(--mark); font-weight:700; } .tree .good { color:var(--verd7); }
+@media print { .pg, .sl { break-inside: avoid; } }
+</style></head><body><div class="pg ink">
+  <div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+    <span class="ebrow">Звіт 4 із 5</span>
+    <h1 class="big" style="font-size:40pt">Роадмапа<br>впровадження</h1>
+    <p class="lead" style="margin-top:8mm">Виконуваний маршрут А→Б: три хвилі за 9 місяців, перша — по тижнях. 46 задач із власниками в межах реальної ємності команди, 12 ризиків із мітигаціями, 6 контрольних точок, формула гарантії КТ-2 і окрема лінія автономності власника.</p>
+    <p class="marg" style="margin-top:10mm;color:rgba(255,255,255,.5)">9 сторінок · Гант 12×9 · ресурсна модель · ризики · гарантія · автономність</p>
+  </div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 1/·</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Зміст · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+  <span class="ebrow">Зміст звіту</span>
+  <table class="t" style="margin-top:4mm">
+    <tr><th style="width:16mm">Глава</th><th>Назва — і що вона дає</th><th class="num" style="width:14mm">стор.</th></tr>
+    <tr><td class="num"><b>4.01</b></td><td>Хвилі (вікна з перекриттям) та Гант із датами й виконавцями · W1 по тижнях · mermaid/Excel-експорт</td><td class="num">3–4</td></tr><tr><td class="num"><b>4.02</b></td><td>Беклог 46 задач · ресурсна модель без перевантажень · рішення по PM</td><td class="num">5</td></tr><tr><td class="num"><b>4.03</b></td><td>План перших 90 днів · вимірні цілі дня 90 з YoY-нормалізацією</td><td class="num">6</td></tr><tr><td class="num"><b>4.04</b></td><td>Реєстр 12 ризиків з мітигаціями · 6 КТ · формула гарантії КТ-2 з винятками</td><td class="num">7–8</td></tr><tr><td class="num"><b>4.05</b></td><td>Лінія автономності: політики → власники → тест 3 тижнів → шлях до 3 місяців</td><td class="num">9</td></tr>
+  </table><div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 2/9</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 4.01 · Хвилі та Гант 1/2 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 4.01 · Хвилі та Гант А→Б · 1/2</span>
+    <h1 class="big" style="font-size:26pt">Спершу прилади. Потім двигуни.<br>Потім система і масштаб.</h1>
+    <table class="t" style="margin-top:4mm;font-size:8.2pt">
+      <tr><th>Хвиля (вікна ПЕРЕКРИВАЮТЬСЯ — канон)</th><th>Принцип</th><th>DoD хвилі цілком</th></tr>
+      <tr><td><b style="color:var(--mark)">W1 · дні 0–30</b> (01.09–30.09)</td><td>чесне вимірювання + зупинка прямих втрат</td><td>GA4 ≤5% · бій ≤0.7% на тесті · бренд &lt;10% платних · розпродаж запущено</td></tr>
+      <tr><td><b>W2 · дні 21–120</b> (21.09–29.12) — старт до фінішу W1</td><td>двигуни грошей: CRM, mobile, наявність, дашборд</td><td>CR і repeat ростуть проти baseline; дашборд у ритмі ≥3 тижні</td></tr>
+      <tr><td><b style="color:var(--verd7)">W3 · дні 105–270</b> (14.12–29.05)</td><td>система і масштаб: SEO, орг, PL-поріг</td><td>канали/ринки проходять поріг юніт-економіки; DoD-чекліст 3.05</td></tr>
+    </table>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">Гант: 12 задач-плейбуків · вісь — реальні дати · у кожної виконавець</h2>
+    <svg width="100%" viewBox="0 0 690 370" style="margin-top:1mm"><line x1="200" y1="26" x2="200" y2="362" stroke="#eceff0"/><text x="200" y="18" font-family="IBM Plex Mono,monospace" font-size="8" fill="#94A0A8">09.26</text><line x1="253.33333333333331" y1="26" x2="253.33333333333331" y2="362" stroke="#eceff0"/><text x="253.33333333333331" y="18" font-family="IBM Plex Mono,monospace" font-size="8" fill="#94A0A8">10.26</text><line x1="306.66666666666663" y1="26" x2="306.66666666666663" y2="362" stroke="#eceff0"/><text x="306.66666666666663" y="18" font-family="IBM Plex Mono,monospace" font-size="8" fill="#94A0A8">11.26</text><line x1="360" y1="26" x2="360" y2="362" stroke="#eceff0"/><text x="360" y="18" font-family="IBM Plex Mono,monospace" font-size="8" fill="#94A0A8">12.26</text><line x1="413.3333333333333" y1="26" x2="413.3333333333333" y2="362" stroke="#eceff0"/><text x="413.3333333333333" y="18" font-family="IBM Plex Mono,monospace" font-size="8" fill="#94A0A8">01.27</text><line x1="466.66666666666663" y1="26" x2="466.66666666666663" y2="362" stroke="#eceff0"/><text x="466.66666666666663" y="18" font-family="IBM Plex Mono,monospace" font-size="8" fill="#94A0A8">02.27</text><line x1="520" y1="26" x2="520" y2="362" stroke="#eceff0"/><text x="520" y="18" font-family="IBM Plex Mono,monospace" font-size="8" fill="#94A0A8">03.27</text><line x1="573.3333333333333" y1="26" x2="573.3333333333333" y2="362" stroke="#eceff0"/><text x="573.3333333333333" y="18" font-family="IBM Plex Mono,monospace" font-size="8" fill="#94A0A8">04.27</text><line x1="626.6666666666666" y1="26" x2="626.6666666666666" y2="362" stroke="#eceff0"/><text x="626.6666666666666" y="18" font-family="IBM Plex Mono,monospace" font-size="8" fill="#94A0A8">05.27</text><line x1="680" y1="26" x2="680" y2="362" stroke="#eceff0"/><text x="680" y="18" font-family="IBM Plex Mono,monospace" font-size="8" fill="#94A0A8">06.27</text><rect x="308.44444444444446" y="26" width="108.44444444444444" height="336" fill="rgba(214,54,43,.05)"/><text x="361.77777777777777" y="36" font-family="IBM Plex Mono,monospace" font-size="7" fill="#D6362B" text-anchor="middle">Q4 · заморозка ризикових релізів</text><text x="0" y="39" font-size="8.4" fill="#26292e" font-weight="600">GA4-фікс + власність акаунтів</text><rect x="200" y="43" width="37.33333333333333" height="6" fill="#D6362B"/><text x="241.33333333333331" y="49" font-family="IBM Plex Mono,monospace" font-size="6.6" fill="#6E7C86">WEEXP-аналітик + розробник</text><text x="0" y="63" font-size="8.4" fill="#26292e" font-weight="600">Пакування: стандарт + тест 200</text><rect x="212.44444444444446" y="67" width="37.33333333333333" height="6" fill="#D6362B"/><text x="253.77777777777777" y="73" font-family="IBM Plex Mono,monospace" font-size="6.6" fill="#6E7C86">ops-лід</text><text x="0" y="87" font-size="8.4" fill="#26292e" font-weight="600">Allegro: тест 10 SKU → розкат 40</text><rect x="224.88888888888889" y="91" width="81.77777777777777" height="6" fill="#D6362B"/><text x="310.66666666666663" y="97" font-family="IBM Plex Mono,monospace" font-size="6.6" fill="#6E7C86">PM + маркетолог</text><text x="0" y="111" font-size="8.4" fill="#26292e" font-weight="600">Dead stock → кеш (стоп-лос)</text><rect x="224.88888888888889" y="115" width="108.44444444444444" height="6" fill="#D6362B"/><text x="337.3333333333333" y="121" font-family="IBM Plex Mono,monospace" font-size="6.6" fill="#6E7C86">PM + маркетолог</text><text x="0" y="135" font-size="8.4" fill="#26292e" font-weight="600">Політики делегування + ритм читок</text><rect x="200" y="139" width="53.33333333333333" height="6" fill="#D6362B"/><text x="257.3333333333333" y="145" font-family="IBM Plex Mono,monospace" font-size="6.6" fill="#6E7C86">власник + WEEXP</text><text x="0" y="159" font-size="8.4" fill="#26292e" font-weight="600">Checkout: доставка видима → −4 поля</text><rect x="224.88888888888889" y="163" width="55.11111111111111" height="6" fill="#070d12"/><text x="284" y="169" font-family="IBM Plex Mono,monospace" font-size="6.6" fill="#6E7C86">розробник</text><text x="0" y="183" font-size="8.4" fill="#26292e" font-weight="600">CRM: DMARC → прогрів → 6 flows</text><rect x="203.55555555555554" y="187" width="192" height="6" fill="#070d12"/><text x="399.55555555555554" y="193" font-family="IBM Plex Mono,monospace" font-size="6.6" fill="#6E7C86">WEEXP-CRM + копірайтер</text><text x="0" y="207" font-size="8.4" fill="#26292e" font-weight="600">LCP-пакет + кеш-шар</text><rect x="253.33333333333331" y="211" width="80" height="6" fill="#070d12"/><text x="337.3333333333333" y="217" font-family="IBM Plex Mono,monospace" font-size="6.6" fill="#6E7C86">розробник + WEEXP</text><text x="0" y="231" font-size="8.4" fill="#26292e" font-weight="600">Закупівлі: reorder point топ-20</text><rect x="280" y="235" width="97.77777777777777" height="6" fill="#070d12"/><text x="381.77777777777777" y="241" font-family="IBM Plex Mono,monospace" font-size="6.6" fill="#6E7C86">ops-лід + WEEXP</text><text x="0" y="255" font-size="8.4" fill="#26292e" font-weight="600">Дашборд + маржа в подіях + алерти</text><rect x="237.33333333333331" y="259" width="96" height="6" fill="#070d12"/><text x="337.3333333333333" y="265" font-family="IBM Plex Mono,monospace" font-size="6.6" fill="#6E7C86">WEEXP-аналітик</text><text x="0" y="279" font-size="8.4" fill="#26292e" font-weight="600">Staging → бекап-тест → SLA</text><rect x="253.33333333333331" y="283" width="71.11111111111111" height="6" fill="#070d12"/><text x="328.44444444444446" y="289" font-family="IBM Plex Mono,monospace" font-size="6.6" fill="#6E7C86">розробник + PM</text><text x="0" y="303" font-size="8.4" fill="#26292e" font-weight="600">SEO: фасети (staging) → контент-ядро</text><rect x="386.66666666666663" y="307" width="293.3333333333333" height="6" fill="#2A6D5C"/><text x="382.66666666666663" y="313" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="6.6" fill="#6E7C86">WEEXP + студія + розробник</text><text x="0" y="327" font-size="8.4" fill="#26292e" font-weight="600">PL: юніт-економіка → поріг CZ/RO</text><rect x="431.1111111111111" y="331" width="160" height="6" fill="#2A6D5C"/><text x="595.1111111111111" y="337" font-family="IBM Plex Mono,monospace" font-size="6.6" fill="#6E7C86">WEEXP + бухгалтер</text><text x="0" y="351" font-size="8.4" fill="#26292e" font-weight="600">Орг: власники каналів → тест відпустки</text><rect x="360" y="355" width="213.33333333333331" height="6" fill="#2A6D5C"/><text x="577.3333333333333" y="361" font-family="IBM Plex Mono,monospace" font-size="6.6" fill="#6E7C86">власник + WEEXP</text></svg>
+    <p class="marg" style="margin-top:2mm">Кожен рядок = плейбук програми: строк (вікно на осі) · виконавець (підпис) · бюджет-вікно хвилі (Звіт 5) · вимірний DoD (таблиця беклогу 4.02).
+    Перекриття хвиль — свідоме: W2-роботи (копірайт flows, staging) стартують, поки W1 закривається. Q4-заморозка ризикових релізів: 01.11–31.12 (штрихована зона).</p>
+    <p class="marg mono" style="font-size:6.8pt;background:#F4F6F5;padding:2mm;line-height:1.5">Канонічний експорт (mermaid, фрагмент — повний у робочих матеріалах + Excel-лист «Гант (план)»):<br>
+    gantt · dateFormat YYYY-MM-DD · axisFormat %m.%y<br>
+    section Хвиля 1 · GA4-фікс і власність :2026-09-01, 21d · Пакування (тест 200) :2026-09-08, 21d · Allegro тест цін 10 SKU :2026-09-15, 14d<br>
+    section Хвиля 2 · CRM flows з прогрівом :2026-09-21, 75d · LCP-пакет :2026-10-01, 45d · Дашборд щотижневий :2026-10-15, 30d<br>
+    section Хвиля 3 · SEO фасети+контент :2026-12-14, 120d · PL юніт-економіка :2027-01-10, 90d · Тест відпустки :2027-02-15, 21d</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 3/9</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 4.01 · Хвилі та Гант 2/2 · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 4.01 · Хвиля 1 по тижнях · 2/2</span>
+    <h2 class="st" style="font-size:13pt">Хвиля 1 по тижнях (розробник — рівно 40 год, без перевантаження)</h2>
+    <table class="t" style="font-size:8pt">
+      <tr><th>Тиж.</th><th>Розробник (год)</th><th>WEEXP / команда</th><th>Видимий результат тижня</th></tr>
+      <tr><td class="num">1</td><td>server-side purchase, ч.1 (10)</td><td>кікоф · власність GA4 → компанія · DMARC p=none · PMax бренд-виключення · політики знижок — драфт</td><td>брендові кліки падають уже в пʼятницю</td></tr>
+      <tr><td class="num">2</td><td>purchase ч.2 + дедуплікація (6) · Consent Mode v2 (8)</td><td>стандарт пакування розроблено · Allegro: беззбитковість 40 SKU порахована · план розпродажу dead stock</td><td>нова схема пакування в тест (200 відпр.)</td></tr>
+      <tr><td class="num">3</td><td>доставка+строк на PDP і в кошику (12)</td><td>звірка GA4↔бекенд (14 дн, старт) · Allegro: тест цін на 10 SKU · читка №3 · W2-старт: копірайт кошик-flow</td><td>доставка видима ДО оформлення</td></tr>
+      <tr><td class="num">4</td><td>строк над fold на PDP (4)</td><td>політики делегування підписані · розпродаж запущено · тест пакування: заміри · <b>КТ-1</b></td><td>КТ-1: чесний GA4 ≤5% · бій ≤0.7% на тесті · бренд &lt;10%</td></tr>
+    </table>
+    <p class="marg" style="margin-top:2mm">Разом розробник у W1: 40 год — рівно місячна ємність підрядника. Checkout −4 поля (14 год) і бекап-тест (6 год) — свідомо
+    в тижнях 5–6 (W2): пріоритет W1 — вимірювання і видимість доставки. Тиждень 3 показує перекриття хвиль: W2-копірайт стартує до фінішу W1.</p>
+    <h2 class="st" style="font-size:12pt;margin-top:4mm">Залежності, які тримають графік</h2>
+    <table class="t" style="font-size:8.2pt">
+      <tr><th>Що</th><th>Чекає на</th><th>Ризик зриву</th></tr>
+      <tr><td>CRM-flows (з дня 21)</td><td>DMARC (день 3) — інакше листи в спам</td><td>низький — 3 год роботи</td></tr>
+      <tr><td>Дашборд (день 45)</td><td>GA4-фікс (день 21) + маржа в подіях (день 60)</td><td>середній — залежить від розробника</td></tr>
+      <tr><td>Закупівлі Q4 (день 90–120)</td><td>кеш із dead stock: ≥€40k до дня 75</td><td>середній — темп розпродажу (ризик R3)</td></tr>
+      <tr><td>SEO-фасети (день 105+, на staging)</td><td>staging (день 50); НЕ в сезон — тому після 14.12 підготовка, розкат січень</td><td>низький</td></tr>
+      <tr><td>CZ/RO-рішення (КТ-4, М7)</td><td>PL LTV:CAC ≥2.5 — інакше НЕ виходимо</td><td>це фіча, не баг: захист від передчасного масштабу</td></tr>
+    </table>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 4/9</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 4.02 · Беклог і ресурси · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 4.02 · Беклог із власниками та ресурсна модель</span>
+    <h1 class="big" style="font-size:26pt">46 задач. Жодного власника<br>з навантаженням понад ємність.</h1>
+    <h2 class="st" style="font-size:12pt;margin-top:3mm">Ресурсна модель по місяцях (год/міс проти ємності)</h2>
+    <table class="t" style="font-size:7.9pt">
+      <tr><th>Роль</th><th class="num">Ємність</th><th class="num">М1</th><th class="num">М2</th><th class="num">М3</th><th class="num">М4</th><th class="num">М5–9 сер.</th><th>Примітка</th></tr>
+      <tr><td>Розробник (підрядник)</td><td class="num">40</td><td class="num"><b>40</b></td><td class="num">38</td><td class="num">36</td><td class="num">30</td><td class="num">24</td><td>жодного місяця понад 40</td></tr>
+      <tr><td>PM «Тестик» (fulltime)</td><td class="num">160</td><td class="num">120</td><td class="num">130</td><td class="num">120</td><td class="num">110</td><td class="num">100</td><td>резерв 20–30% на операційку</td></tr>
+      <tr><td>Маркетолог (25% на проект)</td><td class="num">40</td><td class="num">18</td><td class="num">30</td><td class="num">34</td><td class="num">30</td><td class="num">26</td><td>пік — креативна матриця М2–3</td></tr>
+      <tr><td>Ops-лід</td><td class="num">30</td><td class="num">24</td><td class="num">16</td><td class="num">20</td><td class="num">26</td><td class="num">12</td><td>пік — пакування М1, закупівлі М4</td></tr>
+      <tr><td>Контентник</td><td class="num">60</td><td class="num">8</td><td class="num">20</td><td class="num">28</td><td class="num">30</td><td class="num">40</td><td>атрибутика → контент-ядро</td></tr>
+      <tr><td>WEEXP (аналітик + CRO/CRM, part-time)</td><td class="num">64</td><td class="num">58</td><td class="num">62</td><td class="num">60</td><td class="num">54</td><td class="num">48</td><td>у бюджеті €6k/міс</td></tr>
+      <tr><td>Копірайтер (новий, з М2)</td><td class="num">24</td><td class="num">—</td><td class="num">20</td><td class="num">22</td><td class="num">16</td><td class="num">10</td><td>≈€400/міс — погоджено у Звіті 5</td></tr>
+    </table>
+    <div class="callout" style="font-size:8.3pt"><b>Про PM з дня 1:</b> найм PM триває 4–6 тижнів. Рішення: перший місяць роль PM тримає WEEXP-фасилітатор
+    (у межах пакета) паралельно з наймом; передача ролі — на тижні 5–6 із дводенним оверлапом. Це знімає ризик R2 (реєстр нижче).</div>
+    <h2 class="st" style="font-size:12pt">Верх беклогу W2 (18 задач — головні 10)</h2>
+    <table class="t" style="font-size:7.8pt">
+      <tr><th>Задача</th><th>Власник</th><th class="num">Год</th><th>Критерій «зроблено»</th></tr>
+      <tr><td>Checkout: −4 поля + автозаповнення (тижні 5–6)</td><td>розробник</td><td class="num">14</td><td>completion ≥52% до дня 90</td></tr>
+      <tr><td>Бекап: тест відновлення на staging (тиж. 6)</td><td>розробник</td><td class="num">6</td><td>протокол відновлення</td></tr>
+      <tr><td>Кинутий кошик: 3 листи + SMS</td><td>WEEXP-CRM + копірайтер</td><td class="num">16</td><td>≥7% повернених кошиків</td></tr>
+      <tr><td>Після-продажний цикл (догляд)</td><td>WEEXP-CRM + маркетолог</td><td class="num">16</td><td>2-га ≤90 дн: 9→12%</td></tr>
+      <tr><td>Реактивація з прогрівом (15%/тиж, стоп-правило)</td><td>WEEXP-CRM</td><td class="num">12</td><td>скарги <0.2%</td></tr>
+      <tr><td>LCP-пакет: WebP+CDN+критичний CSS+GTM-ревізія</td><td>розробник + WEEXP</td><td class="num">30</td><td>LCP ≤3.0s (CrUX 28 дн)</td></tr>
+      <tr><td>Reorder point + safety stock топ-20</td><td>ops-лід + WEEXP</td><td class="num">16</td><td>OOS ≤10% в місяць запуску</td></tr>
+      <tr><td>Щотижневий дашборд (виручка/маржа/CAC/repeat)</td><td>WEEXP-аналітик</td><td class="num">20</td><td>основа читок 3 тижні поспіль</td></tr>
+      <tr><td>Staging + чеклист релізу</td><td>розробник</td><td class="num">10</td><td>релізи через staging</td></tr>
+      <tr><td>Собівартість по SKU → ABC v2 → прайс-тест ядра</td><td>бухгалтер + WEEXP</td><td class="num">16</td><td>тест +5% на 30 SKU проведено</td></tr>
+    </table>
+    <p class="marg" style="margin-top:2mm">Повний беклог: 46 задач (14 W1 · 18 W2 · 14 W3), кожна з ID знахідки (Звіт 2, гл. 2.18) — простежуваність
+    «знахідка → задача → метрика» наскрізна. W3-напрями: фасети, контент-ядро 60 стор., GEO-пакет, другий постачальник, B2B-правила, фінмодель-сценарії, орг-цикл 2, AI-пілот описів, Q4-план, TCO-оцінка платформи.</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 5/9</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 4.03 · Перші 90 днів · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 4.03 · План перших 90 днів</span>
+    <h1 class="big" style="font-size:26pt">Три спринти: полагодити,<br>запустити, виміряти.</h1>
+    <table class="t" style="margin-top:4mm;font-size:8pt">
+      <tr><th>Спринт</th><th>Головне</th><th>Що бачить власник наприкінці</th></tr>
+      <tr><td><b>1 · дні 1–30</b><br><span class="src">«Прилади і кровотечі»</span></td><td>потижневий план — гл. 4.01. GA4-фікс, DMARC, пакування, Allegro-тест, доставка видима, розпродаж запущено, політики підписані</td><td>КТ-1: чесні дані · бій ≤0.7% на тесті · бренд <10% платних · перший кеш із dead stock</td></tr>
+      <tr><td><b>2 · дні 31–60</b><br><span class="src">«Двигуни»</span></td><td>checkout-поля · кошик-flow · після-продажний flow · LCP-пакет ч.1 · staging · RFM-сегменти · прогрів бази</td><td>перші повернені кошики в дашборді · LCP-тренд вниз · сегментні розсилки</td></tr>
+      <tr><td><b>3 · дні 61–90</b><br><span class="src">«Виміряти і показати»</span></td><td>реактивація · маржа в подіях · дашборд v1 у ритмі · reorder point · NPS-запуск · BLIK · schema-зірки топ-40</td><td>КТ-2: переоблік матриці + перерахунок €433k за фактами</td></tr>
+    </table>
+    <h2 class="st" style="font-size:12pt;margin-top:4mm">День 90 — вимірні цілі (не обіцянки)</h2>
+    <table class="t" style="font-size:7.7pt">
+      <tr><th>Метрика</th><th class="num">День 0</th><th class="num">Ціль д.90</th><th>Джерело</th><th>Як нормалізуємо сезон (YoY)</th></tr>
+      <tr><td>Розбіжність GA4 ↔ бекенд</td><td class="num">22%</td><td class="num"><b>≤5%</b></td><td>щотижнева звірка</td><td>не сезонна — абсолют</td></tr>
+      <tr><td>Checkout completion</td><td class="num">43.6%</td><td class="num"><b>≥52%</b></td><td>GA4 (чесний)</td><td>порівняння з тим самим міс. торік ±2 п.п.</td></tr>
+      <tr><td>Бій у доставці</td><td class="num">2.1%</td><td class="num"><b>≤0.9%</b></td><td>перевізники</td><td>% від відправлень — сезон не впливає</td></tr>
+      <tr><td>LCP mobile</td><td class="num">4.6s</td><td class="num"><b>≤3.5s</b></td><td>CrUX 28 дн</td><td>не сезонна — абсолют</td></tr>
+      <tr><td>Виручка з CRM</td><td class="num">4.8%</td><td class="num"><b>≥8%</b></td><td>бекенд+UTM</td><td>частка виручки — самонормалізується</td></tr>
+      <tr><td>Кеш із dead stock</td><td class="num">€0</td><td class="num"><b>≥€40k</b></td><td>каса</td><td>абсолют, разовий</td></tr>
+      <tr><td>Allegro contribution</td><td class="num">3%</td><td class="num"><b>≥6%</b></td><td>юніт-звіт каналу</td><td>частка — самонормалізується</td></tr>
+      <tr><td>Брендові кліки в платному</td><td class="num">31%</td><td class="num"><b><10%</b></td><td>search terms</td><td>частка — самонормалізується</td></tr>
+      <tr><td>Рішень на власнику / тиждень</td><td class="num">≈14</td><td class="num"><b>≤7</b></td><td>журнал читок</td><td>не сезонна</td></tr>
+    </table>
+    <p class="marg" style="margin-top:2mm">Ефект 90 днів у грошах: ≈€17k contribution кумулятивно + ≥€40k кешу (крива окупності — Звіт 3, гл. 3.04; прибуткова окупність — М4–М5, і ми кажемо це прямо). Ритм: читка щотижня 45 хв; власник — перші 4, далі раз на 2 тижні; SLA рішень власника — 48 год.</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 6/9</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 4.04 · Реєстр ризиків · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 4.04 · Реєстр ризиків впровадження · 1/2</span>
+    <h1 class="big" style="font-size:26pt">12 ризиків, які можуть зʼїсти план.<br>У кожного — мітигація і тригер плану Б.</h1>
+    <table class="t" style="margin-top:3mm;font-size:7.5pt">
+      <tr><th>#</th><th>Ризик</th><th style="width:13mm">Ймов./Вплив</th><th>Мітигація</th><th>Тригер плану Б</th></tr>
+      <tr class="hl"><td class="num">R1</td><td><b>Розробник (bus-factor 1) випадає</b></td><td>сер. / крит.</td><td>SLA + документація ядра (W2); другий підрядник «на підхваті» з М3 (4 год/міс знайомства з кодом)</td><td>простій >5 роб. днів → підхват переймає</td></tr>
+      <tr class="hl"><td class="num">R2</td><td><b>PM не найнято вчасно</b></td><td>сер. / вис.</td><td>WEEXP тримає роль М1 (гл. 4.02); найм стартує до кікофу</td><td>немає кандидата до тижня 4 → продовження опції на М2 (без зміни бюджету)</td></tr>
+      <tr><td class="num">R3</td><td>Розпродаж dead stock повільніший за план</td><td>сер. / сер.</td><td>черги зі стоп-лосом; канали: сайт-аутлет + Allegro-акції; переоцінка щотижня</td><td><€25k за 45 дн → Q4-закупівлі частково в кредитну лінію (погодити з банком заздалегідь, W1)</td></tr>
+      <tr><td class="num">R4</td><td>Реактивація бази палить домен</td><td>низ. / вис.</td><td>прогрів 15%/тиж зі стоп-правилом (скарги >0.2%)</td><td>спам-інциденти → пауза 2 тижні + окремий IP/субдомен</td></tr>
+      <tr><td class="num">R5</td><td>Allegro: підняття цін валить обсяг</td><td>сер. / сер.</td><td>тест на 10 SKU 2 тижні ДО розкату; моніторинг позицій Smart!</td><td>обсяг −>15% → відкат цін, важіль через логістику</td></tr>
+      <tr><td class="num">R6</td><td>Сезон зʼїдає ops-лідa (М4–5)</td><td>вис. / сер.</td><td>його задачі W2 сплановані на М2–3; М4–5 — лише контроль правил</td><td>перевантаження → перенесення другого постачальника на М6</td></tr>
+      <tr><td class="num">R7</td><td>Consent-фікс знизить видиму конверсію</td><td>вис. / низ.</td><td>очікувано: пояснено в дашборді приміткою; рішення — по бекенду</td><td>—（не ризик грошей, ризик паніки — знятий комунікацією)</td></tr>
+      <tr><td class="num">R8</td><td>Каса Q4: закупівлі проти графіка проекту</td><td>сер. / вис.</td><td>план каси W2 (д01); дорогі роботи не плануються на вересень–жовтень</td><td>розрив >€20k → пауза W3-витрат на 1 міс (заморозка узгоджена наперед)</td></tr>
+      <tr><td class="num">R9</td><td>Клієнт не надає дані/доступи вчасно</td><td>сер. / вис.</td><td>чекліст доступів підписується на кікофі з датами; PM веде трекер «чекаємо від клієнта»</td><td>блокер >5 роб. днів → задача зсувається, дедлайн КТ переноситься письмово (не «мовчазний» зрив)</td></tr>
+      <tr><td class="num">R10</td><td>SLA рішень власника 48 год не тримається</td><td>сер. / вис.</td><td>читка фіксує прострочені рішення; ескалаційна карта (гл. 4.05); частину рішень закривають політики</td><td>3 тижні поспіль >2 прострочень → розмова про делегування цієї категорії рішень достроково</td></tr>
+      <tr><td class="num">R11</td><td>Вето співзасновниці на PDP/контент-зміни</td><td>сер. / сер.</td><td>вона в C-ролі W2-рішень від початку (гл. 2.01); зміни показуються на макетах ДО релізу</td><td>вето на ключовий блок → A/B-тест як арбітр: рішення за цифрами, не за смаком</td></tr>
+      <tr><td class="num">R12</td><td>Відмова від нових підрядників (копірайтер/студія)</td><td>низ. / сер.</td><td>тендерний блок 0 у Ганті: бриф → шортлист 3 → тестове → договір; бюджет-стеля у Звіті 5</td><td>жоден кандидат не пройшов → WEEXP закриває обсяг тимчасово за тим самим бюджетом</td></tr>
+    </table>
+    <p class="marg" style="margin-top:2mm">Ймовірність/вплив переглядаються на кожній КТ; нові ризики додаються з номером, жоден не видаляється — лише закривається зі статусом.</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 7/9</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 4.04 · КТ і гарантія · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 4.04 · Контрольні точки і формула гарантії КТ-2 · 2/2</span>
+    <h1 class="big" style="font-size:26pt">6 контрольних точок.<br>І гарантія, порахована формулою.</h1>
+    <table class="t" style="margin-top:3mm;font-size:8pt">
+      <tr><th>КТ</th><th>Коли</th><th>Що перевіряється</th><th>Рішення</th></tr>
+      <tr><td><b>КТ-1</b></td><td>день 30</td><td>GA4 ≤5% · бій ≤0.7% тест · бренд <10% · розпродаж запущено</td><td>старт W2 / корекція</td></tr>
+      <tr class="hl"><td><b>КТ-2</b></td><td>день 90</td><td>9 метрик дня 90 (гл. 4.03) + переоблік матриці</td><td>гарантійна розвилка — формула нижче</td></tr>
+      <tr><td><b>КТ-2.5</b></td><td>день 150</td><td>CRM/LCP-ефекти виміряні · OOS-правила діють · дашборд у ритмі</td><td>рішення про масштабування реклами</td></tr>
+      <tr><td><b>КТ-3</b></td><td>день 180</td><td>повний контур W2 · роль аналітика (найм/аутсорс)</td><td>старт орг-циклу 2</td></tr>
+      <tr><td><b>КТ-4</b></td><td>М7</td><td>PL: CAC проти маржі 1-го замовлення (payback ≤1) · тест відпустки пройдено</td><td>go/no-go CZ/RO</td></tr>
+      <tr><td><b>КТ-5</b></td><td>М9</td><td>DoD-чекліст повністю (Звіт 3, гл. 3.05)</td><td>передача системи + план року 2</td></tr>
+    </table>
+    <h2 class="st" style="font-size:12pt;margin-top:4mm">Формула гарантії КТ-2 — без дрібного шрифту</h2>
+    <table class="t" style="font-size:8.2pt">
+      <tr><th>Результат на день 90</th><th>Правило</th><th>Що це означає у грошах</th></tr>
+      <tr><td><b>≥7 із 9</b> метрик дня 90 досягнуто</td><td>КТ-2 пройдено — програма йде далі за планом</td><td>оплата М4 за графіком</td></tr>
+      <tr><td><b>5–6 із 9</b></td><td>М4 — half-rate (50%), план W2 коригується письмово; повторний замір день 120</td><td>−€3.0k ризику на боці WEEXP</td></tr>
+      <tr class="hl"><td><b>≤4 із 9</b></td><td><b>М4 не оплачується взагалі</b> — працюємо місяць за свій рахунок до проходження</td><td>−€6.0k повністю на боці WEEXP</td></tr>
+    </table>
+    <p class="body" style="font-size:8.4pt;margin-top:2mm"><b>Винятки (не рахуються у «недосягнуто»):</b> метрика заблокована з вини замовника, зафіксованої у трекері R9/R10
+    (доступ не надано >5 роб. днів; рішення власника прострочене >7 днів; вето R11 без A/B-арбітражу) — така метрика виключається зі знаменника:
+    було 9 → рахуємо з тих, що були в наших руках. <b>Приймання:</b> кожна метрика міряється джерелом зі своєї таблиці (бекенд клієнта — первинний;
+    GA4 — лише після проходження звірки ≤5%); сезонність — колонка YoY-нормалізації в гл. 4.03. Спірні виміри — третій замір разом, протокол підписується обома сторонами.</p>
+    <div class="callout" style="font-size:8.4pt"><b>Чому ми на це готові:</b> 7 із 9 метрик дня 90 — інженерні (звірка, DMARC, LCP, бій, розпродаж), їх результат залежить від виконання, не від ринку. Ризик формули для WEEXP реальний, але керований — саме тому гарантія чесна, а не маркетингова.</div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 8/9</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Глава 4.05 · Лінія автономності · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">Глава 4.05 · Лінія автономності власника (пріоритет №2 з анкети)</span>
+    <h1 class="big" style="font-size:26pt">Від «все стане» — до трьох тижнів,<br>а далі до трьох місяців.</h1>
+    <p class="body" style="margin-top:3mm">Це не побажання, а окрема лінія плану з власними етапами, метриками і тестом. Мета-фраза власника:
+    «бізнес не потребує мене щодня». Розкладаємо на 4 етапи:</p>
+    <table class="t" style="font-size:8.2pt">
+      <tr><th>Етап</th><th>Що передається</th><th>Інструмент</th><th>Метрика</th></tr>
+      <tr><td><b>1 · М1–2: Політики</b></td><td>знижки (з contribution-правилом), креативи (в межах бренд-рамки), закупівлі B/C-груп</td><td>підписані політики + журнал винятків</td><td>рішень на власнику: 14 → ≤7/тиж</td></tr>
+      <tr><td><b>2 · М3–5: Власники каналів</b></td><td>CRM → маркетолог · OTIF/склад → ops-лід · воронка → PM · P&L-ритм → бухгалтер+PM</td><td>KPI в дашборді + щотижнева читка без власника (він читає протокол)</td><td>4 власники з KPI ≥2 міс поспіль</td></tr>
+      <tr class="hl"><td><b>3 · М6–7: Тест 3 тижнів</b></td><td>власник офлайн 3 тижні (свідомо ДО сезону, не в М8)</td><td>ескалаційна карта: що і до кого; WEEXP — арбітр процесу, не рішень</td><td>жодна метрика дашборда не падає >5%; рішень «через океан» ≤2</td></tr>
+      <tr><td><b>4 · М9–15: До трьох місяців</b></td><td>цикл 2: делегування цін ядра і Q-планування; наймання/розвиток заступника</td><td>річний операційний план + квартальні цілі</td><td>3 місяці — реальний горизонт року 2, і ми кажемо це чесно</td></tr>
+    </table>
+    <h2 class="st" style="font-size:12pt;margin-top:4mm">RACI цільовий (фрагмент — повний у робочому трекері)</h2>
+    <table class="t" style="font-size:7.9pt">
+      <tr><th>Рішення / процес</th><th>R (робить)</th><th>A (відповідає)</th><th>C (радиться)</th><th>I (знає)</th></tr>
+      <tr><td>Знижка в межах правила</td><td>маркетолог</td><td>маркетолог</td><td>—</td><td>власник (журнал)</td></tr>
+      <tr><td>Знижка поза правилом</td><td>маркетолог</td><td><b>власник</b></td><td>WEEXP</td><td>PM</td></tr>
+      <tr><td>Закупівля A-групи</td><td>ops-лід</td><td>власник (до М5) → ops-лід (після)</td><td>бухгалтер</td><td>PM</td></tr>
+      <tr><td>Релізи сайту</td><td>розробник</td><td>PM</td><td>WEEXP</td><td>команда</td></tr>
+      <tr><td>Ціни ядра</td><td>WEEXP-аналіз</td><td><b>власник</b> (весь рік 1)</td><td>маркетолог</td><td>—</td></tr>
+    </table>
+    <p class="marg" style="margin-top:2mm">Звʼязок з історією: 4 минулі ініціативи вмерли без власника метрики і ритму (гл. 2.01). Лінія автономності — це той самий механізм,
+    відбудований свідомо: політики → власники → ритм → тест. Кожен етап видно в дашборді, зриви — на читках, а не постфактум.</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 9/9</span></div></div></body></html>

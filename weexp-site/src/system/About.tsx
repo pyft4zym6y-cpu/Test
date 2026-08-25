@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useT, useLp, useLang } from '@/i18n';
 import { TEAM, localizeRole } from '@/data/team';
 import { L } from '@/system/expertises';
+import { useJsonLd, ORIGIN } from '@/lib/seo';
 import './system.css';
 
 /**
@@ -21,6 +22,8 @@ const AREAS: { t: [string, string]; d: [string, string] }[] = [
   { t: ['UX / CRO Lead', 'UX / CRO Lead'], d: ['Досвід і конверсія: каталог, картка, checkout, mobile.', 'Experience and conversion: catalog, product, checkout, mobile.'] },
   { t: ['Web & Technology', 'Web & Technology'], d: ['Платформа, інтеграції, швидкість, розробка й підтримка.', 'Platform, integrations, speed, development and support.'] },
   { t: ['Analytics & BI', 'Analytics & BI'], d: ['Наскрізна аналітика, дані й звітність для рішень.', 'End-to-end analytics, data and reporting for decisions.'] },
+  { t: ['ERP & Automation', 'ERP & Automation'], d: ['Автоматизація бізнес-процесів: ERP, CRM, інтеграції та операційна автоматизація.', 'Business-process automation: ERP, CRM, integrations and operational automation.'] },
+  { t: ['Marketplace Sales', 'Marketplace Sales'], d: ['Побудова та розвиток продажів на маркетплейсах: стратегія, управління каналом, масштабування.', 'Building and growing marketplace sales: strategy, channel management, scaling.'] },
 ];
 
 export function About() {
@@ -28,6 +31,15 @@ export function About() {
   const lp = useLp();
   const lang = useLang();
   const fnd = localizeRole(FOUNDER, lang);
+
+  // Person-схема засновника — краще для пошуку та Knowledge Graph.
+  useJsonLd('person', {
+    '@context': 'https://schema.org', '@type': 'Person',
+    name: fnd.name, jobTitle: t('Засновник і архітектор Commerce', 'Founder & Architect of Commerce'),
+    worksFor: { '@type': 'Organization', name: 'WEEXP', url: ORIGIN },
+    ...(FOUNDER.photo ? { image: ORIGIN + FOUNDER.photo } : {}),
+    url: ORIGIN + (lang === 'en' ? '/en/people' : '/people'),
+  });
 
   const VALUES: { t: string; d: string }[] = [
     { t: t('Система, а не героїзм', 'A system, not heroics'), d: t('Результат тримається на процесах і стандартах, а не на конкретних людях і нічних змінах.', 'Results rest on processes and standards, not on specific people and night shifts.') },
@@ -123,7 +135,7 @@ export function About() {
             </div>
           </div>
 
-          <span className="about-roster-lab mono">{t('Глибина експертизи агентства — 9 напрямів, кожен із власним пулом спеціалістів під вашу задачу:', 'The agency’s depth of expertise — 9 practices, each with its own pool of specialists for your task:')}</span>
+          <span className="about-roster-lab mono">{t('Глибина експертизи агентства — 11 напрямів, кожен із власним пулом спеціалістів під вашу задачу:', 'The agency’s depth of expertise — 11 practices, each with its own pool of specialists for your task:')}</span>
           <div className="about-roster about-roster-3">
             {AREAS.map((a, i) => (
               <div key={a.t[0]} className="about-role-c about-area-c">

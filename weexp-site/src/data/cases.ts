@@ -95,8 +95,8 @@ export const CASES: CaseStudy[] = [
       ],
       metrics: [
         { label: 'Turnover/year', before: '€48K', after: '€900K', note: '×18' },
-        { label: 'Conversion', before: '0,8%', after: '4,2%', note: 'top-1%' },
-        { label: 'ROAS', before: '2,1×', after: '4,8×' },
+        { label: 'Conversion', before: '0.8%', after: '4.2%', note: 'top-1%' },
+        { label: 'ROAS', before: '2.1×', after: '4.8×' },
         { label: 'Repeats', before: '12%', after: '28%' },
         { label: 'Organic', before: '5%', after: '45%' },
         { label: 'Email share', before: '0%', after: '18%' },
@@ -153,7 +153,7 @@ export const CASES: CaseStudy[] = [
       ],
       metrics: [
         { label: 'Sales', before: 'baseline', after: '+65%', note: '9 mo' },
-        { label: 'Repeats', before: '14,7%', after: '60%' },
+        { label: 'Repeats', before: '14.7%', after: '60%' },
         { label: 'ERP efficiency', before: 'baseline', after: '+40%' },
         { label: 'CAC', before: '$40–50', after: '$26', note: '−45%' },
         { label: 'Markets', before: '1', after: '6' },
@@ -209,9 +209,9 @@ export const CASES: CaseStudy[] = [
         'SEO from position 14 into the top-5; Europe entry 0% → 12–18%.',
       ],
       metrics: [
-        { label: 'Turnover', before: '23,2 млн ₴', after: '×2–2,5', note: 'target' },
-        { label: 'Conversion', before: '3,9%', after: '4,3–4,5%' },
-        { label: 'Order payment', before: '63,4%', after: '≥75%' },
+        { label: 'Turnover', before: '23.2 млн ₴', after: '×2–2.5', note: 'target' },
+        { label: 'Conversion', before: '3.9%', after: '4.3–4.5%' },
+        { label: 'Order payment', before: '63.4%', after: '≥75%' },
         { label: 'Redemption', before: '82%', after: '≥88%' },
         { label: 'Europe', before: '0%', after: '12–18%' },
       ],
@@ -324,7 +324,7 @@ export const CASES: CaseStudy[] = [
         { label: 'Report assembly', before: '6 днів', after: '4 години', note: '×36' },
         { label: 'GA4 accuracy', before: '78%', after: '99%' },
         { label: 'Contribution margin', before: '−3%', after: '+11%' },
-        { label: 'Decision speed', before: 'baseline', after: '×3,4' },
+        { label: 'Decision speed', before: 'baseline', after: '×3.4' },
         { label: 'Sources of truth', before: '3', after: '1' },
       ],
       after: 'The holding is run as one business: one panel, one P&L, one accountability.',
@@ -377,7 +377,7 @@ export const CASES: CaseStudy[] = [
         'Upsell/cross-sell of accessories on the page and in the cart.',
       ],
       metrics: [
-        { label: 'Conversion', before: '0,9%', after: '2,6%', note: '×2,9' },
+        { label: 'Conversion', before: '0.9%', after: '2.6%', note: '×2.9' },
         { label: 'Cart abandonment', before: '34%', after: '19%' },
         { label: 'Checkout steps', before: '6', after: '2' },
         { label: 'Average order value', before: 'baseline', after: '+38%' },
@@ -432,9 +432,9 @@ export const CASES: CaseStudy[] = [
         'RFM segmentation and personalized selections.',
       ],
       metrics: [
-        { label: 'LTV', before: 'baseline', after: '×2,3' },
+        { label: 'LTV', before: 'baseline', after: '×2.3' },
         { label: 'Repeats', before: '9%', after: '31%' },
-        { label: 'Mobile conversion', before: '0,6%', after: '2,1%' },
+        { label: 'Mobile conversion', before: '0.6%', after: '2.1%' },
         { label: 'Email revenue', before: '2%', after: '19%' },
       ],
       after: 'Customers come back along the child’s growth timeline — with no manual campaigns.',
@@ -487,7 +487,7 @@ export const CASES: CaseStudy[] = [
         'Cross-sell of stacks and personalized offers by RFM.',
       ],
       metrics: [
-        { label: 'Subscription revenue', before: '9%', after: '37%', note: '×4,1' },
+        { label: 'Subscription revenue', before: '9%', after: '37%', note: '×4.1' },
         { label: 'Repeats', before: '16%', after: '48%' },
         { label: 'Contribution margin', before: '−8%', after: '+14%' },
         { label: 'Average order value', before: 'baseline', after: '+27%' },
@@ -653,7 +653,7 @@ export const CASES: CaseStudy[] = [
       ],
       metrics: [
         { label: 'SKUs in master data', before: 'chaos', after: '250 000' },
-        { label: 'Conversion', before: '0,7%', after: '2,4%' },
+        { label: 'Conversion', before: '0.7%', after: '2.4%' },
         { label: 'Returns', before: '19%', after: '6%' },
         { label: 'VIN search', before: 'none', after: '92% success' },
       ],
@@ -707,7 +707,7 @@ export const CASES: CaseStudy[] = [
         'A retention loop with reasons to return between purchases.',
       ],
       metrics: [
-        { label: 'LTV', before: 'baseline', after: '×2,6' },
+        { label: 'LTV', before: 'baseline', after: '×2.6' },
         { label: 'Repeats', before: '11%', after: '29%' },
         { label: 'Organic', before: '8%', after: '38%' },
         { label: 'Average order value', before: 'baseline', after: '+22%' },
@@ -763,7 +763,7 @@ export const CASES: CaseStudy[] = [
       ],
       metrics: [
         { label: 'Average order value', before: 'baseline', after: '+41%' },
-        { label: 'ROAS', before: '2,3×', after: '4,1×' },
+        { label: 'ROAS', before: '2.3×', after: '4.1×' },
         { label: 'Repeats', before: '13%', after: '33%' },
         { label: 'Campaign margin', before: 'baseline', after: '+16 pp' },
       ],
@@ -817,7 +817,7 @@ export const CASES: CaseStudy[] = [
         'A strategy and roadmap by impact/effort.',
       ],
       metrics: [
-        { label: 'Turnover', before: 'baseline', after: '×1,8–2,2', note: 'target' },
+        { label: 'Turnover', before: 'baseline', after: '×1.8–2.2', note: 'target' },
         { label: 'Lost deals', before: '31%', after: '≤12%' },
         { label: 'People dependency', before: 'high', after: 'processes' },
         { label: 'Predictability', before: 'none', after: 'funnel + plan' },
@@ -872,7 +872,7 @@ export const CASES: CaseStudy[] = [
         'Food subscriptions and post-purchase reminders.',
       ],
       metrics: [
-        { label: 'Conversion', before: '1,0%', after: '2,2%', note: '×2,2' },
+        { label: 'Conversion', before: '1.0%', after: '2.2%', note: '×2.2' },
         { label: 'Out-of-stock', before: '11%', after: '2%' },
         { label: 'Cancellations', before: '17%', after: '5%' },
         { label: 'Food subscriptions', before: '0%', after: '23%' },
@@ -1005,4 +1005,41 @@ export const STAGES: Stage[] = ['Diagnose', 'Build', 'Scale', 'Independence'];
  */
 export function localizeCase(c: CaseStudy, lang: Lang): CaseStudy {
   return lang === 'en' && c.en ? { ...c, ...c.en } : c;
+}
+
+/**
+ * Ролевий склад команди кейсу — детермінований, виводиться зі списку систем
+ * (`systems`), яких торкнувся кейс. Не вигадуємо конкретних людей (кейси
+ * анонімні): показуємо, які ролі/компетенції були задіяні. Кожен кейс веде
+ * Head of E-commerce (лід доставки результату). Закриває зауваження «незрозуміло,
+ * хто працює над проєктом» без розкриття персональних даних.
+ */
+const ROLE_UK: Record<SystemKey, string> = {
+  strategy: 'E-commerce стратег',
+  commercial: 'Performance / комерція',
+  customer: 'Retention / CRM',
+  experience: 'UX / CRO',
+  operations: 'Операції та процеси',
+  data: 'Аналітика та BI',
+  org: 'Оргдизайн і команда',
+  expansion: 'Вихід на ринки',
+};
+const ROLE_EN: Record<SystemKey, string> = {
+  strategy: 'E-commerce Strategist',
+  commercial: 'Performance / Commerce',
+  customer: 'Retention / CRM',
+  experience: 'UX / CRO',
+  operations: 'Operations & Process',
+  data: 'Analytics & BI',
+  org: 'Org Design & Team',
+  expansion: 'Market Expansion',
+};
+
+export function caseTeam(c: CaseStudy, lang: Lang): string[] {
+  const map = lang === 'en' ? ROLE_EN : ROLE_UK;
+  const lead = lang === 'en' ? 'Head of E-commerce (delivery lead)' : 'Head of E-commerce (лід проєкту)';
+  const seen = new Set<string>();
+  const roles: string[] = [];
+  for (const k of c.systems) { const r = map[k]; if (r && !seen.has(r)) { seen.add(r); roles.push(r); } }
+  return [lead, ...roles];
 }

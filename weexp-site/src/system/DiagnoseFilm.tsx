@@ -4,6 +4,7 @@ import {
   QUESTIONS, SYSTEMS, scoreXray, opportunityLabel, levelFor, systemByKey, SHORT,
   type Answers,
 } from '@/data/xray';
+import { useLiteVisuals } from '@/lib/liteVisuals';
 import './system.css';
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
@@ -20,6 +21,7 @@ const HW = (s: number) => (s >= 65 ? 'ok' : s >= 40 ? 'warn' : 'bad');
 const nodeOf = (key: string) => Math.max(0, SYSTEMS.findIndex((s) => s.key === key));
 
 export function DiagnoseFilm() {
+  const lite = useLiteVisuals();
   const [phase, setPhase] = useState<'intro' | 'quiz' | 'result'>('intro');
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Answers>({});
@@ -44,7 +46,7 @@ export function DiagnoseFilm() {
   return (
     <section className="sysx sysx-calc">
       <div className="sysx-field" aria-hidden="true" />
-      <div className="sysx-calc-bg"><Suspense fallback={null}><CommerceSystem3D fixedProgress={0.6} alerts={alerts} /></Suspense></div>
+      <div className={'sysx-calc-bg' + (lite ? ' is-lite' : '')} aria-hidden="true">{!lite && <Suspense fallback={null}><CommerceSystem3D fixedProgress={0.6} alerts={alerts} /></Suspense>}</div>
 
       <div className="sysx-calc-panel">
         {phase !== 'result' && (

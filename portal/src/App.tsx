@@ -20,6 +20,7 @@ import DecisionPage from './pages/DecisionPage';
 import PrivacyPage from './pages/PrivacyPage';
 import ConnectorsPage from './pages/ConnectorsPage';
 import AuditRunnerPage from './pages/AuditRunnerPage';
+import AuditIntakePage from './pages/AuditIntakePage';
 import Assistant from './components/Assistant';
 
 type Ctx = { session: Session | null; member: Member; locked: boolean };
@@ -34,6 +35,11 @@ function Topbar({ member }: { member: Member | null }) {
           WEEXP<b>·DISCOVERY</b>
         </Link>
         <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+          {member && (
+            <Link to="/intake" className="tag">
+              Что нужно для аудита
+            </Link>
+          )}
           {member && (
             <Link to="/connectors" className="tag">
               Коннекторы
@@ -166,6 +172,7 @@ export default function App() {
           <Route path="/d/:sheet" element={<DomainPage />} />
           <Route path="/access" element={<AccessPage />} />
           <Route path="/connectors" element={<ConnectorsPage />} />
+          <Route path="/intake" element={<AuditIntakePage />} />
           <Route path="/audit" element={<AuditRunnerPage />} />
           <Route path="/decision" element={<DecisionPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
@@ -233,6 +240,7 @@ export default function App() {
         <Route path="/d/:sheet" element={<DomainPage />} />
         <Route path="/access" element={<AccessPage />} />
         <Route path="/connectors" element={<ConnectorsPage />} />
+        <Route path="/intake" element={<AuditIntakePage />} />
         <Route path="/audit" element={<AuditRunnerPage />} />
           <Route path="/decision" element={<DecisionPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />

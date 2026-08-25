@@ -3,12 +3,15 @@
  * показати чесний результат: 'ok' — надіслано; 'not_configured' — бекенд не
  * налаштований (env RESEND_API_KEY); 'error' — мережа/збій відправлення.
  */
+import { getUtmString } from '@/lib/utm';
+
 export type LeadPayload = {
   source: string;
   email?: string;
   phone?: string;
   name?: string;
   store?: string;
+  site?: string;      // сайт клієнта (окремо від назви магазину)
   turnover?: string;
   role?: string;      // роль ЛПР
   task?: string;      // головна задача / напрям
@@ -24,10 +27,13 @@ export type LeadResult = 'ok' | 'not_configured' | 'error';
 
 export async function sendLead(payload: LeadPayload): Promise<LeadResult> {
   try {
+    // Додаємо first-touch UTM у коментар (видно в CRM і в листі, без зміни схеми БД).
+    const utm = getUtmString();
+    const body = utm ? { ...payload, comment: [payload.comment, utm].filter(Boolean).join(' · ') } : payload;
     const r = await fetch('/api/lead', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(body),
     });
     const j = await r.json().catch(() => ({}));
     if (j.ok) return 'ok';

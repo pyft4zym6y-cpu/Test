@@ -1,0 +1,217 @@
+<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>Том D · Стартові шаблони — Тестик</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink:#070d12; --ink8:#0F1A21; --ink6:#1E3038;
+  --verd:#1F5648; --verd7:#2A6D5C; --verd5:#6FAA9A;
+  --mark:#D6362B; --steel:#6E7C86; --steel6:#94A0A8; --steel4:#D3D9DC;
+  --vel:#E7EAE7; --paper:#fff; --hair:#dfe4e6;
+  --sans:'IBM Plex Sans','Golos Text',system-ui,Arial,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+html,body { background:#fff; }
+body { font-family:var(--sans); color:#26292e; }
+.mono, .num { font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:.02em; }
+
+/* ── Сторінка A4 ── */
+.pg { width: 210mm; height: 296mm; position: relative; overflow: hidden; page-break-after: always; background:#fff; padding: 16mm 16mm 14mm; display:flex; flex-direction:column; }
+.pg.ink { background: var(--ink); color: #E8ECEA; }
+.pg.verd { background: var(--verd); color: #EAF2EE; }
+
+/* шапка/підвал документа */
+.hd { display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid var(--ink); padding-bottom:4mm; margin-bottom:8mm; }
+.pg.ink .hd, .pg.verd .hd { border-color: rgba(255,255,255,.35); }
+.hd .l { font-family:var(--mono); font-size:8.5pt; letter-spacing:.16em; text-transform:uppercase; }
+.hd .r { font-family:var(--mono); font-size:8.5pt; color:var(--steel); }
+.pg.ink .hd .r, .pg.verd .hd .r { color:rgba(255,255,255,.55); }
+.ft { position:absolute; left:16mm; right:16mm; bottom:8mm; display:flex; justify-content:space-between; font-family:var(--mono); font-size:7.5pt; color:var(--steel6); border-top:1px solid var(--hair); padding-top:2.5mm; }
+.pg.ink .ft, .pg.verd .ft { color:rgba(255,255,255,.45); border-color:rgba(255,255,255,.2); }
+.proto { color:var(--mark); }
+
+/* типографіка */
+.ebrow { font-family:var(--mono); font-size:9pt; letter-spacing:.22em; text-transform:uppercase; color:var(--verd7); margin-bottom:5mm; }
+.pg.ink .ebrow { color:var(--verd5); }
+h1.big { font-weight:800; letter-spacing:-.03em; line-height:.98; font-size:34pt; color:var(--ink); }
+.pg.ink h1.big, .pg.verd h1.big { color:#fff; }
+h2.st { font-weight:800; letter-spacing:-.02em; font-size:16pt; color:var(--ink); margin:0 0 4mm; line-height:1.05; }
+.pg.ink h2.st { color:#fff; }
+p.lead { font-size:11pt; line-height:1.5; color:#3A3D42; max-width:150mm; }
+.pg.ink p.lead, .pg.verd p.lead { color:rgba(255,255,255,.82); }
+p.body { font-size:9.5pt; line-height:1.55; color:#33373c; margin-bottom:3mm; }
+.marg { font-family:var(--mono); font-size:7.5pt; color:var(--steel); line-height:1.45; }
+.src { font-family:var(--mono); font-size:7pt; color:var(--steel6); }
+.mark { color: var(--mark); }
+.verdc { color: var(--verd7); }
+
+/* число-герой */
+.hero { margin: 8mm 0 4mm; }
+.hero .n { font-family:var(--mono); font-weight:700; font-size:64pt; letter-spacing:-.04em; line-height:1; color:var(--ink); }
+.hero.m .n { color:var(--mark); } .hero.v .n { color:var(--verd7); }
+.pg.ink .hero .n { color:#fff; }
+.hero .cap { font-size:10pt; color:var(--steel); margin-top:2mm; max-width:120mm; }
+.pg.ink .hero .cap { color:rgba(255,255,255,.65); }
+
+/* KPI-ряд */
+.kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:4mm; margin:5mm 0; }
+.kpis.c3 { grid-template-columns:repeat(3,1fr); }
+.kpi { border:1.5px solid var(--ink); padding:3.5mm 4mm; }
+.kpi .v { font-family:var(--mono); font-weight:700; font-size:16pt; letter-spacing:-.02em; }
+.kpi .v.bad { color:var(--mark); } .kpi .v.ok { color:var(--verd7); }
+.kpi .k { font-family:var(--mono); font-size:7pt; letter-spacing:.1em; text-transform:uppercase; color:var(--steel); margin-top:1.5mm; }
+
+/* таблиці */
+table.t { width:100%; border-collapse:collapse; font-size:8.5pt; }
+table.t th { font-family:var(--mono); font-size:7pt; letter-spacing:.12em; text-transform:uppercase; color:var(--steel); text-align:left; border-bottom:1.5px solid var(--ink); padding:1.8mm 2mm; }
+table.t td { border-bottom:1px solid var(--hair); padding:1.9mm 2mm; vertical-align:top; line-height:1.35; }
+table.t td.num, table.t th.num { text-align:right; font-family:var(--mono); }
+table.t tr.hl td { background:#F4F6F5; }
+table.t td b { font-weight:700; color:var(--ink); }
+.sev { font-family:var(--mono); font-size:7pt; letter-spacing:.08em; padding:.5mm 1.5mm; border:1px solid; }
+.sev.h { color:var(--mark); border-color:var(--mark); }
+.sev.m { color:#a06a00; border-color:#a06a00; }
+.sev.l { color:var(--steel); border-color:var(--steel6); }
+.sev.ok { color:var(--verd7); border-color:var(--verd7); }
+
+/* шкала-бенчмарк (D1) */
+.bench { margin:3.5mm 0; }
+.bench .lab { display:flex; justify-content:space-between; font-size:8.5pt; margin-bottom:1.2mm; }
+.bench .lab .b { font-family:var(--mono); }
+.bench .bar { position:relative; height:5.5mm; background:var(--vel); }
+.bench .fill { position:absolute; left:0; top:0; bottom:0; background:var(--ink); }
+.bench .fill.bad { background:var(--mark); }
+.bench .tick { position:absolute; top:-1.2mm; bottom:-1.2mm; width:1px; background:var(--verd7); }
+.bench .tick i { position:absolute; top:100%; left:-14mm; width:28mm; text-align:center; font-family:var(--mono); font-style:normal; font-size:6.5pt; color:var(--verd7); }
+
+/* гант */
+.gantt { width:100%; border-collapse:collapse; font-size:8pt; }
+.gantt th { font-family:var(--mono); font-size:6.5pt; letter-spacing:.08em; color:var(--steel); border-bottom:1.5px solid var(--ink); padding:1.5mm 1mm; text-align:center; }
+.gantt th.rn { text-align:left; }
+.gantt td { border-bottom:1px solid var(--hair); padding:1.5mm 1mm; }
+.gantt td.rn { font-size:8pt; line-height:1.25; width:52mm; }
+.gantt .cell { height:4.5mm; }
+.gantt .on { background:var(--ink); } .gantt .on.w1 { background:var(--mark); } .gantt .on.w3 { background:var(--verd7); }
+
+/* блоки-виноски */
+.callout { border-left:3px solid var(--mark); padding:2.5mm 4mm; background:#FBF3F2; font-size:9pt; line-height:1.45; margin:3mm 0; }
+.callout.v { border-color:var(--verd7); background:#F1F6F4; }
+.cols2 { display:grid; grid-template-columns:1fr 1fr; gap:6mm; }
+.cols3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:5mm; }
+
+/* слайди 16:9 */
+.sl { width:1280px; height:720px; position:relative; overflow:hidden; page-break-after:always; background:var(--paper); padding:56px 64px; display:flex; flex-direction:column; }
+.sl.ink { background:var(--ink); color:#E8ECEA; }
+.sl.verd { background:var(--verd); color:#EAF2EE; }
+.sl .ebrow { font-size:12px; margin-bottom:18px; }
+.sl h1 { font-weight:800; letter-spacing:-.03em; line-height:.98; font-size:64px; color:var(--ink); max-width:1000px; }
+.sl.ink h1, .sl.verd h1 { color:#fff; }
+.sl h1 .mk { color:var(--mark); }
+.sl .heron { font-family:var(--mono); font-weight:700; font-size:220px; letter-spacing:-.05em; line-height:.95; }
+.sl .foot { position:absolute; left:64px; right:64px; bottom:28px; display:flex; justify-content:space-between; font-family:var(--mono); font-size:11px; color:var(--steel6); }
+.sl.ink .foot, .sl.verd .foot { color:rgba(255,255,255,.45); }
+
+/* ── Постраничный разбор: блок-таблиця з оцінкою 0–5 ── */
+.bt { width:100%; border-collapse:collapse; font-size:7.4pt; }
+.bt th { font-family:var(--mono); font-size:6.6pt; letter-spacing:.1em; text-transform:uppercase; color:var(--steel); text-align:left; border-bottom:1.5px solid var(--ink); padding:1.5mm 1.8mm; }
+.bt td { border-bottom:1px solid var(--hair); padding:1.7mm 1.8mm; vertical-align:top; line-height:1.35; }
+.bt .bnum { font-family:var(--mono); font-weight:700; white-space:nowrap; }
+.bt .score { font-family:var(--mono); font-weight:700; font-size:10pt; text-align:center; width:10mm; }
+.bt .sc5 { color:var(--verd7); } .bt .sc4 { color:var(--ink); } .bt .sc2, .bt .sc3 { color:#a06a00; } .bt .sc0, .bt .sc1 { color:var(--mark); }
+.tag { font-family:var(--mono); font-size:5.8pt; letter-spacing:.06em; border:1px solid var(--steel6); color:var(--steel); padding:.3mm 1mm; margin-right:.8mm; }
+.okm { color:var(--verd7); font-weight:700; } .badm { color:var(--mark); font-weight:700; }
+
+/* ── Wireframe ЗАРАЗ / ЯК ТРЕБА ── */
+.wf2 { display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin:2.5mm 0; }
+.wf { border:2px solid; padding:2.5mm; }
+.wf.cur { border-color:var(--mark); } .wf.should { border-color:var(--verd7); }
+.wf .wfh { font-family:var(--mono); font-size:6.8pt; letter-spacing:.14em; margin-bottom:1.6mm; }
+.wf.cur .wfh { color:var(--mark); } .wf.should .wfh { color:var(--verd7); }
+.wf .m { background:#F4F6F5; border:1px solid var(--steel4); padding:1.6mm 2mm; margin-bottom:1.2mm; font-size:6.8pt; line-height:1.3; }
+.wf .m b { font-size:7.2pt; }
+.wf .m.ghost { border-style:dashed; color:var(--steel6); text-align:center; }
+.wf .m.cta { background:var(--ink); color:#fff; text-align:center; font-weight:700; }
+.wf .m.cta.mk { background:var(--mark); }
+.wf .mrow { display:grid; gap:1.2mm; margin-bottom:1.2mm; }
+.wf .note { font-size:6.6pt; color:var(--steel); line-height:1.35; margin-top:1mm; }
+.wf .lnk { color:var(--verd7); font-weight:700; }
+
+/* ── Дерево сайта ── */
+.tree { font-family:var(--mono); font-size:7.2pt; line-height:1.55; }
+.tree b { font-size:7.6pt; }
+.tree .lvl1 { margin-left:5mm; } .tree .lvl2 { margin-left:10mm; color:#33373c; }
+.tree .cnt { color:var(--steel6); } .tree .warn { color:var(--mark); font-weight:700; } .tree .good { color:var(--verd7); }
+@media print { .pg, .sl { break-inside: avoid; } }
+</style></head><body><div class="pg ink">
+  <div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+    <span class="ebrow">Звіт 2·D із 5</span>
+    <h1 class="big" style="font-size:40pt">Робочий том D:<br>стартові шаблони</h1>
+    <p class="lead" style="margin-top:8mm">Три документи, без яких W1 не стартує: вакансія PM (публікується як є), політика знижок із заповненим розрахунком (підписується власником) і сценарій читки на 45 хвилин (перша читка — за ним). Не поради — робочі файли.</p>
+    <p class="marg" style="margin-top:10mm;color:rgba(255,255,255,.5)">5 сторінок · JD PM · політика знижок · сценарій читки</p>
+  </div>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 1/·</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">Зміст · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+  <span class="ebrow">Зміст звіту</span>
+  <table class="t" style="margin-top:4mm">
+    <tr><th style="width:16mm">Глава</th><th>Назва — і що вона дає</th><th class="num" style="width:14mm">стор.</th></tr>
+    <tr><td class="num"><b>D.1</b></td><td>Вакансія PM: готовий текст + процес найму з тестовим завданням</td><td class="num">3</td></tr><tr><td class="num"><b>D.2</b></td><td>Політика знижок: рівні рішень + заповнений contribution-розрахунок</td><td class="num">4</td></tr><tr><td class="num"><b>D.3</b></td><td>Сценарій щотижневої читки 45 хв: таймінг + правила проти деградації</td><td class="num">5</td></tr>
+  </table><div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 2/5</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">D.1 · Вакансія PM · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">D.1 · Job Description: Project Manager e-commerce (готово до публікації)</span>
+    <h1 class="big" style="font-size:24pt">PM «Тестик» — текст вакансії,<br>який можна публікувати сьогодні.</h1>
+    <table class="t" style="margin-top:3mm;font-size:8pt">
+      <tr><th style="width:32mm">Блок</th><th>Текст (редагується під бренд роботодавця)</th></tr>
+      <tr><td><b>Позиція</b></td><td>Project Manager e-commerce · fulltime · гібрид (2 дні офіс) · підпорядкування власнику, з М3 — операційна самостійність у межах політик</td></tr>
+      <tr><td><b>Навіщо ця роль</b></td><td>Компанія €1.5M/рік запускає 9-місячну програму зростання з зовнішнім консалтингом. PM — власник ритму: Гант 71 задача, щотижневі читки, контроль DoD, координація 4 виконавців і 3 підрядників.</td></tr>
+      <tr><td><b>Що робити (перші 90 днів)</b></td><td>тиждень 1–2: прийняти Гант і трекер знахідок, зібрати доступи за чеклистом · далі: вести читку (сценарій D.3), тримати трекер «чекаємо від клієнта/підрядника», приймати задачі лише по DoD, готувати КТ-звіти · ескалувати за картою, а не «як вийде»</td></tr>
+      <tr><td><b>Вимоги (must)</b></td><td>2+ роки ведення проектів з підрядниками · впевнений Excel/Sheets (формули, зведені) · вміє прочитати GA4-звіт і не злякатися · українська письмова — грамотна: половина роботи — протоколи</td></tr>
+      <tr><td><b>Буде плюсом</b></td><td>e-commerce досвід · базове розуміння SEO/CRM · Jira/Asana/ClickUp · англійська B1+ (постачальники)</td></tr>
+      <tr><td><b>Чого НЕ вимагаємо</b></td><td>бути маркетологом чи розробником — для цього є виконавці; роль PM — ритм, приймання, комунікація</td></tr>
+      <tr><td><b>KPI ролі</b></td><td>≥90% задач тижня закрито або письмово перенесено · 0 «мовчазних» зривів дедлайнів · КТ-звіти вчасно · рішень на власнику ≤7/тиждень (метрика з дашборда)</td></tr>
+      <tr><td><b>Умови</b></td><td>€900–1200/міс (ринок UA, редагується) · випробувальний 2 міс з планом онбордингу · навчання: 2 сесії передачі знань WEEXP + доступ до всіх матеріалів аудиту</td></tr>
+    </table>
+    <p class="marg" style="margin-top:2mm">Процес найму (рекомендований): скринінг CV → 30-хв дзвінок → тестове 90 хв (розібрати фрагмент Ганта: знайти конфлікт ресурсів і запропонувати перенос — правильна відповідь є в листі «Ресурси») → фінал із власником. Найм стартує ДО кікофу; М1 роль тримає WEEXP (Звіт 4, R2).</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 3/5</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">D.2 · Політика знижок · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">D.2 · Політика знижок — правило + заповнений приклад розрахунку</span>
+    <h1 class="big" style="font-size:24pt">Знижка — це формула,<br>а не настрій переговорів.</h1>
+    <p class="body" style="margin-top:2mm">Мета політики: зняти з власника ~6 рішень/тиждень (найбільша категорія в журналі) без втрати маржі. Підписується власником, діє з W1, винятки — лише письмово в журналі.</p>
+    <table class="t" style="font-size:8.2pt">
+      <tr><th>Рівень</th><th>Хто вирішує</th><th>Межі</th><th>Умова</th></tr>
+      <tr><td>Знижка ≤5% або безкоштовна доставка</td><td>маркетолог, без погоджень</td><td>будь-який SKU крім ядра*</td><td>contribution замовлення після знижки ≥ €6</td></tr>
+      <tr class="hl"><td><b>Знижка 5–15%</b></td><td>маркетолог за формулою нижче</td><td>не-ядро; ядро — лише в акційному календарі</td><td>contribution ≥ €4 І знижка окупається обсягом (розрахунок)</td></tr>
+      <tr><td>Знижка >15% / нижче собівартості</td><td><b>власник</b>, письмово</td><td>лише розпродаж dead stock за чергами зі стоп-лосом</td><td>рішення в журналі з причиною</td></tr>
+    </table>
+    <h2 class="st" style="font-size:11.5pt;margin-top:3mm">Заповнений приклад — як рахувати (реальні числа «Тестик»)</h2>
+    <table class="t" style="font-size:8.2pt">
+      <tr><th>Крок</th><th>Формула</th><th class="num">Приклад: набір каструль, ціна €89</th></tr>
+      <tr><td>1. Contribution до знижки</td><td>ціна − собівартість − змінні (логістика, пакування, еквайринг) − реклама на замовлення</td><td class="num">89 − 42.7 − 11.3 − 18 = <b>€17.0</b></td></tr>
+      <tr><td>2. Contribution після знижки 10%</td><td>те саме, ціна × 0.9 (змінні НЕ зменшуються)</td><td class="num">80.1 − 42.7 − 11.3 − 18 = <b>€8.1</b></td></tr>
+      <tr><td>3. Скільки додаткових замовлень потрібно</td><td>щоб сумарний contribution не впав: N × 8.1 ≥ базовий обсяг × 17.0</td><td class="num">потрібно <b>+110%</b> замовлень (×2.1)</td></tr>
+      <tr class="hl"><td><b>4. Рішення</b></td><td>знижка 10% «на все» подвоєння НЕ дасть → <b>відмовити</b>; знижка працює лише прицільно</td><td>ок: −10% на другий товар у кошику (піднімає чек, а не ріже маржу)</td></tr>
+    </table>
+    <p class="body" style="font-size:8.4pt;margin-top:2mm"><b>Висновок, який політика робить сама:</b> суцільні знижки при contribution 12–19% майже ніколи не окупаються обсягом —
+    тому дозволені механіки за замовчуванням: поріг доставки, знижка на 2-й товар, бандли, розпродаж хвостів. Прямі «−15% на все» — лише 2 календарні акції/рік, підписані власником.</p>
+    <p class="marg">*Ядро — топ-20 SKU (58% виручки), список у трекері. Собівартість для формули — з таблиці W2 (до її готовності — тимчасова оцінка фінвідділу, позначається в журналі).</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 4/5</span></div></div><div class="pg "><div class="hd"><span class="l">WEEXP · Глибокий аудит · «Тестик»</span><span class="r">D.3 · Сценарій читки · дані станом на 20.08.2026 · вивантаження TSK-0820</span></div>
+    <span class="ebrow">D.3 · Сценарій щотижневої читки — 45 хвилин, не більше</span>
+    <h1 class="big" style="font-size:24pt">Читка — це 45 хвилин по таймеру.<br>Ось хвилина за хвилиною.</h1>
+    <table class="t" style="margin-top:3mm;font-size:8.2pt">
+      <tr><th style="width:20mm">Час</th><th>Блок</th><th>Правила</th></tr>
+      <tr><td class="num">0–5 хв</td><td><b>Дашборд мовчки</b></td><td>усі дивляться 7 метрик CEO-дашборда; питання записуються, не обговорюються</td></tr>
+      <tr><td class="num">5–15 хв</td><td><b>Метрики: що змінилось і чому</b></td><td>говорить власник метрики (не PM за всіх); формат «число → причина → що роблю»; без причини = «не знаю, з’ясую до четверга» — це легальна відповідь</td></tr>
+      <tr><td class="num">15–30 хв</td><td><b>Гант: тиждень минулий/наступний</b></td><td>лише задачі зі статусом «під загрозою» і «блокер» (зелені не обговорюються!); кожен блокер виходить із зустрічі з власником рішення і датою</td></tr>
+      <tr><td class="num">30–38 хв</td><td><b>Рішення, що чекають</b></td><td>трекер прострочених рішень (SLA 48 год); прострочене рішення власника — перший пункт, без сорому і без драми</td></tr>
+      <tr><td class="num">38–43 хв</td><td><b>Одна тема глибоко</b></td><td>заздалегідь заявлена (у порядку денному за 24 год); якщо тем нема — блок пропускається, читка коротшає</td></tr>
+      <tr><td class="num">43–45 хв</td><td><b>Протокол</b></td><td>PM зачитує рішення і власників уголос; протокол у чат ≤2 год після читки</td></tr>
+    </table>
+    <h2 class="st" style="font-size:11.5pt;margin-top:3mm">Правила, без яких читка деградує (перевірено на 4 минулих спробах «Тестик»)</h2>
+    <table class="t" style="font-size:8.2pt">
+      <tr><th>Правило</th><th>Чому</th></tr>
+      <tr><td>Час фіксований: той самий день/година, 45 хв максимум</td><td>читка «коли всі зможуть» вмирає за 3 тижні — саме так вмерли спроби №2 і №4</td></tr>
+      <tr><td>Без дашборда читка не починається</td><td>розмова без цифр — це нарада, а не читка; краще перенести на день</td></tr>
+      <tr><td>Обговорюємо відхилення, не хвалимо норму</td><td>45 хв вистачає лише якщо зелене проходить мовчки</td></tr>
+      <tr><td>Рішення = текст + власник + дата; «домовились подумати» — не рішення</td><td>протокол без дат — головна причина «мовчазних» зривів</td></tr>
+      <tr><td>З М2 власник — раз на 2 тижні; читка МАЄ працювати без нього</td><td>це тренування лінії автономності (Звіт 4, гл. 4.05) — не побічний ефект, а мета</td></tr>
+    </table>
+    <p class="marg" style="margin-top:2mm">Шаблон порядку денного і протоколу — однакова таблиця: Метрика/Задача · Статус · Причина · Рішення · Власник · Дата. Копіюється з цієї сторінки в перший протокол.</p>
+  <div class="ft"><span></span><span class="proto">ПРОТОТИП · СИНТЕТИЧНІ ДАНІ</span><span>стор. 5/5</span></div></div></body></html>
