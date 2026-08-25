@@ -59,3 +59,8 @@ drop policy if exists "team delete leads" on public.leads;
 create policy "team delete leads" on public.leads
   for delete to authenticated
   using ((auth.jwt() -> 'app_metadata' ->> 'role') in ('super','admin','manager','auditor'));
+
+-- Чек-лист угоди в картці заявки. Без цієї колонки setLeadDeal() мовчки нічого не
+-- зберігає і повертає підказку «виконайте alter table…» — тобто крок був ручний.
+alter table public.leads add column if not exists deal jsonb;
+create index if not exists leads_created_at_idx on public.leads (created_at desc);
