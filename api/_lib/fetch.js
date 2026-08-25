@@ -1,6 +1,6 @@
 // Vercel serverless: качает HTML чужого сайта для L0-скрининга (обход CORS браузера).
 // GET /api/fetch?url=https://example.com — только http(s), максимум 400 КБ HTML.
-export default async function handler(req, res) {
+export async function fetchPage(req, res) {
   const url = req.query.url;
   if (!url || !/^https?:\/\//i.test(url)) {
     res.status(400).json({ error: 'Нужен параметр url (http/https)' });

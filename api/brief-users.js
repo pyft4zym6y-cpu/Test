@@ -3,7 +3,13 @@
 // Действия: create (создать пользователя с паролем), set_password (сменить),
 // delete (удалить пользователя auth — вход закрыт немедленно).
 // Env: SUPABASE_URL (или VITE_SUPABASE_URL) + SUPABASE_SERVICE_ROLE_KEY.
+import { portalConfig } from './_lib/portal-config.js';
+
 export default async function handler(req, res) {
+  // /api/portal-config (GET) → rewrite сюди з ?fn=config. Обовʼязково ПЕРЕД
+  // перевіркою методу нижче: конфіг віддається саме GET-ом.
+  if (req.query?.fn === 'config') return portalConfig(req, res);
+
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'POST only' });
     return;

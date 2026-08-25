@@ -107,7 +107,12 @@ async function listProperties(access) {
 }
 const back = (res, qs) => { res.statusCode = 302; res.setHeader('Location', `/cabinet?section=docs&${qs}`); res.end(); };
 
+import { ga4Site } from './_lib/ga4-site.js';
+
 export default async function handler(req, res) {
+  // /api/ga4-site → rewrite сюди з ?fn=site (ліміт 12 функцій Hobby).
+  if (req.query?.fn === 'site') return ga4Site(req, res);
+
   const q = req.query || {};
   const action = String(q.action || '');
   const CID = process.env.GOOGLE_OAUTH_CLIENT_ID;

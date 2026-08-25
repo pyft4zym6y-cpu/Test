@@ -2,7 +2,7 @@
 // для брифа на /brief/. Anon-ключ по дизайну Supabase публичный (защита — RLS),
 // но держим его в env, чтобы не хардкодить в репозитории.
 // Env: SUPABASE_URL + SUPABASE_ANON_KEY (или VITE_-варианты, как в проекте портала).
-export default function handler(req, res) {
+export function portalConfig(req, res) {
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
   const anon = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
   res.setHeader('Content-Type', 'application/javascript; charset=utf-8');

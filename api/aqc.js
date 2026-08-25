@@ -2,7 +2,14 @@
 // По правилу метода машинный разбор даёт ГИПОТЕЗЫ с достоверностью 25 —
 // консультант подтверждает или отклоняет каждую руками.
 // Env: ANTHROPIC_API_KEY (обязательно), AQC_MODEL (по умолчанию claude-sonnet-5).
+import { interview } from './_lib/interview.js';
+import { fetchPage } from './_lib/fetch.js';
+
 export default async function handler(req, res) {
+  // /api/interview і /api/fetch → rewrite сюди з ?fn=… (ліміт 12 функцій Hobby).
+  if (req.query?.fn === 'interview') return interview(req, res);
+  if (req.query?.fn === 'fetch') return fetchPage(req, res);
+
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) {
     res.status(200).json({

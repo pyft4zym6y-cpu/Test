@@ -3,9 +3,6 @@
   "installCommand": "cd weexp-site && npm install",
   "buildCommand": "cd weexp-site && npm run build",
   "outputDirectory": "weexp-site/dist",
-  "rewrites": [
-    { "source": "/api/ai-score", "destination": "/api/ai-draft" }
-  ],
   "redirects": [
     { "source": "/approach", "destination": "/systems", "permanent": true },
     { "source": "/process", "destination": "/systems", "permanent": true },
@@ -41,7 +38,14 @@
     { "source": "/oferta", "destination": "/oferta.html", "permanent": false },
     { "source": "/security.txt", "destination": "/.well-known/security.txt", "permanent": false }
   ],
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+  "rewrites": [
+    { "source": "/api/ai-score", "destination": "/api/ai-draft" },
+    { "source": "/api/ga4-site", "destination": "/api/ga4?fn=site" },
+    { "source": "/api/interview", "destination": "/api/aqc?fn=interview" },
+    { "source": "/api/fetch", "destination": "/api/aqc?fn=fetch" },
+    { "source": "/api/portal-config", "destination": "/api/brief-users?fn=config" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
   "headers": [
     {
       "source": "/assets/(.*)",

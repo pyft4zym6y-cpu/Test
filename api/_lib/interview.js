@@ -42,7 +42,7 @@ const clampInt = (n, lo, hi, dflt) => {
   return Number.isFinite(x) ? Math.max(lo, Math.min(hi, x)) : dflt;
 };
 
-export default async function handler(req, res) {
+export async function interview(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ error: 'POST only' }); return; }
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) { res.status(200).json({ error: 'not_configured' }); return; }

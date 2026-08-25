@@ -35,7 +35,7 @@ async function runReport(token, propertyId, body) {
   return j;
 }
 
-export default async function handler(req, res) {
+export async function ga4Site(req, res) {
   const propertyId = process.env.GA4_SITE_PROPERTY_ID || process.env.GA4_PROPERTY_ID;
   const { GA4_SA_EMAIL, GA4_SA_KEY } = process.env;
   if (!propertyId || !GA4_SA_EMAIL || !GA4_SA_KEY) {
