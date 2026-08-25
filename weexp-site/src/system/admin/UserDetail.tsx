@@ -71,7 +71,7 @@ export function UserDetail({ row, leads, canDelete, selfEmail, onClose, openFile
       </div>
       <div className="adm-upage-body">
           {utab === 'over' && <ClientBrief row={row} code={code} />}
-          {utab === 'kb' && <KnowledgeBase row={row} code={code} />}
+          {utab === 'kb' && <KnowledgeBase row={row} code={code} author={selfEmail} />}
           {utab === 'over' && code && (
             <Block title="Код доступу">
               <button className="adm-code adm-code-lg" onClick={() => navigator.clipboard?.writeText(code)} title="Скопіювати">🔑 {code}</button>

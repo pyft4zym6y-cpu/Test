@@ -14,6 +14,7 @@ export type AuditDataset = {
   takenAt: string;
   mode?: 'audit' | 'prelaunch'; // prelaunch — сайта ещё нет / в разработке
   brief?: string; // бриф проекта для режима prelaunch
+  knowledge?: string; // база знаний клиента (свёрнутая в текст) — контекст для анализа
 };
 
 const KIND_LABEL: Record<PageAudit['kind'], string> = {

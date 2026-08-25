@@ -106,6 +106,7 @@ export type DiagRecord = {
   auditDoc?: AuditDoc;                         // редагований документ аудиту (адмін коригує/версіонує/експортує)
   packChecklist?: Record<string, PackState>;   // готовність глав пакета (5 звітів; ключ = auditPack chapter id)
   deepModeration?: DeepModeration;             // модерація опитувальника глибокого аудиту
+  kbVersions?: KbVersion[];                    // зрізи бази знань: що ми знали на дату
   sharedDocs?: SharedDoc[];                    // фінальні документи, якими адмін поділився з клієнтом
   updatedAt?: string;
 };
@@ -119,6 +120,13 @@ export type DeepModeration = {
 };
 
 /** Документ, переданий клієнту в кабінет (розділ «Документи»). path → tier-files. */
+/** Зріз бази знань на дату: скільки чого було і що казав клієнт про компанію.
+    Потрібен, щоб через півроку можна було подивитись, ЩО МИ ЗНАЛИ ТОДІ. */
+export type KbVersion = {
+  id: string; at: string; by?: string; note?: string;
+  counts: Record<string, number>;
+  company?: Record<string, string>;
+};
 export type SharedDoc = { id: string; title: string; path?: string; at: string; by?: string };
 
 /** Стан одного артефакта пакета аудиту: — → готово → передано. */

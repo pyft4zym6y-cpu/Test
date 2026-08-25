@@ -58,6 +58,9 @@ export function datasetToPrompt(ds: AuditDataset, engineFactsStr?: string): stri
     return L.join('\n');
   }
   L.push(`Тир T${ds.tier}. Запрос клиента: ${ds.request || '(не задан — негласный/инициативный аудит)'}`);
+  // База знаний идёт ПЕРЕД данными обхода: она задаёт рамку — что мы уже знаем,
+  // чего нам не дали и какие выводы уже сделаны на прошлых этапах.
+  if (ds.knowledge) L.push('\n' + ds.knowledge);
   L.push('\n' + siteBrief(ds.client, 'КЛИЕНТ'));
   if (ds.competitors.length) {
     L.push('\nКОНКУРЕНТЫ:');

@@ -23,7 +23,14 @@ export default async function handler(req, res) {
     }
     if (b.action === 'start') {
       if (!b.site) { res.status(200).json({ error: 'Вкажіть сайт клієнта (домен) для аудиту' }); return; }
-      const opts = { site: b.site, tier: Math.max(1, Math.min(4, Number(b.tier) || 1)), answers: b.answers || undefined };
+      // knowledge — база знань клієнта (профіль, доступи, файли, оцінки, попередні
+      // прогони). Їде поруч із відповідями, щоб рушій бачив контекст усіх етапів.
+      const opts = {
+        site: b.site,
+        tier: Math.max(1, Math.min(4, Number(b.tier) || 1)),
+        answers: b.answers || undefined,
+        knowledge: b.knowledge || undefined,
+      };
       const r = await fetch(`${base}/audit`, { method: 'POST', headers: hdr, body: JSON.stringify(opts) });
       const j = await r.json();
       res.status(200).json(j.ok ? { ok: true, id: j.id } : { error: j.error || 'audit_start_failed' });

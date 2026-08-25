@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { findAuditIdByCode, loadAuditAnswers, type AdminRow, type AuditAnswer } from '@/lib/supa';
+import { findAuditIdByCode, loadAuditAnswers, savePatchFor, type AdminRow, type AuditAnswer, type KbVersion } from '@/lib/supa';
+import { toast } from '@/lib/toast';
 import { loadTemplate, type AuditTemplate } from '../auditTemplate';
 import { ACCESS_CATALOG } from '@/data/accessCatalog';
 import { Block, rel } from './shared';
@@ -18,11 +19,13 @@ type Group = { key: string; title: string; note: string; items: Item[]; expected
 
 const SRC_CLS: Record<Src, string> = { 'клієнт': 'ok', 'менеджер': 'wait', 'рушій': 'none' };
 
-export function KnowledgeBase({ row, code }: { row: AdminRow; code?: string }) {
+export function KnowledgeBase({ row, code, author }: { row: AdminRow; code?: string; author?: string }) {
   const rec = row.record || {};
   const [tpl, setTpl] = useState<AuditTemplate | null>(null);
   const [answers, setAnswers] = useState<Record<string, AuditAnswer>>({});
   const [open, setOpen] = useState<string>('');
+  const [versions, setVersions] = useState<KbVersion[]>(rec.kbVersions || []);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -79,7 +82,38 @@ export function KnowledgeBase({ row, code }: { row: AdminRow; code?: string }) {
     ];
   }, [rec, tpl, answers]);
 
+  const counts = useMemo(
+    () => Object.fromEntries(groups.map((g) => [g.key, g.items.length])) as Record<string, number>,
+    [groups],
+  );
   const total = groups.reduce((n, g) => n + g.items.length, 0);
+
+  /* Зріз фіксує менеджер свідомо: автозапис на кожну зміну засмітив би історію,
+     а сенс версії — «ось що ми знали, коли ухвалювали те рішення». */
+  const snapshot = async () => {
+    setSaving(true);
+    const v: KbVersion = {
+      id: 'kb_' + Date.now().toString(36),
+      at: new Date().toISOString(),
+      by: author,
+      counts,
+      company: Object.fromEntries(
+        (groups.find((g) => g.key === 'profile')?.items || []).map((i) => [i.title, i.detail || '']),
+      ),
+    };
+    const next = [...versions, v].slice(-24);
+    const res = await savePatchFor(row.userId, { kbVersions: next });
+    setSaving(false);
+    if (res.ok) { setVersions(next); toast('✓ Зріз бази знань зафіксовано'); }
+    else toast('Не збережено: ' + (res.error || ''), 'err');
+  };
+
+  const prev = versions.length ? versions[versions.length - 1] : null;
+  const delta = prev ? Object.keys(counts).reduce((acc, k) => {
+    const d = (counts[k] || 0) - (prev.counts[k] || 0);
+    if (d) acc.push(`${groups.find((g) => g.key === k)?.title || k}: ${d > 0 ? '+' : ''}${d}`);
+    return acc;
+  }, [] as string[]) : [];
   const empty = groups.filter((g) => g.items.length === 0).map((g) => g.title);
 
   return (
@@ -115,6 +149,35 @@ export function KnowledgeBase({ row, code }: { row: AdminRow; code?: string }) {
             )}
           </div>
         ))}
+      </div>
+
+      {/* Історія: що ми знали на дату. */}
+      <div className="adm-kb-ver">
+        <div className="adm-kb-ver-h">
+          <b>Історія бази</b>
+          <span className="mono">{versions.length} зрізів</span>
+          <button className="mc-btn sm" disabled={saving} onClick={snapshot}>
+            {saving ? 'Фіксуємо…' : '⎘ Зафіксувати зріз'}
+          </button>
+        </div>
+        {prev && (
+          <p className="mono adm-hint">
+            Від останнього зрізу ({rel(prev.at)}): {delta.length ? delta.join(' · ') : 'без змін'}
+          </p>
+        )}
+        {versions.length === 0
+          ? <p className="mono adm-empty">Зрізів ще немає. Фіксуйте перед рішенням — щоб потім було видно, на чому воно будувалось.</p>
+          : (
+            <ul className="adm-kv">
+              {[...versions].reverse().map((v) => (
+                <li key={v.id}>
+                  <i>{rel(v.at)}{v.by ? ` · ${v.by}` : ''}</i>
+                  <span>{Object.entries(v.counts).filter(([, n]) => n > 0)
+                    .map(([k, n]) => `${groups.find((g) => g.key === k)?.title || k}: ${n}`).join(' · ') || 'порожньо'}</span>
+                </li>
+              ))}
+            </ul>
+          )}
       </div>
     </Block>
   );

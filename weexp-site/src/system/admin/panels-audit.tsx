@@ -20,6 +20,8 @@ import '../system.css';
 import '../cabinet.css';
 import { ACCESS_STATUS, MATURITY_MODULE_OF, MOD_LABEL, fmtVal, rel, relT, type SaveState } from './shared';
 import { exportAuditDocPdf, seedAuditSections } from './docs';
+import { buildKnowledgePack } from './knowledgePack';
+import { auditStatusOf, phaseOf, PHASES } from './auditRequests';
 
 
 export function AuditFill({ code }: { code: string }) {
@@ -207,7 +209,16 @@ export function WorkerAudit({ userId, code, rec, reviewer }: { userId: string; c
     setRunning(true); setJob(null);
     let answers: Record<string, unknown> = {};
     try { const id = code ? await findAuditIdByCode(code) : null; if (id) answers = await loadAuditAnswers(id); } catch { /* ignore */ }
-    const r = await runWorkerAudit('start', { site: site.trim(), tier, answers });
+    // Рушій бачить те саме, що менеджер: профіль, доступи, файли, оцінки,
+    // попередні прогони. Досі їхали лише відповіді анкети.
+    const tplAll = await loadTemplate().catch(() => null);
+    const totalQ = (tplAll?.blocks || []).reduce((n, b) => n + b.questions.length, 0);
+    const st = auditStatusOf({ userId, email: '', record: rec } as never);
+    const knowledge = buildKnowledgePack(
+      { userId, email: '', record: rec } as never,
+      answers as never, totalQ, st ? PHASES[phaseOf(st)].l : undefined,
+    );
+    const r = await runWorkerAudit('start', { site: site.trim(), tier, answers, knowledge });
     if (r.error || !r.id) { setErr('Помилка запуску: ' + (r.error || '')); setRunning(false); toast('Аудит не запущено: ' + (r.error || ''), 'err'); return; }
     const ref: AuditJobRef = { id: r.id, at: new Date().toISOString(), site: site.trim(), tier, status: 'queued' };
     const next = [ref, ...jobs].slice(0, 20); saveJobs(next);

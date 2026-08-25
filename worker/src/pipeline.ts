@@ -100,6 +100,7 @@ import type { Analysis } from './analyze.js';
 import type { UxUiReport } from './uxui.js';
 import type { PrototypeReport } from './prototype.js';
 import type { BenchmarkReport } from './competitor.js';
+import { renderKnowledge } from './clientKnowledge.js';
 
 export type AuditOptions = {
   tier?: Tier;
@@ -111,6 +112,9 @@ export type AuditOptions = {
   prelaunch?: boolean;
   brief?: string;
   answers?: Record<string, unknown> | null;
+  /** База знаний клиента с сайта: профиль, доступы, файлы, оценки, прошлые прогоны.
+      Приходит из админки через /api/audit-run — контекст, а не выгрузка данных. */
+  knowledge?: Record<string, unknown> | null;
   answersFile?: { path: string; type: string }; // опросник файлом (Excel/Word/PDF) — распознаётся воркером
   baseline?: { levers: Levers; extra?: { name: string; monthly: number }[] } | null;
   out?: string;
@@ -225,6 +229,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
 
     const ds: AuditDataset = {
       tier, request: opts.request ?? '', client, competitors: comps, takenAt: new Date().toISOString(),
+      ...(opts.knowledge ? { knowledge: renderKnowledge(opts.knowledge) } : {}),
       ...(prelaunch ? { mode: 'prelaunch' as const, brief: opts.brief || opts.request || '' } : {}),
     };
     const id = `${prelaunch ? 'prelaunch' : slug(site)}-t${tier}-${Date.now()}`;
