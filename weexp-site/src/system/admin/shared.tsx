@@ -46,12 +46,13 @@ export type Cap = Parameters<typeof can>[1];
 export const TABS: { id: Tab; label: string; cap: Cap; sub?: { id: Tab; label: string; cap: Cap }[] }[] = [
   { id: 'overview', label: 'Дашборд', cap: 'view_dashboard' },
   { id: 'leads', label: 'Заявки', cap: 'view_leads' },
-  { id: 'auditreq', label: 'Заявки аудит', cap: 'view_audits' },
+  // Аудит і проєкт — одна сутність: проєкт виростає з аудиту, тому одна дошка
+  // і один життєвий цикл. «Команда і ставки» — довідник під неї, другим рівнем.
+  { id: 'auditreq', label: 'Аудит і проєкти', cap: 'view_audits', sub: [{ id: 'pm', label: 'Команда і ставки', cap: 'manage_pm' }] },
   { id: 'users', label: 'Користувачі', cap: 'view_users' },
   // Другий рівень: конструктор — окремий пункт, але прив'язаний до аудиту.
   { id: 'audits', label: 'Аудити', cap: 'view_audits', sub: [{ id: 'builder', label: 'Конструктор аудиту', cap: 'edit_template' }] },
   { id: 'worker', label: 'Воркер', cap: 'view_audits' },
-  { id: 'projects', label: 'Проекти', cap: 'manage_pm' },
   { id: 'settings', label: 'Налаштування', cap: 'manage_settings' },
 ];
 

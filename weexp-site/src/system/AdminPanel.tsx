@@ -524,68 +524,40 @@ export function AdminPanel() {
         })()}
 
         {/* ── Проекти: робочий простір сформованих проектів ── */}
-        {!detail && curTab === 'projects' && (() => {
-          const withProj = (rows || [])
-            .map((r) => ({ r, projects: getProjects(r.record) }))
-            .filter((x) => x.projects.length)
-            .filter((x) => !q || x.r.email.toLowerCase().includes(q.toLowerCase()) || (x.r.company || '').toLowerCase().includes(q.toLowerCase()));
-          return (
+        {/* «Команда і ставки» — довідник проєктного офісу, другий рівень розділу */}
+        {!detail && curTab === 'pm' && (
           <section className="adm-sec">
-            <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Проекти</h1>
-              {projSeg === 'list' && <input className="mc-search" placeholder="Пошук: email / компанія" value={q} onChange={(e) => setQ(e.target.value)} />}
-            </div>
-            <div className="adm-seg mono" role="tablist">
-              <button role="tab" className={projSeg === 'list' ? 'on' : ''} onClick={() => setProjSeg('list')}>Проекти клієнтів <b>{withProj.length}</b></button>
-              <button role="tab" className={projSeg === 'office' ? 'on' : ''} onClick={() => setProjSeg('office')}>Команда і ставки</button>
-            </div>
-            {projSeg === 'list' && (
-              <div className="adm-proj-new">
-                <span className="mono adm-hint">Завести проект вручну — для будь-якого клієнта, не чекаючи аудиту:</span>
-                <select className="ab-sel" value={projNewFor} onChange={(e) => setProjNewFor(e.target.value)}>
-                  <option value="">— оберіть клієнта —</option>
-                  {(rows || []).map((r) => <option key={r.userId} value={r.userId}>{r.email}{r.company ? ` · ${r.company}` : ''}</option>)}
-                </select>
-                <button className="sysx-cta is-primary" disabled={!projNewFor || busy === 'proj-new'} onClick={async () => {
-                  const row = (rows || []).find((x) => x.userId === projNewFor);
-                  if (!row) return;
-                  setBusy('proj-new');
-                  const existing = getProjects(row.record);
-                  const np = emptyProject();
-                  np.title = `Проект ${existing.length + 1} · ${row.company || row.email}`;
-                  const res = await saveProjectsFor(row.userId, [...existing, np]);
-                  setBusy('');
-                  if (res.ok) { setProjNewFor(''); setOpenUser(row.userId); }
-                  else alert('Не вдалося створити проект: ' + (res.error || ''));
-                }}>{busy === 'proj-new' ? 'Створюємо…' : '+ Новий проєкт'}</button>
-                <span className="mono adm-hint">далі в картці клієнта: назва і строки → команда з довідника «Команда і ставки» → задачі по хвилях → бюджет-матриця → публікація клієнту</span>
-              </div>
-            )}
-            {projSeg === 'office' ? <Suspense fallback={null}><PmOffice /></Suspense> : (
-              rows === null ? <p className="mc-msg mono">Завантаження…</p> : withProj.length === 0 ? <EmptyState icon="📁" text="Сформованих проектів поки немає. Заведіть перший кнопкою «+ Новий проєкт» вище — або з картки клієнта." /> : (
-                <div className="adm-table adm-tr-proj">
-                  <div className="adm-tr adm-tr-proj adm-th"><span>Клієнт</span><span>Проект</span><span>Задач</span><span>Оновлено</span><span></span></div>
-                  {withProj.map(({ r, projects }) => (
-                    <div key={r.userId} className="adm-tr adm-tr-proj">
-                      <span className="adm-c-email"><b>{r.email}</b>{r.company && <i className="mono adm-c-co"> · {r.company}</i>}</span>
-                      <span>{projects.map((p) => p.title || 'Без назви').join(' · ')}{projects.length > 1 && <i className="mono adm-c-co"> ({projects.length})</i>}</span>
-                      <span className="mono">{projects.reduce((n, p) => n + (p.tasks?.length || 0), 0)}</span>
-                      <span className="mono adm-c-date">{r.updatedAt ? rel(r.updatedAt) : '—'}</span>
-                      <button className="adm-open" onClick={() => setOpenUser(r.userId)}>Відкрити →</button>
-                    </div>
-                  ))}
-                </div>
-              )
-            )}
+            <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Команда і ставки</h1></div>
+            <Suspense fallback={<p className="mc-msg mono">Завантаження…</p>}><PmOffice /></Suspense>
           </section>
-          );
-        })()}
+        )}
 
-        {/* ── Глибокий аудит: воронка запитів і стадії ── */}
-        {/* ── Заявки аудит: той самий формат, що «Заявки», але стадія виводиться сама ── */}
         {!detail && curTab === 'auditreq' && (
           <section className="adm-sec">
-            <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Заявки аудит</h1></div>
-            <p className="adm-hint mono">Стадію тут ніхто не проставляє руками — вона змінюється сама від дій клієнта й менеджера.</p>
+            <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Аудит і проєкти</h1>
+              <input className="mc-search" placeholder="Пошук: email / компанія" value={q} onChange={(e) => setQ(e.target.value)} />
+            </div>
+            <p className="adm-hint mono">Один життєвий цикл: заявка на аудит → аудит → проєкт впровадження. Стадію ніхто не проставляє руками — вона змінюється сама від дій клієнта й менеджера.</p>
+            {/* Проєкт можна завести й без аудиту — напр. для чинного клієнта. */}
+            <div className="adm-proj-new">
+              <span className="mono adm-hint">Завести проєкт вручну, не чекаючи аудиту:</span>
+              <select className="ab-sel" value={projNewFor} onChange={(e) => setProjNewFor(e.target.value)}>
+                <option value="">— оберіть клієнта —</option>
+                {(rows || []).map((r) => <option key={r.userId} value={r.userId}>{r.email}{r.company ? ` · ${r.company}` : ''}</option>)}
+              </select>
+              <button className="sysx-cta is-primary" disabled={!projNewFor || busy === 'proj-new'} onClick={async () => {
+                const row = (rows || []).find((x) => x.userId === projNewFor);
+                if (!row) return;
+                setBusy('proj-new');
+                const existing = getProjects(row.record);
+                const np = emptyProject();
+                np.title = `Проект ${existing.length + 1} · ${row.company || row.email}`;
+                const res = await saveProjectsFor(row.userId, [...existing, np]);
+                setBusy('');
+                if (res.ok) { setProjNewFor(''); setOpenUser(row.userId); }
+                else alert('Не вдалося створити проект: ' + (res.error || ''));
+              }}>{busy === 'proj-new' ? 'Створюємо…' : '+ Новий проєкт'}</button>
+            </div>
             <Suspense fallback={<p className="mc-msg mono">Завантаження…</p>}>
               <AuditRequests rows={rows} q={q} busy={busy} onStatus={setStatus} onOpen={(uid) => { setTab('users'); setOpenUser(uid); }} />
             </Suspense>

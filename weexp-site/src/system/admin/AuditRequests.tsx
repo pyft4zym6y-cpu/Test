@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import type { AdminRow, TierStatus } from '@/lib/supa';
+import { getProjects, type AdminRow, type TierStatus } from '@/lib/supa';
 import { AUDIT_STAGES, OURS, auditStatusOf, lastMoveAt, staleDays, type AuditReqStatus } from './auditRequests';
 import { EmptyState, rel } from './shared';
 
@@ -84,6 +84,18 @@ export function AuditRequests({ rows, q, busy, onOpen, onStatus }: {
                       <span className="mono adm-lead-sub">{r.email}</span>
                       <span className="mono adm-lead-sub" title={`${st.note} · рухає: ${st.by}`}>рухає: {st.by}</span>
                       <span className="mono adm-lead-at">оновлено {rel(lastMoveAt(r))}{days >= 3 ? ` · ${days} дн. без руху` : ''}</span>
+                      {/* На проєктних стадіях картка несе те, що раніше показувала окрема таблиця «Проекти». */}
+                      {(() => {
+                        const pr = getProjects(r.record);
+                        if (!pr.length) return null;
+                        const tasks = pr.reduce((n, x) => n + (x.tasks?.length || 0), 0);
+                        return (
+                          <span className="mono adm-lead-sub">
+                            {pr.map((x) => x.title || 'Без назви').join(' · ')} · задач: {tasks}
+                            {pr.some((x) => x.published) ? ' · опубліковано' : ' · чернетка'}
+                          </span>
+                        );
+                      })()}
                       <button className="adm-lead-open" onClick={() => onOpen(r.userId)}>Картка клієнта →</button>
                       {(st.k === 'new' || st.k === 'need_data' || st.k === 'denied') && (
                         <div className="mc-row">
