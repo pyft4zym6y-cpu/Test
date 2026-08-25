@@ -1,3 +1,4 @@
+import { requireUser } from './auth.js';
 // Vercel serverless: Крок 5 — динамічне AI-інтерв'ю поглибленої діагностики.
 // Веде розмову як досвідчений консультант: ставить ПО ОДНОМУ непрямому,
 // підібраному під випадок питанню, поглиблюється туди, де у відповідях видно
@@ -43,6 +44,8 @@ const clampInt = (n, lo, hi, dflt) => {
 };
 
 export async function interview(req, res) {
+  // Витрачає токени Anthropic — лише для увійшлого користувача кабінету.
+  if (!(await requireUser(req, res))) return;
   if (req.method !== 'POST') { res.status(405).json({ error: 'POST only' }); return; }
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) { res.status(200).json({ error: 'not_configured' }); return; }

@@ -3,8 +3,12 @@
 // Env (Vercel): WORKER_URL (за замовч. — прод-URL), AUDIT_SERVER_TOKEN (= токен воркера).
 const DEFAULT_WORKER = 'https://test-production-5713.up.railway.app';
 
+import { requireStaff } from './_lib/auth.js';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ error: 'POST only' }); return; }
+  // Запускає прогін воркера (Playwright + Claude на Railway) — лише команда.
+  if (!(await requireStaff(req, res))) return;
   const base = (process.env.WORKER_URL || DEFAULT_WORKER).replace(/\/$/, '');
   const token = process.env.AUDIT_SERVER_TOKEN || process.env.WORKER_AUDIT_TOKEN;
   if (!token) { res.status(200).json({ error: 'not_configured: додайте AUDIT_SERVER_TOKEN у Vercel (те саме значення, що на воркері)' }); return; }

@@ -125,8 +125,12 @@ async function handleSufficiency(req, res, key) {
   }
 }
 
+import { requireStaff } from './_lib/auth.js';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ error: 'POST only' }); return; }
+  // Витрачає токени Anthropic — лише команда weexp.
+  if (!(await requireStaff(req, res))) return;
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) { res.status(200).json({ error: 'AI не налаштовано: додайте ANTHROPIC_API_KEY у Vercel.' }); return; }
   // Диспетчер: kind='sufficiency' → модерація; масив modules (або rewrite ai-score) → оцінка; інакше — чернетка проєкту.

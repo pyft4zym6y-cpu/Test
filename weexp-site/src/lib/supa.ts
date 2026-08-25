@@ -278,12 +278,27 @@ export type PmDirectory = { specialists?: PmSpecialist[]; roleRates?: PmRoleRate
 
 /** AI-чернетка проекту з відповідей аудиту (через /api/ai-draft → Anthropic). */
 export type AiDraft = { title?: string; tasks?: ProjTask[]; team?: ProjMember[]; tariff?: ProjMonth[]; rationale?: string };
+/**
+ * Заголовки для серверних ендпоінтів, які тепер перевіряють, хто їх зве
+ * (/api/ai-draft, /api/ai-score, /api/audit-run, /api/interview). Без сесії
+ * повертає лише content-type — сервер відповість 401, і UI покаже це чесно.
+ */
+export async function authHeaders(): Promise<Record<string, string>> {
+  const h: Record<string, string> = { 'content-type': 'application/json' };
+  try {
+    const { data } = await supabase.auth.getSession();
+    const t = data.session?.access_token;
+    if (t) h.Authorization = `Bearer ${t}`;
+  } catch { /* немає сесії — сервер відмовить */ }
+  return h;
+}
+
 export async function aiDraftProject(payload: {
   answers: Record<string, unknown>; company?: string; knowledge?: string;
   roleRates?: PmRoleRate[]; specialists?: PmSpecialist[]; startMonth?: string; span?: number;
 }): Promise<{ ok: boolean; draft?: AiDraft; error?: string }> {
   try {
-    const r = await fetch('/api/ai-draft', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
+    const r = await fetch('/api/ai-draft', { method: 'POST', headers: await authHeaders(), body: JSON.stringify(payload) });
     const j = await r.json();
     if (j.error) return { ok: false, error: j.error };
     return { ok: true, draft: j.draft as AiDraft };
@@ -296,7 +311,7 @@ export async function aiScoreAudit(payload: {
   answers?: Record<string, unknown>; company?: unknown; express?: unknown;
 }): Promise<{ ok: boolean; scores?: Record<string, ModuleScore>; error?: string }> {
   try {
-    const r = await fetch('/api/ai-score', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
+    const r = await fetch('/api/ai-score', { method: 'POST', headers: await authHeaders(), body: JSON.stringify(payload) });
     const j = await r.json();
     if (j.error) return { ok: false, error: j.error };
     return { ok: true, scores: (j.scores || {}) as Record<string, ModuleScore> };
@@ -306,7 +321,7 @@ export async function aiScoreAudit(payload: {
 /** Виклик аудит-рушія (worker) через серверний проксі /api/audit-run. */
 export async function runWorkerAudit(action: 'start' | 'status' | 'health' | 'learn' | 'learnSnapshot', payload: Record<string, unknown> = {}): Promise<{ ok?: boolean; error?: string; id?: string; job?: Record<string, unknown>; hasKey?: boolean; written?: number; snapshot?: LearningSnapshot }> {
   try {
-    const r = await fetch('/api/audit-run', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action, ...payload }) });
+    const r = await fetch('/api/audit-run', { method: 'POST', headers: await authHeaders(), body: JSON.stringify({ action, ...payload }) });
     return await r.json();
   } catch (e) { return { error: String(e) }; }
 }
@@ -340,7 +355,7 @@ export async function loadLearningSnapshot(): Promise<{ ok?: boolean; snapshot?:
 export type SufficiencyVerdict = { sufficient: boolean; coveragePct: number; summary: string; missing: { module: string; ask: string }[] };
 export async function aiSufficiency(payload: { answers: Record<string, unknown>; modules: { key: string; title: string }[]; company?: unknown }): Promise<{ ok?: boolean; verdict?: SufficiencyVerdict; error?: string }> {
   try {
-    const r = await fetch('/api/ai-draft', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ kind: 'sufficiency', ...payload }) });
+    const r = await fetch('/api/ai-draft', { method: 'POST', headers: await authHeaders(), body: JSON.stringify({ kind: 'sufficiency', ...payload }) });
     return await r.json();
   } catch (e) { return { error: String(e) }; }
 }

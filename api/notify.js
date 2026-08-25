@@ -18,11 +18,18 @@ export default async function handler(req, res) {
     });
     return;
   }
-  const { subject, text } = req.body ?? {};
+  // Эндпоинт открыт (его зовёт боевой бриф без токена), поэтому ограничиваем
+  // ФОРМУ письма, а не только факт вызова: длины режем, перевод строки из темы
+  // убираем, тему помечаем префиксом — чтобы чужая рассылка не притворялась
+  // системным уведомлением и не била по репутации домена в Resend.
+  const raw = req.body ?? {};
+  const subject = String(raw.subject ?? '').replace(/[\r\n]+/g, ' ').trim().slice(0, 160);
+  const text = String(raw.text ?? '').slice(0, 8000);
   if (!subject || !text) {
     res.status(400).json({ error: 'Нужны subject и text' });
     return;
   }
+  const safeSubject = `[weexp] ${subject}`;
   try {
     const r = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -30,8 +37,8 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         from: NOTIFY_FROM || 'WEEXP <no-reply@weexp.agency>',
         to: [NOTIFY_EMAIL],
-        subject: String(subject).slice(0, 150),
-        text: String(text).slice(0, 4000),
+        subject: safeSubject,
+        text,
       }),
     });
     const j = await r.json();

@@ -1,3 +1,4 @@
+import { authHeaders } from '@/lib/supa';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useT, useLp } from '@/i18n';
@@ -50,7 +51,8 @@ export function Stage5({ context, onClose, onSaveHistory }: { context: Interview
     setBusy(true); setErr('');
     try {
       const r = await fetch('/api/interview', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        // Ендпоінт витрачає токени Anthropic і тепер вимагає вхід — кладемо сесію.
+        method: 'POST', headers: await authHeaders(),
         body: JSON.stringify({ context, history: hist, action }),
       });
       const j = await r.json();
