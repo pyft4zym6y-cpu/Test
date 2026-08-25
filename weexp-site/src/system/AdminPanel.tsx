@@ -27,6 +27,8 @@ const UserDetail = lazy(() => import('./admin/UserDetail').then((m) => ({ defaul
 const LeadDetail = lazy(() => import('./admin/LeadDetail').then((m) => ({ default: m.LeadDetail })));
 const TeamManager = lazy(() => import('./admin/TeamManager').then((m) => ({ default: m.TeamManager })));
 const PmOffice = lazy(() => import('./admin/PmOffice').then((m) => ({ default: m.PmOffice })));
+const AuditRequests = lazy(() => import('./admin/AuditRequests').then((m) => ({ default: m.AuditRequests })));
+const WorkerTab = lazy(() => import('./admin/WorkerTab').then((m) => ({ default: m.WorkerTab })));
 const AuditBuilder = lazy(() => import('./AuditBuilder').then((m) => ({ default: m.AuditBuilder })));
 
 export function AdminPanel() {
@@ -281,7 +283,15 @@ export function AdminPanel() {
         <Link to="/" className="adm-brand"><b>WEEXP</b><span className="mono">admin</span></Link>
         <nav className="adm-nav">
           {allowedTabs.map((tb) => (
-            <button key={tb.id} className={`adm-nav-i${curTab === tb.id ? ' on' : ''}`} onClick={() => { setTab(tb.id); setOpenUser(null); }}>{tb.label}</button>
+            <div key={tb.id}>
+              <button className={`adm-nav-i${curTab === tb.id ? ' on' : ''}`} onClick={() => { setTab(tb.id); setOpenUser(null); }}>{tb.label}</button>
+              {/* Другий рівень: показуємо, коли активна сама секція або її підпункт. */}
+              {(tb.sub || []).filter((sb) => can(user, sb.cap)).map((sb) => (
+                (curTab === tb.id || curTab === sb.id) && (
+                  <button key={sb.id} className={`adm-nav-i adm-nav-sub${curTab === sb.id ? ' on' : ''}`} onClick={() => { setTab(sb.id); setOpenUser(null); }}>{sb.label}</button>
+                )
+              ))}
+            </div>
           ))}
         </nav>
         <div className="adm-foot mono">
@@ -571,143 +581,30 @@ export function AdminPanel() {
         })()}
 
         {/* ── Глибокий аудит: воронка запитів і стадії ── */}
-        {!detail && curTab === 'deep' && (() => {
-          type DStage = 'requested' | 'data' | 'granted' | 'work' | 'done' | 'rejected';
-          const stageOf = (rec: DiagRecord | null | undefined): DStage | null => {
-            const st = Object.values(rec?.funnel?.tierStatus || {});
-            const mod = rec?.deepModeration?.status;
-            if (mod === 'accepted' || (rec?.sharedDocs || []).length) return 'done';
-            if (mod === 'submitted' || mod === 'clarify') return 'work';
-            if (st.includes('granted')) return 'granted';
-            if (st.includes('data')) return 'data';
-            if (st.includes('rejected')) return 'rejected';
-            if (st.includes('requested')) return 'requested';
-            return null;
-          };
-          const STAGES: { k: DStage; label: string; note: string }[] = [
-            { k: 'requested', label: 'Запит надіслано', note: 'клієнт натиснув «Почати глибокий аудит» — чекає рішення менеджера' },
-            { k: 'data', label: 'Потрібні дані', note: 'менеджер запросив додаткові дані/доступи' },
-            { k: 'granted', label: 'Доступ надано', note: 'код видано — клієнт заповнює опитувальник і доступи' },
-            { k: 'work', label: 'Анкета в роботі', note: 'опитувальник надіслано / на уточненні — аудит виконується' },
-            { k: 'done', label: 'Завершено', note: 'аудит прийнято, фінальні документи передані' },
-          ];
-          const withStage = (rows || [])
-            .map((r) => ({ r, stage: stageOf(r.record) }))
-            .filter((x): x is { r: typeof x.r; stage: DStage } => !!x.stage)
-            .filter((x) => !q || x.r.email.toLowerCase().includes(q.toLowerCase()) || (x.r.company || '').toLowerCase().includes(q.toLowerCase()));
-          const cnt = (k: DStage) => withStage.filter((x) => x.stage === k).length;
-          const rejected = cnt('rejected');
-          const reached = (i: number) => STAGES.slice(i).reduce((n, st2) => n + cnt(st2.k), 0);
-          const base = reached(0) || 1;
-          return (
+        {/* ── Заявки аудит: той самий формат, що «Заявки», але стадія виводиться сама ── */}
+        {!detail && curTab === 'auditreq' && (
           <section className="adm-sec">
-            <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Глибокий аудит</h1>
-              <input className="mc-search" placeholder="Пошук: email / компанія" value={q} onChange={(e) => setQ(e.target.value)} /></div>
-            <p className="adm-hint mono">Всі запити на глибокий аудит і їхня воронка: запит → дані → доступ → анкета → завершено. Видача кодів і модерація — у картці клієнта (кнопка «Відкрити»).</p>
-            {rows === null ? <p className="mc-msg mono">Завантаження…</p> : withStage.length === 0 ? <EmptyState icon="🔬" text="Запитів на глибокий аудит поки немає. Вони зʼявляться, щойно клієнт натисне «Почати глибокий аудит» у кабінеті." /> : (<>
-              <div className="adm-dfun">
-                {STAGES.map((st2, i) => {
-                  const n = reached(i);
-                  const pct = Math.round((n / base) * 100);
-                  return (
-                    <div key={st2.k} className="adm-dfun-row" title={st2.note}>
-                      <span className="adm-dfun-l">{st2.label}</span>
-                      <span className="adm-dfun-bar"><i style={{ width: `${Math.max(4, pct)}%` }} /></span>
-                      <b className="adm-dfun-n mono">{n}</b>
-                      <span className="adm-dfun-pct mono">{pct}%</span>
-                      <span className="adm-dfun-here mono">{cnt(st2.k) ? `зараз тут: ${cnt(st2.k)}` : ''}</span>
-                    </div>
-                  );
-                })}
-                {rejected > 0 && <p className="adm-dfun-rej mono">✕ відхилено: {rejected}</p>}
-              </div>
-              {STAGES.map((st2) => {
-                const list = withStage.filter((x) => x.stage === st2.k);
-                if (!list.length) return null;
-                return (
-                  <div key={st2.k} className="adm-dfun-grp">
-                    <span className="cab-acc-cat-h mono" style={{ display: 'block', margin: '18px 0 8px' }}>{st2.label} · {list.length}</span>
-                    {list.map(({ r }) => (
-                      <div key={r.userId} className="adm-tr adm-tr-deep">
-                        <span className="adm-c-email"><b>{r.email}</b>{r.company && <i className="mono adm-c-co"> · {r.company}</i>}</span>
-                        <span className="mono">{r.record?.funnel?.accessCode ? `🔑 ${r.record.funnel.accessCode}` : '—'}</span>
-                        <span className="mono adm-c-date">{r.updatedAt ? rel(r.updatedAt) : '—'}</span>
-                        <button className="adm-open" onClick={() => setOpenUser(r.userId)}>Відкрити →</button>
-                      </div>
-                    ))}
-                  </div>
-                );
-              })}
-              {rejected > 0 && (
-                <div className="adm-dfun-grp">
-                  <span className="cab-acc-cat-h mono" style={{ display: 'block', margin: '18px 0 8px' }}>Відхилені · {rejected}</span>
-                  {withStage.filter((x) => x.stage === 'rejected').map(({ r }) => (
-                    <div key={r.userId} className="adm-tr adm-tr-deep">
-                      <span className="adm-c-email"><b>{r.email}</b>{r.company && <i className="mono adm-c-co"> · {r.company}</i>}</span>
-                      <span className="mono">{Object.values(r.record?.funnel?.tierReason || {}).filter(Boolean).join(' · ') || '—'}</span>
-                      <span className="mono adm-c-date">{r.updatedAt ? rel(r.updatedAt) : '—'}</span>
-                      <button className="adm-open" onClick={() => setOpenUser(r.userId)}>Відкрити →</button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>)}
-          </section>
-          );
-        })()}
-
-        {/* ── Запити доступів (глибокий аудит) ── */}
-        {tab === 'access' && (
-          <section className="adm-sec">
-            <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Запити доступів</h1>
-              <input className="mc-search" placeholder="Пошук: email / компанія" value={q} onChange={(e) => setQ(e.target.value)} /></div>
-            <p className="adm-hint mono">Запити на глибокий аудит від клієнтів. Надаєте доступ — клієнту генерується код і відкривається робочий розділ. (T1–T4 = внутрішня методологія.)</p>
-            {rows === null ? <p className="mc-msg mono">Завантаження…</p> : (
-              <div className="mc-list">
-                {filtered.filter((r) => Object.keys(r.funnel?.tierStatus || {}).length > 0).map((r) => (
-                  <div key={r.userId} className="mc-card">
-                    <div className="mc-card-top">
-                      <div><b className="mc-email">{r.email}</b>{r.company && <span className="mc-company mono"> · {r.company}</span>}</div>
-                    </div>
-                    {r.funnel?.accessCode ? (
-                      <div className="adm-code-banner">
-                        <span className="adm-code-banner-l mono">Код доступу видано клієнту</span>
-                        <button className="adm-code adm-code-lg" onClick={() => { navigator.clipboard?.writeText(r.funnel!.accessCode!); setBusy('copied:' + r.userId); setTimeout(() => setBusy(''), 1200); }} title="Скопіювати код">
-                          {busy === 'copied:' + r.userId ? '✓ скопійовано' : `🔑 ${r.funnel.accessCode}`}
-                        </button>
-                        <span className="adm-code-banner-h mono">клієнт вводить його у «Глибокому аудиті»</span>
-                      </div>
-                    ) : (
-                      <p className="adm-code-hint mono">Код доступу зʼявиться тут після «Надати».</p>
-                    )}
-                    <div className="mc-tiers">
-                      {Object.keys(r.funnel?.tierStatus || {}).map((tid) => {
-                        const cur = (r.funnel?.tierStatus?.[tid] || 'none') as TierStatus | 'none';
-                        const files = r.funnel?.tierFiles?.[tid] || [];
-                        const b = `${r.userId}:${tid}`;
-                        return (
-                          <div key={tid} className="mc-tier">
-                            <div className="mc-tier-l"><b className="mc-tid">{tierLabel(tid)}</b><span className={`cab-badge mono tst-${ST[cur]?.cls ?? 'muted'}`}>{ST[cur]?.txt ?? cur}</span>
-                              {files.map((f, i) => <button key={i} className="mc-file mono" onClick={() => openFile(f.path)}>📎 {f.name}</button>)}</div>
-                            <div className="mc-tier-act">
-                              <button className="mc-btn ok" disabled={busy === b} onClick={() => setStatus(r.userId, tid, 'granted')}>Надати</button>
-                              <button className="mc-btn wait" disabled={busy === b} onClick={() => setStatus(r.userId, tid, 'data')}>Потрібні дані</button>
-                              <button className="mc-btn bad" disabled={busy === b} onClick={() => setStatus(r.userId, tid, 'rejected')}>Відхилити</button>
-                              <button className="mc-btn ghost" disabled={busy === b} onClick={() => clearTier(r.userId, tid)} title="Скинути до «не запрошено»">✕</button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-                {filtered.filter((r) => Object.keys(r.funnel?.tierStatus || {}).length > 0).length === 0 && <EmptyState icon="🔐" text="Запитів доступу поки немає." />}
-              </div>
-            )}
+            <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Заявки аудит</h1></div>
+            <p className="adm-hint mono">Стадію тут ніхто не проставляє руками — вона змінюється сама від дій клієнта й менеджера.</p>
+            <Suspense fallback={<p className="mc-msg mono">Завантаження…</p>}>
+              <AuditRequests rows={rows} q={q} busy={busy} onStatus={setStatus} onOpen={(uid) => { setTab('users'); setOpenUser(uid); }} />
+            </Suspense>
           </section>
         )}
 
-        {/* ── Заявки · міні-CRM ── */}
+        {/* ── Воркер: особистий інструмент адміністратора ── */}
+        {!detail && curTab === 'worker' && (
+          <Suspense fallback={<p className="mc-msg mono">Завантаження…</p>}><WorkerTab /></Suspense>
+        )}
+
+        {/* ── Конструктор аудиту: другий рівень під «Аудити» ── */}
+        {!detail && curTab === 'builder' && (
+          <section className="adm-sec">
+            <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Конструктор аудиту</h1></div>
+            <Suspense fallback={<p className="mc-msg mono">Завантаження…</p>}><AuditBuilder /></Suspense>
+          </section>
+        )}
+
         {!detail && curTab === 'leads' && (
           <section className="adm-sec">
             <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Заявки</h1>

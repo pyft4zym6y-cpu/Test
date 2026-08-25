@@ -120,9 +120,9 @@ export function AuditBuilder() {
   });
 
   const loadFramework = () => {
-    if (!confirm('Замінити поточні блоки ЄДИНИМ повним фреймворком (12 модулів, включно з питаннями під усі документи пакета)? Поточні незбережені блоки буде втрачено. Збереження — окремою кнопкою «Зберегти нову версію».')) return;
+    if (!confirm('Замінити поточні блоки повним фреймворком: 12 модулів питань + блок «Доступи» (21 система з каталогу) + блок «Файли» (вхідні дані під пакет документів)? Поточні незбережені блоки буде втрачено. Збереження — окремою кнопкою «Зберегти нову версію».')) return;
     setTpl((t) => ({ ...frameworkFor('full'), version: t?.version || 1 }));
-    setMsg('Завантажено повний фреймворк (12 модулів). Перевірте й натисніть «Зберегти нову версію».');
+    setMsg('Завантажено повний фреймворк: 12 модулів + доступи + файли. Перевірте й натисніть «Зберегти нову версію».');
   };
 
   const save = async () => {
@@ -139,7 +139,7 @@ export function AuditBuilder() {
       <div className="adm-sec-head">
         <div><h1 className="sysx-display adm-h1">Конструктор аудиту</h1><span className="mono adm-hint">Активна версія v{tpl.version} · {tpl.blocks.length} блоків</span></div>
         <div className="adm-head-r">
-          <button className="sysx-cta" onClick={loadFramework} title="Єдиний максимально повний фреймворк — без пресетів за типом бізнесу">↺ Повний фреймворк</button>
+          <button className="sysx-cta" onClick={loadFramework} title="12 модулів питань із auditTemplate.ts + доступи з каталогу + файли під пакет документів">↺ Повний фреймворк</button>
           <button className="sysx-cta" onClick={() => tpl && exportTemplatePdf(tpl)} title="Красиво оформлений список усіх питань, доступів і файлів — у PDF">📄 Завантажити PDF</button>
           <button className="sysx-cta is-primary" onClick={save} disabled={busy}>{busy ? 'Зберігаємо…' : 'Зберегти нову версію →'}</button>
         </div>

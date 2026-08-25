@@ -39,19 +39,22 @@ export type SiteTraffic = {
   period?: string; sessions?: number; users?: number; pageviews?: number; bounceRate?: number;
   sources?: { name: string; sessions: number }[]; pages?: { path: string; views: number }[]; error?: string;
 };
-export type Tab = 'overview' | 'users' | 'audits' | 'template' | 'access' | 'leads' | 'pm' | 'projects' | 'deep' | 'settings';
+export type Tab = 'overview' | 'users' | 'audits' | 'builder' | 'template' | 'access' | 'leads' | 'pm' | 'projects' | 'auditreq' | 'deep' | 'worker' | 'settings';
 export type Cap = Parameters<typeof can>[1];
 // Структура меню: Дашборд → Заявки (вхідна точка) → Користувачі → Аудити (вся
 // логіка проходження, підрозділи + конструктор) → Проекти (робочий простір) → Налаштування.
-export const TABS: { id: Tab; label: string; cap: Cap }[] = [
+export const TABS: { id: Tab; label: string; cap: Cap; sub?: { id: Tab; label: string; cap: Cap }[] }[] = [
   { id: 'overview', label: 'Дашборд', cap: 'view_dashboard' },
   { id: 'leads', label: 'Заявки', cap: 'view_leads' },
+  { id: 'auditreq', label: 'Заявки аудит', cap: 'view_audits' },
   { id: 'users', label: 'Користувачі', cap: 'view_users' },
-  { id: 'audits', label: 'Аудити', cap: 'view_audits' },
-  { id: 'deep', label: 'Глибокий аудит', cap: 'view_audits' },
+  // Другий рівень: конструктор — окремий пункт, але прив'язаний до аудиту.
+  { id: 'audits', label: 'Аудити', cap: 'view_audits', sub: [{ id: 'builder', label: 'Конструктор аудиту', cap: 'edit_template' }] },
+  { id: 'worker', label: 'Воркер', cap: 'view_audits' },
   { id: 'projects', label: 'Проекти', cap: 'manage_pm' },
   { id: 'settings', label: 'Налаштування', cap: 'manage_settings' },
 ];
+
 // Джерела заявок, що є запитами доступу (не первинна комунікація).
 export const ACCESS_SOURCES = ['cabinet-access', 'cabinet-deep'];
 export const SRC_LABEL: Record<string, string> = {

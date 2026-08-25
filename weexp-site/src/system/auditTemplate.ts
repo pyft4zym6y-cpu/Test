@@ -1,3 +1,4 @@
+import { ACCESS_CATALOG, type AccessMethod } from '@/data/accessCatalog';
 /*
  * Шаблон глибокого аудиту (конструктор). Один глобальний шаблон із версіонуванням.
  * Блоки → питання. Типи питань, обов’язковість, підказки, умовна логіка, ролі.
@@ -30,6 +31,61 @@ export type AuditTemplate = { version: number; blocks: Block[] };
 
 /** Ролі всередині заказника — обмежують, хто які блоки заповнює. */
 export const CLIENT_ROLES = ['Власник', 'Маркетинг', 'Аналітика', 'Фінанси', 'Технічний', 'Операції'];
+
+/* Блоки «Доступи» і «Файли» НЕ пишемо руками: доступи беремо з каталогу
+   (там 21 система з категоріями, способами і інструкціями), файли — зі списку
+   вхідних даних, потрібних пакету документів. Доти ці два блоки збиралися
+   вручну й відставали від каталогу: у фреймворку не було навіть GA4. */
+const M_LABEL: Record<AccessMethod, string> = { view: 'доступ переглядача', oauth: 'конектор', upload: 'вивантаження' };
+
+/** Блок доступів — рівно те, що вміє каталог, згруповано за категорією. */
+export function accessBlock(): Block {
+  const items = [...ACCESS_CATALOG].sort((a, b) => a.category.localeCompare(b.category) || a.system.localeCompare(b.system));
+  return {
+    key: 'access', cat: '13', title: 'Доступи до систем', role: 'Технічний',
+    questions: items.map((a) => ({
+      key: `access_${a.id.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`,
+      label: `${a.category} · ${a.system}`,
+      type: 'access' as QType,
+      hint: `${a.why} · способи: ${a.methods.map((m) => M_LABEL[m]).join(' / ')}`,
+    })),
+  };
+}
+
+/** Вхідні файли: те, без чого не збираються фінансовий звіт, томи й Гант.
+    tpl — готовий шаблон у /templates, якщо клієнту простіше заповнити форму. */
+const FILE_REQUESTS: { k: string; label: string; hint: string; tpl?: string; required?: boolean }[] = [
+  { k: 'pnl', label: 'P&L за 12–24 місяці', hint: 'основа фінансового звіту й мосту А→Б', tpl: 'weexp-pnl.csv', required: true },
+  { k: 'unit', label: 'Юніт-економіка (по категоріях або SKU)', hint: 'маржинальність, без неї важелі рахуються наосліп', tpl: 'weexp-unit-economics.csv', required: true },
+  { k: 'revdyn', label: 'Динаміка виторгу по місяцях', hint: 'сезонність і точка зламу', tpl: 'weexp-revenue-dynamics.csv', required: true },
+  { k: 'channels', label: 'Канали продажів і витрати на них', hint: 'розподіл виторгу й бюджету по каналах', tpl: 'weexp-channels.csv', required: true },
+  { k: 'orders', label: 'Вивантаження замовлень за 24 місяці (CSV)', hint: 'когорти, повторні покупки, AOV', required: true },
+  { k: 'catalog', label: 'Вивантаження каталогу товарів', hint: 'структура, атрибути, контент карток' },
+  { k: 'stock', label: 'Залишки і закупівельні ціни', hint: 'оборотність, неліквід, дефіцит' },
+  { k: 'adreports', label: 'Рекламні звіти за 6–12 місяців', hint: 'якщо доступ до кабінетів дати не можна' },
+  { k: 'cjm', label: 'Шлях клієнта, як ви його бачите', hint: 'звіримо з тим, що покаже обхід', tpl: 'weexp-cjm.csv' },
+  { k: 'accessmap', label: 'Карта систем і відповідальних', hint: 'хто чим володіє — щоб не шукати власника доступу', tpl: 'weexp-data-access.csv' },
+  { k: 'base', label: 'База контактів (знеособлено, під NDA)', hint: 'retention і сегменти' },
+  { k: 'org', label: 'Оргструктура та ролі', hint: 'хто за що відповідає в комерції' },
+  { k: 'brandbook', label: 'Бренд-бук або гайдлайни', hint: 'щоб рекомендації не суперечили айдентиці' },
+  { k: 'b2b', label: 'Прайс і умови для B2B / гуртових', hint: 'якщо є оптовий контур' },
+  { k: 'contracts', label: 'Договори з підрядниками (за потреби)', hint: 'коли в скоупі є передача робіт' },
+  { k: 'screens', label: 'Скріншоти кабінетів, до яких не даєте доступ', hint: 'резервний контур: розберемо зором' },
+];
+
+/** Блок файлів — один список, видимий клієнту у вкладці «Файли». */
+export function filesBlock(): Block {
+  return {
+    key: 'files', cat: '14', title: 'Файли та вивантаження', role: 'Фінанси',
+    questions: FILE_REQUESTS.map((f) => ({
+      key: `files_${f.k}`,
+      label: f.label,
+      type: 'file' as QType,
+      required: f.required,
+      hint: f.tpl ? `${f.hint} · шаблон: /templates/${f.tpl}` : f.hint,
+    })),
+  };
+}
 
 export const uid = (p = 'q') => `${p}_${Math.random().toString(36).slice(2, 8)}`;
 
@@ -388,8 +444,11 @@ export function frameworkFor(presetId: string): AuditTemplate {
   const preset = FRAMEWORK_PRESETS.find((p) => p.id === presetId) || FRAMEWORK_PRESETS[0];
   const byKey = new Map(AUDIT_FRAMEWORK.blocks.map((b) => [b.key, b]));
   const blocks = preset.modules.map((k) => byKey.get(k)).filter((b): b is Block => !!b);
-  return { version: 1, blocks: structuredClone(blocks) };
+  // Доступи і файли додаємо завжди й генеруємо з даних — вони не залежать від
+  // пресета і не мають розходитись із каталогом доступів.
+  return { version: 1, blocks: structuredClone([...blocks, accessBlock(), filesBlock()]) };
 }
+
 
 const LS_KEY = 'weexp:audit-template-v1';
 
