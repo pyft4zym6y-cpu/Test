@@ -101,7 +101,61 @@ export const PACK_VOLUMES: PackVolume[] = [
     descEn: 'A fully working tool, not an illustration: tasks with owners (R/A), predecessors, a weekly grid and DoD + "Legend", "Contractors", "Resources" sheets.',
     vol: '4 листи', scope: 'both' },
 ];
-export const PACK_DOC_COUNT = PACK_REPORTS.length + PACK_VOLUMES.length; // 11 документів
+/* ── 12 аудитів як ОКРЕМІ документи ────────────────────────────────────────
+   Раніше вони були главами всередині діагностичного звіту. Тепер кожен —
+   самостійний документ, як UX/UI, контент і SEO: свій метод, свій профільний
+   набір OS-скілів у рушії (worker/src/domainSkills.ts), свій обсяг.
+   `engine` — модулі рушія, які реально збирають цей аудит сьогодні;
+   порожній масив означає: документ поки збирається руками аудитора. */
+export type PackAudit = {
+  id: string; code: string; uk: string; en: string;
+  descUk: string;
+  skills: string[];        // профільні OS-скіли (+ завжди data/reporting/synthesis)
+  engine: string[];        // модулі worker/src, що виробляють документ
+  scope: 'both' | 'dept';
+};
+export const PACK_AUDITS: PackAudit[] = [
+  { id: 'a-business', code: 'A1', uk: 'Business-аудит', en: 'Business audit',
+    descUk: 'Модель, P&L, юніт-економіка, каса: на чому бізнес заробляє і де втрачає маржу.',
+    skills: ['commerce-os', 'finance-os'], engine: ['money', 'unitecon'], scope: 'both' },
+  { id: 'a-market', code: 'A2', uk: 'Market-аудит', en: 'Market audit',
+    descUk: 'Ринок, конкуренти, позиціонування, бренд і зовнішній інфофон.',
+    skills: ['brand-os', 'identity-os'], engine: ['competitor', 'externalAudits'], scope: 'both' },
+  { id: 'a-product', code: 'A3', uk: 'Product-аудит', en: 'Product audit',
+    descUk: 'Асортимент, ABC/XYZ, ціноутворення, dead stock, глибина категорій.',
+    skills: ['product-os', 'merchandising-os', 'pricing-os'], engine: ['pricechannel'], scope: 'both' },
+  { id: 'a-customer', code: 'A4', uk: 'Customer-аудит', en: 'Customer audit',
+    descUk: 'Сегменти, LTV, retention, когорти, голос клієнта і шлях до повторної покупки.',
+    skills: ['retention-os', 'b2b-os'], engine: ['journey'], scope: 'both' },
+  { id: 'a-website', code: 'A5', uk: 'Website-аудит', en: 'Website audit',
+    descUk: 'Воронка, checkout, mobile, швидкість, доступність — де вітрина втрачає замовлення.',
+    skills: ['ux-os', 'build-os'], engine: ['uxui', 'pagereport', 'prototype', 'uxflow'], scope: 'both' },
+  { id: 'a-seo', code: 'A6', uk: 'SEO/GEO-аудит', en: 'SEO/GEO audit',
+    descUk: 'Індексація, семантика, контент, видимість в AI-пошуку.',
+    skills: ['seo-os', 'content-os'], engine: ['seoarch', 'contentaudit'], scope: 'both' },
+  { id: 'a-acquisition', code: 'A7', uk: 'Acquisition-аудит', en: 'Acquisition audit',
+    descUk: 'Канали, кампанії, креативи, атрибуція, маркетингові механіки.',
+    skills: ['paid-os', 'marketplace-os'], engine: ['channels', 'mechanics'], scope: 'both' },
+  { id: 'a-crm', code: 'A8', uk: 'CRM/Retention-аудит', en: 'CRM & retention audit',
+    descUk: 'База, flows, доставленість, лояльність, реактивація.',
+    skills: ['retention-os', 'content-os'], engine: [], scope: 'both' },
+  { id: 'a-analytics', code: 'A9', uk: 'Analytics-аудит', en: 'Analytics audit',
+    descUk: 'Якість даних, події, атрибуція, BI: чи можна взагалі вірити цифрам.',
+    skills: ['data-os', 'reporting-os'], engine: [], scope: 'both' },
+  { id: 'a-operations', code: 'A10', uk: 'Operations-аудит', en: 'Operations audit',
+    descUk: 'Склад, закупівлі, доставка, повернення, юридичний контур.',
+    skills: ['ops-os', 'legal-os'], engine: [], scope: 'dept' },
+  { id: 'a-technology', code: 'A11', uk: 'Technology-аудит', en: 'Technology audit',
+    descUk: 'Платформа, інтеграції, безпека, bus-factor, AI-готовність.',
+    skills: ['build-os', 'ai-os'], engine: ['techaudit'], scope: 'both' },
+  { id: 'a-organization', code: 'A12', uk: 'Organization-аудит', en: 'Organization audit',
+    descUk: 'Команда, процеси, ритм управління, зрілість, автономність власника.',
+    skills: ['people-os'], engine: ['maturity'], scope: 'dept' },
+];
+/** Скільки з 12 аудитів рушій уже вміє збирати сам. */
+export const AUDITS_WITH_ENGINE = PACK_AUDITS.filter((a) => a.engine.length > 0).length;
+
+export const PACK_DOC_COUNT = PACK_REPORTS.length + PACK_VOLUMES.length + PACK_AUDITS.length; // 5 звітів + 6 томів + 12 аудитів = 23
 
 export const PACK_CHAPTERS: PackChapter[] = [
   // ── r1 · Презентація ──

@@ -77,8 +77,13 @@ export function scopedContext(packs: KnowledgePack[], scope: string): string {
 }
 
 /** Подмешиваемый метод-контекст для скоупа (analyze | uxui | prototype). */
-export async function knowledgeFor(scope: string): Promise<string> {
-  return scopedContext(await loadPacks(), scope);
+export async function knowledgeFor(scope: string, domain?: string): Promise<string> {
+  const base = scopedContext(await loadPacks(), scope);
+  // Профильные скиллы домена (+ слои аналитика и консультанта) — только когда
+  // домен задан: общий анализ по-прежнему получает лишь дистилляты.
+  if (!domain) return base;
+  const { domainContext } = await import('./domainSkills.js');
+  return base + (await domainContext(domain));
 }
 
 export async function knowledgeCount(): Promise<number> {
