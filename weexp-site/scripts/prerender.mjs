@@ -11,7 +11,11 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const DIST = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist');
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+const DIST = join(ROOT, 'dist');
+// Та сама таблиця, що й у рантаймі (src/lib/seo.tsx) — щоб статика й застосунок
+// не розповідали різне про той самий продукт.
+const SEO = JSON.parse(await readFile(join(ROOT, 'src', 'lib', 'seo-data.json'), 'utf8'));
 const ORIGIN = 'https://weexp.agency';
 const SUF = ' · WEEXP';
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -96,7 +100,44 @@ for (const [slug, title, en] of SERVICE_META) {
   });
 }
 
+// Мета беремо з спільної таблиці (де вона є) — статика більше не розходиться
+// з рантаймом. Тіло сторінки лишається багатим, як було.
+for (const r of ROUTES) {
+  const m = SEO.routes[r.path];
+  if (m) { r.title = m.uk[0]; r.desc = m.uk[1]; }
+}
+
+// Підсторінки експертиз: раніше не мали ні статики, ні навіть title у рантаймі.
+for (const [slug, m] of Object.entries(SEO.expansion)) {
+  ROUTES.push({
+    path: `/expansion/${slug}`, og: 'expansion', title: m.uk[0], desc: m.uk[1],
+    content: `<h1>${esc(m.uk[0].split(' — ')[0])}</h1><p>${esc(m.uk[1])}</p>`,
+  });
+}
+
+// EN-двійники. Тіло — з затвердженої EN-мети, а не переклад UK-тексту на око.
+const EN = [];
+for (const r of ROUTES) {
+  const key = r.path;
+  const m = SEO.routes[key] || (key.startsWith('/expansion/') ? SEO.expansion[key.slice('/expansion/'.length)] : null);
+  if (!m) continue;
+  EN.push({
+    path: key === '/' ? '/en' : `/en${key}`, og: r.og, lang: 'en',
+    title: m.en[0], desc: m.en[1],
+    content: `<h1>${esc(m.en[0].split(' — ')[0].replace(' · WEEXP', ''))}</h1><p>${esc(m.en[1])}</p>`,
+  });
+}
+ROUTES.push(...EN);
+
 const canon = (p) => ORIGIN + (p === '/' ? '/' : p);
+/** UK ↔ EN + x-default. Раніше hreflang ставив лише JS — краулери без JS його не бачили. */
+const altsFor = (path) => {
+  const base = path === '/en' ? '/' : path.startsWith('/en/') ? path.slice(3) : path;
+  const uk = canon(base);
+  const en = canon(base === '/' ? '/en' : `/en${base}`);
+  return [['uk', uk], ['en', en], ['x-default', uk]]
+    .map(([hl, href]) => `<link rel="alternate" hreflang="${hl}" href="${href}">`).join('');
+};
 
 // FAQPage і Service лишаємо ТІЛЬКИ на головній (де FAQ/послуга справді на сторінці);
 // на інших сторінках Google вимагає видимий контент під розмітку — тож віддаємо
@@ -109,6 +150,8 @@ function build(tpl, r) {
   if (r.path !== '/') h = h.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/, MINIMAL_LD);
   h = h.replace(/(<meta name="description" content=")[^"]*(")/, `$1${esc(r.desc)}$2`);
   h = h.replace(/(<link rel="canonical" href=")[^"]*(")/, `$1${canon(r.path)}$2`);
+  if (r.lang === 'en') h = h.replace(/<html([^>]*)lang="[^"]*"/, '<html$1lang="en"');
+  h = h.replace('</head>', `${altsFor(r.path)}</head>`);
   h = h.replace(/(<meta property="og:url" content=")[^"]*(")/, `$1${canon(r.path)}$2`);
   h = h.replace(/(<meta property="og:title" content=")[^"]*(")/, `$1${esc(r.title)}$2`);
   h = h.replace(/(<meta property="og:description" content=")[^"]*(")/, `$1${esc(r.desc)}$2`);
@@ -134,4 +177,12 @@ for (const r of ROUTES) {
   await writeFile(out, html, 'utf8');
   n++;
 }
-console.log(`prerender: wrote ${n} static route pages`);
+// Карту сайту пишемо з ТОГО САМОГО списку маршрутів. Доти вона велася руками і
+// встигла розійтися: обіцяла 13 адрес, для яких статики не існувало.
+const EXTRA = ['/privacy.html', '/oferta.html'];
+const urls = [...ROUTES.map((r) => r.path), ...EXTRA];
+const body = urls.map((p) => `  <url><loc>${ORIGIN}${p === '/' ? '/' : p}</loc></url>`).join('\n');
+await writeFile(join(DIST, 'sitemap.xml'),
+  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`, 'utf8');
+
+console.log(`prerender: wrote ${n} static route pages + sitemap (${urls.length} urls)`);
