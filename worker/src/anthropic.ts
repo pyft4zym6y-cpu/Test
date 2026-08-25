@@ -6,6 +6,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { maybeCompress } from './headroom.js';
 import { withTimeout } from './util/timeout.js';
+import { allSkillsContext } from './domainSkills.js';
 
 export const MODEL = process.env.AUDIT_MODEL || 'claude-opus-5';
 
@@ -27,9 +28,15 @@ export const hasKey = () => Boolean(process.env.ANTHROPIC_API_KEY);
 
 /* ── Учёт токенов на прогон (для unit-economics / cost per audit). ──
  * Аккумулятор сбрасывается в начале прогона (pipeline) и читается в Audit Run Record. */
-export type TokenUsage = { calls: number; inputTokens: number; outputTokens: number };
-let meter: TokenUsage = { calls: 0, inputTokens: 0, outputTokens: 0 };
-export function resetUsage(): void { meter = { calls: 0, inputTokens: 0, outputTokens: 0 }; }
+export type TokenUsage = {
+  calls: number; inputTokens: number; outputTokens: number;
+  /** Сколько токенов пришло ИЗ кеша и сколько записано В кеш. Без этих двух
+   *  чисел нельзя проверить, работает ли кеширование метода: если cacheRead
+   *  остаётся нулём от вызова к вызову — префикс где-то ломается. */
+  cacheRead: number; cacheWrite: number;
+};
+let meter: TokenUsage = { calls: 0, inputTokens: 0, outputTokens: 0, cacheRead: 0, cacheWrite: 0 };
+export function resetUsage(): void { meter = { calls: 0, inputTokens: 0, outputTokens: 0, cacheRead: 0, cacheWrite: 0 }; }
 export function getUsage(): TokenUsage { return { ...meter }; }
 function recordUsage(resp: any): void {
   try {
@@ -37,6 +44,8 @@ function recordUsage(resp: any): void {
     if (!u) return;
     meter.calls += 1;
     meter.inputTokens += (u.input_tokens || 0) + (u.cache_read_input_tokens || 0) + (u.cache_creation_input_tokens || 0);
+    meter.cacheRead += u.cache_read_input_tokens || 0;
+    meter.cacheWrite += u.cache_creation_input_tokens || 0;
     meter.outputTokens += u.output_tokens || 0;
   } catch { /* учёт токенов не должен ронять прогон */ }
 }
@@ -52,10 +61,22 @@ export async function ask(system: string, user: string, maxTokens = 8000): Promi
   // Опциональное сжатие крупного payload (headroom-ai) — no-op по умолчанию; системный промпт не трогаем.
   const userMsg = await maybeCompress(user);
   // adaptive thinking / effort могут опережать типы установленного SDK — параметры валидны на API
+  // Метод (22 OS-скилла) идёт ПЕРВЫМ блоком системного промпта и помечен
+  // cache_control: кеш промпта — префиксный, поэтому стабильная часть обязана
+  // стоять до всего, что меняется от вызова к вызову. Первый вызов прогона
+  // оплачивает запись (~1.25x), остальные читают из кеша (~0.1x). TTL час:
+  // прогон длится минуты, а пауза между шагами легко превышает дефолтные 5 минут.
+  const skills = await allSkillsContext();
+  const systemBlocks = skills
+    ? [
+        { type: 'text', text: skills, cache_control: { type: 'ephemeral', ttl: '1h' } },
+        { type: 'text', text: system },
+      ]
+    : system;
   const params: any = {
     model: MODEL,
     max_tokens: maxTokens,
-    system,
+    system: systemBlocks,
     thinking: { type: 'adaptive' },
     output_config: { effort: 'medium' },
     messages: [{ role: 'user', content: userMsg }],
