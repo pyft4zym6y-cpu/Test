@@ -252,6 +252,13 @@
 - Admin dashboard URL: (ask if deployed)
 - API endpoint for crawls: (ask for staging/prod URLs)
 
+**Railway Deployment:**
+- Production instance: https://test-production-5713.up.railway.app/
+- Status: 403 Forbidden (requires auth or configuration review)
+- Likely services: Audit tool backend, admin dashboard, or API server
+- Access: Requires API key, authentication token, or railway.app admin credentials
+- Dashboard: railway.app (requires login to view project, logs, env vars)
+
 ### Следующие Шаги (Priority)
 
 **PHASE 2A: Finding Objectification (1–2 недели)**
@@ -509,10 +516,12 @@ NODE_ENV=production
    - [ ] Щось інше?
 
 2. **Доступи потрібні?**
-   - [ ] Vercel deploy log
+   - [ ] Vercel deploy log (WEEXP.agency)
+   - [ ] Railway.app dashboard (audit tool: https://test-production-5713.up.railway.app/)
    - [ ] Supabase admin console
    - [ ] Search Console stats
    - [ ] GA4 data
+   - [ ] API keys / auth credentials
    - [ ] Нічого
 
 3. **Переглянути список задач?**
