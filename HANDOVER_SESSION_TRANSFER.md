@@ -1,0 +1,302 @@
+# HANDOVER — передача сессии новому чату Claude Code
+
+> **Срез: 2026-08-25.** HEAD = `1f68f54`.
+> Этот файл — актуальное состояние. `HANDOFF.md` (срез 2026-08-10) остаётся
+> полезным для истории и договорённостей, но **устарел в части «что деплоится»**.
+> Где они противоречат друг другу — прав этот файл. Расхождения перечислены в §11.
+
+Читать в таком порядке: **этот файл** → §7 (правила контента) → `DEPLOY.md` →
+`portal/PORTAL_SETUP.md` (только если трогаешь портал/бриф).
+
+---
+
+## 1. Владелец и язык
+
+**Владелец:** Павел Сидоренко, e-commerce-консультант, Украина.
+`pashasidorenko18@gmail.com`, +38 099 918 82 60, linkedin.com/in/pvsidorenko.
+**Продукт:** консалтинг под брендом **weexp · Commerce OS™**.
+
+| Что | Язык |
+|---|---|
+| Контент публичного сайта | украинский |
+| Интерфейс портала/брифа | русский |
+| Общение с владельцем | русский |
+| Комментарии в коде | как в файле рядом (в `weexp-site/` — украинский) |
+| Коммиты | английский |
+
+Владелец говорит прямо, часто голосом (расшифровка с опечатками — читай по
+смыслу). Подтвердил решение → делай полностью, без повторных уточнений.
+Не предлагай лишнего.
+
+---
+
+## 2. Состояние на сегодня — коротко
+
+- Прод-сайт **weexp.agency собирается из папки `weexp-site/`**, а не из корня.
+- Ветка деплоя — `claude/website-creation-publishing-o8ujcs`. `main` (4bb7066)
+  отстал и к проду отношения не имеет.
+- Ветка разработки этой сессии — `claude/handover-session-transfer-8r31sz`.
+  Сейчас она указывает на тот же коммит, что и прод-ветка. **Пуш в неё прод не
+  обновляет** — см. §4.
+- Последняя рабочая волна (19–23 августа): нео-брутализм-редизайн, кабинет
+  клиента, админка `/admin`, воронка доступов T1–T4, лиды в Supabase, двуязычие
+  UK/EN, хаб «Експансія».
+- Незакоммиченных изменений нет, дерево чистое.
+
+---
+
+## 3. Что лежит в репозитории (`pyft4zym6y-cpu/Test`)
+
+Репозиторий один, приложений несколько. **Живое — только `weexp-site/`.**
+
+```
+weexp-site/            ← ★ ПРОД weexp.agency (React 18 + TS + Vite 5)
+  src/App.tsx            маршруты; каждая страница монтируется дважды: UK «/» и EN «/en»
+  src/system/            ЯДРО светлого сайта v2: SystemShell (оболочка), SystemInMotion
+                         (главная), Cabinet, AdminPanel, LossCalculator (/diagnose),
+                         Stage2–Stage5 (глубокий аудит), ExpansionHub + Expertise,
+                         Pricing, ServicePage, CasesFilm, About, ContactFilm
+  src/components/        секции и 3D/анимации (Scene3D, Flywheel, HealthRadar, …)
+  src/lib/               supa.ts (Supabase + воронка + T1–T4), leads.ts, access.ts,
+                         seo.tsx, analytics.ts, score.tsx, vitals.ts
+  src/i18n/index.tsx     словари UK/EN, язык читается из URL (/en)
+  src/data/              cases.ts, benchmark.ts, team.ts, xray.ts, credentials.ts
+  supabase/diagnostics.sql   таблица diagnostics + RLS (идемпотентно)
+  scripts/prerender.mjs  безбраузерный SSG (postbuild) — безопасен для Vercel
+  public/                sitemap.xml, robots.txt, llms.txt, oferta/privacy, og
+
+api/                   ← serverless-функции Vercel корневого проекта (работают для weexp-site)
+  lead.js                приём заявок: письмо через Resend + запись в Supabase `leads`
+  ga4-site.js            трафик сайта для /admin (GA4 Data API, сервисный аккаунт)
+  ga4.js, aqc.js, interview.js, fetch.js, notify.js, brief-users.js, portal-config.js
+
+src/, index.html (корень)  ← ЛЕГАСИ первого сайта («commerce-os-site», 14 страниц).
+                              Не собирается и не деплоится. Не развивать.
+portal/                ← Discovery Portal (Supabase), отдельный проект/поддомен
+public/brief, public/demo  ← боевой бриф и демо портала (см. HANDOFF.md §6.2–6.3)
+school/                ← сайт школы Commerce Architecture (React 19, комикс-стиль)
+worker/                ← AI-аудитор (Playwright + Claude API), отдельный рантайм
+video/, docs/, scripts/    ← ролик, карта Commerce OS, старый Chromium-пререндер корня
+```
+
+---
+
+## 4. Деплой — главные грабли
+
+**Корневой `vercel.json` строит подпапку:**
+
+```json
+"installCommand": "cd weexp-site && npm install",
+"buildCommand":   "cd weexp-site && npm run build",
+"outputDirectory":"weexp-site/dist"
+```
+
+Плюс там же ~27 постоянных 301-редиректов со старых URL (`/cases`, `/blog`,
+`/about`, `/calculator`, `/services`, …) и CSP/HSTS-заголовки. Меняешь маршруты
+— проверь, что старый URL не остался без редиректа.
+
+⚠️ **Production Branch — `claude/website-creation-publishing-o8ujcs`, не `main`.**
+Работать по заданию нужно в `claude/handover-session-transfer-8r31sz`, но, чтобы
+изменения увидел владелец на проде, нужен пуш и в прод-ветку. Спрашивай перед
+этим, если владелец не сказал «выкатывай»:
+
+```bash
+git push -u origin claude/handover-session-transfer-8r31sz     # рабочая ветка (обязательно)
+git push origin HEAD:claude/website-creation-publishing-o8ujcs  # прод — только с согласия
+```
+
+⚠️ В репозитории живут ветки **параллельных сессий Claude** (`claude/ai-assistant-…`,
+`claude/red-site-react-…`, `claude/website-comic-redesign-…`). Их деплои засоряют
+список Vercel и однажды случайно попали на Production. Чужие коммиты не трогай и
+их деплои не промотируй.
+
+**Коммит — от имени владельца, с футером:**
+
+```bash
+git -c user.email="8tyd7zkgfg@privaterelay.appleid.com" -c user.name="Claude" commit -m "$(cat <<'EOF'
+Заголовок на английском
+
+Тело — что и зачем.
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+EOF
+)"
+```
+
+PR не создавать, пока владелец явно не попросит.
+
+---
+
+## 5. Секреты и env — где что лежит
+
+**В репозитории секретов нет.** Всё — в панелях Vercel/Supabase/Resend, доступ у
+владельца. Если ключ нужен — проси добавить, не вставляй в код.
+
+| Переменная | Где нужна | Зачем |
+|---|---|---|
+| `RESEND_API_KEY` | Vercel (проект сайта) | письма по лидам из `api/lead.js`; без неё форма вернёт `not_configured` |
+| `NOTIFY_EMAIL` / `NOTIFY_FROM` | опционально | по умолчанию `pashasidorenko18@gmail.com`, отправитель `onboarding@resend.dev` |
+| `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` | Vercel (проект сайта) | запись лида в таблицу `leads` (иначе лид уйдёт только письмом) |
+| `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` | Vercel (билд сайта) | кабинет и админка |
+| `GA4_SITE_PROPERTY_ID` (или `GA4_PROPERTY_ID`), `GA4_SA_EMAIL`, `GA4_SA_KEY` | Vercel | вкладка «Дашборд» в `/admin` — трафик сайта |
+| `VITE_ACCESS_CODES` | Vercel (билд) | коды входа в глубокий аудит; без неё работает только `WEEXP-DEEP-2026` |
+| `VITE_REPORT_WEBHOOK`, `VITE_VITALS_URL` | опционально | вебхук отчёта, сбор Web Vitals |
+
+⚠️ В `weexp-site/src/lib/supa.ts` **зашит фолбэк-проект Supabase** (URL
+`lpbyigsezimqofygpfof` + publishable-ключ). Это публичный по дизайну ключ, доступ
+гейтит RLS, но помни: если env в Vercel не заданы, сайт молча пишет в этот
+проект. Не выноси туда ничего чувствительного и не считай отсутствие ошибки
+доказательством, что env настроены.
+
+Из контейнера разработки `api.resend.com` и прод-домены недоступны (прокси) —
+интеграции проверяются только на проде руками владельца.
+
+---
+
+## 6. Данные: Supabase
+
+| Объект | Статус | Комментарий |
+|---|---|---|
+| таблица `diagnostics` (`user_id`, `email`, `data` jsonb) | SQL в `weexp-site/supabase/diagnostics.sql` | весь прогресс клиента: `stage1…stage3`, `company`, `funnel` |
+| таблица `leads` | ⚠️ **SQL не версионирован в репо** | пишет `api/lead.js` через service-role; читает `/admin`. Колонки: `source, email, name, phone, task, comment, status, created_at`; функция умеет деградировать до «ядра», если колонок меньше |
+| bucket `tier-files` (приватный) | создаётся руками в Supabase | файлы клиента по уровням T1–T4, отдаются через signed URL на час |
+| RLS | «свои строки» для клиента + политика для админов | без админской политики `/admin` увидит пустой список |
+| Auth | email+пароль с Confirm email, Google OAuth | Redirect URL должен включать `https://weexp.agency/cabinet` |
+
+**Права админки:** в коде `MANAGER_EMAILS = ['pashasidorenko18@gmail.com',
+'hello@weexp.agency']` (`weexp-site/src/lib/supa.ts`). Это сверка с аккаунтом,
+а не «просто кнопка», но настоящий барьер — RLS на стороне Supabase.
+
+Везде есть локальный фолбэк: если Supabase недоступен, кабинет продолжает
+работать на `localStorage` (пользователи вида `local:email`). Это сделано
+сознательно — чтобы клиент не упирался в стену. Не «чини» это, убирая фолбэк.
+
+---
+
+## 7. Правила по контенту — нарушать нельзя
+
+Каждое выстрадано отдельным замечанием владельца:
+
+1. **Цены — только на `/pricing`.** Ни в футере, ни в кейсах, ни в CTA.
+   (В `HANDOFF.md` этот пункт указывал на `/services` — страница переехала,
+   `/services` теперь 301 → `/systems`.)
+2. **Никаких имён реальных конкурентов** (Netpeak, Promodo и т.п.) — только
+   архетипы: «сетевое агентство», «фрилансер-одиночка».
+3. **Никаких названий платформ** в блоках «если/то» (Shopify, Odoo, OpenCart) —
+   отпугивает. Абстрактно: «нічого страшного: побудуємо».
+4. **Никаких гарантий ROI** и работы за результат.
+5. Кейсы — анонимно, без узнаваемых деталей.
+6. Тон: уверенный, без пафоса.
+7. Мобильная вёрстка проверяется всегда (владелец шлёт скриншоты с телефона):
+   без горизонтального скролла, без переносов в футере, тап-таргеты крупные.
+8. Одна айдентика: тёмный легаси выведен из употребления, всё живёт в светлом v2.
+   Не возвращай тёмные блоки «для контраста».
+
+---
+
+## 8. Что уже сделано — не переделывать
+
+**Сайт (weexp-site):**
+- Нео-брутализм-редизайн (токены, шрифты Unbounded/IBM Plex/Bricolage, шапка,
+  карточки, кнопки) в стиле school.weexp.agency.
+- Главная — единый скролл-фильм `SystemInMotion` + 3D-карта систем (three.js).
+- IA после дебаг-спринта: `/`, `/proof`, `/people`, `/expansion(/:slug)`,
+  `/diagnose`, `/pricing`, `/systems/:slug`, `/contact`, `/cabinet`, `/admin`.
+  Всё старое — 301.
+- Двуязычие: те же страницы под `/en`, язык из URL.
+- `/diagnose` — калькулятор потерь в 3 шага, брендированный PDF, лид «заказать
+  аудит»; глубокий аудит отделён и открывается по коду доступа.
+- `/cabinet` — регистрация (email-подтверждение, resend, Google OAuth), разделы,
+  динамический journey, встроенный Stage3, чек-лист доступов T1–T4, таймлайн
+  статусов, загрузка файлов.
+- `/admin` — операционный кокпит: дашборд (GA4), пользователи, аудиты,
+  доступы T1–T4, заявки, настройки.
+- Контактная форма создаёт **настоящий лид в системе** (не mailto-редирект) —
+  это последний коммит `1f68f54`, регресс сюда возвращать нельзя.
+- SEO: хлебные крошки с JSON-LD, безбраузерный пререндер маршрутов в `postbuild`.
+
+**Закрытые темы — не поднимать без просьбы:** логотип/персонаж AI-бота;
+автописьма клиенту после калькулятора (отменены сознательно); тёмный легаси-сайт.
+
+---
+
+## 9. Открытые задачи
+
+**На стороне владельца (напоминать, но не тратить на это ходы):**
+1. Проверить в Vercel (проект сайта): `RESEND_API_KEY`, `SUPABASE_URL`,
+   `SUPABASE_SERVICE_ROLE_KEY`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`,
+   GA4-переменные → Redeploy Production.
+2. Supabase → Auth → Redirect URLs: `https://weexp.agency/cabinet` (кабинет) и
+   `https://weexp.agency/brief/` (бриф).
+3. Supabase → SQL Editor: прогнать `weexp-site/supabase/diagnostics.sql` и
+   убедиться, что таблица `leads`, bucket `tier-files` и админская RLS-политика
+   существуют.
+4. Опционально: подтвердить домен `weexp.agency` в Resend → задать
+   `NOTIFY_FROM=weexp <hello@weexp.agency>`.
+
+**Технический бэклог (приоритеты владельцем не расставлены):**
+- Версионировать SQL таблицы `leads` и политик админа рядом с `diagnostics.sql` —
+  сейчас схема живёт только в панели Supabase.
+- Гейт кодов доступа (`lib/access.ts`) — клиентский, коды лежат в бандле.
+  Строгая проверка должна переехать на бэкенд.
+- Живые лица/отзывы на `/people`; лид-магнит; og-картинки под отдельные страницы.
+- Решить судьбу параллельных приложений в репо (`portal/`, `school/`, `worker/`,
+  корневой легаси-`src/`): развивать, вынести или заморозить.
+
+---
+
+## 10. Окружение и грабли разработки
+
+```bash
+cd /home/user/Test/weexp-site
+npm install          # node_modules в контейнере НЕ предустановлены
+npm run build        # tsc -b && vite build && postbuild-пререндер
+npx vite preview --port 4360 --strictPort   # превью умирает между ходами — перезапускай
+```
+
+- `git` запускай из `/home/user/Test`, не из scratchpad.
+- **Playwright:** `executablePath: '/opt/pw-browsers/chromium'`; скрипт клади
+  внутрь проекта (`/home/user/Test/.test-*.mjs`), иначе ESM не найдёт пакет;
+  `domcontentloaded` + `waitForTimeout`, **не** `networkidle` (бегущая строка не
+  даёт сети «успокоиться»); `page.route('**/api/lead', …)` — так тестировались формы.
+- Крупные TSX правь через Edit. `python3` + `re.sub` по большому TSX однажды
+  покорёжил файл.
+- Два пререндера в репо разные: `weexp-site/scripts/prerender.mjs` — безбраузерный,
+  живёт в `postbuild` и безопасен для Vercel; корневой `scripts/prerender.mjs` —
+  старый, на Chromium, в билд Vercel его пускать нельзя.
+- В `main.tsx` есть guard на ошибку загрузки чанка после деплоя (перезагрузка
+  страницы) — не удаляй, это лечило реальную жалобу.
+- MCP-серверы из `.mcp.json` в веб-сессии часто не авторизованы (`citedy-seo-agent`,
+  `labelhead-artist-momentum`, `notfair-googleads`) — авторизация только из
+  интерактивной сессии, в вебе их просто нет.
+
+---
+
+## 11. Чем этот файл отличается от HANDOFF.md
+
+| Тема | `HANDOFF.md` (10.08) | Сейчас (25.08) |
+|---|---|---|
+| Что деплоится на weexp.agency | корень репозитория (`src/`, 14 страниц) | **`weexp-site/`**; корневой `src/` — легаси, не собирается |
+| Страница цен | `/services` | `/pricing` (`/services` → 301 на `/systems`) |
+| Кабинет клиента | не было | `/cabinet` с реальной авторизацией и воронкой T1–T4 |
+| Админка | админка брифа (`/brief`) | плюс операционная `/admin` на Supabase + GA4 |
+| Лиды | письмо через Resend | письмо **и** запись в таблицу `leads` |
+| Языки сайта | только UK | UK + EN (`/en`) |
+| Пререндер | Chromium, запускать вне Vercel | безбраузерный, в `postbuild` |
+
+Остальные разделы `HANDOFF.md` (бриф `/brief`, демо, портал, методология)
+по-прежнему верны — их тут не дублирую.
+
+---
+
+## 12. Первые шаги новой сессии
+
+1. Прочитать этот файл целиком, затем §7 перед любой правкой текста.
+2. Проверить контекст:
+   ```bash
+   git status && git log --oneline -5
+   ```
+   Ветка должна быть `claude/handover-session-transfer-8r31sz`.
+3. Работать в `weexp-site/`, если задача про сайт. Корневой `src/` не трогать.
+4. Перед выкаткой уточнить у владельца, пушить ли в прод-ветку (§4).
+5. После значимой волны изменений — обновить этот файл, а не заводить третий.
