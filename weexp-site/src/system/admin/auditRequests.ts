@@ -28,10 +28,28 @@ export const AUDIT_STAGES: { k: AuditReqStatus; l: string; cls: string; by: 'к�
   { k: 'clarify',   l: 'Уточнення',         cls: 'wait', by: 'менеджер', note: 'повернуто клієнту з питаннями' },
   { k: 'in_work',   l: 'В роботі',          cls: 'ok',   by: 'менеджер', note: 'анкету прийнято, аудит виконується' },
   { k: 'done',      l: 'Завершено',         cls: 'ok',   by: 'менеджер', note: 'документи передані клієнту' },
-  { k: 'project',   l: 'Проєкт створено',   cls: 'ok',   by: 'менеджер', note: 'аудит перейшов у проєкт впровадження' },
-  { k: 'delivery',  l: 'Проєкт у роботі',    cls: 'ok',   by: 'менеджер', note: 'проєкт опублікований клієнту й виконується' },
+  { k: 'project',   l: 'Впровадження: план', cls: 'ok',   by: 'менеджер', note: 'аудит завершено, проєкт впровадження зібрано' },
+  { k: 'delivery',  l: 'Впровадження: робота', cls: 'ok', by: 'менеджер', note: 'план опублікований клієнту й виконується' },
   { k: 'denied',    l: 'Не надано доступ',  cls: 'bad',  by: 'менеджер', note: 'менеджер відхилив запит' },
 ];
+/**
+ * Фази проєкту. Аудит — не окрема сутність поруч із проєктом, а його ПЕРШИЙ
+ * етап: з нього починається збір єдиної бази знань про клієнта, яка далі живе
+ * через усі етапи й нікуди не «закривається» разом з аудитом.
+ */
+export type Phase = 0 | 1 | 2;
+export const PHASES: { n: Phase; l: string; note: string }[] = [
+  { n: 0, l: 'Вхід',        note: 'заявка на проєкт: вирішуємо, чи беремось' },
+  { n: 1, l: 'Етап 1 · Аудит', note: 'збираємо базу знань і ставимо діагноз' },
+  { n: 2, l: 'Етап 2 · Впровадження', note: 'працюємо за роадмапою аудиту' },
+];
+const PHASE_BY_STATUS: Record<AuditReqStatus, Phase> = {
+  new: 0, need_data: 0, denied: 0,
+  granted: 1, filling: 1, review: 1, clarify: 1, in_work: 1, done: 1,
+  project: 2, delivery: 2,
+};
+export const phaseOf = (st: AuditReqStatus): Phase => PHASE_BY_STATUS[st];
+
 export const STAGE_OF = Object.fromEntries(AUDIT_STAGES.map((s) => [s.k, s])) as Record<AuditReqStatus, typeof AUDIT_STAGES[number]>;
 
 /** Чи є в записі ознаки, що клієнт уже щось заповнив (анкета / доступи / файли). */
@@ -96,7 +114,7 @@ export function nextStep(row: AdminRow): { text: string; who: 'ми' | 'кліє
     case 'review':    return { who: 'ми',     text: 'Перевірити повноту даних і прийняти анкету або повернути на уточнення' };
     case 'clarify':   return { who: 'клієнт', text: 'Чекаємо відповіді на уточнення' };
     case 'in_work':   return { who: 'ми',     text: 'Зібрати пакет документів: прогін рушія, оцінка модулів, документ аудиту' };
-    case 'done':      return { who: 'ми',     text: 'Документи передані — час пропонувати проєкт впровадження' };
+    case 'done':      return { who: 'ми',     text: 'Етап 1 закрито: документи передані. Наступне — зібрати план впровадження' };
     case 'project':   return { who: 'ми',     text: 'Проєкт створено, але не опублікований клієнту' };
     case 'delivery':  return { who: 'ми',     text: 'Проєкт у роботі — вести задачі й платежі' };
     case 'denied':    return { who: 'ми',     text: 'Запит відхилено' };

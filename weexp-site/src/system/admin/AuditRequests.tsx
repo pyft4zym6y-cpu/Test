@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { getProjects, type AdminRow, type TierStatus } from '@/lib/supa';
-import { AUDIT_STAGES, OURS, auditStatusOf, lastMoveAt, staleDays, type AuditReqStatus } from './auditRequests';
+import { AUDIT_STAGES, OURS, PHASES, phaseOf, auditStatusOf, lastMoveAt, staleDays, type AuditReqStatus } from './auditRequests';
 import { EmptyState, rel } from './shared';
 
 /**
@@ -64,9 +64,16 @@ export function AuditRequests({ rows, q, busy, onOpen, onStatus }: {
         ))}
       </div>
 
-      {/* Дошка стадій — колонками, як у «Заявках». */}
-      <div className="adm-board">
-        {AUDIT_STAGES.filter((st) => only === 'all' || only === 'ours' || only === st.k).map((st) => {
+      {/* Дошка: стадії згруповані ФАЗАМИ — аудит це етап 1 проєкту, а не окрема гілка. */}
+      {PHASES.map((ph) => {
+        const stages = AUDIT_STAGES.filter((st) => phaseOf(st.k) === ph.n && (only === 'all' || only === 'ours' || only === st.k));
+        if (!stages.length) return null;
+        const inPhase = shown.filter((x) => phaseOf(x.st) === ph.n).length;
+        return (
+        <div key={ph.n} className="adm-phase">
+          <div className="adm-phase-h"><b>{ph.l}</b><i className="mono">{ph.note}</i><span className="mono">{inPhase}</span></div>
+          <div className="adm-board">
+        {stages.map((st) => {
           const col = shown.filter((x) => x.st === st.k);
           return (
             <div key={st.k} className="adm-col">
@@ -111,7 +118,10 @@ export function AuditRequests({ rows, q, busy, onOpen, onStatus }: {
             </div>
           );
         })}
-      </div>
+          </div>
+        </div>
+        );
+      })}
     </>
   );
 }

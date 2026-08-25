@@ -21,6 +21,7 @@ import '../cabinet.css';
 import { Block, ACCESS_SOURCES, FUNNEL, LEAD_STAGES, ST, U_TABS, coopLabel, funnelStage, rel, tierLabel, type UTab } from './shared';
 import { openClientDossier } from './docs';
 import { ClientBrief } from './ClientBrief';
+import { KnowledgeBase } from './KnowledgeBase';
 import { AccessCatalog, AuditDocEditor, AuditFill, ExtraEditor, ModerationPanel, WorkerAudit } from './panels-audit';
 import { AdminFiles, GaPreview, ModuleScoring, NotesPanel, PackChecklist } from './panels-client';
 import { ProjectsManager } from './ProjectsManager';
@@ -70,6 +71,7 @@ export function UserDetail({ row, leads, canDelete, selfEmail, onClose, openFile
       </div>
       <div className="adm-upage-body">
           {utab === 'over' && <ClientBrief row={row} code={code} />}
+          {utab === 'kb' && <KnowledgeBase row={row} code={code} />}
           {utab === 'over' && code && (
             <Block title="Код доступу">
               <button className="adm-code adm-code-lg" onClick={() => navigator.clipboard?.writeText(code)} title="Скопіювати">🔑 {code}</button>

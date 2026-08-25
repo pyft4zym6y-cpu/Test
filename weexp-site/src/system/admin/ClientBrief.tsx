@@ -3,7 +3,7 @@ import { findAuditIdByCode, loadAuditAnswers, type AdminRow, type AuditAnswer } 
 import { loadTemplate, type AuditTemplate } from '../auditTemplate';
 import { eur } from '../lossModel';
 import { Block, rel } from './shared';
-import { nextStep, readiness, blockers, money, timeline, auditStatusOf, STAGE_OF } from './auditRequests';
+import { nextStep, readiness, blockers, money, timeline, auditStatusOf, STAGE_OF, phaseOf, PHASES } from './auditRequests';
 
 /**
  * Верхній блок картки клієнта: те, що менеджер має побачити ПЕРШИМ, не гортаючи
@@ -58,6 +58,10 @@ export function ClientBrief({ row, code }: { row: AdminRow; code?: string }) {
     <>
       <Block title="Наступний крок">
         <div className="adm-uhead-row">
+          <div className="adm-uhead-cell">
+            <i className="mono">Фаза проєкту</i>
+            <b>{st ? PHASES[phaseOf(st)].l : '—'}</b>
+          </div>
           <div className="adm-uhead-cell">
             <i className="mono">Стадія</i>
             <b>{st ? STAGE_OF[st].l : 'Заявки немає'}</b>

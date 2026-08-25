@@ -215,9 +215,10 @@ export function TrafficBlock({ t }: { t: SiteTraffic | null | undefined }) {
 
 /** Брендоване PDF-досьє клієнта — самодостатня друкована сторінка (нова вкладка → друк/зберегти в PDF). */
 
-export type UTab = 'over' | 'comp' | 'express' | 'deep' | 'docs' | 'team' | 'proj';
+export type UTab = 'over' | 'kb' | 'comp' | 'express' | 'deep' | 'docs' | 'team' | 'proj';
 export const U_TABS: { id: UTab; l: string }[] = [
   { id: 'over', l: 'Огляд' },
+  { id: 'kb', l: 'База знань' },
   { id: 'comp', l: 'Компанія' },
   { id: 'express', l: 'Експрес-аудит' },
   { id: 'deep', l: 'Глибокий аудит' },
