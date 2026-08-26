@@ -198,7 +198,16 @@ const server = createServer(async (req, res) => {
     const skills = await skillCoverage();
     json(res, 200, {
       ok: true, hasKey: hasKey(), knowledge: await knowledgeCount(), store: storeEnabled(),
-      skills: { installed: skills.installed, routed: skills.routed.length, unrouted: skills.unrouted },
+      skills: {
+        installed: skills.installed,
+        inAudit: skills.routed.length,
+        // Не «unrouted», а два разных факта: сознательно вне аудита — и забытые.
+        assistantOnly: skills.assistantOnly.map((g) => ({ group: g.group, n: g.skills.length })),
+        unclassified: skills.unclassified,
+        missing: skills.missing,
+        // Вес каждого аудита: видно заранее, какой домен упирается в лимит.
+        perDomain: Object.fromEntries(Object.entries(skills.perDomain).map(([d, w]) => [d, `${w.skills} скилл. / ${w.chars} симв.${w.over ? ' ⚠ ЛИМИТ' : ''}`])),
+      },
       connectors: connectorSummary(),
     });
     return;

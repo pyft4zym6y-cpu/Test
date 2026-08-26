@@ -201,7 +201,7 @@ export async function narratePrototype(ds: AuditDataset, r: PrototypeReport): Pr
   if (!hasKey() || !r.pages.length) return null;
   const user = `Клієнт: ${ds.client.finalUrl || ds.client.rootUrl}.\n\nЗВІРКА КОМПОЗИЦІЇ З ЕТАЛОНОМ:\n${prototypeFacts(r)}\n\nЗбери JSON. perPage — по одному обʼєкту на кожен тип сторінки зі звірки. Уся текстова частина — українською.`;
   try {
-    const text = await ask(SYSTEM + (await knowledgeFor('prototype')), user, 8000);
+    const text = await ask(SYSTEM + (await knowledgeFor('prototype', 'website')), user, 8000);
     const n = extractJson<PrototypeNarrative>(text);
     if (!n.summary || !Array.isArray(n.perPage)) return null;
     return n;

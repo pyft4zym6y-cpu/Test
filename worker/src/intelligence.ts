@@ -222,7 +222,7 @@ export async function narrateIntelligence(ds: AuditDataset, ci: CIReport, log?: 
   try {
     const facts = ci.layers.map((l) => `[${l.id}] ${l.name}: ${l.observed}`).join('\n');
     const user = `Клієнт: ${ci.client}. Конфігурація: ${ci.config.businessType}; платформа ${ci.config.platform}; дерево ${ci.config.treeSize} URL; товарів ~${ci.config.products}; категорій ${ci.config.categories}; мови ${ci.config.langs.join('/') || 'одна'}.\n\nФАКТИ ЗА ШАРАМИ:\n${facts}\n\nНаявні ланцюжки: ${ci.chains.map((c) => c.observed).join('; ')}\n\nПоверни JSON.`;
-    const text = await ask(CI_SYSTEM + (await knowledgeFor('analyze')), user, 6000);
+    const text = await ask(CI_SYSTEM + (await knowledgeFor('analyze', 'market')), user, 6000);
     const n = extractJson<{ verdict?: string; layerNotes?: { id: string; deduced?: string; decision?: string }[]; chains?: CIChain[] }>(text);
     if (n.verdict) ci.verdict = n.verdict;
     for (const note of n.layerNotes ?? []) {

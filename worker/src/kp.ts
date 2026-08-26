@@ -51,7 +51,7 @@ export async function buildKp(ds: AuditDataset, p: { analysis: Analysis; money?:
   if (p.money) facts.push(`Недополученный оборот ≈ ${rub(p.money.potentialYear)}/год (консервативно ${rub(p.money.consMinYear)}–${rub(p.money.consMaxYear)}).`);
   if (p.scope?.waves?.length) facts.push(`Программа по волнам: ${p.scope.waves.map((w) => `Волна ${w.n} [${w.items.map((i) => i.name).join(', ')}]`).join(' · ')}.`);
   try {
-    const text = await ask(SYSTEM + (await knowledgeFor('analyze')), facts.join('\n'), 6000);
+    const text = await ask(SYSTEM + (await knowledgeFor('analyze', 'business')), facts.join('\n'), 6000);
     const kp = extractJson<Kp>(text);
     if (!kp.pointB) return null;
     kp.pains = kp.pains ?? []; kp.scenarios = kp.scenarios ?? []; kp.nextSteps = kp.nextSteps ?? [];

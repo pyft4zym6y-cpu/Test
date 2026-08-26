@@ -115,7 +115,7 @@ export async function narrateBenchmark(ds: AuditDataset, r: BenchmarkReport): Pr
     `White space (слабко в усіх): ${r.whiteSpace.join(', ') || '—'}.`,
   ].join('\n');
   try {
-    const text = await ask(SYSTEM + (await knowledgeFor('analyze')), facts, 3000);
+    const text = await ask(SYSTEM + (await knowledgeFor('analyze', 'market')), facts, 3000);
     const n = extractJson<NonNullable<BenchmarkReport['narrative']>>(text);
     return n.summary ? n : null;
   } catch { return null; }
