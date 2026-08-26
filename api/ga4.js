@@ -247,27 +247,54 @@ export default async function handler(req, res) {
     if (!site) { res.status(400).json({ error: 'site required' }); return; }
     try {
       const access = await refreshAccess(row.refresh_token, CID, CSECRET);
-      const end = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-      const start = new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10);
-      const qr = async (body) => {
+      const day = (back) => new Date(Date.now() - back * 86400000).toISOString().slice(0, 10);
+      // Два вікна по 28 днів підряд: без попереднього неможливо відрізнити
+      // сторінку, що згасає, від сторінки, яка стільки й важила завжди.
+      const end = day(1); const start = day(28);
+      const prevEnd = day(29); const prevStart = day(56);
+      // Пари «сторінка × запит» — те, з чого рахуються striking distance,
+      // канібалізація і розрив CTR. Стеля Search Console на запит — 25 000
+      // рядків; беремо менше свідомо: далі йде хвіст з одиничними показами,
+      // який лише роздуває запис у базі.
+      const ROWS = 5000;
+      const qr = async (body, from = start, to = end) => {
         const r = await fetch(`https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(site)}/searchAnalytics/query`, {
           method: 'POST', headers: { Authorization: `Bearer ${access}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ startDate: start, endDate: end, ...body }),
+          body: JSON.stringify({ startDate: from, endDate: to, ...body }),
         });
         const j = await r.json();
         if (j.error) throw new Error(j.error.message);
         return j;
       };
-      const [tot, topq] = await Promise.all([
+      const pair = (r2) => ({
+        page: r2.keys?.[0] || '', query: r2.keys?.[1] || '',
+        clicks: Math.round(r2.clicks || 0), impressions: Math.round(r2.impressions || 0),
+        ctr: r2.ctr || 0, position: Math.round((r2.position || 0) * 10) / 10,
+      });
+      const [tot, topq, pages, prevPages] = await Promise.all([
         qr({}),
         qr({ dimensions: ['query'], rowLimit: 10 }),
+        qr({ dimensions: ['page', 'query'], rowLimit: ROWS }),
+        // Попередній період потрібен лише для згасання — там достатньо сторінок.
+        qr({ dimensions: ['page'], rowLimit: 1000 }, prevStart, prevEnd),
       ]);
       const t = tot.rows?.[0] || {};
       res.status(200).json({
         period: '28 днів',
+        range: { start, end },
+        prevRange: { start: prevStart, end: prevEnd },
         clicks: Math.round(t.clicks || 0), impressions: Math.round(t.impressions || 0),
         ctr: Math.round((t.ctr || 0) * 10000) / 100, position: Math.round((t.position || 0) * 10) / 10,
         queries: (topq.rows || []).map((r2) => ({ q: r2.keys?.[0] || '—', clicks: Math.round(r2.clicks || 0), impressions: Math.round(r2.impressions || 0), position: Math.round((r2.position || 0) * 10) / 10 })),
+        rows: (pages.rows || []).map(pair),
+        // Прапорець чесності: якщо впёрлись у стелю, вибірка неповна, і зріз
+        // треба читати як «по верхніх 5000 парах», а не «по сайту».
+        truncated: (pages.rows || []).length >= ROWS,
+        prevRows: (prevPages.rows || []).map((r2) => ({
+          page: r2.keys?.[0] || '', query: '',
+          clicks: Math.round(r2.clicks || 0), impressions: Math.round(r2.impressions || 0),
+          ctr: r2.ctr || 0, position: Math.round((r2.position || 0) * 10) / 10,
+        })),
       });
     } catch (e) {
       res.status(200).json({ error: String(e.message || e) });

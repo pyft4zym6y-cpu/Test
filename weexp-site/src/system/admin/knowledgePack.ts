@@ -22,6 +22,17 @@ export type KnowledgePack = {
   delivered?: string[];
   notes?: string[];
   answersCount?: { done: number; total: number };
+  /** Розбір Search Console — L1-дані з системи клієнта, а не зі слів. */
+  search?: {
+    site: string; period: { start: string; end: string }; prevPeriod?: { start: string; end: string };
+    totals: { clicks: number; impressions: number; ctr: number; position: number };
+    counts: { rows: number; pages: number; queries: number; truncated?: boolean };
+    striking: { query: string; page: string; impressions: number; position: number; upliftEst: number }[];
+    cannibal: { query: string; impressions: number; pages: { page: string; position: number }[] }[];
+    ctrGap: { query: string; page: string; impressions: number; position: number; ctr: number; expectedCtr: number }[];
+    decay: { page: string; clicksNow: number; clicksPrev: number; dropPct: number }[];
+    at: string;
+  };
 };
 
 export function buildKnowledgePack(
@@ -60,5 +71,19 @@ export function buildKnowledgePack(
     delivered: (rec.sharedDocs || []).map((d) => d.title),
     notes: (rec.notes || []).slice(0, 20).map((n) => `${n.module ? `[${n.module}] ` : ''}${n.text}`),
     answersCount: totalQuestions ? { done, total: totalQuestions } : undefined,
+    // Обрізаємо списки: рушію потрібні найбільші розриви, а не весь хвіст.
+    // Повний зріз лишається в записі клієнта — тут лише те, що читає модель.
+    search: rec.searchData ? {
+      site: rec.searchData.site,
+      period: rec.searchData.period,
+      prevPeriod: rec.searchData.prevPeriod,
+      totals: rec.searchData.totals,
+      counts: rec.searchData.counts,
+      striking: rec.searchData.striking.slice(0, 25).map((x) => ({ query: x.query, page: x.page, impressions: x.impressions, position: x.position, upliftEst: x.upliftEst })),
+      cannibal: rec.searchData.cannibal.slice(0, 12).map((c) => ({ query: c.query, impressions: c.impressions, pages: c.pages.map((p2) => ({ page: p2.page, position: p2.position })) })),
+      ctrGap: rec.searchData.ctrGap.slice(0, 15),
+      decay: rec.searchData.decay.slice(0, 15),
+      at: rec.searchData.at,
+    } : undefined,
   };
 }

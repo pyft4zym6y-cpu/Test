@@ -27,6 +27,7 @@ import { PACK_ARTIFACTS, PACK_REPORTS, chaptersOf, TOTAL_CHAPTERS } from '@/data
 import '../system.css';
 import '../cabinet.css';
 import { Block, SaveBadge, captureDoc, rel } from './shared';
+import { buildSearchDigest, digestSummary, CTR_CURVE_NOTE, type GscRow, type SearchDigest } from './searchGaps';
 import { useAutosave } from './useAutosave';
 import { askConfirm } from './dialog';
 import { genAccessMap, genDoD, genGantt, genHandover, genPlan90 } from './docs';
@@ -313,7 +314,9 @@ export function GaPreview({ userId, siteUrl }: { userId: string; siteUrl?: strin
   type GaPull = { period?: string; sessions?: number; users?: number; transactions?: number; revenue?: number; cr?: number; aov?: number;
     channels?: { name: string; sessions: number; revenue: number }[]; devices?: { name: string; sessions: number; cr: number }[]; error?: string };
   type GscPull = { period?: string; clicks?: number; impressions?: number; ctr?: number; position?: number;
-    queries?: { q: string; clicks: number; impressions: number; position: number }[]; error?: string };
+    queries?: { q: string; clicks: number; impressions: number; position: number }[];
+    range?: { start: string; end: string }; prevRange?: { start: string; end: string };
+    rows?: GscRow[]; prevRows?: GscRow[]; truncated?: boolean; error?: string };
   type PsiPull = { score?: number; strategy?: string; lab?: { lcpMs: number; cls: number; tbtMs: number; fcpMs: number; siMs: number };
     field?: { lcp?: { v: number; cat: string } | null; inp?: { v: number; cat: string } | null; cls?: { v: number; cat: string } | null }; fieldOverall?: string | null; error?: string };
   const [st, setSt] = useState<GaStatus | null>(null);
@@ -321,9 +324,11 @@ export function GaPreview({ userId, siteUrl }: { userId: string; siteUrl?: strin
   const [data, setData] = useState<GaPull | null>(null);
   const [site, setSite] = useState('');
   const [gsc, setGsc] = useState<GscPull | null>(null);
+  const [digest, setDigest] = useState<SearchDigest | null>(null);
+  const [saved, setSaved] = useState('');
   const [psiUrl, setPsiUrl] = useState(siteUrl ? (siteUrl.startsWith('http') ? siteUrl : `https://${siteUrl}`) : '');
   const [psi, setPsi] = useState<PsiPull | null>(null);
-  const [busy, setBusy] = useState<'status' | 'pull' | 'gsc' | 'psi' | ''>('');
+  const [busy, setBusy] = useState<'status' | 'pull' | 'gsc' | 'psi' | 'save' | ''>('');
   const check = async () => {
     setBusy('status'); setData(null);
     try {
@@ -343,9 +348,29 @@ export function GaPreview({ userId, siteUrl }: { userId: string; siteUrl?: strin
   };
   const pullGsc = async () => {
     if (!site) return;
-    setBusy('gsc');
-    try { setGsc(await (await fetch(`/api/ga4?action=pull_gsc&u=${encodeURIComponent(userId)}&site=${encodeURIComponent(site)}`, { headers: await authHeaders() })).json()); }
-    catch { setGsc({ error: 'network' }); }
+    setBusy('gsc'); setSaved('');
+    try {
+      const j: GscPull = await (await fetch(`/api/ga4?action=pull_gsc&u=${encodeURIComponent(userId)}&site=${encodeURIComponent(site)}`, { headers: await authHeaders() })).json();
+      setGsc(j);
+      // Зріз рахуємо тут і зберігаємо ОКРЕМО від сирих рядків: у базу знань
+      // їде розбір (десятки позицій), а не п'ять тисяч пар — інакше запис
+      // клієнта роздувається на кожному оновленні.
+      setDigest(!j.error && j.rows?.length
+        ? buildSearchDigest({
+            site, rows: j.rows, prevRows: j.prevRows, truncated: j.truncated,
+            period: j.range || { start: '', end: '' }, prevPeriod: j.prevRange,
+          })
+        : null);
+    } catch { setGsc({ error: 'network' }); setDigest(null); }
+    setBusy('');
+  };
+  /** Зріз у базу знань клієнта — звідти його забирає пакет знань для рушія. */
+  const saveDigest = async () => {
+    if (!digest) return;
+    setBusy('save');
+    const r = await savePatchFor(userId, { searchData: digest });
+    setSaved(r.ok ? 'Збережено в базу знань' : `Не збережено: ${r.error || 'помилка'}`);
+    if (r.ok) toast('Дані Search Console у базі знань — рушій побачить їх у наступному прогоні');
     setBusy('');
   };
   const pullPsi = async (strategy: 'mobile' | 'desktop') => {
@@ -399,6 +424,73 @@ export function GaPreview({ userId, siteUrl }: { userId: string; siteUrl?: strin
                 {(gsc.queries || []).map((q2) => (
                   <div key={q2.q} className="adm-ga-row adm-ga-row4"><span>{q2.q}</span><b className="mono">{q2.clicks}</b><i className="mono">{q2.impressions.toLocaleString('uk-UA')}</i><i className="mono">{q2.position}</i></div>
                 ))}
+              </div>
+            )}
+            {digest && (
+              <div className="adm-ga-gaps">
+                <div className="adm-ga-bar">
+                  <span className="mono adm-ga-h">Розбір: {digestSummary(digest)}</span>
+                  <button className="sysx-cta is-primary" onClick={saveDigest} disabled={busy === 'save'}>
+                    {busy === 'save' ? 'Зберігаємо…' : '↓ У базу знань (рушій побачить)'}
+                  </button>
+                  {saved && <span className="mono adm-ga-ok">{saved}</span>}
+                </div>
+                {digest.counts.truncated && (
+                  <p className="mono adm-ga-no">Вибірка обрізана на 5000 парах «сторінка × запит» — зріз читати як «по верхніх запитах», не «по сайту».</p>
+                )}
+                {digest.striking.length > 0 && (
+                  <div className="adm-ga-tbl">
+                    <span className="mono adm-ga-h">Позиції 4–20 · запит / позиція / покази / оцінка приросту кліків</span>
+                    {digest.striking.slice(0, 10).map((x) => (
+                      <div key={`${x.query}|${x.page}`} className="adm-ga-row adm-ga-row4">
+                        <span title={x.page}>{x.query}</span>
+                        <b className="mono">{x.position}</b>
+                        <i className="mono">{x.impressions.toLocaleString('uk-UA')}</i>
+                        <i className="mono">+{x.upliftEst}</i>
+                      </div>
+                    ))}
+                    <span className="mono adm-ga-h">Приріст — {CTR_CURVE_NOTE}. У звіт іде як оцінка, не як замір.</span>
+                  </div>
+                )}
+                {digest.cannibal.length > 0 && (
+                  <div className="adm-ga-tbl">
+                    <span className="mono adm-ga-h">Канібалізація · запит / скільки сторінок бʼються</span>
+                    {digest.cannibal.slice(0, 8).map((c) => (
+                      <div key={c.query} className="adm-ga-row adm-ga-row4">
+                        <span title={c.pages.map((p2) => p2.page).join('\n')}>{c.query}</span>
+                        <b className="mono">{c.pages.length}</b>
+                        <i className="mono">{c.impressions.toLocaleString('uk-UA')}</i>
+                        <i className="mono">поз. {c.pages[0].position}</i>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {digest.ctrGap.length > 0 && (
+                  <div className="adm-ga-tbl">
+                    <span className="mono adm-ga-h">Бачать, не клікають · запит / позиція / CTR факт vs очікуваний</span>
+                    {digest.ctrGap.slice(0, 8).map((g) => (
+                      <div key={`${g.query}|${g.page}`} className="adm-ga-row adm-ga-row4">
+                        <span title={g.page}>{g.query}</span>
+                        <b className="mono">{g.position}</b>
+                        <i className="mono">{g.ctr}%</i>
+                        <i className="mono">~{g.expectedCtr}%</i>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {digest.decay.length > 0 && (
+                  <div className="adm-ga-tbl">
+                    <span className="mono adm-ga-h">Згасають · сторінка / було → стало кліків / падіння</span>
+                    {digest.decay.slice(0, 8).map((d2) => (
+                      <div key={d2.page} className="adm-ga-row adm-ga-row4">
+                        <span title={d2.page}>{d2.page.replace(/^https?:\/\/[^/]+/, '') || '/'}</span>
+                        <b className="mono">{d2.clicksPrev}</b>
+                        <i className="mono">→ {d2.clicksNow}</i>
+                        <i className="mono">−{d2.dropPct}%</i>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

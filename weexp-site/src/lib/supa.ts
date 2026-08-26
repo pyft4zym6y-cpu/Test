@@ -83,6 +83,8 @@ export type ExpressSnapshot = {
   actions?: string[];
 };
 
+import type { SearchDigest } from '@/system/admin/searchGaps';
+
 /** Дані діагностики, що зберігаються між сесіями (усі етапи). */
 export type DiagRecord = {
   site?: string;
@@ -110,6 +112,7 @@ export type DiagRecord = {
   deepModeration?: DeepModeration;             // модерація опитувальника глибокого аудиту
   kbVersions?: KbVersion[];                    // зрізи бази знань: що ми знали на дату
   sharedDocs?: SharedDoc[];                    // фінальні документи, якими адмін поділився з клієнтом
+  searchData?: SearchDigest;                   // розбір Search Console (L1): striking distance, канібалізація, CTR, згасання
   auditClosedAt?: string;                      // етап 1 закрито явно (а не «бо щось передали клієнту»)
   auditClosedBy?: string;                      // хто закрив
   updatedAt?: string;

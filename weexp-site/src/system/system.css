@@ -2308,6 +2308,12 @@
 
 .adm-ga-row4 { grid-template-columns: 1fr 60px 80px 60px; }
 
+/* Розбір Search Console: чотири зрізи під превʼю. Запит буває довгим, тож
+   перша колонка стискається, а не розсуває панель на горизонтальний скрол. */
+.adm-ga-gaps { display: grid; gap: 8px; margin-top: 4px; border-top: 1px solid var(--line); padding-top: 10px; }
+.adm-ga-gaps .adm-ga-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.adm-ga-gaps .adm-ga-h:last-child { margin: 6px 0 0; text-transform: none; letter-spacing: 0; font-size: 11px; }
+
 /* Другий рівень бічного меню адмінки (напр. «Конструктор аудиту» під «Аудитами»). */
 .adm-nav-sub { padding-left: 1.6rem; font-size: .92em; opacity: .82; }
 .adm-nav-sub.on { opacity: 1; }

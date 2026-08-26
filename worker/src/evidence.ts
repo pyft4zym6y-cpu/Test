@@ -204,8 +204,15 @@ export function buildEvidence(
   const out: EvidenceSource[] = [];
   const p = pack && typeof pack === 'object' ? pack : {};
 
+  // Если по системе есть РАЗБОР её данных, строка «доступ выдан» лишняя: она
+  // говорит меньше (нет периода, нет признаков поломки) и в сводке уровней
+  // считается вторым источником, которого на самом деле нет.
+  const parsed = new Set<string>();
+  if ((p.search as { totals?: unknown } | undefined)?.totals) parsed.add('search console');
+
   for (const a of arr(p.accesses)) {
     const st = s(a.status);
+    if (parsed.has(s(a.system).toLowerCase().replace(/^google\s+/, ''))) continue;
     if (st === 'granted' || st === 'verified') {
       out.push({
         id: `acc:${s(a.system)}`, title: s(a.system), level: 'L1',
@@ -238,6 +245,27 @@ export function buildEvidence(
     // Публичный источник: доступ не нужен, читается напрямую — метка доверия
     // здесь и есть всё объяснение, дублировать её в `why` незачем.
     out.push({ id: e.id, title: e.title, level: 'L3', trust: 'verified' });
+  }
+
+  // Search Console — L1 в самом чистом виде: мы прочитали систему клиента, а не
+  // услышали про неё. Но «подключён» ещё не значит «собирает правильно»: сайт с
+  // показами и нулём кликов чаще всего измеряется неверно, а не работает плохо.
+  const sd = p.search as { totals?: { clicks?: number; impressions?: number }; period?: { start?: string; end?: string }; counts?: { truncated?: boolean } } | undefined;
+  if (sd?.totals) {
+    const imp = Number(sd.totals.impressions) || 0;
+    const clk = Number(sd.totals.clicks) || 0;
+    const broken = imp > 0 && clk === 0;
+    out.push({
+      id: 'l1:gsc',
+      title: `Search Console${sd.period?.start ? ` (${s(sd.period.start)}…${s(sd.period.end)})` : ''}`,
+      level: 'L1',
+      // Не `verified`: мы прочитали данные, но не проверяли, верно ли привязан
+      // ресурс, все ли домены в нём и совпадает ли он с тем, что в GA4.
+      trust: broken ? 'suspect' : 'unverified',
+      why: broken
+        ? 'показы есть, кликов ноль — похоже на неверную привязку ресурса, а не на отсутствие спроса'
+        : (sd.counts?.truncated ? 'выборка обрезана по верхним запросам — не весь сайт' : undefined),
+    });
   }
 
   const ac = p.answersCount as { done?: number; total?: number } | undefined;
