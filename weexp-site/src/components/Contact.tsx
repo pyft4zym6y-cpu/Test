@@ -20,6 +20,9 @@ export function Contact() {
   const [status, setStatus] = useState<Status>('idle');
   // Токен перевірки «я не робот». Порожній, поки віджет не відпрацював.
   const [tsToken, setTsToken] = useState('');
+  // Віджет міг не завантажитись (блокувальник, мережа). Тоді кнопку НЕ блокуємо:
+  // мертва кнопка на формі заявок означає, що заявки просто перестають приходити.
+  const [tsBroken, setTsBroken] = useState(false);
   const [diag, setDiag] = useState<string>('');
   const [fallbackUrl, setFallbackUrl] = useState<string>('');
 
@@ -53,11 +56,16 @@ export function Contact() {
     }
     // Ліміт і бот-перевірка — не привід кидати людину в mailto: це поправно
     // прямо тут, треба лише сказати, що саме сталось.
-    if (res === 'too_many' || res === 'robot') {
+    if (res === 'too_many') {
       setStatus('idle');
-      say(res === 'too_many'
-        ? 'Забагато заявок з цієї адреси за годину. Напишіть на hello@weexp.agency — відповімо так само.'
-        : 'Перевірка «я не робот» не пройдена. Оновіть сторінку і спробуйте ще раз.');
+      say('Забагато заявок з цієї адреси за годину. Напишіть на hello@weexp.agency — відповімо так само.');
+      return;
+    }
+    // Перевірку не пройдено. Якщо віджет узагалі не піднявся — людина ні в чому
+    // не винна, тож не лишаємо її з глухою відмовою, а даємо шлях поштою (нижче).
+    if (res === 'robot' && !tsBroken) {
+      setStatus('idle');
+      say('Перевірка «я не робот» не пройдена. Оновіть сторінку і спробуйте ще раз.');
       return;
     }
     // Бекенд не налаштований або збій — готуємо чесний mailto-fallback.
@@ -124,9 +132,12 @@ export function Contact() {
             {/* honeypot: приховане поле, люди його не бачать */}
             <input name="company_website" tabIndex={-1} autoComplete="off" className="ct-hp" aria-hidden="true" />
             {/* Показується тільки якщо задано VITE_TURNSTILE_SITE_KEY. */}
-            <Turnstile onToken={setTsToken} />
-            <button className="ct-submit mono" type="submit" disabled={status === 'sending' || (turnstileEnabled && !tsToken)}>
-              {status === 'sending' ? 'Надсилаємо…' : turnstileEnabled && !tsToken ? 'Перевірка…' : 'Отримати діагноз →'}
+            <Turnstile onToken={setTsToken} onFail={() => setTsBroken(true)} />
+            <button className="ct-submit mono" type="submit"
+              disabled={status === 'sending' || (turnstileEnabled && !tsToken && !tsBroken)}>
+              {status === 'sending' ? 'Надсилаємо…'
+                : turnstileEnabled && !tsToken && !tsBroken ? 'Перевірка…'
+                : 'Отримати діагноз →'}
             </button>
             {status === 'fallback' && (
               <p className="ct-note mono">Пошту відкрито з готовим листом (також скопійовано в буфер).

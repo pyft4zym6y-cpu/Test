@@ -45,6 +45,7 @@ async function saveLeadToDb(row) {
 }
 
 import { rateOk, turnstileOk } from './_lib/guard.js';
+import { caller } from './_lib/auth.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -58,7 +59,11 @@ export default async function handler(req, res) {
     res.status(429).json({ error: 'Забагато заявок з цієї адреси. Спробуйте за годину або напишіть на hello@weexp.agency.' });
     return;
   }
-  if (!(await turnstileOk(req, (req.body ?? {}).turnstile))) {
+  // Turnstile — захист від АНОНІМНИХ ботів. Заявки з кабінету (глибокий аудит,
+  // співпраця, підсумок етапу) шле авторизований клієнт: віджета там немає й не
+  // потрібно, а вимагати токен означало б просто зламати ці форми.
+  const signedIn = Boolean(await caller(req));
+  if (!signedIn && !(await turnstileOk(req, (req.body ?? {}).turnstile))) {
     res.status(400).json({ error: 'Не пройдено перевірку «я не робот». Оновіть сторінку й спробуйте ще раз.' });
     return;
   }

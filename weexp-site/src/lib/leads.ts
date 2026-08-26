@@ -4,6 +4,7 @@
  * налаштований (env RESEND_API_KEY); 'error' — мережа/збій відправлення.
  */
 import { getUtmString } from '@/lib/utm';
+import { authHeaders } from '@/lib/supa';
 
 export type LeadPayload = {
   source: string;
@@ -31,9 +32,11 @@ export async function sendLead(payload: LeadPayload): Promise<LeadResult> {
     // Додаємо first-touch UTM у коментар (видно в CRM і в листі, без зміни схеми БД).
     const utm = getUtmString();
     const body = utm ? { ...payload, comment: [payload.comment, utm].filter(Boolean).join(' · ') } : payload;
+    // Токен сесії, якщо людина увійшла: сервер за ним відрізняє заявку з
+    // кабінету (де віджета перевірки немає) від анонімної форми сайту.
     const r = await fetch('/api/lead', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: await authHeaders(),
       body: JSON.stringify(body),
     });
     const j = await r.json().catch(() => ({}));

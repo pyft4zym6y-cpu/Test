@@ -37,33 +37,42 @@ function loadScript(): Promise<void> {
   return loading;
 }
 
-export function Turnstile({ onToken }: { onToken: (t: string) => void }) {
+export function Turnstile({ onToken, onFail }: { onToken: (t: string) => void; onFail?: (why: string) => void }) {
   const box = useRef<HTMLDivElement>(null);
   const [failed, setFailed] = useState(false);
   const cb = useRef(onToken); cb.current = onToken;
+  const fail = useRef(onFail); fail.current = onFail;
+  const got = useRef(false);
 
   useEffect(() => {
     if (!SITE_KEY || !box.current) return;
     let widgetId: string | undefined;
     let alive = true;
+    const broke = (why: string) => { if (!alive || got.current) return; setFailed(true); cb.current(''); fail.current?.(why); };
+    // Блокувальники реклами часто ріжуть скрипт МОВЧКИ: onerror не спрацьовує,
+    // callback не приходить, і без таймауту форма зависає назавжди.
+    const timeout = setTimeout(() => broke('timeout'), 8000);
     loadScript().then(() => {
-      if (!alive || !box.current || !window.turnstile) return;
+      if (!alive || !box.current || !window.turnstile) { broke('no-api'); return; }
       widgetId = window.turnstile.render(box.current, {
         sitekey: SITE_KEY,
-        callback: (t: string) => cb.current(t),
-        'expired-callback': () => cb.current(''),
-        'error-callback': () => { setFailed(true); cb.current(''); },
+        callback: (t: string) => { got.current = true; clearTimeout(timeout); setFailed(false); cb.current(t); },
+        'expired-callback': () => { got.current = false; cb.current(''); },
+        'error-callback': () => broke('error'),
         theme: 'light',
       });
-    }).catch(() => setFailed(true));
-    return () => { alive = false; if (widgetId && window.turnstile) try { window.turnstile.remove(widgetId); } catch { /* ignore */ } };
+    }).catch(() => broke('script'));
+    return () => {
+      alive = false; clearTimeout(timeout);
+      if (widgetId && window.turnstile) try { window.turnstile.remove(widgetId); } catch { /* ignore */ }
+    };
   }, []);
 
   if (!SITE_KEY) return null;
   return (
     <div className="ts-box">
       <div ref={box} />
-      {failed && <p className="mono ts-err">Перевірку не вдалося завантажити. Напишіть на hello@weexp.agency.</p>}
+      {failed && <p className="mono ts-err">Перевірку «я не робот» не вдалося завантажити (блокувальник реклами?). Форму все одно можна надіслати — якщо не пройде, напишіть на hello@weexp.agency.</p>}
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { computeLoss, eur, project, localizeSys, sysLabel, leakLabel, actionText, NICHES, type LossInput, type LossResult, type SysKey, type NicheKey, type Season, type Signals } from './lossModel';
 import { saveExpressAudit } from './cabinetData';
 import { sendLead } from '@/lib/leads';
+import { Turnstile, turnstileEnabled } from '@/components/Turnstile';
 import { shortOf } from '@/data/xray';
 import { useT, useLp, useLang } from '@/i18n';
 import { useLiteVisuals } from '@/lib/liteVisuals';
@@ -84,6 +85,11 @@ export function LossCalculator() {
   const [oPhone, setOPhone] = useState('');
   const [oMsg, setOMsg] = useState('');
   const [oHp, setOHp] = useState(''); // honeypot — у людей завжди порожнє
+  // Перевірка «я не робот»: форма калькулятора анонімна, тож захист потрібен
+  // саме тут. Якщо віджет не піднявся — кнопку не блокуємо (мертва кнопка на
+  // формі заявок = заявки просто перестають приходити).
+  const [tsToken, setTsToken] = useState('');
+  const [tsBroken, setTsBroken] = useState(false);
   const [oErr, setOErr] = useState('');
   // Заявка йде саме за результатом експрес-аудиту — тип фіксований, без «вибору послуги».
   const REQUEST_LABEL = t('Заявка за експрес-аудитом', 'Request from express audit');
@@ -135,14 +141,19 @@ export function LossCalculator() {
   const submitOrder = async () => {
     if (!res) return;
     setLeadBusy(true);
-    await sendLead({
+    const res2 = await sendLead({
       source: 'calc-order-audit', role: 'calc', name: oName.trim() || undefined, email: oEmail.trim() || undefined, phone: oPhone.trim(),
       company_website: oHp,
+      turnstile: tsToken || undefined,
       task: REQUEST_LABEL,
       comment: `${oMsg.trim() ? oMsg.trim() + ' · ' : ''}${t('Витік', 'Leak')}: ${eur(res.total)}/${t('рік', 'yr')} · bottleneck: ${sysLabel(res.primary, lang)} · Health ${res.overallHealth}/100`,
       calc: `total=${res.total};range=${res.range[0]}-${res.range[1]};bottleneck=${res.primary};health=${res.overallHealth}`,
     });
-    setLeadBusy(false); setOrderStep('sent');
+    setLeadBusy(false);
+    // Чесна відмова замість «надіслано»: інакше людина впевнена, що заявка пішла.
+    if (res2 === 'too_many') { setOErr(t('Забагато заявок з цієї адреси за годину. Напишіть на hello@weexp.agency.', 'Too many requests from this address this hour. Please email hello@weexp.agency.')); return; }
+    if (res2 === 'robot' && !tsBroken) { setOErr(t('Перевірка «я не робот» не пройдена. Оновіть сторінку й спробуйте ще раз.', 'The "I am not a robot" check did not pass. Reload and try again.')); return; }
+    setOrderStep('sent');
   };
 
   // Брендований PDF результату — самодостатня друкована сторінка (нова вкладка → друк/зберегти в PDF).
@@ -391,9 +402,10 @@ ${projRows ? `<div class="card"><h2>${esc(t('Зараз → куди можем�
                 <label className="sysx-inp"><span className="sysx-inp-l">{t('Коментар (необовʼязково)', 'Note (optional)')}</span><input value={oMsg} onChange={(e) => setOMsg(e.target.value)} placeholder={t('Що для вас важливо?', 'What matters most to you?')} /></label>
                 <input name="company_website" tabIndex={-1} autoComplete="off" aria-hidden="true" value={oHp} onChange={(e) => setOHp(e.target.value)} style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }} />
                 <HumanSummary res={res} lang={lang} t={t} />
+                <Turnstile onToken={setTsToken} onFail={() => setTsBroken(true)} />
                 {oErr && <span className="s3-err mono">{oErr}</span>}
                 <div className="sysx-calc-actions">
-                  <button className="sysx-cta is-primary" type="submit" disabled={leadBusy}>{leadBusy ? t('Надсилаємо…', 'Sending…') : t('Надіслати заявку', 'Send request')} →</button>
+                  <button className="sysx-cta is-primary" type="submit" disabled={leadBusy || (turnstileEnabled && !tsToken && !tsBroken)}>{leadBusy ? t('Надсилаємо…', 'Sending…') : turnstileEnabled && !tsToken && !tsBroken ? t('Перевірка…', 'Checking…') : t('Надіслати заявку', 'Send request')} →</button>
                   <button className="sysx-cta" type="button" onClick={() => setOrderStep(null)}>{t('Скасувати', 'Cancel')}</button>
                 </div>
               </form>
