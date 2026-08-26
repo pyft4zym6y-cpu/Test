@@ -220,19 +220,37 @@ export function blockers(row: AdminRow): string[] {
   return out;
 }
 
-/** Гроші по клієнту в одному місці: оцінка втрат, бюджет проєктів, платежі. */
+/**
+ * Гроші по клієнту в одному місці — включно з тим, чого досі ніде не було:
+ * скільки ми на ньому ЗАРОБИЛИ проти того, скільки він нам КОШТУВАВ.
+ *
+ * Дохід — платежі проєктів. Собівартість — тарифні позиції по місяцях
+ * (години × ставка), які менеджер і так веде у проєкт-офісі. Обидві половини
+ * лежали в системі окремо, і зіставити їх не було де: бюджет показував план,
+ * платежі — факт надходжень, ставки — вартість години, а маржі не бачив ніхто.
+ */
 export function money(row: AdminRow) {
   const rec = row.record || {};
   const projects: Project[] = getProjects(rec);
   const budget = projects.reduce((sum, p) => sum + Object.values(p.budget || {}).reduce((a, b) => a + (Number(b) || 0), 0), 0);
   const pays = projects.flatMap((p) => p.payments || []);
+  const paid = pays.filter((x) => x.status === 'paid').reduce((a, b) => a + (Number(b.amount) || 0), 0);
+  const pending = pays.filter((x) => x.status === 'pending').reduce((a, b) => a + (Number(b.amount) || 0), 0);
+  // Собівартість: години × ставка по всіх тарифних місяцях усіх проєктів.
+  const cost = projects.reduce((sum, p) => sum
+    + (p.tariff || []).reduce((m, mon) => m
+      + (mon.items || []).reduce((i, it) => i + (Number(it.hours) || 0) * (Number(it.rate) || 0), 0), 0), 0);
+  const hours = projects.reduce((sum, p) => sum
+    + (p.tariff || []).reduce((m, mon) => m + (mon.items || []).reduce((i, it) => i + (Number(it.hours) || 0), 0), 0), 0);
+  const margin = paid - cost;
   return {
     expressTotal: rec.express?.total ?? null,
     expressRange: rec.express?.range ?? null,
     health: rec.express?.overallHealth ?? null,
-    budget,
-    paid: pays.filter((x) => x.status === 'paid').reduce((a, b) => a + (Number(b.amount) || 0), 0),
-    pending: pays.filter((x) => x.status === 'pending').reduce((a, b) => a + (Number(b.amount) || 0), 0),
+    budget, paid, pending,
+    cost, hours, margin,
+    /** Рентабельність за фактом надходжень. null — поки нема ні доходу, ні витрат. */
+    marginPct: paid > 0 ? Math.round((margin / paid) * 100) : null,
   };
 }
 

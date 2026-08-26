@@ -101,6 +101,12 @@ export function ClientBrief({ row, code }: { row: AdminRow; code?: string }) {
           <li><i>Бюджет проєктів</i><span>{m.budget ? eur(m.budget) : '—'}</span></li>
           <li><i>Оплачено</i><span>{m.paid ? eur(m.paid) : '—'}</span></li>
           <li><i>Очікує оплати</i><span>{m.pending ? eur(m.pending) : '—'}</span></li>
+          {/* Дві половини економіки клієнта досі жили окремо: платежі в проєкті,
+              ставки в проєкт-офісі. Зіставлення не було ніде. */}
+          <li><i>Наші витрати</i><span>{m.cost ? `${eur(m.cost)} · ${m.hours} год` : '—'}</span></li>
+          <li><i>Маржа</i><span className={m.margin < 0 ? 'tst-bad' : ''}>
+            {m.cost || m.paid ? `${eur(m.margin)}${m.marginPct != null ? ` · ${m.marginPct}%` : ''}` : '—'}
+          </span></li>
         </ul>
       </Block>
 

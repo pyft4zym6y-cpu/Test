@@ -164,7 +164,8 @@ export function WorkerTab({ rows }: { rows: AdminRow[] | null }) {
       <div className="adm-panel">
         <span className="adm-col-h mono">Мої прогони</span>
         {runs.length === 0
-          ? <EmptyState icon="⚙" text="Прогонів ще не було. Історія зберігається у цьому браузері; привʼязані до клієнта — у його картці." />
+          ? <EmptyState icon="⚙" text="Прогонів ще не було. Історія зберігається у цьому браузері; привʼязані до клієнта — у його картці."
+              hint="Це особистий інструмент: подивитись чужу вітрину, перевірити гіпотезу. Аудит клієнта запускається з його картки — там рушій бачить анкету, доступи й файли." />
           : (
             <table className="adm-table">
               <thead><tr><th>Коли</th><th>Сайт</th><th>Тир</th><th>Статус</th><th>Підсумок</th><th>Пакет</th></tr></thead>

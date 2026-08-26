@@ -238,8 +238,8 @@ export function AdminPanel() {
       const inPh = withSt.filter((v) => phaseOf(v.st) === ph.n);
       const sum = inPh.reduce((acc, v) => {
         const m = money(v.x);
-        return { budget: acc.budget + m.budget, paid: acc.paid + m.paid, pending: acc.pending + m.pending };
-      }, { budget: 0, paid: 0, pending: 0 });
+        return { budget: acc.budget + m.budget, paid: acc.paid + m.paid, pending: acc.pending + m.pending, cost: acc.cost + m.cost };
+      }, { budget: 0, paid: 0, pending: 0, cost: 0 });
       return { ...ph, n: inPh.length, ...sum };
     });
     // Тривалість аудиту: від видачі доступу до явного закриття етапу.
@@ -256,7 +256,7 @@ export function AdminPanel() {
     const reachedProject = withSt.filter((v) => phaseOf(v.st) >= 2).length;
     const conv = withSt.length ? Math.round((reachedProject / withSt.length) * 100) : 0;
     const breaches = r.filter((x) => slaOf(x).state === 'breach').length;
-    const totals = byPhase.reduce((a, p) => ({ budget: a.budget + p.budget, paid: a.paid + p.paid, pending: a.pending + p.pending }), { budget: 0, paid: 0, pending: 0 });
+    const totals = byPhase.reduce((a, p) => ({ budget: a.budget + p.budget, paid: a.paid + p.paid, pending: a.pending + p.pending, cost: a.cost + p.cost }), { budget: 0, paid: 0, pending: 0, cost: 0 });
     return { byPhase, avgAudit, conv, reachedProject, cases: withSt.length, breaches, totals };
   }, [rows]);
 
@@ -533,6 +533,7 @@ export function AdminPanel() {
               <div className="adm-panel">
                 <span className="adm-col-h mono">
                   Гроші й цикл · бюджет {eur(biz.totals.budget)} · оплачено {eur(biz.totals.paid)} · очікує {eur(biz.totals.pending)}
+                  {biz.totals.cost > 0 && <> · собівартість {eur(biz.totals.cost)} · маржа <b className={biz.totals.paid - biz.totals.cost >= 0 ? '' : 'bad'}>{eur(biz.totals.paid - biz.totals.cost)}</b></>}
                 </span>
                 <div className="adm-money">
                   {biz.byPhase.map((p) => (
@@ -541,6 +542,7 @@ export function AdminPanel() {
                       <span className="mono adm-money-n">{p.n} клієнт.</span>
                       <span className="mono">бюджет {eur(p.budget)}</span>
                       <span className="mono adm-money-sub">оплачено {eur(p.paid)} · очікує {eur(p.pending)}</span>
+                      {p.cost > 0 && <span className="mono adm-money-sub">витрати {eur(p.cost)} · маржа {eur(p.paid - p.cost)}</span>}
                     </div>
                   ))}
                 </div>

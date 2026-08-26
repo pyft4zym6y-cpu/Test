@@ -160,8 +160,19 @@ export const relT = (iso?: string) => {
 
 /** Realtime-подача заповнення спільного аудиту (адмінка): що заповнено + автор. */
 
-export function EmptyState({ icon, text }: { icon: string; text: string }) {
-  return <div className="adm-empty-box"><span className="adm-empty-ic" aria-hidden="true">{icon}</span><p className="mono">{text}</p></div>;
+/**
+ * Порожній стан має пояснювати систему, а не констатувати порожнечу. Новий
+ * менеджер інакше не дізнається ні що статуси похідні, ні звідки беруться
+ * картки, ні який крок його.
+ */
+export function EmptyState({ icon, text, hint }: { icon: string; text: string; hint?: string }) {
+  return (
+    <div className="adm-empty-box">
+      <span className="adm-empty-ic" aria-hidden="true">{icon}</span>
+      <p className="mono">{text}</p>
+      {hint && <p className="mono adm-empty-hint">{hint}</p>}
+    </div>
+  );
 }
 
 export function Trend({ data }: { data: { t0: number; n: number }[] }) {
