@@ -14,7 +14,12 @@
  * записи в документации. Аудит печатает этот список в «Ограничениях», чтобы
  * отсутствие источника было видно клиенту, а не превращалось в тихий пробел.
  */
-export type ConnectorState = 'ready' | 'needs_key' | 'needs_client_oauth' | 'not_in_worker';
+export type ConnectorState =
+  | 'ready'
+  | 'needs_key'
+  | 'needs_client_oauth'
+  | 'site_side'      // живёт в Vercel (api/*), воркеру его env не видны в принципе
+  | 'not_in_worker';
 
 export type Connector = {
   id: string;
@@ -23,6 +28,9 @@ export type Connector = {
   state: ConnectorState;
   need?: string;              // что именно нужно, чтобы включить
   note?: string;
+  /** Внутренний источник (наши собственные метрики). В клиентский документ не
+   *  попадает: строка «у нас не было GA4 нашего сайта» в отчёте КЛИЕНТУ — мусор. */
+  internal?: boolean;
 };
 
 const has = (...keys: string[]) => keys.every((k) => Boolean(process.env[k]));
@@ -47,7 +55,7 @@ export function connectors(): Connector[] {
     },
     {
       id: 'gsc', title: 'Google Search Console + Bing WMT', domains: ['seo'],
-      state: has('GOOGLE_APPLICATION_CREDENTIALS') ? 'ready' : 'needs_client_oauth',
+      state: 'site_side',
       need: 'сервис-аккаунт с доступом к ресурсу клиента (AC-03)',
     },
     {
@@ -55,7 +63,7 @@ export function connectors(): Connector[] {
       // Два независимых пути, и путать их нельзя: клиентский коннектор в
       // api/ga4.js работает через OAuth (клиент сам даёт согласие в браузере),
       // а сервис-аккаунт GA4_SA_* обслуживает ТОЛЬКО наш собственный сайт.
-      state: has('GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET') ? 'ready' : 'needs_client_oauth',
+      state: 'site_side',
       need: 'OAuth-клиент Web в Google Cloud + согласие клиента в кабинете',
       note: 'redirect URI: https://weexp.agency/api/ga4 (без query-параметров)',
     },
@@ -64,10 +72,11 @@ export function connectors(): Connector[] {
       state: has('GA4_SA_EMAIL', 'GA4_SA_KEY') ? 'ready' : 'needs_key',
       need: 'сервис-аккаунт Viewer в НАШЕМ ресурсе GA4 (GA4_SA_EMAIL + GA4_SA_KEY)',
       note: 'питает дашборд /admin, к аудиту клиента отношения не имеет',
+      internal: true,
     },
     {
       id: 'googleads', title: 'Google Ads', domains: ['acquisition'],
-      state: has('GOOGLE_ADS_DEVELOPER_TOKEN') ? 'ready' : 'needs_client_oauth',
+      state: 'site_side',
       need: 'developer token + OAuth клиента (AC-07)',
     },
     {
@@ -95,18 +104,22 @@ export function connectors(): Connector[] {
 }
 
 /** Свод для /health и для раздела «Ограничения» в отчёте. */
-export function connectorSummary(): { ready: string[]; blocked: { id: string; need: string }[] } {
+export function connectorSummary(): { ready: string[]; siteSide: string[]; blocked: { id: string; need: string }[] } {
   const all = connectors();
   return {
     ready: all.filter((c) => c.state === 'ready').map((c) => c.id),
-    blocked: all.filter((c) => c.state !== 'ready').map((c) => ({ id: c.id, need: c.need || c.state })),
+    siteSide: all.filter((c) => c.state === 'site_side').map((c) => c.id),
+    blocked: all.filter((c) => c.state !== 'ready' && c.state !== 'site_side').map((c) => ({ id: c.id, need: c.need || c.state })),
   };
 }
 
 /** Текст для отчёта: чего у аудита НЕ было и почему. Пробел должен быть виден. */
 export function limitationsText(domains?: string[]): string {
   const rel = connectors().filter((c) => !domains || c.domains.some((d) => domains.includes(d)));
-  const blocked = rel.filter((c) => c.state !== 'ready');
+  // site_side НЕ считаем пробелом: эти источники подключаются в /admin, и их
+  // статус воркеру не виден. Печатать клиенту «GA4 не было», когда он был, —
+  // это враньё в документе, за который заплатили.
+  const blocked = rel.filter((c) => c.state !== 'ready' && c.state !== 'site_side' && !c.internal);
   if (!blocked.length) return 'Все профильные источники данных были доступны.';
   const L = ['Источники, которых у этого аудита НЕ было:'];
   for (const c of blocked) L.push(`• ${c.title} — ${c.need || c.state}${c.note ? ` (${c.note})` : ''}`);
