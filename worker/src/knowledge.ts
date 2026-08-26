@@ -83,7 +83,8 @@ export async function knowledgeFor(scope: string, domain?: string): Promise<stri
   // домен задан: общий анализ по-прежнему получает лишь дистилляты.
   if (!domain) return base;
   const { domainContext } = await import('./domainSkills.js');
-  return base + (await domainContext(domain));
+  const { pluginSkillsFor } = await import('./skillRegistry.js');
+  return base + (await domainContext(domain)) + (await pluginSkillsFor(domain));
 }
 
 export async function knowledgeCount(): Promise<number> {

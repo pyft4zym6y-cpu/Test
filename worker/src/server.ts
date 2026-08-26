@@ -20,6 +20,8 @@ import { randomUUID } from 'node:crypto';
 import { runAudit, type AuditMetrics } from './pipeline.js';
 import { hasKey } from './anthropic.js';
 import { knowledgeCount } from './knowledge.js';
+import { skillCoverage } from './skillRegistry.js';
+import { connectorSummary } from './connectors.js';
 import { CONSOLE_HTML } from './console.js';
 import { catalogCards } from './experts/catalog.js';
 import { makeZip } from './zip.js';
@@ -177,7 +179,18 @@ const server = createServer(async (req, res) => {
   const url = new URL(req.url || '/', 'http://localhost');
   const path = url.pathname;
 
-  if (path === '/health') { json(res, 200, { ok: true, hasKey: hasKey(), knowledge: await knowledgeCount(), store: storeEnabled() }); return; }
+  if (path === '/health') {
+    // Показываем не только «жив ли сервер», но и ЧЕМ он вооружён: сколько скиллов
+    // видит и какие источники данных реально готовы. Иначе «подключено» —
+    // непроверяемое утверждение.
+    const skills = await skillCoverage();
+    json(res, 200, {
+      ok: true, hasKey: hasKey(), knowledge: await knowledgeCount(), store: storeEnabled(),
+      skills: { installed: skills.installed, routed: skills.routed.length, unrouted: skills.unrouted },
+      connectors: connectorSummary(),
+    });
+    return;
+  }
   if (req.method === 'GET' && (path === '/' || path === '/admin')) { cors(res); res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); res.end(CONSOLE_HTML); return; }
 
   // ниже — только по токену. FAIL-CLOSED: пустой AUDIT_SERVER_TOKEN не «открывает» сервер,

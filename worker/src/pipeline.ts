@@ -101,6 +101,7 @@ import type { UxUiReport } from './uxui.js';
 import type { PrototypeReport } from './prototype.js';
 import type { BenchmarkReport } from './competitor.js';
 import { renderKnowledge } from './clientKnowledge.js';
+import { cruxBenchmark, cruxToFacts, hasCrux } from './crux.js';
 
 export type AuditOptions = {
   tier?: Tier;
@@ -227,8 +228,19 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       }
     }
 
+    // Поле важнее лаборатории: CrUX даёт реальных пользователей и, главное,
+    // измеряет конкурентов без единого доступа к ним.
+    let cruxFacts = '';
+    if (site && hasCrux()) {
+      const b = await cruxBenchmark(site, comps.map((c) => c.finalUrl || c.rootUrl).filter(Boolean), log);
+      if (b.client || b.competitors.length) {
+        cruxFacts = cruxToFacts(b);
+        log(`✓ CrUX: клиент ${b.client?.insufficientData ? 'ниже порога публикации' : 'есть'}, конкурентов ${b.competitors.length}`);
+      }
+    }
     const ds: AuditDataset = {
       tier, request: opts.request ?? '', client, competitors: comps, takenAt: new Date().toISOString(),
+      ...(cruxFacts ? { crux: cruxFacts } : {}),
       ...(opts.knowledge ? { knowledge: renderKnowledge(opts.knowledge) } : {}),
       ...(prelaunch ? { mode: 'prelaunch' as const, brief: opts.brief || opts.request || '' } : {}),
     };

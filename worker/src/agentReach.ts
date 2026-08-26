@@ -23,14 +23,34 @@ const REACH_BIN = process.env.AGENT_REACH_BIN || 'agent-reach';
 const CURL_BIN = process.env.CURL_BIN || 'curl';
 const MCPORTER_BIN = process.env.MCPORTER_BIN || 'mcporter';
 
-/** execFile → stdout или null (ошибка/таймаут/ненулевой код — молча). */
+/**
+ * Причины, по которым внешний инструмент не отработал. Раньше всё падало в null,
+ * и в отчёте отсутствие БИНАРЯ выглядело как «поиск ничего не нашёл» — то есть
+ * сломанный инструмент читался как факт о клиенте. Теперь причина видна.
+ */
+const toolFailures: Record<string, string> = {};
+export function toolStatus(): Record<string, string> { return { ...toolFailures }; }
+
+/** execFile → stdout или null. Причину неудачи записываем в toolFailures. */
 function run(cmd: string, args: string[], timeoutMs: number): Promise<string | null> {
   return new Promise((resolve) => {
     try {
       execFile(cmd, args, { timeout: timeoutMs, maxBuffer: 4 * 1024 * 1024 }, (err, stdout) => {
-        resolve(err ? null : (stdout || '').toString());
+        if (err) {
+          const e = err as NodeJS.ErrnoException & { killed?: boolean };
+          toolFailures[cmd] = e.code === 'ENOENT'
+            ? 'не установлен в образе'
+            : e.killed ? 'таймаут' : `код ${e.code ?? 'ошибка'}`;
+          resolve(null);
+          return;
+        }
+        delete toolFailures[cmd];
+        resolve((stdout || '').toString());
       });
-    } catch { resolve(null); }
+    } catch {
+      toolFailures[cmd] = 'запуск не удался';
+      resolve(null);
+    }
   });
 }
 
