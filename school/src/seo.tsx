@@ -6,6 +6,7 @@ import { COURSES, courseById, courseLevels, courseStats, fmtPrice } from './data
 import { LEVELS, TOTALS } from './data/program';
 import { SCHOOL, FAQ } from './data/school';
 import { POSTS, postBySlug } from './data/blog';
+import { GLOSSARY } from './data/glossary';
 
 export const SITE = 'https://school.weexp.agency';
 const SUFFIX = ' | Commerce Architecture';
@@ -18,9 +19,11 @@ export interface PageSeo {
   /* og:type article + article:published_time для сторінок блогу */
   type?: 'article';
   published?: string;
+  /* абсолютний URL og-картинки сторінки (генеруються в public/og/) */
+  image: string;
 }
 
-const STATIC_PAGES: Record<string, Omit<PageSeo, 'canonical'>> = {
+const STATIC_PAGES: Record<string, Omit<PageSeo, 'canonical' | 'image'>> = {
   '/': {
     title: 'Commerce Architecture — школа архітекторів e-commerce',
     description: `Від новачка до E-Commerce Director: ${TOTALS.levels} рівнів, ${TOTALS.modules} модуль, ${TOTALS.questions} екзаменаційних питань. Загальні треки, точкові та експертні курси, капстоун із захистом. Системно, практично, без води.`,
@@ -41,6 +44,11 @@ const STATIC_PAGES: Record<string, Omit<PageSeo, 'canonical'>> = {
     title: 'Блог: аналітика, фінанси, SEO і карʼєра в e-commerce' + SUFFIX,
     description:
       'Практичні розбори з методології школи: юніт-економіка, діагностика падіння продажів, RFM і LTV, SEO та GEO/AEO, карʼєра e-commerce директора.',
+  },
+  '/glossary': {
+    title: 'Глосарій e-commerce термінів: 45+ визначень простою мовою' + SUFFIX,
+    description:
+      'Що таке конверсія, CAC, LTV, юніт-економіка, RFM, GEO і AEO — словник e-commerce термінів з поясненнями простою мовою. Кожне визначення — пряма відповідь у першому реченні.',
   },
   '/enroll': {
     title: 'Запис на навчання' + SUFFIX,
@@ -64,12 +72,30 @@ const STATIC_PAGES: Record<string, Omit<PageSeo, 'canonical'>> = {
   },
 };
 
+/* Сторінки без власної og-картинки використовують загальну */
+const DEFAULT_OG = SITE + '/og-image.png';
+const OG_PAGES = new Set([
+  '/',
+  '/about',
+  '/courses',
+  '/program',
+  '/blog',
+  '/glossary',
+  '/enroll',
+  '/faq',
+  '/contacts',
+]);
+
 export function getSeo(pathname: string): PageSeo {
   const clean = pathname.replace(/\/+$/, '') || '/';
   const canonical = SITE + (clean === '/' ? '/' : clean);
 
   const staticPage = STATIC_PAGES[clean];
-  if (staticPage) return { ...staticPage, canonical };
+  if (staticPage) {
+    const key = clean === '/' ? 'home' : clean.slice(1);
+    const image = OG_PAGES.has(clean) ? `${SITE}/og/page-${key}.png` : DEFAULT_OG;
+    return { ...staticPage, canonical, image };
+  }
 
   const postMatch = clean.match(/^\/blog\/([\w-]+)$/);
   if (postMatch) {
@@ -81,6 +107,7 @@ export function getSeo(pathname: string): PageSeo {
         canonical,
         type: 'article',
         published: post.date,
+        image: `${SITE}/og/post-${post.slug}.png`,
       };
     }
   }
@@ -94,6 +121,7 @@ export function getSeo(pathname: string): PageSeo {
         title: `${course.name} — курс за ${fmtPrice(course.price)}` + SUFFIX,
         description: `${course.hook} Курс «${course.name}»: ${stats.modules} модулів, ${course.duration}, ${fmtPrice(course.price)}. ${course.audience}. ${course.result}.`,
         canonical,
+        image: `${SITE}/og/course-${course.id}.png`,
       };
     }
   }
@@ -103,6 +131,7 @@ export function getSeo(pathname: string): PageSeo {
     description: 'Такої сторінки немає. Поверніться на головну школи Commerce Architecture.',
     canonical: SITE + '/',
     noindex: true,
+    image: DEFAULT_OG,
   };
 }
 
@@ -390,6 +419,7 @@ export function llmsTxt(): string {
     '## Сторінки',
     '',
     `- [Програма всіх 16 рівнів](${SITE}/program)`,
+    `- [Глосарій e-commerce термінів](${SITE}/glossary)`,
     `- [Про школу: місія, цінності, засновник](${SITE}/about)`,
     `- [Часті питання](${SITE}/faq)`,
     `- [Запис на навчання](${SITE}/enroll)`,
@@ -402,6 +432,70 @@ export function llmsTxt(): string {
     `- Формат: онлайн, українською; щотижневі менторські дзвінки із засновником; розбір власного магазину як навчального кейсу.`,
     `- Повний шлях завершується Capstone-проєктом: 24 артефакти власного e-commerce бізнесу і захист перед «власником/інвестором».`,
   );
+  return lines.join('\n') + '\n';
+}
+
+/* RSS-фід блогу: швидше виявлення нових статей краулерами й агрегаторами */
+export function rssXml(): string {
+  const escXml = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const items = [...POSTS]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .map((p) =>
+      [
+        '    <item>',
+        `      <title>${escXml(p.title)}</title>`,
+        `      <link>${SITE}/blog/${p.slug}</link>`,
+        `      <guid isPermaLink="true">${SITE}/blog/${p.slug}</guid>`,
+        `      <pubDate>${new Date(p.date + 'T08:00:00Z').toUTCString()}</pubDate>`,
+        `      <description>${escXml(p.description)}</description>`,
+        '    </item>',
+      ].join('\n'),
+    )
+    .join('\n');
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<rss version="2.0">',
+    '  <channel>',
+    `    <title>Блог Commerce Architecture</title>`,
+    `    <link>${SITE}/blog</link>`,
+    `    <description>Практичні розбори з методології школи: аналітика, фінанси, SEO/GEO, CRM і карʼєра в e-commerce.</description>`,
+    '    <language>uk</language>',
+    items,
+    '  </channel>',
+    '</rss>',
+    '',
+  ].join('\n');
+}
+
+/* llms-full.txt: повні тексти статей і глосарій одним файлом для AI-моделей.
+   llms.txt — коротка картка; цей файл — повний корпус знань сайту. */
+export function llmsFullTxt(): string {
+  const lines: string[] = [
+    `# ${SCHOOL.name} — повний корпус контенту`,
+    '',
+    `> Повні тексти статей блогу і глосарій школи ${SCHOOL.name} (${SITE}).`,
+    `> Коротка картка сайту: ${SITE}/llms.txt`,
+    '',
+    '## Статті блогу (повні тексти)',
+    '',
+  ];
+  for (const p of [...POSTS].sort((a, b) => b.date.localeCompare(a.date))) {
+    lines.push(`### ${p.title}`, '', `URL: ${SITE}/blog/${p.slug} · ${p.date}`, '', p.intro, '');
+    for (const s of p.sections) {
+      if (s.h) lines.push(`#### ${s.h}`, '');
+      for (const par of s.p ?? []) lines.push(par, '');
+      if (s.list) {
+        for (const item of s.list) lines.push(`- ${item}`);
+        lines.push('');
+      }
+    }
+  }
+  lines.push('## Глосарій e-commerce термінів', '');
+  for (const g of GLOSSARY) {
+    lines.push(`### ${g.title}`, '');
+    for (const t of g.terms) lines.push(`**${t.term}** — ${t.def}`, '');
+  }
   return lines.join('\n') + '\n';
 }
 

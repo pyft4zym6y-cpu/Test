@@ -4,9 +4,14 @@
 import { renderToString } from 'react-dom/server';
 import { StaticRouter } from 'react-router';
 import { AppShell } from './App';
-import { getSeo, llmsTxt, prerenderRoutes, SITE } from './seo';
+import { getSeo, llmsFullTxt, llmsTxt, prerenderRoutes, rssXml, SITE } from './seo';
+import { COURSES, courseStats, fmtPrice } from './data/courses';
+import { POSTS } from './data/blog';
+import { TOTALS } from './data/program';
 
-export { getSeo, llmsTxt, prerenderRoutes, SITE };
+export { getSeo, llmsFullTxt, llmsTxt, prerenderRoutes, rssXml, SITE };
+// дані для локальної генерації og-картинок (scripts/og-images.mjs)
+export { COURSES, courseStats, fmtPrice, POSTS, TOTALS };
 
 export function render(url: string): string {
   return renderToString(

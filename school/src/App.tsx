@@ -12,6 +12,7 @@ import Faq from './pages/Faq';
 import Contacts from './pages/Contacts';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
+import Glossary from './pages/Glossary';
 import { Privacy, Terms } from './pages/Legal';
 import NotFound from './pages/NotFound';
 import { Seo } from './seo';
@@ -43,6 +44,7 @@ export function AppShell() {
             <Route path="/enroll" element={<Enroll />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/glossary" element={<Glossary />} />
             <Route path="/faq" element={<Faq />} />
             <Route path="/contacts" element={<Contacts />} />
             <Route path="/privacy" element={<Privacy />} />

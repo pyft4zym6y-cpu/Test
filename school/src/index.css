@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Manrope:wght@400;600;800&family=Caveat:wght@600;700&family=Marck+Script&display=swap');
+/* Шрифти підключаються <link>-ом в index.html (не блокує рендер, на відміну від @import) */
 @import "tailwindcss";
 
 @theme {

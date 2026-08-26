@@ -98,6 +98,7 @@
 ## Сторінки
 
 - [Програма всіх 16 рівнів](https://school.weexp.agency/program)
+- [Глосарій e-commerce термінів](https://school.weexp.agency/glossary)
 - [Про школу: місія, цінності, засновник](https://school.weexp.agency/about)
 - [Часті питання](https://school.weexp.agency/faq)
 - [Запис на навчання](https://school.weexp.agency/enroll)

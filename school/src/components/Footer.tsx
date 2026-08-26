@@ -16,6 +16,7 @@ const COLS = [
     links: [
       { to: '/about', label: 'Про школу' },
       { to: '/blog', label: 'Блог' },
+      { to: '/glossary', label: 'Глосарій' },
       { to: '/faq', label: 'FAQ' },
       { to: '/contacts', label: 'Контакти' },
     ],

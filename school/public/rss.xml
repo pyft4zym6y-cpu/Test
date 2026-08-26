@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Блог Commerce Architecture</title>
+    <link>https://school.weexp.agency/blog</link>
+    <description>Практичні розбори з методології школи: аналітика, фінанси, SEO/GEO, CRM і карʼєра в e-commerce.</description>
+    <language>uk</language>
+    <item>
+      <title>Як відкрити інтернет-магазин в Україні у 2026: покроковий план</title>
+      <link>https://school.weexp.agency/blog/yak-vidkryty-internet-magazyn</link>
+      <guid isPermaLink="true">https://school.weexp.agency/blog/yak-vidkryty-internet-magazyn</guid>
+      <pubDate>Mon, 24 Aug 2026 08:00:00 GMT</pubDate>
+      <description>Покроковий план запуску інтернет-магазину: ніша і юніт-економіка, платформа, асортимент, перший трафік. Скільки коштує старт і які помилки зʼїдають бюджет.</description>
+    </item>
+    <item>
+      <title>KPI інтернет-магазину: 15 метрик, які треба відстежувати</title>
+      <link>https://school.weexp.agency/blog/kpi-internet-magazynu</link>
+      <guid isPermaLink="true">https://school.weexp.agency/blog/kpi-internet-magazynu</guid>
+      <pubDate>Sat, 22 Aug 2026 08:00:00 GMT</pubDate>
+      <description>Головні KPI e-commerce за рівнями: трафік і конверсія, гроші замовлення, retention і LTV, юніт-економіка. Формули, нормальні діапазони і типові помилки вимірювання.</description>
+    </item>
+    <item>
+      <title>Як продавати на маркетплейсах: стратегія для Rozetka і Prom</title>
+      <link>https://school.weexp.agency/blog/yak-prodavaty-na-marketpleysah</link>
+      <guid isPermaLink="true">https://school.weexp.agency/blog/yak-prodavaty-na-marketpleysah</guid>
+      <pubDate>Thu, 20 Aug 2026 08:00:00 GMT</pubDate>
+      <description>Стратегія продажів на маркетплейсах України: вибір площадки, контент карток, buy box, ціноутворення з урахуванням комісій і коли будувати власний сайт.</description>
+    </item>
+    <item>
+      <title>AI в e-commerce у 2026: що вже працює, а що — хайп</title>
+      <link>https://school.weexp.agency/blog/ai-v-ecommerce-2026</link>
+      <guid isPermaLink="true">https://school.weexp.agency/blog/ai-v-ecommerce-2026</guid>
+      <pubDate>Tue, 18 Aug 2026 08:00:00 GMT</pubDate>
+      <description>Де штучний інтелект реально заробляє гроші інтернет-магазину у 2026: пошук і рекомендації, контент карток, підтримка, прогноз попиту — і як потрапити у відповіді ChatGPT.</description>
+    </item>
+    <item>
+      <title>Як стати e-commerce директором: покроковий шлях від новачка</title>
+      <link>https://school.weexp.agency/blog/yak-staty-ecommerce-dyrektorom</link>
+      <guid isPermaLink="true">https://school.weexp.agency/blog/yak-staty-ecommerce-dyrektorom</guid>
+      <pubDate>Wed, 12 Aug 2026 08:00:00 GMT</pubDate>
+      <description>Що має вміти E-Commerce Director, скільки триває шлях від новачка і з чого почати: покрокова карта компетенцій — від будови магазину до P&amp;L і стратегії.</description>
+    </item>
+    <item>
+      <title>Юніт-економіка інтернет-магазину: як порахувати і не обдурити себе</title>
+      <link>https://school.weexp.agency/blog/unit-ekonomika-internet-magazynu</link>
+      <guid isPermaLink="true">https://school.weexp.agency/blog/unit-ekonomika-internet-magazynu</guid>
+      <pubDate>Mon, 10 Aug 2026 08:00:00 GMT</pubDate>
+      <description>Формула юніт-економіки для e-commerce: contribution margin, CAC, LTV, точка беззбитковості. Покроковий розрахунок із типовими помилками.</description>
+    </item>
+    <item>
+      <title>Чому падають продажі в інтернет-магазині: чек-лист діагностики за 1 день</title>
+      <link>https://school.weexp.agency/blog/chomu-padayut-prodazhi</link>
+      <guid isPermaLink="true">https://school.weexp.agency/blog/chomu-padayut-prodazhi</guid>
+      <pubDate>Sat, 08 Aug 2026 08:00:00 GMT</pubDate>
+      <description>Продажі впали — трафік, сайт чи асортимент? Покроковий алгоритм діагностики падіння продажів в e-commerce: які звіти відкрити і в якому порядку.</description>
+    </item>
+    <item>
+      <title>SEO для інтернет-магазину у 2026: Core Web Vitals, структура і GEO/AEO</title>
+      <link>https://school.weexp.agency/blog/seo-dlya-internet-magazynu-2026</link>
+      <guid isPermaLink="true">https://school.weexp.agency/blog/seo-dlya-internet-magazynu-2026</guid>
+      <pubDate>Wed, 05 Aug 2026 08:00:00 GMT</pubDate>
+      <description>Що працює в SEO інтернет-магазинів у 2026: технічна база, архітектура категорій, structured data і видимість в AI-пошуку (GEO/AEO, AI Overviews, ChatGPT Search).</description>
+    </item>
+    <item>
+      <title>RFM-сегментація і LTV: як збудувати повторні продажі без знижок на все</title>
+      <link>https://school.weexp.agency/blog/rfm-segmentacia-ltv</link>
+      <guid isPermaLink="true">https://school.weexp.agency/blog/rfm-segmentacia-ltv</guid>
+      <pubDate>Sun, 02 Aug 2026 08:00:00 GMT</pubDate>
+      <description>Як сегментувати клієнтську базу за RFM, порахувати LTV по когортах і збудувати тригерні ланцюжки, що повертають клієнтів — без тотальних знижок.</description>
+    </item>
+    <item>
+      <title>Скільки заробляє e-commerce директор і за що йому платять</title>
+      <link>https://school.weexp.agency/blog/skilky-zaroblyaye-ecommerce-dyrektor</link>
+      <guid isPermaLink="true">https://school.weexp.agency/blog/skilky-zaroblyaye-ecommerce-dyrektor</guid>
+      <pubDate>Thu, 30 Jul 2026 08:00:00 GMT</pubDate>
+      <description>Зарплата e-commerce директора в Україні та ЄС: вилки, з чого складається компенсація, і які компетенції реально підвищують ставку.</description>
+    </item>
+  </channel>
+</rss>

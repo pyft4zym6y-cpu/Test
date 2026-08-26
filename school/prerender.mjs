@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const dist = join(root, 'dist');
-const { render, getSeo, prerenderRoutes, SITE, llmsTxt } = await import(
+const { render, getSeo, prerenderRoutes, SITE, llmsTxt, llmsFullTxt, rssXml } = await import(
   './dist-ssr/entry-server.js'
 );
 
@@ -43,11 +43,15 @@ for (const route of routes) {
       `<link rel="canonical" href="${seo.canonical}" />`,
     );
 
-  // per-page twitter-теги + og:type article для блогу
+  // per-page og-картинка + twitter-теги + og:type article для блогу
+  html = html.replace(
+    /<meta property="og:image" content="[^"]*" \/>/,
+    `<meta property="og:image" content="${seo.image}" />`,
+  );
   const extra = [
     `<meta name="twitter:title" content="${esc(seo.title)}" />`,
     `<meta name="twitter:description" content="${esc(seo.description)}" />`,
-    `<meta name="twitter:image" content="${SITE}/og-image.png" />`,
+    `<meta name="twitter:image" content="${seo.image}" />`,
   ];
   if (seo.type === 'article') {
     html = html.replace(
@@ -83,4 +87,14 @@ const llms = llmsTxt();
 writeFileSync(join(dist, 'llms.txt'), llms);
 writeFileSync(join(root, 'public', 'llms.txt'), llms);
 
-console.log(`prerendered ${routes.length} routes + sitemap + llms.txt`);
+// llms-full.txt — повні тексти статей і глосарій для AI-моделей
+const llmsFull = llmsFullTxt();
+writeFileSync(join(dist, 'llms-full.txt'), llmsFull);
+writeFileSync(join(root, 'public', 'llms-full.txt'), llmsFull);
+
+// rss.xml — фід блогу
+const rss = rssXml();
+writeFileSync(join(dist, 'rss.xml'), rss);
+writeFileSync(join(root, 'public', 'rss.xml'), rss);
+
+console.log(`prerendered ${routes.length} routes + sitemap + llms(+full) + rss`);
