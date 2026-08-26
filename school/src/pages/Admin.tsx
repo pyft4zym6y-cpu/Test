@@ -78,7 +78,9 @@ function Login({ onOk }: { onOk: (token: string, mode: 'live' | 'demo') => void 
         setErr(String(r.error || 'Помилка входу'));
       }
     } catch {
-      setErr('Сервер недоступний');
+      // без бекенда (демо-артефакт): пускаємо з демо-даними за дефолтними кредами
+      if (login === 'admin' && password === 'school2026') onOk('demo-offline', 'demo');
+      else setErr('Сервер недоступний');
     }
     setBusy(false);
   }
