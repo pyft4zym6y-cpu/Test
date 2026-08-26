@@ -12,8 +12,13 @@
 -- ── 1. Роль поточного користувача ──────────────────────────────────────────
 -- Роль лежить в app_metadata (її ставить /api/team сервісним ключем — з UI
 -- підмінити не можна, на відміну від user_metadata).
+--
+-- security definer + фіксований search_path — обовʼязково: функція читає схему
+-- auth, а виконується під час перевірки RLS від імені звичайного користувача.
+-- Без цього перевірка падає з «permission denied for schema auth», і разом з нею
+-- падає будь-який запит до таблиці.
 create or replace function public.weexp_role()
-returns text language sql stable as $$
+returns text language sql stable security definer set search_path = public, auth, pg_temp as $$
   select coalesce(
     nullif(auth.jwt() -> 'app_metadata' ->> 'role', ''),
     -- бутстрап: перші супери задані списком, щоб не втратити доступ
@@ -24,21 +29,35 @@ returns text language sql stable as $$
 $$;
 
 create or replace function public.weexp_is_staff()
-returns boolean language sql stable as $$
-  select public.weexp_role() in ('super', 'admin', 'manager', 'auditor');
+returns boolean language sql stable security definer set search_path = public, pg_temp as $$
+  -- coalesce: без ролі функція повертала б NULL, а не false. Для RLS це
+  -- майже те саме, але NULL у with check рахується порушенням і дає
+  -- незрозумілу помилку замість чесного «доступу немає».
+  select coalesce(public.weexp_role() in ('super', 'admin', 'manager', 'auditor'), false);
 $$;
 
 -- Хто має право ЗМІНЮВАТИ клієнтські дані. Аудитор — ні: він читає й аналізує.
 create or replace function public.weexp_can_write()
-returns boolean language sql stable as $$
-  select public.weexp_role() in ('super', 'admin', 'manager');
+returns boolean language sql stable security definer set search_path = public, pg_temp as $$
+  -- coalesce: без ролі функція повертала б NULL, а не false. Для RLS це
+  -- майже те саме, але NULL у with check рахується порушенням і дає
+  -- незрозумілу помилку замість чесного «доступу немає».
+  select coalesce(public.weexp_role() in ('super', 'admin', 'manager'), false);
 $$;
 
 -- Хто має право ВИДАЛЯТИ. Лише super і admin (capability delete_data).
 create or replace function public.weexp_can_delete()
-returns boolean language sql stable as $$
-  select public.weexp_role() in ('super', 'admin');
+returns boolean language sql stable security definer set search_path = public, pg_temp as $$
+  -- coalesce: без ролі функція повертала б NULL, а не false. Для RLS це
+  -- майже те саме, але NULL у with check рахується порушенням і дає
+  -- незрозумілу помилку замість чесного «доступу немає».
+  select coalesce(public.weexp_role() in ('super', 'admin'), false);
 $$;
+
+-- Функції зве RLS від імені звичайного користувача — потрібен явний доступ.
+grant execute on function public.weexp_role(), public.weexp_is_staff(),
+                          public.weexp_can_write(), public.weexp_can_delete()
+  to authenticated, anon;
 
 -- ── 2. Журнал дій адміністратора ───────────────────────────────────────────
 -- Окрема таблиця, а не історія всередині jsonb: всередині запису клієнта така
