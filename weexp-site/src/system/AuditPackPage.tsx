@@ -1,12 +1,12 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import { useT, useLp } from '@/i18n';
-import { PACK_REPORTS, PACK_VOLUMES, PACK_DOC_COUNT, chaptersOf, AUDIT_BLOCKS, TOTAL_CHECKS } from '@/data/auditPack';
+import { PACK_REPORTS, PACK_VOLUMES, PACK_DOC_COUNT, PACK_AUDITS, chaptersOf, AUDIT_BLOCKS, TOTAL_CHECKS } from '@/data/auditPack';
 import './system.css';
 
 /**
  * /audit-pack — публічний склад пакета глибокого аудиту: 5 ємких звітів
  * (обіцянка формату 01 на /pricing), кожен зі змістом і конечною цінністю.
- * 12 спеціалізованих аудитів — глави Звіту 2. Джерело — src/data/auditPack.ts
+ * Спеціалізовані аудити — глави Звіту 2. Джерело — src/data/auditPack.ts
  * (той самий канон, що й чеклист готовності в адмінці).
  */
 export function AuditPackPage() {
@@ -17,6 +17,7 @@ export function AuditPackPage() {
   const setScope = (v: 'store' | 'dept') => setParams({ scope: v }, { replace: true });
   const volumes = PACK_VOLUMES.filter((v) => scope === 'dept' || v.scope === 'both');
   const docCount = PACK_REPORTS.length + volumes.length;
+  const N = PACK_AUDITS.length;   // 13-й аудит додано — число більше не пишемо руками
   return (
     <section className="sysx apack" aria-label={t('Склад пакета аудиту', 'Audit pack contents')}>
       <div className="sysx-field" aria-hidden="true" />
@@ -33,7 +34,7 @@ export function AuditPackPage() {
             </button>
           </div>
           <p className="sysx-lead">{scope === 'dept'
-            ? t('Повна глибина: діагностика всього відділу e-commerce за 12 аудитами — від економіки й каналів до операцій, команди й організації. 5 звітів + 5 посторінкових томів «зараз → як треба» + повноробочий Гант-план Excel.', 'Full depth: a diagnosis of the entire e-commerce department across the 12 audits — from economics and channels to operations, team and organisation. 5 reports + 5 page-by-page “now → should-be” volumes + a fully working Excel Gantt.')
+            ? t(`Повна глибина: діагностика всього відділу e-commerce за ${N} аудитами — від економіки й каналів до операцій, команди, організації та експансії. 5 звітів + 5 посторінкових томів «зараз → як треба» + повноробочий Гант-план Excel.`, `Full depth: a diagnosis of the entire e-commerce department across the ${N} audits — from economics and channels to operations, team, organisation and expansion. 5 reports + 5 page-by-page “now → should-be” volumes + a fully working Excel Gantt.`)
             : t('Фокус на магазині та шляху клієнта: сайтові аудити з 12, кожна сторінка поблочно проти еталона, контент і SEO, 15 етапів шляху клієнта. 5 звітів + 4 посторінкові томи «зараз → як треба» + повноробочий Гант-план Excel.', 'Focus on the store and the customer journey: the site audits of the 12, every page block-by-block against the benchmark, content and SEO, the 15 journey stages. 5 reports + 4 page-by-page “now → should-be” volumes + a fully working Excel Gantt.')}</p>
         </header>
 
@@ -74,8 +75,8 @@ export function AuditPackPage() {
         </div>
 
         <div className="apack-method">
-          <h2 className="apack-ph-t mono">{t(`Методологія: E-commerce 360° · 12 аудитів · ${TOTAL_CHECKS}+ перевірок`, `Methodology: E-commerce 360° · 12 audits · ${TOTAL_CHECKS}+ checks`)}</h2>
-          <p className="apack-d apack-method-lead">{t('Це не «аудит сайту». Ядро пакета — Звіт 2: діагностика всього бізнесу за 12 аудитами, кожен зі спільним каркасом: вердикт → методика → факти проти бенчмарків → знахідки з доказами → рекомендації з власником → звʼязки → що міряти через 90 днів.', 'This is not a “website audit”. The core of the pack is Report 2: a diagnosis of the whole business across 12 audits, each on a shared skeleton: verdict → method → facts vs benchmarks → evidenced findings → owned recommendations → links → what to measure in 90 days.')}</p>
+          <h2 className="apack-ph-t mono">{t(`Методологія: E-commerce 360° · ${N} аудитів · ${TOTAL_CHECKS}+ перевірок`, `Methodology: E-commerce 360° · ${N} audits · ${TOTAL_CHECKS}+ checks`)}</h2>
+          <p className="apack-d apack-method-lead">{t(`Це не «аудит сайту». Ядро пакета — Звіт 2: діагностика всього бізнесу за ${N} аудитами, кожен зі спільним каркасом: вердикт → методика → факти проти бенчмарків → знахідки з доказами → рекомендації з власником → звʼязки → що міряти через 90 днів.`, `This is not a “website audit”. The core of the pack is Report 2: a diagnosis of the whole business across ${N} audits, each on a shared skeleton: verdict → method → facts vs benchmarks → evidenced findings → owned recommendations → links → what to measure in 90 days.`)}</p>
           <div className="apack-blocks">
             {AUDIT_BLOCKS.map((b, i) => {
               const siteCore = ['product', 'customer', 'website', 'seo', 'marketing', 'crm', 'analytics'].includes(b.key);

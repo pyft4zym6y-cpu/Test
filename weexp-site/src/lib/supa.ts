@@ -178,7 +178,9 @@ export type WorkerMaturity = { rows: MaturityRow[]; observedAvg: number | null }
 export const MATURITY_DOMAIN_MODULE: Record<string, string> = {
   SEO: 'seo', Platform: 'technology', Product: 'product', Analytics: 'analytics', Marketing: 'acquisition',
   Strategy: 'business', Customer: 'customer', Brand: 'market', Sales: 'business', CRM: 'crm',
-  Pricing: 'product', Operations: 'operations', Marketplace: 'operations', International: 'business',
+  // Marketplace і International раніше падали в operations/business — там вони
+  // губилися серед складу і P&L. Тепер у них є свій модуль: A13 Expansion.
+  Pricing: 'product', Operations: 'operations', Marketplace: 'expansion', International: 'expansion',
   Finance: 'business', People: 'organization', AI: 'technology', Governance: 'organization',
 };
 

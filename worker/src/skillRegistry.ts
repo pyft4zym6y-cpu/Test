@@ -58,6 +58,13 @@ export const SKILL_ROUTING: Record<string, string[]> = {
   operations:   ['diagram-maker'],
   technology:   ['seo-technical', 'playwright-cli'],
   organization: ['marketing-council', 'diagram-maker'],
+  // Экспансия смотрит на то, чего у клиента ЕЩЁ НЕТ, поэтому линзы здесь
+  // разведывательные, а не оптимизационные: есть ли спрос на новом рынке
+  // (ecommerce-keyword-research), кто там уже стоит и с какой ценой
+  // (competitor-profiling, competitor-price-analysis), сколько стоит вход
+  // в канал (ads-competitor) и потянет ли фид площадку (google-shopping-optimization).
+  expansion:    ['ecommerce-keyword-research', 'competitor-profiling', 'competitor-price-analysis',
+                 'ads-competitor', 'google-shopping-optimization'],
 };
 
 /**

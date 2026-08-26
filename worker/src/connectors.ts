@@ -24,7 +24,7 @@ export type ConnectorState =
 export type Connector = {
   id: string;
   title: string;
-  domains: string[];          // какие из 12 аудитов усиливает
+  domains: string[];          // какие из 13 аудитов усиливает
   state: ConnectorState;
   need?: string;              // что именно нужно, чтобы включить
   note?: string;
@@ -49,7 +49,7 @@ export function connectors(): Connector[] {
       need: 'PAGESPEED_API_KEY', note: 'лаборатория; при расхождении верить CrUX',
     },
     {
-      id: 'exa', title: 'Веб-поиск Exa (через mcporter)', domains: ['market', 'customer'],
+      id: 'exa', title: 'Веб-поиск Exa (через mcporter)', domains: ['market', 'customer', 'expansion'],
       state: 'ready', need: 'бинарь mcporter в образе',
       note: 'внешний инфофон, соцсети, отзывы; статус проверяется на прогоне',
     },

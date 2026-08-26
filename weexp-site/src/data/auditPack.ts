@@ -36,7 +36,7 @@ export const PACK_REPORTS: PackReport[] = [
     valueEn: 'In a 40-minute meeting the owner understands what leaks, what it costs and what to do.',
   },
   {
-    id: 'r2', uk: 'Діагностичний звіт: 12 аудитів', en: 'Diagnostic report: the 12 audits',
+    id: 'r2', uk: 'Діагностичний звіт: 13 аудитів', en: 'Diagnostic report: the 13 audits',
     descUk: 'Головний том: 12 спеціалізованих аудитів (Business → Organization) зі спільним каркасом, CJM, зведеним реєстром знахідок, матрицею зрілості і протоколом якості.',
     descEn: 'The main volume: 12 specialised audits (Business → Organization) on a shared skeleton, CJM, the consolidated findings registry, the maturity matrix and the QA protocol.',
     valueUk: 'Повна картина бізнесу з доказами: кожен висновок можна перевірити до джерела.',
@@ -101,7 +101,7 @@ export const PACK_VOLUMES: PackVolume[] = [
     descEn: 'A fully working tool, not an illustration: tasks with owners (R/A), predecessors, a weekly grid and DoD + "Legend", "Contractors", "Resources" sheets.',
     vol: '4 листи', scope: 'both' },
 ];
-/* ── 12 аудитів як ОКРЕМІ документи ────────────────────────────────────────
+/* ── 13 аудитів як ОКРЕМІ документи ────────────────────────────────────────
    Раніше вони були главами всередині діагностичного звіту. Тепер кожен —
    самостійний документ, як UX/UI, контент і SEO: свій метод, свій профільний
    набір OS-скілів у рушії (worker/src/domainSkills.ts), свій обсяг.
@@ -151,11 +151,14 @@ export const PACK_AUDITS: PackAudit[] = [
   { id: 'a-organization', code: 'A12', uk: 'Organization-аудит', en: 'Organization audit',
     descUk: 'Команда, процеси, ритм управління, зрілість, автономність власника.',
     skills: ['people-os'], engine: ['maturity'], scope: 'dept' },
+  { id: 'a-expansion', code: 'A13', uk: 'Аудит експансії', en: 'Expansion audit',
+    descUk: 'Куди рости далі: нові ринки й країни, маркетплейси, B2B/опт, нові моделі продажу — попит, вартість входу, юридичний контур і те, що зламається першим.',
+    skills: ['marketplace-os', 'b2b-os', 'legal-os'], engine: [], scope: 'both' },
 ];
-/** Скільки з 12 аудитів рушій уже вміє збирати сам. */
+/** Скільки з 13 аудитів рушій уже вміє збирати сам. */
 export const AUDITS_WITH_ENGINE = PACK_AUDITS.filter((a) => a.engine.length > 0).length;
 
-export const PACK_DOC_COUNT = PACK_REPORTS.length + PACK_VOLUMES.length + PACK_AUDITS.length; // 5 звітів + 6 томів + 12 аудитів = 23
+export const PACK_DOC_COUNT = PACK_REPORTS.length + PACK_VOLUMES.length + PACK_AUDITS.length; // 5 звітів + 6 томів + 13 аудитів = 24
 
 export const PACK_CHAPTERS: PackChapter[] = [
   // ── r1 · Презентація ──
@@ -176,8 +179,9 @@ export const PACK_CHAPTERS: PackChapter[] = [
   { id: 'd10', report: 'r2', uk: 'Operations-аудит: склад, закупівлі, доставка, повернення', en: 'Operations audit', source: 'worker' },
   { id: 'd11', report: 'r2', uk: 'Technology-аудит: платформа, інтеграції, безпека, bus-factor', en: 'Technology audit', source: 'worker' },
   { id: 'd12', report: 'r2', uk: 'Organization-аудит: команда, процеси, ритм, AI-зрілість', en: 'Organization audit', source: 'worker' },
+  { id: 'd13', report: 'r2', uk: 'Аудит експансії: нові ринки, маркетплейси, B2B, вартість входу', en: 'Expansion audit', source: 'worker' },
   { id: 'a13', report: 'r2', uk: 'Карта шляху клієнта (CJM): етапи, розриви, моменти істини', en: 'Customer journey map', source: 'worker' },
-  { id: 'a09', report: 'r2', uk: 'Матриця зрілості і Health Score: зведення 12 аудитів', en: 'Maturity matrix & Health Score', source: 'worker' },
+  { id: 'a09', report: 'r2', uk: 'Матриця зрілості і Health Score: зведення 13 аудитів', en: 'Maturity matrix & Health Score', source: 'worker' },
   { id: 'a11', report: 'r2', uk: 'Зведений реєстр знахідок (ICE з розкладкою, власники)', en: 'Consolidated findings registry', source: 'worker' },
   { id: 'a14', report: 'r2', uk: 'Протокол якості аудиту (як перевірявся сам аудит)', en: 'Audit QA protocol', source: 'worker' },
   // ── r3 · Фінансовий звіт ──
@@ -202,7 +206,7 @@ export const TOTAL_CHAPTERS = PACK_CHAPTERS.length;
 /** Легасі-аліас: плаский список глав (чеклист адмінки, генератори). */
 export const PACK_ARTIFACTS = PACK_CHAPTERS;
 
-/* ── Методологія: 12 аудитів E-commerce 360° · 150+ спеціалізованих перевірок ──
+/* ── Методологія: 13 аудитів E-commerce 360° · 150+ спеціалізованих перевірок ──
  * Кожен аудит — глава Звіту 2 зі СПІЛЬНИМ КАРКАСОМ із 7 секцій:
  * 1. Вердикт (рівень зрілості, висновок, топ-3 знахідки, гроші блоку)
  * 2. Методика і дані (що перевірялось, джерела, період, що НЕ перевірялось)
@@ -232,6 +236,10 @@ export const AUDIT_BLOCKS: AuditBlock[] = [
   { key: 'operations', uk: 'Operations', en: 'Operations', taskUk: 'Знизити операційні втрати: склад, закупівлі, fulfillment, доставка, повернення', taskEn: 'Cut operational losses: warehouse, purchasing, fulfillment, delivery, returns', checks: 13, merges: '70,72,74,75,76,78,80,81,85,136', chapter: 'd10' },
   { key: 'technology', uk: 'Technology', en: 'Technology', taskUk: 'Забезпечити масштабованість: CMS, ERP, інтеграції, швидкість, безпека', taskEn: 'Ensure scalability: CMS, ERP, integrations, performance, security', checks: 14, merges: '87,88,90,91,92,93,94,96,98,99,100,101', chapter: 'd11' },
   { key: 'organization', uk: 'Organization', en: 'Organization', taskUk: 'Зробити систему керованою: команда, процеси, KPI, підрядники, AI', taskEn: 'Make the system manageable: team, processes, KPIs, contractors, AI', checks: 12, merges: '113,114,115,117,118,119,120,121,150', chapter: 'd12' },
+  // Єдиний блок, який НЕ зводить перевірки з каталогу 150: там усі 150 дивляться
+  // на те, що працює сьогодні. Експансія дивиться на те, чого ще немає, тому її
+  // перевірки — нові, а не перенумеровані старі.
+  { key: 'expansion', uk: 'Expansion', en: 'Expansion', taskUk: 'Знайти наступний ринок: країни, маркетплейси, B2B/опт, нові моделі — попит, вартість входу, юридичний контур', taskEn: 'Find the next market: countries, marketplaces, B2B/wholesale, new models — demand, cost of entry, legal perimeter', checks: 12, merges: 'нові перевірки (не зводяться з каталогу 150)', chapter: 'd13' },
 ];
 export const TOTAL_CHECKS = AUDIT_BLOCKS.reduce((s, b) => s + b.checks, 0);
 
