@@ -1244,3 +1244,16 @@
   .adm-board { grid-auto-columns: minmax(86vw, 1fr); }
   .adm-tiles { grid-template-columns: 1fr 1fr; }
 }
+
+/* Анкета в картці: рядок відповіді клікабельний, коли менеджер може писати. */
+.adm-fill-q.editable .adm-fill-qv,
+.adm-fill-q.editable .adm-fill-qe { cursor: pointer; text-align: left; background: none; border: 0; font: inherit; color: inherit; padding: 0; }
+.adm-fill-q.editable .adm-fill-qv:hover,
+.adm-fill-q.editable .adm-fill-qe:hover { text-decoration: underline; }
+.adm-fill-qv:disabled, .adm-fill-qe:disabled { cursor: default; }
+.adm-fill-edit { display: flex; gap: 6px; align-items: center; flex: 1 1 240px; }
+.adm-fill-edit .ab-inp { flex: 1; }
+
+/* Пошук: показуємо, ДЕ саме знайшлось, якщо це не email. */
+.adm-hits { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 2px; font-size: 11px; opacity: .7; padding-left: 2px; }
+.adm-hits i { font-style: normal; }

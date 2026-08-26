@@ -7,6 +7,7 @@ import '../system.css';
 import '../cabinet.css';
 import { Block, COOP_TYPES, LEAD_STAGES, SaveBadge, stageOf } from './shared';
 import { useAutosave } from './useAutosave';
+import { auditStatusOf, nextStep, phaseOf, slaOf, PHASES, STAGE_OF } from './auditRequests';
 
 export function LeadDetail({ lead, allRows, onClose, onStatus, onDeal, onConvert, onOpenClient, onDelete, busy }: { lead?: LeadRow; allRows: AdminRow[]; onClose: () => void; onStatus: (id: string, s: LeadStatus) => void;
   /** Повідомити батька про збережену угоду, щоб список не показував старе. */
@@ -132,6 +133,26 @@ export function LeadDetail({ lead, allRows, onClose, onStatus, onDeal, onConvert
             </ul>
           </Block>
           {lead.comment && <Block title="Коментар / проблема"><p className="adm-longtext">{lead.comment}</p></Block>}
+
+          {/* Дві воронки — заявки і аудит — стояли поруч без стику: із картки
+              заявки не було видно, що клієнт уже пройшов половину аудиту. */}
+          {client && (() => {
+            const st = auditStatusOf(client);
+            if (!st) return null;
+            const step = nextStep(client);
+            const sla = slaOf(client);
+            return (
+              <Block title="Цей клієнт в аудиті">
+                <ul className="adm-kv">
+                  <li><i>Фаза</i><span>{PHASES[phaseOf(st)].l}</span></li>
+                  <li><i>Стадія</i><span><span className={`cab-badge mono tst-${STAGE_OF[st].cls}`}>{STAGE_OF[st].l}</span></span></li>
+                  <li><i>Хід за</i><span className={step.who === 'ми' ? 'tst-bad' : ''}>{step.who === 'ми' ? 'нами' : 'клієнтом'}</span></li>
+                  {sla.state !== 'ok' && <li><i>Без руху</i><span className={sla.state === 'breach' ? 'tst-bad' : ''}>{sla.days} дн. (норматив {sla.limit})</span></li>}
+                </ul>
+                <p className="mono adm-hint">{step.text}</p>
+              </Block>
+            );
+          })()}
 
           {client ? (
             <Block title="Профіль клієнта">

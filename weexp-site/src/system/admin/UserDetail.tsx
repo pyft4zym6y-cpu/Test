@@ -239,7 +239,7 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, 
           ) : <p className="mono adm-empty">немає запитів</p>}</Block>}
 
           {utab === 'data' && code && (
-            <Block title="Заповнення аудиту"><AuditFill code={code} /></Block>
+            <Block title="Анкета клієнта"><AuditFill code={code} editor={canAccess ? selfEmail : undefined} /></Block>
           )}
           {utab === 'data' && code && (
             <Block title="Уточнення (Крок 2)"><ExtraEditor code={code} /></Block>

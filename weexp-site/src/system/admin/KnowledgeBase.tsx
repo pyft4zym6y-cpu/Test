@@ -100,6 +100,15 @@ export function KnowledgeBase({ row, code, author }: { row: AdminRow; code?: str
       company: Object.fromEntries(
         (groups.find((g) => g.key === 'profile')?.items || []).map((i) => [i.title, i.detail || '']),
       ),
+      // Зміст, а не тільки лічильники: через півроку має бути видно, ЩО саме
+      // клієнт відповів на ту дату, а не скільки в нас було файлів.
+      content: {
+        answers: Object.fromEntries(Object.entries(answers).map(([k, a]) => [k, a?.value])),
+        accesses: Object.entries(rec.accessLog || {}).map(([id, a]) => ({ id, status: a.status })),
+        files: (rec.clientFiles || []).map((f) => f.title || f.type || 'файл'),
+        notes: (rec.notes || []).map((n) => n.text),
+        scoring: Object.fromEntries(Object.entries(rec.assessment || {}).map(([k, x]) => [k, { state: x.state, gap: x.gap }])),
+      },
     };
     const next = [...versions, v].slice(-24);
     const res = await savePatchFor(row.userId, { kbVersions: next });

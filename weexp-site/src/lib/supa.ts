@@ -131,6 +131,15 @@ export type KbVersion = {
   id: string; at: string; by?: string; note?: string;
   counts: Record<string, number>;
   company?: Record<string, string>;
+  /** Зміст на дату зрізу, а не лише «скільки чого було». Без цього питання
+   *  «що ми знали тоді» мало відповідь рівня «у нас було 5 файлів». */
+  content?: {
+    answers?: Record<string, unknown>;              // відповіді анкети
+    accesses?: { id: string; status?: string }[];
+    files?: string[];
+    notes?: string[];
+    scoring?: Record<string, { state?: string; gap?: string }>;
+  };
 };
 export type SharedDoc = { id: string; title: string; path?: string; at: string; by?: string };
 

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { getProjects, type AdminRow, type TierStatus } from '@/lib/supa';
 import { AUDIT_STAGES, OURS, PHASES, phaseOf, auditStatusOf, lastMoveAt, slaOf, type AuditReqStatus } from './auditRequests';
 import { EmptyState, rel } from './shared';
+import { rowMatches } from './search';
 
 /**
  * «Заявки аудит» — той самий формат, що й «Заявки»: воронка зверху, дошка стадій
@@ -23,14 +24,14 @@ export function AuditRequests({ rows, q, busy, onOpen, onStatus, onCloseAudit, o
 }) {
   const [only, setOnly] = useState<AuditReqStatus | 'all' | 'ours' | 'overdue'>('all');
 
-  const list = useMemo(() => {
-    const needle = q.trim().toLowerCase();
-    return (rows || [])
-      .map((r) => ({ r, st: auditStatusOf(r) }))
-      .filter((x): x is { r: AdminRow; st: AuditReqStatus } => x.st !== null)
-      .filter((x) => !needle || x.r.email.toLowerCase().includes(needle) || (x.r.company || '').toLowerCase().includes(needle))
-      .sort((a, b) => lastMoveAt(b.r).localeCompare(lastMoveAt(a.r)));
-  }, [rows, q]);
+  const list = useMemo(() => (rows || [])
+    .map((r) => ({ r, st: auditStatusOf(r) }))
+    .filter((x): x is { r: AdminRow; st: AuditReqStatus } => x.st !== null)
+    // Той самий наскрізний пошук, що й у «Користувачах»: по нотатках, файлах,
+    // доступах і прогонах, а не лише по email.
+    .filter((x) => rowMatches(x.r, q))
+    .sort((a, b) => lastMoveAt(b.r).localeCompare(lastMoveAt(a.r))),
+  [rows, q]);
 
   const count = (k: AuditReqStatus) => list.filter((x) => x.st === k).length;
   const ours = list.filter((x) => OURS.includes(x.st));

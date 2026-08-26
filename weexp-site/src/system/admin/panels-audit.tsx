@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   findAuditIdByCode,
   loadAuditAnswers,
+  saveAuditAnswer,
   loadAuditExtra,
   saveAuditExtra,
   savePatchFor,
@@ -43,17 +44,32 @@ import { exportAuditDocPdf, seedAuditSections } from './docs';
 import { buildKnowledgePack } from './knowledgePack';
 import { auditStatusOf, phaseOf, PHASES } from './auditRequests';
 
-export function AuditFill({ code }: { code: string }) {
+/**
+ * Перегляд і ЗАПОВНЕННЯ анкети менеджером.
+ *
+ * Досі це був суто перегляд, хоча модель послуги інша: клієнт дає дані, збирає
+ * менеджер. Виправити описку або записати відповідь зі слів клієнта по телефону
+ * було ніде — доводилось просити клієнта зайти в кабінет.
+ *
+ * Авторство зберігається чесно: у полі `by` опиняється email того, хто ввів,
+ * тож у «Базі знань» видно, що це наш запис, а не клієнтський.
+ */
+export function AuditFill({ code, editor }: { code: string; editor?: string }) {
   const [tpl, setTpl] = useState<AuditTemplate | null>(null);
   const [answers, setAnswers] = useState<Record<string, AuditAnswer>>({});
+  const [auditId, setAuditId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [onlyEmpty, setOnlyEmpty] = useState(false);
+  const [edit, setEdit] = useState<string | null>(null);
+  const [draft, setDraft] = useState('');
+  const [saving, setSaving] = useState('');
   const load = () => {
     setLoading(true);
     (async () => {
       const t = await loadTemplate();
       const id = await findAuditIdByCode(code);
       const a = id ? await loadAuditAnswers(id) : {};
-      setTpl(t); setAnswers(a); setLoading(false);
+      setTpl(t); setAnswers(a); setAuditId(id); setLoading(false);
     })();
   };
   useEffect(load, [code]);
@@ -63,30 +79,87 @@ export function AuditFill({ code }: { code: string }) {
     return { total, done, pct: total ? Math.round((done / total) * 100) : 0, authors: [...authors] };
   }, [tpl, answers]);
 
+  const startEdit = (q: Question) => {
+    if (!editor || !auditId) return;
+    setEdit(q.key);
+    const v = answers[q.key]?.value;
+    setDraft(v == null ? '' : Array.isArray(v) ? v.join(', ') : String(v));
+  };
+  const commit = async (q: Question) => {
+    if (!auditId || !editor) { setEdit(null); return; }
+    const raw = draft.trim();
+    setSaving(q.key);
+    const value = q.type === 'multi' ? raw.split(',').map((x) => x.trim()).filter(Boolean) : raw;
+    const r = await saveAuditAnswer(auditId, q.key, value, editor);
+    setSaving('');
+    if (!r.ok) { toast('Не збережено: ' + (r.error || ''), 'err'); return; }
+    setAnswers((m) => ({ ...m, [q.key]: { value, by: editor, at: r.at } }));
+    setEdit(null);
+    toast('✓ Записано від вашого імені');
+  };
+
+  /** Вивантажити анкету — щоб працювати з нею поза адмінкою. */
+  const exportCsv = () => {
+    const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const lines = [['Блок', 'Питання', 'Відповідь', 'Хто', 'Коли'].join(',')];
+    (tpl?.blocks || []).forEach((b) => b.questions.forEach((q) => {
+      const a = answers[q.key];
+      lines.push([b.title, q.label, fmtVal(a?.value), a?.by || '', a?.at || ''].map(esc).join(','));
+    }));
+    const blob = new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+    const el = document.createElement('a'); el.href = URL.createObjectURL(blob); el.download = `anketa-${code}.csv`; el.click(); URL.revokeObjectURL(el.href);
+  };
+
   return (
     <div className="adm-fill">
       <div className="adm-fill-head">
         <span className="mono adm-fill-p">{stat.done}/{stat.total} · {stat.pct}%</span>
         {stat.authors.length > 0 && <span className="mono adm-fill-au">автори: {stat.authors.join(', ')}</span>}
+        <button className={`mc-btn sm${onlyEmpty ? ' ok' : ' ghost'}`} onClick={() => setOnlyEmpty((v) => !v)}>
+          {onlyEmpty ? '✓ Лише незаповнені' : 'Лише незаповнені'}
+        </button>
+        <button className="mc-btn sm ghost" onClick={exportCsv} disabled={!tpl}>↓ CSV</button>
         <button className="mc-btn ghost adm-fill-rf" onClick={load}>↻</button>
       </div>
+      {editor && <p className="mono adm-hint">Клік по відповіді — записати її від свого імені (напр. зі слів клієнта по телефону).</p>}
       {loading ? <p className="mono adm-empty">Завантаження…</p> : !tpl ? <p className="mono adm-empty">—</p> : (
         <div className="adm-fill-blocks">
-          {tpl.blocks.map((b) => (
-            <div key={b.key} className="adm-fill-block">
-              <b className="adm-fill-bt">{b.title}</b>
-              {b.questions.map((q: Question) => {
-                const a = answers[q.key];
-                const filled = a && a.value != null && a.value !== '';
-                return (
-                  <div key={q.key} className={`adm-fill-q${filled ? ' on' : ''}`}>
-                    <span className="adm-fill-ql">{q.label}</span>
-                    {filled ? <span className="adm-fill-qv">{fmtVal(a!.value)}<i className="mono"> — {a!.by} · {relT(a!.at)}</i></span> : <span className="mono adm-fill-qe">—</span>}
-                  </div>
-                );
-              })}
-            </div>
-          ))}
+          {tpl.blocks.map((b) => {
+            const qs = onlyEmpty ? b.questions.filter((q) => { const a = answers[q.key]; return !(a && a.value != null && a.value !== ''); }) : b.questions;
+            if (!qs.length) return null;
+            return (
+              <div key={b.key} className="adm-fill-block">
+                <b className="adm-fill-bt">{b.title}</b>
+                {qs.map((q: Question) => {
+                  const a = answers[q.key];
+                  const filled = a && a.value != null && a.value !== '';
+                  const editing = edit === q.key;
+                  return (
+                    <div key={q.key} className={`adm-fill-q${filled ? ' on' : ''}${editor ? ' editable' : ''}`}>
+                      <span className="adm-fill-ql">{q.label}</span>
+                      {editing ? (
+                        <span className="adm-fill-edit">
+                          <input className="ab-inp sm" autoFocus value={draft} onChange={(e) => setDraft(e.target.value)}
+                            placeholder={q.type === 'multi' ? 'через кому' : 'відповідь'}
+                            onKeyDown={(e) => { if (e.key === 'Enter') void commit(q); if (e.key === 'Escape') setEdit(null); }} />
+                          <button className="mc-btn sm ok" disabled={saving === q.key} onClick={() => void commit(q)}>{saving === q.key ? '…' : '✓'}</button>
+                          <button className="mc-btn sm ghost" onClick={() => setEdit(null)}>✕</button>
+                        </span>
+                      ) : filled ? (
+                        <button className="adm-fill-qv" disabled={!editor} onClick={() => startEdit(q)} title={editor ? 'Змінити від свого імені' : undefined}>
+                          {fmtVal(a!.value)}<i className="mono"> — {a!.by} · {relT(a!.at)}</i>
+                        </button>
+                      ) : (
+                        <button className="mono adm-fill-qe" disabled={!editor} onClick={() => startEdit(q)} title={editor ? 'Записати відповідь' : undefined}>
+                          {editor ? '+ записати' : '—'}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

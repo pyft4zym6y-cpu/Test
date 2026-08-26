@@ -36,6 +36,7 @@ import {
 } from '@/lib/supa';
 import { eur } from './systems';
 import { askConfirm, DialogHost, PanelBoundary } from './admin/dialog';
+import { matchRow, rowMatches } from './admin/search';
 import { auditStatusOf, blockers, lastMoveAt, money, nextStep, phaseOf, slaOf, staleDays, OURS, PHASES, STAGE_OF } from './admin/auditRequests';
 import { toast } from '@/lib/toast';
 import { useCabTheme, ThemeToggle } from '@/lib/cabTheme';
@@ -296,12 +297,41 @@ export function AdminPanel() {
   };
   // Етап 1 закрито явно: раніше «Завершено» ставилось від факту, що клієнту
   // передали хоч один документ — проміжний файл закривав увесь аудит.
+  /**
+   * Зріз бази знань на переході фази. Ручну кнопку ніхто не згадає натиснути,
+   * а саме на межі етапів і треба зафіксувати, що ми знали.
+   */
+  const snapshotKb = async (userId: string, note: string) => {
+    const full = await loadDiagnosticFor(userId);
+    const rec = full?.record; if (!rec) return;
+    const v = {
+      id: 'kb_' + Date.now().toString(36), at: new Date().toISOString(), by: user?.email, note,
+      counts: {
+        access: Object.keys(rec.accessLog || {}).length,
+        files: (rec.clientFiles || []).length,
+        runs: (rec.auditJobs || []).length,
+        scores: Object.keys(rec.assessment || {}).length,
+        notes: (rec.notes || []).length,
+        docs: (rec.sharedDocs || []).length,
+      },
+      company: Object.fromEntries(Object.entries(rec.company || {}).filter(([, x]) => typeof x === 'string')) as Record<string, string>,
+      content: {
+        accesses: Object.entries(rec.accessLog || {}).map(([id, a]) => ({ id, status: a.status })),
+        files: (rec.clientFiles || []).map((f) => f.title || f.type || 'файл'),
+        notes: (rec.notes || []).map((n) => n.text),
+        scoring: Object.fromEntries(Object.entries(rec.assessment || {}).map(([k, x]) => [k, { state: x.state, gap: x.gap }])),
+      },
+    };
+    await savePatchFor(userId, { kbVersions: [...(rec.kbVersions || []), v].slice(-24) });
+  };
+
   const closeAudit = async (userId: string) => {
     if (!(await askConfirm({ title: 'Закрити етап «Аудит»?', text: 'Клієнт побачить етап завершеним, далі — план впровадження.', confirmLabel: 'Закрити етап' }))) return;
     setBusy('close:' + userId);
     const res = await savePatchFor(userId, { auditClosedAt: new Date().toISOString(), auditClosedBy: user?.email });
     setBusy('');
     if (!res.ok) { toast('Не вдалося: ' + (res.error || ''), 'err'); return; }
+    await snapshotKb(userId, 'етап «Аудит» закрито');
     toast('✓ Етап «Аудит» закрито'); load(); void reloadDetail();
   };
   // Впровадження закрито → клієнт переходить на супровід (фаза 3), а не зникає
@@ -331,6 +361,7 @@ export function AdminPanel() {
     const res = await saveProjectsFor(userId, [...existing, p]);
     setBusy('');
     if (!res.ok) { toast('Не вдалося створити проект: ' + (res.error || ''), 'err'); return; }
+    await snapshotKb(userId, 'створено проект впровадження');
     toast('✓ Проект «' + p.title + '» створено'); load(); setOpenUser(userId);
   };
   // «Надати» — одразу; «Потрібні дані» / «Відхилити» — через модалку з причиною.
@@ -424,7 +455,9 @@ export function AdminPanel() {
     setOpenUser(null);
   };
 
-  const filtered = (rows || []).filter((r) => !q || r.email.toLowerCase().includes(q.toLowerCase()) || (r.company || '').toLowerCase().includes(q.toLowerCase()));
+  // Пошук іде по всій картці (нотатки, файли, оцінки, прогони, доступи), а не
+  // лише по email і назві компанії — саме такі питання і ставить власник.
+  const filtered = (rows || []).filter((r) => rowMatches(r, q));
   const tierCount = (r: AdminRow) => Object.keys(r.funnel?.tierStatus || {}).length;
   const sorted = [...filtered].sort((a, b) => {
     let av: string | number = '', bv: string | number = '';
@@ -649,7 +682,7 @@ export function AdminPanel() {
           <section className="adm-sec">
             <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Користувачі</h1>
               <div className="adm-head-r">
-                <input className="mc-search" placeholder="Пошук: email / компанія" value={q} onChange={(e) => setQ(e.target.value)} />
+                <input className="mc-search" placeholder="Пошук: email, компанія, нотатки, файли, доступи…" value={q} onChange={(e) => setQ(e.target.value)} />
                 <button className="sysx-cta" onClick={exportUsersCsv} disabled={sorted.length === 0}>↓ CSV</button>
               </div>
             </div>
@@ -676,6 +709,12 @@ export function AdminPanel() {
                     <span className="mono">{tierCount(r) || '—'}{r.funnel?.accessCode ? ' 🔑' : ''}</span>
                     <span className="mono adm-c-date">{rel(r.updatedAt)}</span>
                     <button className="adm-open" onClick={() => setOpenUser(r.userId)}>Відкрити →</button>
+                    {/* Знайшлось не за email — покажемо, де саме збіг. */}
+                    {q && !r.email.toLowerCase().includes(q.toLowerCase()) && (
+                      <span className="adm-hits mono">
+                        {matchRow(r, q).map((h, i) => <i key={i}>{h.where}: {h.text.slice(0, 70)}</i>)}
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>
@@ -693,7 +732,7 @@ export function AdminPanel() {
           return (
           <section className="adm-sec">
             <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Експрес-аудити</h1>
-              <input className="mc-search" placeholder="Пошук: email / компанія" value={q} onChange={(e) => setQ(e.target.value)} />
+              <input className="mc-search" placeholder="Пошук: email, компанія, нотатки, файли, доступи…" value={q} onChange={(e) => setQ(e.target.value)} />
             </div>
             <p className="adm-hint mono">Перший дотик: калькулятор витрат. Далі життя клієнта ведеться у «Аудит і проєкти».</p>
             {rows === null ? <p className="mc-msg mono">Завантаження…</p> : base.length === 0 && !anonExpress.length ? <EmptyState icon="📊" text="Експрес-аудитів ще немає." /> : (
@@ -745,7 +784,7 @@ export function AdminPanel() {
           <section className="adm-sec">
             <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Аудит і проєкти</h1>
               <div className="adm-head-r">
-                <input className="mc-search" placeholder="Пошук: email / компанія" value={q} onChange={(e) => setQ(e.target.value)} />
+                <input className="mc-search" placeholder="Пошук: email, компанія, нотатки, файли, доступи…" value={q} onChange={(e) => setQ(e.target.value)} />
                 <button className="sysx-cta" disabled={!(rows || []).length} onClick={exportAuditCsv}>↓ CSV</button>
               </div>
             </div>
