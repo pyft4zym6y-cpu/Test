@@ -35,20 +35,29 @@ export const ALWAYS: string[] = ['agent-reach'];
  * промпта нужный (потолок общий) и оплаченные токены за шум.
  */
 export const SKILL_ROUTING: Record<string, string[]> = {
-  business:     ['ads-math', 'marketing-council'],
+  business:     ['ads-math', 'competitor-price-analysis', 'marketing-council'],
   market:       ['ads-competitor', 'competitor-profiling', 'marketing-council'],
-  product:      ['product-page-seo', 'competitor-price-analysis', 'ecommerce-keyword-research'],
+  product:      ['product-page-seo', 'competitor-price-analysis', 'ecommerce-keyword-research',
+                 'google-shopping-optimization', 'cro'],
   customer:     ['churn-prevention', 'cro', 'ab-testing'],
-  website:      ['cro', 'ab-testing', 'site-architecture', 'playwright-cli'],
+  // Ревью ≠ производство. `impeccable`, `apple-design-hig`, `web-design-guidelines`
+  // и `plan-design-review` РАЗБИРАЮТ чужой интерфейс — это ровно то, чем занят
+  // Website-аудит. В прошлой правке они уехали в наш контур вместе с
+  // `taste-*` и `emil-animate`, которые действительно только производят.
+  website:      ['cro', 'ab-testing', 'site-architecture', 'impeccable', 'plan-design-review',
+                 'apple-design-hig', 'web-design-guidelines', 'playwright-cli'],
   // seo-local здесь НЕТ намеренно — он в CONDITIONAL, см. ниже.
   seo:          ['seo-audit', 'seo-technical', 'seo-page', 'seo-schema', 'seo-geo', 'seo-sxo',
                  'seo-ecommerce', 'ecommerce-keyword-research'],
-  acquisition:  ['ads-audit', 'ads-google', 'ads-meta', 'ads-budget', 'google-shopping-optimization'],
-  crm:          ['churn-prevention', 'ab-testing'],
-  analytics:    ['ads-attribution', 'ads-report'],
-  operations:   [],
+  acquisition:  ['ads-audit', 'ads-google', 'ads-meta', 'ads-budget', 'ads-attribution',
+                 'google-shopping-optimization'],
+  crm:          ['churn-prevention', 'ab-testing', 'cro'],
+  analytics:    ['ads-attribution', 'ab-testing', 'ads-report'],
+  // Схема процесса — это анализ операций, а не оформление отчёта: разложить
+  // фактический путь заказа от корзины до возврата и есть предмет аудита.
+  operations:   ['diagram-maker'],
   technology:   ['seo-technical', 'playwright-cli'],
-  organization: ['marketing-council'],
+  organization: ['marketing-council', 'diagram-maker'],
 };
 
 /**
@@ -85,8 +94,8 @@ export const CONSENT_ONLY: Record<string, string[]> = {
  * поимённо, чтобы было видно — их не забыли, их сознательно не подмешивают.
  */
 export const ASSISTANT_ONLY: { group: string; why: string; skills: string[] }[] = [
-  { group: 'дизайн и фронтенд', why: 'инструмент производства сайта weexp, не линза на чужой бизнес',
-    skills: ['impeccable', 'web-design-guidelines', 'apple-design-hig', 'plan-design-review', 'creative-director',
+  { group: 'дизайн — производство', why: 'создают интерфейс, а не разбирают чужой; ревью-скиллы отсюда ушли в Website-аудит',
+    skills: ['creative-director',
              'emil-animate', 'emil-review-animations', 'emil-improve-animations', 'emil-find-animation-opportunities',
              'emil-design-eng', 'emil-apple-design', 'emil-prototype', 'emil-pick-ui-library', 'emil-animation-vocabulary',
              'taste-taste-skill', 'taste-redesign-skill', 'taste-soft-skill', 'taste-minimalist-skill', 'taste-brutalist-skill'] },
@@ -96,7 +105,7 @@ export const ASSISTANT_ONLY: { group: string; why: string; skills: string[] }[] 
              'sm-niche-research', 'sm-graphic-designer', 'sm-gemini-carousel', 'sm-gemini-infographic',
              'sm-quote-post', 'sm-pinned-comment', 'sm-reels-scripting', 'sm-youtube-thumbnail'] },
   { group: 'производство артефактов', why: 'делают документы и страницы, а не ставят диагноз',
-    skills: ['diagram-maker', 'remotion-motion-graphics', 'seo-competitor-pages'] },
+    skills: ['remotion-motion-graphics', 'seo-competitor-pages'] },
   { group: 'безопасность — ассистенту', why: 'работа по нашему коду и CI, не по сайту клиента',
     skills: ['managed-pentesting-with-strix', 'fix-security-vulnerabilities-with-strix', 'ci-security-scanning-with-strix'] },
 ];
