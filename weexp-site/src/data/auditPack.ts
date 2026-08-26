@@ -4,7 +4,7 @@
  * і чеклист готовності в картці клієнта (адмінка) читають саме цей перелік.
  *
  * Структура: кожен звіт — самодостатній документ зі змістом, конечною цінністю
- * і логічним завершенням. 12 спеціалізованих аудитів — ГЛАВИ Звіту 2 (кожен зі
+ * і логічним завершенням. 13 спеціалізованих аудитів — ГЛАВИ Звіту 2 (кожен зі
  * стандартним каркасом: вердикт → методика → факти vs бенчмарки → знахідки з
  * доказами → рекомендації з власником → звʼязки → що міряти через 90 днів).
  *
@@ -37,8 +37,8 @@ export const PACK_REPORTS: PackReport[] = [
   },
   {
     id: 'r2', uk: 'Діагностичний звіт: 13 аудитів', en: 'Diagnostic report: the 13 audits',
-    descUk: 'Головний том: 12 спеціалізованих аудитів (Business → Organization) зі спільним каркасом, CJM, зведеним реєстром знахідок, матрицею зрілості і протоколом якості.',
-    descEn: 'The main volume: 12 specialised audits (Business → Organization) on a shared skeleton, CJM, the consolidated findings registry, the maturity matrix and the QA protocol.',
+    descUk: 'Головний том: 13 спеціалізованих аудитів (Business → Expansion) зі спільним каркасом, CJM, зведеним реєстром знахідок, матрицею зрілості і протоколом якості.',
+    descEn: 'The main volume: 13 specialised audits (Business → Expansion) on a shared skeleton, CJM, the consolidated findings registry, the maturity matrix and the QA protocol.',
     valueUk: 'Повна картина бізнесу з доказами: кожен висновок можна перевірити до джерела.',
     valueEn: 'The full picture with evidence: every conclusion traceable to its source.',
   },
@@ -66,7 +66,7 @@ export const PACK_REPORTS: PackReport[] = [
 ];
 
 
-/* ── Робочі томи пакета (посторінкові) + Гант: канон 11 документів ──
+/* ── Робочі томи пакета (посторінкові) + Гант: 5 томів + Гант ──
    scope: 'both' — входить в обидва аудити ($2,900 і $4,900);
           'dept' — лише в аудит відділу e-commerce ($4,900). */
 export type PackVolume = {
