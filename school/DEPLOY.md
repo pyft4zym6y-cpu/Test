@@ -60,3 +60,39 @@ Variables** → додати:
 - [ ] Відео в секції-маніфесті грає (Cloudinary)
 - [ ] Переходи `/#/courses`, `/#/program`, `/#/enroll` працюють
 - [ ] Форма запису відкриває поштовий клієнт із заявкою
+
+## Адмінка і CRM заявок (/admin)
+
+Вхід: маленьке посилання «вхід» у подвалі або одразу school.weexp.agency/admin.
+Демо-доступ (поки не змінено через env): логін `admin`, пароль `school2026`.
+На проді задати свої в Vercel → Settings → Environment Variables:
+`ADMIN_LOGIN`, `ADMIN_PASSWORD` (після зміни — Redeploy).
+
+Без бази адмінка працює в демо-режимі (дані в браузері). Щоб заявки
+з форми реально падали у воронку — підключити Supabase:
+
+1. supabase.com → New project (можна в наявному акаунті weexp, окремий проєкт).
+2. SQL Editor → виконати:
+
+   create table leads (
+     id uuid primary key default gen_random_uuid(),
+     created_at timestamptz not null default now(),
+     name text default '',
+     contact text not null,
+     course text default '',
+     comment text default '',
+     status text not null default 'new',
+     note text
+   );
+   alter table leads enable row level security;
+   -- політик не додаємо: доступ лише через service key із серверних функцій
+
+3. Project Settings → API: скопіювати «Project URL» і «service_role key».
+4. Vercel → Settings → Environment Variables (Production):
+   SUPABASE_URL = <Project URL>
+   SUPABASE_SERVICE_KEY = <service_role key>
+5. Redeploy. Нові заявки з /enroll пишуться в таблицю (лист на пошту
+   надходить як і раніше), адмінка показує їх у воронці:
+   Нові → В контакті → Оплата → Навчається → Відмова.
+
+service_role key — секрет: лише в env Vercel, ніколи в код чи фронтенд.

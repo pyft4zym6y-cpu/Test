@@ -3,6 +3,8 @@
 
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /api/
 
 # AI-краулери пошуку і асистентів — явно дозволені
 User-agent: GPTBot

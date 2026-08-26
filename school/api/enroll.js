@@ -43,6 +43,26 @@ export default async function handler(req, res) {
 
   const results = {};
 
+  // Supabase: заявка падає в таблицю leads → видна у міні-CRM (/admin)
+  const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = process.env;
+  if (SUPABASE_URL && SUPABASE_SERVICE_KEY) {
+    try {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
+        method: 'POST',
+        headers: {
+          apikey: SUPABASE_SERVICE_KEY,
+          Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({ name, contact, course, comment, status: 'new' }),
+      });
+      results.db = r.ok ? 'ok' : `db_${r.status}`;
+    } catch (e) {
+      results.db = String(e).slice(0, 120);
+    }
+  }
+
   if (RESEND_API_KEY) {
     try {
       const looksEmail = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contact);

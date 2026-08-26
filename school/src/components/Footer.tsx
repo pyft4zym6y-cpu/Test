@@ -107,6 +107,9 @@ export default function Footer() {
             >
               LinkedIn
             </a>
+            <Link to="/admin" className="text-white/25 hover:text-white/60 text-[12px] self-center">
+              вхід
+            </Link>
           </span>
         </div>
       </div>

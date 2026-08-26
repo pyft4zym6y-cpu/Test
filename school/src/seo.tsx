@@ -90,6 +90,17 @@ export function getSeo(pathname: string): PageSeo {
   const clean = pathname.replace(/\/+$/, '') || '/';
   const canonical = SITE + (clean === '/' ? '/' : clean);
 
+  // службова сторінка: не індексується, не пререндериться
+  if (clean === '/admin') {
+    return {
+      title: 'Адмінка' + SUFFIX,
+      description: 'Службова сторінка школи.',
+      canonical,
+      noindex: true,
+      image: DEFAULT_OG,
+    };
+  }
+
   const staticPage = STATIC_PAGES[clean];
   if (staticPage) {
     const key = clean === '/' ? 'home' : clean.slice(1);
