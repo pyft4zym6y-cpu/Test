@@ -1,3 +1,4 @@
+import { askConfirm } from './dialog';
 import { useEffect, useState } from 'react';
 
 import { MANAGER_EMAILS, ROLE_LABEL, teamApi, type Role, type TeamMember } from '@/lib/supa';
@@ -66,7 +67,7 @@ export function TeamManager({ selfEmail }: { selfEmail: string }) {
                 <span className="adm-team-acts">
                   <button className="mc-btn ghost" disabled={busy === 'reset:' + m.id} onClick={() => run('reset', { email: m.email }, 'reset:' + m.id)} title="Надіслати лист скидання пароля">🔑</button>
                   {!isBootstrap && !isSelf && <button className="mc-btn ghost" disabled={busy === 'ban:' + m.id} onClick={() => run('ban', { userId: m.id, banned: !m.banned }, 'ban:' + m.id)}>{m.banned ? 'Розблок.' : 'Блок'}</button>}
-                  {!isBootstrap && !isSelf && <button className="mc-btn bad" disabled={busy === 'rm:' + m.id} onClick={() => { if (confirm(`Видалити адміна ${m.email}?`)) run('remove', { userId: m.id, email: m.email }, 'rm:' + m.id); }}>✕</button>}
+                  {!isBootstrap && !isSelf && <button className="mc-btn bad" disabled={busy === 'rm:' + m.id} onClick={async () => { if (await askConfirm({ title: `Видалити адміна ${m.email}?`, text: 'Обліковий запис втратить доступ до адмінки негайно.', confirmLabel: 'Видалити', tone: 'bad' })) run('remove', { userId: m.id, email: m.email }, 'rm:' + m.id); }}>✕</button>}
                 </span>
               </div>
             );

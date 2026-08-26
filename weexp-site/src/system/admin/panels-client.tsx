@@ -26,11 +26,13 @@ import type { Block as TplBlock } from '../auditTemplate';   // тип блок�
 import { PACK_ARTIFACTS, PACK_REPORTS, chaptersOf, TOTAL_CHAPTERS } from '@/data/auditPack';
 import '../system.css';
 import '../cabinet.css';
-import { Block, SaveBadge, rel } from './shared';
+import { Block, SaveBadge, captureDoc, rel } from './shared';
 import { useAutosave } from './useAutosave';
+import { askConfirm } from './dialog';
 import { genAccessMap, genDoD, genGantt, genHandover, genPlan90 } from './docs';
 
 export function PackChecklist({ userId, email, rec }: { userId: string; email: string; rec: DiagRecord }) {
+  const [saving, setSaving] = useState('');
   const [map, setMap] = useState<Record<string, PackState>>(rec.packChecklist || {});
   const [modMap, setModMap] = useState<Record<string, string>>({});
   useEffect(() => { let on = true; loadTemplate().then((tp) => { if (on && tp) setModMap(Object.fromEntries(tp.blocks.map((b) => [b.key, b.title]))); }).catch(() => {}); return () => { on = false; }; }, []);
@@ -55,6 +57,26 @@ export function PackChecklist({ userId, email, rec }: { userId: string; email: s
     a17: () => genDoD(rec, email, modTitle),
     a19: () => genHandover(rec, email, map),
   };
+  /**
+   * Згенерувати документ і одразу покласти у файли клієнта. Досі генератори
+   * вміли лише відкрити вікно на друк: щоб документ дійшов до клієнта, його
+   * друкували в PDF і вантажили назад руками.
+   */
+  const generateToFiles = async (id: string, title: string) => {
+    const gen = GEN[id]; if (!gen) return;
+    setSaving(id);
+    const out = await captureDoc(gen);
+    if (!out) { setSaving(''); toast('Документ не сформувався', 'err'); return; }
+    const file = new File([out.html], `${title.replace(/[^\wа-яїєґі\s.-]+/gi, '').trim().slice(0, 60) || id}.html`, { type: 'text/html' });
+    const up = await uploadAdminFile(userId, file);
+    if (!up.ok || !up.path) { setSaving(''); toast('Не завантажено: ' + (up.error || ''), 'err'); return; }
+    const added: AdminFile = { path: up.path, name: file.name, kind: 'deliverable', at: new Date().toISOString(), by: email };
+    const r = await savePatchFor(userId, { adminFiles: [added, ...(rec.adminFiles || [])] });
+    setSaving('');
+    if (!r.ok) { toast('Файл завантажено, але картку не оновлено: ' + (r.error || ''), 'err'); return; }
+    toast('✓ У файлах клієнта — віддати можна у вкладці «Документи»');
+  };
+
   const done = PACK_ARTIFACTS.filter((a) => map[a.id]?.st).length;
   const delivered = PACK_ARTIFACTS.filter((a) => map[a.id]?.st === 'delivered').length;
   let n = 0;
@@ -72,7 +94,12 @@ export function PackChecklist({ userId, email, rec }: { userId: string; email: s
               <div key={a.id} className="adm-pack-row">
                 <span className="adm-pack-num mono">{String(n).padStart(2, '0')}</span>
                 <span className="adm-pack-t"><b>{a.uk}</b>{a.source === 'worker' && <i className="adm-pack-src mono"> · рушій</i>}{a.source === 'portal' && <i className="adm-pack-src mono"> · кабінет</i>}</span>
-                {GEN[a.id] && <button className="mc-btn ghost" onClick={GEN[a.id]}>📄 Згенерувати</button>}
+                {GEN[a.id] && <>
+                  <button className="mc-btn ghost" onClick={GEN[a.id]} title="Відкрити на друк / зберегти в PDF">📄 Друк</button>
+                  <button className="mc-btn ok" disabled={saving === a.id} onClick={() => generateToFiles(a.id, a.uk)} title="Згенерувати й покласти у файли клієнта">
+                    {saving === a.id ? '…' : '→ У файли'}
+                  </button>
+                </>}
                 <button className={`adm-pack-st mono st-${st || 'none'}`} onClick={() => cycle(a.id)}>
                   {st === 'delivered' ? '↗ передано' : st === 'ready' ? '✓ готово' : '— в роботі'}
                 </button>
@@ -126,7 +153,7 @@ export function AdminFiles({ userId, initial, sharedInitial, author, openFile }:
     if (added.length) { persist([...added, ...list]); toast(`✓ Додано файлів: ${added.length}`); }
   };
   const del = async (f: AdminFile) => {
-    if (!confirm(`Видалити «${f.name}»?`)) return;
+    if (!(await askConfirm({ title: `Видалити «${f.name}»?`, text: 'Файл зникне зі сховища назавжди.', confirmLabel: 'Видалити', tone: 'bad' }))) return;
     setBusy(f.path);
     const r = await deleteAdminFile(f.path);
     setBusy('');

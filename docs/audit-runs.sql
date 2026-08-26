@@ -29,3 +29,18 @@ create policy "staff read runs" on public.audit_runs
   for select to authenticated using (public.weexp_is_staff());
 -- Функція weexp_is_staff() створюється в docs/admin-roles-and-events.sql —
 -- застосуйте той файл першим.
+
+-- ── Ретенція ───────────────────────────────────────────────────────────────
+-- У прогоні найважче — metrics і files. Через півроку вони вже нікому не
+-- потрібні, а рядок як факт «прогін був» лишається корисним назавжди.
+create or replace function public.weexp_prune_runs(keep_months int default 6)
+returns int language plpgsql security definer set search_path = public, pg_temp as $$
+declare n int;
+begin
+  update public.audit_runs set metrics = null, files = null
+   where at < now() - make_interval(months => keep_months) and (metrics is not null or files is not null);
+  get diagnostics n = row_count;
+  return n;
+end;
+$$;
+-- select cron.schedule('weexp-prune-runs', '15 3 * * *', $$select public.weexp_prune_runs()$$);

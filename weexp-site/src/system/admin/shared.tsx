@@ -251,9 +251,24 @@ export const ACCESS_STATUS: { v: NonNullable<AccessState['status']>; l: string; 
 ];
 /** Каталог доступів клієнта: 3 способи (перегляд-пошта / OAuth / вивантаження), статус, інструкція, нотатка. */
 
+/**
+ * Куди віддати згенерований документ замість нового вікна.
+ *
+ * Генератори пакета (карта доступів, Ганта, план 90 днів, DoD, передача справ,
+ * досьє) вміли тільки відкрити вікно на друк. Щоб документ дійшов до клієнта,
+ * менеджер друкував його в PDF і завантажував назад руками — той самий останній
+ * метр, який для прогонів рушія вже закритий. Тут генератор можна попросити
+ * віддати HTML, а не показати: далі його кладуть у файли клієнта.
+ */
+let DOC_SINK: ((html: string, title: string) => void) | null = null;
+export async function captureDoc(run: () => void | Promise<void>): Promise<{ html: string; title: string } | null> {
+  let out: { html: string; title: string } | null = null;
+  DOC_SINK = (html, title) => { out = { html, title }; };
+  try { await run(); } finally { DOC_SINK = null; }
+  return out;
+}
+
 export function openPrintDoc(title: string, email: string, bodyHtml: string) {
-  const w = window.open('', '_blank');
-  if (!w) { toast('Дозвольте спливаючі вікна, щоб відкрити документ', 'err'); return; }
   const now = new Date().toLocaleString('uk-UA');
   const html = `<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>${title}</title><style>
 @page{margin:16mm}body{font-family:"IBM Plex Sans","Segoe UI",system-ui,Arial,sans-serif;color:#141210;margin:0;font-size:13px;line-height:1.55}
@@ -274,6 +289,9 @@ th{color:#6B675E;font-weight:600;font-size:11px;text-transform:uppercase;letter-
 ${bodyHtml}
 <div class="foot">WEEXP — Commerce OS · weexp.agency · hello@weexp.agency · Конфіденційно, не для розповсюдження.</div>
 </div></body></html>`;
+  if (DOC_SINK) { DOC_SINK(html, title); return; }
+  const w = window.open('', '_blank');
+  if (!w) { toast('Дозвольте спливаючі вікна, щоб відкрити документ', 'err'); return; }
   w.document.open(); w.document.write(html); w.document.close();
 }
 export const escH = (s: unknown) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

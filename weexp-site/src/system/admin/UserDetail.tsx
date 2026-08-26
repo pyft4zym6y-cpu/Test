@@ -5,6 +5,7 @@ import { eur, sysLabel, actionText, type SysKey } from '../systems';
 
 import '../system.css';
 import '../cabinet.css';
+import { PanelBoundary } from './dialog';
 import { Block, ACCESS_SOURCES, FUNNEL, LEAD_STAGES, ST, U_TABS, coopLabel, funnelStage, rel, tierLabel, type UTab } from './shared';
 import { openClientDossier } from './docs';
 /* Вміст вкладок вантажимо на вимогу. Картка відкривається на «Огляді», а
@@ -70,7 +71,7 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, onClos
       </div>
       <div className="adm-upage-body">
         {/* Кожен блок сам по собі: падіння однієї панелі не має забирати картку. */}
-        <Suspense fallback={<p className="mc-msg mono">Завантаження…</p>}>
+        <PanelBoundary title="Картка клієнта"><Suspense fallback={<p className="mc-msg mono">Завантаження…</p>}>
           {utab === 'over' && <ClientBrief row={row} code={code} />}
           {utab === 'kb' && <KnowledgeBase row={row} code={code} author={selfEmail} />}
           {utab === 'over' && code && (
@@ -280,7 +281,7 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, onClos
               </button>
             </div>
           )}
-        </Suspense>
+        </Suspense></PanelBoundary>
         </div>
     </section>
   );

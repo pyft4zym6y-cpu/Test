@@ -23,6 +23,7 @@ import '../system.css';
 import '../cabinet.css';
 import { gMonthLabel, SaveBadge } from './shared';
 import { useAutosave } from './useAutosave';
+import { askConfirm, askText } from './dialog';
 
 export function ProjectsManager({ userId, initial, code, company }: { userId: string; initial: Project[]; code?: string; company?: string }) {
   const [list, setList] = useState<Project[]>(initial.length ? initial : []);
@@ -35,7 +36,7 @@ export function ProjectsManager({ userId, initial, code, company }: { userId: st
 
   const patchCur = (p: Project) => apply(list.map((x, i) => (i === idx ? p : x)));
   const addProject = () => { const np = emptyProject(); np.title = `Проект ${list.length + 1}`; apply([...list, np]); setActive(list.length); };
-  const delProject = () => { if (!cur) return; if (!confirm('Видалити цей проект?')) return; const nl = list.filter((_, i) => i !== idx); apply(nl); setActive(0); };
+  const delProject = async () => { if (!cur) return; if (!(await askConfirm({ title: 'Видалити цей проект?', text: 'Задачі, бюджет і платежі проекту зникнуть разом з ним.', confirmLabel: 'Видалити', tone: 'bad' }))) return; const nl = list.filter((_, i) => i !== idx); apply(nl); setActive(0); };
 
   const pubN = list.filter((x) => x.published).length;
   const savedNote = `${list.length} проект(и), ${pubN} видно клієнту`;
@@ -112,7 +113,7 @@ export function ProjectEditor({ value, onChange, code, company }: { value: Proje
     setAi(`✓ Застосовано пресет «${pr.title || 'без назви'}».`);
   };
   const saveAsPreset = async () => {
-    const name = prompt('Назва пресету:', p.title || 'Пресет');
+    const name = await askText({ title: 'Назва пресету', input: { rows: 1, initial: p.title || 'Пресет' }, confirmLabel: 'Зберегти' });
     if (!name) return;
     const preset: Project = { ...p, id: rid('pr'), title: name, published: false, payments: [], budget: {} };
     const nd = { ...dir, presets: [...presets, preset] };

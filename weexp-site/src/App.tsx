@@ -130,8 +130,13 @@ export default function App() {
             <Route path="*" element={<SystemNotFound />} />
           </Route>
 
-          {/* Операційна адмінка — окремий маршрут поза оболонкою сайту. */}
+          {/* Операційна адмінка — окремий маршрут поза оболонкою сайту.
+              Розділ і відкритий клієнт живуть в адресі: інакше картку не можна
+              переслати колезі, F5 скидав позицію, а «Назад» вивалював із адмінки. */}
           <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/admin/:tab" element={<AdminPanel />} />
+          <Route path="/admin/:tab/c/:clientId" element={<AdminPanel />} />
+          <Route path="/admin/:tab/c/:clientId/:utab" element={<AdminPanel />} />
           <Route path="/manage" element={<Navigate to="/admin" replace />} />
 
           {/* Клієнтські редиректи (дублюють 301 у root vercel.json — для SPA-навігації).

@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   currentUser,
   isManager,
@@ -35,6 +35,7 @@ import {
   type LeadStatus
 } from '@/lib/supa';
 import { eur } from './systems';
+import { askConfirm, DialogHost, PanelBoundary } from './admin/dialog';
 import { auditStatusOf, blockers, lastMoveAt, money, nextStep, phaseOf, slaOf, staleDays, OURS, PHASES, STAGE_OF } from './admin/auditRequests';
 import { toast } from '@/lib/toast';
 import { useCabTheme, ThemeToggle } from '@/lib/cabTheme';
@@ -58,13 +59,24 @@ const AuditBuilder = lazy(() => import('./AuditBuilder').then((m) => ({ default:
 
 export function AdminPanel() {
   const theme = useCabTheme();
+  /* Стан навігації — в адресі. Вкладка й відкритий клієнт більше не «десь у
+     памʼяті компонента»: посилання на картку можна переслати, F5 повертає туди
+     ж, «Назад» працює як очікується. */
+  const nav = useNavigate();
+  const params = useParams<{ tab?: string; clientId?: string; utab?: string }>();
   const [user, setUser] = useState<DiagUser | null>(null);
   const [checking, setChecking] = useState(true);
   const [rows, setRows] = useState<AdminRow[] | null>(null);
   const [leads, setLeads] = useState<LeadRow[] | null>(null);
-  const [tab, setTab] = useState<Tab>('overview');
+  const urlTab = (TABS.some((t) => t.id === params.tab) || TABS.some((t) => (t.sub || []).some((x) => x.id === params.tab))
+    ? (params.tab as Tab) : 'overview');
+  const tab = urlTab;
+  const setTab = (t: Tab) => nav(`/admin/${t}`);
   const [q, setQ] = useState('');
-  const [openUser, setOpenUser] = useState<string | null>(null);
+  const openUser = params.clientId || null;
+  // tab через ref: обробники, підписані один раз (Esc), інакше бачили б застарілу вкладку.
+  const tabRef = useRef<Tab>(tab); tabRef.current = tab;
+  const setOpenUser = (uid: string | null) => nav(uid ? `/admin/${tabRef.current}/c/${uid}` : `/admin/${tabRef.current}`);
   // Повний запис відкритої картки: у списку лежить лише полегшений зріз.
   const [detailRow, setDetailRow] = useState<AdminRow | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -78,7 +90,12 @@ export function AdminPanel() {
   const [traffic, setTraffic] = useState<SiteTraffic | null | undefined>(undefined);
   const [sortKey, setSortKey] = useState<'email' | 'company' | 'tiers' | 'updated'>('updated');
   const [sortDir, setSortDir] = useState<1 | -1>(-1);
-  const [period, setPeriod] = useState<7 | 30 | 90 | 0>(30);
+  // Період дашборда переживає перезавантаження — інакше кожен вхід починався
+  // з чужого «30 днів», навіть якщо ти працюєш у розрізі кварталу.
+  const [period, setPeriod] = useState<7 | 30 | 90 | 0>(() => {
+    try { const v = Number(localStorage.getItem('weexp:adm-period')); return ([7, 30, 90, 0] as number[]).includes(v) ? (v as 7 | 30 | 90 | 0) : 30; } catch { return 30; }
+  });
+  useEffect(() => { try { localStorage.setItem('weexp:adm-period', String(period)); } catch { /* ignore */ } }, [period]);
   const [ask, setAsk] = useState<{ userId: string; tier: string; status: TierStatus } | null>(null);
   const [askReason, setAskReason] = useState('');
   const [selLeads, setSelLeads] = useState<Set<string>>(new Set()); // мультивибір заявок (має бути ДО ранніх return — правило хуків)
@@ -268,7 +285,7 @@ export function AdminPanel() {
   // Етап 1 закрито явно: раніше «Завершено» ставилось від факту, що клієнту
   // передали хоч один документ — проміжний файл закривав увесь аудит.
   const closeAudit = async (userId: string) => {
-    if (!window.confirm('Закрити етап «Аудит»? Клієнт побачить його як завершений, далі — план впровадження.')) return;
+    if (!(await askConfirm({ title: 'Закрити етап «Аудит»?', text: 'Клієнт побачить етап завершеним, далі — план впровадження.', confirmLabel: 'Закрити етап' }))) return;
     setBusy('close:' + userId);
     const res = await savePatchFor(userId, { auditClosedAt: new Date().toISOString(), auditClosedBy: user?.email });
     setBusy('');
@@ -282,7 +299,7 @@ export function AdminPanel() {
     if (!row) return;
     const open = getProjects(row.record).filter((p) => !p.closedAt);
     if (!open.length) return;
-    if (!window.confirm(`Закрити впровадження (${open.length} проєкт.)? Клієнт перейде на супровід.`)) return;
+    if (!(await askConfirm({ title: `Закрити впровадження (${open.length} проєкт.)?`, text: 'Клієнт перейде у фазу супроводу.', confirmLabel: 'Закрити' }))) return;
     setBusy('closedel:' + userId);
     const stamp = new Date().toISOString();
     const next = getProjects(row.record).map((p) => (p.closedAt ? p : { ...p, closedAt: stamp, closedBy: user?.email }));
@@ -310,7 +327,7 @@ export function AdminPanel() {
     else { setAsk({ userId, tier, status }); setAskReason(''); }
   };
   const clearTier = async (userId: string, tier: string) => {
-    if (typeof window !== 'undefined' && !window.confirm(`Скинути ${tier} до «не запрошено»?`)) return;
+    if (!(await askConfirm({ title: `Скинути ${tier} до «не запрошено»?`, text: 'Історія статусів лишиться в журналі.', confirmLabel: 'Скинути', tone: 'bad' }))) return;
     setBusy(`${userId}:${tier}`);
     const res = await clearTierStatusFor(userId, tier);
     setBusy('');
@@ -326,7 +343,7 @@ export function AdminPanel() {
     toast('✓ Стадію змінено'); listLeads().then(setLeads);
   };
   const removeLead = async (id: string) => {
-    if (!window.confirm('Видалити цю заявку назавжди? Дію не можна скасувати.')) return;
+    if (!(await askConfirm({ title: 'Видалити цю заявку?', text: 'Назавжди. Дію не можна скасувати.', confirmLabel: 'Видалити', tone: 'bad' }))) return;
     setBusy('del:' + id);
     const res = await deleteLead(id);
     setBusy('');
@@ -378,7 +395,7 @@ export function AdminPanel() {
   };
   const bulkDelete = async () => {
     const ids = [...selLeads];
-    if (!window.confirm(`Видалити ${ids.length} заявок назавжди? Дію не можна скасувати.`)) return;
+    if (!(await askConfirm({ title: `Видалити ${ids.length} заявок?`, text: 'Назавжди. Дію не можна скасувати.', confirmLabel: 'Видалити', tone: 'bad' }))) return;
     setBusy('bulk');
     const res = await Promise.all(ids.map((id) => deleteLead(id)));
     setBusy(''); clearSel();
@@ -387,7 +404,7 @@ export function AdminPanel() {
     setLeads((ls) => (ls || []).filter((l) => !ids.includes(l.id || '')));
   };
   const removeUser = async (userId: string, email: string) => {
-    if (!window.confirm(`Видалити клієнта ${email} та всі його дані (профіль, експрес/глибокий аудит, воронку, проекти)? Обліковий запис входу лишиться в Supabase Auth, але з панелі зникне. Дію не можна скасувати.`)) return;
+    if (!(await askConfirm({ title: `Видалити клієнта ${email}?`, text: 'Профіль, аудити, воронка, проекти і ЙОГО ФАЙЛИ у сховищі. Обліковий запис входу лишиться в Supabase Auth. Дію не можна скасувати.', confirmLabel: 'Видалити назавжди', tone: 'bad' }))) return;
     setBusy('del:' + userId);
     const res = await deleteDiagnostics(userId);
     setBusy('');
@@ -460,17 +477,17 @@ export function AdminPanel() {
     <div className={'sysx adm' + theme.cls}>
       <aside className="adm-side">
         <Link to="/" className="adm-brand"><b>WEEXP</b><span className="mono">admin</span></Link>
-        <nav className="adm-nav">
+        <nav className="adm-nav" role="tablist" aria-label="Розділи адмінки">
           {allowedTabs.map((tb) => (
             <div key={tb.id}>
-              <button className={`adm-nav-i${curTab === tb.id ? ' on' : ''}`} onClick={() => { setTab(tb.id); setOpenUser(null); }}>
+              <button role="tab" aria-selected={curTab === tb.id} className={`adm-nav-i${curTab === tb.id ? ' on' : ''}`} onClick={() => setTab(tb.id)}>
                 {tb.label}
                 {!!pending[tb.id] && <span className="adm-nav-badge mono" title="чекає нашого ходу">{pending[tb.id]}</span>}
               </button>
               {/* Другий рівень: показуємо, коли активна сама секція або її підпункт. */}
               {(tb.sub || []).filter((sb) => can(user, sb.cap)).map((sb) => (
                 (curTab === tb.id || curTab === sb.id) && (
-                  <button key={sb.id} className={`adm-nav-i adm-nav-sub${curTab === sb.id ? ' on' : ''}`} onClick={() => { setTab(sb.id); setOpenUser(null); }}>{sb.label}</button>
+                  <button key={sb.id} role="tab" aria-selected={curTab === sb.id} className={`adm-nav-i adm-nav-sub${curTab === sb.id ? ' on' : ''}`} onClick={() => setTab(sb.id)}>{sb.label}</button>
                 )
               ))}
             </div>
@@ -738,7 +755,7 @@ export function AdminPanel() {
                 const res = await saveProjectsFor(row.userId, [...existing, np]);
                 setBusy('');
                 if (res.ok) { setProjNewFor(''); setOpenUser(row.userId); }
-                else alert('Не вдалося створити проект: ' + (res.error || ''));
+                else toast('Не вдалося створити проект: ' + (res.error || ''), 'err');
               }}>{busy === 'proj-new' ? 'Створюємо…' : '+ Новий проєкт'}</button>
             </div>
             {/* onOpen лише відкриває картку ПОВЕРХ поточного розділу: закрив —
@@ -898,13 +915,15 @@ export function AdminPanel() {
         )}
       </main>
 
+      <DialogHost />
+
       {/* Панель деталей заявки */}
       {openLead && leads && <Suspense fallback={null}><LeadDetail lead={leads.find((l) => l.id === openLead)} allRows={rows || []} onClose={() => setOpenLead(null)} onStatus={moveLead} onDeal={saveDeal} onConvert={leadToProject} onDelete={removeLead} busy={busy} onOpenClient={(uid) => { setOpenLead(null); setOpenUser(uid); }} /></Suspense>}
 
       {/* Модалка причини (замість browser prompt) */}
       {ask && (
         <div className="adm-modal-wrap" onClick={() => setAsk(null)}>
-          <div className="adm-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="adm-modal" role="dialog" aria-modal="true" aria-label="Рішення за запитом доступу" onClick={(e) => e.stopPropagation()}>
             <b className="adm-modal-h">{ask.status === 'rejected' ? `Відхилити: ${tierLabel(ask.tier)}` : `${tierLabel(ask.tier)}: запит даних`}</b>
             <p className="adm-modal-p mono">{ask.status === 'rejected' ? 'Причина відмови — її побачить клієнт у кабінеті.' : 'Що саме потрібно від клієнта — він побачить це у кабінеті.'}</p>
             <textarea className="adm-modal-ta" autoFocus rows={3} value={askReason} onChange={(e) => setAskReason(e.target.value)}

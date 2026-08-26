@@ -124,3 +124,18 @@ create policy "staff delete leads" on public.leads
 -- ── Перевірка ──────────────────────────────────────────────────────────────
 -- select public.weexp_role(), public.weexp_is_staff(), public.weexp_can_write();
 -- Під акаунтом аудитора має бути: auditor | true | false.
+
+-- ── 5. Ретенція журналу ────────────────────────────────────────────────────
+-- Журнал росте назавжди. Тримаємо 12 місяців: цього досить, щоб розібрати
+-- будь-яку спірну ситуацію, і не досить, щоб таблиця стала проблемою.
+-- Викликати раз на добу (Supabase → Database → Cron), або руками.
+create or replace function public.weexp_prune_events(keep_months int default 12)
+returns int language plpgsql security definer set search_path = public, pg_temp as $$
+declare n int;
+begin
+  delete from public.admin_events where at < now() - make_interval(months => keep_months);
+  get diagnostics n = row_count;
+  return n;
+end;
+$$;
+-- select cron.schedule('weexp-prune-events', '0 3 * * *', $$select public.weexp_prune_events()$$);

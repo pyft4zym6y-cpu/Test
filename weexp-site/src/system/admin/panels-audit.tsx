@@ -38,6 +38,7 @@ import '../system.css';
 import '../cabinet.css';
 import { ACCESS_STATUS, MATURITY_MODULE_OF, MOD_LABEL, SaveBadge, fmtVal, rel, relT, type SaveState } from './shared';
 import { useAutosave } from './useAutosave';
+import { askConfirm, askText } from './dialog';
 import { exportAuditDocPdf, seedAuditSections } from './docs';
 import { buildKnowledgePack } from './knowledgePack';
 import { auditStatusOf, phaseOf, PHASES } from './auditRequests';
@@ -220,7 +221,7 @@ export function WorkerAudit({ userId, code, rec, reviewer }: { userId: string; c
     const st = await runWorkerAudit('status', { id });
     const list = (st.job?.files as { name: string }[] | undefined) || [];
     if (!list.length) { toast('Рушій не віддав список документів цього прогону', 'err'); return; }
-    if (!confirm(`Перенести ${list.length} документ(ів) прогону у файли клієнта?`)) return;
+    if (!(await askConfirm({ title: `Перенести ${list.length} документ(ів) прогону у файли клієнта?`, text: 'Далі їх можна віддати клієнту кнопкою «Поділитися» у вкладці «Документи».', confirmLabel: 'Перенести' }))) return;
     setImporting(id);
     const r = await importRunFiles(userId, id, list, reviewer, (done, total) => setImporting(`${id}:${done}/${total}`));
     setImporting('');
@@ -442,9 +443,9 @@ export function AuditDocEditor({ userId, email, rec }: { userId: string; email: 
   const addSec = () => push({ ...doc, sections: [...doc.sections, { id: uid(), heading: 'Новий розділ', body: '' }] });
   const delSec = (id: string) => push({ ...doc, sections: doc.sections.filter((s) => s.id !== id) });
   const move = (i: number, d: number) => { const j = i + d; if (j < 0 || j >= doc.sections.length) return; const s = [...doc.sections]; [s[i], s[j]] = [s[j], s[i]]; push({ ...doc, sections: s }); };
-  const seed = () => { if (doc.sections.length && !confirm('Перезібрати чернетку з даних? Поточний вміст буде замінено (стару версію можна зберегти окремо).')) return; push({ ...doc, sections: seedAuditSections(rec, modTitle) }); };
+  const seed = async () => { if (doc.sections.length && !(await askConfirm({ title: 'Перезібрати чернетку з даних?', text: 'Поточний вміст буде замінено. Стару версію можна зберегти окремо кнопкою «Зберегти версію».', confirmLabel: 'Перезібрати', tone: 'bad' }))) return; push({ ...doc, sections: seedAuditSections(rec, modTitle) }); };
   const saveVersion = () => { const v: AuditDocVersion = { at: new Date().toISOString(), title: doc.title, sections: doc.sections, by: email }; push({ ...doc, versions: [v, ...(doc.versions || [])].slice(0, 10) }); toast('✓ Версію збережено'); };
-  const restore = (v: AuditDocVersion) => { if (!confirm(`Відновити версію від ${new Date(v.at).toLocaleString('uk-UA')}? Поточний вміст замінить її знімок.`)) return; push({ ...doc, title: v.title, sections: v.sections }); };
+  const restore = async (v: AuditDocVersion) => { if (!(await askConfirm({ title: `Відновити версію від ${new Date(v.at).toLocaleString('uk-UA')}?`, text: 'Поточний вміст замінить знімок цієї версії.', confirmLabel: 'Відновити', tone: 'bad' }))) return; push({ ...doc, title: v.title, sections: v.sections }); };
 
   return (
     <div className="adm-doc">
@@ -515,8 +516,17 @@ export function ModerationPanel({ userId, code, rec, reviewer }: { userId: strin
     } catch (e) { toast('Помилка: ' + String(e), 'err'); }
     setBusy('');
   };
-  const clarify = () => {
-    const note = window.prompt('Коментар клієнту (побачить у кабінеті). Самі питання додайте у блоці «Уточнення (Крок 2)» нижче:', verdict?.missing?.length ? 'Потрібно кілька уточнень — питання нижче у вкладці «Питання».' : '') || undefined;
+  const clarify = async () => {
+    // Це текст, який ПОБАЧИТЬ КЛІЄНТ, — йому потрібне нормальне поле, а не
+    // однорядковий prompt(), у якому не видно, що написав.
+    const typed = await askText({
+      title: 'Повернути анкету на уточнення',
+      text: 'Коментар клієнту — він побачить його в кабінеті. Самі питання додайте у блоці «Уточнення (Крок 2)».',
+      input: { rows: 4, placeholder: 'Що саме уточнити', initial: verdict?.missing?.length ? 'Потрібно кілька уточнень — питання нижче у вкладці «Питання».' : '' },
+      confirmLabel: 'Повернути клієнту', tone: 'wait',
+    });
+    if (typed === null) return;
+    const note = typed.trim() || undefined;
     void setStatus('clarify', note);
   };
   const M: Record<string, { l: string; cls: string }> = {
