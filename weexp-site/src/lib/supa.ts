@@ -270,6 +270,8 @@ export type Project = {
   tariff?: ProjMonth[];
   budget?: Record<string, number>;  // бюджет-матриця: ключ `${taskId}:${monthIndex}` → € (внутрішнє, проект-офіс)
   published?: boolean;   // видимий клієнту (менеджер публікує, коли готово)
+  closedAt?: string;     // впровадження завершено — далі супровід (фаза 3)
+  closedBy?: string;
   updatedAt?: string;
 };
 export function emptyProject(): Project {
@@ -881,6 +883,24 @@ export async function logAdminEvent(ev: AdminEvent): Promise<void> {
       subject: ev.subject || null, detail: ev.detail || null,
     });
   } catch { /* журнал не має ламати роботу */ }
+}
+
+/** Рядок журналу дій для перегляду в «Налаштуваннях». */
+export type AdminEventRow = { id: number; at: string; actor: string; kind: string; user_id?: string | null; subject?: string | null; detail?: string | null };
+
+/**
+ * Прочитати журнал. Таблиці може ще не бути (міграцію не застосували) — тоді
+ * повертаємо ознаку, щоб UI сказав це прямо, а не показав порожній список.
+ */
+export async function listAdminEvents(limit = 100, userId?: string): Promise<{ rows: AdminEventRow[]; missing?: boolean }> {
+  if (!CONFIGURED) return { rows: [] };
+  try {
+    let qb = supabase.from('admin_events').select('id,at,actor,kind,user_id,subject,detail').order('at', { ascending: false }).limit(limit);
+    if (userId) qb = qb.eq('user_id', userId);
+    const { data, error } = await qb;
+    if (error) return { rows: [], missing: true };
+    return { rows: (data || []) as AdminEventRow[] };
+  } catch { return { rows: [], missing: true }; }
 }
 
 const RLS_HINT = 'Оновлення не застосовано — перевірте UPDATE-політику адміна на diagnostics (RLS).';

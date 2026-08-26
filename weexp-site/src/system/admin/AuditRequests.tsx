@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { getProjects, type AdminRow, type TierStatus } from '@/lib/supa';
-import { AUDIT_STAGES, OURS, PHASES, phaseOf, auditStatusOf, lastMoveAt, staleDays, type AuditReqStatus } from './auditRequests';
+import { AUDIT_STAGES, OURS, PHASES, phaseOf, auditStatusOf, lastMoveAt, slaOf, type AuditReqStatus } from './auditRequests';
 import { EmptyState, rel } from './shared';
 
 /**
@@ -20,7 +20,7 @@ export function AuditRequests({ rows, q, busy, onOpen, onStatus, onCloseAudit, o
   /** manage_access: аудитор бачить дошку, але не роздає доступи й не рухає етапи. */
   canAccess: boolean;
 }) {
-  const [only, setOnly] = useState<AuditReqStatus | 'all' | 'ours'>('all');
+  const [only, setOnly] = useState<AuditReqStatus | 'all' | 'ours' | 'overdue'>('all');
 
   const list = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -33,7 +33,9 @@ export function AuditRequests({ rows, q, busy, onOpen, onStatus, onCloseAudit, o
 
   const count = (k: AuditReqStatus) => list.filter((x) => x.st === k).length;
   const ours = list.filter((x) => OURS.includes(x.st));
-  const shown = only === 'all' ? list : only === 'ours' ? ours : list.filter((x) => x.st === only);
+  // Прострочені — окремий фільтр: це не «наш хід», а те, що вже горить.
+  const overdue = list.filter((x) => slaOf(x.r).state === 'breach');
+  const shown = only === 'all' ? list : only === 'ours' ? ours : only === 'overdue' ? overdue : list.filter((x) => x.st === only);
 
   if (rows === null) return <p className="mc-msg mono">Завантаження…</p>;
   if (!list.length) {
@@ -62,6 +64,7 @@ export function AuditRequests({ rows, q, busy, onOpen, onStatus, onCloseAudit, o
       {/* Фільтр стадій. «Наш хід» — те, що чекає саме менеджера. */}
       <div className="adm-bulk">
         <button className={`mc-btn sm${only === 'ours' ? '' : ' ghost'}`} onClick={() => setOnly('ours')}>Наш хід · {ours.length}</button>
+        <button className={`mc-btn sm${only === 'overdue' ? '' : ' ghost'} bad`} disabled={!overdue.length} onClick={() => setOnly('overdue')}>Прострочено · {overdue.length}</button>
         <button className={`mc-btn sm${only === 'all' ? '' : ' ghost'}`} onClick={() => setOnly('all')}>Усі · {list.length}</button>
         {AUDIT_STAGES.filter((s) => count(s.k) > 0).map((s) => (
           <button key={s.k} className={`mc-btn sm${only === s.k ? '' : ' ghost'} tst-${s.cls}`} onClick={() => setOnly(s.k)}>{s.l} · {count(s.k)}</button>
@@ -88,13 +91,16 @@ export function AuditRequests({ rows, q, busy, onOpen, onStatus, onCloseAudit, o
               <div className="adm-col-body">
                 {col.length === 0 && <p className="mono adm-col-empty">—</p>}
                 {col.map(({ r }) => {
-                  const days = staleDays(r);
+                  const sla = slaOf(r);
                   return (
-                    <div key={r.userId} className="adm-lead-card">
+                    <div key={r.userId} className={`adm-lead-card sla-${sla.state}`}>
                       <b>{r.company || r.email}</b>
                       <span className="mono adm-lead-sub">{r.email}</span>
                       <span className="mono adm-lead-sub" title={`${st.note} · рухає: ${st.by}`}>рухає: {st.by}</span>
-                      <span className="mono adm-lead-at">оновлено {rel(lastMoveAt(r))}{days >= 3 ? ` · ${days} дн. без руху` : ''}</span>
+                      <span className="mono adm-lead-at" title={`норматив стадії — ${sla.limit} дн.`}>
+                        оновлено {rel(lastMoveAt(r))}
+                        {sla.state !== 'ok' && ` · ${sla.days} дн. без руху${sla.state === 'breach' ? ` (норматив ${sla.limit})` : ''}`}
+                      </span>
                       {/* На проєктних стадіях картка несе те, що раніше показувала окрема таблиця «Проекти». */}
                       {(() => {
                         const pr = getProjects(r.record);

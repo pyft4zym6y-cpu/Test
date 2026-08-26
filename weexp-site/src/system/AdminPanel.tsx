@@ -33,7 +33,7 @@ import {
   type LeadStatus
 } from '@/lib/supa';
 import { eur } from './systems';
-import { auditStatusOf, blockers, lastMoveAt, nextStep, phaseOf, staleDays, OURS, STAGE_OF } from './admin/auditRequests';
+import { auditStatusOf, blockers, lastMoveAt, money, nextStep, phaseOf, slaOf, staleDays, OURS, PHASES, STAGE_OF } from './admin/auditRequests';
 import { toast } from '@/lib/toast';
 import { useCabTheme, ThemeToggle } from '@/lib/cabTheme';
 import { uid } from './auditTemplate';
@@ -51,6 +51,7 @@ const TeamManager = lazy(() => import('./admin/TeamManager').then((m) => ({ defa
 const PmOffice = lazy(() => import('./admin/PmOffice').then((m) => ({ default: m.PmOffice })));
 const AuditRequests = lazy(() => import('./admin/AuditRequests').then((m) => ({ default: m.AuditRequests })));
 const WorkerTab = lazy(() => import('./admin/WorkerTab').then((m) => ({ default: m.WorkerTab })));
+const EventLog = lazy(() => import('./admin/EventLog').then((m) => ({ default: m.EventLog })));
 const AuditBuilder = lazy(() => import('./AuditBuilder').then((m) => ({ default: m.AuditBuilder })));
 
 export function AdminPanel() {
@@ -180,6 +181,40 @@ export function AdminPanel() {
     leads: (leads || []).filter((l) => !ACCESS_SOURCES.includes(l.source || '') && stageOf(l) === 'new').length,
     auditreq: (rows || []).filter((r) => { const st = auditStatusOf(r); return st !== null && OURS.includes(st); }).length,
   };
+
+  /**
+   * Гроші й цикл. Плитки вище відповідають на «скільки чого штук»; власнику
+   * потрібне інше: де стоять гроші, скільки триває аудит, яка частка заявок
+   * доходить до проєкту і що вже прострочено.
+   */
+  const biz = useMemo(() => {
+    const r = rows || [];
+    const withSt = r.map((x) => ({ x, st: auditStatusOf(x) })).filter((v) => v.st !== null) as { x: AdminRow; st: NonNullable<ReturnType<typeof auditStatusOf>> }[];
+    const byPhase = PHASES.map((ph) => {
+      const inPh = withSt.filter((v) => phaseOf(v.st) === ph.n);
+      const sum = inPh.reduce((acc, v) => {
+        const m = money(v.x);
+        return { budget: acc.budget + m.budget, paid: acc.paid + m.paid, pending: acc.pending + m.pending };
+      }, { budget: 0, paid: 0, pending: 0 });
+      return { ...ph, n: inPh.length, ...sum };
+    });
+    // Тривалість аудиту: від видачі доступу до явного закриття етапу.
+    const spans: number[] = [];
+    for (const x of r) {
+      const rec = x.record || {};
+      const grantedAt = Object.values(rec.funnel?.tierHistory || {}).flat().filter((h) => h?.st === 'granted').map((h) => h.at).sort()[0];
+      if (grantedAt && rec.auditClosedAt) {
+        const d = (new Date(rec.auditClosedAt).getTime() - new Date(grantedAt).getTime()) / 86400000;
+        if (d >= 0 && d < 400) spans.push(d);
+      }
+    }
+    const avgAudit = spans.length ? Math.round(spans.reduce((a, b) => a + b, 0) / spans.length) : null;
+    const reachedProject = withSt.filter((v) => phaseOf(v.st) >= 2).length;
+    const conv = withSt.length ? Math.round((reachedProject / withSt.length) * 100) : 0;
+    const breaches = r.filter((x) => slaOf(x).state === 'breach').length;
+    const totals = byPhase.reduce((a, p) => ({ budget: a.budget + p.budget, paid: a.paid + p.paid, pending: a.pending + p.pending }), { budget: 0, paid: 0, pending: 0 });
+    return { byPhase, avgAudit, conv, reachedProject, cases: withSt.length, breaches, totals };
+  }, [rows]);
 
   if (checking) return <div className="adm"><div className="adm-boot mono">Завантаження…</div></div>;
   if (!CONFIGURED) return <Shell><p className="mc-msg">Supabase не налаштовано — адмінка недоступна.</p></Shell>;
@@ -429,6 +464,29 @@ export function AdminPanel() {
               <Tile n={metrics.leadsTable || metrics.leadsN} l="Заявок" />
             </div>
             {rows !== null && rows.length === 0 && <p className="mc-msg mono">Продуктових даних поки немає (або порожній результат — перевірте RLS-політику для адмінів у Supabase).</p>}
+
+            {rows !== null && rows.length > 0 && (
+              <div className="adm-panel">
+                <span className="adm-col-h mono">
+                  Гроші й цикл · бюджет {eur(biz.totals.budget)} · оплачено {eur(biz.totals.paid)} · очікує {eur(biz.totals.pending)}
+                </span>
+                <div className="adm-money">
+                  {biz.byPhase.map((p) => (
+                    <div key={p.n} className="adm-money-cell">
+                      <b className="mono">{p.l}</b>
+                      <span className="mono adm-money-n">{p.n} клієнт.</span>
+                      <span className="mono">бюджет {eur(p.budget)}</span>
+                      <span className="mono adm-money-sub">оплачено {eur(p.paid)} · очікує {eur(p.pending)}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="adm-money-kpi mono">
+                  <span>Середній аудит: <b>{biz.avgAudit != null ? `${biz.avgAudit} дн.` : '— (жоден ще не закритий явно)'}</b></span>
+                  <span>Доходять до проєкту: <b>{biz.conv}%</b> ({biz.reachedProject} з {biz.cases})</span>
+                  <span className={biz.breaches ? 'bad' : ''}>Прострочено стадій: <b>{biz.breaches}</b></span>
+                </div>
+              </div>
+            )}
 
             {rows !== null && rows.length > 0 && (
               <div className="adm-grid2">
@@ -764,6 +822,12 @@ export function AdminPanel() {
             </div>
 
             {can(user, 'manage_team') && <Suspense fallback={null}><TeamManager selfEmail={user.email} /></Suspense>}
+
+            <div className="pj-card">
+              <h2 className="pj-h2">Журнал дій</h2>
+              <p className="pj-sub mono">Хто що зробив у системі. Записується автоматично, не редагується.</p>
+              <Suspense fallback={<p className="mc-msg mono">Завантаження…</p>}><EventLog /></Suspense>
+            </div>
           </section>
         )}
       </main>

@@ -46,6 +46,9 @@
     { "source": "/api/portal-config", "destination": "/api/brief-users?fn=config" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
+  "crons": [
+    { "path": "/api/sla", "schedule": "0 7 * * *" }
+  ],
   "headers": [
     {
       "source": "/assets/(.*)",

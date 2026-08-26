@@ -17,7 +17,8 @@ export type AuditReqStatus =
   | 'in_work'    // менеджер прийняв анкету — аудит виконується
   | 'done'       // фінальні документи передані клієнту
   | 'project'    // з аудиту виріс проєкт — створений, але ще не в роботі
-  | 'delivery';  // проєкт опублікований клієнту й виконується
+  | 'delivery'   // проєкт опублікований клієнту й виконується
+  | 'care';      // впровадження завершене — клієнт на супроводі
 
 export const AUDIT_STAGES: { k: AuditReqStatus; l: string; cls: string; by: 'клієнт' | 'менеджер'; note: string }[] = [
   { k: 'new',       l: 'Нова',              cls: 'wait', by: 'клієнт',   note: 'клієнт натиснув «Почати глибокий аудит»' },
@@ -30,6 +31,7 @@ export const AUDIT_STAGES: { k: AuditReqStatus; l: string; cls: string; by: 'к�
   { k: 'done',      l: 'Завершено',         cls: 'ok',   by: 'менеджер', note: 'документи передані клієнту' },
   { k: 'project',   l: 'Впровадження: план', cls: 'ok',   by: 'менеджер', note: 'аудит завершено, проєкт впровадження зібрано' },
   { k: 'delivery',  l: 'Впровадження: робота', cls: 'ok', by: 'менеджер', note: 'план опублікований клієнту й виконується' },
+  { k: 'care',      l: 'Супровід',          cls: 'ok',   by: 'менеджер', note: 'впровадження закрито, ведемо клієнта далі' },
   { k: 'denied',    l: 'Не надано доступ',  cls: 'bad',  by: 'менеджер', note: 'менеджер відхилив запит' },
 ];
 /**
@@ -37,16 +39,20 @@ export const AUDIT_STAGES: { k: AuditReqStatus; l: string; cls: string; by: 'к�
  * етап: з нього починається збір єдиної бази знань про клієнта, яка далі живе
  * через усі етапи й нікуди не «закривається» разом з аудитом.
  */
-export type Phase = 0 | 1 | 2;
+export type Phase = 0 | 1 | 2 | 3;
 export const PHASES: { n: Phase; l: string; note: string }[] = [
   { n: 0, l: 'Вхід',        note: 'заявка на проєкт: вирішуємо, чи беремось' },
   { n: 1, l: 'Етап 1 · Аудит', note: 'збираємо базу знань і ставимо діагноз' },
   { n: 2, l: 'Етап 2 · Впровадження', note: 'працюємо за роадмапою аудиту' },
+  // Життя клієнта не закінчується здачею роадмапи. Раніше модель обривалась на
+  // фазі 2, і клієнт після впровадження просто зникав із дошки.
+  { n: 3, l: 'Етап 3 · Супровід', note: 'впровадження закрито, ведемо й розвиваємо' },
 ];
 const PHASE_BY_STATUS: Record<AuditReqStatus, Phase> = {
   new: 0, need_data: 0, denied: 0,
   granted: 1, filling: 1, review: 1, clarify: 1, in_work: 1, done: 1,
   project: 2, delivery: 2,
+  care: 3,
 };
 export const phaseOf = (st: AuditReqStatus): Phase => PHASE_BY_STATUS[st];
 
@@ -84,6 +90,8 @@ export function auditStatusOf(row: AdminRow): AuditReqStatus | null {
 
   // Проєкт — пізніша сутність за аудит, тож перекриває його стадії.
   const projects = getProjects(rec);
+  // Супровід — коли всі заведені проєкти закриті. Один незакритий = ще працюємо.
+  if (projects.length > 0 && projects.every((p) => p.closedAt)) return 'care';
   if (projects.some((p) => p.published)) return 'delivery';
   if (projects.length > 0) return 'project';
   // «Завершено» — лише за явним закриттям етапу. Раніше сюди потрапляв будь-хто,
@@ -114,6 +122,34 @@ export function staleDays(row: AdminRow): number {
   return Math.max(0, Math.floor((Date.now() - new Date(at).getTime()) / 86_400_000));
 }
 
+/* ─── SLA: скільки стадія має право стояти ──────────────────────────────────
+   Раніше «зависло» показувалось одним універсальним порогом у 7 днів, однаково
+   для «клієнт має відповісти» і для «ми мали передати документи». Через це
+   прострочені стадії не відрізнялись від нормального очікування. Пороги — в
+   днях без руху; перший — попередження, другий — порушення. */
+export const SLA: Record<AuditReqStatus, { warn: number; breach: number }> = {
+  new:       { warn: 1,  breach: 2 },    // заявка чекає рішення — найдорожче очікування
+  review:    { warn: 1,  breach: 2 },    // клієнт надіслав анкету і дивиться на нас
+  need_data: { warn: 5,  breach: 10 },
+  granted:   { warn: 5,  breach: 14 },   // код видали, а клієнт не почав
+  filling:   { warn: 7,  breach: 21 },
+  clarify:   { warn: 5,  breach: 10 },
+  in_work:   { warn: 10, breach: 21 },   // аудит виконується — але не місяцями
+  done:      { warn: 3,  breach: 7 },    // етап закрито, план не зібрано
+  project:   { warn: 5,  breach: 10 },   // проєкт є, але клієнт його не бачить
+  delivery:  { warn: 14, breach: 30 },
+  care:      { warn: 30, breach: 60 },
+  denied:    { warn: 9e9, breach: 9e9 }, // відхилене не «зависає»
+};
+export type SlaState = 'ok' | 'warn' | 'breach';
+export function slaOf(row: AdminRow): { state: SlaState; days: number; limit: number } {
+  const st = auditStatusOf(row);
+  const days = staleDays(row);
+  if (!st) return { state: 'ok', days, limit: 0 };
+  const r = SLA[st];
+  return { state: days >= r.breach ? 'breach' : days >= r.warn ? 'warn' : 'ok', days, limit: r.breach };
+}
+
 /** Стадії, де мʼяч на боці менеджера — саме вони мають підсвічуватись першими. */
 export const OURS: AuditReqStatus[] = ['new', 'review'];
 
@@ -133,6 +169,7 @@ export function nextStep(row: AdminRow): { text: string; who: 'ми' | 'кліє
     case 'done':      return { who: 'ми',     text: 'Етап 1 закрито. Наступне — зібрати проект впровадження' };
     case 'project':   return { who: 'ми',     text: 'Проєкт створено, але не опублікований клієнту' };
     case 'delivery':  return { who: 'ми',     text: 'Проєкт у роботі — вести задачі й платежі' };
+    case 'care':      return { who: 'ми',     text: 'Впровадження закрито. Тримати контакт: наступний зріз, нові гіпотези, розвиток' };
     case 'denied':    return { who: 'ми',     text: 'Запит відхилено' };
     default:          return { who: 'ми',     text: 'Заявки на глибокий аудит немає' };
   }
@@ -177,6 +214,7 @@ export function blockers(row: AdminRow): string[] {
     const pr = getProjects(rec);
     if (pr.length && !pr.some((p) => p.published)) out.push('проект не опублікований клієнту');
   }
+  if (phase === 3 && staleDays(row) >= 30) out.push('на супроводі, але місяць без жодного руху');
   const d = staleDays(row);
   if (d >= 7) out.push(`стадія не рухалась ${d} дн.`);
   return out;
