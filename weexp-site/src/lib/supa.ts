@@ -622,21 +622,68 @@ export function isManager(u: DiagUser | null): boolean {
 export type AdminRow = {
   userId: string; email: string; company?: string; funnel?: FunnelState; updatedAt?: string;
   hasExpress?: boolean; hasDeep?: boolean; record?: DiagRecord;
+  /** true = запис із списку (без важких полів). Картка вантажить повний. */
+  partial?: boolean;
 };
-/** Усі клієнтські записи для адмінки/консолі (потрібна RLS-політика для адмінів). */
-export async function listAllDiagnostics(): Promise<AdminRow[]> {
+/**
+ * Список клієнтів для адмінки.
+ *
+ * Раніше тягнувся ПОВНИЙ jsonb кожного клієнта без ліміту: разом із відповідями
+ * анкети, документом аудиту з усіма версіями і зрізами бази знань. На десятку
+ * клієнтів це непомітно, далі — секунди очікування на кожне «↻ оновити» і вся
+ * клієнтська база в памʼяті браузера. Тепер беремо лише поля, потрібні спискам
+ * і дошці; важке (auditDoc, kbVersions, етапи калькулятора) довантажується,
+ * коли відкрили конкретну картку — див. loadDiagnosticFor().
+ */
+const LIST_KEYS = [
+  'company', 'funnel', 'express', 'stage1Money', 'stage3', 'projects', 'project',
+  'deepModeration', 'sharedDocs', 'auditClosedAt', 'auditClosedBy', 'accessLog',
+  'marketplaces', 'clientFiles', 'auditJobs', 'assessment', 'notes', 'adminFiles',
+  'packChecklist', 'updatedAt',
+] as const;
+const LIST_SELECT = 'user_id,email,' + LIST_KEYS.map((k) => `${k}:data->${k}`).join(',');
+/** Скільки клієнтів беремо за раз. Понад це — кнопка «показати ще». */
+export const LIST_PAGE = 200;
+
+const toRow = (r: Record<string, unknown>): AdminRow => {
+  const record = Object.fromEntries(LIST_KEYS.map((k) => [k, r[k]]).filter(([, v]) => v != null)) as DiagRecord;
+  return {
+    userId: String(r.user_id), email: String(r.email || ''),
+    company: record.company?.name, funnel: record.funnel, updatedAt: record.updatedAt,
+    hasExpress: Boolean(record.stage1Money || record.express),
+    hasDeep: Boolean(record.stage3 && Object.keys(record.stage3).length > 0),
+    record, partial: true,
+  };
+};
+
+export async function listAllDiagnostics(page = 0): Promise<AdminRow[]> {
   if (!CONFIGURED) return [];
   try {
-    const { data, error } = await supabase.from('diagnostics').select('user_id,email,data');
+    const { data, error } = await supabase.from('diagnostics')
+      .select(LIST_SELECT)
+      .order('user_id')
+      .range(page * LIST_PAGE, page * LIST_PAGE + LIST_PAGE - 1);
     if (error || !data) return [];
-    const rows: AdminRow[] = data.map((r: { user_id: string; email: string; data: DiagRecord }) => ({
-      userId: r.user_id, email: r.email, company: r.data?.company?.name, funnel: r.data?.funnel, updatedAt: r.data?.updatedAt,
-      hasExpress: Boolean(r.data?.stage1Money || r.data?.stage1),
-      hasDeep: Boolean(r.data?.stage3 && Object.keys(r.data.stage3).length > 0),
-      record: r.data,
-    }));
-    return rows.sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
+    return (data as unknown as Record<string, unknown>[]).map(toRow)
+      .sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
   } catch { return []; }
+}
+
+/** Повний запис одного клієнта — вантажимо при відкритті картки, не списком. */
+export async function loadDiagnosticFor(userId: string): Promise<AdminRow | null> {
+  if (!CONFIGURED) return null;
+  try {
+    const { data, error } = await supabase.from('diagnostics').select('user_id,email,data').eq('user_id', userId).maybeSingle();
+    if (error || !data) return null;
+    const rec = (data.data as DiagRecord) || {};
+    return {
+      userId: data.user_id as string, email: (data.email as string) || '',
+      company: rec.company?.name, funnel: rec.funnel, updatedAt: rec.updatedAt,
+      hasExpress: Boolean(rec.stage1Money || rec.stage1),
+      hasDeep: Boolean(rec.stage3 && Object.keys(rec.stage3).length > 0),
+      record: rec,
+    };
+  } catch { return null; }
 }
 
 /* ─── Спільний аудит компанії (Фаза B) ─── */

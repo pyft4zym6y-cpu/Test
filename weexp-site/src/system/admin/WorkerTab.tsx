@@ -1,20 +1,25 @@
 import { useEffect, useRef, useState } from 'react';
-import { runWorkerAudit } from '@/lib/supa';
+import { runWorkerAudit, downloadWorkerPack, savePatchFor, type AdminRow, type AuditJobRef } from '@/lib/supa';
 import { toast } from '@/lib/toast';
-import { EmptyState } from './shared';
+import { EmptyState, rel } from './shared';
 
 /**
  * «Воркер» — особистий інструмент адміністратора, а не рушій клієнтської послуги.
  * Прогін по довільному сайту під вузьку задачу: подивитись чужу вітрину, зібрати
- * факти, перевірити гіпотезу. З карткою клієнта не звʼязаний — для аудиту клієнта
- * є свій блок у картці, який пише результат у його запис.
+ * факти, перевірити гіпотезу.
  *
- * Токен рушія лишається на сервері: браузер дьоргає лише /api/audit-run, і той
- * ендпоінт з недавнього часу пускає тільки команду (перевірка ролі в Supabase).
+ * Прогін можна ЗАЛИШИТИ особистим, а можна привʼязати до клієнта — тоді він
+ * лягає в його базу знань разом з рештою. Без цього особистий прогін був
+ * глухим кутом: подивився й забув.
+ *
+ * Токен рушія лишається на сервері: браузер дьоргає лише /api/audit-run.
  */
 type Health = { ok?: boolean; hasKey?: boolean; knowledge?: unknown; store?: unknown; error?: string };
-type Run = { id: string; at: string; site: string; tier: number; status: string; summary?: string };
+type Run = { id: string; at: string; site: string; tier: number; status: string; summary?: string; clientId?: string };
 const LS = 'weexp:worker-runs';
+/** Скільки поспіль невдалих опитувань терпимо, перш ніж зупинитись. */
+const MAX_POLL_ERRORS = 5;
+const POLL_MS = 4000;
 
 const TIERS: { v: number; l: string; note: string }[] = [
   { v: 1, l: 'T1', note: 'лише сайт — зовнішній обхід, без доступів' },
@@ -23,9 +28,10 @@ const TIERS: { v: number; l: string; note: string }[] = [
   { v: 4, l: 'T4', note: '+ внутрішні дані (CRM/ERP)' },
 ];
 
-export function WorkerTab() {
+export function WorkerTab({ rows }: { rows: AdminRow[] | null }) {
   const [site, setSite] = useState('');
   const [tier, setTier] = useState(1);
+  const [clientId, setClientId] = useState('');
   const [health, setHealth] = useState<Health | null>(null);
   const [job, setJob] = useState<Record<string, unknown> | null>(null);
   const [running, setRunning] = useState(false);
@@ -34,7 +40,10 @@ export function WorkerTab() {
     try { return JSON.parse(localStorage.getItem(LS) || '[]'); } catch { return []; }
   });
   const poll = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
-  useEffect(() => () => { if (poll.current) clearInterval(poll.current); }, []);
+  // Зупиняємо опитування в одному місці — раніше інтервал міг лишитись висіти
+  // назавжди: при помилці статусу код просто повертався й опитував далі.
+  const stopPolling = () => { if (poll.current) { clearInterval(poll.current); poll.current = undefined; } };
+  useEffect(() => stopPolling, []);
 
   const saveRuns = (next: Run[]) => { setRuns(next); try { localStorage.setItem(LS, JSON.stringify(next.slice(0, 30))); } catch { /* ignore */ } };
 
@@ -45,31 +54,65 @@ export function WorkerTab() {
     if (r.error) setErr(String(r.error));
   };
 
+  /** Записати прогін у базу знань клієнта (той самий формат, що й аудит клієнта). */
+  const attach = async (run: Run, uid: string) => {
+    const row = (rows || []).find((r) => r.userId === uid);
+    if (!row) return;
+    const prev = row.record?.auditJobs || [];
+    if (prev.some((j) => j.id === run.id)) { toast('Цей прогін уже є в картці клієнта'); return; }
+    const ref: AuditJobRef = { id: run.id, at: run.at, site: run.site, tier: run.tier, status: run.status, summary: run.summary };
+    const res = await savePatchFor(uid, { auditJobs: [ref, ...prev] });
+    if (!res.ok) { toast('Не привʼязано: ' + (res.error || ''), 'err'); return; }
+    toast('✓ Прогін у картці клієнта');
+    saveRuns(runs.map((x) => (x.id === run.id ? { ...x, clientId: uid } : x)));
+  };
+
   const start = async () => {
     const s = site.trim();
     if (!s) { setErr('Вкажіть домен або URL.'); return; }
+    stopPolling();
     setErr(''); setRunning(true); setJob(null);
     const r = await runWorkerAudit('start', { site: s, tier });
     if (r.error || !r.id) {
       setErr('Не запустилось: ' + (r.error || 'невідома помилка'));
       setRunning(false); toast('Прогін не запущено', 'err'); return;
     }
-    const ref: Run = { id: r.id, at: new Date().toISOString(), site: s, tier, status: 'queued' };
-    const next = [ref, ...runs]; saveRuns(next);
+    const ref: Run = { id: r.id, at: new Date().toISOString(), site: s, tier, status: 'queued', clientId: clientId || undefined };
+    let next = [ref, ...runs]; saveRuns(next);
     toast('✓ Прогін запущено');
+    let errors = 0;
     poll.current = setInterval(async () => {
       const st = await runWorkerAudit('status', { id: r.id });
-      if (st.error) return;
+      if (st.error) {
+        // Рушій міг перезапуститись або впасти. Не опитуємо вічність.
+        if (++errors >= MAX_POLL_ERRORS) {
+          stopPolling(); setRunning(false);
+          setErr(`Рушій не відповідає (${MAX_POLL_ERRORS} спроб): ${st.error}. Прогін міг лишитись живим — перевірте «Стан рушія».`);
+        }
+        return;
+      }
+      errors = 0;
       const j = st.job || {};
       setJob(j);
       const s2 = String(j.status || '');
       if (s2 === 'done' || s2 === 'error' || s2 === 'failed') {
-        if (poll.current) clearInterval(poll.current);
-        setRunning(false);
-        saveRuns(next.map((x) => x.id === r.id ? { ...x, status: s2, summary: typeof j.summary === 'string' ? j.summary : undefined } : x));
+        stopPolling(); setRunning(false);
+        const summary = typeof j.summary === 'string' ? j.summary : undefined;
+        next = next.map((x) => (x.id === r.id ? { ...x, status: s2, summary } : x));
+        saveRuns(next);
+        if (s2 === 'done' && clientId) void attach({ ...ref, status: s2, summary }, clientId);
         toast(s2 === 'done' ? '✓ Прогін завершено' : 'Прогін завершився помилкою', s2 === 'done' ? 'ok' : 'err');
       }
-    }, 4000);
+    }, POLL_MS);
+  };
+
+  const stop = () => { stopPolling(); setRunning(false); toast('Перестали стежити за прогоном — на рушії він триває'); };
+
+  const download = async (id: string, internal: boolean) => {
+    const r = await downloadWorkerPack(id, internal);
+    if (!r.ok || !r.blob) { toast('Завантаження: ' + (r.error || 'недоступно'), 'err'); return; }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(r.blob);
+    a.download = `audit-${id}${internal ? '-internal' : ''}.zip`; a.click(); URL.revokeObjectURL(a.href);
   };
 
   const log = Array.isArray(job?.log) ? (job!.log as string[]) : [];
@@ -82,7 +125,7 @@ export function WorkerTab() {
       </div>
       <p className="adm-hint mono">
         Особистий інструмент: прогін рушія Commerce OS по будь-якому сайту під вашу задачу.
-        Результат нікуди не привʼязується. Аудит клієнта запускається з його картки.
+        За замовчуванням нікуди не привʼязується; за потреби — кладеться в базу знань обраного клієнта.
       </p>
 
       {health && (
@@ -101,8 +144,16 @@ export function WorkerTab() {
           <select className="mc-inp" value={tier} onChange={(e) => setTier(Number(e.target.value))} title={TIERS.find((t) => t.v === tier)?.note}>
             {TIERS.map((t) => <option key={t.v} value={t.v}>{t.l} — {t.note}</option>)}
           </select>
+          <select className="mc-inp" value={clientId} onChange={(e) => setClientId(e.target.value)} title="Куди покласти результат">
+            <option value="">особистий прогін (нікуди не класти)</option>
+            {(rows || []).map((r) => <option key={r.userId} value={r.userId}>у базу знань: {r.company || r.email}</option>)}
+          </select>
           <button className="sysx-cta is-primary" disabled={running} onClick={start}>{running ? 'Йде прогін…' : 'Запустити'}</button>
+          {running && <button className="mc-btn ghost" onClick={stop}>Перестати стежити</button>}
         </div>
+        {tier >= 3 && !clientId && (
+          <p className="adm-hint mono">T3/T4 читають аналітику й внутрішні дані — без привʼязки до клієнта рушію нема звідки взяти доступи, результат буде як у T1.</p>
+        )}
         {err && <p className="mc-msg mono bad">{err}</p>}
         {log.length > 0 && (
           <pre className="adm-log mono">{log.slice(-40).join('\n')}</pre>
@@ -112,20 +163,35 @@ export function WorkerTab() {
       <div className="adm-panel">
         <span className="adm-col-h mono">Мої прогони</span>
         {runs.length === 0
-          ? <EmptyState icon="⚙" text="Прогонів ще не було. Історія зберігається у цьому браузері." />
+          ? <EmptyState icon="⚙" text="Прогонів ще не було. Історія зберігається у цьому браузері; привʼязані до клієнта — у його картці." />
           : (
             <table className="adm-table">
-              <thead><tr><th>Коли</th><th>Сайт</th><th>Тир</th><th>Статус</th><th>Підсумок</th></tr></thead>
+              <thead><tr><th>Коли</th><th>Сайт</th><th>Тир</th><th>Статус</th><th>Підсумок</th><th>Пакет</th></tr></thead>
               <tbody>
-                {runs.map((r) => (
-                  <tr key={r.id}>
-                    <td className="mono">{new Date(r.at).toLocaleString('uk-UA')}</td>
-                    <td>{r.site}</td>
-                    <td className="mono">T{r.tier}</td>
-                    <td className="mono">{r.status}</td>
-                    <td>{r.summary || '—'}</td>
-                  </tr>
-                ))}
+                {runs.map((r) => {
+                  const cli = r.clientId ? (rows || []).find((x) => x.userId === r.clientId) : undefined;
+                  return (
+                    <tr key={r.id}>
+                      <td className="mono" title={new Date(r.at).toLocaleString('uk-UA')}>{rel(r.at)}</td>
+                      <td>{r.site}{cli && <i className="mono adm-c-co"> · {cli.company || cli.email}</i>}</td>
+                      <td className="mono">T{r.tier}</td>
+                      <td className="mono">{r.status}</td>
+                      <td>{r.summary || '—'}</td>
+                      <td className="mc-row">
+                        {r.status === 'done' && <>
+                          <button className="mc-btn sm" onClick={() => download(r.id, false)} title="Клієнтський пакет">zip</button>
+                          <button className="mc-btn sm ghost" onClick={() => download(r.id, true)} title="Повний внутрішній пакет">повний</button>
+                          {!r.clientId && (rows || []).length > 0 && (
+                            <select className="mc-inp sm" value="" onChange={(e) => e.target.value && attach(r, e.target.value)} title="Покласти в базу знань клієнта">
+                              <option value="">→ клієнту</option>
+                              {(rows || []).map((x) => <option key={x.userId} value={x.userId}>{x.company || x.email}</option>)}
+                            </select>
+                          )}
+                        </>}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}

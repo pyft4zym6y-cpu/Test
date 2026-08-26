@@ -39,19 +39,23 @@ export type SiteTraffic = {
   period?: string; sessions?: number; users?: number; pageviews?: number; bounceRate?: number;
   sources?: { name: string; sessions: number }[]; pages?: { path: string; views: number }[]; error?: string;
 };
-export type Tab = 'overview' | 'users' | 'audits' | 'builder' | 'template' | 'access' | 'leads' | 'pm' | 'projects' | 'auditreq' | 'deep' | 'worker' | 'settings';
+export type Tab = 'overview' | 'leads' | 'auditreq' | 'express' | 'builder' | 'pm' | 'users' | 'worker' | 'settings';
 export type Cap = Parameters<typeof can>[1];
-// Структура меню: Дашборд → Заявки (вхідна точка) → Користувачі → Аудити (вся
-// логіка проходження, підрозділи + конструктор) → Проекти (робочий простір) → Налаштування.
+// Структура меню. Один життєвий цикл клієнта — один розділ: «Аудит і проєкти».
+// Експрес-аудит (те, що було до заявки), конструктор анкети й довідник ставок —
+// другий рівень під ним, бо всі троє існують заради нього. Окремої вкладки
+// «Аудити» більше немає: вона показувала ту саму воронку іншими словами.
 export const TABS: { id: Tab; label: string; cap: Cap; sub?: { id: Tab; label: string; cap: Cap }[] }[] = [
   { id: 'overview', label: 'Дашборд', cap: 'view_dashboard' },
   { id: 'leads', label: 'Заявки', cap: 'view_leads' },
-  // Аудит і проєкт — одна сутність: проєкт виростає з аудиту, тому одна дошка
-  // і один життєвий цикл. «Команда і ставки» — довідник під неї, другим рівнем.
-  { id: 'auditreq', label: 'Аудит і проєкти', cap: 'view_audits', sub: [{ id: 'pm', label: 'Команда і ставки', cap: 'manage_pm' }] },
+  {
+    id: 'auditreq', label: 'Аудит і проєкти', cap: 'view_audits', sub: [
+      { id: 'express', label: 'Експрес-аудити', cap: 'view_audits' },
+      { id: 'builder', label: 'Конструктор аудиту', cap: 'edit_template' },
+      { id: 'pm', label: 'Команда і ставки', cap: 'manage_pm' },
+    ],
+  },
   { id: 'users', label: 'Користувачі', cap: 'view_users' },
-  // Другий рівень: конструктор — окремий пункт, але прив'язаний до аудиту.
-  { id: 'audits', label: 'Аудити', cap: 'view_audits', sub: [{ id: 'builder', label: 'Конструктор аудиту', cap: 'edit_template' }] },
   { id: 'worker', label: 'Воркер', cap: 'view_audits' },
   { id: 'settings', label: 'Налаштування', cap: 'manage_settings' },
 ];

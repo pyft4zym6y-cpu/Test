@@ -5,6 +5,8 @@ import {
   isManager,
   setActor,
   listAllDiagnostics,
+  loadDiagnosticFor,
+  LIST_PAGE,
   listLeads,
   setTierStatusFor,
   clearTierStatusFor,
@@ -31,6 +33,7 @@ import {
   type LeadStatus
 } from '@/lib/supa';
 import { eur } from './systems';
+import { auditStatusOf, blockers, lastMoveAt, nextStep, phaseOf, staleDays, OURS, STAGE_OF } from './admin/auditRequests';
 import { toast } from '@/lib/toast';
 import { useCabTheme, ThemeToggle } from '@/lib/cabTheme';
 import { uid } from './auditTemplate';
@@ -59,6 +62,10 @@ export function AdminPanel() {
   const [tab, setTab] = useState<Tab>('overview');
   const [q, setQ] = useState('');
   const [openUser, setOpenUser] = useState<string | null>(null);
+  // Повний запис відкритої картки: у списку лежить лише полегшений зріз.
+  const [detailRow, setDetailRow] = useState<AdminRow | null>(null);
+  const [more, setMore] = useState(false);   // чи може бути наступна сторінка
+  const [loadingMore, setLoadingMore] = useState(false);
   const [openLead, setOpenLead] = useState<string | null>(null);
   const [busy, setBusy] = useState('');
   const [traffic, setTraffic] = useState<SiteTraffic | null | undefined>(undefined);
@@ -74,10 +81,31 @@ export function AdminPanel() {
   const [projNewFor, setProjNewFor] = useState(''); // підрозділи «Проекти»
 
   const load = () => {
-    listAllDiagnostics().then(setRows);
+    listAllDiagnostics().then((rs) => { setRows(rs); setMore(rs.length >= LIST_PAGE); });
     listLeads().then(setLeads);
     fetch('/api/ga4-site').then((r) => r.json()).then((j: SiteTraffic) => setTraffic(j)).catch(() => setTraffic(null));
   };
+  const loadMore = async () => {
+    setLoadingMore(true);
+    const page = Math.floor((rows || []).length / LIST_PAGE);
+    const next = await listAllDiagnostics(page);
+    setLoadingMore(false);
+    setMore(next.length >= LIST_PAGE);
+    setRows((rs) => {
+      const seen = new Set((rs || []).map((r) => r.userId));
+      return [...(rs || []), ...next.filter((r) => !seen.has(r.userId))];
+    });
+  };
+  // Відкриття картки — це момент, коли потрібен повний запис (документ аудиту,
+  // зрізи бази знань, етапи). У списку його немає навмисно.
+  useEffect(() => {
+    if (!openUser) { setDetailRow(null); return; }
+    let alive = true;
+    const stub = (rows || []).find((r) => r.userId === openUser) || null;
+    setDetailRow(stub);
+    loadDiagnosticFor(openUser).then((full) => { if (alive && full) setDetailRow(full); });
+    return () => { alive = false; };
+  }, [openUser, rows]);
   // Хто працює — знає шар даних: усі записи підписуються цим email (журнал дій).
   useEffect(() => { currentUser().then((u) => { setActor(u?.email); setUser(u); setChecking(false); if (u && isManager(u)) load(); }); }, []);
   // Esc закриває відкриті шухляди/модалку.
@@ -145,6 +173,13 @@ export function AdminPanel() {
     const leadSources = [...srcMap.entries()].map(([k, n]) => ({ k, n })).sort((a, b) => b.n - a.n).slice(0, 8);
     return { funnel, statusDist, recent: inPeriod.slice(0, 14), trend, leadSources };
   }, [rows, leads, metrics, period]);
+
+  // Скільки на кожній вкладці чекає саме нас. Без цього дізнатись, що прийшла
+  // заявка, можна було лише відкривши розділ і поглянувши очима.
+  const pending: Partial<Record<Tab, number>> = {
+    leads: (leads || []).filter((l) => !ACCESS_SOURCES.includes(l.source || '') && stageOf(l) === 'new').length,
+    auditreq: (rows || []).filter((r) => { const st = auditStatusOf(r); return st !== null && OURS.includes(st); }).length,
+  };
 
   if (checking) return <div className="adm"><div className="adm-boot mono">Завантаження…</div></div>;
   if (!CONFIGURED) return <Shell><p className="mc-msg">Supabase не налаштовано — адмінка недоступна.</p></Shell>;
@@ -235,8 +270,8 @@ export function AdminPanel() {
   const leadToProject = async (lead: LeadRow) => {
     if (!lead.id) return;
     const client = lead.email ? (rows || []).find((r) => (r.email || '').toLowerCase() === lead.email!.toLowerCase()) : undefined;
-    if (!client) { toast('Немає кабінету з email заявки — попросіть клієнта зареєструватись або створіть проект вручну у «Проектах».', 'err'); return; }
-    if (lead.deal?.projectId) { toast('Проект уже створено з цієї заявки — відкриваю картку клієнта'); setOpenLead(null); setTab('projects'); setOpenUser(client.userId); return; }
+    if (!client) { toast('Немає кабінету з email заявки — попросіть клієнта зареєструватись або створіть проект вручну в «Аудит і проєкти».', 'err'); return; }
+    if (lead.deal?.projectId) { toast('Проект уже створено з цієї заявки — відкриваю картку клієнта'); setOpenLead(null); setTab('users'); setOpenUser(client.userId); return; }
     setBusy('conv:' + lead.id);
     const existing = getProjects(client.record);
     const title = `${coopLabel(lead.deal?.coopType) || 'Проект'} · ${client.company || lead.name || lead.email}`;
@@ -250,7 +285,7 @@ export function AdminPanel() {
     else toast('✓ Проект «' + title + '» створено і звʼязано з заявкою');
     setLeads((ls) => (ls || []).map((l) => (l.id === lead.id ? { ...l, deal } : l)));
     load();
-    setOpenLead(null); setTab('projects'); setOpenUser(client.userId);
+    setOpenLead(null); setTab('users'); setOpenUser(client.userId);
   };
   // Масові дії над заявками (мультивибір).
   const toggleSel = (id: string) => setSelLeads((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
@@ -305,6 +340,23 @@ export function AdminPanel() {
     const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'weexp-users.csv'; a.click(); URL.revokeObjectURL(a.href);
   };
+  // Розділ «Аудит і проєкти» досі не мав вивантаження, хоча «Заявки» мали.
+  const exportAuditCsv = () => {
+    const head = ['email', 'company', 'stage', 'phase', 'who', 'lastMove', 'staleDays', 'blockers'];
+    const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const lines = [head.join(',')];
+    for (const r of rows || []) {
+      const st = auditStatusOf(r);
+      if (!st) continue;
+      lines.push([
+        r.email, r.company || '', STAGE_OF[st]?.l ?? st, `Фаза ${phaseOf(st)}`,
+        nextStep(r).who, lastMoveAt(r), staleDays(r), blockers(r).join('; '),
+      ].map(esc).join(','));
+    }
+    const blob = new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'weexp-audit.csv'; a.click(); URL.revokeObjectURL(a.href);
+    toast('✓ CSV завантажено');
+  };
   const exportLeadsCsv = (list: LeadRow[]) => {
     const head = ['at', 'source', 'status', 'name', 'email', 'phone', 'task', 'comment'];
     const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
@@ -313,7 +365,15 @@ export function AdminPanel() {
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'weexp-leads.csv'; a.click(); URL.revokeObjectURL(a.href);
     toast('✓ CSV завантажено');
   };
-  const detail = openUser ? (rows || []).find((r) => r.userId === openUser) : null;
+  const detail = openUser ? detailRow : null;
+  // Список сторінковий: показуємо, що це не всі, і даємо добрати наступну сторінку.
+  const MoreBtn = () => (more ? (
+    <div className="adm-more">
+      <button className="mc-btn ghost" disabled={loadingMore} onClick={loadMore}>
+        {loadingMore ? 'Вантажимо…' : `Показати ще (завантажено ${(rows || []).length})`}
+      </button>
+    </div>
+  ) : null);
 
   return (
     <div className={'sysx adm' + theme.cls}>
@@ -322,7 +382,10 @@ export function AdminPanel() {
         <nav className="adm-nav">
           {allowedTabs.map((tb) => (
             <div key={tb.id}>
-              <button className={`adm-nav-i${curTab === tb.id ? ' on' : ''}`} onClick={() => { setTab(tb.id); setOpenUser(null); }}>{tb.label}</button>
+              <button className={`adm-nav-i${curTab === tb.id ? ' on' : ''}`} onClick={() => { setTab(tb.id); setOpenUser(null); }}>
+                {tb.label}
+                {!!pending[tb.id] && <span className="adm-nav-badge mono" title="чекає нашого ходу">{pending[tb.id]}</span>}
+              </button>
               {/* Другий рівень: показуємо, коли активна сама секція або її підпункт. */}
               {(tb.sub || []).filter((sb) => can(user, sb.cap)).map((sb) => (
                 (curTab === tb.id || curTab === sb.id) && (
@@ -483,54 +546,28 @@ export function AdminPanel() {
                 ))}
               </div>
             )}
+            <MoreBtn />
           </section>
           );
         })()}
 
-        {/* ── Аудити: єдина клієнтська воронка ── */}
-        {!detail && curTab === 'audits' && (() => {
-          const base = (rows || []).filter((r) => !q || r.email.toLowerCase().includes(q.toLowerCase()) || (r.company || '').toLowerCase().includes(q.toLowerCase()));
-          const withStage = base.map((r) => ({ r, stage: funnelStage(r) }));
-          // Підрозділи: Всі (будь-яка аудит-активність) · Експрес (всі, вкл. незареєстрованих
-          // з заявок) · Експрес зареєстрованих · Запити на глибокий · В роботі · Завершено (→ проект).
+        {/* ── Експрес-аудити: те, що клієнт зробив ДО заявки на глибокий ── */}
+        {!detail && curTab === 'express' && (() => {
+          const base = (rows || []).filter((r) => r.hasExpress && (!q || r.email.toLowerCase().includes(q.toLowerCase()) || (r.company || '').toLowerCase().includes(q.toLowerCase())));
+          // Експрес проходять і без реєстрації — такі приходять заявкою.
           const anonExpress = (leads || []).filter((l) => (l.diag || l.calc) && !ACCESS_SOURCES.includes(l.source || ''));
-          const segRows: Record<string, { r: AdminRow; stage: FunnelStage }[]> = {
-            all: withStage.filter((x) => x.stage !== 'registered'),
-            express: withStage.filter((x) => x.r.hasExpress),
-            express_reg: withStage.filter((x) => x.r.hasExpress),
-            deep_req: withStage.filter((x) => x.stage === 'requested' || x.stage === 'awaiting_data'),
-            deep_work: withStage.filter((x) => x.stage === 'in_work'),
-            deep_done: withStage.filter((x) => x.stage === 'project'),
-          };
-          const SEGS: { k: typeof auditSeg; l: string; n?: number }[] = [
-            { k: 'all', l: 'Всі аудити', n: segRows.all.length },
-            { k: 'express', l: 'Експрес-аудити', n: segRows.express.length + anonExpress.length },
-            { k: 'express_reg', l: 'Експрес зареєстрованих', n: segRows.express_reg.length },
-            { k: 'deep_req', l: 'Запити на глибокий', n: segRows.deep_req.length },
-            { k: 'deep_work', l: 'Глибокий — в роботі', n: segRows.deep_work.length },
-            { k: 'deep_done', l: 'Глибокий — завершено', n: segRows.deep_done.length },
-          ];
-          const shown = auditSeg === 'builder' ? [] : (segRows[auditSeg] || segRows.all);
           return (
           <section className="adm-sec">
-            <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Аудити</h1>
-              {auditSeg !== 'builder' && <input className="mc-search" placeholder="Пошук: email / компанія" value={q} onChange={(e) => setQ(e.target.value)} />}
+            <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Експрес-аудити</h1>
+              <input className="mc-search" placeholder="Пошук: email / компанія" value={q} onChange={(e) => setQ(e.target.value)} />
             </div>
-            <div className="adm-seg mono" role="tablist">
-              {SEGS.map((s) => (
-                <button key={s.k} role="tab" className={auditSeg === s.k ? 'on' : ''} onClick={() => setAuditSeg(s.k)}>{s.l} <b>{s.n}</b></button>
-              ))}
-              {can(user, 'edit_template') && (
-                <button role="tab" className={auditSeg === 'builder' ? 'on' : ''} onClick={() => setAuditSeg('builder')}>⚙ Конструктор</button>
-              )}
-            </div>
-            {auditSeg === 'builder' ? <Suspense fallback={null}><AuditBuilder /></Suspense> : (<>
-            {rows === null ? <p className="mc-msg mono">Завантаження…</p> : shown.length === 0 && !(auditSeg === 'express' && anonExpress.length) ? <EmptyState icon="📊" text="У цьому підрозділі поки порожньо." /> : (
+            <p className="adm-hint mono">Перший дотик: калькулятор витрат. Далі життя клієнта ведеться у «Аудит і проєкти».</p>
+            {rows === null ? <p className="mc-msg mono">Завантаження…</p> : base.length === 0 && !anonExpress.length ? <EmptyState icon="📊" text="Експрес-аудитів ще немає." /> : (
               <div className="adm-table adm-tr-funnel">
                 <div className="adm-tr adm-th adm-tr-funnel"><span>Email / компанія</span><span>Стадія</span><span>Витік/рік</span><span>Доступ</span><span></span></div>
-                {shown.map(({ r, stage }) => {
+                {base.map((r) => {
                   const money = r.record?.stage1Money;
-                  const st = FUNNEL.find((x) => x.k === stage)!;
+                  const st = FUNNEL.find((x) => x.k === funnelStage(r))!;
                   return (
                     <div key={r.userId} className="adm-tr adm-tr-funnel">
                       <span className="adm-c-email"><b>{r.email}</b>{r.company && <i className="mono adm-c-co"> · {r.company}</i>}</span>
@@ -543,7 +580,7 @@ export function AdminPanel() {
                 })}
               </div>
             )}
-            {auditSeg === 'express' && anonExpress.length > 0 && (
+            {anonExpress.length > 0 && (
               <div className="adm-anon-express">
                 <span className="adm-acc-cat-h mono">Експрес без реєстрації (із заявок) · {anonExpress.length}</span>
                 {anonExpress.map((l) => (
@@ -556,7 +593,7 @@ export function AdminPanel() {
                 ))}
               </div>
             )}
-            </>)}
+            <MoreBtn />
           </section>
           );
         })()}
@@ -573,7 +610,10 @@ export function AdminPanel() {
         {!detail && curTab === 'auditreq' && (
           <section className="adm-sec">
             <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Аудит і проєкти</h1>
-              <input className="mc-search" placeholder="Пошук: email / компанія" value={q} onChange={(e) => setQ(e.target.value)} />
+              <div className="adm-head-r">
+                <input className="mc-search" placeholder="Пошук: email / компанія" value={q} onChange={(e) => setQ(e.target.value)} />
+                <button className="sysx-cta" disabled={!(rows || []).length} onClick={exportAuditCsv}>↓ CSV</button>
+              </div>
             </div>
             <p className="adm-hint mono">Один життєвий цикл: заявка на аудит → аудит → проєкт впровадження. Стадію ніхто не проставляє руками — вона змінюється сама від дій клієнта й менеджера.</p>
             {/* Проєкт можна завести й без аудиту — напр. для чинного клієнта. */}
@@ -606,7 +646,7 @@ export function AdminPanel() {
 
         {/* ── Воркер: особистий інструмент адміністратора ── */}
         {!detail && curTab === 'worker' && (
-          <Suspense fallback={<p className="mc-msg mono">Завантаження…</p>}><WorkerTab /></Suspense>
+          <Suspense fallback={<p className="mc-msg mono">Завантаження…</p>}><WorkerTab rows={rows} /></Suspense>
         )}
 
         {/* ── Конструктор аудиту: другий рівень під «Аудити» ── */}

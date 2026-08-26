@@ -923,6 +923,18 @@ function DeepAudit({ user, rec, express, onDone, onClose, go }: { user: DiagUser
     history[DEEP] = [...(history[DEEP] || []), { st: 'requested' as TierStatus, at: new Date().toISOString(), by: 'client' as const }];
     await sendLead({ source: 'cabinet-deep', email: user.email, role: 'cabinet', task: 'Запит на глибокий аудит', comment: rec?.company?.name ? `Компанія: ${rec.company.name} · ${rec.company.site || ''}` : undefined });
     await saveDiag(user, { funnel: { ...(rec?.funnel || {}), deepRequested: true, deepAt: new Date().toISOString(), tierStatus: nextStatus, tierHistory: history } });
+    // Заявка на аудит — момент, коли мʼяч переходить до нас. Досі про неї можна
+    // було дізнатись, лише зайшовши в адмінку й помітивши нову картку.
+    void notifyAdmin(
+      `Глибокий аудит: заявка від ${rec?.company?.name || user.email}`,
+      [
+        `Клієнт: ${rec?.company?.name || '—'}`,
+        `Email: ${user.email}`,
+        rec?.company?.site ? `Сайт: ${rec.company.site}` : '',
+        '',
+        `Адмінка: ${typeof window !== 'undefined' ? window.location.origin : 'https://weexp.agency'}/admin`,
+      ].filter(Boolean).join('\n'),
+    );
     setBusy(false); onDone();
   };
   const matchesPersonal = (v: string) => !!accessCode && v.trim().toUpperCase() === accessCode.trim().toUpperCase();

@@ -1173,3 +1173,10 @@
 
 .cab-ga-ok { color: #1F6E4E; }
 .cab-ga-drop { background: none; border: 0; padding: 0; color: var(--red); font: inherit; font-size: 12px; cursor: pointer; text-decoration: underline; }
+
+/* Сторінковий список клієнтів: кнопка «показати ще» під таблицею. */
+.adm-more { display: flex; justify-content: center; padding: 14px 0 4px; }
+
+/* Лічильник «чекає нашого ходу» в пункті меню адмінки. */
+.adm-nav-i { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.adm-nav-badge { background: var(--deep); color: var(--cream); border-radius: 999px; padding: 0 7px; font-size: 11px; line-height: 18px; min-width: 18px; text-align: center; }
