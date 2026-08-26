@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 
 import { getProjects, type AdminRow, type LeadRow, type TierStatus, type LeadStatus } from '@/lib/supa';
 import { eur, sysLabel, actionText, type SysKey } from '../systems';
@@ -7,13 +7,25 @@ import '../system.css';
 import '../cabinet.css';
 import { Block, ACCESS_SOURCES, FUNNEL, LEAD_STAGES, ST, U_TABS, coopLabel, funnelStage, rel, tierLabel, type UTab } from './shared';
 import { openClientDossier } from './docs';
-import { ClientBrief } from './ClientBrief';
-import { KnowledgeBase } from './KnowledgeBase';
-import { AccessCatalog, AuditDocEditor, AuditFill, ExtraEditor, ModerationPanel, WorkerAudit } from './panels-audit';
-import { AdminFiles, GaPreview, ModuleScoring, NotesPanel, PackChecklist } from './panels-client';
-import { ProjectsManager } from './ProjectsManager';
+/* Вміст вкладок вантажимо на вимогу. Картка відкривається на «Огляді», а
+   машинерія аудиту (рушій, оцінка модулів, редактор документа, проєкти) —
+   найважче, що тут є; тягнути її заради перегляду профілю немає сенсу. */
+const ClientBrief = lazy(() => import('./ClientBrief').then((m) => ({ default: m.ClientBrief })));
+const KnowledgeBase = lazy(() => import('./KnowledgeBase').then((m) => ({ default: m.KnowledgeBase })));
+const AccessCatalog = lazy(() => import('./panels-audit').then((m) => ({ default: m.AccessCatalog })));
+const AuditDocEditor = lazy(() => import('./panels-audit').then((m) => ({ default: m.AuditDocEditor })));
+const AuditFill = lazy(() => import('./panels-audit').then((m) => ({ default: m.AuditFill })));
+const ExtraEditor = lazy(() => import('./panels-audit').then((m) => ({ default: m.ExtraEditor })));
+const ModerationPanel = lazy(() => import('./panels-audit').then((m) => ({ default: m.ModerationPanel })));
+const WorkerAudit = lazy(() => import('./panels-audit').then((m) => ({ default: m.WorkerAudit })));
+const AdminFiles = lazy(() => import('./panels-client').then((m) => ({ default: m.AdminFiles })));
+const GaPreview = lazy(() => import('./panels-client').then((m) => ({ default: m.GaPreview })));
+const ModuleScoring = lazy(() => import('./panels-client').then((m) => ({ default: m.ModuleScoring })));
+const NotesPanel = lazy(() => import('./panels-client').then((m) => ({ default: m.NotesPanel })));
+const PackChecklist = lazy(() => import('./panels-client').then((m) => ({ default: m.PackChecklist })));
+const ProjectsManager = lazy(() => import('./ProjectsManager').then((m) => ({ default: m.ProjectsManager })));
 
-export function UserDetail({ row, leads, canDelete, selfEmail, onClose, openFile, onStatus, onDelete, busy }: { row: AdminRow; leads: LeadRow[] | null; canDelete: boolean; selfEmail: string; onClose: () => void; openFile: (p: string) => void; onStatus: (userId: string, tier: string, status: TierStatus) => void; onDelete: (userId: string, email: string) => void; busy: string }) {
+export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, onClose, openFile, onStatus, onDelete, busy }: { row: AdminRow; leads: LeadRow[] | null; canDelete: boolean; /** manage_access: аудитор бачить картку, але не роздає доступи */ canAccess: boolean; selfEmail: string; onClose: () => void; openFile: (p: string) => void; onStatus: (userId: string, tier: string, status: TierStatus) => void; onDelete: (userId: string, email: string) => void; busy: string }) {
   const [utab, setUtab] = useState<UTab>('over');
   useEffect(() => { setUtab('over'); }, [row.userId]);
   const rec = row.record || {};
@@ -49,13 +61,16 @@ export function UserDetail({ row, leads, canDelete, selfEmail, onClose, openFile
           <div className="adm-uhead-cell"><i className="mono">Дата початку</i><b>{startAt || (row.updatedAt ? new Date(row.updatedAt).toLocaleDateString('uk-UA') : '—')}</b></div>
           <div className="adm-uhead-cell"><i className="mono">Етап</i><b>{deepSt ? (ST[deepSt]?.txt ?? deepSt) : st.l}</b></div>
         </div>
-        <nav className="adm-utabs">
+        <nav className="adm-utabs" role="tablist" aria-label="Розділи картки клієнта">
           {U_TABS.map((tb) => (
-            <button key={tb.id} className={`adm-utab${utab === tb.id ? ' on' : ''}`} onClick={() => setUtab(tb.id)}>{tb.l}</button>
+            <button key={tb.id} role="tab" aria-selected={utab === tb.id} title={tb.hint}
+              className={`adm-utab${utab === tb.id ? ' on' : ''}`} onClick={() => setUtab(tb.id)}>{tb.l}</button>
           ))}
         </nav>
       </div>
       <div className="adm-upage-body">
+        {/* Кожен блок сам по собі: падіння однієї панелі не має забирати картку. */}
+        <Suspense fallback={<p className="mc-msg mono">Завантаження…</p>}>
           {utab === 'over' && <ClientBrief row={row} code={code} />}
           {utab === 'kb' && <KnowledgeBase row={row} code={code} author={selfEmail} />}
           {utab === 'over' && code && (
@@ -179,48 +194,50 @@ export function UserDetail({ row, leads, canDelete, selfEmail, onClose, openFile
             return <p className="mono adm-empty">{row.hasExpress ? 'є' : 'не рахували'}</p>;
           })()}</Block>}
 
-          {utab === 'deep' && <Block title="Глибокий аудит">{row.hasDeep ? <p className="mono">у роботі</p> : <p className="mono adm-empty">не почато</p>}</Block>}
+          {utab === 'work' && <Block title="Аудит рушієм Commerce OS"><WorkerAudit userId={row.userId} code={code} rec={rec} reviewer={selfEmail} /></Block>}
 
-          {utab === 'deep' && <Block title="Аудит рушієм Commerce OS"><WorkerAudit userId={row.userId} code={code} rec={rec} reviewer={selfEmail} /></Block>}
+          {utab === 'work' && <Block title="Оцінка модулів (C-level) — внутрішнє"><ModuleScoring userId={row.userId} initial={rec.assessment || {}} code={code} rec={rec} /></Block>}
 
-          {utab === 'deep' && <Block title="Оцінка модулів (C-level) — внутрішнє"><ModuleScoring userId={row.userId} initial={rec.assessment || {}} code={code} rec={rec} /></Block>}
-
-          {utab === 'docs' && <Block title="Каталог доступів клієнта"><AccessCatalog userId={row.userId} initial={rec.accessLog || {}} /></Block>}
+          {utab === 'data' && <Block title="Каталог доступів клієнта"><AccessCatalog userId={row.userId} initial={rec.accessLog || {}} /></Block>}
 
           {utab === 'docs' && <Block title="Аналітика клієнта (GA4 · GSC · PageSpeed)"><GaPreview userId={row.userId} siteUrl={company?.site || rec.site || ''} /></Block>}
 
           {utab === 'over' && <Block title="Внутрішні нотатки команди"><NotesPanel userId={row.userId} initial={rec.notes || []} author={selfEmail} /></Block>}
 
-          {utab === 'deep' && <Block title="Модерація опитувальника"><ModerationPanel userId={row.userId} code={code} rec={rec} reviewer={selfEmail} /></Block>}
+          {utab === 'data' && <Block title="Модерація опитувальника"><ModerationPanel userId={row.userId} code={code} rec={rec} reviewer={selfEmail} /></Block>}
 
-          {utab === 'deep' && <Block title="Пакет аудиту — 5 звітів"><PackChecklist userId={row.userId} email={row.email} rec={rec} /></Block>}
+          {utab === 'pack' && <Block title="Пакет аудиту — 5 звітів"><PackChecklist userId={row.userId} email={row.email} rec={rec} /></Block>}
 
-          {utab === 'deep' && <Block title="Документ аудиту (редагований)"><AuditDocEditor userId={row.userId} email={row.email} rec={rec} /></Block>}
+          {utab === 'pack' && <Block title="Документ аудиту (редагований)"><AuditDocEditor userId={row.userId} email={row.email} rec={rec} /></Block>}
 
           {utab === 'docs' && <Block title="Мої файли та передача клієнту"><AdminFiles userId={row.userId} initial={rec.adminFiles || []} sharedInitial={rec.sharedDocs || []} author={selfEmail} openFile={openFile} /></Block>}
 
-          {utab === 'deep' && <Block title="Запити доступів">{tiers.length ? (
+          {utab === 'data' && <Block title="Запити доступів">{tiers.length ? (
             <div className="adm-drawer-tiers">
               {tiers.map(([tid, s]) => {
                 const b = `${row.userId}:${tid}`;
                 return (
                   <div key={tid} className="adm-dtier">
                     <div className="adm-dtier-l"><b className="mc-tid">{tierLabel(tid)}</b><span className={`cab-badge mono tst-${ST[s]?.cls ?? 'muted'}`}>{ST[s]?.txt ?? s}</span></div>
-                    <div className="mc-tier-act">
-                      <button className="mc-btn ok" disabled={busy === b} onClick={() => onStatus(row.userId, tid, 'granted')}>Надати</button>
-                      <button className="mc-btn wait" disabled={busy === b} onClick={() => onStatus(row.userId, tid, 'data')}>Дані</button>
-                      <button className="mc-btn bad" disabled={busy === b} onClick={() => onStatus(row.userId, tid, 'rejected')}>Відхилити</button>
-                    </div>
+                    {/* Ті самі дії, що й на дошці, — і той самий гейт. Раніше
+                        дошку закрили, а картку ні: аудитор видавав доступи звідси. */}
+                    {canAccess ? (
+                      <div className="mc-tier-act">
+                        <button className="mc-btn ok" disabled={busy === b} onClick={() => onStatus(row.userId, tid, 'granted')}>Надати</button>
+                        <button className="mc-btn wait" disabled={busy === b} onClick={() => onStatus(row.userId, tid, 'data')}>Дані</button>
+                        <button className="mc-btn bad" disabled={busy === b} onClick={() => onStatus(row.userId, tid, 'rejected')}>Відхилити</button>
+                      </div>
+                    ) : <span className="mono adm-empty">лише перегляд</span>}
                   </div>
                 );
               })}
             </div>
           ) : <p className="mono adm-empty">немає запитів</p>}</Block>}
 
-          {utab === 'deep' && code && (
+          {utab === 'data' && code && (
             <Block title="Заповнення аудиту"><AuditFill code={code} /></Block>
           )}
-          {utab === 'deep' && code && (
+          {utab === 'data' && code && (
             <Block title="Уточнення (Крок 2)"><ExtraEditor code={code} /></Block>
           )}
 
@@ -263,6 +280,7 @@ export function UserDetail({ row, leads, canDelete, selfEmail, onClose, openFile
               </button>
             </div>
           )}
+        </Suspense>
         </div>
     </section>
   );

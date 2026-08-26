@@ -5,6 +5,7 @@ import {
   loadAuditAnswers,
   saveAssessmentFor,
   savePatchFor,
+  mergeMapFor,
   authHeaders,
   uploadAdminFile,
   deleteAdminFile,
@@ -193,10 +194,16 @@ export function ModuleScoring({ userId, initial, code, rec }: { userId: string; 
   const [map, setMap] = useState<Record<string, ModuleScore>>(initial || {});
   const [open, setOpen] = useState<string | null>(null);
   const [ai, setAi] = useState(false);
-  const auto = useAutosave<Record<string, ModuleScore>>((v) => saveAssessmentFor(userId, v), 1200);
+  // Те саме, що з каталогом доступів: зливаємо по модулях, а не кладемо
+  // всю оцінку цілком поверх чужої роботи.
+  const touched = useRef<Set<string>>(new Set());
+  const auto = useAutosave<Record<string, ModuleScore>>((v) => {
+    const changed = Object.fromEntries([...touched.current].map((k) => [k, v[k]]).filter(([, x]) => x));
+    return mergeMapFor(userId, 'assessment', changed as Record<string, ModuleScore>);
+  }, 1200);
   useEffect(() => { loadTemplate().then((t) => setMods(t.blocks)); }, []);
   /** Єдина точка зміни оцінок — щоб автозбереження не залежало від ефекту на [map]. */
-  const apply = (next: Record<string, ModuleScore>) => { setMap(next); auto.touch(next); };
+  const apply = (next: Record<string, ModuleScore>, keys?: string[]) => { (keys || Object.keys(next)).forEach((k) => touched.current.add(k)); setMap(next); auto.touch(next); };
 
   const aiDraft = async () => {
     if (!mods) return;
@@ -223,7 +230,7 @@ export function ModuleScoring({ userId, initial, code, rec }: { userId: string; 
   };
 
   if (!mods) return <p className="mono adm-empty">Завантаження модулів…</p>;
-  const set = (k: string, patch: Partial<ModuleScore>) => apply({ ...map, [k]: { ...map[k], ...patch } });
+  const set = (k: string, patch: Partial<ModuleScore>) => apply({ ...map, [k]: { ...map[k], ...patch } }, [k]);
   const scored = mods.filter((b) => (map[b.key]?.score ?? null) !== null && map[b.key]?.score !== undefined);
   const avg = scored.length ? Math.round(scored.reduce((n, b) => n + (map[b.key]!.score || 0), 0) / scored.length) : null;
   const p1 = mods.filter((b) => map[b.key]?.priority === 'P1').length;

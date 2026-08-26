@@ -64,11 +64,24 @@ export default async function handler(req, res) {
   if (!URL_BASE || !KEY) { res.status(200).json({ error: 'not_configured: потрібні SUPABASE_URL і SUPABASE_SERVICE_ROLE_KEY' }); return; }
 
   try {
-    const r = await fetch(`${URL_BASE}/rest/v1/diagnostics?select=user_id,email,data`, {
-      headers: { apikey: KEY, Authorization: `Bearer ${KEY}` },
-    });
-    if (!r.ok) { res.status(200).json({ error: `supabase ${r.status}` }); return; }
-    const rows = await r.json();
+    // Тягнемо лише поля, потрібні для стадії: повний jsonb кожного клієнта тут
+    // не потрібен (там анкета, документ аудиту з версіями, зрізи бази знань), а
+    // PostgREST мовчки обрізає видачу на 1000 рядках — тому ще й сторінками.
+    const KEYS = ['funnel', 'projects', 'project', 'auditClosedAt', 'deepModeration',
+      'stage3', 'accessLog', 'clientFiles', 'marketplaces', 'company', 'updatedAt'];
+    const select = 'user_id,email,' + KEYS.map((k) => `${k}:data->${k}`).join(',');
+    const PAGE = 500;
+    const rows = [];
+    for (let from = 0; ; from += PAGE) {
+      const r = await fetch(`${URL_BASE}/rest/v1/diagnostics?select=${encodeURIComponent(select)}&order=user_id`, {
+        headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, Range: `${from}-${from + PAGE - 1}` },
+      });
+      if (!r.ok) { res.status(200).json({ error: `supabase ${r.status}` }); return; }
+      const page = await r.json();
+      rows.push(...page.map((p) => ({ user_id: p.user_id, email: p.email, data: p })));
+      if (page.length < PAGE) break;
+      if (from > 20000) break;   // запобіжник від нескінченного циклу
+    }
 
     const overdue = [];
     for (const row of rows) {

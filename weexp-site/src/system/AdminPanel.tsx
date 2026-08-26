@@ -201,12 +201,13 @@ export function AdminPanel() {
     return { funnel, statusDist, recent: inPeriod.slice(0, 14), trend, leadSources };
   }, [rows, leads, metrics, period]);
 
-  // Скільки на кожній вкладці чекає саме нас. Без цього дізнатись, що прийшла
-  // заявка, можна було лише відкривши розділ і поглянувши очима.
-  const pending: Partial<Record<Tab, number>> = {
+  // Скільки на кожній вкладці чекає саме нас. Обовʼязково у useMemo: тут
+  // auditStatusOf() біжить по всьому списку, а в тілі рендера це рахувалось
+  // наново на кожне натискання клавіші в пошуку.
+  const pending = useMemo<Partial<Record<Tab, number>>>(() => ({
     leads: (leads || []).filter((l) => !ACCESS_SOURCES.includes(l.source || '') && stageOf(l) === 'new').length,
     auditreq: (rows || []).filter((r) => { const st = auditStatusOf(r); return st !== null && OURS.includes(st); }).length,
-  };
+  }), [rows, leads]);
 
   /**
    * Гроші й цикл. Плитки вище відповідають на «скільки чого штук»; власнику
@@ -445,13 +446,15 @@ export function AdminPanel() {
   };
   const detail = openUser ? detailRow : null;
   // Список сторінковий: показуємо, що це не всі, і даємо добрати наступну сторінку.
-  const MoreBtn = () => (more ? (
+  // Це елемент, а не компонент усередині рендера: інакше React бачив новий тип
+  // на кожен рендер і перемонтовував кнопку.
+  const moreBtn = more ? (
     <div className="adm-more">
       <button className="mc-btn ghost" disabled={loadingMore} onClick={loadMore}>
         {loadingMore ? 'Вантажимо…' : `Показати ще (завантажено ${(rows || []).length})`}
       </button>
     </div>
-  ) : null);
+  ) : null;
 
   return (
     <div className={'sysx adm' + theme.cls}>
@@ -485,7 +488,7 @@ export function AdminPanel() {
       <main className="adm-main">
         {/* ── Повна сторінка клієнта (замість бокового drawer) ── */}
         {openUser && detailLoading && !detail && <div className="adm-boot mono">Завантажуємо картку…</div>}
-        {detail && <Suspense fallback={null}><UserDetail row={detail} leads={leads} canDelete={can(user, 'delete_data')} selfEmail={user.email} onClose={() => setOpenUser(null)} openFile={openFile} onStatus={setStatus} onDelete={removeUser} busy={busy} /></Suspense>}
+        {detail && <Suspense fallback={null}><UserDetail row={detail} leads={leads} canDelete={can(user, 'delete_data')} canAccess={can(user, 'manage_access')} selfEmail={user.email} onClose={() => setOpenUser(null)} openFile={openFile} onStatus={setStatus} onDelete={removeUser} busy={busy} /></Suspense>}
         {/* ── Дашборд ── */}
         {!detail && curTab === 'overview' && (
           <section className="adm-sec">
@@ -648,7 +651,7 @@ export function AdminPanel() {
                 ))}
               </div>
             )}
-            <MoreBtn />
+            {moreBtn}
           </section>
           );
         })()}
@@ -695,7 +698,7 @@ export function AdminPanel() {
                 ))}
               </div>
             )}
-            <MoreBtn />
+            {moreBtn}
           </section>
           );
         })()}

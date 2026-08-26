@@ -935,8 +935,22 @@ export type AdminEvent = { kind: string; userId?: string; subject?: string; deta
  * нечитабельна й не вибирається запитом («хто видав доступ у березні»).
  * Таблиця може ще не існувати — тоді просто мовчимо (див. docs/admin-events.sql).
  */
+/**
+ * Автозбереження редакторів пише раз на секунду-півтори. Якщо все це лягає в
+ * журнал, значимі події (видача доступу, закриття етапу) тонуть серед сотень
+ * «patch: auditDoc». Схлопуємо повтори однієї й тієї ж дії по одному клієнту в
+ * межах вікна — у журналі лишається перша подія серії.
+ */
+const EVENT_WINDOW_MS = 10 * 60_000;
+const lastEvent = new Map<string, number>();
+
 export async function logAdminEvent(ev: AdminEvent): Promise<void> {
   if (!CONFIGURED || !ACTOR) return;
+  const key = [ACTOR, ev.kind, ev.userId || '', ev.subject || '', ev.detail || ''].join('|');
+  const now = Date.now();
+  const prev = lastEvent.get(key);
+  if (prev && now - prev < EVENT_WINDOW_MS) return;
+  lastEvent.set(key, now);
   try {
     await supabase.from('admin_events').insert({
       actor: ACTOR, kind: ev.kind, user_id: ev.userId || null,
@@ -1062,6 +1076,29 @@ export async function saveAssessmentFor(userId: string, assessment: Record<strin
 export async function savePatchFor(userId: string, patch: Partial<DiagRecord>): Promise<{ ok: boolean; error?: string }> {
   const res = await mutateRecord(userId, (rec) => ({ ...rec, ...patch }),
     { kind: 'patch', detail: Object.keys(patch).join(', ') });
+  return { ok: res.ok, error: res.error };
+}
+
+/**
+ * Записати ЛИШЕ змінені ключі всередині map-секції (accessLog, assessment).
+ *
+ * `savePatchFor` кладе секцію цілком: якщо колега поки що правив інший доступ у
+ * тому ж каталозі, при збереженні моя копія мапи затирала його зміну — запис
+ * «успішний», а правка зникла. Тут зливаємо по ключах, тож двоє можуть правити
+ * різні рядки одного каталогу без взаємних втрат.
+ *
+ * Видаляти ключі цим не можна (на те й злиття) — для секцій, де ключі
+ * зникають, лишається savePatchFor.
+ */
+export async function mergeMapFor<K extends 'accessLog' | 'assessment' | 'findingReviews'>(
+  userId: string,
+  key: K,
+  changed: NonNullable<DiagRecord[K]>,
+): Promise<{ ok: boolean; error?: string }> {
+  const res = await mutateRecord(userId, (rec) => ({
+    ...rec,
+    [key]: { ...((rec[key] || {}) as object), ...(changed as object) },
+  }), { kind: 'patch', detail: `${key}: ${Object.keys(changed).length} поз.` });
   return { ok: res.ok, error: res.error };
 }
 

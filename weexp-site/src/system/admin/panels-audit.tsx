@@ -6,6 +6,7 @@ import {
   loadAuditExtra,
   saveAuditExtra,
   savePatchFor,
+  mergeMapFor,
   runWorkerAudit,
   downloadWorkerPack,
   importRunFiles,
@@ -126,8 +127,14 @@ export function ExtraEditor({ code }: { code: string }) {
 
 export function AccessCatalog({ userId, initial }: { userId: string; initial: Record<string, AccessState> }) {
   const [map, setMap] = useState<Record<string, AccessState>>(initial || {});
-  const auto = useAutosave<Record<string, AccessState>>((v) => savePatchFor(userId, { accessLog: v }));
-  const set = (id: string, patch: Partial<AccessState>) => setMap((m) => { const next = { ...m, [id]: { ...m[id], ...patch, at: new Date().toISOString() } }; auto.touch(next); return next; });
+  // Пишемо лише те, що змінили в цій сесії: інакше збереження затирало правки
+  // колеги в сусідніх рядках того самого каталогу.
+  const touched = useRef<Set<string>>(new Set());
+  const auto = useAutosave<Record<string, AccessState>>((v) => {
+    const changed = Object.fromEntries([...touched.current].map((k) => [k, v[k]]).filter(([, x]) => x));
+    return mergeMapFor(userId, 'accessLog', changed as Record<string, AccessState>);
+  });
+  const set = (id: string, patch: Partial<AccessState>) => setMap((m) => { touched.current.add(id); const next = { ...m, [id]: { ...m[id], ...patch, at: new Date().toISOString() } }; auto.touch(next); return next; });
   const cats = [...new Set(ACCESS_CATALOG.map((a) => a.category))];
   const granted = ACCESS_CATALOG.filter((a) => ['granted', 'verified'].includes(map[a.id]?.status || '')).length;
 
