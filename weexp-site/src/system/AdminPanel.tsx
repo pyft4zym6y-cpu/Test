@@ -7,6 +7,8 @@ import {
   listAllDiagnostics,
   loadDiagnosticFor,
   LIST_PAGE,
+  checkDb,
+  type DbCheck,
   listLeads,
   setTierStatusFor,
   clearTierStatusFor,
@@ -65,6 +67,7 @@ export function AdminPanel() {
   const [openUser, setOpenUser] = useState<string | null>(null);
   // Повний запис відкритої картки: у списку лежить лише полегшений зріз.
   const [detailRow, setDetailRow] = useState<AdminRow | null>(null);
+  const [db, setDb] = useState<DbCheck[] | null>(null);   // стан міграцій
   const [more, setMore] = useState(false);   // чи може бути наступна сторінка
   const [loadingMore, setLoadingMore] = useState(false);
   const [openLead, setOpenLead] = useState<string | null>(null);
@@ -108,7 +111,7 @@ export function AdminPanel() {
     return () => { alive = false; };
   }, [openUser, rows]);
   // Хто працює — знає шар даних: усі записи підписуються цим email (журнал дій).
-  useEffect(() => { currentUser().then((u) => { setActor(u?.email); setUser(u); setChecking(false); if (u && isManager(u)) load(); }); }, []);
+  useEffect(() => { currentUser().then((u) => { setActor(u?.email); setUser(u); setChecking(false); if (u && isManager(u)) { load(); void checkDb().then(setDb); } }); }, []);
   // Esc закриває відкриті шухляди/модалку.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { setAsk(null); setOpenUser(null); setOpenLead(null); } };
@@ -840,6 +843,23 @@ export function AdminPanel() {
             </div>
 
             {can(user, 'manage_team') && <Suspense fallback={null}><TeamManager selfEmail={user.email} /></Suspense>}
+
+            <div className="pj-card">
+              <h2 className="pj-h2">Стан бази</h2>
+              <p className="pj-sub mono">Які міграції застосовані. Без них частина адмінки працює «наполовину» й мовчить про це.</p>
+              {db === null ? <p className="mc-msg mono">Перевіряємо…</p> : (
+                <div className="adm-db">
+                  {db.map((d) => (
+                    <div key={d.key} className="adm-db-row mono">
+                      <span className={`cab-badge tst-${d.ok ? 'ok' : 'bad'}`}>{d.ok ? '✓ є' : '— немає'}</span>
+                      <span>{d.label}</span>
+                      <code>{d.file}</code>
+                    </div>
+                  ))}
+                  {db.some((d) => !d.ok) && <p className="adm-hint mono">Виконайте відсутні файли в Supabase → SQL Editor, у порядку списку.</p>}
+                </div>
+              )}
+            </div>
 
             <div className="pj-card">
               <h2 className="pj-h2">Журнал дій</h2>

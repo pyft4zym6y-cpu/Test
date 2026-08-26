@@ -1197,3 +1197,8 @@
 .adm-money-sub { font-size: 11px; opacity: .65; }
 .adm-money-kpi { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 12px; font-size: 12px; }
 .adm-money-kpi .bad { color: var(--bad, #b3401f); }
+
+/* Налаштування → стан застосованих міграцій. */
+.adm-db { display: flex; flex-direction: column; gap: 6px; }
+.adm-db-row { display: grid; grid-template-columns: 90px minmax(140px, 1fr) auto; gap: 10px; align-items: center; font-size: 12px; }
+@media (max-width: 640px) { .adm-db-row { grid-template-columns: 80px 1fr; } .adm-db-row code { display: none; } }

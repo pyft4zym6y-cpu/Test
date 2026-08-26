@@ -937,6 +937,27 @@ export async function listAdminEvents(limit = 100, userId?: string): Promise<{ r
   } catch { return { rows: [], missing: true }; }
 }
 
+/**
+ * Які міграції вже застосовані. Перевіряємо пробним читанням: якщо таблиці
+ * немає — PostgREST відповість помилкою. Потрібно, щоб адмінка казала прямо
+ * «журнал не увімкнено», а не показувала порожній екран без пояснень.
+ */
+export type DbCheck = { key: string; label: string; file: string; ok: boolean };
+export async function checkDb(): Promise<DbCheck[]> {
+  const probes: { key: string; label: string; file: string; table: string }[] = [
+    { key: 'events', label: 'Журнал дій і ролі', file: 'docs/admin-roles-and-events.sql', table: 'admin_events' },
+    { key: 'runs', label: 'Прогони рушія', file: 'docs/audit-runs.sql', table: 'audit_runs' },
+    { key: 'projection', label: 'Проекція сутностей (аналітика)', file: 'docs/entities-projection.sql', table: 'p_projects' },
+  ];
+  if (!CONFIGURED) return probes.map((p) => ({ key: p.key, label: p.label, file: p.file, ok: false }));
+  return Promise.all(probes.map(async (p) => {
+    try {
+      const { error } = await supabase.from(p.table).select('*', { count: 'exact', head: true }).limit(1);
+      return { key: p.key, label: p.label, file: p.file, ok: !error };
+    } catch { return { key: p.key, label: p.label, file: p.file, ok: false }; }
+  }));
+}
+
 const RLS_HINT = 'Оновлення не застосовано — перевірте UPDATE-політику адміна на diagnostics (RLS).';
 const CONFLICT_HINT = 'Запис змінився, поки ви працювали, і зміну не вдалося накласти. Оновіть сторінку.';
 
