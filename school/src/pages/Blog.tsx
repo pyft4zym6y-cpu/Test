@@ -24,7 +24,7 @@ export default function Blog() {
       />
       <Section className="!pt-8">
         <div className="grid md:grid-cols-2 gap-7">
-          {POSTS.map((post, i) => (
+          {[...POSTS].sort((a, b) => b.date.localeCompare(a.date)).map((post, i) => (
             <Pop key={post.slug} delay={(i % 2) * 0.08}>
               <Link
                 to={`/blog/${post.slug}`}

@@ -2,8 +2,8 @@
 // і для пререндера (prerender.mjs бере ті самі дані через getSeo).
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { COURSES, courseById, courseStats, fmtPrice } from './data/courses';
-import { TOTALS } from './data/program';
+import { COURSES, courseById, courseLevels, courseStats, fmtPrice } from './data/courses';
+import { LEVELS, TOTALS } from './data/program';
 import { SCHOOL, FAQ } from './data/school';
 import { POSTS, postBySlug } from './data/blog';
 
@@ -15,6 +15,9 @@ export interface PageSeo {
   description: string;
   canonical: string;
   noindex?: boolean;
+  /* og:type article + article:published_time для сторінок блогу */
+  type?: 'article';
+  published?: string;
 }
 
 const STATIC_PAGES: Record<string, Omit<PageSeo, 'canonical'>> = {
@@ -72,7 +75,13 @@ export function getSeo(pathname: string): PageSeo {
   if (postMatch) {
     const post = postBySlug(postMatch[1]);
     if (post) {
-      return { title: post.title + SUFFIX, description: post.description, canonical };
+      return {
+        title: post.title + SUFFIX,
+        description: post.description,
+        canonical,
+        type: 'article',
+        published: post.date,
+      };
     }
   }
 
@@ -202,11 +211,10 @@ export function courseLd(courseId: string) {
     name: course.name,
     description: `${course.audience}. ${course.result}. ${stats.modules} модулів, ${stats.questions} екзаменаційних питань.`,
     url: `${SITE}/courses/${course.id}`,
-    provider: {
-      '@type': 'EducationalOrganization',
-      name: SCHOOL.name,
-      url: SITE,
-    },
+    inLanguage: 'uk',
+    teaches: courseLevels(course).map((l) => l.title),
+    educationalCredentialAwarded: 'Сертифікат Commerce Architecture з переліком компетенцій',
+    provider: { '@id': SITE + '/#organization' },
     offers: {
       '@type': 'Offer',
       price: course.price,
@@ -218,7 +226,94 @@ export function courseLd(courseId: string) {
       '@type': 'CourseInstance',
       courseMode: 'online',
       courseWorkload: course.duration,
+      inLanguage: 'uk',
     },
+  };
+}
+
+/* Person-сутність засновника: entity-SEO, рендериться на /about */
+export function personLd() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    '@id': SITE + '/#founder',
+    name: SCHOOL.founder.name,
+    jobTitle: SCHOOL.founder.role,
+    description: SCHOOL.founder.bio,
+    url: SITE + '/about',
+    worksFor: { '@id': SITE + '/#organization' },
+    knowsAbout: [
+      'e-commerce консалтинг',
+      'аудит інтернет-магазинів',
+      'юніт-економіка',
+      'e-commerce стратегія',
+    ],
+    sameAs: [SCHOOL.founder.linkedin],
+  };
+}
+
+/* ItemList курсів: допомагає пошуку зрозуміти каталог на /courses */
+export function coursesItemListLd() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    itemListElement: COURSES.map((c, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: c.name,
+      url: `${SITE}/courses/${c.id}`,
+    })),
+  };
+}
+
+export function blogBreadcrumbLd(slug: string, title: string) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Головна', item: SITE + '/' },
+      { '@type': 'ListItem', position: 2, name: 'Блог', item: SITE + '/blog' },
+      { '@type': 'ListItem', position: 3, name: title, item: `${SITE}/blog/${slug}` },
+    ],
+  };
+}
+
+/* AEO: часті питання конкретного курсу — генеруються з даних курсу,
+   тому ціна/тривалість у відповідях завжди актуальні. Рендеряться
+   видимим блоком на сторінці курсу + FAQPage-розміткою. */
+export function courseFaq(courseId: string): { q: string; a: string }[] {
+  const course = courseById(courseId);
+  if (!course) return [];
+  const stats = courseStats(course);
+  return [
+    {
+      q: `Скільки коштує курс «${course.name}»?`,
+      a: `Курс «${course.name}» коштує ${fmtPrice(course.price)}${course.oldPrice ? ` (окремо його блоки коштували б ${fmtPrice(course.oldPrice)})` : ''}. Доступна оплата частинами, діє гарантія повернення 14 днів.`,
+    },
+    {
+      q: `Скільки триває курс і який його обсяг?`,
+      a: `Навчання триває ${course.duration}: ${stats.modules} модулів і ${stats.questions} екзаменаційних питань з розборами. Після кожного рівня — чек-лист компетенцій.`,
+    },
+    {
+      q: `Кому підходить курс «${course.name}»?`,
+      a: `${course.audience}. Формат — повністю онлайн українською, зі щотижневими менторськими дзвінками із засновником школи.`,
+    },
+    {
+      q: `Що я отримаю після завершення?`,
+      a: `${course.result}. Після фінального чек-листа видається сертифікат Commerce Architecture з переліком опанованих компетенцій, а найкращі учасники отримують офер у партнерську агенцію weexp.agency.`,
+    },
+  ];
+}
+
+export function courseFaqLd(courseId: string) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: courseFaq(courseId).map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
   };
 }
 
@@ -278,9 +373,17 @@ export function llmsTxt(): string {
       `- [${c.name}](${SITE}/courses/${c.id}): ${tier}, ${fmtPrice(c.price)}, ${c.duration}, ${stats.modules} модулів. ${c.audience}. ${c.result}.`,
     );
   }
+  lines.push('', '## Програма: 16 рівнів компетентності', '');
+  for (const l of LEVELS) {
+    lines.push(`${l.n}. ${l.title} — ${l.modules} модулів, ${l.questions} питань. ${l.summary}`);
+  }
   lines.push('', '## Статті блогу', '');
   for (const p of POSTS) {
     lines.push(`- [${p.title}](${SITE}/blog/${p.slug}): ${p.description}`);
+  }
+  lines.push('', '## Часті питання', '');
+  for (const f of FAQ) {
+    lines.push(`**${f.q}**`, f.a, '');
   }
   lines.push(
     '',

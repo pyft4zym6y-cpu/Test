@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { COURSES, type CourseKind } from '../data/courses';
 import CourseCard from '../components/CourseCard';
 import { PageHead, Pop, Section } from '../components/comic';
+import { coursesItemListLd, JsonLd } from '../seo';
 
 type Filter = 'all' | CourseKind | 'expert';
 
@@ -23,6 +24,7 @@ export default function Courses() {
 
   return (
     <>
+      <JsonLd data={coursesItemListLd()} />
       <PageHead
         eyebrow="Каталог курсів"
         title={

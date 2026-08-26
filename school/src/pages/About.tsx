@@ -1,5 +1,6 @@
 import { SCHOOL } from '../data/school';
 import { TOTALS } from '../data/program';
+import { JsonLd, personLd } from '../seo';
 import CareerTrack from '../components/CareerTrack';
 import {
   Bubble,
@@ -41,6 +42,7 @@ const FOR_WHOM = [
 export default function About() {
   return (
     <>
+      <JsonLd data={personLd()} />
       <PageHead
         eyebrow="Про школу"
         title={

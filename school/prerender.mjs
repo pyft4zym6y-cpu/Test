@@ -43,6 +43,21 @@ for (const route of routes) {
       `<link rel="canonical" href="${seo.canonical}" />`,
     );
 
+  // per-page twitter-теги + og:type article для блогу
+  const extra = [
+    `<meta name="twitter:title" content="${esc(seo.title)}" />`,
+    `<meta name="twitter:description" content="${esc(seo.description)}" />`,
+    `<meta name="twitter:image" content="${SITE}/og-image.png" />`,
+  ];
+  if (seo.type === 'article') {
+    html = html.replace(
+      /<meta property="og:type"[^>]*\/>/,
+      '<meta property="og:type" content="article" />',
+    );
+    extra.push(`<meta property="article:published_time" content="${seo.published}" />`);
+  }
+  html = html.replace('</head>', `    ${extra.join('\n    ')}\n  </head>`);
+
   const out = route === '/' ? join(dist, 'index.html') : join(dist, route, 'index.html');
   mkdirSync(dirname(out), { recursive: true });
   writeFileSync(out, html);

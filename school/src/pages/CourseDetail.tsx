@@ -1,8 +1,9 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { courseById, courseLevels, courseStats, fmtPrice, levelsLabel } from '../data/courses';
+import { POSTS } from '../data/blog';
 import CourseCard from '../components/CourseCard';
 import { Guarantee, Included, TrustStrip } from '../components/Trust';
-import { breadcrumbLd, courseLd, JsonLd } from '../seo';
+import { breadcrumbLd, courseFaq, courseFaqLd, courseLd, JsonLd } from '../seo';
 import {
   ComicButton,
   Eyebrow,
@@ -20,11 +21,14 @@ export default function CourseDetail() {
 
   const levels = courseLevels(course);
   const stats = courseStats(course);
+  const faq = courseFaq(course.id);
+  const relatedPosts = POSTS.filter((p) => p.courseId === course.id).slice(0, 2);
 
   return (
     <>
       <JsonLd data={courseLd(course.id)!} />
       <JsonLd data={breadcrumbLd(course.id, course.name)} />
+      <JsonLd data={courseFaqLd(course.id)} />
       <Section className="halftone !pb-12 pt-28 md:pt-36">
         <Pop>
           <Link
@@ -172,6 +176,53 @@ export default function CourseDetail() {
       )}
 
       <Section>
+        <Pop>
+          <Eyebrow>Питання — відповідь</Eyebrow>
+          <H2 className="!mb-6">
+            Часті питання про <span className="redmark">курс</span>
+          </H2>
+        </Pop>
+        <div className="flex flex-col gap-5 max-w-3xl">
+          {faq.map((f, i) => (
+            <Pop key={f.q} delay={(i % 4) * 0.05}>
+              <div className="comic-border bg-white hard-shadow-sm p-6">
+                <h3 className="font-oswald font-bold uppercase text-[16px] leading-tight mb-2">
+                  {f.q}
+                </h3>
+                <p className="text-[14.5px] leading-relaxed text-ink/80">{f.a}</p>
+              </div>
+            </Pop>
+          ))}
+        </div>
+
+        {relatedPosts.length > 0 && (
+          <Pop className="mt-16">
+            <Eyebrow>Спробувати тему на смак</Eyebrow>
+            <H2 className="!mb-6">
+              Статті за <span className="yellowmark">темою курсу</span>
+            </H2>
+            <div className="grid md:grid-cols-2 gap-7">
+              {relatedPosts.map((p) => (
+                <Link
+                  key={p.slug}
+                  to={`/blog/${p.slug}`}
+                  className="group comic-border bg-white hard-shadow-sm p-6 hover:-translate-y-1 transition-transform"
+                >
+                  <h3 className="font-oswald font-bold uppercase text-[18px] leading-tight mb-2">
+                    {p.title}
+                  </h3>
+                  <p className="text-[14px] leading-relaxed text-ink/70 mb-3">{p.description}</p>
+                  <span className="font-oswald font-bold uppercase text-[13px] text-brand group-hover:translate-x-1 inline-block transition-transform">
+                    Читати →
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </Pop>
+        )}
+      </Section>
+
+      <Section className="!pt-0">
         <Pop>
           <div className="comic-border bg-sun hard-shadow p-8 md:p-10 text-center">
             <H2 className="!mb-3">Звучить як твій курс?</H2>

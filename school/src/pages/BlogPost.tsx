@@ -3,7 +3,7 @@ import { POSTS, postBySlug } from '../data/blog';
 import { courseById } from '../data/courses';
 import CourseCard from '../components/CourseCard';
 import { Eyebrow, H2, Hand, Pop, Section } from '../components/comic';
-import { JsonLd, SITE } from '../seo';
+import { blogBreadcrumbLd, JsonLd, SITE } from '../seo';
 import { SCHOOL } from '../data/school';
 
 function fmtDate(iso: string): string {
@@ -22,7 +22,10 @@ function articleLd(slug: string) {
     headline: post.title,
     description: post.description,
     datePublished: post.date,
+    dateModified: post.date,
     inLanguage: 'uk',
+    image: `${SITE}/og-image.png`,
+    mainEntityOfPage: `${SITE}/blog/${post.slug}`,
     url: `${SITE}/blog/${post.slug}`,
     author: {
       '@type': 'Person',
@@ -40,11 +43,20 @@ export default function BlogPost() {
   if (!post) return <Navigate to="/blog" replace />;
 
   const course = courseById(post.courseId);
-  const related = POSTS.filter((p) => p.slug !== post.slug).slice(0, 2);
+  // спершу статті зі спільними тегами, потім решта
+  const related = [...POSTS]
+    .filter((p) => p.slug !== post.slug)
+    .sort(
+      (a, b) =>
+        b.tags.filter((t) => post.tags.includes(t)).length -
+        a.tags.filter((t) => post.tags.includes(t)).length,
+    )
+    .slice(0, 2);
 
   return (
     <>
       <JsonLd data={articleLd(post.slug)} />
+      <JsonLd data={blogBreadcrumbLd(post.slug, post.title)} />
       <Section className="halftone !pb-10 pt-28 md:pt-36">
         <Pop>
           <Link
