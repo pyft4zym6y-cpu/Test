@@ -51,9 +51,19 @@ export function connectors(): Connector[] {
       need: 'сервис-аккаунт с доступом к ресурсу клиента (AC-03)',
     },
     {
-      id: 'ga4', title: 'Google Analytics 4', domains: ['analytics', 'acquisition', 'customer'],
-      state: has('GA4_SA_EMAIL', 'GA4_SA_KEY') ? 'ready' : 'needs_client_oauth',
-      need: 'сервис-аккаунт Viewer в ресурсе клиента',
+      id: 'ga4', title: 'Google Analytics 4 (клиент)', domains: ['analytics', 'acquisition', 'customer'],
+      // Два независимых пути, и путать их нельзя: клиентский коннектор в
+      // api/ga4.js работает через OAuth (клиент сам даёт согласие в браузере),
+      // а сервис-аккаунт GA4_SA_* обслуживает ТОЛЬКО наш собственный сайт.
+      state: has('GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET') ? 'ready' : 'needs_client_oauth',
+      need: 'OAuth-клиент Web в Google Cloud + согласие клиента в кабинете',
+      note: 'redirect URI: https://weexp.agency/api/ga4 (без query-параметров)',
+    },
+    {
+      id: 'ga4_own', title: 'Google Analytics 4 (наш сайт)', domains: ['analytics'],
+      state: has('GA4_SA_EMAIL', 'GA4_SA_KEY') ? 'ready' : 'needs_key',
+      need: 'сервис-аккаунт Viewer в НАШЕМ ресурсе GA4 (GA4_SA_EMAIL + GA4_SA_KEY)',
+      note: 'питает дашборд /admin, к аудиту клиента отношения не имеет',
     },
     {
       id: 'googleads', title: 'Google Ads', domains: ['acquisition'],
