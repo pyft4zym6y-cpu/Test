@@ -1,28 +1,43 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+
 import {
-  currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, setLeadDeal, deleteLead, deleteDiagnostics, signTierFile, CONFIGURED,
-  findAuditIdByCode, loadAuditAnswers, loadAuditExtra, saveAuditExtra,
-  saveProjectsFor, saveAssessmentFor, savePatchFor, runWorkerAudit, uploadAdminFile, deleteAdminFile, maturityToAssessment, sendFindingReviews, loadLearningSnapshot, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject, aiScoreAudit, aiSufficiency, type SufficiencyVerdict, type SharedDoc,
-  type ModuleScore, type DiagRecord, type AccessState, type ProjectNote, type AuditJobRef, type AdminFile, type WorkerMaturity, type ReviewableFinding, type FindingReview, type LearningSnapshot, type AuditDoc, type AuditDocSection, type AuditDocVersion, type PackState,
-  MANAGER_EMAILS, TEAM_ROLES, ROLE_LABEL, roleOf, can, teamApi, MATURITY_DOMAIN_MODULE, type Role, type TeamMember, type DiagUser, type AdminRow, type LeadRow, type LeadDeal, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
-  type Project, type ProjTask, type ProjMember, type ProjPayment, type ProjMonth, type ProjTariffItem,
-  type PmDirectory, type PmSpecialist, type PmRoleRate,
+  findAuditIdByCode,
+  loadAuditAnswers,
+  loadAuditExtra,
+  saveAuditExtra,
+  savePatchFor,
+  runWorkerAudit,
+  downloadWorkerPack,
+  maturityToAssessment,
+  sendFindingReviews,
+  loadLearningSnapshot,
+  aiSufficiency,
+  type SufficiencyVerdict,
+  type DiagRecord,
+  type AccessState,
+  type AuditJobRef,
+  type WorkerMaturity,
+  type ReviewableFinding,
+  type FindingReview,
+  type LearningSnapshot,
+  type AuditDoc,
+  type AuditDocSection,
+  type AuditDocVersion,
+  type AuditAnswer,
+  type ExtraQ
 } from '@/lib/supa';
-import { eur, sysLabel, actionText, type SysKey } from '../lossModel';
+
 import { toast } from '@/lib/toast';
-import { useCabTheme, ThemeToggle } from '@/lib/cabTheme';
-import { AuditBuilder } from '../AuditBuilder';
-import { loadTemplate, uid, Q_TYPES, type AuditTemplate, type Question, type Block } from '../auditTemplate';
+
+import { loadTemplate, uid, Q_TYPES, type AuditTemplate, type Question } from '../auditTemplate';
 import { ACCESS_CATALOG, ACCESS_METHOD_LABEL } from '@/data/accessCatalog';
-import { PACK_ARTIFACTS, PACK_REPORTS, chaptersOf, TOTAL_CHAPTERS } from '@/data/auditPack';
+
 import '../system.css';
 import '../cabinet.css';
 import { ACCESS_STATUS, MATURITY_MODULE_OF, MOD_LABEL, fmtVal, rel, relT, type SaveState } from './shared';
 import { exportAuditDocPdf, seedAuditSections } from './docs';
 import { buildKnowledgePack } from './knowledgePack';
 import { auditStatusOf, phaseOf, PHASES } from './auditRequests';
-
 
 export function AuditFill({ code }: { code: string }) {
   const [tpl, setTpl] = useState<AuditTemplate | null>(null);
@@ -74,7 +89,6 @@ export function AuditFill({ code }: { code: string }) {
   );
 }
 
-
 export function ExtraEditor({ code }: { code: string }) {
   const [list, setList] = useState<ExtraQ[] | null>(null);
   const [busy, setBusy] = useState(false);
@@ -107,7 +121,6 @@ export function ExtraEditor({ code }: { code: string }) {
     </div>
   );
 }
-
 
 export function AccessCatalog({ userId, initial }: { userId: string; initial: Record<string, AccessState> }) {
   const [map, setMap] = useState<Record<string, AccessState>>(initial || {});
@@ -195,12 +208,9 @@ export function WorkerAudit({ userId, code, rec, reviewer }: { userId: string; c
   };
 
   const downloadPack = async (id: string, internal: boolean) => {
-    try {
-      const r = await fetch('/api/audit-run', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'pack', id, internal }) });
-      if (!r.ok || (r.headers.get('content-type') || '').includes('application/json')) { const j = await r.json().catch(() => ({})); toast('Завантаження: ' + (j.error || 'недоступно'), 'err'); return; }
-      const blob = await r.blob();
-      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `audit-${id}${internal ? '-internal' : ''}.zip`; a.click(); URL.revokeObjectURL(a.href);
-    } catch (e) { toast('Помилка завантаження: ' + String(e), 'err'); }
+    const r = await downloadWorkerPack(id, internal);
+    if (!r.ok || !r.blob) { toast('Завантаження: ' + (r.error || 'недоступно'), 'err'); return; }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(r.blob); a.download = `audit-${id}${internal ? '-internal' : ''}.zip`; a.click(); URL.revokeObjectURL(a.href);
   };
 
   const start = async () => {

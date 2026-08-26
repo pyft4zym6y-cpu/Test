@@ -1,24 +1,24 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+
 import { Link } from 'react-router-dom';
 import {
-  currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, setLeadDeal, deleteLead, deleteDiagnostics, signTierFile, CONFIGURED,
-  findAuditIdByCode, loadAuditAnswers, loadAuditExtra, saveAuditExtra,
-  saveProjectsFor, saveAssessmentFor, savePatchFor, runWorkerAudit, uploadAdminFile, deleteAdminFile, maturityToAssessment, sendFindingReviews, loadLearningSnapshot, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject, aiScoreAudit, aiSufficiency, type SufficiencyVerdict, type SharedDoc,
-  type ModuleScore, type DiagRecord, type AccessState, type ProjectNote, type AuditJobRef, type AdminFile, type WorkerMaturity, type ReviewableFinding, type FindingReview, type LearningSnapshot, type AuditDoc, type AuditDocSection, type AuditDocVersion, type PackState,
-  MANAGER_EMAILS, TEAM_ROLES, ROLE_LABEL, roleOf, can, teamApi, MATURITY_DOMAIN_MODULE, type Role, type TeamMember, type DiagUser, type AdminRow, type LeadRow, type LeadDeal, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
-  type Project, type ProjTask, type ProjMember, type ProjPayment, type ProjMonth, type ProjTariffItem,
-  type PmDirectory, type PmSpecialist, type PmRoleRate,
+  getProjects,
+  type AccessState,
+  MANAGER_EMAILS,
+  can,
+  MATURITY_DOMAIN_MODULE,
+  type Role,
+  type AdminRow,
+  type LeadRow,
+  type TierStatus,
+  type LeadStatus
 } from '@/lib/supa';
-import { eur, sysLabel, actionText, type SysKey } from '../lossModel';
+
 import { toast } from '@/lib/toast';
-import { useCabTheme, ThemeToggle } from '@/lib/cabTheme';
-import { AuditBuilder } from '../AuditBuilder';
-import { loadTemplate, uid, Q_TYPES, type AuditTemplate, type Question, type Block } from '../auditTemplate';
-import { ACCESS_CATALOG, ACCESS_METHOD_LABEL } from '@/data/accessCatalog';
-import { PACK_ARTIFACTS, PACK_REPORTS, chaptersOf, TOTAL_CHAPTERS } from '@/data/auditPack';
+
+import { type Block } from '../auditTemplate';
+
 import '../system.css';
 import '../cabinet.css';
-
 
 /** Домен рушія → ключ нашого модуля (реекспорт для UI імпорту зрілості). */
 export const MATURITY_MODULE_OF = MATURITY_DOMAIN_MODULE;
@@ -138,7 +138,6 @@ export function rel(iso?: string): string {
   try { return new Date(iso).toLocaleDateString('uk-UA', { day: '2-digit', month: 'short' }); } catch { return ''; }
 }
 
-
 export function Tile({ n, l, accent }: { n: number; l: string; accent?: boolean }) {
   return <div className={`adm-tile${accent ? ' accent' : ''}`}><b className="adm-tile-n">{n}</b><span className="adm-tile-l">{l}</span></div>;
 }
@@ -227,7 +226,6 @@ export const U_TABS: { id: UTab; l: string }[] = [
   { id: 'proj', l: 'Проект' },
 ];
 
-
 export const PM_MONTHS = ['січ', 'лют', 'бер', 'кві', 'тра', 'чер', 'лип', 'сер', 'вер', 'жов', 'лис', 'гру'];
 export function gMonthLabel(startMonth: string | undefined, i: number): string {
   const m = /^(\d{4})-(\d{1,2})$/.exec(startMonth || '');
@@ -277,11 +275,9 @@ export const ALL_ROLES: Role[] = ['super', 'admin', 'manager', 'auditor'];
 
 export type SaveState = 'idle' | 'dirty' | 'saving' | 'saved' | 'error';
 
-
 export function Shell({ children }: { children: React.ReactNode }) {
   return <div className="sysx adm"><div className="adm-in"><Link to="/" className="mc-back mono">← weexp.agency</Link>{children}</div></div>;
 }
-
 
 export function Block({ title, children }: { title: string; children: React.ReactNode }) {
   return <div className="adm-block"><span className="sysx-kick">{title}</span>{children}</div>;

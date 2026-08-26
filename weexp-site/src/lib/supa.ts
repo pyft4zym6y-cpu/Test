@@ -48,7 +48,9 @@ export type CompanyProfile = {
 /** Статус доступу до кожного рівня аудиту (керована воронка): відсутній ключ = «не запрошено». */
 export type TierStatus = 'requested' | 'data' | 'granted' | 'rejected';
 /** Подія зміни статусу рівня — для таймлайну прогресу (хто/коли перевів). */
-export type TierEvent = { st: TierStatus | 'none'; at: string; by?: 'client' | 'manager' };
+// `by` — чия сторона зробила крок, `byEmail` — конкретна людина з нашого боку.
+// Без другого поля на питання «хто саме видав доступ» відповіді в системі немає.
+export type TierEvent = { st: TierStatus | 'none'; at: string; by?: 'client' | 'manager'; byEmail?: string };
 /** Файл, доданий клієнтом під рівень (Supabase Storage або локально). */
 export type TierFile = { name: string; path: string; at: string; size?: number };
 export type FunnelState = {
@@ -108,6 +110,8 @@ export type DiagRecord = {
   deepModeration?: DeepModeration;             // модерація опитувальника глибокого аудиту
   kbVersions?: KbVersion[];                    // зрізи бази знань: що ми знали на дату
   sharedDocs?: SharedDoc[];                    // фінальні документи, якими адмін поділився з клієнтом
+  auditClosedAt?: string;                      // етап 1 закрито явно (а не «бо щось передали клієнту»)
+  auditClosedBy?: string;                      // хто закрив
   updatedAt?: string;
 };
 
@@ -323,6 +327,23 @@ export async function aiScoreAudit(payload: {
     const j = await r.json();
     if (j.error) return { ok: false, error: j.error };
     return { ok: true, scores: (j.scores || {}) as Record<string, ModuleScore> };
+  } catch (e) { return { ok: false, error: String(e) }; }
+}
+
+/**
+ * Завантажити пакет документів прогону (zip) через той самий проксі.
+ * Окремо від runWorkerAudit, бо відповідь — бінарник, а не JSON. Раніше цей
+ * виклик ішов БЕЗ токена сесії: після закриття /api/audit-run для сторонніх
+ * кнопка почала мовчки віддавати 401.
+ */
+export async function downloadWorkerPack(id: string, internal = false): Promise<{ ok: boolean; blob?: Blob; error?: string }> {
+  try {
+    const r = await fetch('/api/audit-run', { method: 'POST', headers: await authHeaders(), body: JSON.stringify({ action: 'pack', id, internal }) });
+    if (!r.ok || (r.headers.get('content-type') || '').includes('application/json')) {
+      const j = await r.json().catch(() => ({} as { error?: string }));
+      return { ok: false, error: j.error || `недоступно (${r.status})` };
+    }
+    return { ok: true, blob: await r.blob() };
   } catch (e) { return { ok: false, error: String(e) }; }
 }
 
@@ -765,93 +786,146 @@ export async function deleteDiagnostics(userId: string): Promise<{ ok: boolean; 
 /** Менеджер проставляє статус рівня клієнту (+ причину); подія лягає в таймлайн. */
 export async function setTierStatusFor(userId: string, tier: string, status: TierStatus, reason?: string): Promise<{ ok: boolean; error?: string }> {
   if (!CONFIGURED) return { ok: false, error: 'not_configured' };
-  try {
-    const { data } = await supabase.from('diagnostics').select('data').eq('user_id', userId).maybeSingle();
-    const rec = (data?.data as DiagRecord) || {};
+  const res = await mutateRecord(userId, (rec) => {
     const funnel: FunnelState = { ...(rec.funnel || {}) };
     funnel.tierStatus = { ...(funnel.tierStatus || {}), [tier]: status };
     if (reason !== undefined) funnel.tierReason = { ...(funnel.tierReason || {}), [tier]: reason };
     // При наданні доступу — видаємо унікальний код входу в глибокий аудит (один на клієнта).
     if (status === 'granted' && !funnel.accessCode) funnel.accessCode = genAccessCode();
     const history = { ...(funnel.tierHistory || {}) };
-    history[tier] = [...(history[tier] || []), { st: status, at: new Date().toISOString(), by: 'manager' }];
+    // `by` — конкретний email, а не знеособлене «manager»: інакше на питання
+    // «хто видав доступ» відповіді в системі не існує.
+    history[tier] = [...(history[tier] || []), { st: status, at: new Date().toISOString(), by: 'manager', byEmail: actor() || undefined }];
     funnel.tierHistory = history;
-    const merged: DiagRecord = { ...rec, funnel, updatedAt: new Date().toISOString() };
-    const { error } = await supabase.from('diagnostics').update({ data: merged }).eq('user_id', userId);
-    return error ? { ok: false, error: error.message } : { ok: true };
-  } catch (e) { return { ok: false, error: String(e) }; }
+    return { ...rec, funnel };
+  }, { kind: 'tier_status', subject: tier, detail: status + (reason ? ` · ${reason}` : '') });
+  return { ok: res.ok, error: res.error };
+}
+
+/* ─── Єдиний шлюз запису в diagnostics ──────────────────────────────────────
+   Три речі, які раніше кожна функція робила по-своєму (або не робила):
+   1) перевірка, що рядок реально оновився — без `.select()` RLS мовчки блокує
+      запис, а UI рапортує «збережено»;
+   2) оптимістична конкурентність — читання-зміна-запис двома менеджерами (або
+      менеджером і клієнтом) губило правки: хто зберіг другим, той затер першого.
+      Пишемо лише якщо `data->>updatedAt` не змінився з моменту читання; якщо
+      змінився — перечитуємо і накладаємо зміну на свіжий запис;
+   3) авторство — хто саме зробив дію (раніше писалось знеособлене «manager»).
+   ────────────────────────────────────────────────────────────────────────── */
+
+/** Хто зараз працює в адмінці. Ставиться один раз після входу (див. AdminPanel). */
+let ACTOR = '';
+export function setActor(email?: string | null): void { ACTOR = String(email || '').toLowerCase(); }
+export function actor(): string { return ACTOR; }
+
+/** Подія адмінки для журналу дій (V1). Пишеться best-effort, ніколи не блокує. */
+export type AdminEvent = { kind: string; userId?: string; subject?: string; detail?: string };
+
+/**
+ * Журнал дій адміністратора. Окрема таблиця, бо всередині jsonb така історія
+ * нечитабельна й не вибирається запитом («хто видав доступ у березні»).
+ * Таблиця може ще не існувати — тоді просто мовчимо (див. docs/admin-events.sql).
+ */
+export async function logAdminEvent(ev: AdminEvent): Promise<void> {
+  if (!CONFIGURED || !ACTOR) return;
+  try {
+    await supabase.from('admin_events').insert({
+      actor: ACTOR, kind: ev.kind, user_id: ev.userId || null,
+      subject: ev.subject || null, detail: ev.detail || null,
+    });
+  } catch { /* журнал не має ламати роботу */ }
+}
+
+const RLS_HINT = 'Оновлення не застосовано — перевірте UPDATE-політику адміна на diagnostics (RLS).';
+const CONFLICT_HINT = 'Запис змінився, поки ви працювали, і зміну не вдалося накласти. Оновіть сторінку.';
+
+/** Локальний/демо-режим: пишемо в localStorage, як і раніше. */
+const isOffline = (userId: string) => !CONFIGURED || userId.startsWith('local:') || userId.startsWith('demo:');
+
+/**
+ * Прочитати запис, застосувати `mutate`, записати назад під перевіркою версії.
+ * `mutate` викликається щоразу заново на СВІЖОМУ записі — тому повтор після
+ * конфлікту дає правильний результат, а не затирає чужу правку.
+ */
+export async function mutateRecord(
+  userId: string,
+  mutate: (rec: DiagRecord) => DiagRecord,
+  event?: AdminEvent,
+): Promise<{ ok: boolean; error?: string; record?: DiagRecord }> {
+  if (isOffline(userId)) {
+    try {
+      const k = LS_DATA(userId);
+      const prev = JSON.parse(localStorage.getItem(k) || '{}') as DiagRecord;
+      const next = { ...mutate(prev), updatedAt: new Date().toISOString() };
+      localStorage.setItem(k, JSON.stringify(next));
+      return { ok: true, record: next };
+    } catch (e) { return { ok: false, error: String(e) }; }
+  }
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const { data, error: readErr } = await supabase.from('diagnostics').select('data').eq('user_id', userId).maybeSingle();
+      if (readErr) return { ok: false, error: readErr.message };
+      const rec = (data?.data as DiagRecord) || {};
+      const seen = rec.updatedAt;
+      const merged: DiagRecord = { ...mutate(rec), updatedAt: new Date().toISOString() };
+      let qb = supabase.from('diagnostics').update({ data: merged }).eq('user_id', userId);
+      // Умова версії: пишемо тільки поверх того, що прочитали. Для записів без
+      // updatedAt (старі рядки) умови немає — там конкурувати ще нема з чим.
+      if (seen) qb = qb.eq('data->>updatedAt', seen);
+      const { data: upd, error } = await qb.select('user_id');
+      if (error) return { ok: false, error: error.message };
+      if (upd && upd.length > 0) {
+        if (event) void logAdminEvent({ ...event, userId: event.userId || userId });
+        return { ok: true, record: merged };
+      }
+      // 0 рядків: або RLS, або хтось записав раніше за нас. Розрізняємо перечитуванням.
+      if (!seen) return { ok: false, error: RLS_HINT };
+      const { data: fresh } = await supabase.from('diagnostics').select('data').eq('user_id', userId).maybeSingle();
+      const nowStamp = (fresh?.data as DiagRecord | undefined)?.updatedAt;
+      if (nowStamp === seen) return { ok: false, error: RLS_HINT };  // версія та сама → нас не пустив RLS
+      // інакше — конкурентний запис, пробуємо ще раз на свіжому записі
+    } catch (e) { return { ok: false, error: String(e) }; }
+  }
+  return { ok: false, error: CONFLICT_HINT };
 }
 
 /** Скинути рівень до «не запрошено» (прибрати запис) — прибирання тестових/помилкових статусів. */
 export async function clearTierStatusFor(userId: string, tier: string): Promise<{ ok: boolean; error?: string }> {
   if (!CONFIGURED) return { ok: false, error: 'not_configured' };
-  try {
-    const { data } = await supabase.from('diagnostics').select('data').eq('user_id', userId).maybeSingle();
-    const rec = (data?.data as DiagRecord) || {};
+  const res = await mutateRecord(userId, (rec) => {
     const funnel: FunnelState = { ...(rec.funnel || {}) };
     const ts = { ...(funnel.tierStatus || {}) }; delete ts[tier]; funnel.tierStatus = ts;
     const tr = { ...(funnel.tierReason || {}) }; delete tr[tier]; funnel.tierReason = tr;
     const th = { ...(funnel.tierHistory || {}) }; delete th[tier]; funnel.tierHistory = th;
-    const merged: DiagRecord = { ...rec, funnel, updatedAt: new Date().toISOString() };
-    const { error } = await supabase.from('diagnostics').update({ data: merged }).eq('user_id', userId);
-    return error ? { ok: false, error: error.message } : { ok: true };
-  } catch (e) { return { ok: false, error: String(e) }; }
+    return { ...rec, funnel };
+  }, { kind: 'tier_clear', subject: tier });
+  return { ok: res.ok, error: res.error };
 }
 
 /** Менеджер зберігає/оновлює проекти клієнта (в diagnostics.data.projects). Клієнт лише переглядає. */
 /** Зберегти C-level оцінку модулів для клієнта (адмінський шар). */
 export async function saveAssessmentFor(userId: string, assessment: Record<string, ModuleScore>): Promise<{ ok: boolean; error?: string }> {
-  const stamp = new Date().toISOString();
-  if (!CONFIGURED || userId.startsWith('local:') || userId.startsWith('demo:')) {
-    try { const k = LS_DATA(userId); const prev = JSON.parse(localStorage.getItem(k) || '{}'); localStorage.setItem(k, JSON.stringify({ ...prev, assessment })); } catch { /* ignore */ }
-    return { ok: true };
-  }
-  try {
-    const { data } = await supabase.from('diagnostics').select('data').eq('user_id', userId).maybeSingle();
-    const rec = (data?.data as DiagRecord) || {};
-    const merged: DiagRecord = { ...rec, assessment, updatedAt: stamp };
-    const { data: upd, error } = await supabase.from('diagnostics').update({ data: merged }).eq('user_id', userId).select('user_id');
-    if (error) return { ok: false, error: error.message };
-    if (!upd || upd.length === 0) return { ok: false, error: 'Оновлення не застосовано — перевірте UPDATE-політику адміна на diagnostics (RLS).' };
-    return { ok: true };
-  } catch (e) { return { ok: false, error: String(e) }; }
+  const res = await mutateRecord(userId, (rec) => ({ ...rec, assessment }),
+    { kind: 'assessment', detail: `модулів: ${Object.keys(assessment).length}` });
+  return { ok: res.ok, error: res.error };
 }
 
 /** Оновити один розділ record клієнта (адмінський шар: accessLog / notes / …). */
 export async function savePatchFor(userId: string, patch: Partial<DiagRecord>): Promise<{ ok: boolean; error?: string }> {
-  const stamp = new Date().toISOString();
-  if (!CONFIGURED || userId.startsWith('local:') || userId.startsWith('demo:')) {
-    try { const k = LS_DATA(userId); const prev = JSON.parse(localStorage.getItem(k) || '{}'); localStorage.setItem(k, JSON.stringify({ ...prev, ...patch })); } catch { /* ignore */ }
-    return { ok: true };
-  }
-  try {
-    const { data } = await supabase.from('diagnostics').select('data').eq('user_id', userId).maybeSingle();
-    const rec = (data?.data as DiagRecord) || {};
-    const merged: DiagRecord = { ...rec, ...patch, updatedAt: stamp };
-    const { data: upd, error } = await supabase.from('diagnostics').update({ data: merged }).eq('user_id', userId).select('user_id');
-    if (error) return { ok: false, error: error.message };
-    if (!upd || upd.length === 0) return { ok: false, error: 'Оновлення не застосовано — перевірте UPDATE-політику адміна на diagnostics (RLS).' };
-    return { ok: true };
-  } catch (e) { return { ok: false, error: String(e) }; }
+  const res = await mutateRecord(userId, (rec) => ({ ...rec, ...patch }),
+    { kind: 'patch', detail: Object.keys(patch).join(', ') });
+  return { ok: res.ok, error: res.error };
 }
 
 export async function saveProjectsFor(userId: string, projects: Project[]): Promise<{ ok: boolean; error?: string }> {
   const stamp = new Date().toISOString();
   const list: Project[] = projects.map((p) => ({ ...p, id: p.id || 'pr_' + Math.random().toString(36).slice(2, 9), updatedAt: stamp }));
-  if (!CONFIGURED || userId.startsWith('local:') || userId.startsWith('demo:')) {
-    try { const k = LS_DATA(userId); const prev = JSON.parse(localStorage.getItem(k) || '{}'); delete prev.project; localStorage.setItem(k, JSON.stringify({ ...prev, projects: list })); } catch { /* ignore */ }
-    return { ok: true };
-  }
-  try {
-    const { data } = await supabase.from('diagnostics').select('data').eq('user_id', userId).maybeSingle();
-    const rec = (data?.data as DiagRecord) || {};
-    const merged: DiagRecord = { ...rec, projects: list, updatedAt: stamp };
-    delete merged.project;  // прибираємо legacy-поле після міграції
-    const { data: upd, error } = await supabase.from('diagnostics').update({ data: merged }).eq('user_id', userId).select('user_id');
-    if (error) return { ok: false, error: error.message };
-    if (!upd || upd.length === 0) return { ok: false, error: 'Оновлення не застосовано — перевірте UPDATE-політику адміна на diagnostics (RLS).' };
-    return { ok: true };
-  } catch (e) { return { ok: false, error: String(e) }; }
+  const res = await mutateRecord(userId, (rec) => {
+    const next: DiagRecord = { ...rec, projects: list };
+    delete next.project;  // прибираємо legacy-поле після міграції
+    return next;
+  }, { kind: 'projects', detail: `проектів: ${list.length}` });
+  return { ok: res.ok, error: res.error };
 }
 
 /* ─── Файли рівня (Етап B) — приватний бакет Supabase Storage «tier-files» ─── */

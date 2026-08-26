@@ -9,12 +9,16 @@ import { EmptyState, rel } from './shared';
  * ВИВОДИТЬСЯ з дій клієнта й менеджера (див. auditRequests.ts). Кнопки під
  * карткою не «ставлять статус», а виконують дію, після якої статус зміниться сам.
  */
-export function AuditRequests({ rows, q, busy, onOpen, onStatus }: {
+export function AuditRequests({ rows, q, busy, onOpen, onStatus, onCloseAudit, onStartProject, canAccess }: {
   rows: AdminRow[] | null;
   q: string;
   busy: string;
   onOpen: (userId: string) => void;
   onStatus: (userId: string, tier: string, status: TierStatus) => void;
+  onCloseAudit: (userId: string) => void;
+  onStartProject: (userId: string) => void;
+  /** manage_access: аудитор бачить дошку, але не роздає доступи й не рухає етапи. */
+  canAccess: boolean;
 }) {
   const [only, setOnly] = useState<AuditReqStatus | 'all' | 'ours'>('all');
 
@@ -104,12 +108,20 @@ export function AuditRequests({ rows, q, busy, onOpen, onStatus }: {
                         );
                       })()}
                       <button className="adm-lead-open" onClick={() => onOpen(r.userId)}>Картка клієнта →</button>
-                      {(st.k === 'new' || st.k === 'need_data' || st.k === 'denied') && (
+                      {canAccess && (st.k === 'new' || st.k === 'need_data' || st.k === 'denied') && (
                         <div className="mc-row">
-                          <button className="mc-btn sm ok" disabled={busy === r.userId} onClick={() => onStatus(r.userId, 'DEEP', 'granted')}>Надати</button>
-                          <button className="mc-btn sm" disabled={busy === r.userId} onClick={() => onStatus(r.userId, 'DEEP', 'data')}>Дані</button>
-                          <button className="mc-btn sm bad" disabled={busy === r.userId} onClick={() => onStatus(r.userId, 'DEEP', 'rejected')}>Відхилити</button>
+                          <button className="mc-btn sm ok" disabled={!!busy} onClick={() => onStatus(r.userId, 'DEEP', 'granted')}>Надати</button>
+                          <button className="mc-btn sm" disabled={!!busy} onClick={() => onStatus(r.userId, 'DEEP', 'data')}>Дані</button>
+                          <button className="mc-btn sm bad" disabled={!!busy} onClick={() => onStatus(r.userId, 'DEEP', 'rejected')}>Відхилити</button>
                         </div>
+                      )}
+                      {/* Явні переходи замість побічних ефектів: етап закривається
+                          кнопкою, проект заводиться кнопкою — обидва видно в журналі. */}
+                      {canAccess && st.k === 'in_work' && (
+                        <button className="mc-btn sm ok" disabled={!!busy} onClick={() => onCloseAudit(r.userId)}>Закрити етап «Аудит»</button>
+                      )}
+                      {canAccess && st.k === 'done' && (
+                        <button className="mc-btn sm ok" disabled={!!busy} onClick={() => onStartProject(r.userId)}>Зібрати проект впровадження</button>
                       )}
                     </div>
                   );

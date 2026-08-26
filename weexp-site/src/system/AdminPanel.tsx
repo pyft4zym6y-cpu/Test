@@ -1,24 +1,43 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, setLeadDeal, deleteLead, deleteDiagnostics, signTierFile, CONFIGURED,
-  findAuditIdByCode, loadAuditAnswers, loadAuditExtra, saveAuditExtra,
-  saveProjectsFor, saveAssessmentFor, savePatchFor, runWorkerAudit, uploadAdminFile, deleteAdminFile, maturityToAssessment, sendFindingReviews, loadLearningSnapshot, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject, aiScoreAudit, aiSufficiency, type SufficiencyVerdict, type SharedDoc,
-  type ModuleScore, type DiagRecord, type AccessState, type ProjectNote, type AuditJobRef, type AdminFile, type WorkerMaturity, type ReviewableFinding, type FindingReview, type LearningSnapshot, type AuditDoc, type AuditDocSection, type AuditDocVersion, type PackState,
-  MANAGER_EMAILS, TEAM_ROLES, ROLE_LABEL, roleOf, can, teamApi, MATURITY_DOMAIN_MODULE, type Role, type TeamMember, type DiagUser, type AdminRow, type LeadRow, type LeadDeal, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
-  type Project, type ProjTask, type ProjMember, type ProjPayment, type ProjMonth, type ProjTariffItem,
-  type PmDirectory, type PmSpecialist, type PmRoleRate,
+  currentUser,
+  isManager,
+  setActor,
+  listAllDiagnostics,
+  listLeads,
+  setTierStatusFor,
+  clearTierStatusFor,
+  setLeadStatus,
+  setLeadDeal,
+  deleteLead,
+  deleteDiagnostics,
+  signTierFile,
+  CONFIGURED,
+  saveProjectsFor,
+  savePatchFor,
+  emptyProject,
+  getProjects,
+  MANAGER_EMAILS,
+  TEAM_ROLES,
+  ROLE_LABEL,
+  roleOf,
+  can,
+  type DiagUser,
+  type AdminRow,
+  type LeadRow,
+  type LeadDeal,
+  type TierStatus,
+  type LeadStatus
 } from '@/lib/supa';
-import { eur, sysLabel, actionText, type SysKey } from './lossModel';
+import { eur } from './systems';
 import { toast } from '@/lib/toast';
 import { useCabTheme, ThemeToggle } from '@/lib/cabTheme';
-import { loadTemplate, uid, Q_TYPES, type AuditTemplate, type Question, type Block } from './auditTemplate';
-import { ACCESS_CATALOG, ACCESS_METHOD_LABEL } from '@/data/accessCatalog';
-import { PACK_ARTIFACTS, PACK_REPORTS, chaptersOf, TOTAL_CHAPTERS } from '@/data/auditPack';
+import { uid } from './auditTemplate';
+
 import './system.css';
 import './cabinet.css';
 import { ACCESS_SOURCES, TABS, CAP_SUMMARY, EmptyState, FUNNEL, LEAD_STAGES, ST, Shell, Tile, TrafficBlock, Trend, coopLabel, funnelStage, rel, srcName, stageOf, tierLabel, type FunnelStage, type SiteTraffic, type Tab } from './admin/shared';
-
 
 /* Важкі екрани вантажимо на вимогу: адмінка відкривається на «Дашборді», а
    картка клієнта, заявка, конструктор шаблону, проєктний офіс і команда потрібні
@@ -59,7 +78,8 @@ export function AdminPanel() {
     listLeads().then(setLeads);
     fetch('/api/ga4-site').then((r) => r.json()).then((j: SiteTraffic) => setTraffic(j)).catch(() => setTraffic(null));
   };
-  useEffect(() => { currentUser().then((u) => { setUser(u); setChecking(false); if (u && isManager(u)) load(); }); }, []);
+  // Хто працює — знає шар даних: усі записи підписуються цим email (журнал дій).
+  useEffect(() => { currentUser().then((u) => { setActor(u?.email); setUser(u); setChecking(false); if (u && isManager(u)) load(); }); }, []);
   // Esc закриває відкриті шухляди/модалку.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { setAsk(null); setOpenUser(null); setOpenLead(null); } };
@@ -136,22 +156,40 @@ export function AdminPanel() {
   const allowedTabs = TABS.filter((tb) => can(user, tb.cap));
   const curTab = allowedTabs.some((tb) => tb.id === tab) ? tab : (allowedTabs[0]?.id ?? 'overview');
 
+  // Видача доступу НЕ створює проект. Раніше створювала — і клієнт тієї ж миті
+  // вилітав з фази «Аудит» у фазу «Впровадження» (статус виводиться з даних, а
+  // наявність проекту важить більше за все інше). Через це колонки «Доступ
+  // надано / Клієнт заповнює / На модерації / В роботі» ніколи не мали карток.
+  // Проект тепер заводиться явно, коли аудит закрито — див. startProject().
   const applyStatus = async (userId: string, tier: string, status: TierStatus, reason?: string) => {
     setBusy(`${userId}:${tier}`);
     const res = await setTierStatusFor(userId, tier, status, reason);
-    // «Глибокий аудит = проект»: доступ надано → аудит стартував → одразу
-    // заводимо проект клієнту (якщо його ще немає), щоб робота велась у «Проектах».
-    if (res.ok && status === 'granted') {
-      const row = (rows || []).find((r) => r.userId === userId);
-      if (row && getProjects(row.record).length === 0) {
-        const p = { ...emptyProject(), title: `Глибокий аудит · ${row.company || row.email}`, startMonth: new Date().toISOString().slice(0, 7) };
-        const pr = await saveProjectsFor(userId, [p]);
-        if (pr.ok) toast('✓ Створено проект «' + p.title + '»');
-      }
-    }
     setBusy('');
     if (!res.ok) { toast('Не вдалося: ' + (res.error || ''), 'err'); return; }
     toast('✓ Статус оновлено'); load();
+  };
+  // Етап 1 закрито явно: раніше «Завершено» ставилось від факту, що клієнту
+  // передали хоч один документ — проміжний файл закривав увесь аудит.
+  const closeAudit = async (userId: string) => {
+    if (!window.confirm('Закрити етап «Аудит»? Клієнт побачить його як завершений, далі — план впровадження.')) return;
+    setBusy('close:' + userId);
+    const res = await savePatchFor(userId, { auditClosedAt: new Date().toISOString(), auditClosedBy: user?.email });
+    setBusy('');
+    if (!res.ok) { toast('Не вдалося: ' + (res.error || ''), 'err'); return; }
+    toast('✓ Етап «Аудит» закрито'); load();
+  };
+  // Проект впровадження — наступний крок ПІСЛЯ закритого аудиту, не побічний
+  // ефект видачі доступу.
+  const startProject = async (userId: string) => {
+    const row = (rows || []).find((r) => r.userId === userId);
+    if (!row) return;
+    setBusy('proj:' + userId);
+    const existing = getProjects(row.record);
+    const p = { ...emptyProject(), title: `Впровадження · ${row.company || row.email}`, startMonth: new Date().toISOString().slice(0, 7) };
+    const res = await saveProjectsFor(userId, [...existing, p]);
+    setBusy('');
+    if (!res.ok) { toast('Не вдалося створити проект: ' + (res.error || ''), 'err'); return; }
+    toast('✓ Проект «' + p.title + '» створено'); load(); setTab('users'); setOpenUser(userId);
   };
   // «Надати» — одразу; «Потрібні дані» / «Відхилити» — через модалку з причиною.
   const setStatus = (userId: string, tier: string, status: TierStatus) => {
@@ -559,7 +597,9 @@ export function AdminPanel() {
               }}>{busy === 'proj-new' ? 'Створюємо…' : '+ Новий проєкт'}</button>
             </div>
             <Suspense fallback={<p className="mc-msg mono">Завантаження…</p>}>
-              <AuditRequests rows={rows} q={q} busy={busy} onStatus={setStatus} onOpen={(uid) => { setTab('users'); setOpenUser(uid); }} />
+              <AuditRequests rows={rows} q={q} busy={busy} onStatus={setStatus} canAccess={can(user, 'manage_access')}
+                onCloseAudit={closeAudit} onStartProject={startProject}
+                onOpen={(uid) => { setTab('users'); setOpenUser(uid); }} />
             </Suspense>
           </section>
         )}

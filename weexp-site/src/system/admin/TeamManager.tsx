@@ -1,25 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import {
-  currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, setLeadDeal, deleteLead, deleteDiagnostics, signTierFile, CONFIGURED,
-  findAuditIdByCode, loadAuditAnswers, loadAuditExtra, saveAuditExtra,
-  saveProjectsFor, saveAssessmentFor, savePatchFor, runWorkerAudit, uploadAdminFile, deleteAdminFile, maturityToAssessment, sendFindingReviews, loadLearningSnapshot, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject, aiScoreAudit, aiSufficiency, type SufficiencyVerdict, type SharedDoc,
-  type ModuleScore, type DiagRecord, type AccessState, type ProjectNote, type AuditJobRef, type AdminFile, type WorkerMaturity, type ReviewableFinding, type FindingReview, type LearningSnapshot, type AuditDoc, type AuditDocSection, type AuditDocVersion, type PackState,
-  MANAGER_EMAILS, TEAM_ROLES, ROLE_LABEL, roleOf, can, teamApi, MATURITY_DOMAIN_MODULE, type Role, type TeamMember, type DiagUser, type AdminRow, type LeadRow, type LeadDeal, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
-  type Project, type ProjTask, type ProjMember, type ProjPayment, type ProjMonth, type ProjTariffItem,
-  type PmDirectory, type PmSpecialist, type PmRoleRate,
-} from '@/lib/supa';
-import { eur, sysLabel, actionText, type SysKey } from '../lossModel';
+import { useEffect, useState } from 'react';
+
+import { MANAGER_EMAILS, ROLE_LABEL, teamApi, type Role, type TeamMember } from '@/lib/supa';
+
 import { toast } from '@/lib/toast';
-import { useCabTheme, ThemeToggle } from '@/lib/cabTheme';
-import { AuditBuilder } from '../AuditBuilder';
-import { loadTemplate, uid, Q_TYPES, type AuditTemplate, type Question, type Block } from '../auditTemplate';
-import { ACCESS_CATALOG, ACCESS_METHOD_LABEL } from '@/data/accessCatalog';
-import { PACK_ARTIFACTS, PACK_REPORTS, chaptersOf, TOTAL_CHAPTERS } from '@/data/auditPack';
+
 import '../system.css';
 import '../cabinet.css';
 import { ALL_ROLES } from './shared';
-
 
 export function TeamManager({ selfEmail }: { selfEmail: string }) {
   const [members, setMembers] = useState<TeamMember[] | null>(null);

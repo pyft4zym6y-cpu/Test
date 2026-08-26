@@ -1,27 +1,31 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+
 import {
-  currentUser, isManager, listAllDiagnostics, listLeads, setTierStatusFor, clearTierStatusFor, setLeadStatus, setLeadDeal, deleteLead, deleteDiagnostics, signTierFile, CONFIGURED,
-  findAuditIdByCode, loadAuditAnswers, loadAuditExtra, saveAuditExtra,
-  saveProjectsFor, saveAssessmentFor, savePatchFor, runWorkerAudit, uploadAdminFile, deleteAdminFile, maturityToAssessment, sendFindingReviews, loadLearningSnapshot, emptyProject, getProjects, loadPmDirectory, savePmDirectory, aiDraftProject, aiScoreAudit, aiSufficiency, type SufficiencyVerdict, type SharedDoc,
-  type ModuleScore, type DiagRecord, type AccessState, type ProjectNote, type AuditJobRef, type AdminFile, type WorkerMaturity, type ReviewableFinding, type FindingReview, type LearningSnapshot, type AuditDoc, type AuditDocSection, type AuditDocVersion, type PackState,
-  MANAGER_EMAILS, TEAM_ROLES, ROLE_LABEL, roleOf, can, teamApi, MATURITY_DOMAIN_MODULE, type Role, type TeamMember, type DiagUser, type AdminRow, type LeadRow, type LeadDeal, type TierStatus, type LeadStatus, type AuditAnswer, type ExtraQ,
-  type Project, type ProjTask, type ProjMember, type ProjPayment, type ProjMonth, type ProjTariffItem,
-  type PmDirectory, type PmSpecialist, type PmRoleRate,
+  findAuditIdByCode,
+  loadAuditAnswers,
+  saveAssessmentFor,
+  savePatchFor,
+  uploadAdminFile,
+  deleteAdminFile,
+  aiScoreAudit,
+  type SharedDoc,
+  type ModuleScore,
+  type DiagRecord,
+  type ProjectNote,
+  type AdminFile,
+  type PackState
 } from '@/lib/supa';
-import { eur, sysLabel, actionText, type SysKey } from '../lossModel';
+
 import { toast } from '@/lib/toast';
-import { useCabTheme, ThemeToggle } from '@/lib/cabTheme';
-import { AuditBuilder } from '../AuditBuilder';
-import { loadTemplate, uid, Q_TYPES, type AuditTemplate, type Question } from '../auditTemplate';
+
+import { loadTemplate, uid } from '../auditTemplate';
 import type { Block as TplBlock } from '../auditTemplate';   // тип блоку шаблону ≠ UI-компонент Block
-import { ACCESS_CATALOG, ACCESS_METHOD_LABEL } from '@/data/accessCatalog';
+
 import { PACK_ARTIFACTS, PACK_REPORTS, chaptersOf, TOTAL_CHAPTERS } from '@/data/auditPack';
 import '../system.css';
 import '../cabinet.css';
 import { Block, rel, type SaveState } from './shared';
 import { genAccessMap, genDoD, genGantt, genHandover, genPlan90 } from './docs';
-
 
 export function PackChecklist({ userId, email, rec }: { userId: string; email: string; rec: DiagRecord }) {
   const [map, setMap] = useState<Record<string, PackState>>(rec.packChecklist || {});
@@ -259,8 +263,6 @@ export function ModuleScoring({ userId, initial, code, rec }: { userId: string; 
     </div>
   );
 }
-
-
 
 export function GaPreview({ userId, siteUrl }: { userId: string; siteUrl?: string }) {
   type GaStatus = { connected?: boolean; email?: string; properties?: { id: string; name: string; account: string }[]; sites?: { url: string; level: string }[]; at?: string; error?: string };

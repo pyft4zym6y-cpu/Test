@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { findAuditIdByCode, loadAuditAnswers, type AdminRow, type AuditAnswer } from '@/lib/supa';
 import { loadTemplate, type AuditTemplate } from '../auditTemplate';
-import { eur } from '../lossModel';
+import { eur } from '../systems';
 import { Block, rel } from './shared';
 import { nextStep, readiness, blockers, money, timeline, auditStatusOf, STAGE_OF, phaseOf, PHASES } from './auditRequests';
 

@@ -1,4 +1,4 @@
-import { getProjects, type AdminRow, type DiagRecord, type Project } from '@/lib/supa';
+import { getProjects, type AdminRow, type DiagRecord, type Project, type TierStatus } from '@/lib/supa';
 import { ACCESS_CATALOG } from '@/data/accessCatalog';
 
 /**
@@ -60,26 +60,42 @@ const clientStarted = (rec: DiagRecord): boolean =>
   || (rec.marketplaces || []).length > 0;
 
 /**
+ * Статус глибокого аудиту читаємо ТІЛЬКИ з ключа DEEP. Раніше бралися значення
+ * усіх рівнів разом (`Object.values`), і один старий відхилений T2 робив клієнта
+ * з виданим DEEP «не надано доступ». Для записів, де ключа DEEP ще немає (легасі
+ * T1–T4), беремо найсильніший зі старих статусів, а не перший-ліпший.
+ */
+const PRECEDENCE: TierStatus[] = ['granted', 'data', 'requested', 'rejected'];
+function deepStatus(rec: DiagRecord): TierStatus | undefined {
+  const ts = rec.funnel?.tierStatus || {};
+  if (ts.DEEP) return ts.DEEP;
+  const legacy = Object.values(ts);
+  return PRECEDENCE.find((p) => legacy.includes(p));
+}
+
+/**
  * Порядок важливий: перевіряємо від найпізнішої стадії до найранішої, щоб
  * пізніша дія перекривала ранішу. null = це взагалі не заявка на аудит.
  */
 export function auditStatusOf(row: AdminRow): AuditReqStatus | null {
   const rec = row.record || {};
-  const tiers = Object.values(rec.funnel?.tierStatus || {});
+  const st = deepStatus(rec);
   const mod = rec.deepModeration?.status;
 
   // Проєкт — пізніша сутність за аудит, тож перекриває його стадії.
   const projects = getProjects(rec);
   if (projects.some((p) => p.published)) return 'delivery';
   if (projects.length > 0) return 'project';
-  if ((rec.sharedDocs || []).length > 0) return 'done';
+  // «Завершено» — лише за явним закриттям етапу. Раніше сюди потрапляв будь-хто,
+  // кому передали хоч один проміжний документ.
+  if (rec.auditClosedAt) return 'done';
   if (mod === 'accepted') return 'in_work';
   if (mod === 'clarify') return 'clarify';
   if (mod === 'submitted') return 'review';
-  if (tiers.includes('rejected')) return 'denied';
-  if (tiers.includes('granted')) return clientStarted(rec) ? 'filling' : 'granted';
-  if (tiers.includes('data')) return 'need_data';
-  if (tiers.includes('requested') || rec.funnel?.deepRequested) return 'new';
+  if (st === 'rejected') return 'denied';
+  if (st === 'granted') return clientStarted(rec) ? 'filling' : 'granted';
+  if (st === 'data') return 'need_data';
+  if (st === 'requested' || rec.funnel?.deepRequested) return 'new';
   return null;
 }
 
@@ -87,7 +103,7 @@ export function auditStatusOf(row: AdminRow): AuditReqStatus | null {
 export function lastMoveAt(row: AdminRow): string {
   const rec = row.record || {};
   const hist = Object.values(rec.funnel?.tierHistory || {}).flat();
-  const dates = [rec.deepModeration?.at, rec.updatedAt, ...hist.map((h) => h.at)].filter(Boolean) as string[];
+  const dates = [rec.deepModeration?.at, rec.auditClosedAt, rec.updatedAt, ...hist.map((h) => h.at)].filter(Boolean) as string[];
   return dates.sort().pop() || '';
 }
 
@@ -113,8 +129,8 @@ export function nextStep(row: AdminRow): { text: string; who: 'ми' | 'кліє
     case 'filling':   return { who: 'клієнт', text: 'Клієнт заповнює анкету, доступи й файли' };
     case 'review':    return { who: 'ми',     text: 'Перевірити повноту даних і прийняти анкету або повернути на уточнення' };
     case 'clarify':   return { who: 'клієнт', text: 'Чекаємо відповіді на уточнення' };
-    case 'in_work':   return { who: 'ми',     text: 'Зібрати пакет документів: прогін рушія, оцінка модулів, документ аудиту' };
-    case 'done':      return { who: 'ми',     text: 'Етап 1 закрито: документи передані. Наступне — зібрати план впровадження' };
+    case 'in_work':   return { who: 'ми',     text: 'Зібрати пакет документів: прогін рушія, оцінка модулів, документ аудиту → закрити етап' };
+    case 'done':      return { who: 'ми',     text: 'Етап 1 закрито. Наступне — зібрати проект впровадження' };
     case 'project':   return { who: 'ми',     text: 'Проєкт створено, але не опублікований клієнту' };
     case 'delivery':  return { who: 'ми',     text: 'Проєкт у роботі — вести задачі й платежі' };
     case 'denied':    return { who: 'ми',     text: 'Запит відхилено' };
@@ -143,12 +159,24 @@ export function readiness(row: AdminRow) {
 /** Що заважає рухатись далі — конкретним списком, а не відчуттям. */
 export function blockers(row: AdminRow): string[] {
   const rec = row.record || {};
+  const st = auditStatusOf(row);
   const r = readiness(row);
   const out: string[] = [];
+  // Вимоги прив'язані до фази: на етапі впровадження безглуздо вимагати файли
+  // для аудиту, який давно закрито — раніше цей список шумів на кожній картці.
+  const phase = st ? phaseOf(st) : 0;
   if (!rec.company?.name) out.push('не заповнений профіль компанії');
   if (!rec.company?.site) out.push('не вказаний сайт — рушій нема куди запускати');
-  if (r.accessGiven + r.accessNa === 0) out.push('не надано жодного доступу');
-  if (r.files === 0) out.push('не завантажено жодного файлу');
+  if (phase === 1) {
+    if (r.accessGiven + r.accessNa === 0) out.push('не надано жодного доступу');
+    if (r.files === 0) out.push('не завантажено жодного файлу');
+    if (st === 'in_work' && r.jobs === 0) out.push('рушій ще жодного разу не прогонявся');
+    if (st === 'in_work' && r.scored === 0) out.push('модулі ще не оцінені');
+  }
+  if (phase === 2) {
+    const pr = getProjects(rec);
+    if (pr.length && !pr.some((p) => p.published)) out.push('проект не опублікований клієнту');
+  }
   const d = staleDays(row);
   if (d >= 7) out.push(`стадія не рухалась ${d} дн.`);
   return out;
