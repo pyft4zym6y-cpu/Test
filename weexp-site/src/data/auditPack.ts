@@ -141,7 +141,7 @@ export const PACK_AUDITS: PackAudit[] = [
     skills: ['retention-os', 'content-os'], engine: [], scope: 'both' },
   { id: 'a-analytics', code: 'A9', uk: 'Analytics-аудит', en: 'Analytics audit',
     descUk: 'Якість даних, події, атрибуція, BI: чи можна взагалі вірити цифрам.',
-    skills: ['data-os', 'reporting-os'], engine: [], scope: 'both' },
+    skills: ['data-os', 'reporting-os'], engine: ['analyticsflow'], scope: 'both' },
   { id: 'a-operations', code: 'A10', uk: 'Operations-аудит', en: 'Operations audit',
     descUk: 'Склад, закупівлі, доставка, повернення, юридичний контур.',
     skills: ['ops-os', 'legal-os'], engine: [], scope: 'dept' },
@@ -153,7 +153,7 @@ export const PACK_AUDITS: PackAudit[] = [
     skills: ['people-os'], engine: ['maturity'], scope: 'dept' },
   { id: 'a-expansion', code: 'A13', uk: 'Аудит експансії', en: 'Expansion audit',
     descUk: 'Куди рости далі: нові ринки й країни, маркетплейси, B2B/опт, нові моделі продажу — попит, вартість входу, юридичний контур і те, що зламається першим.',
-    skills: ['marketplace-os', 'b2b-os', 'legal-os'], engine: [], scope: 'both' },
+    skills: ['marketplace-os', 'b2b-os', 'legal-os'], engine: ['geoexpand'], scope: 'both' },
 ];
 /** Скільки з 13 аудитів рушій уже вміє збирати сам. */
 export const AUDITS_WITH_ENGINE = PACK_AUDITS.filter((a) => a.engine.length > 0).length;
