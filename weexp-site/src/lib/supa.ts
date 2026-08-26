@@ -119,6 +119,7 @@ export type DiagRecord = {
 export type DeepModeration = {
   status: 'submitted' | 'clarify' | 'accepted';
   at: string;
+  by?: string;            // хто з команди прийняв анкету або повернув на уточнення
   note?: string;          // коментар менеджера клієнту (видно в кабінеті)
   aiVerdict?: { sufficient: boolean; coveragePct?: number; summary?: string; at: string }; // внутрішнє
 };
@@ -347,6 +348,39 @@ export async function downloadWorkerPack(id: string, internal = false): Promise<
     }
     return { ok: true, blob: await r.blob() };
   } catch (e) { return { ok: false, error: String(e) }; }
+}
+
+/**
+ * Перенести готові документи прогону у файли клієнта — конвеєр замість ручної
+ * праці. Досі документи існували лише всередині pack.zip: щоб віддати їх
+ * клієнту, менеджер качав архів, розпаковував і завантажував назад по одному.
+ * Тут кожен файл тягнеться з рушія через проксі й лягає в Storage клієнта, звідки
+ * його вже можна віддати одним кліком («Поділитися»).
+ */
+export async function importRunFiles(
+  userId: string,
+  runId: string,
+  files: { name: string }[],
+  author: string,
+  onStep?: (done: number, total: number, name: string) => void,
+): Promise<{ ok: boolean; added: AdminFile[]; failed: string[] }> {
+  const added: AdminFile[] = [];
+  const failed: string[] = [];
+  const headers = await authHeaders();
+  for (let i = 0; i < files.length; i++) {
+    const name = files[i].name;
+    onStep?.(i, files.length, name);
+    try {
+      const r = await fetch('/api/audit-run', { method: 'POST', headers, body: JSON.stringify({ action: 'file', id: runId, name }) });
+      if (!r.ok || (r.headers.get('content-type') || '').includes('application/json')) { failed.push(name); continue; }
+      const blob = await r.blob();
+      const up = await uploadAdminFile(userId, new File([blob], name, { type: blob.type || 'application/octet-stream' }));
+      if (up.ok && up.path) added.push({ path: up.path, name, kind: 'deliverable', at: new Date().toISOString(), by: author });
+      else failed.push(name);
+    } catch { failed.push(name); }
+  }
+  onStep?.(files.length, files.length, '');
+  return { ok: added.length > 0, added, failed };
 }
 
 /** Виклик аудит-рушія (worker) через серверний проксі /api/audit-run. */

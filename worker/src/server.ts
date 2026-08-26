@@ -25,7 +25,7 @@ import { connectorSummary } from './connectors.js';
 import { CONSOLE_HTML } from './console.js';
 import { catalogCards } from './experts/catalog.js';
 import { makeZip } from './zip.js';
-import { storeEnabled, getClientBundle, saveRun } from './store.js';
+import { storeEnabled, getClientBundle, saveRun, saveRunRow } from './store.js';
 
 const TOKEN = process.env.AUDIT_SERVER_TOKEN || '';
 const PORT = Number(process.env.PORT || 8787);
@@ -46,6 +46,8 @@ type Job = {
   maturity?: import('./maturity.js').MaturityReport | null;
   findings?: import('./learning/ledger.js').ReviewableFinding[];
   opts?: Record<string, unknown>; clientId?: string;
+  /** Чей это прогон: uid клиента сайта, id клиента портала или personal:<email>. */
+  ownerKey?: string;
 };
 
 const jobs = new Map<string, Job>();
@@ -106,9 +108,19 @@ async function processQueue(): Promise<void> {
     job.status = 'done'; job.finishedAt = Date.now();
     await writeFile(join(OUT, r.id, 'job.json'), JSON.stringify(persistView(job)), 'utf8').catch(() => {});
     void persistJob(job);
-    if (job.clientId && storeEnabled()) {
-      const ok = await saveRun(job.clientId, { runId: r.id, summary: r.summary, metrics: r.metrics, files: job.files.map((f) => ({ name: f.name, url: f.url })) });
-      job.log.push(ok ? '· результат записан в карточку клиента (Supabase)' : '⚠️ не удалось записать результат в Supabase');
+    if (storeEnabled()) {
+      const files = job.files.map((f) => ({ name: f.name, url: f.url }));
+      const rec = { runId: r.id, summary: r.summary, metrics: r.metrics, files };
+      // Собственная таблица прогонов — не зависит от clients(id) портала, поэтому
+      // пишется и для прогонов из админки сайта, и для личных прогонов админа.
+      const health = (r.metrics as { health?: number } | undefined)?.health ?? null;
+      const rowOk = await saveRunRow(job.ownerKey || job.clientId, { ...rec, site: String((job.opts as any)?.site ?? ''), tier: job.tier, health });
+      job.log.push(rowOk ? '· прогон записан в audit_runs (Supabase)' : '⚠️ прогон не записан в audit_runs — применён ли docs/audit-runs.sql?');
+      // Портальный путь: карточка клиента портала. Только для настоящего clients.id.
+      if (job.clientId) {
+        const ok = await saveRun(job.clientId, rec);
+        job.log.push(ok ? '· результат записан в карточку клиента портала' : '⚠️ не удалось записать результат в report_meta');
+      }
     }
   } catch (e) {
     job.status = 'error'; job.error = String(e).slice(0, 600); job.finishedAt = Date.now();
@@ -279,7 +291,8 @@ const server = createServer(async (req, res) => {
         delete opts.answersUpload;
       }
       const client = (() => { try { return opts.prelaunch ? 'предзапуск' : new URL(opts.site).hostname.replace(/^www\./, ''); } catch { return bundleName || opts.site || clientId || '—'; } })();
-      const job: Job = { id, client, tier: Number(opts.tier ?? 1), status: 'queued', startedAt: Date.now(), log: [], opts, clientId: clientId || undefined };
+      const ownerKey = typeof opts.ownerKey === 'string' ? opts.ownerKey.trim().slice(0, 200) : '';
+      const job: Job = { id, client, tier: Number(opts.tier ?? 1), status: 'queued', startedAt: Date.now(), log: [], opts, clientId: clientId || undefined, ownerKey: ownerKey || undefined };
       jobs.set(id, job);
       void persistJob(job);
       queue.push(id);

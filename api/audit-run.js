@@ -30,6 +30,9 @@ export default async function handler(req, res) {
         tier: Math.max(1, Math.min(4, Number(b.tier) || 1)),
         answers: b.answers || undefined,
         knowledge: b.knowledge || undefined,
+        // Чей прогон. Раньше не передавался вовсе, поэтому воркер не мог
+        // сохранить его никуда, кроме диска контейнера.
+        ownerKey: typeof b.ownerKey === 'string' ? b.ownerKey.slice(0, 200) : undefined,
       };
       const r = await fetch(`${base}/audit`, { method: 'POST', headers: hdr, body: JSON.stringify(opts) });
       const j = await r.json();
@@ -63,6 +66,19 @@ export default async function handler(req, res) {
       const buf = Buffer.from(await r.arrayBuffer());
       res.setHeader('content-type', 'application/zip');
       res.setHeader('content-disposition', `attachment; filename="audit-${b.id}${b.internal ? '-internal' : ''}.zip"`);
+      res.status(200).send(buf);
+      return;
+    }
+    // Один документ прогона. Нужен, чтобы перенести готовые документы из
+    // движка прямо в файлы клиента: раньше единственным путём был zip →
+    // распаковать руками → загрузить обратно.
+    if (b.action === 'file') {
+      if (!b.id || !b.name) { res.status(200).json({ error: 'need id + name' }); return; }
+      const name = String(b.name).replace(/[\\/]/g, '');
+      const r = await fetch(`${base}/result/${encodeURIComponent(b.id)}/${encodeURIComponent(name)}`, { headers: hdr });
+      if (!r.ok) { res.status(200).json({ error: 'файл недоступний (' + r.status + ')' }); return; }
+      const buf = Buffer.from(await r.arrayBuffer());
+      res.setHeader('content-type', r.headers.get('content-type') || 'application/octet-stream');
       res.status(200).send(buf);
       return;
     }

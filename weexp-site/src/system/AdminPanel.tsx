@@ -248,6 +248,22 @@ export function AdminPanel() {
     if (!res.ok) { toast('Не вдалося: ' + (res.error || ''), 'err'); return; }
     toast('✓ Етап «Аудит» закрито'); load();
   };
+  // Впровадження закрито → клієнт переходить на супровід (фаза 3), а не зникає
+  // з дошки, як було до появи третьої фази.
+  const closeDelivery = async (userId: string) => {
+    const row = (rows || []).find((r) => r.userId === userId);
+    if (!row) return;
+    const open = getProjects(row.record).filter((p) => !p.closedAt);
+    if (!open.length) return;
+    if (!window.confirm(`Закрити впровадження (${open.length} проєкт.)? Клієнт перейде на супровід.`)) return;
+    setBusy('closedel:' + userId);
+    const stamp = new Date().toISOString();
+    const next = getProjects(row.record).map((p) => (p.closedAt ? p : { ...p, closedAt: stamp, closedBy: user?.email }));
+    const res = await saveProjectsFor(userId, next);
+    setBusy('');
+    if (!res.ok) { toast('Не вдалося: ' + (res.error || ''), 'err'); return; }
+    toast('✓ Впровадження закрито — клієнт на супроводі'); load();
+  };
   // Проект впровадження — наступний крок ПІСЛЯ закритого аудиту, не побічний
   // ефект видачі доступу.
   const startProject = async (userId: string) => {
@@ -259,7 +275,7 @@ export function AdminPanel() {
     const res = await saveProjectsFor(userId, [...existing, p]);
     setBusy('');
     if (!res.ok) { toast('Не вдалося створити проект: ' + (res.error || ''), 'err'); return; }
-    toast('✓ Проект «' + p.title + '» створено'); load(); setTab('users'); setOpenUser(userId);
+    toast('✓ Проект «' + p.title + '» створено'); load(); setOpenUser(userId);
   };
   // «Надати» — одразу; «Потрібні дані» / «Відхилити» — через модалку з причиною.
   const setStatus = (userId: string, tier: string, status: TierStatus) => {
@@ -306,7 +322,7 @@ export function AdminPanel() {
     if (!lead.id) return;
     const client = lead.email ? (rows || []).find((r) => (r.email || '').toLowerCase() === lead.email!.toLowerCase()) : undefined;
     if (!client) { toast('Немає кабінету з email заявки — попросіть клієнта зареєструватись або створіть проект вручну в «Аудит і проєкти».', 'err'); return; }
-    if (lead.deal?.projectId) { toast('Проект уже створено з цієї заявки — відкриваю картку клієнта'); setOpenLead(null); setTab('users'); setOpenUser(client.userId); return; }
+    if (lead.deal?.projectId) { toast('Проект уже створено з цієї заявки — відкриваю картку клієнта'); setOpenLead(null); setOpenUser(client.userId); return; }
     setBusy('conv:' + lead.id);
     const existing = getProjects(client.record);
     const title = `${coopLabel(lead.deal?.coopType) || 'Проект'} · ${client.company || lead.name || lead.email}`;
@@ -320,7 +336,7 @@ export function AdminPanel() {
     else toast('✓ Проект «' + title + '» створено і звʼязано з заявкою');
     setLeads((ls) => (ls || []).map((l) => (l.id === lead.id ? { ...l, deal } : l)));
     load();
-    setOpenLead(null); setTab('users'); setOpenUser(client.userId);
+    setOpenLead(null); setOpenUser(client.userId);
   };
   // Масові дії над заявками (мультивибір).
   const toggleSel = (id: string) => setSelLeads((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
@@ -694,10 +710,12 @@ export function AdminPanel() {
                 else alert('Не вдалося створити проект: ' + (res.error || ''));
               }}>{busy === 'proj-new' ? 'Створюємо…' : '+ Новий проєкт'}</button>
             </div>
+            {/* onOpen лише відкриває картку ПОВЕРХ поточного розділу: закрив —
+                і ти знову на дошці, з якої прийшов. Раніше кожне відкриття
+                перекидало у «Користувачі», і повертатись було нікуди. */}
             <Suspense fallback={<p className="mc-msg mono">Завантаження…</p>}>
               <AuditRequests rows={rows} q={q} busy={busy} onStatus={setStatus} canAccess={can(user, 'manage_access')}
-                onCloseAudit={closeAudit} onStartProject={startProject}
-                onOpen={(uid) => { setTab('users'); setOpenUser(uid); }} />
+                onCloseAudit={closeAudit} onStartProject={startProject} onCloseDelivery={closeDelivery} onOpen={setOpenUser} />
             </Suspense>
           </section>
         )}
@@ -833,7 +851,7 @@ export function AdminPanel() {
       </main>
 
       {/* Панель деталей заявки */}
-      {openLead && leads && <Suspense fallback={null}><LeadDetail lead={leads.find((l) => l.id === openLead)} allRows={rows || []} onClose={() => setOpenLead(null)} onStatus={moveLead} onDeal={saveDeal} onConvert={leadToProject} onDelete={removeLead} busy={busy} onOpenClient={(uid) => { setOpenLead(null); setTab('users'); setOpenUser(uid); }} /></Suspense>}
+      {openLead && leads && <Suspense fallback={null}><LeadDetail lead={leads.find((l) => l.id === openLead)} allRows={rows || []} onClose={() => setOpenLead(null)} onStatus={moveLead} onDeal={saveDeal} onConvert={leadToProject} onDelete={removeLead} busy={busy} onOpenClient={(uid) => { setOpenLead(null); setOpenUser(uid); }} /></Suspense>}
 
       {/* Модалка причини (замість browser prompt) */}
       {ask && (

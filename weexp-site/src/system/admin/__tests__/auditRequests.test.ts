@@ -103,3 +103,38 @@ describe('staleDays', () => {
     expect(staleDays(row({}))).toBe(0);
   });
 });
+
+describe('фаза 3 — супровід', () => {
+  it('усі проєкти закриті → care', () => {
+    const rec = { projects: [{ id: 'p1', title: 'x', published: true, closedAt: '2026-03-01' }] } as DiagRecord;
+    const st = auditStatusOf(row(rec));
+    expect(st).toBe('care');
+    expect(phaseOf(st!)).toBe(3);
+  });
+
+  it('один незакритий проєкт лишає клієнта у впровадженні', () => {
+    const rec = { projects: [
+      { id: 'p1', title: 'x', published: true, closedAt: '2026-03-01' },
+      { id: 'p2', title: 'y', published: true },
+    ] } as DiagRecord;
+    expect(auditStatusOf(row(rec))).toBe('delivery');
+  });
+});
+
+describe('SLA', () => {
+  it('норматив залежить від стадії, а не один на всіх', async () => {
+    const { SLA } = await import('../auditRequests');
+    expect(SLA.new.breach).toBeLessThan(SLA.filling.breach);
+    expect(SLA.review.breach).toBeLessThan(SLA.delivery.breach);
+    expect(SLA.denied.breach).toBeGreaterThan(1000);   // відхилене не «зависає»
+  });
+
+  it('свіжа стадія — ok, стара — breach', async () => {
+    const { slaOf } = await import('../auditRequests');
+    const fresh = { funnel: { tierStatus: { DEEP: 'requested' }, tierHistory: { DEEP: [{ st: 'requested', at: new Date().toISOString() }] } } } as DiagRecord;
+    expect(slaOf(row(fresh)).state).toBe('ok');
+    const old = new Date(Date.now() - 40 * 86400000).toISOString();
+    const stale = { funnel: { tierStatus: { DEEP: 'requested' }, tierHistory: { DEEP: [{ st: 'requested', at: old }] } } } as DiagRecord;
+    expect(slaOf(row(stale)).state).toBe('breach');
+  });
+});

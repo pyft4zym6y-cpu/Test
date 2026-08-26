@@ -8,6 +8,7 @@ import {
   savePatchFor,
   runWorkerAudit,
   downloadWorkerPack,
+  importRunFiles,
   maturityToAssessment,
   sendFindingReviews,
   loadLearningSnapshot,
@@ -207,6 +208,27 @@ export function WorkerAudit({ userId, code, rec, reviewer }: { userId: string; c
     else toast('Не вдалося зберегти оцінку: ' + (r.error || ''), 'err');
   };
 
+  /**
+   * Конвеєр: документи прогону → файли клієнта одним рухом. Раніше останній
+   * метр послуги був ручним — качали zip, розпаковували, вантажили назад.
+   * Далі документ віддається клієнту кнопкою «Поділитися» у вкладці «Документи».
+   */
+  const [importing, setImporting] = useState('');
+  const importRun = async (id: string) => {
+    const st = await runWorkerAudit('status', { id });
+    const list = (st.job?.files as { name: string }[] | undefined) || [];
+    if (!list.length) { toast('Рушій не віддав список документів цього прогону', 'err'); return; }
+    if (!confirm(`Перенести ${list.length} документ(ів) прогону у файли клієнта?`)) return;
+    setImporting(id);
+    const r = await importRunFiles(userId, id, list, reviewer, (done, total) => setImporting(`${id}:${done}/${total}`));
+    setImporting('');
+    if (!r.added.length) { toast('Не перенесено жодного документа' + (r.failed.length ? ` (${r.failed.length} з помилкою)` : ''), 'err'); return; }
+    const prev = rec.adminFiles || [];
+    const res = await savePatchFor(userId, { adminFiles: [...r.added, ...prev] });
+    if (!res.ok) { toast('Файли завантажено, але картку не оновлено: ' + (res.error || ''), 'err'); return; }
+    toast(`✓ Перенесено ${r.added.length} документ(ів)${r.failed.length ? ` · не вдалось: ${r.failed.length}` : ''} — вкладка «Документи»`);
+  };
+
   const downloadPack = async (id: string, internal: boolean) => {
     const r = await downloadWorkerPack(id, internal);
     if (!r.ok || !r.blob) { toast('Завантаження: ' + (r.error || 'недоступно'), 'err'); return; }
@@ -228,15 +250,26 @@ export function WorkerAudit({ userId, code, rec, reviewer }: { userId: string; c
       { userId, email: '', record: rec } as never,
       answers as never, totalQ, st ? PHASES[phaseOf(st)].l : undefined,
     );
-    const r = await runWorkerAudit('start', { site: site.trim(), tier, answers, knowledge });
+    const r = await runWorkerAudit('start', { site: site.trim(), tier, answers, knowledge, ownerKey: userId });
     if (r.error || !r.id) { setErr('Помилка запуску: ' + (r.error || '')); setRunning(false); toast('Аудит не запущено: ' + (r.error || ''), 'err'); return; }
     const ref: AuditJobRef = { id: r.id, at: new Date().toISOString(), site: site.trim(), tier, status: 'queued' };
     const next = [ref, ...jobs].slice(0, 20); saveJobs(next);
     toast('✓ Аудит запущено на рушії');
-    // Полінг статусу.
+    // Полінг статусу. Обриваємо його після кількох невдач поспіль: рушій міг
+    // перезапуститись, і опитувати його вічно — просто вантажити мережу.
+    if (poll.current) clearInterval(poll.current);
+    let pollErrors = 0;
     poll.current = setInterval(async () => {
       const s = await runWorkerAudit('status', { id: r.id });
-      if (s.error) return;
+      if (s.error) {
+        if (++pollErrors >= 5) {
+          if (poll.current) clearInterval(poll.current);
+          setRunning(false);
+          setErr('Рушій не відповідає (5 спроб): ' + s.error + '. Прогін міг лишитись живим — перевірте пізніше.');
+        }
+        return;
+      }
+      pollErrors = 0;
       const j = s.job || {};
       setJob(j);
       const st = String(j.status || '');
@@ -314,6 +347,9 @@ export function WorkerAudit({ userId, code, rec, reviewer }: { userId: string; c
               {j.status === 'done' && <span className="adm-worker-dl">
                 <button className="mc-btn ghost" onClick={() => downloadPack(j.id, false)} title="Пакет документів для клієнта">⬇ Клієнту</button>
                 <button className="mc-btn ghost" onClick={() => downloadPack(j.id, true)} title="Внутрішній пакет (усі доки + JSON)">⬇ Внутрішній</button>
+                <button className="mc-btn ok" disabled={!!importing} onClick={() => importRun(j.id)} title="Покласти документи прогону у файли клієнта — звідти їх можна віддати клієнту">
+                  {importing.startsWith(j.id) ? (importing.split(':')[1] || 'Переносимо…') : '→ У файли клієнта'}
+                </button>
               </span>}
               {j.summary && <span className="adm-worker-sum">{j.summary}</span>}
             </div>
@@ -454,13 +490,13 @@ export function AuditDocEditor({ userId, email, rec }: { userId: string; email: 
 
 /* ── Модерація опитувальника: AI-перевірка достатності + рішення менеджера ── */
 
-export function ModerationPanel({ userId, code, rec }: { userId: string; code?: string; rec: DiagRecord }) {
+export function ModerationPanel({ userId, code, rec, reviewer }: { userId: string; code?: string; rec: DiagRecord; reviewer?: string }) {
   const [busy, setBusy] = useState('');
   const [verdict, setVerdict] = useState<SufficiencyVerdict | null>(null);
   const mod = rec.deepModeration;
   const setStatus = async (status: 'accepted' | 'clarify', note?: string) => {
     setBusy(status);
-    const r = await savePatchFor(userId, { deepModeration: { ...(mod || {}), status, at: new Date().toISOString(), note: note || undefined, aiVerdict: verdict ? { sufficient: verdict.sufficient, coveragePct: verdict.coveragePct, summary: verdict.summary, at: new Date().toISOString() } : mod?.aiVerdict } });
+    const r = await savePatchFor(userId, { deepModeration: { ...(mod || {}), status, at: new Date().toISOString(), by: reviewer || undefined, note: note || undefined, aiVerdict: verdict ? { sufficient: verdict.sufficient, coveragePct: verdict.coveragePct, summary: verdict.summary, at: new Date().toISOString() } : mod?.aiVerdict } });
     setBusy('');
     if (r.ok) toast(status === 'accepted' ? '✓ Підтверджено — клієнт бачить «очікуйте підсумки»' : '✓ Повернуто з уточненнями — клієнт бачить питання');
     else toast('Не вдалося: ' + (r.error || ''), 'err');

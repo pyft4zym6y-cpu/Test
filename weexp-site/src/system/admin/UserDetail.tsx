@@ -191,7 +191,7 @@ export function UserDetail({ row, leads, canDelete, selfEmail, onClose, openFile
 
           {utab === 'over' && <Block title="Внутрішні нотатки команди"><NotesPanel userId={row.userId} initial={rec.notes || []} author={selfEmail} /></Block>}
 
-          {utab === 'deep' && <Block title="Модерація опитувальника"><ModerationPanel userId={row.userId} code={code} rec={rec} /></Block>}
+          {utab === 'deep' && <Block title="Модерація опитувальника"><ModerationPanel userId={row.userId} code={code} rec={rec} reviewer={selfEmail} /></Block>}
 
           {utab === 'deep' && <Block title="Пакет аудиту — 5 звітів"><PackChecklist userId={row.userId} email={row.email} rec={rec} /></Block>}
 

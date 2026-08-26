@@ -72,7 +72,8 @@ export function WorkerTab({ rows }: { rows: AdminRow[] | null }) {
     if (!s) { setErr('Вкажіть домен або URL.'); return; }
     stopPolling();
     setErr(''); setRunning(true); setJob(null);
-    const r = await runWorkerAudit('start', { site: s, tier });
+    // Особистий прогін теж має власника — інакше в базі він анонімний.
+    const r = await runWorkerAudit('start', { site: s, tier, ownerKey: clientId || 'personal' });
     if (r.error || !r.id) {
       setErr('Не запустилось: ' + (r.error || 'невідома помилка'));
       setRunning(false); toast('Прогін не запущено', 'err'); return;

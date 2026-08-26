@@ -74,3 +74,32 @@ export async function saveRun(clientId: string, run: RunRecord): Promise<boolean
     return r.ok;
   } catch { return false; }
 }
+
+/**
+ * Прогін у власну таблицю `audit_runs`. Окремо від report_meta, бо той звʼязаний
+ * зовнішнім ключем із таблицею clients ПОРТАЛУ: прогони, запущені з адмінки
+ * сайту (де клієнт — це auth uid у diagnostics), туди не вставлялись взагалі, і
+ * єдиним слідом лишалися файли на диску контейнера.
+ * best-effort: жодна помилка тут не має ламати прогін.
+ */
+export async function saveRunRow(ownerKey: string | undefined, run: RunRecord & { site?: string; tier?: number; health?: number | null }): Promise<boolean> {
+  if (!storeEnabled()) return false;
+  try {
+    const r = await rest('audit_runs?on_conflict=id', {
+      method: 'POST',
+      headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({
+        id: run.runId,
+        owner_key: ownerKey || null,
+        site: run.site ?? null,
+        tier: run.tier ?? null,
+        status: 'done',
+        summary: run.summary,
+        health: run.health ?? null,
+        metrics: run.metrics,
+        files: run.files,
+      }),
+    });
+    return r.ok;
+  } catch { return false; }
+}

@@ -9,7 +9,7 @@ import { EmptyState, rel } from './shared';
  * ВИВОДИТЬСЯ з дій клієнта й менеджера (див. auditRequests.ts). Кнопки під
  * карткою не «ставлять статус», а виконують дію, після якої статус зміниться сам.
  */
-export function AuditRequests({ rows, q, busy, onOpen, onStatus, onCloseAudit, onStartProject, canAccess }: {
+export function AuditRequests({ rows, q, busy, onOpen, onStatus, onCloseAudit, onStartProject, onCloseDelivery, canAccess }: {
   rows: AdminRow[] | null;
   q: string;
   busy: string;
@@ -17,6 +17,7 @@ export function AuditRequests({ rows, q, busy, onOpen, onStatus, onCloseAudit, o
   onStatus: (userId: string, tier: string, status: TierStatus) => void;
   onCloseAudit: (userId: string) => void;
   onStartProject: (userId: string) => void;
+  onCloseDelivery: (userId: string) => void;
   /** manage_access: аудитор бачить дошку, але не роздає доступи й не рухає етапи. */
   canAccess: boolean;
 }) {
@@ -128,6 +129,9 @@ export function AuditRequests({ rows, q, busy, onOpen, onStatus, onCloseAudit, o
                       )}
                       {canAccess && st.k === 'done' && (
                         <button className="mc-btn sm ok" disabled={!!busy} onClick={() => onStartProject(r.userId)}>Зібрати проект впровадження</button>
+                      )}
+                      {canAccess && st.k === 'delivery' && (
+                        <button className="mc-btn sm ok" disabled={!!busy} onClick={() => onCloseDelivery(r.userId)}>Закрити впровадження</button>
                       )}
                     </div>
                   );
