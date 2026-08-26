@@ -714,6 +714,37 @@ export async function listAllDiagnostics(page = 0): Promise<AdminRow[]> {
   } catch { return []; }
 }
 
+/**
+ * Підписка на зміни клієнтських даних (H1).
+ *
+ * Досі адмінка дізнавалась про будь-яку подію лише коли її ВІДКРИЛИ або
+ * натиснули «↻ оновити»: клієнт міг надіслати анкету годину тому, а на дошці
+ * нічого. SDK Supabase уже в бандлі — realtime іде в ньому, окремої ціни немає.
+ *
+ * Свідомо НЕ тягнемо дані з події: payload приходить обрізаним і без наших
+ * похідних полів. Подія — це лише сигнал «щось змінилось», далі звичайне
+ * перечитання. Так не зʼявляється другий шлях побудови стану, який неминуче
+ * розійшовся б із першим.
+ *
+ * Повертає функцію відписки. Якщо realtime недоступний (політики, план) —
+ * мовчки нічого не робить: кнопка «оновити» лишається на місці.
+ */
+export function watchClientData(onChange: () => void): () => void {
+  if (!CONFIGURED) return () => {};
+  try {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    // Дебаунс: одна дія клієнта = кілька рядкових подій, перечитувати на кожну
+    // немає сенсу.
+    const ping = () => { if (timer) clearTimeout(timer); timer = setTimeout(onChange, 1200); };
+    const ch = supabase
+      .channel('weexp-admin')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'diagnostics' }, ping)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, ping)
+      .subscribe();
+    return () => { if (timer) clearTimeout(timer); void supabase.removeChannel(ch); };
+  } catch { return () => {}; }
+}
+
 /** Повний запис одного клієнта — вантажимо при відкритті картки, не списком. */
 export async function loadDiagnosticFor(userId: string): Promise<AdminRow | null> {
   if (!CONFIGURED) return null;

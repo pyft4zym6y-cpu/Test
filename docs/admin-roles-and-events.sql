@@ -139,3 +139,16 @@ begin
 end;
 $$;
 -- select cron.schedule('weexp-prune-events', '0 3 * * *', $$select public.weexp_prune_events()$$);
+
+-- ── 6. Живе оновлення адмінки (realtime) ───────────────────────────────────
+-- Адмінка підписується на зміни diagnostics і leads, щоб дошка оновлювалась
+-- сама, а не тільки по кнопці «↻ оновити». Публікація потрібна лише для
+-- СИГНАЛУ: самі дані панель перечитує звичайним запитом під своїми RLS —
+-- тобто підписка нічого зайвого не відкриває.
+do $$
+begin
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime') then
+    begin alter publication supabase_realtime add table public.diagnostics; exception when duplicate_object then null; end;
+    begin alter publication supabase_realtime add table public.leads;       exception when duplicate_object then null; end;
+  end if;
+end $$;
