@@ -25,7 +25,9 @@ COPY portal/ ./portal/
 
 WORKDIR /app/worker
 ENV PORT=8787
-ENV AUDIT_OUT=/app/worker/results
+# Каталог результатов вынесен на постоянный том Railway (Mount path /data).
+# Внутри образа файлы не переживают редеплой — тогда документы прогонов терялись.
+ENV AUDIT_OUT=/data/results
 # Браузер уже в образе Playwright — заново не качаем.
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 EXPOSE 8787

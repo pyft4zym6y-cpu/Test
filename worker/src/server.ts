@@ -2,7 +2,7 @@
  * HTTP-сервер аудитора с консолью оператора. Асинхронные прогоны (очередь),
  * живой лог, история, дашборд-метрики, единый .zip-пакет, ввод T2–T4 файлом.
  *
- * Env: ANTHROPIC_API_KEY, AUDIT_SERVER_TOKEN, PORT (8787), AUDIT_OUT (results), AUDIT_MODEL.
+ * Env: ANTHROPIC_API_KEY, AUDIT_SERVER_TOKEN, PORT (8787), AUDIT_OUT (каталог результатов; на Railway — /data/results, постоянный том), AUDIT_MODEL.
  *
  * Эндпоинты:
  *   GET  /                       — консоль оператора (HTML).
@@ -385,6 +385,11 @@ const server = createServer(async (req, res) => {
 });
 
 server.requestTimeout = 0; server.headersTimeout = 0; server.timeout = 0;
+// Каталог результатов создаём на старте: на Railway это постоянный том (/data),
+// и если он не примонтирован или не пишется — лучше увидеть это в логе старта,
+// чем потерять документы прогона через час работы.
+await mkdir(OUT, { recursive: true }).catch((e: unknown) =>
+  console.error(`ВНИМАНИЕ: каталог результатов ${OUT} недоступен для записи — документы прогонов сохраняться не будут:`, e));
 loadHistory().finally(() => {
   server.listen(PORT, '0.0.0.0', () => console.log(`Аудит-сервер (консоль) на 0.0.0.0:${PORT} · ключ Claude: ${hasKey() ? 'есть' : 'НЕТ'} · прогонов в истории: ${jobs.size}`));
 });
