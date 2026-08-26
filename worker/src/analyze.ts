@@ -61,6 +61,9 @@ export function datasetToPrompt(ds: AuditDataset, engineFactsStr?: string): stri
   // База знаний идёт ПЕРЕД данными обхода: она задаёт рамку — что мы уже знаем,
   // чего нам не дали и какие выводы уже сделаны на прошлых этапах.
   if (ds.knowledge) L.push('\n' + ds.knowledge);
+  // Уровни данных идут СРАЗУ после базы знаний: аудитор должен читать факты
+  // уже зная, какой у каждого источник и чему из этого можно верить.
+  if (ds.evidence) L.push('\n' + ds.evidence);
   if (ds.crux) L.push('\n' + ds.crux);
   L.push('\n' + siteBrief(ds.client, 'КЛИЕНТ'));
   if (ds.competitors.length) {

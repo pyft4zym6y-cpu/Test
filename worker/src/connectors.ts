@@ -126,3 +126,14 @@ export function limitationsText(domains?: string[]): string {
   L.push('Выводы, зависящие от этих источников, помечены как гипотезы.');
   return L.join('\n');
 }
+
+/**
+ * Внешние источники (L3), которые реально готовы по ключам. Именно они дают
+ * данные БЕЗ доступов клиента — и потому доступны всегда, даже когда клиент
+ * не открыл ничего.
+ */
+export function readyExternal(): { id: string; title: string }[] {
+  return connectors()
+    .filter((c) => c.state === 'ready' && !c.internal)
+    .map((c) => ({ id: c.id, title: c.title }));
+}

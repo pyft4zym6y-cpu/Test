@@ -101,6 +101,8 @@ import type { UxUiReport } from './uxui.js';
 import type { PrototypeReport } from './prototype.js';
 import type { BenchmarkReport } from './competitor.js';
 import { renderKnowledge } from './clientKnowledge.js';
+import { buildEvidence, evidenceBlock, levelSummary } from './evidence.js';
+import { readyExternal } from './connectors.js';
 import { cruxBenchmark, cruxToFacts, hasCrux } from './crux.js';
 
 export type AuditOptions = {
@@ -241,7 +243,17 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
     const ds: AuditDataset = {
       tier, request: opts.request ?? '', client, competitors: comps, takenAt: new Date().toISOString(),
       ...(cruxFacts ? { crux: cruxFacts } : {}),
+      // База знаний + разбор её по уровням достоверности. Второе важнее: без
+      // него аудитор не отличает «клиент сказал» от «мы прочитали в его системе»,
+      // а расхождение между ними — это находка, а не помеха.
       ...(opts.knowledge ? { knowledge: renderKnowledge(opts.knowledge) } : {}),
+      ...(() => {
+        const sources = buildEvidence(opts.knowledge as Record<string, unknown> | undefined, readyExternal());
+        if (!sources.length) return {};
+        const n = levelSummary(sources);
+        log(`· уровни данных: L1 ${n.L1} · L2 ${n.L2} · L3 ${n.L3} · слово клиента ${n.C}`);
+        return { evidence: evidenceBlock(sources) };
+      })(),
       ...(prelaunch ? { mode: 'prelaunch' as const, brief: opts.brief || opts.request || '' } : {}),
     };
     const id = `${prelaunch ? 'prelaunch' : slug(site)}-t${tier}-${Date.now()}`;
