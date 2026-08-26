@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   currentUser,
@@ -67,6 +67,9 @@ export function AdminPanel() {
   const [openUser, setOpenUser] = useState<string | null>(null);
   // Повний запис відкритої картки: у списку лежить лише полегшений зріз.
   const [detailRow, setDetailRow] = useState<AdminRow | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  // Свіжий список без того, щоб робити його залежністю ефектів (див. нижче).
+  const rowsRef = useRef<AdminRow[]>([]);
   const [db, setDb] = useState<DbCheck[] | null>(null);   // стан міграцій
   const [more, setMore] = useState(false);   // чи може бути наступна сторінка
   const [loadingMore, setLoadingMore] = useState(false);
@@ -85,7 +88,7 @@ export function AdminPanel() {
   const [projNewFor, setProjNewFor] = useState(''); // підрозділи «Проекти»
 
   const load = () => {
-    listAllDiagnostics().then((rs) => { setRows(rs); setMore(rs.length >= LIST_PAGE); });
+    listAllDiagnostics().then((rs) => { rowsRef.current = rs; setRows(rs); setMore(rs.length >= LIST_PAGE); });
     listLeads().then(setLeads);
     fetch('/api/ga4-site').then((r) => r.json()).then((j: SiteTraffic) => setTraffic(j)).catch(() => setTraffic(null));
   };
@@ -97,19 +100,39 @@ export function AdminPanel() {
     setMore(next.length >= LIST_PAGE);
     setRows((rs) => {
       const seen = new Set((rs || []).map((r) => r.userId));
-      return [...(rs || []), ...next.filter((r) => !seen.has(r.userId))];
+      const merged = [...(rs || []), ...next.filter((r) => !seen.has(r.userId))];
+      rowsRef.current = merged;
+      return merged;
     });
   };
-  // Відкриття картки — це момент, коли потрібен повний запис (документ аудиту,
-  // зрізи бази знань, етапи). У списку його немає навмисно.
+  /**
+   * Відкриття картки — момент, коли потрібен повний запис (документ аудиту,
+   * зрізи бази знань, етапи). У списку його немає навмисно.
+   *
+   * Залежність ТІЛЬКИ від openUser. Раніше сюди входив і `rows`: будь-яке
+   * оновлення списку (а `load()` викликається після кожної дії) підміняло
+   * повний запис обрізаним зрізом зі списку, панелі картки перемонтовувались і
+   * бралися з застарілих пропсів — правки менеджера могли відкотитись.
+   */
   useEffect(() => {
     if (!openUser) { setDetailRow(null); return; }
     let alive = true;
-    const stub = (rows || []).find((r) => r.userId === openUser) || null;
-    setDetailRow(stub);
-    loadDiagnosticFor(openUser).then((full) => { if (alive && full) setDetailRow(full); });
+    setDetailLoading(true);
+    loadDiagnosticFor(openUser).then((full) => {
+      if (!alive) return;
+      setDetailLoading(false);
+      if (full) setDetailRow(full);
+      else setDetailRow(rowsRef.current.find((r) => r.userId === openUser) || null);
+    });
     return () => { alive = false; };
-  }, [openUser, rows]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openUser]);
+  /** Перечитати відкриту картку — після дій, що змінюють саме її. */
+  const reloadDetail = async () => {
+    if (!openUser) return;
+    const full = await loadDiagnosticFor(openUser);
+    if (full) setDetailRow(full);
+  };
   // Хто працює — знає шар даних: усі записи підписуються цим email (журнал дій).
   useEffect(() => { currentUser().then((u) => { setActor(u?.email); setUser(u); setChecking(false); if (u && isManager(u)) { load(); void checkDb().then(setDb); } }); }, []);
   // Esc закриває відкриті шухляди/модалку.
@@ -239,7 +262,7 @@ export function AdminPanel() {
     const res = await setTierStatusFor(userId, tier, status, reason);
     setBusy('');
     if (!res.ok) { toast('Не вдалося: ' + (res.error || ''), 'err'); return; }
-    toast('✓ Статус оновлено'); load();
+    toast('✓ Статус оновлено'); load(); void reloadDetail();
   };
   // Етап 1 закрито явно: раніше «Завершено» ставилось від факту, що клієнту
   // передали хоч один документ — проміжний файл закривав увесь аудит.
@@ -249,7 +272,7 @@ export function AdminPanel() {
     const res = await savePatchFor(userId, { auditClosedAt: new Date().toISOString(), auditClosedBy: user?.email });
     setBusy('');
     if (!res.ok) { toast('Не вдалося: ' + (res.error || ''), 'err'); return; }
-    toast('✓ Етап «Аудит» закрито'); load();
+    toast('✓ Етап «Аудит» закрито'); load(); void reloadDetail();
   };
   // Впровадження закрито → клієнт переходить на супровід (фаза 3), а не зникає
   // з дошки, як було до появи третьої фази.
@@ -265,7 +288,7 @@ export function AdminPanel() {
     const res = await saveProjectsFor(userId, next);
     setBusy('');
     if (!res.ok) { toast('Не вдалося: ' + (res.error || ''), 'err'); return; }
-    toast('✓ Впровадження закрито — клієнт на супроводі'); load();
+    toast('✓ Впровадження закрито — клієнт на супроводі'); load(); void reloadDetail();
   };
   // Проект впровадження — наступний крок ПІСЛЯ закритого аудиту, не побічний
   // ефект видачі доступу.
@@ -291,7 +314,7 @@ export function AdminPanel() {
     const res = await clearTierStatusFor(userId, tier);
     setBusy('');
     if (!res.ok) { toast('Не вдалося: ' + (res.error || ''), 'err'); return; }
-    toast('✓ Статус оновлено'); load();
+    toast('✓ Статус оновлено'); load(); void reloadDetail();
   };
   const openFile = async (path: string) => { const url = await signTierFile(path); if (url) window.open(url, '_blank'); };
   const moveLead = async (id: string, status: LeadStatus) => {
@@ -368,7 +391,8 @@ export function AdminPanel() {
     const res = await deleteDiagnostics(userId);
     setBusy('');
     if (!res.ok) { toast('Не вдалося видалити: ' + (res.error || ''), 'err'); return; }
-    toast('✓ Клієнта видалено'); setRows((rs) => (rs || []).filter((x) => x.userId !== userId));
+    toast(res.filesLeft ? `✓ Клієнта видалено · ${res.filesLeft} файл(ів) лишились у сховищі — приберіть вручну` : '✓ Клієнта видалено разом з його файлами', res.filesLeft ? 'err' : 'ok');
+    setRows((rs) => (rs || []).filter((x) => x.userId !== userId));
     setOpenUser(null);
   };
 
@@ -460,6 +484,7 @@ export function AdminPanel() {
 
       <main className="adm-main">
         {/* ── Повна сторінка клієнта (замість бокового drawer) ── */}
+        {openUser && detailLoading && !detail && <div className="adm-boot mono">Завантажуємо картку…</div>}
         {detail && <Suspense fallback={null}><UserDetail row={detail} leads={leads} canDelete={can(user, 'delete_data')} selfEmail={user.email} onClose={() => setOpenUser(null)} openFile={openFile} onStatus={setStatus} onDelete={removeUser} busy={busy} /></Suspense>}
         {/* ── Дашборд ── */}
         {!detail && curTab === 'overview' && (

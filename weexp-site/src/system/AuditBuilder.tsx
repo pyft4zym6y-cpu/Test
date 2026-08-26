@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   loadTemplate, saveTemplate, uid, Q_TYPES, CLIENT_ROLES, frameworkFor, customerArchetypeBlock,
   type AuditTemplate, type Block, type Question, type QType,
@@ -82,6 +82,16 @@ ${blocks}
 
 export function AuditBuilder() {
   const [tpl, setTpl] = useState<AuditTemplate | null>(null);
+  // Конструктор зберігається лише кнопкою. Без цієї позначки закрита вкладка
+  // мовчки забирала з собою всю роботу над шаблоном.
+  const dirty = useRef(false);
+  const markDirty = () => { dirty.current = true; };
+  useEffect(() => {
+    const onLeave = (e: BeforeUnloadEvent) => { if (dirty.current) { e.preventDefault(); e.returnValue = ''; } };
+    window.addEventListener('beforeunload', onLeave);
+    return () => window.removeEventListener('beforeunload', onLeave);
+  }, []);
+
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
 
@@ -93,7 +103,7 @@ export function AuditBuilder() {
 
   if (!tpl) return <section className="adm-sec"><p className="mc-msg mono">Завантаження шаблону…</p></section>;
 
-  const patch = (fn: (t: AuditTemplate) => AuditTemplate) => setTpl((t) => (t ? fn(structuredClone(t)) : t));
+  const patch = (fn: (t: AuditTemplate) => AuditTemplate) => { markDirty(); setTpl((t) => (t ? fn(structuredClone(t)) : t)); };
   const move = <T,>(arr: T[], i: number, dir: -1 | 1) => { const j = i + dir; if (j < 0 || j >= arr.length) return arr; [arr[i], arr[j]] = [arr[j], arr[i]]; return arr; };
 
   const addBlock = () => patch((t) => { t.blocks.push({ key: uid('b'), title: 'Новий блок', questions: [] }); return t; });
@@ -121,16 +131,17 @@ export function AuditBuilder() {
 
   const loadFramework = () => {
     if (!confirm('Замінити поточні блоки повним фреймворком: 12 модулів питань + блок «Доступи» (21 система з каталогу) + блок «Файли» (вхідні дані під пакет документів)? Поточні незбережені блоки буде втрачено. Збереження — окремою кнопкою «Зберегти нову версію».')) return;
-    setTpl((t) => ({ ...frameworkFor('full'), version: t?.version || 1 }));
+    markDirty(); setTpl((t) => ({ ...frameworkFor('full'), version: t?.version || 1 }));
     setMsg('Завантажено повний фреймворк: 12 модулів + доступи + файли. Перевірте й натисніть «Зберегти нову версію».');
   };
 
   const save = async () => {
     setBusy(true); setMsg('');
-    const next = { ...tpl, version: (tpl.version || 1) + 1 };
-    const r = await saveTemplate(next);
+    // Номер версії призначає saveTemplate за станом бази — клієнт його не вигадує.
+    const r = await saveTemplate(tpl);
+    const next = { ...tpl, version: r.version ?? tpl.version };
     setBusy(false);
-    if (r.ok) { setTpl(next); setMsg(r.local ? `Збережено локально (v${next.version}). З Supabase — нова активна версія.` : `Збережено · активна версія v${next.version}.`); }
+    if (r.ok) { dirty.current = false; setTpl(next); setMsg(r.error ? `⚠ ${r.error}` : r.local ? `Збережено локально (v${next.version}). З Supabase — нова активна версія.` : `Збережено · активна версія v${next.version}.`); }
     else setMsg('Помилка: ' + (r.error || ''));
   };
 

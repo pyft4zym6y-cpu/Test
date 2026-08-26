@@ -21,51 +21,24 @@ import { uid } from '../auditTemplate';
 
 import '../system.css';
 import '../cabinet.css';
-import { gMonthLabel, type SaveState } from './shared';
+import { gMonthLabel, SaveBadge } from './shared';
+import { useAutosave } from './useAutosave';
 
 export function ProjectsManager({ userId, initial, code, company }: { userId: string; initial: Project[]; code?: string; company?: string }) {
   const [list, setList] = useState<Project[]>(initial.length ? initial : []);
   const [active, setActive] = useState(0);
-  const [state, setState] = useState<SaveState>('idle');
-  const [savedAt, setSavedAt] = useState('');
-  const [msg, setMsg] = useState('');
+  const auto = useAutosave<Project[]>((v) => saveProjectsFor(userId, v), 1200);
   const idx = Math.min(active, Math.max(0, list.length - 1));
   const cur = list[idx];
+  /** Єдина точка зміни списку: стан + автозбереження разом, без ефекту на [list]. */
+  const apply = (next: Project[]) => { setList(next); auto.touch(next); };
 
-  // Автозбереження: рефи тримають найсвіжіший стан для дебаунса й флешу при демонтажі.
-  const latest = useRef(list); latest.current = list;
-  const dirty = useRef(false);
-  const first = useRef(true);
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-
-  const doSave = async () => {
-    setState('saving'); setMsg('');
-    const r = await saveProjectsFor(userId, latest.current);
-    if (r.ok) { dirty.current = false; setState('saved'); setSavedAt(new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })); }
-    else { setState('error'); setMsg(r.error || 'Помилка збереження'); }
-  };
-
-  // При кожній зміні list — позначаємо «незбережено» і плануємо автозбереження (дебаунс 1.2с).
-  useEffect(() => {
-    if (first.current) { first.current = false; return; }
-    dirty.current = true; setState('dirty');
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => { void doSave(); }, 1200);
-    return () => { if (timer.current) clearTimeout(timer.current); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [list]);
-  // Флеш при демонтажі (перехід між клієнтами/розділами) — щоб зміни не губилися.
-  useEffect(() => () => { if (dirty.current) void saveProjectsFor(userId, latest.current); }, [userId]);
-
-  const patchCur = (p: Project) => setList((l) => l.map((x, i) => (i === idx ? p : x)));
-  const addProject = () => { const np = emptyProject(); np.title = `Проект ${list.length + 1}`; setList([...list, np]); setActive(list.length); };
-  const delProject = () => { if (!cur) return; if (!confirm('Видалити цей проект?')) return; const nl = list.filter((_, i) => i !== idx); setList(nl); setActive(0); };
+  const patchCur = (p: Project) => apply(list.map((x, i) => (i === idx ? p : x)));
+  const addProject = () => { const np = emptyProject(); np.title = `Проект ${list.length + 1}`; apply([...list, np]); setActive(list.length); };
+  const delProject = () => { if (!cur) return; if (!confirm('Видалити цей проект?')) return; const nl = list.filter((_, i) => i !== idx); apply(nl); setActive(0); };
 
   const pubN = list.filter((x) => x.published).length;
-  const stateLabel = state === 'saving' ? '💾 Збереження…'
-    : state === 'dirty' ? '● Є незбережені зміни'
-    : state === 'saved' ? `✓ Збережено ${savedAt} · ${list.length} проект(и), ${pubN} видно клієнту`
-    : state === 'error' ? `✕ ${msg}` : '';
+  const savedNote = `${list.length} проект(и), ${pubN} видно клієнту`;
 
   return (
     <div className="pj-mgr">
@@ -83,8 +56,9 @@ export function ProjectsManager({ userId, initial, code, company }: { userId: st
           <div className="pj-ed-foot">
             <button className="mc-btn bad" onClick={delProject}>Видалити проект</button>
             <div className="pj-mgr-save">
-              {stateLabel && <span className={`mono pj-save-state pj-save-${state}`}>{stateLabel}</span>}
-              <button className="mc-btn ok" onClick={() => { if (timer.current) clearTimeout(timer.current); void doSave(); }} disabled={state === 'saving'}>{state === 'saving' ? 'Зберігаємо…' : 'Зберегти зараз'}</button>
+              <SaveBadge state={auto.state} error={auto.error} savedAt={auto.savedAt} onRetry={auto.flush} />
+              {auto.state === 'saved' && <span className="mono adm-hint">{savedNote}</span>}
+              <button className="mc-btn ok" onClick={() => void auto.flush()} disabled={auto.state === 'saving'}>{auto.state === 'saving' ? 'Зберігаємо…' : 'Зберегти зараз'}</button>
             </div>
           </div>
         </>

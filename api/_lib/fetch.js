@@ -1,3 +1,4 @@
+import { requireStaff } from './auth.js';
 // Vercel serverless: качает HTML чужого сайта для L0-скрининга (обход CORS браузера).
 // GET /api/fetch?url=https://example.com — только http(s), максимум 400 КБ HTML.
 //
@@ -43,6 +44,9 @@ async function assertPublic(u) {
 }
 
 export async function fetchPage(req, res) {
+  // SSRF закрито нижче, але це все одно завантажувач довільних URL нашим IP:
+  // відкритий — стає безкоштовним проксі для чужого сканування.
+  if (!(await requireStaff(req, res))) return;
   const url = req.query.url;
   if (!url || !/^https?:\/\//i.test(url)) {
     res.status(400).json({ error: 'Нужен параметр url (http/https)' });

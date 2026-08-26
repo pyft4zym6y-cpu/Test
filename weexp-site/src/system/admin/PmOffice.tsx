@@ -12,41 +12,26 @@ import { uid } from '../auditTemplate';
 
 import '../system.css';
 import '../cabinet.css';
-import { type SaveState } from './shared';
+import { SaveBadge } from './shared';
+import { useAutosave } from './useAutosave';
 
 export function PmOffice() {
   const [dir, setDir] = useState<PmDirectory | null>(null);
-  const [msg, setMsg] = useState('');
-  const [state, setState] = useState<SaveState>('idle');
-  const [savedAt, setSavedAt] = useState('');
-  const latest = useRef<PmDirectory | null>(dir); latest.current = dir;
-  const dirtyRef = useRef(false);
-  const loaded = useRef(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  useEffect(() => { loadPmDirectory().then(setDir); }, []);
   const persist = (d: PmDirectory) => savePmDirectory({
     specialists: (d.specialists || []).filter((s) => s.name.trim() || s.role.trim()),
     roleRates: (d.roleRates || []).filter((s) => s.role.trim()),
     knowledge: d.knowledge || '', presets: d.presets || [],
   });
-  const doSave = async () => {
-    const d = latest.current; if (!d) return;
-    setState('saving'); setMsg('');
-    const r = await persist(d);
-    if (r.ok) { dirtyRef.current = false; setState('saved'); setSavedAt(new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })); }
-    else { setState('error'); setMsg(r.error || 'Помилка збереження'); }
-  };
-  // Автозбереження довідника: дебаунс 1.2с; перший стан після завантаження не зберігаємо.
+  const auto = useAutosave<PmDirectory>(persist, 1200);
+  const loaded = useRef(false);
+  useEffect(() => { loadPmDirectory().then(setDir); }, []);
+  // Автозбереження довідника; перший стан після завантаження не зберігаємо.
   useEffect(() => {
     if (!dir) return;
     if (!loaded.current) { loaded.current = true; return; }
-    dirtyRef.current = true; setState('dirty');
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => { void doSave(); }, 1200);
-    return () => { if (timer.current) clearTimeout(timer.current); };
+    auto.touch(dir);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dir]);
-  useEffect(() => () => { if (dirtyRef.current && latest.current) void persist(latest.current); }, []);
   if (!dir) return <section className="adm-sec"><h1 className="sysx-display adm-h1">Проект-офіс</h1><p className="mono adm-empty">Завантаження…</p></section>;
 
   const specs = dir.specialists || [], roles = dir.roleRates || [];
@@ -54,10 +39,7 @@ export function PmOffice() {
   const setSpec = (i: number, k: keyof PmSpecialist, v: unknown) => setDir({ ...dir, specialists: specs.map((s, j) => (j === i ? { ...s, [k]: v } : s)) });
   const setRole = (i: number, k: keyof PmRoleRate, v: unknown) => setDir({ ...dir, roleRates: roles.map((s, j) => (j === i ? { ...s, [k]: v } : s)) });
   const presets = dir.presets || [];
-  const stateLabel = state === 'saving' ? '💾 Збереження…'
-    : state === 'dirty' ? '● Є незбережені зміни'
-    : state === 'saved' ? `✓ Збережено ${savedAt}`
-    : state === 'error' ? `✕ ${msg}` : '';
+
 
   return (
     <section className="adm-sec">
@@ -113,8 +95,8 @@ export function PmOffice() {
       </div>
 
       <div className="pj-ed-foot" style={{ marginTop: 16 }}>
-        {stateLabel && <span className={`mono pj-save-state pj-save-${state}`}>{stateLabel}</span>}
-        <button className="mc-btn ok" onClick={() => { if (timer.current) clearTimeout(timer.current); void doSave(); }} disabled={state === 'saving'}>{state === 'saving' ? 'Зберігаємо…' : 'Зберегти зараз'}</button>
+        <SaveBadge state={auto.state} error={auto.error} savedAt={auto.savedAt} onRetry={auto.flush} />
+        <button className="mc-btn ok" onClick={() => void auto.flush()} disabled={auto.state === 'saving'}>{auto.state === 'saving' ? 'Зберігаємо…' : 'Зберегти зараз'}</button>
       </div>
     </section>
   );

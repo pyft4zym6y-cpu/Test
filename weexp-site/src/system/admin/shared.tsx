@@ -286,3 +286,21 @@ export function Shell({ children }: { children: React.ReactNode }) {
 export function Block({ title, children }: { title: string; children: React.ReactNode }) {
   return <div className="adm-block"><span className="sysx-kick">{title}</span>{children}</div>;
 }
+
+/**
+ * Однаковий індикатор збереження для всіх редакторів: стан, причина помилки і
+ * кнопка «Повторити». Раніше кожен редактор показував свій «✕» без пояснень.
+ */
+export function SaveBadge({ state, error, savedAt, onRetry }: { state: SaveState; error?: string; savedAt?: string; onRetry?: () => void }) {
+  if (state === 'idle') return null;
+  const txt = state === 'saving' ? '💾 Збереження…'
+    : state === 'dirty' ? '● Є незбережені зміни'
+    : state === 'saved' ? `✓ Збережено${savedAt ? ' ' + savedAt : ''}`
+    : `✕ ${error || 'Не збережено'}`;
+  return (
+    <span className={`pj-save-state pj-save-${state}`} role="status" aria-live="polite">
+      {txt}
+      {state === 'error' && onRetry && <button className="mc-btn sm ghost adm-retry" onClick={onRetry}>Повторити</button>}
+    </span>
+  );
+}

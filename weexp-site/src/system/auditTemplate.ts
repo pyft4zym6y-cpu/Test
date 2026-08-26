@@ -464,14 +464,36 @@ export async function loadTemplate(): Promise<AuditTemplate> {
   return DEFAULT_TEMPLATE;
 }
 
-export async function saveTemplate(t: AuditTemplate): Promise<{ ok: boolean; error?: string; local?: boolean }> {
-  const next: AuditTemplate = { ...t, version: (t.version || 1) };
-  try { localStorage.setItem(LS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
-  if (!CONFIGURED) return { ok: true, local: true };
+/**
+ * Зберегти шаблон новою активною версією.
+ *
+ * Раніше порядок був: спочатку зняти `active` з УСІХ версій, потім вставити
+ * нову. Якщо друга дія падала (RLS, мережа, конфлікт), у системі не лишалося
+ * жодної активної версії — і анкета ламалась одразу в усіх клієнтів.
+ * Тепер навпаки: спершу вставляємо нову версію, і лише переконавшись, що вона
+ * лягла, знімаємо прапорець зі старих. Найгірший результат — дві активні
+ * версії на секунду, а не жодної.
+ *
+ * Номер версії беремо з БАЗИ, а не `+1` на клієнті: два адміни, що редагували
+ * одночасно, отримували однаковий номер, і другий мовчки затирав першого.
+ */
+export async function saveTemplate(t: AuditTemplate): Promise<{ ok: boolean; error?: string; local?: boolean; version?: number }> {
+  try { localStorage.setItem(LS_KEY, JSON.stringify({ ...t })); } catch { /* ignore */ }
+  if (!CONFIGURED) return { ok: true, local: true, version: t.version };
   try {
-    // Нова версія активна; попередні лишаються (заморожені для вже початих аудитів).
-    await supabase.from('audit_template').update({ active: false }).eq('active', true);
-    const { error } = await supabase.from('audit_template').upsert({ version: next.version, schema: { blocks: next.blocks }, active: true });
-    return error ? { ok: false, error: error.message } : { ok: true };
+    const { data: top } = await supabase.from('audit_template').select('version').order('version', { ascending: false }).limit(1);
+    const nextVersion = Math.max(Number(top?.[0]?.version || 0), Number(t.version || 0)) + 1;
+
+    const { error: insErr } = await supabase.from('audit_template')
+      .insert({ version: nextVersion, schema: { blocks: t.blocks }, active: true });
+    if (insErr) return { ok: false, error: insErr.message };
+
+    // Нова версія вже активна — тепер безпечно прибрати прапорець зі старих.
+    const { error: offErr } = await supabase.from('audit_template')
+      .update({ active: false }).eq('active', true).neq('version', nextVersion);
+    if (offErr) {
+      return { ok: true, version: nextVersion, error: `Версію v${nextVersion} збережено, але старі лишились активними: ${offErr.message}` };
+    }
+    return { ok: true, version: nextVersion };
   } catch (e) { return { ok: false, error: String(e) }; }
 }

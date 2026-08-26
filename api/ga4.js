@@ -108,6 +108,7 @@ async function listProperties(access) {
 const back = (res, qs) => { res.statusCode = 302; res.setHeader('Location', `/cabinet?section=docs&${qs}`); res.end(); };
 
 import { ga4Site } from './_lib/ga4-site.js';
+import { requireSelfOrStaff, requireStaff } from './_lib/auth.js';
 
 export default async function handler(req, res) {
   // /api/ga4-site → rewrite сюди з ?fn=site (ліміт 12 функцій Hobby).
@@ -118,6 +119,25 @@ export default async function handler(req, res) {
   const CID = process.env.GOOGLE_OAUTH_CLIENT_ID;
   const CSECRET = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
   const store = sb();
+
+  /* ── Хто зве ───────────────────────────────────────────────────────────────
+     Ендпоінт довго жив без жодної перевірки: за одним лише ?u=<uuid> він
+     віддавав виторг і сесії клієнта з його GA4, email підключеного Google-
+     акаунта, перелік property та сайтів GSC — і, гірше, дозволяв ВІДКЛЮЧИТИ
+     інтеграцію клієнта (disconnect відкликає токен). Єдиним захистом була
+     складність вгадати uuid.
+     Виняток один — OAuth-callback: його викликає Google, сесії там немає, а
+     достовірність підтверджує підписаний state. */
+  const isOauthCallback = Boolean(q.code && q.state && !action);
+  if (!isOauthCallback) {
+    // Дії з даними конкретного користувача — сам користувач або команда.
+    if (['status', 'disconnect', 'pull', 'pull_gsc', 'oauth_url'].includes(action)) {
+      if (!(await requireSelfOrStaff(req, res, String(q.u || '')))) return;
+    } else {
+      // Решта (psi та все нове) — лише команда: це наш зовнішній виклик за гроші/квоту.
+      if (!(await requireStaff(req, res))) return;
+    }
+  }
 
   /* ── OAuth-callback: Google повертає ?code&state на чистий /api/ga4 ── */
   if (q.code && q.state && !action) {
@@ -154,7 +174,12 @@ export default async function handler(req, res) {
     }
   }
 
-  if (action === 'oauth_start') {
+  /* Раніше тут був oauth_start: GET-редірект, який брав `u` із адреси. Оскільки
+     це навігація, заголовок сесії до нього не доїде — тобто перевірити, що
+     людина має право привʼязувати саме цей акаунт, було неможливо, і будь-хто
+     міг ініціювати привʼязку до чужого uid. Тепер два кроки: авторизований
+     виклик віддає посилання, і вже за ним переходить браузер. */
+  if (action === 'oauth_url') {
     if (!CID || !CSECRET) { res.status(200).json({ error: 'not_configured', hint: 'Додайте GOOGLE_OAUTH_CLIENT_ID і GOOGLE_OAUTH_CLIENT_SECRET у Vercel; redirect URI: https://weexp.agency/api/ga4' }); return; }
     const u = String(q.u || '');
     if (!u) { res.status(400).json({ error: 'u required' }); return; }
@@ -162,7 +187,7 @@ export default async function handler(req, res) {
       client_id: CID, redirect_uri: redirectUri(req), response_type: 'code', scope: OAUTH_SCOPE,
       access_type: 'offline', prompt: 'consent', include_granted_scopes: 'true', state: signState(u, CSECRET),
     });
-    res.statusCode = 302; res.setHeader('Location', url); res.end(); return;
+    res.status(200).json({ ok: true, url }); return;
   }
 
   if (action === 'status') {

@@ -4,11 +4,17 @@
 // Env: ANTHROPIC_API_KEY (обязательно), AQC_MODEL (по умолчанию claude-sonnet-5).
 import { interview } from './_lib/interview.js';
 import { fetchPage } from './_lib/fetch.js';
+import { requireStaff } from './_lib/auth.js';
 
 export default async function handler(req, res) {
   // /api/interview і /api/fetch → rewrite сюди з ?fn=… (ліміт 12 функцій Hobby).
   if (req.query?.fn === 'interview') return interview(req, res);
   if (req.query?.fn === 'fetch') return fetchPage(req, res);
+
+  // Сам /api/aqc лишається задеплоєною функцією й доступний напряму, тому
+  // rewrite'и його не захищають: без цієї перевірки будь-хто з інтернету палив
+  // наш ключ Anthropic одним POST.
+  if (!(await requireStaff(req, res))) return;
 
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) {

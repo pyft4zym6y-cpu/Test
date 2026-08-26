@@ -5,6 +5,7 @@ import {
   loadAuditAnswers,
   saveAssessmentFor,
   savePatchFor,
+  authHeaders,
   uploadAdminFile,
   deleteAdminFile,
   aiScoreAudit,
@@ -24,7 +25,8 @@ import type { Block as TplBlock } from '../auditTemplate';   // тип блок�
 import { PACK_ARTIFACTS, PACK_REPORTS, chaptersOf, TOTAL_CHAPTERS } from '@/data/auditPack';
 import '../system.css';
 import '../cabinet.css';
-import { Block, rel, type SaveState } from './shared';
+import { Block, SaveBadge, rel } from './shared';
+import { useAutosave } from './useAutosave';
 import { genAccessMap, genDoD, genGantt, genHandover, genPlan90 } from './docs';
 
 export function PackChecklist({ userId, email, rec }: { userId: string; email: string; rec: DiagRecord }) {
@@ -37,7 +39,13 @@ export function PackChecklist({ userId, email, rec }: { userId: string; email: s
     const next: PackState['st'] = cur === undefined ? 'ready' : cur === 'ready' ? 'delivered' : undefined;
     const nm = { ...map, [id]: { st: next, at: new Date().toISOString() } };
     if (next === undefined) delete nm[id];
-    setMap(nm); void savePatchFor(userId, { packChecklist: nm });
+    const prev = map;
+    setMap(nm);
+    void savePatchFor(userId, { packChecklist: nm }).then((r) => {
+      // Відкат: без нього галочка «передано» лишалась на екрані навіть тоді,
+      // коли запис не пройшов, і пакет вважався зданим помилково.
+      if (!r.ok) { setMap(prev); toast('Не збережено: ' + (r.error || ''), 'err'); }
+    });
   };
   const GEN: Record<string, (() => void) | undefined> = {
     a02: () => genAccessMap(rec, email),
@@ -85,14 +93,23 @@ export function AdminFiles({ userId, initial, sharedInitial, author, openFile }:
   const [shared, setShared] = useState<SharedDoc[]>(sharedInitial || []);
   const [kind, setKind] = useState<AdminFile['kind']>('data');
   const [busy, setBusy] = useState('');
-  const persist = (next: AdminFile[]) => { setList(next); void savePatchFor(userId, { adminFiles: next }); };
+  const persist = async (next: AdminFile[]) => {
+    const prev = list;
+    setList(next);
+    const r = await savePatchFor(userId, { adminFiles: next });
+    if (!r.ok) { setList(prev); toast('Список файлів не збережено: ' + (r.error || ''), 'err'); }
+  };
   const isShared = (p: string) => shared.some((d) => d.path === p);
   const toggleShare = (f: AdminFile) => {
     const next = isShared(f.path)
       ? shared.filter((d) => d.path !== f.path)
       : [...shared, { id: f.path, title: f.name, path: f.path, at: new Date().toISOString(), by: author }];
-    setShared(next); void savePatchFor(userId, { sharedDocs: next });
-    toast(isShared(f.path) ? 'Прибрано з кабінету клієнта' : '✓ Поділилися: клієнт бачить документ у розділі «Документи»');
+    const prev = shared; const wasShared = isShared(f.path);
+    setShared(next);
+    void savePatchFor(userId, { sharedDocs: next }).then((r) => {
+      if (!r.ok) { setShared(prev); toast('Не збережено: ' + (r.error || ''), 'err'); return; }
+      toast(wasShared ? 'Прибрано з кабінету клієнта' : '✓ Поділилися: клієнт бачить документ у розділі «Документи»');
+    });
   };
   const onPick = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []); e.target.value = '';
@@ -107,7 +124,14 @@ export function AdminFiles({ userId, initial, sharedInitial, author, openFile }:
     setBusy('');
     if (added.length) { persist([...added, ...list]); toast(`✓ Додано файлів: ${added.length}`); }
   };
-  const del = async (f: AdminFile) => { if (!confirm(`Видалити «${f.name}»?`)) return; setBusy(f.path); await deleteAdminFile(f.path); setBusy(''); persist(list.filter((x) => x.path !== f.path)); };
+  const del = async (f: AdminFile) => {
+    if (!confirm(`Видалити «${f.name}»?`)) return;
+    setBusy(f.path);
+    const r = await deleteAdminFile(f.path);
+    setBusy('');
+    if (!r.ok) { toast('Файл не видалено зі сховища: ' + (r.error || ''), 'err'); return; }
+    await persist(list.filter((x) => x.path !== f.path));
+  };
   return (
     <div className="adm-afiles">
       <div className="adm-afiles-add">
@@ -169,22 +193,10 @@ export function ModuleScoring({ userId, initial, code, rec }: { userId: string; 
   const [map, setMap] = useState<Record<string, ModuleScore>>(initial || {});
   const [open, setOpen] = useState<string | null>(null);
   const [ai, setAi] = useState(false);
-  const [state, setState] = useState<SaveState>('idle');
-  const [savedAt, setSavedAt] = useState('');
-  const latest = useRef(map); latest.current = map;
-  const dirty = useRef(false); const first = useRef(true);
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const auto = useAutosave<Record<string, ModuleScore>>((v) => saveAssessmentFor(userId, v), 1200);
   useEffect(() => { loadTemplate().then((t) => setMods(t.blocks)); }, []);
-  const doSave = async () => { setState('saving'); const r = await saveAssessmentFor(userId, latest.current); if (r.ok) { dirty.current = false; setState('saved'); setSavedAt(new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })); } else { setState('error'); } };
-  useEffect(() => {
-    if (first.current) { first.current = false; return; }
-    dirty.current = true; setState('dirty');
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => { void doSave(); }, 1200);
-    return () => { if (timer.current) clearTimeout(timer.current); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map]);
-  useEffect(() => () => { if (dirty.current) void saveAssessmentFor(userId, latest.current); }, [userId]);
+  /** Єдина точка зміни оцінок — щоб автозбереження не залежало від ефекту на [map]. */
+  const apply = (next: Record<string, ModuleScore>) => { setMap(next); auto.touch(next); };
 
   const aiDraft = async () => {
     if (!mods) return;
@@ -195,29 +207,27 @@ export function ModuleScoring({ userId, initial, code, rec }: { userId: string; 
       const r = await aiScoreAudit({ modules: mods.map((b) => ({ key: b.key, title: b.title })), answers, company: rec.company, express: rec.express });
       if (r.error || !r.scores) { toast('AI: ' + (r.error || 'порожньо'), 'err'); setAi(false); return; }
       // Заповнюємо ЛИШЕ порожні поля — правки аудитора не перетираємо.
-      setMap((m) => {
-        const next = { ...m };
-        for (const [k, s] of Object.entries(r.scores!)) {
-          const cur = next[k] || {};
-          next[k] = {
-            score: cur.score ?? s.score, state: cur.state || s.state, gap: cur.gap || s.gap,
-            rec: cur.rec || s.rec, impact: cur.impact || s.impact, priority: cur.priority || s.priority,
-            evidence: cur.evidence, owner: cur.owner, expected: cur.expected,
-          };
-        }
-        return next;
-      });
+      const next = { ...map };
+      for (const [k, sc] of Object.entries(r.scores!)) {
+        const cur = next[k] || {};
+        next[k] = {
+          score: cur.score ?? sc.score, state: cur.state || sc.state, gap: cur.gap || sc.gap,
+          rec: cur.rec || sc.rec, impact: cur.impact || sc.impact, priority: cur.priority || sc.priority,
+          evidence: cur.evidence, owner: cur.owner, expected: cur.expected,
+        };
+      }
+      apply(next);
       toast('✓ AI-чернетку оцінки складено — перевірте й доопрацюйте');
     } catch (e) { toast('AI-помилка: ' + String(e), 'err'); }
     setAi(false);
   };
 
   if (!mods) return <p className="mono adm-empty">Завантаження модулів…</p>;
-  const set = (k: string, patch: Partial<ModuleScore>) => setMap((m) => ({ ...m, [k]: { ...m[k], ...patch } }));
+  const set = (k: string, patch: Partial<ModuleScore>) => apply({ ...map, [k]: { ...map[k], ...patch } });
   const scored = mods.filter((b) => (map[b.key]?.score ?? null) !== null && map[b.key]?.score !== undefined);
   const avg = scored.length ? Math.round(scored.reduce((n, b) => n + (map[b.key]!.score || 0), 0) / scored.length) : null;
   const p1 = mods.filter((b) => map[b.key]?.priority === 'P1').length;
-  const label = state === 'saving' ? '💾 Збереження…' : state === 'dirty' ? '● Незбережено' : state === 'saved' ? `✓ ${savedAt}` : state === 'error' ? '✕ помилка' : '';
+
 
   return (
     <div className="adm-score">
@@ -225,7 +235,7 @@ export function ModuleScoring({ userId, initial, code, rec }: { userId: string; 
         <span>Загальна зрілість: <b>{avg != null ? `${avg}/100` : '—'}</b></span>
         <span>Оцінено: <b>{scored.length}/{mods.length}</b></span>
         <span>P1: <b>{p1}</b></span>
-        {label && <span className={`pj-save-state pj-save-${state}`}>{label}</span>}
+        <SaveBadge state={auto.state} error={auto.error} savedAt={auto.savedAt} onRetry={auto.flush} />
         <button className="mc-btn ai" disabled={ai} onClick={aiDraft} title="AI-чернетка оцінки з даних клієнта (заповнює лише порожні поля)" style={{ marginLeft: 'auto' }}>{ai ? '🪄 Думаю…' : '🪄 AI-чернетка'}</button>
       </div>
       {mods.map((b) => {
@@ -283,7 +293,7 @@ export function GaPreview({ userId, siteUrl }: { userId: string; siteUrl?: strin
   const check = async () => {
     setBusy('status'); setData(null);
     try {
-      const j: GaStatus = await (await fetch(`/api/ga4?action=status&u=${encodeURIComponent(userId)}`)).json();
+      const j: GaStatus = await (await fetch(`/api/ga4?action=status&u=${encodeURIComponent(userId)}`, { headers: await authHeaders() })).json();
       setSt(j);
       if (j.connected && (j.properties || []).length && !prop) setProp(String((j.properties || [])[0].id));
       if (j.connected && (j.sites || []).length && !site) setSite((j.sites || [])[0].url);
@@ -293,21 +303,21 @@ export function GaPreview({ userId, siteUrl }: { userId: string; siteUrl?: strin
   const pull = async () => {
     if (!prop) return;
     setBusy('pull');
-    try { setData(await (await fetch(`/api/ga4?action=pull&u=${encodeURIComponent(userId)}&property=${prop}`)).json()); }
+    try { setData(await (await fetch(`/api/ga4?action=pull&u=${encodeURIComponent(userId)}&property=${prop}`, { headers: await authHeaders() })).json()); }
     catch { setData({ error: 'network' }); }
     setBusy('');
   };
   const pullGsc = async () => {
     if (!site) return;
     setBusy('gsc');
-    try { setGsc(await (await fetch(`/api/ga4?action=pull_gsc&u=${encodeURIComponent(userId)}&site=${encodeURIComponent(site)}`)).json()); }
+    try { setGsc(await (await fetch(`/api/ga4?action=pull_gsc&u=${encodeURIComponent(userId)}&site=${encodeURIComponent(site)}`, { headers: await authHeaders() })).json()); }
     catch { setGsc({ error: 'network' }); }
     setBusy('');
   };
   const pullPsi = async (strategy: 'mobile' | 'desktop') => {
     if (!psiUrl) return;
     setBusy('psi');
-    try { setPsi(await (await fetch(`/api/ga4?action=psi&url=${encodeURIComponent(psiUrl)}&strategy=${strategy}`)).json()); }
+    try { setPsi(await (await fetch(`/api/ga4?action=psi&url=${encodeURIComponent(psiUrl)}&strategy=${strategy}`, { headers: await authHeaders() })).json()); }
     catch { setPsi({ error: 'network' }); }
     setBusy('');
   };

@@ -5,7 +5,8 @@
 //
 // ВАЖЛИВО: service-role ключ живе лише тут (сервер), у клієнт не потрапляє.
 
-const SUPERS = ['pashasidorenko18@gmail.com', 'hello@weexp.agency']; // бутстрап — щоб не залочити себе
+// Бутстрап-супери — з одного місця (_lib/auth.js), щоб списки не розʼїхались.
+import { SUPERS } from './_lib/auth.js';
 const ROLES = ['super', 'admin', 'manager', 'auditor'];
 
 export default async function handler(req, res) {

@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   currentUser, signOut, loadDiag, saveDiag, CONFIGURED, isCloudUser, isManager,
   signInWithGoogle, onAuth, signTierFile, uploadTierFile,
-  ensureAudit, findAuditIdByCode, loadAuditAnswers, loadAuditExtra, getProjects, notifyAdmin,
+  ensureAudit, findAuditIdByCode, loadAuditAnswers, loadAuditExtra, getProjects, notifyAdmin, authHeaders,
   type DiagUser, type DiagRecord, type CompanyProfile, type TierStatus, type TierEvent, type AuditAnswer, type ExtraQ, type AccessState,
   type MarketplaceAccess, type ClientFile,
 } from '@/lib/supa';
@@ -281,7 +281,7 @@ function AccessGrant({ user, rec, embedded }: { user: DiagUser; rec: DiagRecord 
   const [gaInfo, setGaInfo] = useState<{ connected?: boolean; email?: string; properties?: { id: string; name: string; account: string }[]; sites?: { url: string; level: string }[]; error?: string } | null>(null);
   useEffect(() => {
     let alive = true;
-    fetch(`/api/ga4?action=status&u=${encodeURIComponent(user.id)}`)
+    authHeaders().then((h) => fetch(`/api/ga4?action=status&u=${encodeURIComponent(user.id)}`, { headers: h }))
       .then((r) => r.json())
       .then((j) => {
         if (!alive) return;
@@ -297,16 +297,20 @@ function AccessGrant({ user, rec, embedded }: { user: DiagUser; rec: DiagRecord 
   }, [user.id]); // eslint-disable-line react-hooks/exhaustive-deps
   const startGa = async () => {
     try {
-      const r = await fetch(`/api/ga4?action=status&u=${encodeURIComponent(user.id)}`);
+      const r = await fetch(`/api/ga4?action=status&u=${encodeURIComponent(user.id)}`, { headers: await authHeaders() });
       const j = await r.json();
       if (j.error === 'not_configured') { toast(t('Конектор ще не налаштовано на сервері — поки що скористайтесь «Надати доступ вручну»', 'The connector is not configured on the server yet — use "Grant manually" for now'), 'err'); return; }
     } catch { /* мережевий збій — все одно пробуємо */ }
     set('AC-01', { method: 'oauth', connStatus: 'progress' });
-    window.location.href = `/api/ga4?action=oauth_start&u=${encodeURIComponent(user.id)}`;
+    // Два кроки: авторизований запит віддає посилання, браузер іде за ним.
+    // Прямий GET-редірект не міг довести, що привʼязують саме свій акаунт.
+    const r = await fetch(`/api/ga4?action=oauth_url&u=${encodeURIComponent(user.id)}`, { headers: await authHeaders() }).then((x) => x.json()).catch(() => null);
+    if (!r?.url) { alert('Не вдалося почати підключення: ' + (r?.error || r?.hint || 'спробуйте пізніше')); return; }
+    window.location.href = r.url;
   };
   const dropGa = async () => {
     if (!confirm(t('Відключити Google Analytics? Ми втратимо read-only доступ до даних.', 'Disconnect Google Analytics? We lose read-only access to the data.'))) return;
-    try { await fetch(`/api/ga4?action=disconnect&u=${encodeURIComponent(user.id)}`); } catch { /* noop */ }
+    try { await fetch(`/api/ga4?action=disconnect&u=${encodeURIComponent(user.id)}`, { headers: await authHeaders() }); } catch { /* noop */ }
     setGaInfo({ connected: false });
     set('AC-01', { connStatus: 'off', status: undefined });
   };

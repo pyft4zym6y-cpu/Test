@@ -4,7 +4,10 @@
 //
 // Навіщо: ендпоінти, що витрачають гроші (Claude, прогін воркера), до цього
 // приймали будь-який запит з інтернету.
-const SUPERS = String(process.env.MANAGER_EMAILS || 'pashasidorenko18@gmail.com,hello@weexp.agency')
+// ЄДИНИЙ список бутстрап-суперів на всі ендпоінти. Раніше team.js тримав свою
+// копію списком у коді — два джерела правди неминуче розходяться, і права
+// починають відрізнятися залежно від того, який ендпоінт ти смикнув.
+export const SUPERS = String(process.env.MANAGER_EMAILS || 'pashasidorenko18@gmail.com,hello@weexp.agency')
   .split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
 const STAFF_ROLES = ['super', 'admin', 'manager', 'auditor'];
 
@@ -24,7 +27,7 @@ export async function caller(req) {
     const email = String(u?.email || '').toLowerCase();
     if (!email) return null;
     const role = u?.app_metadata?.role || (SUPERS.includes(email) ? 'super' : null);
-    return { email, role };
+    return { id: u?.id ? String(u.id) : '', email, role };
   } catch {
     return null;
   }
@@ -43,4 +46,18 @@ export async function requireStaff(req, res) {
   if (!c) { res.status(401).json({ error: 'unauthorized: потрібен вхід' }); return null; }
   if (!STAFF_ROLES.includes(String(c.role))) { res.status(403).json({ error: 'forbidden: доступ лише для команди' }); return null; }
   return c;
+}
+
+/**
+ * Доступ до даних КОНКРЕТНОГО клієнта: або це сам клієнт, або хтось із команди.
+ * Потрібно там, де ендпоінт приймає `userId` параметром і віддає чи змінює дані
+ * цього користувача (GA4-підключення, вивантаження аналітики).
+ */
+export async function requireSelfOrStaff(req, res, userId) {
+  const c = await caller(req);
+  if (!c) { res.status(401).json({ error: 'unauthorized: потрібен вхід' }); return null; }
+  if (STAFF_ROLES.includes(String(c.role))) return c;
+  if (userId && c.id && String(userId) === String(c.id)) return c;
+  res.status(403).json({ error: 'forbidden: чужі дані' });
+  return null;
 }

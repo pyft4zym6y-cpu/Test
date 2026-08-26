@@ -1202,3 +1202,6 @@
 .adm-db { display: flex; flex-direction: column; gap: 6px; }
 .adm-db-row { display: grid; grid-template-columns: 90px minmax(140px, 1fr) auto; gap: 10px; align-items: center; font-size: 12px; }
 @media (max-width: 640px) { .adm-db-row { grid-template-columns: 80px 1fr; } .adm-db-row code { display: none; } }
+
+/* Індикатор збереження: кнопка «Повторити» при помилці. */
+.adm-retry { margin-left: 8px; }

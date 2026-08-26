@@ -856,13 +856,39 @@ export async function deleteLead(id: string): Promise<{ ok: boolean; error?: str
   } catch (e) { return { ok: false, error: String(e) }; }
 }
 /** Видалити запис клієнта (профіль, експрес/глибокий аудит, воронку, проекти) — тестові дані. */
-export async function deleteDiagnostics(userId: string): Promise<{ ok: boolean; error?: string }> {
+/**
+ * Видалити клієнта з панелі.
+ *
+ * Раніше зникав лише рядок `diagnostics`, а файли клієнта (звітність,
+ * вивантаження, наші дельіверабли) лишались у сховищі назавжди: ані знайти їх,
+ * ані видалити було вже нічим — посилання на них жили тільки в тому записі.
+ * Для персональних даних клієнта це не дрібниця. Тепер спершу прибираємо файли,
+ * потім запис; проекцію (p_*) чистить тригер у базі.
+ */
+export async function deleteDiagnostics(userId: string): Promise<{ ok: boolean; error?: string; filesLeft?: number }> {
   if (!CONFIGURED) return { ok: false, error: 'not_configured' };
   try {
+    // 1) Зібрати шляхи файлів із запису — після видалення взяти їх буде ніде.
+    const { data: pre } = await supabase.from('diagnostics').select('data').eq('user_id', userId).maybeSingle();
+    const rec = (pre?.data as DiagRecord) || {};
+    const tierPaths = Object.values(rec.funnel?.tierFiles || {}).flat().map((f) => f.path).filter(Boolean) as string[];
+    const clientPaths = (rec.clientFiles || []).map((f) => (f as { path?: string }).path).filter(Boolean) as string[];
+    const adminPaths = (rec.adminFiles || []).map((f) => f.path).filter(Boolean);
+
+    let filesLeft = 0;
+    const drop = async (bucket: string, paths: string[]) => {
+      if (!paths.length) return;
+      const { error } = await supabase.storage.from(bucket).remove(paths);
+      if (error) filesLeft += paths.length;
+    };
+    // Усі три види файлів лежать в одному приватному бакеті tier-files.
+    await drop(TIER_BUCKET, [...new Set([...tierPaths, ...clientPaths, ...adminPaths])]);
+
+    // 2) Сам запис.
     const { data, error } = await supabase.from('diagnostics').delete().eq('user_id', userId).select('user_id');
     if (error) return { ok: false, error: error.message };
     if (!data || data.length === 0) return { ok: false, error: 'Не видалено — додайте DELETE-політику для адмінів на diagnostics (RLS).' };
-    return { ok: true };
+    return { ok: true, filesLeft };
   } catch (e) { return { ok: false, error: String(e) }; }
 }
 

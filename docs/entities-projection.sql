@@ -123,6 +123,27 @@ create trigger weexp_project_record_t
   after insert or update of data on public.diagnostics
   for each row execute function public.weexp_project_record();
 
+-- Видалення клієнта теж має прибирати проекцію. Без цього рядки лишались
+-- назавжди, і будь-який звіт («незакриті проєкти», «прогонів за місяць»)
+-- рахував давно видалених клієнтів.
+create or replace function public.weexp_forget_record()
+returns trigger language plpgsql security definer set search_path = public, pg_temp as $$
+begin
+  delete from public.p_projects where user_id = old.user_id;
+  delete from public.p_access   where user_id = old.user_id;
+  delete from public.p_files    where user_id = old.user_id;
+  delete from public.p_runs     where user_id = old.user_id;
+  return old;
+exception when others then
+  return old;
+end;
+$$;
+
+drop trigger if exists weexp_forget_record_t on public.diagnostics;
+create trigger weexp_forget_record_t
+  after delete on public.diagnostics
+  for each row execute function public.weexp_forget_record();
+
 -- ── Разовий backfill наявних записів ───────────────────────────────────────
 update public.diagnostics set data = data where true;
 

@@ -35,7 +35,8 @@ import { ACCESS_CATALOG, ACCESS_METHOD_LABEL } from '@/data/accessCatalog';
 
 import '../system.css';
 import '../cabinet.css';
-import { ACCESS_STATUS, MATURITY_MODULE_OF, MOD_LABEL, fmtVal, rel, relT, type SaveState } from './shared';
+import { ACCESS_STATUS, MATURITY_MODULE_OF, MOD_LABEL, SaveBadge, fmtVal, rel, relT, type SaveState } from './shared';
+import { useAutosave } from './useAutosave';
 import { exportAuditDocPdf, seedAuditSections } from './docs';
 import { buildKnowledgePack } from './knowledgePack';
 import { auditStatusOf, phaseOf, PHASES } from './auditRequests';
@@ -125,20 +126,8 @@ export function ExtraEditor({ code }: { code: string }) {
 
 export function AccessCatalog({ userId, initial }: { userId: string; initial: Record<string, AccessState> }) {
   const [map, setMap] = useState<Record<string, AccessState>>(initial || {});
-  const [state, setState] = useState<SaveState>('idle');
-  const latest = useRef(map); latest.current = map;
-  const dirty = useRef(false); const first = useRef(true);
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  useEffect(() => {
-    if (first.current) { first.current = false; return; }
-    dirty.current = true; setState('dirty');
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(async () => { setState('saving'); const r = await savePatchFor(userId, { accessLog: latest.current }); setState(r.ok ? 'saved' : 'error'); dirty.current = !r.ok; }, 1000);
-    return () => { if (timer.current) clearTimeout(timer.current); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map]);
-  useEffect(() => () => { if (dirty.current) void savePatchFor(userId, { accessLog: latest.current }); }, [userId]);
-  const set = (id: string, patch: Partial<AccessState>) => setMap((m) => ({ ...m, [id]: { ...m[id], ...patch, at: new Date().toISOString() } }));
+  const auto = useAutosave<Record<string, AccessState>>((v) => savePatchFor(userId, { accessLog: v }));
+  const set = (id: string, patch: Partial<AccessState>) => setMap((m) => { const next = { ...m, [id]: { ...m[id], ...patch, at: new Date().toISOString() } }; auto.touch(next); return next; });
   const cats = [...new Set(ACCESS_CATALOG.map((a) => a.category))];
   const granted = ACCESS_CATALOG.filter((a) => ['granted', 'verified'].includes(map[a.id]?.status || '')).length;
 
@@ -147,7 +136,7 @@ export function AccessCatalog({ userId, initial }: { userId: string; initial: Re
       <div className="adm-acc-sum mono">
         <span>Надано: <b>{granted}/{ACCESS_CATALOG.length}</b></span>
         <span className="adm-acc-hint">Статус-трекер команди. Інструкції з надання доступів клієнт бачить у своєму кабінеті.</span>
-        {state !== 'idle' && <span className={`pj-save-state pj-save-${state}`}>{state === 'saving' ? '💾' : state === 'saved' ? '✓' : state === 'dirty' ? '●' : '✕'}</span>}
+        <SaveBadge state={auto.state} error={auto.error} savedAt={auto.savedAt} onRetry={auto.flush} />
       </div>
       {cats.map((cat) => (
         <div key={cat} className="adm-acc-cat">
@@ -197,7 +186,13 @@ export function WorkerAudit({ userId, code, rec, reviewer }: { userId: string; c
   const poll = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   useEffect(() => () => { if (poll.current) clearInterval(poll.current); }, []);
 
-  const saveJobs = (next: AuditJobRef[]) => { setJobs(next); void savePatchFor(userId, { auditJobs: next }); };
+  // Раніше результат запису відкидався: RLS відмовляв — на екрані все одно
+  // зʼявлявся новий прогін, якого в базі немає.
+  const saveJobs = async (next: AuditJobRef[]) => {
+    setJobs(next);
+    const r = await savePatchFor(userId, { auditJobs: next });
+    if (!r.ok) toast('Історія прогонів не збереглась: ' + (r.error || ''), 'err');
+  };
 
   const importMaturity = async () => {
     if (!maturity) return;
@@ -369,7 +364,7 @@ export function FindingsReview({ auditId, findings, userId, reviewer, initial }:
   const setV = (id: string, patch: Partial<FindingReview>) => {
     const prev = reviews[id] || { verdict: 'accepted' as const, at: '' };
     const next = { ...reviews, [id]: { ...prev, ...patch, sent: false, at: new Date().toISOString() } };
-    setReviews(next); void savePatchFor(userId, { findingReviews: next });
+    setReviews(next); void savePatchFor(userId, { findingReviews: next }).then((r) => { if (!r.ok) toast('Рецензію не збережено: ' + (r.error || ''), 'err'); });
   };
   const decided = findings.filter((f) => reviews[f.id]);
   const unsent = decided.filter((f) => !reviews[f.id].sent).length;
@@ -382,7 +377,7 @@ export function FindingsReview({ auditId, findings, userId, reviewer, initial }:
     setBusy(false);
     if (r.ok) {
       const next = { ...reviews }; verdicts.forEach((v) => { if (next[v.findingId]) next[v.findingId] = { ...next[v.findingId], sent: true }; });
-      setReviews(next); void savePatchFor(userId, { findingReviews: next });
+      setReviews(next); void savePatchFor(userId, { findingReviews: next }).then((r) => { if (!r.ok) toast('Рецензію не збережено: ' + (r.error || ''), 'err'); });
       toast(`✓ У навчання записано: ${r.written ?? verdicts.length}`);
     } else toast('Не вдалося надіслати: ' + (r.error || 'воркер ще не оновлено'), 'err');
   };
@@ -426,17 +421,15 @@ export function FindingsReview({ auditId, findings, userId, reviewer, initial }:
 
 export function AuditDocEditor({ userId, email, rec }: { userId: string; email: string; rec: DiagRecord }) {
   const [doc, setDoc] = useState<AuditDoc>(rec.auditDoc || { title: 'Документ аудиту', sections: [] });
-  const [state, setState] = useState<SaveState>('idle');
   const [modMap, setModMap] = useState<Record<string, string>>({});
-  const dirty = useRef(false); const latest = useRef(doc); const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const auto = useAutosave<AuditDoc>((v) => savePatchFor(userId, { auditDoc: v }), 1200);
   useEffect(() => { let on = true; loadTemplate().then((t) => { if (on && t) setModMap(Object.fromEntries(t.blocks.map((b) => [b.key, b.title]))); }).catch(() => {}); return () => { on = false; }; }, []);
   const modTitle = (k: string) => modMap[k] || k;
   const push = (next: AuditDoc) => {
-    next.updatedAt = new Date().toISOString(); latest.current = next; setDoc({ ...next }); dirty.current = true; setState('dirty');
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(async () => { setState('saving'); const r = await savePatchFor(userId, { auditDoc: latest.current }); setState(r.ok ? 'saved' : 'error'); dirty.current = !r.ok; }, 1200);
+    next.updatedAt = new Date().toISOString();
+    setDoc({ ...next });
+    auto.touch(next);
   };
-  useEffect(() => () => { if (dirty.current) void savePatchFor(userId, { auditDoc: latest.current }); }, [userId]);
 
   const setSec = (id: string, patch: Partial<AuditDocSection>) => push({ ...doc, sections: doc.sections.map((s) => s.id === id ? { ...s, ...patch } : s) });
   const addSec = () => push({ ...doc, sections: [...doc.sections, { id: uid(), heading: 'Новий розділ', body: '' }] });
@@ -450,7 +443,7 @@ export function AuditDocEditor({ userId, email, rec }: { userId: string; email: 
     <div className="adm-doc">
       <div className="adm-doc-bar">
         <input className="ab-inp adm-doc-title" value={doc.title} onChange={(e) => push({ ...doc, title: e.target.value })} placeholder="Назва документа" />
-        <span className={`pj-save-state pj-save-${state}`}>{state === 'saving' ? 'збереження…' : state === 'saved' ? '✓ збережено' : state === 'error' ? '⚠ помилка' : state === 'dirty' ? '● не збережено' : ''}</span>
+        <SaveBadge state={auto.state} error={auto.error} savedAt={auto.savedAt} onRetry={auto.flush} />
       </div>
       <div className="adm-doc-tools">
         <button className="mc-btn ghost" onClick={seed}>✨ {doc.sections.length ? 'Перезібрати' : 'Зібрати'} чернетку</button>
