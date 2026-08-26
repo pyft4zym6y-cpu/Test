@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useKeyboardClass } from '@/lib/keyboardClass';
 import { NavLink, Link, Outlet, useLocation } from 'react-router-dom';
 import { SiteFooter } from '@/system/SiteFooter';
 import { CookieConsent } from '@/system/CookieConsent';
@@ -41,6 +42,8 @@ const TABS = [
 ];
 
 export function SystemShell() {
+  // Клавіатура на телефоні: нижня панель має ховатись, поки людина заповнює поле.
+  useKeyboardClass();
   const nav = useRef<HTMLElement>(null);
   const sentinel = useRef<HTMLSpanElement>(null);
   const [open, setOpen] = useState(false);

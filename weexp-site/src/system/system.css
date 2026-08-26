@@ -2333,3 +2333,30 @@
 /* Turnstile: віджет перевірки «я не робот» на відкритих формах. */
 .ts-box { grid-column: 1 / -1; margin: 4px 0; }
 .ts-err { color: var(--red, #b3401f); font-size: 11.5px; margin-top: 6px; }
+
+/* ── Телефон: екранна клавіатура ───────────────────────────────────────────
+   На iOS `position: fixed` тримається ВІЗУАЛЬНОГО viewport, тож із відкритою
+   клавіатурою нижня app-панель переїжджала нагору й закривала саме ті поля,
+   які людина заповнює. Ховаємо її на час набору — навігація в цей момент і так
+   не потрібна, а місце потрібне. */
+body.kb-open .sysh-tabs { display: none !important; }
+/* Декоративний фон теж прибираємо: зміна висоти viewport під елементом
+   `fixed; height: 100vh` смикає скрол сторінки на кожен фокус поля. */
+body.kb-open .sysx-calc-bg,
+body.kb-open .pf-bg { display: none !important; }
+
+/* Фіксовані повноекранні шари — на динамічну висоту viewport, щоб поява
+   клавіатури взагалі не змінювала їхній розмір. */
+@supports (height: 100dvh) {
+  .sysx-calc-bg { height: 100dvh; }
+  @media (max-width: 900px) { .sysx-calc-bg { height: 100dvh; } }
+}
+
+@media (max-width: 900px) {
+  /* Поле у фокусі не має ховатись під нижньою панеллю. */
+  .ctf-field input, .ctf-field textarea, .ctf-field select,
+  .ct-field input, .ct-field textarea, .ct-field select,
+  .sysx-inp input, .sysx-inp textarea, .sysx-inp select { scroll-margin-bottom: 96px; scroll-margin-top: 80px; }
+  /* Запас під фіксованою панеллю, щоб кнопка відправки не тулилась до неї. */
+  .ctf-form { padding-bottom: 12px; }
+}

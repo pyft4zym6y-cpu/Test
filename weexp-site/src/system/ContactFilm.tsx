@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useT, useLp } from '@/i18n';
 import { useLiteVisuals } from '@/lib/liteVisuals';
 import { sendLead } from '@/lib/leads';
+import { Turnstile, turnstileEnabled } from '@/components/Turnstile';
 import { track } from '@/lib/analytics';
 import { DIAG_SUMMARY_KEY } from '@/data/xray';
 import { getExpressAudit } from '@/system/cabinetData';
@@ -27,6 +28,12 @@ export function ContactFilm() {
   // Коротка форма: імʼя + телефон обовʼязкові, решта — необовʼязкова.
   const loc = useLocation();
   const [status, setStatus] = useState<Status>('idle');
+  // Перевірка «я не робот». Форма анонімна — саме тут захист і потрібен.
+  // Якщо віджет не піднявся (блокувальник, мережа) — кнопку НЕ блокуємо:
+  // мертва кнопка на формі заявок означає, що заявки просто не приходять.
+  const [tsToken, setTsToken] = useState('');
+  const [tsBroken, setTsBroken] = useState(false);
+  const [failMsg, setFailMsg] = useState('');
   const [emailErr, setEmailErr] = useState('');   // мʼяка інлайн-підказка по email
   const [phoneErr, setPhoneErr] = useState('');
   // «Формат співпраці»: необовʼязковий select; префіл з ?format=1|2|3 (кнопки
@@ -63,12 +70,21 @@ export function ContactFilm() {
       site: String(f.get('site') || ''), comment: String(f.get('comment') || ''),
       task: format || undefined,   // обраний формат співпраці → колонка «Задача» заявки
       diag: attach || undefined, company_website: String(f.get('company_website') || ''),
+      turnstile: tsToken || undefined,
     };
-    setStatus('sending');
+    setStatus('sending'); setFailMsg('');
     const res = await sendLead(payload);
     track('lead_submit', { source: payload.source, result: res, has_diag: Boolean(attach) });
     // Заявка створюється у системі (Supabase → адмінка). Ніяких mailto/буфера:
-    // або підтвердження, або чесна помилка з пропозицією написати вручну.
+    // або підтвердження, або чесна помилка з поясненням, ЩО саме сталось.
+    if (res === 'too_many') {
+      setFailMsg(t('Забагато заявок з цієї адреси за годину. Напишіть нам на пошту — відповімо так само.', 'Too many requests from this address this hour. Email us — we answer just the same.'));
+      setStatus('error'); return;
+    }
+    if (res === 'robot' && !tsBroken) {
+      setFailMsg(t('Перевірка «я не робот» не пройдена. Оновіть сторінку і спробуйте ще раз.', 'The "I am not a robot" check did not pass. Reload the page and try again.'));
+      setStatus('error'); return;
+    }
     setStatus(res === 'ok' ? 'ok' : 'error');
   };
 
@@ -131,14 +147,17 @@ export function ContactFilm() {
               </label>
               <label className="ctf-field ctf-full"><span className="mono">{t('Коментар ', 'Comment ')}<i className="ctf-opt">{t('(необовʼязково)', '(optional)')}</i></span><textarea name="comment" rows={3} placeholder={t('Що зараз найбільше турбує у продажах?', 'What worries you most about sales right now?')} /></label>
               <input name="company_website" tabIndex={-1} autoComplete="off" className="ctf-hp" aria-hidden="true" />
+              <div className="ctf-full"><Turnstile onToken={setTsToken} onFail={() => setTsBroken(true)} /></div>
               <div className="sysx-calc-actions ctf-full">
-                <button className="sysx-cta is-primary" type="submit" disabled={status === 'sending'}>
-                  {status === 'sending' ? t('Надсилаємо…', 'Sending…') : t('Отримати діагноз →', 'Get the diagnosis →')}
+                <button className="sysx-cta is-primary" type="submit" disabled={status === 'sending' || (turnstileEnabled && !tsToken && !tsBroken)}>
+                  {status === 'sending' ? t('Надсилаємо…', 'Sending…')
+                    : turnstileEnabled && !tsToken && !tsBroken ? t('Перевірка…', 'Checking…')
+                    : t('Отримати діагноз →', 'Get the diagnosis →')}
                 </button>
                 <span className="sysx-note mono">UA · EU · US · {MAIL}</span>
               </div>
               {status === 'error' && (
-                <p className="s3-err mono ctf-full">{t('Не вдалося надіслати заявку. Спробуйте ще раз або напишіть нам на ', 'Could not send the request. Please try again or write to us at ')}<a href={`mailto:${MAIL}`}>{MAIL}</a>.</p>
+                <p className="s3-err mono ctf-full">{failMsg || t('Не вдалося надіслати заявку. Спробуйте ще раз або напишіть нам на ', 'Could not send the request. Please try again or write to us at ')}{!failMsg && <><a href={`mailto:${MAIL}`}>{MAIL}</a>.</>}</p>
               )}
             </form>
           </div>
