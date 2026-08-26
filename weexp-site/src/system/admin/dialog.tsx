@@ -36,19 +36,51 @@ export function DialogHost() {
   const [cur, setCur] = useState<Pending | null>(null);
   const [value, setValue] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const confirmRef = useRef<HTMLButtonElement>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
+  // Куди повернути фокус після закриття — на кнопку, з якої діалог відкрили.
+  const returnTo = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    open = (a) => { setCur(a); setValue(a.input?.initial || ''); };
+    open = (a) => {
+      returnTo.current = document.activeElement as HTMLElement | null;
+      setCur(a); setValue(a.input?.initial || '');
+    };
     return () => { open = null; };
   }, []);
-  useEffect(() => { if (cur?.input) inputRef.current?.focus(); }, [cur]);
+  // Фокус ЗАВЖДИ всередині діалогу: у полі, якщо воно є, інакше на кнопці
+  // підтвердження. Раніше фокус ставився лише на поле, тож confirm-діалог
+  // клавіатурою підтвердити було неможливо.
+  useEffect(() => {
+    if (!cur) return;
+    (cur.input ? inputRef.current : confirmRef.current)?.focus();
+  }, [cur]);
 
-  const close = useCallback((v: string | boolean | null) => { cur?.resolve(v); setCur(null); }, [cur]);
+  const close = useCallback((v: string | boolean | null) => {
+    cur?.resolve(v);
+    setCur(null);
+    // Повертаємо фокус туди, звідки прийшли, інакше після закриття він падає
+    // на <body> і клавіатурна навігація починається спочатку.
+    const back = returnTo.current;
+    returnTo.current = null;
+    if (back && document.contains(back)) setTimeout(() => back.focus(), 0);
+  }, [cur]);
 
   useEffect(() => {
     if (!cur) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { e.preventDefault(); close(null); }
+      if (e.key === 'Escape') { e.preventDefault(); close(null); return; }
+      // Ловушка фокуса: Tab не має виводити з модалки — інакше «модальність»
+      // існує лише візуально, а клавіатурою можна натиснути що завгодно позаду.
+      if (e.key === 'Tab' && boxRef.current) {
+        const f = boxRef.current.querySelectorAll<HTMLElement>('button, textarea, input, select, a[href]');
+        if (!f.length) return;
+        const first = f[0], last = f[f.length - 1];
+        const active = document.activeElement;
+        if (e.shiftKey && (active === first || !boxRef.current.contains(active))) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
+        return;
+      }
       // Enter підтверджує; у багаторядковому полі — тільки з Ctrl/Cmd.
       if (e.key === 'Enter' && (!cur.input || (cur.input.rows ?? 1) <= 1 || e.metaKey || e.ctrlKey)) {
         e.preventDefault(); close(cur.input ? value : true);
@@ -61,7 +93,7 @@ export function DialogHost() {
   if (!cur) return null;
   return (
     <div className="adm-modal-wrap" onClick={() => close(null)}>
-      <div className="adm-modal" role="dialog" aria-modal="true" aria-label={cur.title} onClick={(e) => e.stopPropagation()}>
+      <div ref={boxRef} className="adm-modal" role="dialog" aria-modal="true" aria-label={cur.title} onClick={(e) => e.stopPropagation()}>
         <b className="adm-modal-h">{cur.title}</b>
         {cur.text && <p className="adm-modal-p mono">{cur.text}</p>}
         {cur.input && (
@@ -70,7 +102,7 @@ export function DialogHost() {
         )}
         <div className="adm-modal-act">
           <button className="mc-btn" onClick={() => close(null)}>Скасувати</button>
-          <button className={`mc-btn ${cur.tone || 'ok'}`} onClick={() => close(cur.input ? value : true)}>
+          <button ref={confirmRef} className={`mc-btn ${cur.tone || 'ok'}`} onClick={() => close(cur.input ? value : true)}>
             {cur.confirmLabel || 'Підтвердити'}
           </button>
         </div>

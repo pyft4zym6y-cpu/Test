@@ -1212,3 +1212,35 @@
 /* Поле пароля з перемикачем видимості (керування командою). */
 .adm-pass { display: flex; gap: 6px; align-items: center; flex: 1 1 220px; }
 .adm-pass .ab-inp { flex: 1; }
+
+/* ── Адмінка на вузькому екрані ────────────────────────────────────────────
+   Новий інтерфейс (лічильники в меню, гроші по фазах, дошка фаз, вкладки
+   картки) додавався без жодного media-правила: на телефоні бейдж розтягував
+   пункт меню, другий рівень зливався з першим, а дошка перетворювалась на
+   три горизонтальні прокрутки одна під одною. */
+@media (max-width: 860px) {
+  /* Пункт меню — «таблетка»: підпис і лічильник поруч, а не по краях. */
+  .adm-nav-i { justify-content: flex-start; gap: 6px; }
+  .adm-nav-badge { padding: 0 6px; font-size: 10px; line-height: 16px; min-width: 16px; }
+  /* Другий рівень має лишатись другим рівнем і в горизонтальному ряду. */
+  .adm-nav-sub { opacity: .8; font-size: 12px; padding-left: 8px; border-left: 2px solid var(--red, #F5301C) !important; }
+  /* Гроші по фазах — одна колонка замість тісної сітки. */
+  .adm-money { grid-template-columns: 1fr; }
+  .adm-money-kpi { flex-direction: column; gap: 6px; }
+  /* Дошка: одна колонка на екран замість смуги 190px-стовпчиків. */
+  .adm-board { grid-auto-columns: minmax(78vw, 1fr); }
+  .adm-phase-h { flex-wrap: wrap; gap: .3rem .6rem; }
+  .adm-phase-h i { flex: 1 1 100%; font-size: 11px; }
+  /* Вкладки картки: прокрутка без обрізання, з інерцією. */
+  .adm-utabs { -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .adm-utabs::-webkit-scrollbar { display: none; }
+  .adm-utab { white-space: nowrap; }
+  /* Шапка картки клієнта — у стовпчик. */
+  .adm-uhead-kv { grid-template-columns: 1fr 1fr; }
+  .adm-uhead-top { flex-wrap: wrap; gap: 8px; }
+}
+@media (max-width: 520px) {
+  .adm-uhead-kv { grid-template-columns: 1fr; }
+  .adm-board { grid-auto-columns: minmax(86vw, 1fr); }
+  .adm-tiles { grid-template-columns: 1fr 1fr; }
+}

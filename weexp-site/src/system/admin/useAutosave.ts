@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { toast } from '@/lib/toast';
 import type { SaveState } from './shared';
 
 /**
@@ -36,13 +37,31 @@ export function useAutosave<T>(
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const saveRef = useRef(save); saveRef.current = save;
 
+  const alive = useRef(true);
+  const inFlight = useRef<Promise<boolean> | null>(null);
+
   const doSave = useCallback(async (): Promise<boolean> => {
     if (latest.current === null) return true;
-    setState('saving'); setError('');
-    const r = await saveRef.current(latest.current);
-    if (r.ok) { dirty.current = false; setState('saved'); setSavedAt(new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })); return true; }
-    setState('error'); setError(r.error || 'Не збережено');
-    return false;
+    // Черга з одного: `flush()` під час дебаунс-сейву давав дві паралельні
+    // записи, порядок яких ніхто не гарантував.
+    if (inFlight.current) await inFlight.current;
+    if (latest.current === null) return true;
+    if (alive.current) { setState('saving'); setError(''); }
+    const run = (async () => {
+      const r = await saveRef.current(latest.current as T);
+      if (r.ok) {
+        dirty.current = false;
+        if (alive.current) { setState('saved'); setSavedAt(new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })); }
+        return true;
+      }
+      if (alive.current) { setState('error'); setError(r.error || 'Не збережено'); }
+      // Компонент уже зник (пішли з розділу) — показати помилку в ньому вже
+      // ніде, а мовчазна втрата даних саме так і виглядала. Кажемо тостом.
+      else toast('Останні зміни не збереглися: ' + (r.error || 'помилка'), 'err');
+      return false;
+    })();
+    inFlight.current = run;
+    try { return await run; } finally { inFlight.current = null; }
   }, []);
 
   const touch = useCallback((next: T) => {
@@ -67,6 +86,7 @@ export function useAutosave<T>(
 
   // Демонтаж (перехід між клієнтами/розділами всередині SPA): встигаємо зберегти.
   useEffect(() => () => {
+    alive.current = false;
     if (timer.current) clearTimeout(timer.current);
     if (dirty.current) void doSave();
   }, [doSave]);

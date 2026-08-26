@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense } from 'react';
 
 import { getProjects, type AdminRow, type LeadRow, type TierStatus, type LeadStatus } from '@/lib/supa';
 import { eur, sysLabel, actionText, type SysKey } from '../systems';
@@ -26,9 +26,12 @@ const NotesPanel = lazy(() => import('./panels-client').then((m) => ({ default: 
 const PackChecklist = lazy(() => import('./panels-client').then((m) => ({ default: m.PackChecklist })));
 const ProjectsManager = lazy(() => import('./ProjectsManager').then((m) => ({ default: m.ProjectsManager })));
 
-export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, onClose, openFile, onStatus, onDelete, busy }: { row: AdminRow; leads: LeadRow[] | null; canDelete: boolean; /** manage_access: аудитор бачить картку, але не роздає доступи */ canAccess: boolean; selfEmail: string; onClose: () => void; openFile: (p: string) => void; onStatus: (userId: string, tier: string, status: TierStatus) => void; onDelete: (userId: string, email: string) => void; busy: string }) {
-  const [utab, setUtab] = useState<UTab>('over');
-  useEffect(() => { setUtab('over'); }, [row.userId]);
+export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, onUtab, onChanged, onClose, openFile, onStatus, onDelete, busy }: { row: AdminRow; leads: LeadRow[] | null; canDelete: boolean; /** manage_access: аудитор бачить картку, але не роздає доступи */ canAccess: boolean; selfEmail: string; /** Вкладка картки живе в адресі — інакше посилання на неї відкриває «Огляд». */
+  utab: UTab; onUtab: (t: UTab) => void;
+  /** Перечитати картку після запису панелі: інакше «Огляд» і «База знань»
+   *  показують старі числа, поки картку не переоткриють. */
+  onChanged: () => void;
+  onClose: () => void; openFile: (p: string) => void; onStatus: (userId: string, tier: string, status: TierStatus) => void; onDelete: (userId: string, email: string) => void; busy: string }) {
   const rec = row.record || {};
   const company = rec.company;
   const money = rec.stage1Money;
@@ -65,7 +68,7 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, onClos
         <nav className="adm-utabs" role="tablist" aria-label="Розділи картки клієнта">
           {U_TABS.map((tb) => (
             <button key={tb.id} role="tab" aria-selected={utab === tb.id} title={tb.hint}
-              className={`adm-utab${utab === tb.id ? ' on' : ''}`} onClick={() => setUtab(tb.id)}>{tb.l}</button>
+              className={`adm-utab${utab === tb.id ? ' on' : ''}`} onClick={() => onUtab(tb.id)}>{tb.l}</button>
           ))}
         </nav>
       </div>
@@ -197,9 +200,9 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, onClos
 
           {utab === 'work' && <Block title="Аудит рушієм Commerce OS"><WorkerAudit userId={row.userId} code={code} rec={rec} reviewer={selfEmail} /></Block>}
 
-          {utab === 'work' && <Block title="Оцінка модулів (C-level) — внутрішнє"><ModuleScoring userId={row.userId} initial={rec.assessment || {}} code={code} rec={rec} /></Block>}
+          {utab === 'work' && <Block title="Оцінка модулів (C-level) — внутрішнє"><ModuleScoring userId={row.userId} initial={rec.assessment || {}} code={code} rec={rec} onSaved={onChanged} /></Block>}
 
-          {utab === 'data' && <Block title="Каталог доступів клієнта"><AccessCatalog userId={row.userId} initial={rec.accessLog || {}} /></Block>}
+          {utab === 'data' && <Block title="Каталог доступів клієнта"><AccessCatalog userId={row.userId} initial={rec.accessLog || {}} onSaved={onChanged} /></Block>}
 
           {utab === 'docs' && <Block title="Аналітика клієнта (GA4 · GSC · PageSpeed)"><GaPreview userId={row.userId} siteUrl={company?.site || rec.site || ''} /></Block>}
 
@@ -211,7 +214,7 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, onClos
 
           {utab === 'pack' && <Block title="Документ аудиту (редагований)"><AuditDocEditor userId={row.userId} email={row.email} rec={rec} /></Block>}
 
-          {utab === 'docs' && <Block title="Мої файли та передача клієнту"><AdminFiles userId={row.userId} initial={rec.adminFiles || []} sharedInitial={rec.sharedDocs || []} author={selfEmail} openFile={openFile} /></Block>}
+          {utab === 'docs' && <Block title="Мої файли та передача клієнту"><AdminFiles userId={row.userId} initial={rec.adminFiles || []} sharedInitial={rec.sharedDocs || []} author={selfEmail} openFile={openFile} onSaved={onChanged} /></Block>}
 
           {utab === 'data' && <Block title="Запити доступів">{tiers.length ? (
             <div className="adm-drawer-tiers">

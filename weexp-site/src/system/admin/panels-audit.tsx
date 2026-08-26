@@ -126,14 +126,14 @@ export function ExtraEditor({ code }: { code: string }) {
   );
 }
 
-export function AccessCatalog({ userId, initial }: { userId: string; initial: Record<string, AccessState> }) {
+export function AccessCatalog({ userId, initial, onSaved }: { userId: string; initial: Record<string, AccessState>; onSaved?: () => void }) {
   const [map, setMap] = useState<Record<string, AccessState>>(initial || {});
   // Пишемо лише те, що змінили в цій сесії: інакше збереження затирало правки
   // колеги в сусідніх рядках того самого каталогу.
   const touched = useRef<Set<string>>(new Set());
   const auto = useAutosave<Record<string, AccessState>>((v) => {
     const changed = Object.fromEntries([...touched.current].map((k) => [k, v[k]]).filter(([, x]) => x));
-    return mergeMapFor(userId, 'accessLog', changed as Record<string, AccessState>);
+    return mergeMapFor(userId, 'accessLog', changed as Record<string, AccessState>).then((r) => { if (r.ok) onSaved?.(); return r; });
   });
   const set = (id: string, patch: Partial<AccessState>) => setMap((m) => { touched.current.add(id); const next = { ...m, [id]: { ...m[id], ...patch, at: new Date().toISOString() } }; auto.touch(next); return next; });
   const cats = [...new Set(ACCESS_CATALOG.map((a) => a.category))];

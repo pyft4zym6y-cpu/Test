@@ -116,7 +116,7 @@ export function PackChecklist({ userId, email, rec }: { userId: string; email: s
  *  «Поділитися» — ЄДИНИЙ шлях, яким документ потрапляє клієнту в кабінет
  *  (розділ «Документи»): нічого не публікується автоматично. */
 
-export function AdminFiles({ userId, initial, sharedInitial, author, openFile }: { userId: string; initial: AdminFile[]; sharedInitial: SharedDoc[]; author: string; openFile: (p: string) => void }) {
+export function AdminFiles({ userId, initial, sharedInitial, author, openFile, onSaved }: { userId: string; initial: AdminFile[]; sharedInitial: SharedDoc[]; author: string; openFile: (p: string) => void; onSaved?: () => void }) {
   const [list, setList] = useState<AdminFile[]>(initial || []);
   const [shared, setShared] = useState<SharedDoc[]>(sharedInitial || []);
   const [kind, setKind] = useState<AdminFile['kind']>('data');
@@ -125,7 +125,7 @@ export function AdminFiles({ userId, initial, sharedInitial, author, openFile }:
     const prev = list;
     setList(next);
     const r = await savePatchFor(userId, { adminFiles: next });
-    if (!r.ok) { setList(prev); toast('Список файлів не збережено: ' + (r.error || ''), 'err'); }
+    if (!r.ok) { setList(prev); toast('Список файлів не збережено: ' + (r.error || ''), 'err'); } else onSaved?.();
   };
   const isShared = (p: string) => shared.some((d) => d.path === p);
   const toggleShare = (f: AdminFile) => {
@@ -216,7 +216,7 @@ export function NotesPanel({ userId, initial, author }: { userId: string; initia
 
 /** Адмінський шар: C-level оцінка кожного модуля аудиту клієнта. Автозбереження. */
 
-export function ModuleScoring({ userId, initial, code, rec }: { userId: string; initial: Record<string, ModuleScore>; code?: string; rec: DiagRecord }) {
+export function ModuleScoring({ userId, initial, code, rec, onSaved }: { userId: string; initial: Record<string, ModuleScore>; code?: string; rec: DiagRecord; onSaved?: () => void }) {
   const [mods, setMods] = useState<TplBlock[] | null>(null);
   const [map, setMap] = useState<Record<string, ModuleScore>>(initial || {});
   const [open, setOpen] = useState<string | null>(null);
@@ -226,7 +226,7 @@ export function ModuleScoring({ userId, initial, code, rec }: { userId: string; 
   const touched = useRef<Set<string>>(new Set());
   const auto = useAutosave<Record<string, ModuleScore>>((v) => {
     const changed = Object.fromEntries([...touched.current].map((k) => [k, v[k]]).filter(([, x]) => x));
-    return mergeMapFor(userId, 'assessment', changed as Record<string, ModuleScore>);
+    return mergeMapFor(userId, 'assessment', changed as Record<string, ModuleScore>).then((r) => { if (r.ok) onSaved?.(); return r; });
   }, 1200);
   useEffect(() => { loadTemplate().then((t) => setMods(t.blocks)); }, []);
   /** Єдина точка зміни оцінок — щоб автозбереження не залежало від ефекту на [map]. */

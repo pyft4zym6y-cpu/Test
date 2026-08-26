@@ -43,7 +43,7 @@ import { uid } from './auditTemplate';
 
 import './system.css';
 import './cabinet.css';
-import { ACCESS_SOURCES, TABS, CAP_SUMMARY, EmptyState, FUNNEL, LEAD_STAGES, ST, Shell, Tile, TrafficBlock, Trend, coopLabel, funnelStage, rel, srcName, stageOf, tierLabel, type FunnelStage, type SiteTraffic, type Tab } from './admin/shared';
+import { ACCESS_SOURCES, TABS, U_TABS, CAP_SUMMARY, EmptyState, FUNNEL, LEAD_STAGES, ST, Shell, Tile, TrafficBlock, Trend, coopLabel, funnelStage, rel, srcName, stageOf, tierLabel, type FunnelStage, type SiteTraffic, type Tab, type UTab } from './admin/shared';
 
 /* Важкі екрани вантажимо на вимогу: адмінка відкривається на «Дашборді», а
    картка клієнта, заявка, конструктор шаблону, проєктний офіс і команда потрібні
@@ -71,12 +71,18 @@ export function AdminPanel() {
   const urlTab = (TABS.some((t) => t.id === params.tab) || TABS.some((t) => (t.sub || []).some((x) => x.id === params.tab))
     ? (params.tab as Tab) : 'overview');
   const tab = urlTab;
-  const setTab = (t: Tab) => nav(`/admin/${t}`);
+  // replace: прохід по розділах не має класти в історію по запису — інакше
+  // після пʼяти вкладок «Назад» треба тиснути пʼять разів, щоб вийти.
+  const setTab = (t: Tab) => nav(`/admin/${t}`, { replace: true });
   const [q, setQ] = useState('');
   const openUser = params.clientId || null;
   // tab через ref: обробники, підписані один раз (Esc), інакше бачили б застарілу вкладку.
   const tabRef = useRef<Tab>(tab); tabRef.current = tab;
   const setOpenUser = (uid: string | null) => nav(uid ? `/admin/${tabRef.current}/c/${uid}` : `/admin/${tabRef.current}`);
+  // Вкладка картки — теж в адресі. Раніше маршрут :utab існував, але ніде не
+  // читався: посилання на конкретну вкладку відкривало «Огляд».
+  const utab = (U_TABS.some((t) => t.id === params.utab) ? params.utab : 'over') as UTab;
+  const setUtab = (t: UTab) => { if (openUser) nav(`/admin/${tabRef.current}/c/${openUser}/${t}`, { replace: true }); };
   // Повний запис відкритої картки: у списку лежить лише полегшений зріз.
   const [detailRow, setDetailRow] = useState<AdminRow | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -154,7 +160,13 @@ export function AdminPanel() {
   useEffect(() => { currentUser().then((u) => { setActor(u?.email); setUser(u); setChecking(false); if (u && isManager(u)) { load(); void checkDb().then(setDb); } }); }, []);
   // Esc закриває відкриті шухляди/модалку.
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { setAsk(null); setOpenUser(null); setOpenLead(null); } };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      // Картка відкривалась push'ем — закриваємо її поверненням назад, а не
+      // новим записом в історії.
+      setAsk(null); setOpenLead(null);
+      if (window.location.pathname.includes('/c/')) nav(-1);
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
@@ -352,14 +364,12 @@ export function AdminPanel() {
     setOpenLead(null);
   };
   // Чек-лист угоди в картці заявки → leads.deal (jsonb).
-  const saveDeal = async (id: string, deal: LeadDeal) => {
-    setBusy('deal:' + id);
-    const res = await setLeadDeal(id, deal);
-    setBusy('');
-    if (!res.ok) { toast('Не збережено: ' + (res.error || ''), 'err'); return; }
-    toast('✓ Чек-лист угоди збережено');
+  // Запис угоди робить сама картка (автозбереження); тут лише тримаємо
+  // список у актуальному стані, щоб дошка не показувала старе.
+  const saveDeal = (id: string, deal: LeadDeal) => {
     setLeads((ls) => (ls || []).map((l) => (l.id === id ? { ...l, deal } : l)));
   };
+
   // «Завершена» → перевести заявку в проект: створюємо проект у кабінеті клієнта
   // з даними угоди, звʼязуємо заявку з проектом (deal.projectId), заявку не видаляємо.
   const leadToProject = async (lead: LeadRow) => {
@@ -505,7 +515,7 @@ export function AdminPanel() {
       <main className="adm-main">
         {/* ── Повна сторінка клієнта (замість бокового drawer) ── */}
         {openUser && detailLoading && !detail && <div className="adm-boot mono">Завантажуємо картку…</div>}
-        {detail && <Suspense fallback={null}><UserDetail row={detail} leads={leads} canDelete={can(user, 'delete_data')} canAccess={can(user, 'manage_access')} selfEmail={user.email} onClose={() => setOpenUser(null)} openFile={openFile} onStatus={setStatus} onDelete={removeUser} busy={busy} /></Suspense>}
+        {detail && <Suspense fallback={null}><UserDetail row={detail} leads={leads} canDelete={can(user, 'delete_data')} canAccess={can(user, 'manage_access')} selfEmail={user.email} utab={utab} onUtab={setUtab} onChanged={reloadDetail} onClose={() => setOpenUser(null)} openFile={openFile} onStatus={setStatus} onDelete={removeUser} busy={busy} /></Suspense>}
         {/* ── Дашборд ── */}
         {!detail && curTab === 'overview' && (
           <section className="adm-sec">

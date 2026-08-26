@@ -1,20 +1,37 @@
 import { useEffect, useState } from 'react';
 
-import { type AdminRow, type LeadRow, type LeadDeal, type LeadStatus } from '@/lib/supa';
+import { setLeadDeal, type AdminRow, type LeadRow, type LeadDeal, type LeadStatus } from '@/lib/supa';
 import { eur, sysLabel, type SysKey } from '../systems';
 
 import '../system.css';
 import '../cabinet.css';
-import { Block, COOP_TYPES, LEAD_STAGES, stageOf } from './shared';
+import { Block, COOP_TYPES, LEAD_STAGES, SaveBadge, stageOf } from './shared';
+import { useAutosave } from './useAutosave';
 
-export function LeadDetail({ lead, allRows, onClose, onStatus, onDeal, onConvert, onOpenClient, onDelete, busy }: { lead?: LeadRow; allRows: AdminRow[]; onClose: () => void; onStatus: (id: string, s: LeadStatus) => void; onDeal: (id: string, d: LeadDeal) => void; onConvert: (l: LeadRow) => void; onOpenClient: (userId: string) => void; onDelete: (id: string) => void; busy: string }) {
-  // Локальний чернетковий стан чек-листа угоди — зберігається кнопкою.
+export function LeadDetail({ lead, allRows, onClose, onStatus, onDeal, onConvert, onOpenClient, onDelete, busy }: { lead?: LeadRow; allRows: AdminRow[]; onClose: () => void; onStatus: (id: string, s: LeadStatus) => void;
+  /** Повідомити батька про збережену угоду, щоб список не показував старе. */
+  onDeal: (id: string, d: LeadDeal) => void; onConvert: (l: LeadRow) => void; onOpenClient: (userId: string) => void; onDelete: (id: string) => void; busy: string }) {
+  /**
+   * Чек-лист угоди був єдиним редактором, що лишився поза автозбереженням:
+   * ручна кнопка, прапорець `dirty` — і жодного захисту. Клік повз шторку, ✕ або
+   * Esc з незбереженими умовами угоди — дані зникали мовчки. Тепер той самий
+   * хук, що й скрізь: дебаунс, попередження при закритті вкладки, збереження
+   * при демонтажі, помилка з кнопкою «Повторити».
+   */
   const [deal, setDeal] = useState<LeadDeal>(lead?.deal || {});
-  const [dirty, setDirty] = useState(false);
-  useEffect(() => { setDeal(lead?.deal || {}); setDirty(false); }, [lead?.id]);
+  const leadId = lead?.id || '';
+  const auto = useAutosave<LeadDeal>(async (d) => {
+    if (!leadId) return { ok: false, error: 'Заявка без id' };
+    const r = await setLeadDeal(leadId, d);
+    if (r.ok) onDeal(leadId, d);   // синхронізуємо список у батька
+    return r;
+  }, 1200);
+  useEffect(() => { setDeal(lead?.deal || {}); }, [lead?.id]);
+  // Закриття шторки з незбереженим — спершу дозберігаємо.
+  const closeSafely = () => { void auto.flush().finally(onClose); };
   if (!lead) return null;
   const cur = stageOf(lead);
-  const patchDeal = (p: Partial<LeadDeal>) => { setDeal((d) => ({ ...d, ...p })); setDirty(true); };
+  const patchDeal = (p: Partial<LeadDeal>) => { setDeal((d) => { const next = { ...d, ...p }; auto.touch(next); return next; }); };
   // Звʼязок «заявка → клієнт»: шукаємо зареєстрований акаунт за email заявки.
   const client = lead.email ? allRows.find((r) => (r.email || '').toLowerCase() === lead.email!.toLowerCase()) : undefined;
   const ex = client?.record?.express;
@@ -32,11 +49,12 @@ export function LeadDetail({ lead, allRows, onClose, onStatus, onDeal, onConvert
     ['Бюджет', lead.budget],
   ];
   return (
-    <div className="adm-drawer-wrap" onClick={onClose}>
-      <aside className="adm-drawer" onClick={(e) => e.stopPropagation()}>
+    <div className="adm-drawer-wrap" onClick={closeSafely}>
+      <aside className="adm-drawer" role="dialog" aria-modal="true" aria-label="Картка заявки" onClick={(e) => e.stopPropagation()}>
         <div className="adm-drawer-head">
           <a className="adm-email adm-mail" href={`mailto:${lead.email || ''}`}>{lead.email || lead.phone || 'Заявка'}</a>
-          <button className="adm-x" onClick={onClose} aria-label="Закрити" title="Закрити">✕</button>
+          <SaveBadge state={auto.state} error={auto.error} savedAt={auto.savedAt} onRetry={auto.flush} />
+          <button className="adm-x" onClick={closeSafely} aria-label="Закрити" title="Закрити">✕</button>
         </div>
         <div className="adm-drawer-body">
           <Block title="Стадія CRM">
@@ -83,8 +101,8 @@ export function LeadDetail({ lead, allRows, onClose, onStatus, onDeal, onConvert
                 </button>
               </div>
               <div className="adm-deal-save">
-                <button className="mc-btn ok" disabled={!dirty || busy === 'deal:' + lead.id} onClick={() => { onDeal(lead.id || '', deal); setDirty(false); }}>
-                  {busy === 'deal:' + lead.id ? 'Зберігаємо…' : dirty ? 'Зберегти чек-лист' : '✓ Збережено'}
+                <button className="mc-btn ok" disabled={auto.state === 'saving' || auto.state === 'idle'} onClick={() => void auto.flush()}>
+                  {auto.state === 'saving' ? 'Зберігаємо…' : auto.state === 'dirty' ? 'Зберегти зараз' : '✓ Збережено'}
                 </button>
                 {deal.projectId && <span className="mono adm-deal-linked">🔗 Звʼязано з проектом</span>}
               </div>
