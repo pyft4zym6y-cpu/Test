@@ -5,7 +5,7 @@
  * которую ест движок (computeEngine). JSON в «родной» форме отдаётся напрямую.
  */
 import { readFile } from 'node:fs/promises';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import mammoth from 'mammoth';
 import { createMessage, extractJson, hasKey } from './anthropic.js';
 
@@ -26,16 +26,64 @@ function looksLikeAnswers(j: unknown): j is Answers {
   return vals.length > 0 && vals.every((v) => v && typeof v === 'object' && 'answer' in (v as object));
 }
 
-async function extract(path: string, type: string): Promise<{ text?: string; pdf?: string; json?: unknown }> {
+/** Файл опросника → сырьё для Claude. Экспортируется ради теста: именно здесь
+ *  живёт разбор недоверенного клиентского файла, и ломаться он должен на CI. */
+export async function extract(path: string, type: string): Promise<{ text?: string; pdf?: string; json?: unknown }> {
   const t = (type || '') + ' ' + path;
   if (/json/i.test(t)) return { json: JSON.parse(await readFile(path, 'utf8')) };
   if (/pdf/i.test(t)) return { pdf: await readFile(path, 'base64') };
   if (/word|docx|officedocument\.wordprocessing/i.test(t)) { const r = await mammoth.extractRawText({ path }); return { text: r.value }; }
-  // Excel (xlsx/xls) — все листы в CSV-текст. Читаем буфер сами (в ESM-сборке
-  // XLSX.readFile требует привязки fs и падает — XLSX.read(buffer) надёжнее).
-  const wb = XLSX.read(await readFile(path), { type: 'buffer' });
-  const parts = wb.SheetNames.map((name) => `# ${name}\n${XLSX.utils.sheet_to_csv(wb.Sheets[name])}`);
+  // CSV и просто текст незачем гонять через парсер книги — это уже текст.
+  if (/csv|text\/plain|\.txt$/i.test(t)) return { text: await readFile(path, 'utf8') };
+  // Устаревший бинарный .xls (BIFF) exceljs не читает. Раньше его брал SheetJS,
+  // но именно он и был дырой: xlsx@0.18.5 — последняя версия в npm, в ней живут
+  // GHSA-4r6h-8v6p-xvw6 (prototype pollution) и GHSA-5pgg-2g8v-p4x9 (ReDoS), а
+  // файл сюда приносит КЛИЕНТ. Просить пересохранить в .xlsx дешевле, чем
+  // держать уязвимый парсер на пути недоверенного ввода.
+  if (/\.xls$|ms-excel(?!\.sheet)/i.test(t)) {
+    // Коротко: сообщение уезжает в лог прогона, где режется по 90 символам.
+    throw new Error('формат .xls не підтримується — збережіть як .xlsx або .csv');
+  }
+  // Excel (xlsx) — все листы в CSV-текст.
+  const wb = new ExcelJS.Workbook();
+  // readFile, а не load(buffer): типы exceljs ждут Buffer из своего старого
+  // @types/node, и любой буфер отсюда не проходит проверку типов.
+  await wb.xlsx.readFile(path);
+  const parts: string[] = [];
+  wb.eachSheet((ws) => {
+    const rows: string[] = [];
+    ws.eachRow({ includeEmpty: false }, (row) => rows.push(rowToCsv(row)));
+    parts.push(`# ${ws.name}\n${rows.join('\n')}`);
+  });
   return { text: parts.join('\n\n') };
+}
+
+/** Строка листа → строка CSV. Значения exceljs богаче примитивов: формула
+ *  отдаётся объектом {formula, result}, гиперссылка — {text, hyperlink},
+ *  форматированный текст — {richText:[…]}. Без разворачивания в промпт уехало
+ *  бы «[object Object]» вместо ответа клиента. */
+function rowToCsv(row: ExcelJS.Row): string {
+  const cells: string[] = [];
+  // values — массив с холостой ячейкой 0; идём по индексу, чтобы пустые
+  // колонки посередине не схлопывались и таблица не съезжала.
+  const values = row.values as unknown[];
+  for (let i = 1; i < values.length; i += 1) cells.push(cellText(values[i]));
+  return cells.map((v) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v)).join(',');
+}
+
+function cellText(v: unknown): string {
+  if (v == null) return '';
+  if (v instanceof Date) return v.toISOString().slice(0, 10);
+  if (typeof v === 'object') {
+    const o = v as Record<string, unknown>;
+    if (Array.isArray(o.richText)) return (o.richText as { text?: string }[]).map((r) => r.text ?? '').join('');
+    if ('result' in o) return cellText(o.result);
+    if ('text' in o) return String(o.text ?? '');
+    if ('hyperlink' in o) return String(o.hyperlink ?? '');
+    if ('error' in o) return '';
+    return '';
+  }
+  return String(v);
 }
 
 const SYSTEM = `Ти отримуєш заповнений клієнтом опитувальник (у вільній формі: таблиця, документ або текст) і КАТАЛОГ питань аудиту з їх id. Завдання — зіставити відповіді клієнта з питаннями каталогу ЗА ЗМІСТОМ і повернути JSON-мапу {qid: "відповідь клієнта"}.
