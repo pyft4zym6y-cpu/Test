@@ -9,7 +9,7 @@
 //
 // Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (читання всіх записів у обхід RLS),
 //      CRON_SECRET (Vercel ставить сам), NOTIFY_EMAIL/RESEND_API_KEY — через /api/notify.
-import { requireStaff } from './_lib/auth.js';
+import { requireStaff, logServerEvent } from './_lib/auth.js';
 
 // Пороги мають збігатися з SLA у weexp-site/src/system/admin/auditRequests.ts.
 const SLA = {
@@ -107,6 +107,8 @@ export default async function handler(req, res) {
         body: JSON.stringify({ subject: `SLA: ${overdue.length} прострочених стадій`, text }),
       }).catch(() => {});
     }
+    // Слід у журналі: інакше «чому мені прийшов цей лист» не має відповіді.
+    void logServerEvent(byCron ? 'cron' : 'manual', 'sla_check', { detail: `перевірено ${rows.length}, прострочено ${overdue.length}` });
     res.status(200).json({ ok: true, checked: rows.length, overdue: overdue.length, items: overdue.slice(0, 50) });
   } catch (e) {
     res.status(200).json({ error: String(e).slice(0, 200) });

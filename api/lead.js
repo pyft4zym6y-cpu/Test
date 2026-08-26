@@ -44,9 +44,22 @@ async function saveLeadToDb(row) {
   }
 }
 
+import { rateOk, turnstileOk } from './_lib/guard.js';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'POST only' });
+    return;
+  }
+  // Форма відкрита за задумом (заявку лишає незареєстрований відвідувач), тому
+  // обмежуємо не доступ, а частоту й ботів. Обидва вмикаються наявністю
+  // налаштувань: без них пропускаємо, щоб не зламати форми до налаштування.
+  if (!(await rateOk(req, 'lead', 10, 3600))) {
+    res.status(429).json({ error: 'Забагато заявок з цієї адреси. Спробуйте за годину або напишіть на hello@weexp.agency.' });
+    return;
+  }
+  if (!(await turnstileOk(req, (req.body ?? {}).turnstile))) {
+    res.status(400).json({ error: 'Не пройдено перевірку «я не робот». Оновіть сторінку й спробуйте ще раз.' });
     return;
   }
   const { RESEND_API_KEY, NOTIFY_FROM } = process.env;

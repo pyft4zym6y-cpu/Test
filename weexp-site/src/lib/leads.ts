@@ -21,9 +21,10 @@ export type LeadPayload = {
   diag?: string; // текстовий підсумок Business X-Ray / повної діагностики
   calc?: string; // розрахунок калькулятора
   company_website?: string; // honeypot — завжди порожнє в людей
+  turnstile?: string;       // токен перевірки «я не робот» (якщо ввімкнена)
 };
 
-export type LeadResult = 'ok' | 'not_configured' | 'error';
+export type LeadResult = 'ok' | 'not_configured' | 'error' | 'too_many' | 'robot';
 
 export async function sendLead(payload: LeadPayload): Promise<LeadResult> {
   try {
@@ -38,6 +39,10 @@ export async function sendLead(payload: LeadPayload): Promise<LeadResult> {
     const j = await r.json().catch(() => ({}));
     if (j.ok) return 'ok';
     if (j.error === 'not_configured') return 'not_configured';
+    // Ліміт частоти й перевірка на бота мають бути видимі формі: інакше людина
+    // бачить абстрактну «помилку» і б'ється в неї далі.
+    if (r.status === 429) return 'too_many';
+    if (r.status === 400 && /робот/i.test(String(j.error || ''))) return 'robot';
     return 'error';
   } catch {
     return 'error';

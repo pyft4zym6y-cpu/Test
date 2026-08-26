@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Eyebrow, FadeIn } from '@/lib/primitives';
 import { say } from '@/lib/bus';
 import { sendLead } from '@/lib/leads';
+import { Turnstile, turnstileEnabled } from './Turnstile';
 import { track } from '@/lib/analytics';
 import { DIAG_SUMMARY_KEY } from '@/data/xray';
 import './contact.css';
@@ -17,6 +18,8 @@ type Status = 'idle' | 'sending' | 'ok' | 'fallback';
 
 export function Contact() {
   const [status, setStatus] = useState<Status>('idle');
+  // Токен перевірки «я не робот». Порожній, поки віджет не відпрацював.
+  const [tsToken, setTsToken] = useState('');
   const [diag, setDiag] = useState<string>('');
   const [fallbackUrl, setFallbackUrl] = useState<string>('');
 
@@ -38,6 +41,7 @@ export function Contact() {
       comment: String(f.get('comment') || ''),
       diag: diag || undefined,
       company_website: String(f.get('company_website') || ''), // honeypot
+      turnstile: tsToken || undefined,
     };
     setStatus('sending');
     const res = await sendLead(payload);
@@ -45,6 +49,15 @@ export function Contact() {
     if (res === 'ok') {
       setStatus('ok');
       say('Дякую! Заявку отримано — повернемося з планом діагностики у грошах.');
+      return;
+    }
+    // Ліміт і бот-перевірка — не привід кидати людину в mailto: це поправно
+    // прямо тут, треба лише сказати, що саме сталось.
+    if (res === 'too_many' || res === 'robot') {
+      setStatus('idle');
+      say(res === 'too_many'
+        ? 'Забагато заявок з цієї адреси за годину. Напишіть на hello@weexp.agency — відповімо так само.'
+        : 'Перевірка «я не робот» не пройдена. Оновіть сторінку і спробуйте ще раз.');
       return;
     }
     // Бекенд не налаштований або збій — готуємо чесний mailto-fallback.
@@ -110,8 +123,10 @@ export function Contact() {
             <label className="ct-field ct-full"><span className="mono">Коментар</span><textarea name="comment" rows={3} /></label>
             {/* honeypot: приховане поле, люди його не бачать */}
             <input name="company_website" tabIndex={-1} autoComplete="off" className="ct-hp" aria-hidden="true" />
-            <button className="ct-submit mono" type="submit" disabled={status === 'sending'}>
-              {status === 'sending' ? 'Надсилаємо…' : 'Отримати діагноз →'}
+            {/* Показується тільки якщо задано VITE_TURNSTILE_SITE_KEY. */}
+            <Turnstile onToken={setTsToken} />
+            <button className="ct-submit mono" type="submit" disabled={status === 'sending' || (turnstileEnabled && !tsToken)}>
+              {status === 'sending' ? 'Надсилаємо…' : turnstileEnabled && !tsToken ? 'Перевірка…' : 'Отримати діагноз →'}
             </button>
             {status === 'fallback' && (
               <p className="ct-note mono">Пошту відкрито з готовим листом (також скопійовано в буфер).

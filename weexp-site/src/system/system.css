@@ -2329,3 +2329,7 @@
 .adm-kb-ver { margin-top: 1.1rem; padding-top: .9rem; border-top: 1px solid var(--sysx-line, #ddd); }
 .adm-kb-ver-h { display: flex; align-items: center; gap: .7rem; margin-bottom: .4rem; }
 .adm-kb-ver-h span { flex: 1; opacity: .6; }
+
+/* Turnstile: віджет перевірки «я не робот» на відкритих формах. */
+.ts-box { grid-column: 1 / -1; margin: 4px 0; }
+.ts-err { color: var(--red, #b3401f); font-size: 11.5px; margin-top: 6px; }

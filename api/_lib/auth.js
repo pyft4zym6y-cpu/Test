@@ -61,3 +61,23 @@ export async function requireSelfOrStaff(req, res, userId) {
   res.status(403).json({ error: 'forbidden: чужі дані' });
   return null;
 }
+
+/**
+ * Записати подію в журнал СЕРВЕРНОЮ стороною.
+ *
+ * Досі `admin_events` наповнювався лише з браузера, тому все, що робить сервер
+ * — керування командою, автоматичні перевірки SLA — у журналі не існувало.
+ * На питання «хто підвищив цього менеджера» відповіді не було взагалі.
+ */
+export async function logServerEvent(actor, kind, { userId = null, subject = null, detail = null } = {}) {
+  const URL_BASE = String(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '').replace(/\/$/, '');
+  const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!URL_BASE || !KEY || !actor) return;
+  try {
+    await fetch(`${URL_BASE}/rest/v1/admin_events`, {
+      method: 'POST',
+      headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'content-type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify({ actor: String(actor).toLowerCase(), kind, user_id: userId, subject, detail }),
+    });
+  } catch { /* журнал не має ламати дію */ }
+}

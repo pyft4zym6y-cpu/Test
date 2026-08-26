@@ -5,9 +5,17 @@
 //      адрес на подтверждённом домене, напр. portal@weexp.agency).
 const DEFAULT_NOTIFY_EMAIL = 'pashasidorenko18@gmail.com';
 
+import { rateOk } from './_lib/guard.js';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'POST only' });
+    return;
+  }
+  // Ендпоінт шле лист власнику й відкритий (його зве бриф без токена). Без
+  // ліміту це безкоштовний спосіб залити пошту і спалити квоту Resend.
+  if (!(await rateOk(req, 'notify', 20, 3600))) {
+    res.status(429).json({ error: 'too_many' });
     return;
   }
   const { RESEND_API_KEY, NOTIFY_FROM } = process.env;

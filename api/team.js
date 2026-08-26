@@ -6,7 +6,7 @@
 // ВАЖЛИВО: service-role ключ живе лише тут (сервер), у клієнт не потрапляє.
 
 // Бутстрап-супери — з одного місця (_lib/auth.js), щоб списки не розʼїхались.
-import { SUPERS } from './_lib/auth.js';
+import { SUPERS, logServerEvent } from './_lib/auth.js';
 const ROLES = ['super', 'admin', 'manager', 'auditor'];
 
 export default async function handler(req, res) {
@@ -33,6 +33,10 @@ export default async function handler(req, res) {
   });
   const setRole = (userId, role) => admin(`/users/${userId}`, { method: 'PUT', body: JSON.stringify({ app_metadata: { role } }) });
   const valid = (r) => ROLES.includes(r);
+
+  // Кожна зміна складу команди — у журнал. Дія сервера, тож браузерний
+  // logAdminEvent її не бачив: журнал мовчав про найчутливіші операції.
+  const journal = (kind, detail) => logServerEvent(myEmail, kind, { subject: b.email || b.userId || null, detail });
 
   try {
     const a = b.action;
@@ -64,17 +68,17 @@ export default async function handler(req, res) {
         const ex = await findByEmail();
         if (!ex) { res.status(200).json({ error: a === 'promote' ? 'Користувача з таким email не знайдено' : 'Немає такого користувача — вкажіть пароль, щоб створити новий акаунт' }); return; }
         await setRole(ex.id, role);
-        res.status(200).json({ ok: true, promoted: true, user: { id: ex.id, email: ex.email, role } });
+        void journal('team_create', `${ex.email} → ${role} (існуючий)`); res.status(200).json({ ok: true, promoted: true, user: { id: ex.id, email: ex.email, role } });
         return;
       }
       if (String(b.password).length < 8) { res.status(200).json({ error: 'Пароль — мінімум 8 символів' }); return; }
       const j = await admin('/users', { method: 'POST', body: JSON.stringify({ email: b.email, password: b.password, email_confirm: true, app_metadata: { role } }) }).then((r) => r.json());
-      if (j.id) { res.status(200).json({ ok: true, user: { id: j.id, email: j.email, role } }); return; }
+      if (j.id) { void journal('team_create', `${j.email} → ${role}`); res.status(200).json({ ok: true, user: { id: j.id, email: j.email, role } }); return; }
       // Якщо email вже зайнятий — не помилка, а промоут існуючого акаунта до ролі.
       const errText = String(j.msg || j.error_description || j.error || '').toLowerCase();
       if (/already|registered|exist/.test(errText)) {
         const ex = await findByEmail();
-        if (ex) { await setRole(ex.id, role); res.status(200).json({ ok: true, promoted: true, user: { id: ex.id, email: ex.email, role } }); return; }
+        if (ex) { await setRole(ex.id, role); void journal('team_create', `${ex.email} → ${role} (існуючий)`); res.status(200).json({ ok: true, promoted: true, user: { id: ex.id, email: ex.email, role } }); return; }
       }
       res.status(200).json({ error: j.msg || j.error_description || j.error || 'create_failed' });
       return;
@@ -93,14 +97,22 @@ export default async function handler(req, res) {
     if (a === 'set_role') {
       if (!b.userId || !valid(b.role)) { res.status(200).json({ error: 'bad_params' }); return; }
       if (SUPERS.includes(String(b.email || '').toLowerCase()) && b.role !== 'super') { res.status(200).json({ error: 'Не можна знизити бутстрап-super-адміна' }); return; }
+      // Себе понизити не можна: один промах у списку — і super лишається без
+      // доступу до розділу, у якому цю помилку виправляють.
+      if (String(b.userId) === String(me?.id) && b.role !== 'super') {
+        res.status(200).json({ error: 'Не можна змінити власну роль. Попросіть іншого Super Admin.' }); return;
+      }
       const r = await setRole(b.userId, b.role);
+      if (r.ok) void journal('team_role', `${b.email || b.userId} → ${b.role}`);
       res.status(200).json(r.ok ? { ok: true } : { error: 'set_role_failed' });
       return;
     }
 
     if (a === 'ban') {
       if (!b.userId) { res.status(200).json({ error: 'bad_params' }); return; }
+      if (String(b.userId) === String(me?.id)) { res.status(200).json({ error: 'Не можна заблокувати себе' }); return; }
       const r = await admin(`/users/${b.userId}`, { method: 'PUT', body: JSON.stringify({ ban_duration: b.banned ? '876000h' : 'none' }) });
+      if (r.ok) void journal('team_ban', `${b.email || b.userId}: ${b.banned ? 'заблоковано' : 'розблоковано'}`);
       res.status(200).json(r.ok ? { ok: true } : { error: 'ban_failed' });
       return;
     }
@@ -108,6 +120,7 @@ export default async function handler(req, res) {
     if (a === 'reset') {
       // Лист відновлення пароля (потрібен SMTP). Без сервіс-ролі — публічний recover.
       const r = await fetch(`${URL}/auth/v1/recover`, { method: 'POST', headers: { apikey: SRK, 'content-type': 'application/json' }, body: JSON.stringify({ email: b.email }) });
+      if (r.ok) void journal('team_reset', String(b.email || ''));
       res.status(200).json(r.ok ? { ok: true } : { error: 'reset_failed (перевірте SMTP)' });
       return;
     }
@@ -116,6 +129,7 @@ export default async function handler(req, res) {
       if (!b.userId) { res.status(200).json({ error: 'bad_params' }); return; }
       if (SUPERS.includes(String(b.email || '').toLowerCase())) { res.status(200).json({ error: 'Не можна видалити бутстрап-super-адміна' }); return; }
       const r = await admin(`/users/${b.userId}`, { method: 'DELETE' });
+      if (r.ok) void journal('team_remove', String(b.email || b.userId));
       res.status(200).json(r.ok ? { ok: true } : { error: 'remove_failed' });
       return;
     }
