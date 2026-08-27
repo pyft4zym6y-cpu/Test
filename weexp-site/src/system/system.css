@@ -22,18 +22,42 @@
   --charcoal: #201D19;     /* типографіка */
   --deep: #141210;         /* чорнило: рамки, текст, тёмні секції */
   /* — Бренд-акценти — */
-  --red: #F5301C;          /* головний акцент: хайлайти, кнопки, числа */
-  --red-ink: #D8250F;
+  /*
+   * ДВА червоних, і різниця між ними — контраст, а не смак.
+   *
+   * --red — це айдентика: смуги, рамки, великі декоративні заливки, іконки.
+   * Там, де фарба НЕ торкається тексту, вона лишається рівно такою, як задумана.
+   *
+   * --red-ink — усе, що торкається тексту: червоний текст і червоне тло під
+   * білим текстом. #F5301C на білому дає 3.95:1 при нормі WCAG AA 4.5:1 —
+   * axe знаходив 60 таких вузлів на всіх публічних сторінках. #D8250F дає 5.01:1
+   * в обидва боки, а на око це той самий червоний (світлота нижча на 6%).
+   *
+   * Зворотний бік: на ТЕМНИХ поверхнях правило перевертається. --red-ink на
+   * #141210 дає лише 3.72:1, а вихідний --red — 4.74:1. Тобто в темних секціях
+   * (.cred, .sfoot та подібних) червоний лишається --red, і це не виняток, а та
+   * сама вимога 4.5:1, прочитана з іншого боку.
+   *
+   * Токен існував і раніше, але не був підключений жодного разу.
+   */
+  --red: #F5301C;          /* айдентика: смуги, рамки, заливки БЕЗ тексту */
+  --red-ink: #D8250F;      /* усе, що торкається тексту (WCAG AA 4.5:1) */
   --yellow: #FFD200;       /* бейджі/чипи, вторинний хайлайт */
-  --data: #F5301C;         /* alias старого «data» → бренд-червоний */
+  /*
+   * Семантичні аліаси беруть ДОСТУПНЕ значення, а не чисту айдентику: усі троє
+   * читаються як інформація (акцент, тривога, погано), а інформація — це текст
+   * або підпис поруч із ним. Декоративні крапки й смуги, що теж на них стоять,
+   * від зсуву світлоти на 6% не змінюються на око.
+   */
+  --data: #D8250F;         /* alias старого «data» → доступний бренд-червоний */
   --data-soft: #FFD200;    /* alias → жовтий */
-  --alert: #F5301C;
+  --alert: #D8250F;
   /* — Семантика статусів — */
   --ok: #1F9D55;
   --ok-strong: #177A43;
   --warn: #C0851E;
   --warn-strong: #9A6A12;
-  --bad: #F5301C;
+  --bad: #D8250F;          /* статус читається текстом → доступне значення */
   /* — Хейрлайни/рамки — */
   --line: rgba(20, 18, 16, .16);
   --line-soft: rgba(20, 18, 16, .08);
@@ -64,11 +88,11 @@
 }
 /* Рукописний акцент бренду (червоний, як на school.weexp.agency) */
 .sysx .script, .sysx-script {
-  font-family: var(--script); font-weight: 700; color: var(--red);
+  font-family: var(--script); font-weight: 700; color: var(--red-ink);
   text-transform: none; letter-spacing: .01em; line-height: 1;
 }
 /* Хайлайт-бокс на слові (червоний / жовтий) */
-.sysx .hl { background: var(--red); color: #fff; padding: .02em .2em;
+.sysx .hl { background: var(--red-ink); color: #fff; padding: .02em .2em;
   -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 .sysx .hl-y { background: var(--yellow); color: var(--deep); padding: .02em .2em;
   -webkit-box-decoration-break: clone; box-decoration-break: clone; }
@@ -84,7 +108,7 @@
 }
 .sysx-kick {
   font-family: var(--sans); font-weight: 800; font-size: 12.5px; letter-spacing: .14em;
-  text-transform: uppercase; color: var(--red);
+  text-transform: uppercase; color: var(--red-ink);
 }
 .sysx-lead { font-size: clamp(15px, 1.5vw, 19px); line-height: 1.55; color: var(--charcoal); max-width: 46ch; }
 
@@ -106,7 +130,7 @@
   transition: transform var(--dur-fast) var(--ease-cine), box-shadow var(--dur-fast);
 }
 .sysx-cta:hover { transform: translate(3px, 3px); box-shadow: 2px 2px 0 var(--deep); }
-.sysx-cta.is-primary { background: var(--red); color: #fff; border-color: var(--deep); }
+.sysx-cta.is-primary { background: var(--red-ink); color: #fff; border-color: var(--deep); }
 .sysx-cta.is-primary:hover { box-shadow: 2px 2px 0 var(--deep); }
 
 /* — Доступність: видимий фокус для клавіатури/скрінрідера — */
@@ -200,7 +224,7 @@
 }
 
 /* ── SHELL: cinematic-навігація превʼю-напряму ── */
-.sysh { --sh-deep: #141210; --sh-charcoal: #201D19; --sh-graphite: #6B675E; --sh-silver: #141210; --sh-data: #F5301C; --sh-warm: #FAF5E9;
+.sysh { --sh-deep: #141210; --sh-charcoal: #201D19; --sh-graphite: #6B675E; --sh-silver: #141210; --sh-data: #D8250F; --sh-warm: #FAF5E9;
   /* Єдине полотно сайту: крем + точкова сітка малюються ОДИН раз на всю висоту
      сторінки — секції прозорі, тому патерн ніде не «перезапускається». */
   background: var(--cream, #F3EFE6);
@@ -507,7 +531,10 @@
 .cred-process { margin-top: clamp(28px, 4vw, 44px); }
 .cred-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
 .cred-step { position: relative; padding: 16px 16px 16px 18px; border-left: 2px solid var(--data); display: grid; gap: 5px; }
-.cred-step i { font-size: 11px; color: var(--data); font-weight: 700; }
+/* Секція .cred темна (background: var(--deep)), і тут працює зворотне правило:
+   --red-ink розрахований на світле тло і на темному дає 3.72:1, а вихідний
+   бренд-червоний — 4.74:1. На темних поверхнях червоний лишається --red. */
+.cred-step i { font-size: 11px; color: var(--red); font-weight: 700; }
 .cred-step b { color: #fff; font-size: 14px; }
 .cred-step span { font-size: 12px; line-height: 1.5; color: #a7aeb7; }
 
@@ -525,7 +552,7 @@
 .cred-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: clamp(30px, 4vw, 48px); padding-top: clamp(22px, 3vw, 32px); border-top: 1px solid rgba(255,255,255,.12); }
 .cred-cta-note { flex: 1 1 300px; font-size: 12.5px; line-height: 1.5; color: #a7aeb7; }
 .cred .sysx-cta { background: rgba(255,255,255,.08); color: #fff; border-color: rgba(255,255,255,.2); }
-.cred .sysx-cta.is-primary { background: var(--data); color: #0b1020; border-color: var(--data); }
+.cred .sysx-cta.is-primary { background: var(--data); color: #fff; border-color: var(--data); }
 @media (max-width: 860px) { .cred-method, .cred-steps { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 540px) { .cred-method, .cred-steps { grid-template-columns: 1fr; } }
 
@@ -610,7 +637,7 @@
 .svc-next-l .svc-txt b { color: #fff; }
 .svc-next-r { display: flex; flex-wrap: wrap; gap: 10px; }
 .svc-next .sysx-cta { background: rgba(255,255,255,.08); color: #fff; border-color: rgba(255,255,255,.2); }
-.svc-next .sysx-cta.is-primary { background: var(--data); border-color: var(--data); color: #0b1020; }
+.svc-next .sysx-cta.is-primary { background: var(--data); border-color: var(--data); color: #fff; }
 
 .svc-siblings { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; margin-top: 26px; }
 .svc-sib { font-size: 13px; color: var(--deep); text-decoration: none; border: 1px solid var(--silver); border-radius: 100px; padding: 9px 15px; min-height: 42px; display: inline-flex; align-items: center; transition: border-color .2s; }
@@ -637,9 +664,9 @@
 .ctf-attach { grid-column: 1 / -1; display: grid; gap: 10px; border: 2.5px solid var(--deep); border-radius: 0;
   padding: 14px 16px; background: var(--pure-white); box-shadow: 4px 4px 0 var(--deep); margin-bottom: 6px; }
 .ctf-attach-check { display: flex; align-items: center; gap: 11px; cursor: pointer; font-weight: 700; font-size: 13.5px; color: var(--deep); }
-.ctf-attach-check input { width: 20px; height: 20px; flex: 0 0 auto; accent-color: var(--red); cursor: pointer; }
+.ctf-attach-check input { width: 20px; height: 20px; flex: 0 0 auto; accent-color: var(--red-ink); cursor: pointer; }
 .ctf-attach-none { box-shadow: 4px 4px 0 var(--red); }
-.ctf-attach-lab { font-weight: 800; text-transform: uppercase; letter-spacing: .1em; font-size: 11px; color: var(--red); }
+.ctf-attach-lab { font-weight: 800; text-transform: uppercase; letter-spacing: .1em; font-size: 11px; color: var(--red-ink); }
 .ctf-attach-none p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--charcoal); }
 .ctf-attach-none .sysx-cta { justify-self: start; }
 .cf-thanks { justify-items: start; gap: 12px; }
@@ -1070,7 +1097,7 @@
 .sfoot-brand b { font-family: var(--display); font-size: 22px; letter-spacing: .04em; color: #fff; }
 .sfoot-tag { font-size: 12px; color: #8b929b; }
 .sfoot-school { display: grid; gap: 4px; }
-.sfoot-school-l { font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #6b727b; }
+.sfoot-school-l { font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #7a828c; }
 .sfoot-school-a { font-size: 13.5px; color: #fff; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; min-height: 40px; transition: color .2s; }
 .sfoot-school-a:hover { color: var(--data-soft); }
 .sfoot-school-a i { color: var(--data-soft); font-style: normal; }
@@ -1083,7 +1110,7 @@
 .sfoot-legal { display: flex; gap: 14px; }
 .sfoot-legal a { color: #8b929b; text-decoration: none; display: inline-flex; align-items: center; min-height: 36px; }
 .sfoot-legal a:hover { color: #cfd4da; }
-.sfoot-bottom { max-width: 1180px; margin: 22px auto 0; padding: 14px clamp(18px, 5vw, 40px) 0; border-top: 1px solid rgba(255,255,255,.1); display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: space-between; font-size: 10.5px; color: #6b727b; }
+.sfoot-bottom { max-width: 1180px; margin: 22px auto 0; padding: 14px clamp(18px, 5vw, 40px) 0; border-top: 1px solid rgba(255,255,255,.1); display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: space-between; font-size: 10.5px; color: #7a828c; }
 .sfoot-build { opacity: .7; }
 @media (max-width: 700px) { .sfoot-in { flex-direction: column; gap: 18px; } }
 /* На мобільному лишаємо місце під фіксованою нижньою панеллю (щоб build-мітка не ховалась) */
@@ -1669,7 +1696,7 @@
 .sysx-sig-b { border: 2px solid var(--deep); background: var(--pure-white); color: var(--deep); font: inherit; font-weight: 800; font-size: 12.5px; padding: 7px 16px; cursor: pointer; transition: background .12s, color .12s; }
 .sysx-sig-b:hover { box-shadow: 2px 2px 0 var(--deep); }
 .sysx-sig-b.on-yes { background: var(--ok, #1F9D55); border-color: var(--ok, #1F9D55); color: #fff; }
-.sysx-sig-b.on-no { background: var(--red); border-color: var(--red); color: #fff; }
+.sysx-sig-b.on-no { background: var(--red-ink); border-color: var(--red-ink); color: #fff; }
 .sysx-leaks { display: grid; gap: 8px; }
 .sysx-leak { display: grid; grid-template-columns: 130px 1fr auto; align-items: center; gap: 12px; }
 .sysx-leak-l { font-size: 12px; color: var(--charcoal); }
@@ -1775,7 +1802,7 @@
 .apack-head { max-width: 760px; margin-bottom: clamp(26px, 4vw, 44px); }
 .apack-h1 { font-size: clamp(34px, 5vw, 58px); line-height: 1; margin: 8px 0 12px; }
 .apack-phase { margin-bottom: clamp(24px, 3.4vw, 40px); }
-.apack-ph-t { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--red); margin: 0 0 12px; border-bottom: 2px solid var(--deep); padding-bottom: 8px; }
+.apack-ph-t { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--red-ink); margin: 0 0 12px; border-bottom: 2px solid var(--deep); padding-bottom: 8px; }
 .apack-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
 .apack-card { position: relative; background: var(--pure-white); border: 2.5px solid var(--deep); box-shadow: 4px 4px 0 var(--deep); padding: 16px 16px 14px; }
 .apack-num { position: absolute; top: 10px; right: 12px; font-size: 11px; font-weight: 800; color: var(--graphite); }
@@ -1785,7 +1812,7 @@
 .apack-ctas { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
 .pric-pack-links { display: grid; gap: 6px; margin: 12px 0 14px; }
 .pric-pack-link { display: inline-block; font-size: 11.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--data); text-decoration: none; }
-.pric-pack-link:hover { color: var(--red); }
+.pric-pack-link:hover { color: var(--red-ink); }
 
 /* Фон — єдина система сайту: крем + точкова сітка (.sysx-field), без окремої підложки.
    Маску-затухання прибираємо, щоб сітка не гасла внизу довгої сторінки. */
@@ -1808,7 +1835,7 @@
 .pric-badge { position: absolute; top: -14px; left: 22px; background: var(--yellow); color: var(--deep);
   font-family: var(--sans); font-weight: 800; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
   padding: 6px 12px; border-radius: 0; border: 2.5px solid var(--deep); box-shadow: 3px 3px 0 var(--deep); }
-.pric-tag { font-family: var(--sans); font-weight: 800; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--red); }
+.pric-tag { font-family: var(--sans); font-weight: 800; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--red-ink); }
 .pric-name { font-family: var(--display); font-weight: 800; font-size: clamp(22px, 2.2vw, 27px); letter-spacing: -.02em; margin: 6px 0 0; color: var(--deep); }
 .pric-price-row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
 .pric-price { font-family: var(--display); font-weight: 800; font-size: clamp(20px, 2vw, 24px); color: var(--deep); }
@@ -1983,22 +2010,22 @@
   background: var(--pure-white); border: var(--bd); border-radius: 0; box-shadow: var(--sh); padding: clamp(24px,2.4vw,32px);
   transition: transform .14s var(--ease-cine), box-shadow .14s var(--ease-cine); }
 .xhub-card:hover { transform: translate(-4px,-4px); box-shadow: var(--sh-lg); }
-.xhub-n { font-family: var(--display); font-weight: 900; font-size: 20px; color: var(--red); }
+.xhub-n { font-family: var(--display); font-weight: 900; font-size: 20px; color: var(--red-ink); }
 .xhub-tag { font-family: var(--sans); font-weight: 800; text-transform: uppercase; letter-spacing: .12em; font-size: 11.5px; color: var(--graphite); }
 .xhub-card-h { font-size: clamp(26px,3vw,38px); }
 .xhub-script { font-size: clamp(22px,2.4vw,30px); }
 .xhub-card-p { font-size: 15px; line-height: 1.5; color: var(--charcoal); margin: 2px 0 4px; }
-.xhub-more { margin-top: auto; font-family: var(--sans); font-weight: 800; text-transform: uppercase; letter-spacing: .06em; font-size: 12.5px; color: var(--red); }
+.xhub-more { margin-top: auto; font-family: var(--sans); font-weight: 800; text-transform: uppercase; letter-spacing: .06em; font-size: 12.5px; color: var(--red-ink); }
 
 .xhub-cta { margin-top: clamp(34px,5vw,56px); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 22px;
   background: var(--deep); color: var(--cream); border: var(--bd); box-shadow: var(--sh-red); padding: clamp(26px,3vw,40px);
   background-image: radial-gradient(rgba(255,255,255,.06) 1.2px, transparent 1.3px); background-size: 22px 22px; }
 .xhub-cta-h { display: block; color: #fff; font-size: clamp(24px,3vw,38px); margin-top: 8px; }
-.xhub-cta .sysx-kick { display: block; color: var(--red); }
+.xhub-cta .sysx-kick { display: block; color: var(--red-ink); }
 
 /* ── Підсторінка експертизи ── */
 .xp2-back { display: inline-block; font-weight: 700; color: var(--graphite); text-decoration: none; margin-bottom: 22px; }
-.xp2-back:hover { color: var(--red); }
+.xp2-back:hover { color: var(--red-ink); }
 .xp2-head { max-width: 52ch; }
 .xp2-h1 { font-size: clamp(38px,6.4vw,80px); margin-top: 12px; }
 .xp2-script { display: block; font-size: clamp(24px,3vw,38px); margin-top: 10px; }
@@ -2018,21 +2045,21 @@
 .xp2-two .xp2-sec { margin-top: clamp(34px,4.5vw,56px); }
 .xp2-deliv { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
 .xp2-deliv li { position: relative; padding-left: 26px; font-size: 15.5px; line-height: 1.45; color: var(--charcoal); }
-.xp2-deliv li::before { content: '—'; position: absolute; left: 0; color: var(--red); font-weight: 900; }
+.xp2-deliv li::before { content: '—'; position: absolute; left: 0; color: var(--red-ink); font-weight: 900; }
 .xp2-outcome { background: var(--pure-white); border: var(--bd); box-shadow: var(--sh-red); padding: clamp(22px,2.6vw,30px); align-self: start; }
-.xp2-outcome > .sysx-kick { color: var(--red); }
+.xp2-outcome > .sysx-kick { color: var(--red-ink); }
 .xp2-outcome-t { font-size: clamp(18px,2vw,24px); line-height: 1.15; text-transform: none; letter-spacing: -.01em; color: var(--deep); }
 
 .xp2-proc { display: grid; grid-template-columns: repeat(5,1fr); gap: 14px; }
 @media (max-width: 900px) { .xp2-proc { grid-template-columns: 1fr 1fr; } }
 .xp2-proc-i { border: var(--bd); box-shadow: var(--sh); background: var(--pure-white); padding: 16px 16px; display: flex; flex-direction: column; gap: 6px; }
-.xp2-proc-n { font-family: var(--display); font-weight: 900; font-size: 22px; color: var(--red); }
+.xp2-proc-n { font-family: var(--display); font-weight: 900; font-size: 22px; color: var(--red-ink); }
 .xp2-proc-i b { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: 15px; color: var(--deep); }
 .xp2-proc-i span { font-size: 13px; line-height: 1.4; color: var(--charcoal); }
 
 .xp2-nav { margin-top: clamp(36px,5vw,60px); display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; border-top: var(--bd); padding-top: 22px; }
 .xp2-sib { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: clamp(15px,1.8vw,20px); color: var(--deep); text-decoration: none; letter-spacing: -.01em; }
-.xp2-sib:hover { color: var(--red); }
+.xp2-sib:hover { color: var(--red-ink); }
 .xp2-sib-r { text-align: right; margin-left: auto; }
 
 /* ═══ «Про нас» (/people) — бруталіст ═══ */
@@ -2048,7 +2075,7 @@
 .about-mv-c { background: var(--pure-white); border: var(--bd); box-shadow: var(--sh); padding: clamp(24px,2.6vw,34px); }
 .about-mv-red { box-shadow: var(--sh-red); }
 .about-mv-c > .sysx-kick { display: block; margin-bottom: 14px; }
-.about-mv-red > .sysx-kick { color: var(--red); }
+.about-mv-red > .sysx-kick { color: var(--red-ink); }
 .about-mv-t { font-size: clamp(20px,2.3vw,28px); line-height: 1.14; text-transform: none; letter-spacing: -.01em; color: var(--deep); }
 
 .about-sec { margin-top: clamp(40px,5.5vw,72px); }
@@ -2059,7 +2086,7 @@
 .about-val { padding: 24px 22px; border-right: var(--bd); border-bottom: var(--bd); display: flex; flex-direction: column; gap: 8px; }
 .about-val:nth-child(3n) { border-right: 0; }
 @media (max-width: 860px) { .about-val { border-right: 0; } }
-.about-val-n { font-family: var(--display); font-weight: 900; font-size: 20px; color: var(--red); font-style: normal; }
+.about-val-n { font-family: var(--display); font-weight: 900; font-size: 20px; color: var(--red-ink); font-style: normal; }
 .about-val b { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: 18px; letter-spacing: -.01em; color: var(--deep); }
 .about-val span { font-size: 14px; line-height: 1.45; color: var(--charcoal); }
 
@@ -2072,7 +2099,7 @@
 .about-founder-ph { border: var(--bd); overflow: hidden; align-self: start; }
 .about-founder-ph img { display: block; width: 100%; height: auto; filter: grayscale(1) contrast(1.02); }
 .about-founder-l { display: flex; flex-direction: column; gap: 8px; padding: 6px 4px; }
-.about-eyebrow { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--red); font-weight: 700; }
+.about-eyebrow { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--red-ink); font-weight: 700; }
 .about-name { font-size: clamp(26px,3vw,38px); text-transform: none; }
 .about-role { font-weight: 800; text-transform: uppercase; letter-spacing: .04em; font-size: 13px; color: var(--graphite); }
 .about-focus { font-size: 15.5px; line-height: 1.5; color: var(--charcoal); margin: 4px 0; }
@@ -2084,13 +2111,13 @@
 @media (max-width: 860px) { .about-roster { grid-template-columns: 1fr; } }
 .about-role-c { border: var(--bd); box-shadow: var(--sh); background: var(--pure-white); padding: 18px 18px; display: flex; flex-direction: column; gap: 6px; }
 .about-role-c b { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: 15px; letter-spacing: -.01em; color: var(--deep); }
-.about-role-zone { font-size: 10.5px; letter-spacing: .06em; color: var(--red); text-transform: uppercase; font-weight: 700; }
+.about-role-zone { font-size: 10.5px; letter-spacing: .06em; color: var(--red-ink); text-transform: uppercase; font-weight: 700; }
 .about-role-focus { font-size: 13.5px; line-height: 1.45; color: var(--charcoal); }
 
 .about-cta { margin-top: clamp(40px,5.5vw,72px); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 22px;
   background: var(--deep); color: var(--cream); border: var(--bd); box-shadow: var(--sh-red); padding: clamp(26px,3vw,40px);
   background-image: radial-gradient(rgba(255,255,255,.06) 1.2px, transparent 1.3px); background-size: 22px 22px; }
-.about-cta .sysx-kick { display: block; color: var(--red); }
+.about-cta .sysx-kick { display: block; color: var(--red-ink); }
 .about-cta-h { display: block; color: #fff; font-size: clamp(24px,3vw,40px); margin-top: 8px; max-width: 20ch; }
 
 /* ── Express-audit: замовлення аудиту (форма + підтвердження) ── */
@@ -2099,14 +2126,14 @@
 .calc-order-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 @media (max-width: 680px) { .calc-order-row { grid-template-columns: 1fr; } }
 .calc-ordered { border: var(--bd); box-shadow: var(--sh-red); background: var(--pure-white); padding: clamp(22px,2.6vw,32px); margin-top: 8px; display: grid; gap: 10px; }
-.calc-ordered .sysx-kick { color: var(--red); }
+.calc-ordered .sysx-kick { color: var(--red-ink); }
 .calc-ordered-h { font-size: clamp(22px,2.6vw,32px); text-transform: none; }
 .calc-ordered-p { font-size: 15px; line-height: 1.5; color: var(--charcoal); max-width: 60ch; margin: 0; }
 .calc-ordered-next { margin-top: 6px; }
 .calc-ordered-next > .mono { font-weight: 800; text-transform: uppercase; letter-spacing: .1em; font-size: 11px; color: var(--graphite); }
 .calc-ordered-next ol { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 6px; }
 .calc-ordered-next li { font-size: 14.5px; line-height: 1.45; color: var(--charcoal); }
-.calc-ordered-next li::marker { color: var(--red); font-weight: 800; }
+.calc-ordered-next li::marker { color: var(--red-ink); font-weight: 800; }
 .calc-ordered .sysx-calc-actions { margin-top: 8px; }
 
 /* Партнерська модель на сторінці експертизи */
@@ -2114,7 +2141,7 @@
 .xp2-partner-list { list-style: none; margin: 18px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px 28px; }
 @media (max-width: 720px) { .xp2-partner-list { grid-template-columns: 1fr; } }
 .xp2-partner-list li { position: relative; padding-left: 28px; font-size: 15px; line-height: 1.45; color: var(--charcoal); }
-.xp2-partner-list li::before { content: '✓'; position: absolute; left: 0; top: -1px; color: var(--red); font-weight: 900; }
+.xp2-partner-list li::before { content: '✓'; position: absolute; left: 0; top: -1px; color: var(--red-ink); font-weight: 900; }
 .xp2-partner-key { margin-top: 22px; padding: 20px 22px; border: var(--bd); box-shadow: var(--sh-red); background: var(--pure-white); font-weight: 600; font-size: clamp(15px,1.7vw,18px); line-height: 1.5; color: var(--deep); max-width: 68ch; }
 
 /* «Про нас» — розгорнутий блок «Хто ми» + декластеризований ростер */
@@ -2147,7 +2174,7 @@
 @media (max-width: 900px) { .about-roster-3 { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 560px) { .about-roster-3 { grid-template-columns: 1fr; } }
 .about-area-c { gap: 6px; }
-.about-area-n { font-family: var(--display); font-weight: 900; font-size: 18px; color: var(--red); font-style: normal; }
+.about-area-n { font-family: var(--display); font-weight: 900; font-size: 18px; color: var(--red-ink); font-style: normal; }
 .about-area-c b { font-size: 15px; }
 
 /* ─── Сценарій замовлення аудиту (форма → перевірка → готово) ─── */
@@ -2264,7 +2291,7 @@
 .apack-block { position: relative; border: 2px solid var(--deep, #141210); background: var(--pure-white, #fff); padding: 12px 14px 10px; }
 .apack-bt { display: block; font-size: 14px; color: var(--deep, #141210); padding-right: 28px; }
 .apack-bd { margin: 4px 0 6px; font-size: 11.5px; line-height: 1.45; color: var(--graphite, #6B675E); }
-.apack-bn { font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--red, #F5301C); }
+.apack-bn { font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--red-ink, #D8250F); }
 
 .apack-bdocs { margin: 6px 0 0; font-size: 10.5px; color: var(--graphite, #6B675E); line-height: 1.4; }
 
@@ -2277,7 +2304,7 @@
 .apack-scope:hover { transform: translate(-2px, -2px); }
 .apack-vol .apack-bd { margin: 6px 0 8px; }
 .apack-card.is-dim, .apack-block.is-dim { opacity: .45; }
-.apack-up { background: none; border: 0; padding: 0; color: var(--red); font-weight: 800; cursor: pointer; text-align: left; }
+.apack-up { background: none; border: 0; padding: 0; color: var(--red-ink); font-weight: 800; cursor: pointer; text-align: left; }
 
 /* ── Адмінка · Проекти: ручне створення ── */
 .adm-proj-new { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 10px 0 16px; padding: 12px 14px; border: 1px dashed var(--silver); background: color-mix(in srgb, var(--pure-white) 55%, transparent); }
@@ -2288,12 +2315,12 @@
 .adm-dfun-row { display: grid; grid-template-columns: 150px 1fr 34px 44px auto; gap: 10px; align-items: center; }
 .adm-dfun-l { font-size: 12.5px; font-weight: 700; }
 .adm-dfun-bar { background: color-mix(in srgb, var(--charcoal) 8%, transparent); height: 14px; overflow: hidden; }
-.adm-dfun-bar i { display: block; height: 100%; background: var(--red); }
+.adm-dfun-bar i { display: block; height: 100%; background: var(--red-ink); }
 .adm-dfun-row:nth-child(4) .adm-dfun-bar i, .adm-dfun-row:nth-child(5) .adm-dfun-bar i { background: #1F6E4E; }
 .adm-dfun-n { text-align: right; font-weight: 700; }
 .adm-dfun-pct { color: var(--graphite); font-size: 11px; }
 .adm-dfun-here { color: var(--graphite); font-size: 10.5px; }
-.adm-dfun-rej { color: var(--red); margin: 2px 0 0; font-size: 12px; }
+.adm-dfun-rej { color: var(--red-ink); margin: 2px 0 0; font-size: 12px; }
 .adm-tr-deep { display: grid; grid-template-columns: 1fr auto auto auto; gap: 12px; align-items: center; padding: 9px 12px; border-bottom: 1px solid var(--line); }
 @media (max-width: 820px) { .adm-dfun-row { grid-template-columns: 110px 1fr 30px; } .adm-dfun-pct, .adm-dfun-here { display: none; } .adm-tr-deep { grid-template-columns: 1fr auto; } }
 
@@ -2376,7 +2403,7 @@ body.kb-open .pf-bg { display: none !important; }
 /* Зламана панель. Класу не існувало взагалі: плашка помилки рендерилась без
    стилю й зливалася з рештою інтерфейсу — тобто збій було легко не помітити. */
 .adm-panel-broken { border: 2px solid var(--red); background: var(--pure-white); padding: 16px 18px; display: grid; gap: 10px; }
-.adm-panel-broken .adm-col-h { color: var(--red); }
+.adm-panel-broken .adm-col-h { color: var(--red-ink); }
 .adm-panel-broken .adm-empty { color: var(--charcoal); }
 
 /* Розгортання технічних деталей у зламаній панелі: менеджеру не треба їх бачити
@@ -2424,7 +2451,7 @@ body.kb-open .pf-bg { display: none !important; }
 .adm-ready-doc { border: 1px solid var(--line); padding: 9px 11px; display: grid; gap: 6px; }
 .adm-ready-doc-h { display: flex; align-items: baseline; gap: 8px; }
 .adm-ready-doc-h span { flex: 1; font-size: 13px; }
-.adm-ready-pct.is-ok { color: #1F6E4E; } .adm-ready-pct.is-mid { color: #C58A00; } .adm-ready-pct.is-low { color: var(--red); }
+.adm-ready-pct.is-ok { color: #1F6E4E; } .adm-ready-pct.is-mid { color: #C58A00; } .adm-ready-pct.is-low { color: var(--red-ink); }
 .adm-ready-bar { height: 4px; background: var(--silver); }
 .adm-ready-bar i { display: block; height: 100%; background: var(--deep); }
 .adm-ready-miss { margin: 0; font-size: 11px; color: var(--graphite); line-height: 1.4; }

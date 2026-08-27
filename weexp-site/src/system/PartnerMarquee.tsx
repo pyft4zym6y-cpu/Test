@@ -14,8 +14,11 @@ const ITEMS = [
 
 export function PartnerMarquee() {
   const t = useT();
+  // section, а не div: у голого div немає ролі, і aria-label на ньому
+  // заборонений — скрінрідер його просто ігнорував, тобто підпис не звучав
+  // узагалі. У section з доступним іменем роль region з'являється сама.
   return (
-    <div className="sysx-marquee" aria-label={t('Технологічний стек і партнери', 'Technology stack & partners')}>
+    <section className="sysx-marquee" aria-label={t('Технологічний стек і партнери', 'Technology stack & partners')}>
       <span className="sysx-marquee-lab mono" aria-hidden="true">{t('Працюємо зі стеком лідерів', "We work with the leaders' stack")}</span>
       <div className="sysx-marquee-view" aria-hidden="true">
         <div className="sysx-marquee-track">
@@ -26,6 +29,6 @@ export function PartnerMarquee() {
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 }
