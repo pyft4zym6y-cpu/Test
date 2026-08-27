@@ -4,6 +4,20 @@ import { RouteSeo } from '@/lib/seo';
 import { Engagement } from '@/lib/engagement';
 import { Toaster } from '@/lib/toast';
 import '@/lib/primitives.css';
+import { langOf } from '@/i18n';
+
+/**
+ * Переклад без контексту: мова визначається прямо з URL.
+ *
+ * Потрібен там, де хук useT недоступний або ненадійний — у класовому
+ * ErrorBoundary і в Suspense-заглушці маршруту. У момент збою або до монтування
+ * сторінки контекст може бути ще (або вже) не тим, а екран усе одно має
+ * говорити мовою відвідувача.
+ */
+function trByUrl(): (uk: string, en: string) => string {
+  const en = typeof location !== 'undefined' && langOf(location.pathname) === 'en';
+  return (uk, eng) => (en ? eng : uk);
+}
 
 /**
  * Запобіжник від «білого екрана»: будь-яка помилка рендера всередині маршрутів
@@ -25,14 +39,26 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
   }
   render() {
     if (!this.state.error) return this.props.children;
+    /*
+     * Мова беремо з URL напряму, а не через useT: це класовий компонент, і —
+     * головне — саме тут контекст міг зламатись разом зі сторінкою. Екран
+     * помилки має працювати, коли не працює все інше.
+     *
+     * Раніше він був лише українською: англомовний відвідувач у момент збою
+     * бачив незрозумілий текст — найгірший з можливих моментів для цього.
+     */
+    const tr = trByUrl();
     return (
       <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center', padding: '40px 20px', fontFamily: 'Golos Text, system-ui, sans-serif', color: '#141210' }}>
         <div style={{ maxWidth: 460, border: '2.5px solid #141210', boxShadow: '6px 6px 0 #141210', background: '#fff', padding: '28px 26px' }}>
-          <b style={{ display: 'block', fontSize: 22, marginBottom: 8 }}>Сторінка не завантажилась</b>
-          <p style={{ color: '#6B675E', marginBottom: 18, fontSize: 14, lineHeight: 1.5 }}>Стався технічний збій. Ваші дані збережені — перезавантажте сторінку або поверніться на сайт, нічого не втрачено.</p>
+          <b style={{ display: 'block', fontSize: 22, marginBottom: 8 }}>{tr('Сторінка не завантажилась', 'This page failed to load')}</b>
+          <p style={{ color: '#6B675E', marginBottom: 18, fontSize: 14, lineHeight: 1.5 }}>{tr(
+            'Стався технічний збій. Ваші дані збережені — перезавантажте сторінку або поверніться на сайт, нічого не втрачено.',
+            'A technical error occurred. Your data is saved — reload the page or go back to the site, nothing is lost.',
+          )}</p>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            <button onClick={() => location.reload()} style={{ border: '2.5px solid #141210', background: '#FFD200', padding: '10px 18px', fontWeight: 700, cursor: 'pointer' }}>Перезавантажити</button>
-            <a href="/" style={{ border: '2.5px solid #141210', background: '#fff', padding: '10px 18px', fontWeight: 700, textDecoration: 'none', color: '#141210' }}>На головну</a>
+            <button onClick={() => location.reload()} style={{ border: '2.5px solid #141210', background: '#FFD200', padding: '10px 18px', fontWeight: 700, cursor: 'pointer' }}>{tr('Перезавантажити', 'Reload')}</button>
+            <a href={tr('/', '/en')} style={{ border: '2.5px solid #141210', background: '#fff', padding: '10px 18px', fontWeight: 700, textDecoration: 'none', color: '#141210' }}>{tr('На головну', 'Back to home')}</a>
           </div>
         </div>
       </div>
@@ -42,7 +68,8 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
 
 // Легкий індикатор замість порожнечі, поки вантажиться lazy-чанк сторінки.
 function RouteLoading() {
-  return <div style={{ minHeight: '50vh', display: 'grid', placeItems: 'center', color: '#6B675E', fontFamily: 'JetBrains Mono, monospace', fontSize: 13 }}>Завантаження…</div>;
+  const tr = trByUrl();
+  return <div style={{ minHeight: '50vh', display: 'grid', placeItems: 'center', color: '#6B675E', fontFamily: 'JetBrains Mono, monospace', fontSize: 13 }}>{tr('Завантаження…', 'Loading…')}</div>;
 }
 
 // Нова сторінка — на початок (щоб перехід, напр. «Формати і ціни», відкривався

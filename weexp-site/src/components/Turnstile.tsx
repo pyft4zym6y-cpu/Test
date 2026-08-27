@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useT } from '@/i18n';
 
 /**
  * Cloudflare Turnstile — перевірка «я не робот» на відкритих формах.
@@ -38,6 +39,7 @@ function loadScript(): Promise<void> {
 }
 
 export function Turnstile({ onToken, onFail }: { onToken: (t: string) => void; onFail?: (why: string) => void }) {
+  const t = useT();
   const box = useRef<HTMLDivElement>(null);
   const [failed, setFailed] = useState(false);
   const cb = useRef(onToken); cb.current = onToken;
@@ -72,7 +74,13 @@ export function Turnstile({ onToken, onFail }: { onToken: (t: string) => void; o
   return (
     <div className="ts-box">
       <div ref={box} />
-      {failed && <p className="mono ts-err">Перевірку «я не робот» не вдалося завантажити (блокувальник реклами?). Форму все одно можна надіслати — якщо не пройде, напишіть на hello@weexp.agency.</p>}
+      {/* Віджет стоїть на /diagnose і /contact — обидві сторінки мають англійську
+          версію. Повідомлення про збій було лише українською: відвідувач, у якого
+          капча не піднялась, не міг зрозуміти, чи можна взагалі надсилати форму. */}
+      {failed && <p className="mono ts-err">{t(
+        'Перевірку «я не робот» не вдалося завантажити (блокувальник реклами?). Форму все одно можна надіслати — якщо не пройде, напишіть на hello@weexp.agency.',
+        'The “I’m not a robot” check failed to load (ad blocker?). You can still submit the form — if it does not go through, email hello@weexp.agency.',
+      )}</p>}
     </div>
   );
 }
