@@ -6,7 +6,7 @@ import { sendLead } from '@/lib/leads';
 import { Turnstile, turnstileEnabled } from '@/components/Turnstile';
 import { track } from '@/lib/analytics';
 import { DIAG_SUMMARY_KEY } from '@/data/xray';
-import { getExpressAudit } from '@/system/cabinetData';
+import { getExpressAudit } from '@/system/expressLocal';
 import { eur } from '@/system/lossModel';
 import './system.css';
 

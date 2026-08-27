@@ -6,44 +6,14 @@
  * Експрес-витік зберігається локально одразу (без реєстрації), щоб «Мої аудити»
  * показали число ще до входу; профіль і воронка — у DiagRecord (Supabase/local).
  */
-import type { LossInput, LossResult } from './lossModel';
 import { loadDiag, saveDiag, type DiagRecord, type DiagUser } from '@/lib/supa';
+import { getExpressAudit, type ExpressAudit } from './expressLocal';
 
-const EXPRESS_KEY = 'weexp:express-audit-v1';
-
-export type ExpressAudit = {
-  at: string;
-  input: LossInput;
-  total: number;
-  range: [number, number];
-  primary: string;
-  secondary?: string;
-  overallHealth: number;
-  health?: { key: string; score: number }[];   // здоров'я 8 систем
-  leaks?: { key: string; amount: number }[];    // джерела витоку, €/рік
-  actions?: string[];                            // ключі рекомендацій
-};
-
-/** Калькулятор викликає це на кроці «витік» — повний знімок для кабінету й адмінки. */
-export function saveExpressAudit(input: LossInput, res: LossResult): void {
-  const rec: ExpressAudit = {
-    at: new Date().toISOString(), input,
-    total: res.total, range: res.range, primary: res.primary, secondary: res.secondary, overallHealth: res.overallHealth,
-    health: res.health.map((h) => ({ key: h.key, score: h.score })),
-    leaks: res.leaks.map((l) => ({ key: l.key, amount: l.amount })),
-    actions: res.actions.map((a) => a.key),
-  };
-  try { localStorage.setItem(EXPRESS_KEY, JSON.stringify(rec)); } catch { /* noop */ }
-}
-
-export function getExpressAudit(): ExpressAudit | null {
-  try { const r = localStorage.getItem(EXPRESS_KEY); return r ? (JSON.parse(r) as ExpressAudit) : null; } catch { return null; }
-}
-
-/** Видалити збережений експрес-аудит (кнопка «Видалити» в кабінеті). */
-export function clearExpressAudit(): void {
-  try { localStorage.removeItem(EXPRESS_KEY); } catch { /* noop */ }
-}
+/* Локальний експрес-аудит переїхав у `expressLocal.ts` — модуль без залежностей.
+   Реекспорт лишається, щоб кабінет і калькулятор не переписувати: тут тепер
+   тільки те, що справді працює зі сховищем акаунта. */
+export { saveExpressAudit, getExpressAudit, clearExpressAudit } from './expressLocal';
+export type { ExpressAudit } from './expressLocal';
 
 /**
  * Прив'язати локальний експрес-аудит до акаунту: записати знімок у DiagRecord

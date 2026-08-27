@@ -4,7 +4,32 @@
  * налаштований (env RESEND_API_KEY); 'error' — мережа/збій відправлення.
  */
 import { getUtmString } from '@/lib/utm';
-import { authHeaders } from '@/lib/supa';
+
+/**
+ * Заголовки для /api/lead. Раніше тут стояв статичний `import { authHeaders }
+ * from '@/lib/supa'` — і кожен відвідувач, який просто відкрив контактну форму
+ * чи калькулятор, тягнув увесь SDK Supabase (239 кБ) заради одного заголовка,
+ * якого в нього все одно немає: анонімна людина не має сесії.
+ *
+ * Тепер SDK підвантажується ЛИШЕ коли в localStorage справді лежить сесія.
+ * Ключ Supabase зберігає у форматі `sb-<project-ref>-auth-token`, тож наявність
+ * входу видно без завантаження бібліотеки. Немає ключа — немає й запиту.
+ */
+async function leadHeaders(): Promise<Record<string, string>> {
+  const plain = { 'content-type': 'application/json' };
+  let signedIn = false;
+  try {
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const k = localStorage.key(i) || '';
+      if (/^sb-.*-auth-token$/.test(k)) { signedIn = true; break; }
+    }
+  } catch { /* приватне вікно без сховища — вважаємо анонімом */ }
+  if (!signedIn) return plain;
+  try {
+    const { authHeaders } = await import('@/lib/supa');
+    return await authHeaders();
+  } catch { return plain; }
+}
 
 export type LeadPayload = {
   source: string;
@@ -36,7 +61,7 @@ export async function sendLead(payload: LeadPayload): Promise<LeadResult> {
     // кабінету (де віджета перевірки немає) від анонімної форми сайту.
     const r = await fetch('/api/lead', {
       method: 'POST',
-      headers: await authHeaders(),
+      headers: await leadHeaders(),
       body: JSON.stringify(body),
     });
     const j = await r.json().catch(() => ({}));
