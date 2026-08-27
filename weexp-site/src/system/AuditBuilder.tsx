@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { escapeHtml } from '@/lib/escapeHtml';
 import { INK } from './docInk';
+import { bindPrint, printButton } from '@/lib/printDoc';
 import {
   loadTemplate, saveTemplate, uid, Q_TYPES, CLIENT_ROLES, frameworkFor, customerArchetypeBlock,
   type AuditTemplate, type Block, type Question, type QType,
@@ -74,11 +75,12 @@ table.toc{border-collapse:collapse;width:100%;margin-bottom:8px}
 <p class="lead">Єдиний вичерпний фреймворк діагностики e-commerce: ${tpl.blocks.length} модулів. Зірочка * — обовʼязкове; бейдж показує тип позиції; сірим — куди йде відповідь у пакеті документів.</p>
 <div class="kpis"><div class="kpi"><b>${tpl.blocks.length}</b><span>модулів</span></div><div class="kpi"><b>${counts.q}</b><span>питань</span></div><div class="kpi"><b>${counts.a}</b><span>доступів</span></div><div class="kpi"><b>${counts.f}</b><span>файлів</span></div></div>
 <table class="toc">${toc}</table>
-<button class="noprint" onclick="window.print()" style="margin:6px 0;background:${INK.red};color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer">🖨 Друк / зберегти в PDF</button>
+${printButton(INK.red, '6px 0')}
 ${blocks}
 <div class="foot">WEEXP — Commerce OS · weexp.agency · Внутрішній робочий документ: повний перелік питань, доступів і файлів глибокого аудиту.</div>
 </div><scr${''}ipt>window.onload=function(){setTimeout(function(){window.print()},400)}</scr${''}ipt></body></html>`;
   w.document.open(); w.document.write(html); w.document.close();
+  bindPrint(w);
 }
 
 export function AuditBuilder() {

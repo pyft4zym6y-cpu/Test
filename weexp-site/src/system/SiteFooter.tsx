@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useT, useLp } from '@/i18n';
 import './system.css';
@@ -32,13 +31,17 @@ export function SiteFooter() {
   const year = 2026;
   const t = useT();
   const lp = useLp();
-  // Helper DMCA реєструє адресу сторінки в dmca.com → сканування → статус «Protected».
-  useEffect(() => {
-    if (!DMCA_ID || document.getElementById('dmca-badge-helper')) return;
-    const s = document.createElement('script');
-    s.id = 'dmca-badge-helper'; s.src = 'https://images.dmca.com/Badges/DMCABadgeHelper.min.js'; s.async = true;
-    document.body.appendChild(s);
-  }, []);
+  /*
+   * Тут вантажився helper DMCA — сторонній скрипт із images.dmca.com на КОЖНІЙ
+   * сторінці заради значка в підвалі. Коментар вище двадцятьма рядками при
+   * цьому обіцяв рівно протилежне: «статичний бейдж, без зовнішнього
+   * helper-скрипта → CSP не чіпаємо». Код казав одне, коментар інше.
+   *
+   * Скрипт прибрано: він єдиний ламав Content-Security-Policy, а натомість
+   * давав чужому домену право виконувати будь-що на нашому походженні —
+   * дорого за значок. Значок лишається посиланням-картинкою нижче: він і
+   * веде на сторінку статусу, де перевірка й відбувається.
+   */
   return (
     <footer className="sfoot sysx">
       <div className="sfoot-in">

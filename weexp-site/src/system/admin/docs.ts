@@ -20,6 +20,7 @@ import '../system.css';
 import '../cabinet.css';
 import { ST, escH, openPrintDoc } from './shared';
 import { INK } from '../docInk';
+import { bindPrint, printButton } from '@/lib/printDoc';
 
 export async function openClientDossier(row: AdminRow) {
   const w = window.open('', '_blank');
@@ -79,7 +80,7 @@ td.c{text-align:center;width:56px;font-weight:600}
 </style></head><body><div class="bar"></div><div class="wrap">
 <div class="top"><div><div class="logo">WEEXP<span>.</span></div><div class="sub">Досьє клієнта · конфіденційно</div></div>
 <div class="meta">${escH(row.email)}<br>сформовано ${escH(now)}${code ? `<br>код: <span class="code">${escH(code)}</span>` : ''}</div></div>
-<button class="noprint" onclick="window.print()" style="margin-bottom:14px;background:${INK.red};color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer">🖨 Друк / зберегти в PDF</button>
+${printButton(INK.red, '0 0 14px')}
 <h2>Профіль компанії</h2>${companyRows.some(([, v]) => v) ? `<table>${kv(companyRows)}</table>` : '<p class="empty">Профіль не заповнено.</p>'}
 <h2>Експрес-аудит</h2>${ex ? `<p class="money">${escH(eur(ex.total))} <i>/ рік · витік</i></p><table>${kv(exRows)}</table>` : '<p class="empty">Експрес-аудит не проходив.</p>'}
 ${asmKeys.length ? `<h2>C-level оцінка модулів${asmAvg != null ? ` · зрілість ${asmAvg}/100` : ''}</h2><table><tr><td class="k">Модуль</td><td class="c">Score</td><td class="c">Prio</td><td>Розрив / рекомендація</td></tr>${asmRows}</table>` : ''}
@@ -87,6 +88,7 @@ ${asmKeys.length ? `<h2>C-level оцінка модулів${asmAvg != null ? ` 
 <div class="foot">WEEXP — Commerce OS · weexp.agency · hello@weexp.agency · Документ містить конфіденційні дані клієнта. Не для розповсюдження.</div>
 </div></body></html>`;
   w.document.open(); w.document.write(html); w.document.close();
+  bindPrint(w);
 }
 
 // Горизонтальні вкладки повної сторінки клієнта (замість бокового drawer).
@@ -130,11 +132,12 @@ h2{font-size:14px;letter-spacing:.04em;color:${INK.red};margin:22px 0 8px;border
 <div class="top"><div><div class="logo">WEEXP<span>.</span></div><div class="sub">Документ аудиту · конфіденційно</div></div>
 <div class="meta">${escH(email)}<br>сформовано ${escH(now)}</div></div>
 <h1>${escH(doc.title)}</h1>
-<button class="noprint" onclick="window.print()" style="margin:14px 0;background:${INK.red};color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer">🖨 Друк / зберегти в PDF</button>
+${printButton(INK.red, '14px 0')}
 ${body}
 <div class="foot">WEEXP — Commerce OS · weexp.agency · hello@weexp.agency · Документ містить конфіденційні дані клієнта. Не для розповсюдження.</div>
 </div></body></html>`;
   w.document.open(); w.document.write(html); w.document.close();
+  bindPrint(w);
 }
 
 /** Редактор документа аудиту: коригуємо те, що зібрав рушій; версіонуємо; експорт у PDF. */

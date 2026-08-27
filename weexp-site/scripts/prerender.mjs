@@ -52,6 +52,77 @@ const ROSTER = [
 ];
 const CHANNELS = ['Власний сайт', 'Amazon', 'Allegro', 'eBay', 'Kaufland та локальні маркетплейси', 'Etsy'];
 
+/*
+ * EN-відповідники спільних блоків. До цього англійські сторінки отримували
+ * тільки <h1> і опис — 117–160 символів статики проти 300–998 в українських.
+ * Googlebot виконує JS і побачить усе; краулери AI-пошуку здебільшого ні, а
+ * robots.txt запрошує їх окремо й свідомо. Виходило запрошення без змісту.
+ * Числа, ролі й ринки тут ті самі, що в UK-блоках вище.
+ */
+const SYSTEMS_EN = [
+  'Strategy & Management — a sales strategy you can actually steer',
+  'Commercial Performance — more revenue is not enough; make commerce profitable',
+  'Demand & Customer — turn traffic into customers, and customers into value',
+  'Experience & Conversion — make every step of the customer path work',
+  'Operations & Fulfillment — selling is pointless if you cannot deliver',
+  'Data, Technology & Integration — one business, one source of truth',
+  'Organization & Operating Model — build a business that needs no heroes',
+  'Expansion & Markets — the EU and US as a separate contour, not an attempt',
+];
+const SERVICES_EN = 'Web development, ERP automation, UX/UI and CRO, SEO, analytics/BI, retention/CRM, operating model and expansion — all eight systems under one roof.';
+const PROOF_EN = [
+  'Premium textiles: turnover ×18 (€48K → €900K/year), conversion 0.8% → 4.2%',
+  'Consumer DTC brand: +65% turnover in 9 months, launched in 6 markets',
+  'Fashion manufacturer: ≥19M UAH/year of missed turnover identified',
+  'Cosmetics holding: report assembly 6 days → 4 hours, GA4 accuracy 78% → 99%',
+  'Electronics: product-page conversion ×2.9; checkout 6 → 2 steps',
+];
+const ROSTER_EN = [
+  'Founder & Architect of Commerce — strategy, operating model, governance',
+  'Head of Commerce — profitable commerce: conversion, AOV, repeat, margin',
+  'Retention & CRM Architect — traffic into customers, customers into LTV',
+  'CRO / UX Lead — a working customer path: catalog, product, checkout, mobile',
+  'Operations & Fulfillment Lead — SLA, redemption, delivery, returns',
+  'Data & BI Engineer — end-to-end analytics and P&L for e-commerce',
+  'Integration Engineer — CMS/CRM/ERP/WMS as a single contour',
+  'Demand & SEO Strategist — organic and brand instead of paid dependency',
+  'Delivery Lead / PM — execution in waves against a Definition of Done',
+];
+const CHANNELS_EN = ['Own store', 'Amazon', 'Allegro', 'eBay', 'Kaufland and local marketplaces', 'Etsy'];
+const DIAG_STEPS = ['Профіль і симптоми', 'Ваш витік у грошах', 'Карта восьми систем', 'Кабінет Tier-2', 'Поглиблений AI-розбір'];
+const DIAG_STEPS_EN = ['Profile and symptoms', 'Your leak, in money', 'Map of the eight systems', 'Tier-2 client cabinet', 'In-depth AI review'];
+const FORMATS_EN = [
+  '01 Audit — 4–6 weeks: store audit $2,900 or full e-commerce department audit $4,900',
+  '02 Consulting & support — $50/hour, min. $1,500/month: we are the architect and the control, your team executes',
+  '03 Managed — from $4,900/month, 6–12 months: we run the project and carry the responsibility',
+];
+
+const NEXT_STEPS = [
+  'Короткий дзвінок 20–30 хвилин: що болить, що вже пробували, які цифри є',
+  'Перший зріз розриву у грошах — за вашими даними, а не за середніми по ринку',
+  'Карта восьми систем: де саме витікає виторг і що чинити першим',
+  'Формат співпраці на вибір: аудит, консалтинг і супровід або управління під ключ',
+];
+const PACK = [
+  'Презентація аудиту — головні висновки для власника й ЛПР',
+  'Діагностичний звіт: 13 аудитів по восьми системах онлайн-продажів',
+  'Фінансовий звіт із містком P&L — де саме втрачається маржа',
+  'Роадмапа впровадження хвилями, з Definition of Done на кожну',
+  'Комерційна пропозиція і протокол передачі системи',
+];
+
+/** Тіло EN-сторінки за її адресою. Порожньо — сторінка обійдеться описом. */
+const EN_BODY = {
+  '/': `<p>${esc(SERVICES_EN)}</p><h2>Eight systems of online sales</h2>${ul(SYSTEMS_EN)}`,
+  '/proof': `<p>Not promises — before→after deltas from CRM, ERP and GA4. Every case is anonymous; every number is real.</p>${ul(PROOF_EN)}`,
+  '/people': `<p>WEEXP was founded by Pavlo Sydorenko, Founder &amp; Architect of Commerce (8+ years in international e-commerce: US · EU · MENA). Each of the eight systems of online sales has an owner accountable for the result — specialists, not generalists.</p>${ul(ROSTER_EN)}`,
+  '/expansion': `<p>Europe and the US are a separate business contour. We launch systematically and across all storefronts of a market at once. Priority markets: PL, DE, CZ, USA.</p><h2>Market storefronts</h2>${ul(CHANNELS_EN)}`,
+  '/diagnose': `<p>One instrument, not two: first we count how much leaks every year; then the map of eight systems, the main bottleneck, a cabinet with your data and an in-depth AI review. These are steps of one diagnosis.</p><h2>Steps of the diagnosis</h2>${ul(DIAG_STEPS_EN)}`,
+  '/contact': `<p>Leave a contact — we come back with the first cut of the gap, in money. For e-commerce manufacturers and D2C brands at $0.5–10M. This is not work yet; this is a diagnosis.</p>`,
+  '/audit-pack': `<p>Before the start you see the full list of documents you will receive: intake (Discovery), the audit core, the evidence base, the plan and the handover.</p>`,
+  '/pricing': `<p>The difference is not in «service packages» but in who carries final responsibility for the result.</p>${ul(FORMATS_EN)}<p>Every engagement starts with a diagnosis.</p>`,
+};
+
 const ROUTES = [
   { path: '/', og: 'home', title: 'WEEXP — Commerce OS: система замість героїзму',
     desc: 'Commerce OS для D2C та e-commerce брендів $0.5–10M: діагноз у грошах, побудова системи й вихід на ЄС/США — щоб виторг ріс без вас.',
@@ -70,10 +141,10 @@ const ROUTES = [
     content: `<h1>Діагностика e-commerce: від числа до плану</h1><p>Один інструмент, а не два: спершу рахуємо, скільки витікає щороку; далі — карта восьми систем, головний bottleneck, кабінет із вашими даними та поглиблений AI-розбір. Це кроки однієї діагностики.</p><h2>Кроки діагностики</h2>${ul(['Профіль і симптоми', 'Ваш витік у грошах', 'Карта восьми систем', 'Кабінет Tier-2', 'Поглиблений AI-розбір'])}` },
   { path: '/contact', og: 'contact', title: `Контакт — запит на діагноз${SUF}`,
     desc: 'Залиште контакт — повернемося з планом діагностики у грошах. Для e-commerce виробників і D2C-брендів $0.5–10M.',
-    content: `<h1>Зростання — це система. Почнімо з діагнозу.</h1><p>Залиште контакт — повернемося з першим зрізом розриву у грошах. Для e-commerce виробників і D2C-брендів $0.5–10M.</p>` },
+    content: `<h1>Зростання — це система. Почнімо з діагнозу.</h1><p>Залиште контакт — повернемося з першим зрізом розриву у грошах. Для e-commerce виробників і D2C-брендів $0.5–10M. Це ще не робота, це діагноз.</p><h2>Що буде далі</h2>${ul(NEXT_STEPS)}<p>Працюємо з українськими виробниками та D2C-брендами: власний сайт, маркетплейси, вихід на ЄС і США. Пишіть на hello@weexp.agency або лишайте контакт у формі.</p>` },
   { path: '/audit-pack', og: 'pricing', title: `Склад пакета аудиту — 19 артефактів${SUF}`,
     desc: 'Повний перелік документів глибокого аудиту WEEXP: від брифу й карти доступів до роадмапи хвилями і протоколу передачі.',
-    content: `<h1>Пакет аудиту — 19 артефактів</h1><p>До старту ви бачите повний перелік документів, які отримаєте: вхід (Discovery), ядро аудиту, доказова база, план і закриття.</p>` },
+    content: `<h1>Пакет аудиту — 19 артефактів</h1><p>До старту ви бачите повний перелік документів, які отримаєте: вхід (Discovery), ядро аудиту, доказова база, план і закриття. Аудит закінчується не презентацією, а переданою системою.</p><h2>Що входить</h2>${ul(PACK)}<p>Кожен артефакт має власника з боку WEEXP і Definition of Done — інакше він не вважається зданим.</p>` },
   { path: '/pricing', og: 'pricing', title: `Формати та ціни${SUF}`,
     desc: 'Три формати співпраці WEEXP — аудит, консалтинг і супровід, управління під ключ. Відкриті ціни; різниця — у тому, хто відповідає за результат.',
     content: `<h1>Три формати — за рівнем нашої відповідальності</h1><p>Різниця не в «пакетах послуг», а в тому, хто несе фінальну відповідальність за результат.</p>${ul(['01 Аудит — 4–6 тижнів: аудит інтернет-магазину $2,900 або аудит відділу e-commerce в цілому $4,900', '02 Консалтинг і супровід — $50/год, мін. $1,500/міс: ми архітектор і контроль, руки клієнта', '03 Управління під ключ — від $4,900/міс, 6–12 міс: проєкт ведемо ми, відповідальність наша'])}<p>Будь-яка співпраця починається з діагностики.</p>` },
@@ -119,7 +190,9 @@ for (const r of ROUTES) {
 for (const [slug, m] of Object.entries(SEO.expansion)) {
   ROUTES.push({
     path: `/expansion/${slug}`, og: 'expansion', title: m.uk[0], desc: m.uk[1],
-    content: `<h1>${esc(m.uk[0].split(' — ')[0])}</h1><p>${esc(m.uk[1])}</p>`,
+    // Раніше тіло було одним абзацом — тим самим описом, що вже в <meta>.
+    // Додаємо контекст, спільний для всіх напрямів експансії.
+    content: `<h1>${esc(m.uk[0].split(' — ')[0])}</h1><p>${esc(m.uk[1])}</p><h2>Як це вбудовано в систему</h2><p>Напрям не існує окремо: він частина Commerce OS і міряється тими самими грошима, що й решта. Спершу діагностика за даними CRM/ERP/GA4, далі — план хвилями з Definition of Done, далі — робота до економіки, а не до звіту.</p>${ul(SYSTEMS)}`,
   });
 }
 
@@ -129,10 +202,15 @@ for (const r of ROUTES) {
   const key = r.path;
   const m = SEO.routes[key] || (key.startsWith('/expansion/') ? SEO.expansion[key.slice('/expansion/'.length)] : null);
   if (!m) continue;
+  const head = `<h1>${esc(m.en[0].split(' — ')[0].replace(' · WEEXP', ''))}</h1><p>${esc(m.en[1])}</p>`;
   EN.push({
     path: key === '/' ? '/en' : `/en${key}`, og: r.og, lang: 'en',
     title: m.en[0], desc: m.en[1],
-    content: `<h1>${esc(m.en[0].split(' — ')[0].replace(' · WEEXP', ''))}</h1><p>${esc(m.en[1])}</p>`,
+    // Підсторінки експансії йдуть спільним хвостом — так само, як українські:
+    // напрям не існує окремо, він частина Commerce OS.
+    content: head + (EN_BODY[key] ?? (key.startsWith('/expansion/')
+      ? `<h2>How it fits the system</h2><p>A direction does not exist on its own: it is part of Commerce OS and is measured in the same money as the rest. First a diagnosis on CRM/ERP/GA4 data, then a plan in waves with a Definition of Done, then work carried through to the economics — not to a report.</p>${ul(SYSTEMS_EN)}`
+      : '')),
   });
 }
 ROUTES.push(...EN);

@@ -21,6 +21,7 @@ import '../system.css';
 import '../cabinet.css';
 import { escapeHtml } from '@/lib/escapeHtml';
 import { INK } from '../docInk';
+import { bindPrint, printButton } from '@/lib/printDoc';
 
 /** Домен рушія → ключ нашого модуля (реекспорт для UI імпорту зрілості). */
 export const MATURITY_MODULE_OF = MATURITY_DOMAIN_MODULE;
@@ -298,7 +299,7 @@ th{color:#6B675E;font-weight:600;font-size:11px;text-transform:uppercase;letter-
 <div class="top"><div><div class="logo">WEEXP<span>.</span></div><div style="font-family:monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B675E">Глибокий аудит · документ пакета</div></div>
 <div class="meta">${email}<br>сформовано ${now}</div></div>
 <h1>${title}</h1>
-<button class="noprint" onclick="window.print()" style="margin:0 0 14px;background:${INK.red};color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer">🖨 Друк / зберегти в PDF</button>
+${printButton(INK.red, '0 0 14px')}
 ${bodyHtml}
 <div class="foot">WEEXP — Commerce OS · weexp.agency · hello@weexp.agency · Конфіденційно, не для розповсюдження.</div>
 </div></body></html>`;
@@ -306,6 +307,7 @@ ${bodyHtml}
   const w = window.open('', '_blank');
   if (!w) { toast('Дозвольте спливаючі вікна, щоб відкрити документ', 'err'); return; }
   w.document.open(); w.document.write(html); w.document.close();
+  bindPrint(w);
 }
 /** Історична назва; єдина реалізація живе в lib/escapeHtml. */
 export const escH = escapeHtml;

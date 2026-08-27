@@ -22,6 +22,7 @@ import './system.css';
 import './cabinet.css';
 import { escapeHtml } from '@/lib/escapeHtml';
 import { INK, scoreInk, scoreFill } from './docInk';
+import { bindPrint, printButton } from '@/lib/printDoc';
 
 /**
  * /cabinet — персональний кабінет клієнта як ХАБ однієї воронки. Зліва — розділи,
@@ -608,7 +609,7 @@ ol{margin:6px 0 0;padding-left:0;list-style:none}ol li{padding:6px 0;border-bott
 </style></head><body><div class="bar"></div><div class="wrap">
 <div class="top"><div><div class="logo">WEEXP<span>.</span></div><div style="font-family:monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B675E">Експрес-аудит · результат</div></div>
 <div class="meta">${email ? escapeHtml(email) + '<br>' : ''}пройдено ${escapeHtml(new Date(express.at).toLocaleString('uk-UA'))}</div></div>
-<button class="noprint" onclick="window.print()" style="margin:8px 0;background:${INK.red};color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer">🖨 Друк / зберегти в PDF</button>
+${printButton(INK.red, '8px 0')}
 <div class="money">${escapeHtml(eur(express.total))} <i>/ рік · оцінений витік виторгу</i></div>
 <div class="sub">діапазон ${escapeHtml(eur(express.range[0]))}–${escapeHtml(eur(express.range[1]))} · Business Health ${express.overallHealth}/100</div>
 <div class="verdict"><b>Головний висновок:</b> ключова проблема — <b>${escapeHtml(sysLabel(express.primary as SysKey, 'uk'))}</b>${express.secondary ? `, друга — <b>${escapeHtml(sysLabel(express.secondary as SysKey, 'uk'))}</b>` : ''}. Потенціал зростання = повернення оціненого витоку: почніть із трьох дій нижче.</div>
@@ -620,6 +621,7 @@ ${actions ? `<h2>Три перші дії · рекомендації</h2><ol>${
 <div class="foot">WEEXP — Commerce OS · weexp.agency · Оцінка за наданими даними та бенчмарками ніші; не фінансовий аудит. Точна карта «де саме і чому» — глибокий аудит WEEXP.</div>
 </div></body></html>`;
   w.document.open(); w.document.write(html); w.document.close();
+  bindPrint(w);
 }
 
 /** Збережений результат експрес-аудиту — прямо в кабінеті, без повторного проходження. */
