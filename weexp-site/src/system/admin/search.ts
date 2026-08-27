@@ -1,4 +1,5 @@
 import type { AdminRow, DiagRecord } from '@/lib/supa';
+import { ACCESS_CATALOG } from '@/data/accessCatalog';
 
 /**
  * Пошук по клієнтах.
@@ -37,7 +38,14 @@ export function searchableOf(row: AdminRow): Hit[] {
   (rec.marketplaces || []).forEach((m) => push(out, 'маркетплейс', [m.name, m.status, m.scope].filter(Boolean).join(' ')));
   (rec.auditJobs || []).forEach((j) => push(out, 'прогін рушія', [j.site, j.summary].filter(Boolean).join(' — ')));
   Object.entries(rec.assessment || {}).forEach(([k, v]) => push(out, `оцінка · ${k}`, [v.state, v.gap, v.rec].filter(Boolean).join(' · ')));
-  Object.entries(rec.accessLog || {}).forEach(([id, a]) => push(out, `доступ · ${id}`, [a.status, a.method, a.note].filter(Boolean).join(' · ')));
+  // Ключ accessLog — це AC-id, і сам по собі він людині нічого не каже: у видачі
+  // стояло «доступ · AC-22 · granted». Гірше, що той самий AC-22 у другому
+  // каталозі (портал) означає іншу систему, тож голий ідентифікатор ще й
+  // двозначний. Резолвимо в назву; сам id лишаємо в тексті — по ньому теж шукають.
+  Object.entries(rec.accessLog || {}).forEach(([id, a]) => {
+    const system = ACCESS_CATALOG.find((x) => x.id === id)?.system;
+    push(out, `доступ · ${system || id}`, [id, system, a.status, a.method, a.note].filter(Boolean).join(' · '));
+  });
   return out;
 }
 
