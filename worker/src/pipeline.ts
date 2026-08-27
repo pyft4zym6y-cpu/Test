@@ -132,7 +132,7 @@ export type AuditOptions = {
  * а не витрину. Признаки: одинаковые тонкие страницы, coming-soon-маркеры, ноль
  * коммерческих сигналов. Триггерит резервный контур по скриншотам.
  */
-function detectStub(client: SiteCrawl): boolean {
+export function detectStub(client: SiteCrawl): boolean {
   const pages = client.pages.filter((p) => !p.error);
   if (!pages.length) return false;
   const COMING = /coming soon|незабаром|briefly unavailable|under construction|maintenance mode|сайт в разработ|у розробц|скоро открыт|новий сайт wordpress|website is coming/i;
@@ -154,14 +154,14 @@ export type AuditMetrics = {
 };
 export type AuditResult = { id: string; dir: string; summary: string; files: string[]; metrics: AuditMetrics; maturity?: import('./maturity.js').MaturityReport | null; findings?: import('./learning/ledger.js').ReviewableFinding[] };
 
-function slug(url: string): string {
+export function slug(url: string): string {
   try { return new URL(url).hostname.replace(/^www\./, '').replace(/[^a-z0-9]+/gi, '-'); }
   catch { return 'site'; }
 }
 
 /** Достроить схему к «голому» домену (lanavitta.com → https://lanavitta.com/),
  *  иначе page.goto падает с «Cannot navigate to invalid URL». */
-function normalizeUrl(raw: string): string {
+export function normalizeUrl(raw: string): string {
   const s = (raw || '').trim().replace(/\s+/g, '');
   if (!s) return '';
   const withScheme = /^https?:\/\//i.test(s) ? s : `https://${s}`;
