@@ -440,7 +440,7 @@ export default function AdminClientPage() {
                   <span className="tag" style={{ color: quadrant === 'Quick win' ? 'var(--lime-dark)' : quadrant.startsWith('🔥') ? 'var(--red)' : undefined }}>{quadrant}</span>
                 </div>
                 <p className="mono" style={{ fontSize: 11.5, margin: '4px 0 0', color: 'var(--muted)' }}>
-                  Impact {d.impact}/10 · Сложность {d.difficulty}/10 · ~{d.timeDays} дней · ROI {d.roi} · {d.playbooks.join(', ')}
+                  Impact {d.impact}/10 · Сложность {d.difficulty}/10 · ~{d.timeDays} дн. · ROI {d.roi} · {d.playbooks.join(', ')}
                 </p>
                 <details>
                   <summary className="mono" style={{ fontSize: 11.5, cursor: 'pointer', color: 'var(--lime-dark)' }}>почему →</summary>

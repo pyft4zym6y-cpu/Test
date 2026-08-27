@@ -8,6 +8,7 @@
  *    нестыковка, найденная в процессе, не теряется, а становится задачей.
  */
 import { ask, extractJson, hasKey, apiErrorHint } from './anthropic.js';
+import { plural } from './text.js';
 import { esc, doc, methodologySection, conclusionSection } from './export/reportShell.js';
 import type { SiteAuditReport } from './pagereport.js';
 import type { ContentReport } from './contentaudit.js';
@@ -47,20 +48,6 @@ export type QaParts = {
   maturity?: MaturityReport | null; backlog?: BacklogReport | null;
   money?: MoneyResult | null;
 };
-
-/**
- * Склонение существительного при числительном: 1 проверка, 2 проверки,
- * 5 проверок. В протоколе, который читает клиент, стояло «1 проверок» и
- * «1 перекрёстных проверка» — мелочь, но документ с такой строкой выглядит
- * машинным ровно там, где мы утверждаем его тщательность.
- */
-export function plural(n: number, one: string, few: string, many: string): string {
-  const a = Math.abs(n) % 100, b = a % 10;
-  if (a > 10 && a < 20) return many;
-  if (b > 1 && b < 5) return few;
-  if (b === 1) return one;
-  return many;
-}
 
 export async function buildQa(client: string, takenAt: string, p: QaParts, debugLog: string[], log?: (m: string) => void): Promise<QaReport> {
   const f: QaFinding[] = [];

@@ -10,6 +10,7 @@ import type { Analysis } from '../analyze.js';
 import type { EngineResult } from '../portalEngine.js';
 import type { MoneyResult } from '../money.js';
 import { clientName } from '../deliverables.js';
+import { plural } from '../text.js';
 
 const rub = (n: number) => `${Math.round(n).toLocaleString('ru-RU')} ₴`;
 
@@ -40,7 +41,8 @@ export async function exportReportDocx(ds: AuditDataset, a: Analysis, engine: En
   kids.push(P(a.summary || '—'));
 
   kids.push(H('Точка А — состояние по обходу', HeadingLevel.HEADING_1));
-  kids.push(P(`Соответствие витрины голд-стандарту: ${cs ?? '—'}% (по ${ds.client.pages.filter((p) => p.score !== null).length} страницам).`, { bold: true }));
+  const scored = ds.client.pages.filter((p) => p.score !== null).length;
+  kids.push(P(`Соответствие витрины голд-стандарту: ${cs ?? '—'}% (по ${scored} ${plural(scored, 'странице', 'страницам', 'страницам')}).`, { bold: true }));
   kids.push(P(`Платформа: ${ds.client.tech.platform ?? 'не определена'}. Аналитика: ${ds.client.tech.analytics.join(', ') || 'не обнаружена'}. robots.txt: ${ds.client.robotsTxt ? 'есть' : 'нет'}, sitemap.xml: ${ds.client.sitemapXml ? 'есть' : 'нет'}.`));
   if (a.healthNote) kids.push(P(a.healthNote));
 

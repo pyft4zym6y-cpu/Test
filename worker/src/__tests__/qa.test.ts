@@ -10,7 +10,8 @@
  * счётчиком с комментарием «проверка формальная» — она не делала ничего вообще.
  */
 import { describe, it, expect } from 'vitest';
-import { buildQa, plural, type QaParts } from '../qa.js';
+import { buildQa, type QaParts } from '../qa.js';
+import { plural } from '../text.js';
 
 const qa = (p: Partial<QaParts> = {}) => buildQa('ТОВ Тест', '2026-08-01T00:00:00Z', p as QaParts, []);
 
