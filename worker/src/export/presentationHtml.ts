@@ -110,19 +110,21 @@ function perfSection(r: SiteAuditReport): string {
   // Пороги Google (лабораторний орієнтир): LCP 2.5/4 с · CLS 0.1/0.25 · TTFB 0.8 с.
   const lcpCls = p.lcp == null ? '' : p.lcp <= 2500 ? 'ok' : p.lcp <= 4000 ? 'check' : 'gap';
   const clsCls = p.cls == null ? '' : p.cls <= 0.1 ? 'ok' : p.cls <= 0.25 ? 'check' : 'gap';
-  const ttfbCls = p.ttfb <= 800 ? 'ok' : p.ttfb <= 1800 ? 'check' : 'gap';
+  // Без navigation-entry заміру не було. Раніше сюди приходив 0, і клієнт бачив
+  // зелену плитку «0 мс» — найкращий можливий TTFB на місці невдалого заміру.
+  const ttfbCls = p.ttfb == null ? '' : p.ttfb <= 800 ? 'ok' : p.ttfb <= 1800 ? 'check' : 'gap';
   const wKb = p.weightKb;
   const weightCls = wKb <= 1500 ? 'ok' : wKb <= 3000 ? 'check' : 'gap';
   const weight = wKb >= 1024 ? `${(wKb / 1024).toFixed(1)} МБ` : `${wKb} КБ`;
   const tiles = [
     tile(p.lcp == null ? '—' : s(p.lcp), 'LCP (перший екран)', lcpCls),
     tile(p.cls == null ? '—' : p.cls.toFixed(2), 'CLS (стрибок верстки)', clsCls),
-    tile(s(p.ttfb), 'TTFB (відповідь сервера)', ttfbCls),
+    tile(p.ttfb == null ? '—' : s(p.ttfb), 'TTFB (відповідь сервера)', ttfbCls),
     tile(weight, `вага · ${p.reqCount} запитів`, weightCls),
     tile(`${p.jsKb} КБ`, 'JavaScript', p.jsKb > 800 ? 'check' : ''),
     tile(`${p.imgKb} КБ`, 'зображення', p.imgKb > 1500 ? 'check' : ''),
   ].join('');
-  const slow = (p.lcp != null && p.lcp > 4000) || wKb > 3000 || p.ttfb > 1800;
+  const slow = (p.lcp != null && p.lcp > 4000) || wKb > 3000 || (p.ttfb != null && p.ttfb > 1800);
   const verdict = slow
     ? `Сторінка важить ${weight} і малюється повільно — з мобільного інтернету частина покупців іде ще до першого екрана. Кожна зайва секунда LCP на мобільному коштує конверсії (типово −3…−7% замовлень).`
     : `Швидкість у робочих межах, але не еталон: до топ-1% сегмента доходять ті, у кого перший екран < 2,5 с і нульовий стрибок верстки.`;

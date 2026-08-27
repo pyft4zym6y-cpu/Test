@@ -80,8 +80,8 @@ export type StackFingerprint = {
 
 /** B3 — швидкість / Core Web Vitals, зняті лабораторно з уже відкритої сторінки. */
 export type PagePerf = {
-  ttfb: number;          // час до першого байта, ms
-  domReady: number;      // DOMContentLoaded, ms
+  ttfb: number | null;      // час до першого байта, ms; null — заміру не було
+  domReady: number | null;  // DOMContentLoaded, ms; null — заміру не було
   lcp: number | null;    // Largest Contentful Paint, ms
   cls: number | null;    // Cumulative Layout Shift
   reqCount: number;      // кількість запитів
@@ -204,7 +204,7 @@ export async function launchBrowser(): Promise<Browser> {
 }
 
 /* ── Проверки голд-стандарта, исполняются В СТРАНИЦЕ (реальный DOM) ── */
-function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolean>; tech: string[]; ux: UxProbe; stack: StackFingerprint } {
+export function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolean>; tech: string[]; ux: UxProbe; stack: StackFingerprint } {
   const out: L0Check[] = [];
   const add = (id: string, group: string, label: string, pass: boolean, detail?: string) =>
     out.push({ id, group, label, pass, detail });
@@ -212,7 +212,17 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
   const $$ = (s: string) => Array.from(document.querySelectorAll(s));
   const html = document.documentElement.outerHTML;
   const low = html.toLowerCase();
-  const text = (document.body?.textContent ?? '').toLowerCase();
+  /*
+   * Видимий текст сторінки. `body.textContent` тягне за собою вміст <script>,
+   * <style> і <template> — а на реальних магазинах це JSON-LD з назвами
+   * товарів, dataLayer і рядки з GTM. Через це на текст дивилися перевірки
+   * price / reviews / delivery / contacts / errors-soft і сигнал addToCart,
+   * який визначає тип сторінки: досить було «add to cart» у коді кнопки, щоб
+   * категорію класифікувало як картку товару. Читаємо те, що бачить людина.
+   */
+  const visibleRoot = document.body?.cloneNode(true) as HTMLElement | undefined;
+  visibleRoot?.querySelectorAll('script, style, noscript, template').forEach((n) => n.remove());
+  const text = (visibleRoot?.textContent ?? '').toLowerCase();
 
   // SEO
   const title = (document.title ?? '').trim();
@@ -247,7 +257,9 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
   add('cart', 'UX', 'Корзина обнаружима', hasCart);
   const hasPrice = /(₴|грн|zł|pln|€|eur|usd|\$)\s?\d|\d\s?(₴|грн|zł)/i.test(text);
   add('price', 'UX', 'Цены на странице', hasPrice);
-  add('reviews', 'UX', 'Отзывы/рейтинг обнаружимы', /відгук|отзыв|review|рейтинг|rating/i.test(low));
+  // Сусідні перевірки групи дивляться в текст сторінки, ця дивилася в розмітку,
+  // де «rating» і «review» живуть в іменах класів майже будь-якої теми.
+  add('reviews', 'UX', 'Отзывы/рейтинг обнаружимы', /відгук|отзыв|review|рейтинг|rating|оцінк/i.test(text));
   add('delivery', 'UX', 'Доставка/оплата в контенте', /достав|delivery|shipping|оплат|payment/i.test(text));
   add('contacts', 'UX', 'Контакты/адрес', /контакт|contact|адрес|адреса/i.test(text));
   add('social', 'UX', 'Соцсети привязаны', Boolean($('[href*="instagram."]') || $('[href*="facebook."]') || $('[href*="tiktok."]')));
@@ -263,13 +275,45 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
   const analytics = /gtag|googletagmanager|fbq\(|fbevents|clarity|hotjar/i.test(html);
   add('analytics', 'Техника', 'Аналитика установлена (GA4/GTM/Pixel)', analytics);
   add('preconnect', 'Техника', 'Preconnect/preload ресурсов', Boolean($('link[rel="preconnect"]') || $('link[rel="preload"]')));
-  add('cookies', 'Техника', 'Cookie/consent-механика (для ЕС)', /cookie|consent|gdpr/i.test(low));
+  /*
+   * Перевірка йшла по всій розмітці разом зі скриптами: слово «cookie» є в
+   * будь-якому document.cookie і в будь-якій аналітиці, тож провалити її сайт
+   * практично не міг — рядок стояв у протоколі і завжди давав ✓. Механіка
+   * згоди — це видимий банер і його текст.
+   */
+  const consentBanner = Boolean(
+    $('[id*="cookie" i]') || $('[class*="cookie" i]') || $('[id*="consent" i]')
+    || $('[class*="consent" i]') || $('[href*="cookie" i]'),
+  );
+  add('cookies', 'Техника', 'Cookie/consent-механика (для ЕС)',
+    consentBanner || /cookie|куки|файли cookie|consent|gdpr/i.test(text),
+    consentBanner ? 'банер у розмітці' : undefined);
   add('errors-soft', 'Техника', 'Нет текста ошибок в вёрстке', !/fatal error|exception|undefined index|stack trace/i.test(text));
 
   // Сигналы типа страницы
   const addToCart = /(в корзину|додати в кошик|add to cart|купить|купити|buy now)/i.test(text) ||
     Boolean($('[class*="add-to-cart" i]') || $('[data-add-to-cart]') || $('button[name*="add" i]'));
-  const productCards = $$('[class*="product" i], [class*="card" i], [class*="item" i]').length;
+  /*
+   * Лічильник карток товару. Селектор `[class*="product"], [class*="card"],
+   * [class*="item"]` збігається з menu-item, nav-item, list-item і половиною
+   * класів будь-якої теми: на власній головній weexp.agency, де товарів немає
+   * зовсім, він давав 56 збігів при порозі 8. Значить `manyCards` було
+   * істинним майже завжди, а від нього залежить classify() — внутрішні
+   * сторінки масово ставали «plp».
+   *
+   * Картка товару — це найменший компактний блок, у якому є посилання і ціна.
+   * Саме найменший: контейнер `.products` теж містить і посилання, і ціни, і
+   * якщо рахувати зовнішні, дванадцять карток згортаються в одну.
+   */
+  const PRICE_RE = /(₴|грн|zł|pln|€|eur|usd|\$)\s?\d|\d\s?(₴|грн|zł)/i;
+  const cardish = $$('[class*="product" i], [class*="card" i], [class*="item" i], li, article');
+  const cards = cardish.filter((el) => {
+    const t = el.textContent ?? '';
+    if (t.length > 600) return false;              // це контейнер, а не картка
+    if (!el.querySelector('a')) return false;
+    return PRICE_RE.test(t);
+  });
+  const productCards = cards.filter((el) => !cards.some((o) => o !== el && el.contains(o))).length;
   const kindSignals: Record<string, boolean> = {
     addToCart,
     manyCards: productCards >= 8,
@@ -600,7 +644,7 @@ export function classify(url: string, sig: Record<string, boolean>, isRoot: bool
  * hardenedContext). Виконується В КОНТЕКСТІ СТОРІНКИ через page.evaluate. Лабораторний
  * замір одного заходу — орієнтир, не польові дані CrUX.
  */
-function capturePerf(): PagePerf {
+export function capturePerf(): PagePerf {
   const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
   const res = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
   const cwv = (window as unknown as { __cwv?: { lcp?: number; cls?: number } }).__cwv || {};
@@ -614,9 +658,18 @@ function capturePerf(): PagePerf {
     else if (r.initiatorType === 'img' || /\.(png|jpe?g|webp|gif|svg|avif)(\?|$)/.test(n)) img += b;
   }
   const kb = (x: number) => Math.round(x / 1024);
+  /*
+   * Нуль у Navigation Timing — це не «нуль мілісекунд», а «час не записано»:
+   * навігація без мережевого запиту, prerender, кеш bfcache. Раніше він ішов
+   * у звіт як заміряний TTFB = 0 і давав клієнту зелену плитку «0 мс» —
+   * найкращий можливий результат на місці невдалого заміру. Перевіряти
+   * наявність самого запису недостатньо: у about:blank запис є, а
+   * responseStart дорівнює нулю.
+   */
+  const ms = (v: number | undefined) => (typeof v === 'number' && v > 0 ? Math.round(v) : null);
   return {
-    ttfb: nav ? Math.round(nav.responseStart) : 0,
-    domReady: nav ? Math.round(nav.domContentLoadedEventEnd) : 0,
+    ttfb: ms(nav?.responseStart),
+    domReady: ms(nav?.domContentLoadedEventEnd),
     lcp: cwv.lcp ? Math.round(cwv.lcp) : null,
     cls: typeof cwv.cls === 'number' ? Math.round(cwv.cls * 1000) / 1000 : null,
     reqCount: res.length,
