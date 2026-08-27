@@ -75,9 +75,14 @@ export function runMetaAudit(ctx: MetaAuditContext): MetaAuditReport {
     `Evidence Debt: full ${ctx.quality.evidenceDebt.full} · partial ${ctx.quality.evidenceDebt.partial} · hypothesis ${ctx.quality.evidenceDebt.hypothesis} (debtRatio ${ctx.quality.evidenceDebt.debtRatio})`);
 
   /* ── COVERAGE ── */
-  const missing = (ctx.expectedModules ?? []).filter((m) => !ctx.modulesExecuted.includes(m));
-  add('coverage.modules', 'COVERAGE', 'warn', missing.length === 0,
-    missing.length ? `не выполнены модули: ${missing.join(', ')}` : `модулей выполнено: ${ctx.modulesExecuted.length}`);
+  // Проверку добавляем ТОЛЬКО когда есть с чем сверять. Без expectedModules она
+  // сводилась к `[].length === 0` — зелёная строка «модулей выполнено: N»,
+  // которая ничего не проверяла, но в отчёте выглядела как пройденный гейт.
+  if (ctx.expectedModules?.length) {
+    const missing = ctx.expectedModules.filter((m) => !ctx.modulesExecuted.includes(m));
+    add('coverage.modules', 'COVERAGE', 'warn', missing.length === 0,
+      missing.length ? `не выполнены модули: ${missing.join(', ')}` : `модулей выполнено: ${ctx.modulesExecuted.length}`);
+  }
   add('coverage.failed', 'COVERAGE', ctx.modulesFailed.length > 3 ? 'critical' : 'warn', ctx.modulesFailed.length === 0,
     ctx.modulesFailed.length ? `упавшие модули: ${ctx.modulesFailed.join(', ')}` : 'упавших модулей нет');
   add('coverage.findings', 'COVERAGE', 'critical', ctx.prelaunch || f.length > 0, `находок в реестре: ${f.length}`);
@@ -110,7 +115,10 @@ export function runMetaAudit(ctx: MetaAuditContext): MetaAuditReport {
   /* ── AI-QUALITY ── */
   const ars = ctx.quality.ars.provisional;
   const arsTarget = ctx.arsTarget ?? null;
-  add('ai.ars', 'AI-QUALITY', 'warn', arsTarget == null || (ars != null && ars >= arsTarget),
+  // Без порога это не гейт, а строка отчёта: severity 'info', чтобы её не
+  // считали пройденной проверкой. С порогом — полноценный warn.
+  add('ai.ars', 'AI-QUALITY', arsTarget == null ? 'info' : 'warn',
+    arsTarget == null || (ars != null && ars >= arsTarget),
     ars != null ? `provisional ARS ${ars}/100 (измерено веса ${Math.round(ctx.quality.ars.measuredWeight * 100)}%${arsTarget != null ? `, порог ${arsTarget}` : ''})` : 'ARS не посчитан (нет находок)');
   // «галлюцинация денег»: находка утверждает измеренные деньги на низком тире без данных
   const moneyClaims = f.filter((x) => ctx.tier < 3 && /\b(грн|₴|\$|€|\d{4,})\b/.test(`${x.as_is ?? ''} ${x.title}`) && /измерен|факт|составля|потер[яи]/i.test(`${x.as_is ?? ''} ${x.title}`));

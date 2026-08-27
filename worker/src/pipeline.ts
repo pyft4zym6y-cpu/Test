@@ -302,6 +302,10 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
     // Захоплення HTML кожної лінзи для групування в тематичні документи (композер
     // збирає з них 5 розділів + висновок). cap() зберігає й повертає html далі в рендер.
     const lensHtml: Record<string, string> = {};
+    // Резервный контур сработал: сайт недоступен, но разбор построен по
+    // приложенным скриншотам. Нужен снаружи — гейт достижимости обязан
+    // отличать «есть чем заменить обход» от «данных нет вовсе».
+    let visualFallbackUsed = false;
     const cap = (k: string, html: string): string => { lensHtml[k] = html; return html; };
     if (!prelaunch) {
       log('· UX/UI-разбор страниц против эталона (AQC)…');
@@ -366,7 +370,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
           }))).filter((x): x is VisionFile => x !== null);
           log(`· резервный контур: файлов к разбору ${vfiles.length}`);
           const vr = await auditFromScreenshots(vfiles, siteAudit.client, log).catch((e) => { log(`⚠️ резервный контур упал (${String(e).slice(0, 80)})`); return null; });
-          if (vr?.report?.pages.length) { siteAudit = vr.report; fromScreens = true; log(`✓ UX/UI построен по скриншотам: страниц ${vr.report.pages.length}, соответствие ${vr.report.totalPct}%`); }
+          if (vr?.report?.pages.length) { siteAudit = vr.report; fromScreens = true; visualFallbackUsed = true; log(`✓ UX/UI построен по скриншотам: страниц ${vr.report.pages.length}, соответствие ${vr.report.totalPct}%`); }
           else log('⚠️ резервный контур не дал страниц — остаёмся на разборе живого');
         }
         // Дизайн-ревью со зрением: если UX/UI уже собран по скриншотам — дизайн-вердикт
@@ -880,10 +884,17 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         const { runMetaAudit } = await import('./metaaudit.js');
         const { moduleStatusFromFiles } = await import('./runrecord.js');
         const { METHODOLOGY_VERSION } = await import('./version.js');
-        const q = buildQualitySummary(registry, { reachabilityPassed: !prelaunch });
+        // Раньше сюда шло `!prelaunch` — то есть константа от режима, а не факт.
+        // Гейт data.reachable проверяет `prelaunch || reachabilityPassed`, что при
+        // такой подстановке равно `prelaunch || !prelaunch` — он не мог упасть
+        // никогда, хотя объявлен critical и должен блокировать выдачу.
+        const reachabilityPassed = prelaunch
+          || (client.reachable && client.pages.some((p) => p.score !== null))
+          || visualFallbackUsed;
+        const q = buildQualitySummary(registry, { reachabilityPassed });
         const { executed } = moduleStatusFromFiles(files);
         const meta = runMetaAudit({
-          tier, prelaunch, findings: registry, quality: q, reachabilityPassed: !prelaunch,
+          tier, prelaunch, findings: registry, quality: q, reachabilityPassed,
           pagesCrawled: client.pages.filter((p) => !p.error).length,
           modulesExecuted: executed, modulesFailed: failedModules, reportFiles: files,
           requiredReports: ['Презентація', 'Сводный-бэклог', 'Протокол-синергии'],

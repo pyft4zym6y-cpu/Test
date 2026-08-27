@@ -59,6 +59,14 @@ describe('fail() в пайплайне', () => {
     expect(covered.length / lens.size).toBeGreaterThan(0.8);
   });
 
+  it('достижимость в гейт идёт фактом, а не константой от режима', () => {
+    // Было `reachabilityPassed: !prelaunch` — условие гейта сводилось к
+    // `prelaunch || !prelaunch`, то есть critical-проверка не могла упасть.
+    expect(SRC).not.toMatch(/reachabilityPassed:\s*!prelaunch/);
+    expect(SRC).toMatch(/const reachabilityPassed = prelaunch/);
+    expect(SRC).toMatch(/visualFallbackUsed/);
+  });
+
   it('в гейт качества уходит собранный список, а не пустой литерал', () => {
     // Сравниваем извлечённое значение, а не весь файл: иначе провал теста
     // печатает diff на тысячу строк и в нём не видно, что именно сломалось.
