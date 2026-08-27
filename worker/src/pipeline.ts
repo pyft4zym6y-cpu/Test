@@ -950,10 +950,19 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
           avgConfidence: avgConf,
         } : {},
         metrics: metrics as unknown as Record<string, unknown>,
-        usage: getUsage(),
+        usage: getUsage(),   // включая состав кеша — иначе стоимость завышается
       });
       await writeFile(join(dir, 'audit-run-record.json'), JSON.stringify(rr, null, 2), 'utf8');
       log(`✓ Audit Run Record: методология ${rr.methodologyVersion}, модулей вып. ${rr.modules.executed.length}, находок ${rr.findings.total}, evidence-покрытие ${rr.findings.evidenceCoverage ?? '—'}`);
+      // Кеш промптов молча деградирует: всё работает, просто дороже. Единственный
+      // способ это заметить — смотреть на долю чтений из кеша каждый прогон.
+      const hit = rr.cost.cacheHitRate;
+      if (hit != null) {
+        const icon = hit >= 0.5 ? '✓' : '⚠️';
+        log(`${icon} Кеш промптов: ${Math.round(hit * 100)}% входа из кеша `
+          + `(прочитано ${rr.cost.cacheReadTokens.toLocaleString('ru-RU')}, записано ${rr.cost.cacheWriteTokens.toLocaleString('ru-RU')} токенов) `
+          + `· оценка стоимости $${rr.cost.llmCostUsd ?? '—'}`);
+      }
     } catch (e) { log(`⚠️ Audit Run Record не собрался (${String(e).slice(0, 140)})`); }
 
     // Пробелы в наборе линз — в метрики прогона: аудит, шедший без трёх скиллов,

@@ -69,6 +69,10 @@ export const AuditRunRecordSchema = z.object({
     llmCalls: z.number().int(),
     inputTokens: z.number().int(),
     outputTokens: z.number().int(),
+    cacheReadTokens: z.number().int(),
+    cacheWriteTokens: z.number().int(),
+    /** Доля входа, пришедшая из кеша. null — вызовов не было. */
+    cacheHitRate: z.number().nullable(),
     llmCostUsd: z.number().nullable(),
     priceAsOf: z.string(),
     note: z.string(),
@@ -160,7 +164,11 @@ export type RunRecordInput = {
   failedModules?: string[];
   findings?: Partial<AuditRunRecord['findings']>;
   metrics?: Record<string, unknown>;
-  usage?: { calls: number; inputTokens: number; outputTokens: number };
+  usage?: {
+    calls: number; inputTokens: number; outputTokens: number;
+    /** Состав входа: без него нельзя ни оценить стоимость, ни проверить кеш. */
+    uncachedInput?: number; cacheRead?: number; cacheWrite?: number;
+  };
   reportFiles?: string[];
   review?: Partial<AuditRunRecord['review']>;
 };
@@ -209,7 +217,21 @@ export function buildRunRecord(inp: RunRecordInput): AuditRunRecord {
       llmCalls: inp.usage?.calls ?? 0,
       inputTokens: inp.usage?.inputTokens ?? 0,
       outputTokens: inp.usage?.outputTokens ?? 0,
-      llmCostUsd: inp.usage ? Math.round(estimateLlmCostUsd(inp.usage.inputTokens, inp.usage.outputTokens) * 10000) / 10000 : null,
+      // Кеш промптов: без этих чисел нельзя проверить, работает ли он вообще.
+      // Счётчик их вёл, но наружу они не выходили — инструмент был, показаний нет.
+      cacheReadTokens: inp.usage?.cacheRead ?? 0,
+      cacheWriteTokens: inp.usage?.cacheWrite ?? 0,
+      cacheHitRate: inp.usage && inp.usage.inputTokens
+        ? Math.round(((inp.usage.cacheRead ?? 0) / inp.usage.inputTokens) * 100) / 100
+        : null,
+      llmCostUsd: inp.usage ? Math.round(estimateLlmCostUsd({
+        // Полную ставку платит только вход мимо кеша. Старые прогоны поля не
+        // имеют — для них падаем на общий вход, то есть на прежнюю оценку.
+        inputTokens: inp.usage.uncachedInput ?? inp.usage.inputTokens,
+        outputTokens: inp.usage.outputTokens,
+        cacheRead: inp.usage.cacheRead,
+        cacheWrite: inp.usage.cacheWrite,
+      }) * 10000) / 10000 : null,
       priceAsOf: MODEL_PRICE_ASOF,
       note: 'Только стоимость LLM-токенов. Полная cost per audit = + crawl/compute + внешние API + human QA (раздел 32).',
     },

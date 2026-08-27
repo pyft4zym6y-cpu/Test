@@ -34,16 +34,23 @@ export type TokenUsage = {
    *  чисел нельзя проверить, работает ли кеширование метода: если cacheRead
    *  остаётся нулём от вызова к вызову — префикс где-то ломается. */
   cacheRead: number; cacheWrite: number;
+  /** Вход мимо кеша — по нему и считается полная ставка. */
+  uncachedInput: number;
 };
-let meter: TokenUsage = { calls: 0, inputTokens: 0, outputTokens: 0, cacheRead: 0, cacheWrite: 0 };
-export function resetUsage(): void { meter = { calls: 0, inputTokens: 0, outputTokens: 0, cacheRead: 0, cacheWrite: 0 }; }
+let meter: TokenUsage = { calls: 0, inputTokens: 0, outputTokens: 0, cacheRead: 0, cacheWrite: 0, uncachedInput: 0 };
+export function resetUsage(): void { meter = { calls: 0, inputTokens: 0, outputTokens: 0, cacheRead: 0, cacheWrite: 0, uncachedInput: 0 }; }
 export function getUsage(): TokenUsage { return { ...meter }; }
 function recordUsage(resp: any): void {
   try {
     const u = resp?.usage;
     if (!u) return;
     meter.calls += 1;
+    // inputTokens — ОБЩИЙ объём входа (для наглядности в логе), cacheRead и
+    // cacheWrite — его части. Стоимость считается по составу: сложить их в одну
+    // сумму и умножить на входную ставку значит завысить счёт в разы на любом
+    // прогоне, где кеш сработал.
     meter.inputTokens += (u.input_tokens || 0) + (u.cache_read_input_tokens || 0) + (u.cache_creation_input_tokens || 0);
+    meter.uncachedInput += u.input_tokens || 0;
     meter.cacheRead += u.cache_read_input_tokens || 0;
     meter.cacheWrite += u.cache_creation_input_tokens || 0;
     meter.outputTokens += u.output_tokens || 0;

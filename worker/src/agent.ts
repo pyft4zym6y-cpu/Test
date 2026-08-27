@@ -68,6 +68,44 @@ async function runTool(browser: Browser, ds: AuditDataset, name: string, input: 
   }
 }
 
+/**
+ * Системный промпт как кешируемый блок.
+ *
+ * Порядок рендера запроса — tools → system → messages, и кеш префиксный: точка
+ * на последнем системном блоке накрывает и набор инструментов, и промпт. В цикле
+ * это самая стабильная часть: она не меняется все девять вызовов.
+ *
+ * TTL час, а не пять минут по умолчанию: шаг агента включает обход страницы
+ * браузером, и пауза между вызовами легко превышает пять минут — тогда кеш
+ * протухал бы ровно там, где он и нужен.
+ */
+export const cachedSystem = (text: string) =>
+  [{ type: 'text' as const, text, cache_control: { type: 'ephemeral' as const, ttl: '1h' as const } }];
+
+/**
+ * Точка кеша на последнем блоке последнего сообщения.
+ *
+ * История в цикле растёт: на девятом шаге пересылаются все восемь предыдущих
+ * ходов вместе с результатами инструментов (а это дампы страниц по 6 КБ). Без
+ * точки на хвосте каждый вызов оплачивает всю историю заново по полной ставке.
+ * Ставим её на предпоследнее сообщение — так закешированным оказывается всё, что
+ * уже не изменится, а свежий ход остаётся вне кеша.
+ *
+ * Мутирует переданный массив: он и есть история цикла. Возвращает его же.
+ */
+export function markCachePoint(messages: any[]): any[] {
+  // Ставим ровно одну точку: лимит четыре на запрос, а старую надо снимать,
+  // иначе с каждым ходом их набирается больше лимита и запрос отвергается.
+  for (const m of messages) {
+    if (Array.isArray(m.content)) for (const b of m.content) delete b.cache_control;
+  }
+  const target = messages[messages.length - 2];
+  if (target && Array.isArray(target.content) && target.content.length) {
+    target.content[target.content.length - 1].cache_control = { type: 'ephemeral' };
+  }
+  return messages;
+}
+
 export async function agentAnalyze(browser: Browser, ds: AuditDataset, opts: { maxSteps?: number; engineFactsStr?: string } = {}): Promise<Analysis> {
   const maxSteps = opts.maxSteps ?? 8;
   let webSearch = process.env.AUDIT_WEB_SEARCH !== '0';
@@ -82,7 +120,7 @@ export async function agentAnalyze(browser: Browser, ds: AuditDataset, opts: { m
   for (let step = 0; step < maxSteps; step++) {
     let resp: any;
     try {
-      resp = await createMessage({ max_tokens: 8000, system, tools: tools(webSearch), thinking: { type: 'adaptive' }, output_config: { effort: 'medium' }, messages, ...(containerId ? { container: containerId } : {}) });
+      resp = await createMessage({ max_tokens: 8000, system: cachedSystem(system), tools: tools(webSearch), thinking: { type: 'adaptive' }, output_config: { effort: 'medium' }, messages: markCachePoint(messages), ...(containerId ? { container: containerId } : {}) });
     } catch (e) {
       // web_search может быть недоступен на модели/тарифе, либо контейнерная связка
       // порвалась — отключаем серверный тул и повторяем шаг на клиентских тулзах.
@@ -113,7 +151,7 @@ export async function agentAnalyze(browser: Browser, ds: AuditDataset, opts: { m
 
   // бюджет шагов исчерпан — форсируем finish одним запросом
   messages.push({ role: 'user', content: 'Бюджет шагов исчерпан. Немедленно вызови finish с лучшим анализом на текущих фактах.' });
-  const last: any = await createMessage({ max_tokens: 8000, system, tools: tools(false), tool_choice: { type: 'tool', name: 'finish' }, messages, ...(containerId ? { container: containerId } : {}) });
+  const last: any = await createMessage({ max_tokens: 8000, system: cachedSystem(system), tools: tools(false), tool_choice: { type: 'tool', name: 'finish' }, messages: markCachePoint(messages), ...(containerId ? { container: containerId } : {}) });
   const fb = last.content?.find((b: any) => b.type === 'tool_use' && b.name === 'finish');
   if (fb) return normalize(fb.input);
   throw new Error('Агент не сдал finish за отведённые шаги');
