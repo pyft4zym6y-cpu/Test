@@ -210,8 +210,17 @@ describe.skipIf(!built)('карта сайта и правила обхода', 
   });
 });
 
+/*
+ * Конфигов vercel.json было ДВА: корневой (его и читает Vercel — в нём
+ * outputDirectory, rewrites и crons) и weexp-site/vercel.json. Этот тест читал
+ * второй, csp.test.ts — первый. Полгода они расходились молча: редиректы и
+ * строгий CSP лежали в файле, который никогда не деплоился. Дубль удалён,
+ * оба теста смотрят в корневой; тест ниже стережёт, чтобы копия не вернулась.
+ */
+const ROOT = join(__dirname, '..', '..', '..');
+
 describe('серверные правила (vercel.json)', () => {
-  const cfg = JSON.parse(readFileSync(join(__dirname, '..', '..', 'vercel.json'), 'utf8'));
+  const cfg = JSON.parse(readFileSync(join(ROOT, 'vercel.json'), 'utf8'));
 
   /*
    * 22 устаревших адреса перенаправлялись клиентским <Navigate>: сервер отдавал
@@ -221,7 +230,12 @@ describe('серверные правила (vercel.json)', () => {
   it('устаревшие адреса перенаправляются сервером и постоянным кодом', () => {
     const red = cfg.redirects ?? [];
     expect(red.length, 'редиректы не заданы на сервере').toBeGreaterThanOrEqual(20);
-    expect(red.filter((r: { permanent: boolean }) => !r.permanent), 'временные 302 вместо 301').toEqual([]);
+    // Постоянными должны быть переезды контента. Псевдонимы юридических
+    // файлов (/privacy → /privacy.html) намеренно временные: страницы ещё
+    // могут стать React-маршрутами, а закэшированный браузером 301 не отозвать.
+    const LEGAL = /^\/(en\/)?(privacy|cookies|cookie-policy|terms|oferta|security\.txt)$/;
+    const temp = red.filter((r: { source: string; permanent: boolean }) => !r.permanent && !LEGAL.test(r.source));
+    expect(temp, 'переезд контента отдаётся как временный 302').toEqual([]);
     for (const must of ['/cases', '/about', '/how-it-works', '/loss', '/intelligence'])
       expect(red.map((r: { source: string }) => r.source), `нет редиректа ${must}`).toContain(must);
   });
@@ -233,5 +247,22 @@ describe('серверные правила (vercel.json)', () => {
       expect(keys, `нет заголовка ${k}`).toContain(k);
     const hsts = h.headers.find((x: { key: string }) => x.key === 'Strict-Transport-Security').value;
     expect(hsts, 'HSTS короче года').toMatch(/max-age=(\d{8,})/);
+  });
+
+  it('конфиг ровно один — второй молча не деплоится', () => {
+    expect(existsSync(join(ROOT, 'weexp-site', 'vercel.json')),
+      'вернулась копия vercel.json внутри weexp-site: Vercel читает только корневой').toBe(false);
+    expect(cfg.outputDirectory, 'корневой конфиг обязан собирать weexp-site').toBe('weexp-site/dist');
+    expect((cfg.rewrites ?? []).some((r: { source: string }) => r.source === '/(.*)'),
+      'нет SPA-fallback: любая вложенная ссылка отдаст 404').toBe(true);
+  });
+
+  it('редиректы не строят цепочку из двух прыжков', () => {
+    const red: { source: string; destination: string }[] = cfg.redirects ?? [];
+    const bySource = new Map(red.map((r) => [r.source, r.destination]));
+    for (const r of red) {
+      const next = bySource.get(r.destination.split('#')[0].replace(/\/$/, '') || '/');
+      expect(next, `${r.source} → ${r.destination} → ${next}: лишний прыжок, вес теряется`).toBeUndefined();
+    }
   });
 });

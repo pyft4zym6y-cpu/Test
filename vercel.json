@@ -4,73 +4,299 @@
   "buildCommand": "cd weexp-site && npm run build",
   "outputDirectory": "weexp-site/dist",
   "redirects": [
-    { "source": "/approach", "destination": "/systems", "permanent": true },
-    { "source": "/process", "destination": "/systems", "permanent": true },
-    { "source": "/product", "destination": "/systems", "permanent": true },
-    { "source": "/os", "destination": "/systems", "permanent": true },
-    { "source": "/services", "destination": "/systems", "permanent": true },
-    { "source": "/what-we-build", "destination": "/systems", "permanent": true },
-    { "source": "/what-we-build/:path*", "destination": "/systems", "permanent": true },
-    { "source": "/challenges", "destination": "/systems", "permanent": true },
-    { "source": "/challenges/:slug", "destination": "/systems/:slug", "permanent": true },
-    { "source": "/classic", "destination": "/", "permanent": true },
-    { "source": "/expertise", "destination": "/proof", "permanent": true },
-    { "source": "/cases", "destination": "/proof", "permanent": true },
-    { "source": "/cases/:slug", "destination": "/proof", "permanent": true },
-    { "source": "/how-it-works", "destination": "/systems", "permanent": true },
-    { "source": "/about", "destination": "/people", "permanent": true },
-    { "source": "/about/team", "destination": "/people", "permanent": true },
-    { "source": "/about/standard", "destination": "/people", "permanent": true },
-    { "source": "/about/founder", "destination": "/people", "permanent": true },
-    { "source": "/calculator", "destination": "/diagnose", "permanent": true },
-    { "source": "/estimate", "destination": "/diagnose", "permanent": true },
-    { "source": "/blog", "destination": "/proof", "permanent": true },
-    { "source": "/blog/:path*", "destination": "/proof", "permanent": true },
-    { "source": "/how-it-works/business-health", "destination": "/diagnose", "permanent": true },
-    { "source": "/how-it-works/independence-score", "destination": "/diagnose", "permanent": true },
-    { "source": "/how-it-works/benchmark", "destination": "/diagnose", "permanent": true },
-    { "source": "/intelligence", "destination": "/proof", "permanent": true },
-    { "source": "/privacy", "destination": "/privacy.html", "permanent": false },
-    { "source": "/cookies", "destination": "/cookies.html", "permanent": false },
-    { "source": "/cookie-policy", "destination": "/cookies.html", "permanent": false },
-    { "source": "/en/privacy", "destination": "/privacy.html", "permanent": false },
-    { "source": "/terms", "destination": "/oferta.html", "permanent": false },
-    { "source": "/oferta", "destination": "/oferta.html", "permanent": false },
-    { "source": "/security.txt", "destination": "/.well-known/security.txt", "permanent": false }
+    {
+      "source": "/what-we-build/eu-expansion",
+      "destination": "/expansion",
+      "permanent": true
+    },
+    {
+      "source": "/what-we-build/:path*",
+      "destination": "/#systems",
+      "permanent": true
+    },
+    {
+      "source": "/what-we-build",
+      "destination": "/#systems",
+      "permanent": true
+    },
+    {
+      "source": "/challenges/:slug",
+      "destination": "/systems/:slug",
+      "permanent": true
+    },
+    {
+      "source": "/challenges",
+      "destination": "/#systems",
+      "permanent": true
+    },
+    {
+      "source": "/how-it-works/business-health",
+      "destination": "/diagnose",
+      "permanent": true
+    },
+    {
+      "source": "/how-it-works/independence-score",
+      "destination": "/diagnose",
+      "permanent": true
+    },
+    {
+      "source": "/how-it-works/benchmark",
+      "destination": "/diagnose",
+      "permanent": true
+    },
+    {
+      "source": "/how-it-works",
+      "destination": "/#systems",
+      "permanent": true
+    },
+    {
+      "source": "/approach",
+      "destination": "/#systems",
+      "permanent": true
+    },
+    {
+      "source": "/process",
+      "destination": "/#systems",
+      "permanent": true
+    },
+    {
+      "source": "/product",
+      "destination": "/#systems",
+      "permanent": true
+    },
+    {
+      "source": "/os",
+      "destination": "/#systems",
+      "permanent": true
+    },
+    {
+      "source": "/services",
+      "destination": "/#systems",
+      "permanent": true
+    },
+    {
+      "source": "/systems",
+      "destination": "/#systems",
+      "permanent": true
+    },
+    {
+      "source": "/system",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/classic",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/expertise",
+      "destination": "/proof",
+      "permanent": true
+    },
+    {
+      "source": "/intelligence",
+      "destination": "/proof",
+      "permanent": true
+    },
+    {
+      "source": "/cases/:slug*",
+      "destination": "/proof",
+      "permanent": true
+    },
+    {
+      "source": "/cases",
+      "destination": "/proof",
+      "permanent": true
+    },
+    {
+      "source": "/blog/:path*",
+      "destination": "/proof",
+      "permanent": true
+    },
+    {
+      "source": "/blog",
+      "destination": "/proof",
+      "permanent": true
+    },
+    {
+      "source": "/about/team",
+      "destination": "/people",
+      "permanent": true
+    },
+    {
+      "source": "/about/standard",
+      "destination": "/people",
+      "permanent": true
+    },
+    {
+      "source": "/about/founder",
+      "destination": "/people",
+      "permanent": true
+    },
+    {
+      "source": "/about",
+      "destination": "/people",
+      "permanent": true
+    },
+    {
+      "source": "/calculator",
+      "destination": "/diagnose",
+      "permanent": true
+    },
+    {
+      "source": "/estimate",
+      "destination": "/diagnose",
+      "permanent": true
+    },
+    {
+      "source": "/loss",
+      "destination": "/diagnose",
+      "permanent": true
+    },
+    {
+      "source": "/diagnose/full",
+      "destination": "/diagnose",
+      "permanent": true
+    },
+    {
+      "source": "/expansion/web",
+      "destination": "/expansion/technology",
+      "permanent": true
+    },
+    {
+      "source": "/en/expansion/web",
+      "destination": "/en/expansion/technology",
+      "permanent": true
+    },
+    {
+      "source": "/manage",
+      "destination": "/admin",
+      "permanent": true
+    },
+    {
+      "source": "/privacy",
+      "destination": "/privacy.html",
+      "permanent": false
+    },
+    {
+      "source": "/en/privacy",
+      "destination": "/privacy.html",
+      "permanent": false
+    },
+    {
+      "source": "/cookies",
+      "destination": "/cookies.html",
+      "permanent": false
+    },
+    {
+      "source": "/cookie-policy",
+      "destination": "/cookies.html",
+      "permanent": false
+    },
+    {
+      "source": "/terms",
+      "destination": "/oferta.html",
+      "permanent": false
+    },
+    {
+      "source": "/oferta",
+      "destination": "/oferta.html",
+      "permanent": false
+    },
+    {
+      "source": "/security.txt",
+      "destination": "/.well-known/security.txt",
+      "permanent": false
+    }
   ],
   "rewrites": [
-    { "source": "/api/ai-score", "destination": "/api/ai-draft" },
-    { "source": "/api/ga4-site", "destination": "/api/ga4?fn=site" },
-    { "source": "/api/interview", "destination": "/api/aqc?fn=interview" },
-    { "source": "/api/fetch", "destination": "/api/aqc?fn=fetch" },
-    { "source": "/api/portal-config", "destination": "/api/brief-users?fn=config" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/api/ai-score",
+      "destination": "/api/ai-draft"
+    },
+    {
+      "source": "/api/ga4-site",
+      "destination": "/api/ga4?fn=site"
+    },
+    {
+      "source": "/api/interview",
+      "destination": "/api/aqc?fn=interview"
+    },
+    {
+      "source": "/api/fetch",
+      "destination": "/api/aqc?fn=fetch"
+    },
+    {
+      "source": "/api/portal-config",
+      "destination": "/api/brief-users?fn=config"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ],
   "crons": [
-    { "path": "/api/sla", "schedule": "0 7 * * *" }
+    {
+      "path": "/api/sla",
+      "schedule": "0 7 * * *"
+    }
   ],
   "headers": [
     {
       "source": "/assets/(.*)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     },
     {
       "source": "/(cabinet|admin|manage)(.*)",
-      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
     },
     {
       "source": "/en/(cabinet|admin)(.*)",
-      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
     },
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains" },
-        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(), interest-cohort=()" },
-        { "key": "Content-Security-Policy", "value": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; script-src 'self' https://challenges.cloudflare.com https://images.dmca.com; frame-src 'self' https://challenges.cloudflare.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://challenges.cloudflare.com; form-action 'self'" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "geolocation=(), microphone=(), camera=(), interest-cohort=()"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://images.dmca.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://challenges.cloudflare.com https://www.googleapis.com https://api.indexnow.org; frame-src 'self' https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; upgrade-insecure-requests"
+        }
       ]
     }
   ]
