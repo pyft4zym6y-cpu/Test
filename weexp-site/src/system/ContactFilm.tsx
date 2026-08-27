@@ -120,13 +120,7 @@ export function ContactFilm() {
                 </label>
                 {keepDiag && <pre className="ctf-diag-body mono">{diag}</pre>}
               </div>
-            ) : (
-              <div className="ctf-attach ctf-attach-none">
-                <span className="ctf-attach-lab">{t('Аудит ще не пройдено', 'No audit yet')}</span>
-                <p>{t('Хочете, щоб ми відштовхувались від цифр? Пройдіть безкоштовний Express Audit — і його підсумок можна буде додати сюди.', 'Want us to start from numbers? Take the free Express Audit — its summary can then be attached here.')}</p>
-                <Link to={lp('/diagnose')} className="sysx-cta">{t('Пройти Express Audit', 'Take the Express Audit')} →</Link>
-              </div>
-            )}
+            ) : null}
             <form className="ctf-form" onSubmit={submit}>
               <label className="ctf-field ctf-full"><span className="mono">{t('Формат співпраці ', 'Cooperation format ')}<i className="ctf-opt">{t('(необовʼязково)', '(optional)')}</i></span>
                 <select value={format} onChange={(e) => setFormat(e.target.value)}>
@@ -163,6 +157,13 @@ export function ContactFilm() {
                 <p className="s3-err mono ctf-full">{failMsg || t('Не вдалося надіслати заявку. Спробуйте ще раз або напишіть нам на ', 'Could not send the request. Please try again or write to us at ')}{!failMsg && <><a href={`mailto:${MAIL}`}>{MAIL}</a>.</>}</p>
               )}
             </form>
+            {!diag && (
+              <div className="ctf-attach ctf-attach-none ctf-attach-after">
+                <span className="ctf-attach-lab">{t('Аудит ще не пройдено', 'No audit yet')}</span>
+                <p>{t('Хочете, щоб ми відштовхувались від цифр? Пройдіть безкоштовний Express Audit — і його підсумок можна буде додати сюди.', 'Want us to start from numbers? Take the free Express Audit — its summary can then be attached here.')}</p>
+                <Link to={lp('/diagnose')} className="sysx-cta">{t('Пройти Express Audit', 'Take the Express Audit')} →</Link>
+              </div>
+            )}
           </div>
         )}
       </div>

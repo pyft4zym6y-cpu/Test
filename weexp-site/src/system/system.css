@@ -2227,13 +2227,17 @@
 .ckc-btn.ghost:hover { background: rgba(250,245,233,.12); }
 .ckc-btn.primary:hover { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 #F5301C; }
 /* Над мобільною таб-панеллю (.sysh-tabs), щоб не перекривати навігацію */
+/* На телефоне баннер занимал 150px, а под ним ещё 69px таб-панели — вместе
+   четверть экрана, и это ДО того, как человек увидел страницу. Ужимаем поля и
+   межстрочный интервал; высоту кнопок (44px) не трогаем — она нужна для
+   попадания пальцем, а иконку прячем: смысла она не несёт. */
 @media (max-width: 860px) {
-  .ckc { bottom: calc(62px + env(safe-area-inset-bottom)); padding: 10px; }
-  .ckc-in { flex-wrap: wrap; align-items: center; gap: 10px 10px; padding: 13px 14px; }
-  .ckc-ic { font-size: 18px; }
-  .ckc-text { flex: 1 1 auto; font-size: 12.5px; }
-  .ckc-actions { flex: 0 0 100%; order: 3; justify-content: stretch; }
-  .ckc-btn { flex: 1; padding: 10px 12px; }
+  .ckc { bottom: calc(62px + env(safe-area-inset-bottom)); padding: 8px; }
+  .ckc-in { flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 12px; }
+  .ckc-ic { display: none; }
+  .ckc-text { flex: 1 1 auto; font-size: 12px; line-height: 1.42; }
+  .ckc-actions { flex: 0 0 100%; order: 3; justify-content: stretch; gap: 8px; }
+  .ckc-btn { flex: 1; padding: 10px 8px; font-size: 12px; }
 }
 
 /* Trust-строка у підвалі */
@@ -2578,3 +2582,8 @@ body.kb-open .pf-bg { display: none !important; }
 .ckc-btn.ghost { background: #F1E9D4; color: #141210; border-color: #F1E9D4; }
 .ckc-btn.ghost:hover { background: #fff; border-color: #fff; }
 @media (max-width: 860px) { .ckc-btn { min-width: 0; } }
+
+/* Предложение пройти аудит стоит ПОСЛЕ формы (см. ContactFilm): над ней оно
+   уводило первое поле за нижний край экрана. Здесь ему нужен отступ сверху —
+   раньше его давал соседний блок формы. */
+.ctf-attach-after { margin-top: 26px; }
