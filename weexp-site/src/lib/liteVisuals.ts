@@ -21,18 +21,33 @@ import { useEffect, useState } from 'react';
  * SSR/prerender-безпечно: до маунта повертаємо false (десктоп-дефолт), рішення
  * уточнюється в useEffect уже в браузері.
  */
+function detect(): boolean {
+  try {
+    const nav = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean } };
+    const saveData = !!nav.connection?.saveData;
+    const lowMem = typeof nav.deviceMemory === 'number' && nav.deviceMemory <= 4;
+    const fewCores = typeof nav.hardwareConcurrency === 'number' && nav.hardwareConcurrency <= 4;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const touch = matchMedia('(hover: none) and (pointer: coarse)').matches;
+    return touch || saveData || reduce || (lowMem && fewCores);
+  } catch { return false; }
+}
+
 export function useLiteVisuals(): boolean {
-  const [lite, setLite] = useState(false);
+  // Рішення приймається В ПЕРШОМУ РЕНДЕРІ, а не в useEffect. Різниця не
+  // косметична: `lazy()` починає тягнути чанк тоді, коли елемент уперше
+  // відрендерився. З відкладеним рішенням телефон устигав завантажити й
+  // розпарсити ~474 КБ three.js, і аж потім сцена знімалась — тобто економія
+  // була на малюванні, але не на трафіку й не на парсингу.
+  //
+  // Ініціалізатор useState виконується і при гідрації, тому перевіряємо window:
+  // на пререндері (36 статичних сторінок) navigator і matchMedia відсутні.
+  // Розбіжності розмітки це не дає — важке 3D і так рендериться в null.
+  const [lite, setLite] = useState(() => (typeof window === 'undefined' ? false : detect()));
   useEffect(() => {
-    try {
-      const nav = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean } };
-      const saveData = !!nav.connection?.saveData;
-      const lowMem = typeof nav.deviceMemory === 'number' && nav.deviceMemory <= 4;
-      const fewCores = typeof nav.hardwareConcurrency === 'number' && nav.hardwareConcurrency <= 4;
-      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const touch = matchMedia('(hover: none) and (pointer: coarse)').matches;
-      setLite(touch || saveData || reduce || (lowMem && fewCores));
-    } catch { /* залишаємо false */ }
+    // Перевіряємо ще раз після маунта: між пререндером і гідрацією значення
+    // могло бути обчислене на сервері (false), а тут воно вже справжнє.
+    setLite(detect());
   }, []);
   return lite;
 }
