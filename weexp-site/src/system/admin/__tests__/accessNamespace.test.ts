@@ -38,7 +38,15 @@ function walk(dir: string, out: string[] = []): string[] {
 describe('пространства имён каталогов не смешиваются', () => {
   it('ни один модуль сайта не тянет каталог портала', () => {
     const files = walk(ROOT);
-    expect(files.length, 'обход не нашёл исходников — тест был бы пустым').toBeGreaterThan(100);
+    /*
+     * Проверка, что обход вообще что-то нашёл, — иначе тест зелёный на пустом
+     * списке. Раньше здесь стоял порог «больше 100 файлов»; после удаления
+     * легаси их стало 92, и порог упал вместе с ним, ничего при этом не найдя.
+     * Число, взятое из головы, дрейфует; список обязательных модулей — нет.
+     */
+    const rel = files.map((f) => f.slice(ROOT.length + 1));
+    for (const must of ['App.tsx', 'main.tsx', 'system/Cabinet.tsx', 'system/admin/panels-client.tsx'])
+      expect(rel, `обход не нашёл ${must} — тест был бы пустым`).toContain(must);
     const guilty = files
       .filter((f) => /portal\/src\/data\/accesses|['"].*accesses\.json['"]/.test(readFileSync(f, 'utf8')))
       .map((f) => f.slice(ROOT.length + 1));

@@ -1,9 +1,0 @@
-.proof { padding:clamp(60px,12vh,140px) 0; }
-.proof-h { font-size:clamp(30px,5vw,68px); margin:16px 0 40px; max-width:16ch; }
-.proof-grid { display:grid; grid-template-columns:1.5fr 1fr; gap:clamp(28px,5vw,64px); align-items:center; }
-.proof-chart { min-width:0; }
-.growth { width:100%; height:auto; display:block; }
-.gc-lab { font-family:var(--mono); font-size:12px; fill:var(--steel-600); letter-spacing:.04em; }
-.gc-lab-end { fill:var(--mark-600); }
-.proof-stats { display:grid; gap:20px; }
-@media (max-width:820px){ .proof-grid{ grid-template-columns:1fr; } }
