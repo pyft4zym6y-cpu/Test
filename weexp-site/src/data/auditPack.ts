@@ -158,7 +158,16 @@ export const PACK_AUDITS: PackAudit[] = [
 /** Скільки з 13 аудитів рушій уже вміє збирати сам. */
 export const AUDITS_WITH_ENGINE = PACK_AUDITS.filter((a) => a.engine.length > 0).length;
 
-export const PACK_DOC_COUNT = PACK_REPORTS.length + PACK_VOLUMES.length + PACK_AUDITS.length; // 5 звітів + 6 томів + 13 аудитів = 24
+/**
+ * Скільки ДОКУМЕНТІВ клієнт отримує на руки: 5 звітів + 6 томів = 11.
+ *
+ * 13 аудитів сюди НЕ додаються. Вони не окремі документи, а глави d01–d13
+ * діагностичного звіту (r2) — див. PACK_CHAPTERS нижче. Стара версія цієї
+ * константи їх додавала й давала 24: кожен аудит рахувався двічі. У продажу
+ * такий рахунок читається як завищена обіцянка, а на здачі клієнт недорахується
+ * тринадцяти файлів.
+ */
+export const PACK_DOC_COUNT = PACK_REPORTS.length + PACK_VOLUMES.length;
 
 export const PACK_CHAPTERS: PackChapter[] = [
   // ── r1 · Презентація ──

@@ -16,6 +16,8 @@ export function AuditPackPage() {
   const scope = params.get('scope') === 'dept' ? 'dept' : 'store';
   const setScope = (v: 'store' | 'dept') => setParams({ scope: v }, { replace: true });
   const volumes = PACK_VOLUMES.filter((v) => scope === 'dept' || v.scope === 'both');
+  // Той самий рахунок, що й PACK_DOC_COUNT, але з урахуванням фільтра томів
+  // на сторінці. Розбіжність між ними тримає тест auditPack.test.ts.
   const docCount = PACK_REPORTS.length + volumes.length;
   const N = PACK_AUDITS.length;   // 13-й аудит додано — число більше не пишемо руками
   return (
