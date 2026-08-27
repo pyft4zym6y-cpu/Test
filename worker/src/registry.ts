@@ -199,14 +199,38 @@ export function buildRegistry(inputs: FindingInput[], ctx: RegistryCtx = {}): Fi
   const leverOf = (step?: FunnelStep): LeverKey | null => (step ? STEP_TO_LEVER[step] : null);
   const icByLever = new Map<LeverKey, number>();
   for (const f of scored) { const lv = leverOf(f.funnelStep); if (lv && leverContrib.has(lv)) icByLever.set(lv, (icByLever.get(lv) ?? 0) + f.impactConfidence); }
-  const withMoney: Finding[] = scored.map((f): Finding => {
+  const exposureOf = (f: typeof scored[number]): number => {
     const lv = leverOf(f.funnelStep);
-    let revenueExposure = 0;
-    if (lv && leverContrib.has(lv)) {
-      const totalIc = icByLever.get(lv) || 1;
-      revenueExposure = Math.round((leverContrib.get(lv)! * f.impactConfidence) / totalIc);
-    }
-    const priorityScore = Math.round((f.impactConfidence * Math.max(revenueExposure, 1)) / f.difficulty);
+    if (!lv || !leverContrib.has(lv)) return 0;
+    const totalIc = icByLever.get(lv) || 1;
+    return Math.round((leverContrib.get(lv)! * f.impactConfidence) / totalIc);
+  };
+  const exposures = scored.map(exposureOf);
+  const maxExposure = Math.max(0, ...exposures);
+
+  const withMoney: Finding[] = scored.map((f, i): Finding => {
+    const revenueExposure = exposures[i];
+    /*
+     * Ранг ВНУТРИ полосы. Полосу задаёт качество находки (band ниже), а этот
+     * счёт отвечает на вопрос «что из равного по качеству делать раньше».
+     *
+     * Было: impactConfidence × max(revenueExposure, 1) / difficulty. Деньги в
+     * гривнах против качества в долях единицы — при наличии рычага они
+     * перевешивали всё остальное на пять порядков, а находка БЕЗ рычага
+     * получала счёт около нуля и падала в самый низ полосы. Замер: две находки
+     * P0 с impact 5 — однодневная без шага воронки против пятидневной с
+     * рычагом — давали 1 против 105 600. То есть беклог сортировался не по
+     * пользе, а по тому, легла ли находка на рычаг воронки.
+     *
+     * Стало: деньги нормируются на максимум в этом же реестре, то есть входят
+     * долей 0..1 наравне с качеством, и обе величины делятся на трудоёмкость.
+     * Деньги по-прежнему решают при прочих равных (могут удвоить счёт), но
+     * отсутствие рычага больше не обнуляет находку — она ранжируется по тому,
+     * что о ней известно. Наружу этот счёт не выходит: revenueExposure, который
+     * видит клиент, считается отдельно и не изменился.
+     */
+    const moneyShare = maxExposure > 0 ? revenueExposure / maxExposure : 0;
+    const priorityScore = Math.round(((moneyShare + f.impactConfidence) / f.difficulty) * 1000);
     return { ...f, revenueExposure, priorityScore, priority: band(f.impact, f.confidence, f.funnelStep, f.impactConfidence) };
   });
 

@@ -63,6 +63,62 @@ describe('атрибуция денег', () => {
   });
 });
 
+describe('порядок беклога', () => {
+  const m = money({ key: 'traffic', contribYear: 600_000 });
+
+  it('при равных деньгах раньше идёт то, что дешевле сделать', () => {
+    const r = buildRegistry([
+      f({ title: 'дорого', funnelStep: 'привлечение', impact: 4, difficulty: 5 }),
+      f({ title: 'дёшево', funnelStep: 'привлечение', impact: 4, difficulty: 1 }),
+    ], { money: m });
+    expect(r[0].title).toBe('дёшево');
+  });
+
+  it('при равной трудоёмкости раньше идёт то, где денег больше', () => {
+    const r = buildRegistry([
+      f({ title: 'с рычагом', funnelStep: 'привлечение', impact: 4, difficulty: 3 }),
+      f({ title: 'без рычага', impact: 4, difficulty: 3 }),
+    ], { money: m });
+    expect(r[0].title).toBe('с рычагом');
+  });
+
+  it('находка без рычага не падает в самый низ полосы автоматически', () => {
+    // Замер до починки: однодневная находка impact 5 без шага воронки получала
+    // счёт 1 против 105 600 у пятидневной с рычагом — беклог сортировался по
+    // тому, легла ли находка на рычаг, а не по пользе.
+    const r = buildRegistry([
+      f({ title: 'пятидневная с деньгами', funnelStep: 'привлечение', impact: 5, difficulty: 5 }),
+      f({ title: 'однодневная без денег', impact: 5, difficulty: 1 }),
+    ], { money: m });
+    expect(r[0].title).toBe('однодневная без денег');
+  });
+
+  it('деньги влияют, но не перевешивают на порядки', () => {
+    const r = buildRegistry([
+      f({ title: 'с деньгами', funnelStep: 'привлечение', impact: 4, difficulty: 3 }),
+      f({ title: 'без денег', impact: 4, difficulty: 3 }),
+    ], { money: m });
+    const [a, b] = ['с деньгами', 'без денег'].map((t) => r.find((x) => x.title === t)!);
+    expect(a.priorityScore).toBeGreaterThan(b.priorityScore);
+    expect(a.priorityScore).toBeLessThan(b.priorityScore * 3);   // а не в 100 000 раз
+  });
+
+  it('полоса всегда важнее счёта: P0 идёт раньше P1, как бы ни сложились числа', () => {
+    const r = buildRegistry([
+      f({ title: 'P1 дешёвая', impact: 3, difficulty: 1, funnelStep: 'привлечение' }),
+      f({ title: 'P0 дорогая', impact: 5, difficulty: 5 }),
+    ], { money: m });
+    expect(r[0].priority).toBe('P0');
+  });
+
+  it('счёт конечен и без денег, и без рычагов вообще', () => {
+    for (const x of buildRegistry([f({ title: 'A' }), f({ title: 'B', difficulty: 5 })])) {
+      expect(Number.isFinite(x.priorityScore), x.title).toBe(true);
+      expect(x.priorityScore).toBeGreaterThan(0);
+    }
+  });
+});
+
 describe('уверенность', () => {
   it('неизвестный уровень доказательства не даёт NaN', () => {
     const c = computeConfidence(f({ evidenceLevel: 'L1' as never }));
