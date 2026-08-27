@@ -289,6 +289,29 @@ export default function ReportPage() {
           </div>
 
           {/* Критические разрывы */}
+          {/* Отсутствие карточек — не то же самое, что отсутствие рисков.
+              Когда разрывов не нашлось, секция просто исчезала, и клиент
+              дочитывал отчёт, не узнав, сколько контрольных вопросов вообще
+              проверено. Пустое состояние говорит это словами. */}
+          {report.gaps.length === 0 && (
+            <div className="card" style={{ marginTop: 28 }}>
+              <p className="eyebrow">Критические разрывы</p>
+              <p className="sub" style={{ fontSize: 13, margin: '6px 0 0' }}>
+                {report.gapCoverage.checked < report.gapCoverage.total ? (
+                  <>
+                    Среди проверенных разрывов не найдено, но проверено{' '}
+                    <b>{report.gapCoverage.checked} из {report.gapCoverage.total}</b> — на остальные
+                    контрольные вопросы ответа пока нет. Непроверенный разрыв — не пройденный разрыв.
+                  </>
+                ) : (
+                  <>
+                    Критических разрывов нет: все {report.gapCoverage.total} контрольных вопросов
+                    отвечены, ни на одном не стоит «Нет». Это результат проверки, а не отсутствие проверки.
+                  </>
+                )}
+              </p>
+            </div>
+          )}
           {report.gaps.length > 0 && (
             <>
               <p className="eyebrow" style={{ margin: '28px 0 12px' }}>

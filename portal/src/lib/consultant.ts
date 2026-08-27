@@ -8,7 +8,9 @@ export type Levers = Record<LeverKey, LeverRow>;
 
 export type Money = {
   show: boolean;
-  revenueK?: number; // тыс ₴/мес (старая 2-рычаговая модель)
+  /** тыс ₴/мес. Читается только из старых сохранённых записей: модель
+   *  давно восьмирычаговая (levers + waterfall), новые записи поле не пишут. */
+  revenueK?: number;
   cr: number;
   crTarget: number;
   repeat: number;
@@ -195,23 +197,14 @@ export function computeGap8(levers: Levers) {
   };
 }
 
-/** Расчёт денег — та же цепная модель, что в калькуляторе сайта. */
-export function computeMoney(input: {
-  revenueK: number;
-  cr: number;
-  crTarget: number;
-  repeat: number;
-  repeatTarget: number;
-}): Pick<Money, 'consMin' | 'consMax' | 'monthly'> {
-  const R = input.revenueK * 1000 * 12;
-  const crF = Math.min(Math.max(input.crTarget / Math.max(input.cr, 0.1), 1), 3);
-  const rC = Math.min(input.repeat, 80) / 100;
-  const rT = Math.max(rC, Math.min(input.repeatTarget, 80) / 100);
-  const repF = Math.min(Math.max((1 - rC) / (1 - rT), 1), 1.6);
-  const full = R * (crF * repF - 1);
-  const cons = full * 0.55;
-  return { consMin: Math.round(cons), consMax: Math.round(full), monthly: Math.round(cons / 12) };
-}
+/*
+ * Здесь жила computeMoney — старая двухрычаговая модель (оборот × коэффициент
+ * конверсии × коэффициент повторных). Её вытеснила computeGap8 с восемью
+ * рычагами и цепной атрибуцией, и с тех пор функцию не вызывал никто: она
+ * оставалась третьей независимой копией формулы выручки (рядом с computeGap8 и
+ * worker/src/money.ts), которую пришлось бы править синхронно с двумя другими.
+ * Копий формулы должно быть столько, сколько их вызывают.
+ */
 
 /** PageSpeed Insights: скорость сайта клиента и конкурентов (mobile). */
 export async function runPSI(url: string, key?: string): Promise<Omit<L0Row, 'kind'>> {

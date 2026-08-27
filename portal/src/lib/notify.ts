@@ -62,9 +62,18 @@ export async function checkMilestones(
   } catch { /* noop */ }
   const fresh = MILESTONES.filter((m) => !sent.includes(m.key) && m.when(ctx));
   if (!fresh.length) return null;
+  /*
+   * Дедупликация помечала отправленным ВСЁ, что попало в fresh, независимо от
+   * исхода запроса: catch глотал сетевую ошибку, ответ 500 от /api/notify не
+   * проверялся вовсе, а ключ всё равно уходил в NOTIFY-SENT. Комментарий
+   * обещал «веха уйдёт при следующем заходе» — на деле она не уходила никогда:
+   * при следующем заходе ключ уже числился в отправленных. Помечаем только то,
+   * что действительно ушло.
+   */
+  const delivered: string[] = [];
   for (const m of fresh) {
     try {
-      await fetch('/api/notify', {
+      const r = await fetch('/api/notify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -72,7 +81,8 @@ export async function checkMilestones(
           text: `${m.text(ctx)}\n\nОткрыть карточку: ${window.location.origin}/admin`,
         }),
       });
-    } catch { /* сеть упала — веха уйдёт при следующем заходе */ }
+      if (r.ok) delivered.push(m.key);
+    } catch { /* сеть упала — веха действительно уйдёт при следующем заходе */ }
   }
-  return [...sent, ...fresh.map((m) => m.key)];
+  return delivered.length ? [...sent, ...delivered] : null;
 }
