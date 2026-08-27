@@ -29,8 +29,14 @@ function isPrivateIp(ip) {
     || s.startsWith('fe80') || s.startsWith('::ffff:');
 }
 
-/** Проверяем адрес до запроса: схема, имя хоста и то, куда он резолвится. */
-async function assertPublic(u) {
+/**
+ * Проверяем адрес до запроса: схема, имя хоста и то, куда он резолвится.
+ *
+ * Экспортируется: этот же контур нужен ВЕЗДЕ, где мы идём по адресу от
+ * вызывающего. Гвард уже был написан здесь, но второй такой маршрут (разбор
+ * страницы по критериям AQC) им не пользовался и ходил куда угодно.
+ */
+export async function assertPublic(u) {
   if (!/^https?:$/.test(u.protocol)) throw new Error('только http/https');
   const host = u.hostname.replace(/^\[|\]$/g, '');
   if (/^(localhost|.*\.local|.*\.internal)$/i.test(host)) throw new Error('внутренний хост');
