@@ -488,7 +488,7 @@ export function AdminPanel() {
         {/* ── Дашборд ── */}
         {!detail && curTab === 'overview' && (
           <Panel title="Дашборд">
-            <Dashboard rows={rows} leads={leads} traffic={traffic} period={period} onPeriod={setPeriod} />
+            <Dashboard rows={rows} leads={leads} traffic={traffic} period={period} onPeriod={setPeriod} onOpenClient={setOpenUser} />
           </Panel>
         )}
 

@@ -2441,3 +2441,19 @@ body.kb-open .pf-bg { display: none !important; }
 .adm-fill-list em { font-style: normal; font-size: 10.5px; color: var(--silver); }
 .adm-fill button { justify-self: start; }
 @media (max-width: 760px) { .adm-fill-list label { grid-template-columns: auto 1fr; } .adm-fill-list em { display: none; } }
+
+/* Тижневий зріз: рух, а не стан. */
+.adm-dig { border: 1px solid var(--line); background: var(--pure-white); padding: 14px 16px; margin-bottom: 16px; }
+.adm-dig-sum { margin: 0 0 12px; font-size: 12.5px; color: var(--graphite); }
+.adm-dig-sum b { color: var(--deep); }
+.adm-dig-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+.adm-dig-col { display: grid; gap: 4px; align-content: start; }
+.adm-dig-col > .adm-empty { margin-bottom: 4px; line-height: 1.4; }
+.adm-dig-row { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: baseline;
+  width: 100%; text-align: left; padding: 6px 8px; border: 1px solid var(--line); background: none;
+  font: inherit; cursor: pointer; }
+.adm-dig-row:hover { border-color: var(--deep); }
+.adm-dig-row:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+.adm-dig-row b { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.adm-dig-row span { font-size: 12px; color: var(--deep); }
+.adm-dig-row i { font-style: normal; font-size: 10.5px; color: var(--graphite); }

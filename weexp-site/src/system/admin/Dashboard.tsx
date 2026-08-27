@@ -3,6 +3,7 @@ import { type AdminRow, type LeadRow, type TierStatus } from '@/lib/supa';
 import { eur } from '../systems';
 import { ACCESS_SOURCES, EmptyState, ST, Tile, TrafficBlock, Trend, rel, srcName, type SiteTraffic } from './shared';
 import { auditStatusOf, money, phaseOf, slaOf, PHASES } from './auditRequests';
+import { DigestPanel } from './DigestPanel';
 
 /**
  * Дашборд адмінки. Винесено з AdminPanel окремим лінивим модулем з двох причин:
@@ -10,12 +11,13 @@ import { auditStatusOf, money, phaseOf, slaOf, PHASES } from './auditRequests';
  * стрічка подій, тренд, гроші по фазах) крутились на КОЖНОМУ рендері адмінки —
  * навіть коли відкритий зовсім інший розділ.
  */
-export function Dashboard({ rows, leads, traffic, period, onPeriod }: {
+export function Dashboard({ rows, leads, traffic, period, onPeriod, onOpenClient }: {
   rows: AdminRow[] | null;
   leads: LeadRow[] | null;
   traffic: SiteTraffic | null | undefined;
   period: 7 | 30 | 90 | 0;
   onPeriod: (p: 7 | 30 | 90 | 0) => void;
+  onOpenClient?: (userId: string) => void;
 }) {
   const metrics = useMemo(() => {
     const r = rows || [];
@@ -123,6 +125,7 @@ export function Dashboard({ rows, leads, traffic, period, onPeriod }: {
                 ))}
               </div>
             </div>
+            <DigestPanel rows={rows} onOpen={onOpenClient} />
             <div className="adm-tiles">
               <Tile n={metrics.users} l="Користувачів" />
               <Tile n={metrics.company} l="З профілем компанії" />
