@@ -2406,3 +2406,38 @@ body.kb-open .pf-bg { display: none !important; }
   .adm-anom-row { grid-template-columns: 1fr; gap: 4px; }
   .adm-log-q { min-width: 0; width: 100%; }
 }
+
+/* Готовність до прогону: рішення про запуск і знання про наслідки — поруч. */
+.adm-ready { border: 1px solid var(--line); background: var(--pure-white); margin-top: 10px; }
+.adm-ready-head { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px;
+  background: none; border: 0; font: inherit; text-align: left; cursor: pointer; flex-wrap: wrap; }
+.adm-ready-head:hover { background: var(--surface-2, #f7f7f5); }
+.adm-ready-head:focus-visible { outline: 2px solid var(--red); outline-offset: -2px; }
+.adm-ready-verdict { flex: 1 1 20rem; font-style: normal; font-size: 12.5px; color: var(--graphite); line-height: 1.4; }
+.adm-ready-chev { color: var(--graphite); font-size: 11px; }
+.adm-ready-body { display: grid; gap: 14px; padding: 0 14px 14px; }
+.adm-ready-asks { display: grid; gap: 6px; border-left: 3px solid var(--red); padding: 10px 12px; background: var(--surface-2, #f7f7f5); }
+.adm-ready-ask { display: grid; grid-template-columns: minmax(9rem, 1fr) 5rem 2fr; gap: 10px; align-items: baseline; font-size: 13px; }
+.adm-ready-ask span { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--graphite); }
+.adm-ready-ask i { font-style: normal; font-size: 12px; color: var(--graphite); }
+.adm-ready-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.adm-ready-doc { border: 1px solid var(--line); padding: 9px 11px; display: grid; gap: 6px; }
+.adm-ready-doc-h { display: flex; align-items: baseline; gap: 8px; }
+.adm-ready-doc-h span { flex: 1; font-size: 13px; }
+.adm-ready-pct.is-ok { color: #1F6E4E; } .adm-ready-pct.is-mid { color: #C58A00; } .adm-ready-pct.is-low { color: var(--red); }
+.adm-ready-bar { height: 4px; background: var(--silver); }
+.adm-ready-bar i { display: block; height: 100%; background: var(--deep); }
+.adm-ready-miss { margin: 0; font-size: 11px; color: var(--graphite); line-height: 1.4; }
+@media (max-width: 760px) { .adm-ready-ask { grid-template-columns: 1fr; gap: 2px; } }
+
+/* Перенесення профілю з анкети: пропозиція, а не автозапис. */
+.adm-fill { border: 1px solid var(--line); background: var(--pure-white); padding: 12px 14px; display: grid; gap: 10px; margin-bottom: 10px; }
+.adm-fill-head { display: grid; gap: 2px; }
+.adm-fill-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.adm-fill-list li.is-off { opacity: .45; }
+.adm-fill-list label { display: grid; grid-template-columns: auto minmax(7rem, 10rem) 1fr auto; gap: 10px; align-items: baseline; cursor: pointer; padding: 4px 0; }
+.adm-fill-list i { font-style: normal; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--graphite); }
+.adm-fill-list span { font-size: 13.5px; color: var(--charcoal); }
+.adm-fill-list em { font-style: normal; font-size: 10.5px; color: var(--silver); }
+.adm-fill button { justify-self: start; }
+@media (max-width: 760px) { .adm-fill-list label { grid-template-columns: auto 1fr; } .adm-fill-list em { display: none; } }

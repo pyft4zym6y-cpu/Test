@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react';
+import { AutofillPanel } from './AutofillPanel';
 
 import { getProjects, type AdminRow, type LeadRow, type TierStatus, type LeadStatus } from '@/lib/supa';
 import { eur, sysLabel, actionText, type SysKey } from '../systems';
@@ -93,6 +94,11 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, 
               <button className="adm-code adm-code-lg" onClick={() => navigator.clipboard?.writeText(code)} title="Скопіювати">🔑 {code}</button>
               <span className="mono adm-empty">клієнт вводить його у «Глибокому аудиті»</span>
             </Block>
+          )}
+          {utab === 'comp' && (
+            <PanelBoundary title="Заповнення з анкети">
+              <AutofillPanel userId={row.userId} code={code} rec={rec} onSaved={onChanged} />
+            </PanelBoundary>
           )}
           {utab === 'comp' && <Block title="Компанія">{(company?.name || company?.industry) ? (
             <ul className="adm-kv">

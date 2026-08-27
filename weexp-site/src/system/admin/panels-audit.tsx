@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { ReadinessPanel } from './ReadinessPanel';
 
 import {
   findAuditIdByCode,
@@ -250,6 +251,20 @@ export function AccessCatalog({ userId, initial, onSaved }: { userId: string; in
 export function WorkerAudit({ userId, code, rec, reviewer }: { userId: string; code?: string; rec: DiagRecord; reviewer: string }) {
   const [site, setSite] = useState(rec.company?.site || rec.company?.domains || '');
   const [tier, setTier] = useState(2);
+  // Відповіді потрібні тут для оцінки готовності: рішення про запуск і знання
+  // про його наслідки мають бути в одному місці, а не через дві вкладки.
+  const [wAnswers, setWAnswers] = useState<Record<string, AuditAnswer>>({});
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const id = code ? await findAuditIdByCode(code) : null;
+        const a = id ? await loadAuditAnswers(id) : {};
+        if (alive) setWAnswers(a);
+      } catch { /* немає анкети — готовність порахується без неї */ }
+    })();
+    return () => { alive = false; };
+  }, [code]);
   const [jobs, setJobs] = useState<AuditJobRef[]>(rec.auditJobs || []);
   const [running, setRunning] = useState(false);
   const [job, setJob] = useState<Record<string, unknown> | null>(null);
@@ -373,6 +388,7 @@ export function WorkerAudit({ userId, code, rec, reviewer }: { userId: string; c
         </select>
         <button className="mc-btn ok" disabled={running} onClick={start}>{running ? '⏳ Аудит іде…' : '▶ Запустити аудит'}</button>
       </div>
+      <ReadinessPanel rec={rec} answers={wAnswers} />
       {err && <p className="cab-auth-err mono">{err}</p>}
       {job && (
         <div className="adm-worker-log mono">
