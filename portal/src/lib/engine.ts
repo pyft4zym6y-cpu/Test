@@ -3,7 +3,7 @@ import type { AnswerRow } from './supabase';
 import type { Levers, Money, ReportMeta } from './consultant';
 import type { Contradiction } from './contradictions';
 import { CAUSAL_CHAINS, type CausalChain } from '../data/engine';
-import { byId } from './model';
+import { byId, ACCESSES } from './model';
 
 /**
  * Decision Engine: IF-условия над ответами, рычагами и результатами скрининга →
@@ -257,7 +257,19 @@ export function computeConfidence(
 
   const coverage = report.totalL1 ? report.answeredL1 / report.totalL1 : 0;
   add(`Заполненность опросника ${Math.round(coverage * 100)}%`, Math.round(coverage * 40));
-  add(`Доступы и выгрузки: ${accessGranted}/26`, Math.round((Math.min(accessGranted, 12) / 12) * 15));
+  /*
+   * Знаменатель был захардкожен как 26 — столько доступов в каталоге когда-то и
+   * было. Каталог с тех пор вырос до 38, а число осталось: клиент видел
+   * «30/26», то есть дробь больше единицы. Берём длину каталога.
+   *
+   * Насыщение на 12 — отдельное и намеренное: дюжины доступов уже достаточно,
+   * чтобы выводам можно было верить, и следующие десять уверенности не
+   * добавляют. Но раз в подписи стоит одно число, а в формуле другое, подпись
+   * обязана это назвать — иначе она вводит в заблуждение сама по себе.
+   */
+  const ACCESS_ENOUGH = 12;
+  add(`Доступы и выгрузки: ${accessGranted} из ${ACCESSES.length} (для оценки достаточно ${ACCESS_ENOUGH})`,
+    Math.round((Math.min(accessGranted, ACCESS_ENOUGH) / ACCESS_ENOUGH) * 15));
 
   const levers = meta?.money?.levers;
   if (levers) {

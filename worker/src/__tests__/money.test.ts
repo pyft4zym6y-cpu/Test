@@ -126,6 +126,34 @@ describe('клиент до запуска', () => {
   });
 });
 
+describe('одна формула выручки на два приложения', () => {
+  // money.ts (воркер) и forecast() (портал) считают месячную выручку из одних и
+  // тех же рычагов. В комментарии money.ts это обещано словами — «та же формула
+  // выручки, что forecast() портала», — а держится только на внимательности.
+  // Разъедутся они молча: клиент увидит одно число в кабинете и другое в
+  // документе аудита, и объяснить это будет нечем.
+  it('портал и воркер дают одинаковую текущую выручку', async () => {
+    const { forecast } = await import('../../../portal/src/lib/engine.ts');
+    const lv = L({ traffic: [8000, 9000], cr: [1.2, 1.6], aov: [1450, 1450],
+                   pay: [78, 78], redeem: [86, 86], base: [4200, 4200],
+                   repeat: [23, 23], opr: [1.8, 1.8] });
+    const mine = computeMoney(lv)!;
+    const theirs = forecast({ levers: lv, consMin: mine.consMinYear } as never);
+    expect(theirs).not.toBeNull();
+    expect(theirs!.current).toBe(Math.round(mine.currentMonth * 12));
+  });
+
+  it('совпадение не случайно: меняем рычаг — оба меняются одинаково', async () => {
+    const { forecast } = await import('../../../portal/src/lib/engine.ts');
+    for (const cr of [0.5, 2.4, 7]) {
+      const lv = L({ cr: [cr, cr] });
+      const mine = computeMoney(lv)!;
+      const theirs = forecast({ levers: lv, consMin: 1 } as never);
+      expect(theirs!.current, `cr=${cr}`).toBe(Math.round(mine.currentMonth * 12));
+    }
+  });
+});
+
 describe('moneyFacts — то, что читает модель', () => {
   it('прямо запрещает пересчитывать вклады заново', () => {
     expect(moneyFacts(computeMoney(L())!)).toMatch(/не перераховуй|не додавай/i);
