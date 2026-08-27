@@ -5,11 +5,24 @@
 //      адрес на подтверждённом домене, напр. portal@weexp.agency).
 const DEFAULT_NOTIFY_EMAIL = 'pashasidorenko18@gmail.com';
 
-import { rateOk } from './_lib/guard.js';
+import { rateOk, limiterState } from './_lib/guard.js';
+import { requireStaff } from './_lib/auth.js';
 
 export default async function handler(req, res) {
+  /*
+   * Стан лічильника частоти — для команди. Він пропускає запит на будь-якому
+   * збої (зламана форма гірша за пропущений ліміт), тож «не налаштовано»,
+   * «міграція не застосована» і «працює» ззовні виглядали однаково. Ліміт
+   * бережe ключ Anthropic, прогін Playwright і квоту Google — знати, що він не
+   * працює жодного дня, треба з чогось.
+   */
+  if (req.method === 'GET') {
+    if (!(await requireStaff(req, res))) return;
+    res.status(200).json({ rateLimiter: limiterState });
+    return;
+  }
   if (req.method !== 'POST') {
-    res.status(405).json({ error: 'POST only' });
+    res.status(405).json({ error: 'GET (стан) або POST' });
     return;
   }
   // Ендпоінт шле лист власнику й відкритий (його зве бриф без токена). Без

@@ -13,6 +13,26 @@ export function clientIp(req) {
 }
 
 /**
+ * Стан лічильника з останнього виклику. Три випадки, які до цього були
+ * нерозрізнимі: 'off' — не налаштовано; 'degraded' — налаштовано, але RPC не
+ * відповідає (міграція не застосована, база лягла); 'on' — працює.
+ * Читається GET /api/notify (для команди), щоб «ліміт мовчки не працює»
+ * було видно не тільки в логах Vercel.
+ */
+export const limiterState = { mode: 'unknown', reason: '', at: 0 };
+const seen = new Set();
+/** Один рядок у лог на кожну НОВУ причину — щоб не засмічувати, але й не мовчати. */
+function note(mode, reason) {
+  limiterState.mode = mode;
+  limiterState.reason = reason;
+  limiterState.at = Date.now();
+  const k = `${mode}:${reason}`;
+  if (mode === 'on' || seen.has(k)) return;
+  seen.add(k);
+  console.warn(`[rate-limit] ${mode}: ${reason} — запити пропускаються без обмеження`);
+}
+
+/**
  * Ліміт частоти. true — пропускаємо, false — забагато.
  * Лічильник у Postgres: у serverless памʼятний лічильник у кожного інстансу
  * свій, тобто ліміту фактично не існує.
@@ -20,16 +40,34 @@ export function clientIp(req) {
 export async function rateOk(req, bucket, limit = 10, windowSeconds = 3600, key = null) {
   const URL_BASE = String(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '').replace(/\/$/, '');
   const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!URL_BASE || !KEY) return true;          // не налаштовано — не блокуємо
+  /*
+   * Пропускаємо запит на КОЖНОМУ збої — і це правильно: зламана форма гірша за
+   * пропущений ліміт. Неправильним було інше — робити це мовчки. Три різні
+   * стани («не налаштовано», «міграція не застосована», «база не відповіла»)
+   * виглядали ззовні однаково: як дозвіл. Шість ендпоінтів спираються на цю
+   * функцію, чотири з них бережуть не спокій, а рахунок — ключ Anthropic,
+   * прогін Playwright на Railway, квоту Google. Дізнатися, що лічильник не
+   * працює жодного дня, не було з чого.
+   */
+  if (!URL_BASE || !KEY) { note('off', 'немає SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY'); return true; }
   try {
     const r = await fetch(`${URL_BASE}/rest/v1/rpc/weexp_rate_ok`, {
       method: 'POST',
       headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'content-type': 'application/json' },
       body: JSON.stringify({ p_bucket: bucket, p_key: key || clientIp(req), p_limit: limit, p_window_seconds: windowSeconds }),
     });
-    if (!r.ok) return true;                     // міграція ще не застосована
+    if (!r.ok) {
+      note('degraded', r.status === 404
+        ? 'RPC weexp_rate_ok не знайдено — застосуйте docs/rate-limit.sql'
+        : `RPC відповів HTTP ${r.status}`);
+      return true;
+    }
+    note('on', '');
     return (await r.json()) !== false;
-  } catch { return true; }
+  } catch (e) {
+    note('degraded', `RPC недоступний: ${String(e).slice(0, 80)}`);
+    return true;
+  }
 }
 
 /**
