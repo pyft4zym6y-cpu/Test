@@ -104,6 +104,18 @@ const hit = (answer: string | null | undefined, vals: string[]) => {
   return vals.some((v) => parts.includes(v) || answer === v);
 };
 
+/**
+ * Сколько правил вообще можно было проверить: правило сверяет пару вопросов и
+ * требует ответа на ОБА. Пустой список противоречий сам по себе ничего не
+ * значит — значение ему придаёт только это число.
+ */
+export function contradictionCoverage(rows: Record<string, AnswerRow>): { checked: number; total: number } {
+  const checked = CONTRADICTION_RULES.filter(
+    (r) => rows[r.a.qid]?.answer && rows[r.b.qid]?.answer,
+  ).length;
+  return { checked, total: CONTRADICTION_RULES.length };
+}
+
 export function detectContradictions(rows: Record<string, AnswerRow>): Contradiction[] {
   const out: Contradiction[] = [];
   for (const rule of CONTRADICTION_RULES) {

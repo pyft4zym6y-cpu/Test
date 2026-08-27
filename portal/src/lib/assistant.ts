@@ -12,7 +12,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../App';
 import { useAnswers } from './useAnswers';
 import { useReportMeta } from './consultant';
-import { buildReport, zone, type Report } from './report';
+import { buildReport, type Report } from './report';
 import {
   runDecisions,
   computeConfidence,
@@ -20,7 +20,7 @@ import {
   gapCosts,
   type Decision,
 } from './engine';
-import { detectContradictions } from './contradictions';
+import { detectContradictions, contradictionCoverage } from './contradictions';
 import { bandFor } from '../data/method';
 import { supabase, DEMO } from './supabase';
 import {
@@ -48,6 +48,12 @@ export type AuditSnapshot = {
   problems: { qid: string; question: string; answer: string; zone: string }[];
   rules: { id: string; area: string; trigger: string; playbooks: string; priority: string }[];
   contradictions: { title: string; detail: string }[];
+  /**
+   * Сколько правил-противоречий удалось проверить: правило требует ответов на
+   * ОБА вопроса пары. Без этого числа «противоречий не найдено» одинаково
+   * означает «сверили 12 пар — чисто» и «ни одной пары не с чем сверять».
+   */
+  contradictionCoverage: { checked: number; total: number };
   accessGranted: number;
 };
 
@@ -115,10 +121,15 @@ export function buildSnapshot(
     })),
     problems: report.problems.slice(0, 14).map((p) => ({
       qid: p.q.id, question: p.q.text, answer: p.answer,
-      zone: zone(null).label && p.severity >= 3 ? 'критично' : 'внимание',
+      // Здесь стояло `zone(null).label && p.severity >= 3`. zone(null).label —
+      // это всегда строка «мало данных», то есть всегда истина: условие
+      // сводилось к порогу по severity, а вызов zone был декорацией и тянул
+      // импорт. Порог оставляем, вызов убираем.
+      zone: p.severity >= 3 ? 'критично' : 'внимание',
     })),
     rules: report.rules.slice(0, 12).map((r) => ({ id: r.id, area: r.area, trigger: r.trigger, playbooks: r.playbooks, priority: r.priority })),
     contradictions: contradictions.map((c) => ({ title: c.rule.id, detail: c.rule.question })),
+    contradictionCoverage: contradictionCoverage(rows as any),
     accessGranted,
   };
 }
@@ -158,6 +169,8 @@ export function snapshotToContext(s: AuditSnapshot): string {
     L.push('\n## Деньги: секция не заполнена (нет baseline трафика/конверсии/чека — считать оборот преждевременно).');
   }
 
+  if (!s.gaps.length)
+    L.push(`\n## Критические разрывы: не зафиксировано. Проверено ${s.health.gapCoverage.checked} из ${s.health.gapCoverage.total} контрольных вопросов${s.health.gapCoverage.checked < s.health.gapCoverage.total ? ' — остальные разрывы не проверялись, «рисков нет» из этого не следует' : ''}.`);
   if (s.gaps.length) {
     L.push('\n## Критические разрывы (Health Score штрафы)');
     for (const g of s.gaps)
@@ -180,6 +193,15 @@ export function snapshotToContext(s: AuditSnapshot): string {
   if (s.contradictions.length) {
     L.push('\n## Противоречия в ответах (снижают доверие)');
     for (const c of s.contradictions) L.push(`  · ${c.title} — ${c.detail}`);
+    L.push(`  (сверено ${s.contradictionCoverage.checked} пар из ${s.contradictionCoverage.total})`);
+  } else {
+    // Пустой список — не результат проверки, пока не сказано, сколько пар
+    // проверяемы. Иначе модель читает молчание как «нестыковок нет».
+    L.push(
+      s.contradictionCoverage.checked === 0
+        ? `\n## Противоречия: НЕ ПРОВЕРЯЛИСЬ — ни одна из ${s.contradictionCoverage.total} пар вопросов не заполнена с обеих сторон. Вывода «нестыковок нет» делать нельзя.`
+        : `\n## Противоречия: не найдено (сверено ${s.contradictionCoverage.checked} пар из ${s.contradictionCoverage.total}).`,
+    );
   }
   return L.join('\n');
 }
@@ -190,7 +212,10 @@ type Intent = 'health' | 'money' | 'decisions' | 'fix_first' | 'contradictions' 
 function classify(q: string): Intent {
   const t = q.toLowerCase();
   if (/health|скор|зрел|балл|оценк|состояни/.test(t)) return 'health';
-  if (/деньг|оборот|₴|выручк|потенциал|прогноз|заработ/.test(t)) return 'money';
+  // «Недополученный оборот» — собственный термин продукта, он стоит в отчёте,
+  // в КП и в промпте, но в списке интентов его не было: вопрос «сколько мы
+  // недополучаем» уходил в default и получал справку о возможностях бота.
+  if (/деньг|оборот|₴|выручк|потенциал|прогноз|заработ|недополуч|недозараб|упуск|тер[яю]/.test(t)) return 'money';
   if (/что.*делать|решени|приоритет|план|с чего/.test(t)) return t.includes('перв') || t.includes('снача') ? 'fix_first' : 'decisions';
   if (/противореч|нестыков|расхожд/.test(t)) return 'contradictions';
   if (/заполн|покрыт|сколько.*ответ|прогресс|доступ/.test(t)) return 'coverage';
@@ -204,7 +229,14 @@ export function localAnswer(q: string, s: AuditSnapshot): string {
     case 'health':
       return s.health.score === null
         ? `Health Score пока не считается: заполнено ${s.coverage.answered}/${s.coverage.total} ответов (нужно ≥30 по ключевым доменам). Заполните опросник — и я покажу балл и зону.`
-        : `Health Score: **${s.health.score}/100** — «${s.health.band}».\nРекомендация метода: ${s.health.action}\nСоставляющие: зрелость (A) ${s.health.scoreA ?? '—'}, разрывы (B) ${s.health.scoreB ?? '—'}. Уверенность в выводах — ${s.confidence.score}/100.`;
+        : `Health Score: **${s.health.score}/100** — «${s.health.band}».\nРекомендация метода: ${s.health.action}\nСоставляющие: зрелость (A) ${s.health.scoreA ?? '—'}, разрывы (B) ${s.health.scoreB ?? '—'}. Уверенность в выводах — ${s.confidence.score}/100.${
+            // Оговорку о предварительности снимок отдаёт в промпт Claude с самого
+            // начала, а офлайн-ответчик её не повторял — и в отсутствие ключа
+            // клиент читал тот же балл уже без единого предупреждения.
+            s.health.provisional
+              ? `\n⚠️ Оценка предварительная: из ${s.health.gapCoverage.total} критических разрывов проверено ответом ${s.health.gapCoverage.checked}. Балл отражает только зрелость — вывод «рисков нет» делать нельзя.`
+              : ''
+          }`;
     case 'money':
       if (!s.money.show) return 'Секция денег ещё не заполнена — нет baseline (трафик, конверсия, чек). До этого любая цифра оборота была бы выдумкой. Занесите 8-рычаговый baseline на странице отчёта — и я посчитаю недополученный оборот и прогноз.';
       return `Недополученный оборот (консервативно): **${fmtMoney(s.money.consMin)}–${fmtMoney(s.money.consMax)} в год**, вклад ≈ ${fmtMoney(s.money.monthly)}/мес.${s.money.forecast ? `\nПрогноз 12 мес: ${fmtMoney(s.money.forecast.current)} → ${fmtMoney(s.money.forecast.withProgram)} (+${s.money.forecast.upliftPct}%).` : ''}\nСчитается цепной атрибуцией по рычагам воронки — суммировать разрывы по рычагам нельзя.`;
@@ -218,12 +250,35 @@ export function localAnswer(q: string, s: AuditSnapshot): string {
       return 'Приоритетные решения (влияние/сложность):\n' + s.decisions.slice(0, 5)
         .map((d, i) => `${i + 1}. ${d.title} (${d.id}) — ROI ${d.roi}, ~${d.timeDays} дн · ${d.playbooks.join(', ')}\n   почему: ${d.why[0] ?? ''}`).join('\n');
     case 'contradictions':
-      if (!s.contradictions.length) return 'Противоречий в ответах не найдено — доверие к выводам не понижено.';
+      if (!s.contradictions.length) {
+        const cc = s.contradictionCoverage;
+        return cc.checked === 0
+          ? `Проверить противоречия пока не на чем: ни одна из ${cc.total} пар вопросов не заполнена с обеих сторон. Это не «противоречий нет» — это «не сверяли».`
+          : `Противоречий не найдено: сверено ${cc.checked} пар из ${cc.total} (остальные ждут ответов на оба вопроса пары). Доверие к выводам не понижено.`;
+      }
       return 'Найдены противоречия (стоит уточнить у клиента):\n' + s.contradictions.map((c) => `• ${c.title} — ${c.detail}`).join('\n');
     case 'coverage':
-      return `Опросник L1: ${s.coverage.answered}/${s.coverage.total} (${s.coverage.pct}%). Доступов выдано: ${s.accessGranted}. Уверенность в выводах: ${s.confidence.score}/100.\nСильнее всего балл поднимут: ${s.confidence.factors.slice(0, 3).map((f) => f.label).join('; ')}.`;
+      /*
+       * Здесь стояло `factors.slice(0, 3)` под заголовком «сильнее всего балл
+       * поднимут». factors — это уже НАБРАННОЕ, в порядке добавления, а не в
+       * порядке величины: первыми всегда шли заполненность, доступы и baseline,
+       * одни и те же у любого клиента, и подпись утверждала прямо обратное
+       * тому, что показывала. Резерв балла — это то, чего не хватает: берём
+       * факторы с нулевым и отрицательным вкладом.
+       */
+      const missing = s.confidence.factors.filter((f) => f.delta <= 0);
+      return `Опросник L1: ${s.coverage.answered}/${s.coverage.total} (${s.coverage.pct}%). Доступов выдано: ${s.accessGranted}. Уверенность в выводах: ${s.confidence.score}/100.\n${
+        missing.length
+          ? `Балл держат: ${missing.map((f) => f.label).join('; ')}.`
+          : 'Все составляющие уверенности набраны — резерва в этой шкале больше нет.'
+      }`;
     case 'gaps':
-      if (!s.gaps.length) return 'Критических разрывов не зафиксировано (по контрольным вопросам разрывов нет «Нет»).';
+      if (!s.gaps.length) {
+        const gc = s.health.gapCoverage;
+        return gc.checked < gc.total
+          ? `Разрывов не зафиксировано среди проверенных, но проверено ${gc.checked} из ${gc.total}: на остальные контрольные вопросы ответа нет. Непроверенный разрыв — не пройденный разрыв.`
+          : `Критических разрывов не зафиксировано: все ${gc.total} контрольных вопросов отвечены, «Нет» нет ни на одном.`;
+      }
       return 'Критические разрывы (штраф к Health Score):\n' + s.gaps.map((g) => `• ${g.label} (−${g.penalty})${g.costYear ? ` ≈ ${fmtMoney(g.costYear)}/год` : ''}`).join('\n');
     default:
       return 'Я со-пилот аудита Commerce OS. Спросите про Health Score, недополученный оборот, приоритетные решения («с чего начать»), критические разрывы, противоречия в ответах или что запросить у клиента. Для развёрнутых ответов подключите ANTHROPIC_API_KEY в окружении портала.';

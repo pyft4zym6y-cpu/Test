@@ -96,12 +96,25 @@ export function parseOrdersCsv(text: string): OrdersMetrics | { error: string } 
   if (orders.length < 2) return { error: 'Не удалось разобрать строки заказов' };
 
   const good = orders.filter((o) => !o.bad && o.total > 0);
+  /*
+   * Без этой проверки файл, в котором все заказы отменены или все суммы
+   * нулевые, разбирался «успешно»: totalRev = 0, дальше aov = 0/0 = NaN,
+   * repeatRevenueShare = NaN, доли каналов = NaN. Метрики отдавались наружу,
+   * applyOrders записывал NaN в рычаги aov/base/repeat, и в отчёте клиента
+   * весь блок денег печатался как «NaN ₴» — toLocaleString не спасает.
+   * Пустой результат обязан называться ошибкой, а не числом.
+   */
+  if (!good.length)
+    return { error: 'Ни одного оплаченного заказа с ненулевой суммой — проверьте колонки суммы и статуса' };
   const months = [...new Set(good.map((o) => o.month))].sort();
   const byMonth = new Map<string, O[]>();
   good.forEach((o) => byMonth.set(o.month, [...(byMonth.get(o.month) ?? []), o]));
 
-  // последние 3 полных месяца (последний месяц в данных может быть неполным — отбрасываем его, если есть что-то ещё)
-  const fullMonths = months.length > 3 ? months.slice(0, -1) : months;
+  // Последние 3 полных месяца. Последний месяц в выгрузке почти всегда неполный
+  // и занижает среднее — отбрасываем его, как только остаётся хоть один другой.
+  // Порог был `> 3`: при ровно трёх месяцах данных обрезка не срабатывала, и
+  // неполный месяц молча тянул monthlyRevenue вниз.
+  const fullMonths = months.length > 1 ? months.slice(0, -1) : months;
   const last3 = fullMonths.slice(-3);
   const rev3 = last3.map((m) => (byMonth.get(m) ?? []).reduce((s, o) => s + o.total, 0));
   const ord3 = last3.map((m) => (byMonth.get(m) ?? []).length);

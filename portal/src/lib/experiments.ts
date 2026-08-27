@@ -34,11 +34,23 @@ export function plan(p1: number, liftRel: number, weeklyTraffic: number) {
   return { n, p2, total, weeks, tooLong: weeks > 8 };
 }
 
-/** Минимально детектируемый относительный эффект при данной выборке (бинарный поиск). */
-export function mde(p1: number, weeklyTraffic: number, weeks: number): number {
+/**
+ * Минимально детектируемый относительный эффект при данной выборке (бинарный
+ * поиск в диапазоне 0…MDE_MAX).
+ *
+ * Возвращает null, когда трафика не хватает ни на какой эффект внутри
+ * диапазона: раньше в этом случае наружу уходила сама верхняя граница поиска,
+ * 5.0, и экран печатал «детектируем подъём от 500.0% относительных» — предел
+ * алгоритма, поданный как измеренная величина. При нулевом трафике это
+ * получалось всегда.
+ */
+export const MDE_MAX = 5.0;
+
+export function mde(p1: number, weeklyTraffic: number, weeks: number): number | null {
   const nPerVariant = (weeklyTraffic * weeks) / 2;
+  if (!(nPerVariant > 0) || !(p1 > 0) || p1 >= 1) return null;
   let lo = 1e-5;
-  let hi = 5.0;
+  let hi = MDE_MAX;
   for (let i = 0; i < 80; i++) {
     const mid = (lo + hi) / 2;
     let n: number;
@@ -51,11 +63,22 @@ export function mde(p1: number, weeklyTraffic: number, weeks: number): number {
     if (n > nPerVariant) lo = mid;
     else hi = mid;
   }
-  return hi;
+  // Граница диапазона недостижима: даже подъём в MDE_MAX требует больше выборки,
+  // чем есть. Это «не детектируется ничего», а не «детектируется 500%».
+  return hi >= MDE_MAX - 1e-6 ? null : hi;
 }
 
-/** Чтение результата: двухпропорционный z-тест. */
+/**
+ * Чтение результата: двухпропорционный z-тест.
+ *
+ * null при негодных входных данных. Прежде пустая форма давала pA = 0/0 = NaN
+ * и, поскольку `se ? … : 0` глушил NaN в ноль, вывод «A NaN% → B NaN% · p=1.0000
+ * · ✗ не значимо» — то есть отсутствие данных выглядело как проведённый тест с
+ * отрицательным результатом.
+ */
 export function readResult(nA: number, cA: number, nB: number, cB: number) {
+  const ok = (n: number, c: number) => Number.isFinite(n) && Number.isFinite(c) && n > 0 && c >= 0 && c <= n;
+  if (!ok(nA, cA) || !ok(nB, cB)) return null;
   const pA = cA / nA;
   const pB = cB / nB;
   const lift = pA ? (pB - pA) / pA : NaN;

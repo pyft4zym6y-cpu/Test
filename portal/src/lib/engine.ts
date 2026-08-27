@@ -124,7 +124,11 @@ const RULES: RuleDef[] = [
       const client = (c.meta?.screen ?? []).find((s) => s.kind === 'client' && s.score != null);
       if (client) {
         const seoFails = client.checks.filter((x) => x.group === 'SEO' && !x.pass);
-        if (seoFails.length >= 4) why.push(`Скрининг: провалено ${seoFails.length}/10 SEO-проверок (${seoFails.slice(0, 3).map((f) => f.label).join(', ')}…)`);
+        // Знаменатель был захардкожен как 10 — столько SEO-проверок в протоколе
+        // и есть сегодня. Берём из самого протокола, чтобы подпись не разошлась
+        // с ним при первой же добавленной проверке.
+        const seoTotal = client.checks.filter((x) => x.group === 'SEO').length;
+        if (seoFails.length >= 4) why.push(`Скрининг: провалено ${seoFails.length}/${seoTotal} SEO-проверок (${seoFails.slice(0, 3).map((f) => f.label).join(', ')}…)`);
       }
       return why.length ? why : null;
     },
@@ -253,7 +257,14 @@ export function computeConfidence(
   decisionFilled?: boolean,
 ): Confidence {
   const factors: { label: string; delta: number }[] = [];
-  const add = (label: string, delta: number) => { if (delta !== 0) factors.push({ label, delta }); };
+  /*
+   * Список факторов — это и есть объяснение балла. Прежний add молча выбрасывал
+   * всё с delta === 0, и получалось ровно обратное задуманному: у клиента с
+   * пустым опросником балл 5 приходил с пустым списком «почему», а строка
+   * «Baseline не зафиксирован» (её писали именно как нулевой фактор) не
+   * показывалась никогда. Ноль — это тоже ответ, и его надо назвать.
+   */
+  const add = (label: string, delta: number) => { factors.push({ label, delta }); };
 
   const coverage = report.totalL1 ? report.answeredL1 / report.totalL1 : 0;
   add(`Заполненность опросника ${Math.round(coverage * 100)}%`, Math.round(coverage * 40));
@@ -277,10 +288,11 @@ export function computeConfidence(
     add(`Baseline из данных систем: ${sys}/8 рычагов`, Math.round((sys / 8) * 20));
   } else add('Baseline не зафиксирован', 0);
 
-  if ((meta?.l0 ?? []).length || (meta?.screen ?? []).length) add('Внешние замеры (PSI/скрининг) сделаны', 8);
-  if (decisionFilled) add('Бриф ЛПР и рамки заполнены', 7);
+  const measured = (meta?.l0 ?? []).length || (meta?.screen ?? []).length;
+  add(measured ? 'Внешние замеры (PSI/скрининг) сделаны' : 'Внешних замеров нет (PSI/скрининг)', measured ? 8 : 0);
+  add(decisionFilled ? 'Бриф ЛПР и рамки заполнены' : 'Бриф ЛПР не заполнен', decisionFilled ? 7 : 0);
   add(`Противоречия в ответах: ${contradictions.length}`, -Math.min(contradictions.length * 3, 15));
-  if (meta?.status === 'final') add('Проверено консультантом', 10);
+  add(meta?.status === 'final' ? 'Проверено консультантом' : 'Консультантом ещё не проверено', meta?.status === 'final' ? 10 : 0);
 
   const score = Math.max(5, Math.min(100, factors.reduce((s, f) => s + f.delta, 0)));
   return { score, factors };
@@ -308,16 +320,49 @@ export function forecast(money?: Money | null): { current: number; withProgram: 
 }
 
 /* ── Причинные цепочки: какие активны у этого клиента ── */
+
+/**
+ * Корень подтверждён, если контрольный ответ — отрицательный вариант из
+ * закрытого списка. Проверка была подстрочной по всему ответу
+ * (`/нет|вручную|не |никак|>15%/`), и на закрытых вариантах она работает; но
+ * три из 23 контрольных вопросов — свободный ввод: CR-001 «Число», CO-028 и
+ * CO-015 «Текст». Для числа она не срабатывала никогда (в «8» нет ни одного
+ * из слов), то есть корень «Нет CRM-контура» терял одно из двух своих
+ * оснований молча; для текста, наоборот, срабатывала на любом «не» внутри
+ * фразы — «не только базовый» подтверждало разрыв.
+ *
+ * Поэтому: свободный ввод корень не подтверждает, а числовой ответ сверяем с
+ * порогом там, где порог у метода есть.
+ */
+const ROOT_NEGATIVE = /^(нет|ні|no)?$|^нет\s|вручную|никак|не распределя|не сверял|не измеря|не атрибутир|не проверял|не считает|нет erp|отсутств|>15%/i;
+
+/** Числовые контрольные вопросы: ниже порога = корень подтверждён. */
+const NUMERIC_ROOTS: Record<string, { below: number; label: string }> = {
+  'CR-001': { below: 10, label: 'выручка из email/SMS ниже 10%' },
+};
+
+function rootConfirmed(ctx: Ctx, qid: string): boolean {
+  const a = ans(ctx, qid).trim();
+  if (!a) return false;
+  const numeric = NUMERIC_ROOTS[qid];
+  if (numeric) {
+    const v = numAns(ctx, qid);
+    return v !== null && v < numeric.below;
+  }
+  const q = byId.get(qid);
+  // Свободный ввод: подстрочное «не» ничего не доказывает — оставляем корень
+  // неподтверждённым, а не подтверждаем его случайным словом.
+  if (q && /Текст|Число/.test(q.type ?? '')) return false;
+  return a.split(' | ').some((part) => ROOT_NEGATIVE.test(part.trim()));
+}
+
 export function activeChains(ctx: Ctx): (CausalChain & { confirmedRoots: string[] })[] {
   return CAUSAL_CHAINS
     .filter((c) => !c.painId || ctx.painIds.includes(c.painId))
     .map((c) => ({
       ...c,
       confirmedRoots: c.roots
-        .filter((r) => r.checkQids.some((q) => {
-          const a = ans(ctx, q);
-          return a && /нет|вручную|не |никак|>15%/i.test(a);
-        }))
+        .filter((r) => r.checkQids.some((q) => rootConfirmed(ctx, q)))
         .map((r) => r.cause),
     }))
     .filter((c) => ctx.painIds.includes(c.painId ?? '') || c.confirmedRoots.length);

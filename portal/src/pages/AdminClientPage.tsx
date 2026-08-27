@@ -179,10 +179,14 @@ export default function AdminClientPage() {
         setAbOut(`Выборка ${r.n.toLocaleString()}/вариант · всего ${r.total.toLocaleString()} · ${r.weeks === Infinity ? '∞' : r.weeks.toFixed(1)} нед${r.tooLong ? ' · ⚠ дольше 8 недель — тест не окупается: радикальнее изменение, уже сегмент или внедрять без теста' : ''}`);
       } else if (ab.mode === 'mde') {
         const r = abMde(n(ab.p1) / 100, n(ab.weekly), n(ab.weeks));
-        setAbOut(`За ${ab.weeks} нед при ${n(ab.weekly).toLocaleString()} сессий/нед детектируем подъём от ${(r * 100).toFixed(1)}% относительных — эффекты меньше не увидите`);
+        setAbOut(r === null
+          ? `За ${ab.weeks} нед при ${n(ab.weekly).toLocaleString()} сессий/нед не детектируется ничего: выборки не хватает даже на кратный подъём. Нужен другой трафик, другой срок или внедрение без теста.`
+          : `За ${ab.weeks} нед при ${n(ab.weekly).toLocaleString()} сессий/нед детектируем подъём от ${(r * 100).toFixed(1)}% относительных — эффекты меньше не увидите`);
       } else {
         const r = abRead(n(ab.nA), n(ab.cA), n(ab.nB), n(ab.cB));
-        setAbOut(`A ${(r.pA * 100).toFixed(2)}% → B ${(r.pB * 100).toFixed(2)}% · подъём ${(r.lift * 100).toFixed(1)}% · p=${r.p.toFixed(4)} · ${r.significant ? '✓ ЗНАЧИМО' : '✗ не значимо (данных не хватило — смотри границы ДИ)'} · ДИ [${(r.ci[0] * 100).toFixed(2)}; ${(r.ci[1] * 100).toFixed(2)}] п.п.`);
+        setAbOut(r === null
+          ? 'Нужны все четыре числа: посетители и конверсии по каждому варианту, конверсий не больше посетителей.'
+          : `A ${(r.pA * 100).toFixed(2)}% → B ${(r.pB * 100).toFixed(2)}% · подъём ${(r.lift * 100).toFixed(1)}% · p=${r.p.toFixed(4)} · ${r.significant ? '✓ ЗНАЧИМО' : '✗ не значимо (данных не хватило — смотри границы ДИ)'} · ДИ [${(r.ci[0] * 100).toFixed(2)}; ${(r.ci[1] * 100).toFixed(2)}] п.п.`);
       }
     } catch (e) { setAbOut(String(e)); }
   };
@@ -593,7 +597,7 @@ export default function AdminClientPage() {
             Факт ≈ {Math.round(gap.rFact / 1000)} тыс ₴/мес → цель ≈ {Math.round(gap.rTarget / 1000)} тыс ₴/мес ·
             Консервативно <b>≈{(gap.conservative / 1e6).toFixed(1)} млн ₴/год</b> · полный потенциал{' '}
             {(gap.potential / 1e6).toFixed(1)} млн ₴ · промедление ≈{Math.round(gap.monthly / 1000)} тыс ₴/мес ·{' '}
-            {gap.sumCheck ? 'Σ вкладов = потенциал ✓' : 'Σ вкладов ≠ потенциал ✗'}
+            {gap.finite ? 'Σ вкладов = потенциал (цепная атрибуция, сходится по построению)' : '⚠ рычаг задан не числом — расчёт недействителен'}
           </p>
         )}
         {fc && (

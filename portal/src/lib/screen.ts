@@ -2,7 +2,8 @@ import type { ScreenCheck, ScreenRow } from './consultant';
 
 /**
  * L0-скрининг страницы против голд-стандарта UX/UI/SEO Commerce OS:
- * 30 автоматических проверок по DOM. Голд-стандарт = все проверки пройдены.
+ * Автоматические проверки по DOM (SEO / UX / Техника), голд-стандарт = все
+ * пройдены. Число проверок не дублируем словами — его отдаёт checkCount().
  * HTML качается через /api/fetch (Vercel serverless) — браузеру мешает CORS.
  */
 
@@ -25,7 +26,17 @@ export function runChecks(html: string, url: string): ScreenCheck[] {
   const low = html.toLowerCase();
   const $ = (sel: string) => doc.querySelector(sel);
   const $$ = (sel: string) => doc.querySelectorAll(sel);
-  const text = doc.body?.textContent?.toLowerCase() ?? '';
+  /*
+   * Видимый текст страницы. `body.textContent` включает содержимое <script>,
+   * <style> и <template> — то есть шесть проверок этой группы (price, reviews,
+   * delivery, contacts, cookies, errors-soft) читали заодно исходники скриптов.
+   * Достаточно было `document.cookie` в аналитике, чтобы «механика согласия»
+   * засчиталась, или слова delivery в переменной — чтобы засчитался блок
+   * доставки. Убираем неотображаемое перед чтением.
+   */
+  const visible = doc.body?.cloneNode(true) as HTMLElement | undefined;
+  visible?.querySelectorAll('script, style, noscript, template').forEach((n) => n.remove());
+  const text = visible?.textContent?.toLowerCase() ?? '';
   const out: ScreenCheck[] = [];
   const add = (id: string, group: string, label: string, pass: boolean, detail?: string) =>
     out.push({ id, group, label, pass, detail });
@@ -52,7 +63,10 @@ export function runChecks(html: string, url: string): ScreenCheck[] {
   add('phone', 'UX', 'Телефон кликабелен (tel:)', Boolean($('a[href^="tel:"]')));
   add('cart', 'UX', 'Корзина обнаружима', Boolean($('[href*="cart" i]') || $('[class*="cart" i]') || $('[href*="korzina" i]') || $('[href*="basket" i]')));
   add('price', 'UX', 'Цены на странице', /(₴|грн|zł|pln|€|eur|usd|\$)\s?\d|\d\s?(₴|грн|zł)/i.test(text));
-  add('reviews', 'UX', 'Отзывы/рейтинг обнаружимы', /відгук|отзыв|review|рейтинг|rating/i.test(low));
+  // Соседние проверки этой группы (delivery, contacts, price) смотрят в текст
+  // страницы, а эта смотрела в `low` — в сырую разметку, где «rating» и
+  // «review» живут в именах классов почти любой темы. Приводим к тексту.
+  add('reviews', 'UX', 'Отзывы/рейтинг обнаружимы', /відгук|отзыв|review|рейтинг|rating|оцінк/i.test(text));
   add('delivery', 'UX', 'Доставка/оплата в контенте', /достав|delivery|shipping|оплат|payment/i.test(text));
   add('contacts', 'UX', 'Контакты/адрес', /контакт|contact|адрес|адреса/i.test(text));
   add('social', 'UX', 'Соцсети привязаны', Boolean($('[href*="instagram."]') || $('[href*="facebook."]') || $('[href*="tiktok."]')));
@@ -66,13 +80,44 @@ export function runChecks(html: string, url: string): ScreenCheck[] {
   add('lazy', 'Техника', 'Lazy-load изображений', imgs.some((i) => i.getAttribute('loading') === 'lazy'));
   add('lang', 'Техника', 'Атрибут lang у html', Boolean(doc.documentElement?.getAttribute('lang') || /<html[^>]+lang=/i.test(html.slice(0, 500))));
   add('analytics', 'Техника', 'Аналитика установлена (GA4/GTM/Pixel)', /gtag|googletagmanager|fbq\(|fbevents|clarity|hotjar/i.test(html));
-  add('nojq-inline', 'Техника', 'Нет тяжёлых инлайн-стилей (>150)', $$('[style]').length <= 150, `${$$('[style]').length} шт.`);
-  add('favicon-svg', 'Техника', 'Preconnect/preload шрифтов или критики', Boolean($('link[rel="preconnect"]') || $('link[rel="preload"]')));
-  add('cookies', 'Техника', 'Cookie/consent-механика (для ЕС)', /cookie|consent|gdpr/i.test(low));
+  add('inline-styles', 'Техника', 'Нет тяжёлых инлайн-стилей (>150)', $$('[style]').length <= 150, `${$$('[style]').length} шт.`);
+  // id был `favicon-svg` — остаток копипасты от соседней проверки. По id
+  // проверки сопоставляются между прогонами и попадают в отчёт клиента.
+  add('preload', 'Техника', 'Preconnect/preload шрифтов или критики', Boolean($('link[rel="preconnect"]') || $('link[rel="preload"]')));
+  /*
+   * Проверка шла по `low` — по всей разметке вместе со скриптами. Слово
+   * «cookie» есть в любом `document.cookie`, в любой аналитике и в половине
+   * библиотек, так что провалить её сайт практически не мог: проверка стояла
+   * в протоколе и всегда давала ✓. Consent-механика — это видимый баннер и
+   * его текст, значит искать надо в тексте страницы либо в явной разметке
+   * баннера.
+   */
+  const consentBanner = Boolean(
+    $('[id*="cookie" i]') || $('[class*="cookie" i]') || $('[id*="consent" i]') ||
+    $('[class*="consent" i]') || $('[href*="cookie" i]'),
+  );
+  add('cookies', 'Техника', 'Cookie/consent-механика (для ЕС)',
+    consentBanner || /cookie|куки|файлы cookie|consent|gdpr/i.test(text),
+    consentBanner ? 'баннер в разметке' : undefined);
   add('errors-soft', 'Техника', 'Нет текста ошибок в вёрстке', !/fatal error|exception|undefined index|stack trace/i.test(text));
 
   return out;
 }
+
+/**
+ * Сколько проверок в протоколе и сколько из них в каждой группе — считаем по
+ * самому протоколу, прогнав его на пустом документе. Подписи вроде
+ * «провалено N/10 SEO-проверок» брали десятку из головы; стоит добавить
+ * проверку в группу — и подпись начинает врать, ничего при этом не ломая.
+ */
+let protocol: ScreenCheck[] | null = null;
+/** Лениво: runChecks требует DOMParser, а модуль импортируется и вне браузера. */
+const protocolChecks = () =>
+  (protocol ??= runChecks('<!doctype html><html><body></body></html>', 'https://example.com'));
+
+export const checkCount = () => protocolChecks().length;
+export const checkCountByGroup = (group: string) =>
+  protocolChecks().filter((c) => c.group === group).length;
 
 export async function screenUrl(url: string, kind: ScreenRow['kind']): Promise<ScreenRow> {
   const { html, error } = await fetchHtml(url);

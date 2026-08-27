@@ -150,7 +150,17 @@ export function computeGap8(levers: Levers) {
   const target = {} as Record<LeverKey, number>;
   for (const d of LEVER_DEFS) {
     fact[d.key] = levers[d.key]?.fact ?? 0;
-    target[d.key] = clamp(d.key, levers[d.key]?.target ?? 0, fact[d.key]) || fact[d.key];
+    /*
+     * Нижняя граница — сам факт. Раньше её не было: `|| fact` подхватывал
+     * только ровно нулевую цель, а цель НИЖЕ факта (опечатка в админке —
+     * трафик 40 000 → 10 000) проходила как есть и давала отрицательный
+     * потенциал. Консультант видел «полный потенциал −6.5 млн ₴», кнопка
+     * записывала это в money, и в отчёте клиента прогноз получался «с
+     * программой меньше, чем без изменений». Цель хуже текущего — это не
+     * цель, а ошибка ввода; тот же запрет уже стоит в worker/src/money.ts.
+     */
+    const t = clamp(d.key, levers[d.key]?.target ?? 0, fact[d.key]) || fact[d.key];
+    target[d.key] = Math.max(t, fact[d.key]);
   }
   const rFact = monthlyRevenue(fact);
   const rTarget = monthlyRevenue(target);
@@ -172,7 +182,16 @@ export function computeGap8(levers: Levers) {
     conservative,
     monthly: Math.round(conservative / 12),
     waterfall: waterfall.filter((w) => w.value !== 0),
-    sumCheck: Math.abs(waterfall.reduce((s, w) => s + w.value, 0) - potential) <= Math.max(12, potential * 0.001),
+    /*
+     * Цепная атрибуция телескопируется: Σ (R_i − R_{i−1}) = R_target − R_fact
+     * тождественно, а расхождение округлений — не больше 8 × 0.5 ₴ при допуске
+     * max(12, 0.1%). То есть прежний sumCheck не мог стать false ни на каких
+     * данных и рисовал консультанту зелёную галочку «Σ вкладов = потенциал ✓»
+     * независимо ни от чего. Единственное, что здесь действительно может
+     * сломаться, — нечисловой рычаг: тогда вся арифметика становится NaN, а
+     * NaN <= x равно false. Проверяем то, что проверяемо, и называем это так.
+     */
+    finite: Number.isFinite(potential) && waterfall.every((w) => Number.isFinite(w.value)),
   };
 }
 
@@ -206,9 +225,21 @@ export async function runPSI(url: string, key?: string): Promise<Omit<L0Row, 'ki
     if (!r.ok) return { url, score: null, lcp: null, cls: null, error: `HTTP ${r.status}` };
     const j = await r.json();
     const lr = j.lighthouseResult;
+    /*
+     * PSI отвечает 200 и на неудачный прогон: при runtimeError (страница не
+     * отдалась, редирект в бот-защиту, таймаут) lighthouseResult приходит без
+     * категории performance. Раньше здесь стояло `?? 0`, и «замер не удался»
+     * превращалось в «PageSpeed 0» — худшую возможную оценку, показанную как
+     * измеренную. Хуже того, DE-06 в движке решений фильтрует по `score != null`,
+     * то есть ноль проходил как факт, и клиент читал «у вас 0, у конкурентов 55».
+     * Нет числа — нет числа.
+     */
+    const perf = lr?.categories?.performance?.score;
+    if (typeof perf !== 'number')
+      return { url, score: null, lcp: null, cls: null, error: lr?.runtimeError?.code ?? 'PSI не отдал performance' };
     return {
       url,
-      score: Math.round((lr?.categories?.performance?.score ?? 0) * 100),
+      score: Math.round(perf * 100),
       lcp: lr?.audits?.['largest-contentful-paint']?.numericValue
         ? Math.round(lr.audits['largest-contentful-paint'].numericValue / 100) / 10
         : null,
