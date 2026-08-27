@@ -90,7 +90,7 @@ export function Cabinet() {
     if (p.get('section') === 'docs') setSection('docs');
     void (async () => {
       const cur = await loadDiag(user);
-      const next = { ...(cur.accessLog || {}), 'AC-01': { ...(cur.accessLog || {})['AC-01'], method: 'oauth' as const, connStatus: (ga === 'connected' ? 'on' : 'error') as 'on' | 'error', ...(ga === 'connected' ? { status: 'granted' as const } : {}), at: new Date().toISOString() } };
+      const next = { ...(cur.accessLog || {}), 'CB-01': { ...(cur.accessLog || {})['CB-01'], method: 'oauth' as const, connStatus: (ga === 'connected' ? 'on' : 'error') as 'on' | 'error', ...(ga === 'connected' ? { status: 'granted' as const } : {}), at: new Date().toISOString() } };
       await saveDiag(user, { accessLog: next });
       setRec(await loadDiag(user));
       if (ga === 'connected') toast(t('✓ Google Analytics підключено — доступ read-only', '✓ Google Analytics connected — read-only access'));
@@ -288,11 +288,11 @@ function AccessGrant({ user, rec, embedded }: { user: DiagUser; rec: DiagRecord 
       .then((j) => {
         if (!alive) return;
         setGaInfo(j);
-        const cur = latest.current['AC-01']?.connStatus;
-        if (j.connected && cur !== 'on') set('AC-01', { connStatus: 'on', method: 'oauth', status: 'granted' });
-        if (!j.connected && !j.error && cur === 'on') set('AC-01', { connStatus: 'off' });
+        const cur = latest.current['CB-01']?.connStatus;
+        if (j.connected && cur !== 'on') set('CB-01', { connStatus: 'on', method: 'oauth', status: 'granted' });
+        if (!j.connected && !j.error && cur === 'on') set('CB-01', { connStatus: 'off' });
         // Те саме підключення покриває і Search Console (webmasters.readonly)
-        if (j.connected && (j.sites || []).length && latest.current['AC-03']?.connStatus !== 'on') set('AC-03', { connStatus: 'on', method: 'oauth', status: 'granted' });
+        if (j.connected && (j.sites || []).length && latest.current['CB-03']?.connStatus !== 'on') set('CB-03', { connStatus: 'on', method: 'oauth', status: 'granted' });
       })
       .catch(() => {});
     return () => { alive = false; };
@@ -303,7 +303,7 @@ function AccessGrant({ user, rec, embedded }: { user: DiagUser; rec: DiagRecord 
       const j = await r.json();
       if (j.error === 'not_configured') { toast(t('Конектор ще не налаштовано на сервері — поки що скористайтесь «Надати доступ вручну»', 'The connector is not configured on the server yet — use "Grant manually" for now'), 'err'); return; }
     } catch { /* мережевий збій — все одно пробуємо */ }
-    set('AC-01', { method: 'oauth', connStatus: 'progress' });
+    set('CB-01', { method: 'oauth', connStatus: 'progress' });
     // Два кроки: авторизований запит віддає посилання, браузер іде за ним.
     // Прямий GET-редірект не міг довести, що привʼязують саме свій акаунт.
     const r = await fetch(`/api/ga4?action=oauth_url&u=${encodeURIComponent(user.id)}`, { headers: await authHeaders() }).then((x) => x.json()).catch(() => null);
@@ -314,7 +314,7 @@ function AccessGrant({ user, rec, embedded }: { user: DiagUser; rec: DiagRecord 
     if (!confirm(t('Відключити Google Analytics? Ми втратимо read-only доступ до даних.', 'Disconnect Google Analytics? We lose read-only access to the data.'))) return;
     try { await fetch(`/api/ga4?action=disconnect&u=${encodeURIComponent(user.id)}`, { headers: await authHeaders() }); } catch { /* noop */ }
     setGaInfo({ connected: false });
-    set('AC-01', { connStatus: 'off', status: undefined });
+    set('CB-01', { connStatus: 'off', status: undefined });
   };
   const cats = [...new Set(ACCESS_CATALOG.map((a) => a.category))];
   const granted = ACCESS_CATALOG.filter((a) => ['granted', 'verified'].includes(map[a.id]?.status || '')).length;
@@ -350,7 +350,7 @@ function AccessGrant({ user, rec, embedded }: { user: DiagUser; rec: DiagRecord 
                 <div className="cab-acc-methods">
                   {hasConn && (
                     <>
-                      <button className={'cab-acc-conn st-' + conn} onClick={() => { if (a.id === 'AC-01') { if (conn === 'on') toggleHow('conn'); else void startGa(); } else if (conn === 'off') { set(a.id, { method: 'oauth', connStatus: 'progress' }); setOpenHow(`${a.id}:conn`); } else { toggleHow('conn'); } }}>
+                      <button className={'cab-acc-conn st-' + conn} onClick={() => { if (a.id === 'CB-01') { if (conn === 'on') toggleHow('conn'); else void startGa(); } else if (conn === 'off') { set(a.id, { method: 'oauth', connStatus: 'progress' }); setOpenHow(`${a.id}:conn`); } else { toggleHow('conn'); } }}>
                         {conn === 'off' ? t('Підключити конектор', 'Connect') + ' →' : CONN_STATUS_LABEL[conn]}
                       </button>
                       {conn !== 'off' && (
@@ -369,7 +369,7 @@ function AccessGrant({ user, rec, embedded }: { user: DiagUser; rec: DiagRecord 
                 </div>
                 {howKey === 'view' && a.viewHow && <p className="cab-acc-how-t">{a.viewHow}</p>}
                 {howKey === 'conn' && a.connectorHow && <p className="cab-acc-how-t">{a.connectorHow}</p>}
-                {a.id === 'AC-01' && gaInfo?.connected && (
+                {a.id === 'CB-01' && gaInfo?.connected && (
                   <p className="cab-acc-how-t cab-ga-ok">
                     ✓ {t('Підключено акаунт', 'Connected account')}: <b>{gaInfo.email || '—'}</b>
                     {(gaInfo.properties || []).length > 0 && <> · {t('властивості', 'properties')}: {(gaInfo.properties || []).slice(0, 3).map((pp) => pp.name).join(', ')}{(gaInfo.properties || []).length > 3 ? '…' : ''}</>}

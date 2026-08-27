@@ -100,7 +100,7 @@ export type DiagRecord = {
   projects?: Project[];             // розділ «Мій проект»: кілька проектів на клієнта (веде менеджер)
   pmDir?: PmDirectory;              // проект-офіс: довідник команди та ставок (лише в записі менеджера)
   assessment?: Record<string, ModuleScore>; // C-level оцінка модулів аудиту (адмін-шар, ключ = block.key)
-  accessLog?: Record<string, AccessState>;   // каталог доступів клієнта (ключ = AC-id)
+  accessLog?: Record<string, AccessState>;   // каталог доступів клієнта (ключ = CB-id)
   marketplaces?: MarketplaceAccess[];         // динамічні доступи до маркетплейсів
   clientFiles?: ClientFile[];                 // файли клієнта: звітність і вивантаження
   notes?: ProjectNote[];                      // внутрішні нотатки/коментарі аудитора
@@ -606,14 +606,39 @@ export function onAuth(cb: (u: DiagUser | null) => void): () => void {
   return () => data.subscription.unsubscribe();
 }
 
+/**
+ * Старі записи accessLog ключовані AC-**, каталог кабінету тепер CB-**.
+ *
+ * Перейменування знадобилось тому, що портал нумерує свій каталог теж AC-**,
+ * і з 26 спільних номерів 20 означали різні системи. Бази різні, дані не
+ * плуталися — плуталася людина, яка бачить «AC-17» і не знає, який це каталог.
+ *
+ * Переклад робиться на ЧИТАННІ, а не міграцією бази: відображення 1:1 і
+ * механічне (у межах кабінету AC-14 завжди означав те саме, що тепер CB-14),
+ * тож жодного рядка перезаписувати не треба, і відкотити зміну можна одним
+ * коммітом. Ключі, які вже CB-**, лишаються як є.
+ */
+export function normalizeAccessLog<T>(log?: Record<string, T>): Record<string, T> | undefined {
+  if (!log) return log;
+  const out: Record<string, T> = {};
+  for (const [k, v] of Object.entries(log)) out[k.replace(/^AC-/, 'CB-')] = v;
+  return out;
+}
+
+/** Запис із бази → запис застосунку: одне місце, де застарілі ключі стають поточними. */
+function adopt(rec: DiagRecord): DiagRecord {
+  const accessLog = normalizeAccessLog(rec.accessLog);
+  return accessLog ? { ...rec, accessLog } : rec;
+}
+
 /* ─── Persistence (таблиця diagnostics, jsonb) ─── */
 export async function loadDiag(user: DiagUser): Promise<DiagRecord> {
   if (!CONFIGURED || isLocal(user)) {
-    try { const raw = localStorage.getItem(LS_DATA(user.id)); return raw ? JSON.parse(raw) : {}; } catch { return {}; }
+    try { const raw = localStorage.getItem(LS_DATA(user.id)); return raw ? adopt(JSON.parse(raw)) : {}; } catch { return {}; }
   }
   try {
     const { data } = await supabase.from('diagnostics').select('data').eq('user_id', user.id).maybeSingle();
-    return (data?.data as DiagRecord) ?? {};
+    return adopt((data?.data as DiagRecord) ?? {});
   } catch { return {}; }
 }
 
@@ -696,7 +721,7 @@ const LIST_SELECT = 'user_id,email,' + LIST_KEYS.map((k) => `${k}:data->${k}`).j
 export const LIST_PAGE = 200;
 
 const toRow = (r: Record<string, unknown>): AdminRow => {
-  const record = Object.fromEntries(LIST_KEYS.map((k) => [k, r[k]]).filter(([, v]) => v != null)) as DiagRecord;
+  const record = adopt(Object.fromEntries(LIST_KEYS.map((k) => [k, r[k]]).filter(([, v]) => v != null)) as DiagRecord);
   return {
     userId: String(r.user_id), email: String(r.email || ''),
     company: record.company?.name, funnel: record.funnel, updatedAt: record.updatedAt,
@@ -756,7 +781,7 @@ export async function loadDiagnosticFor(userId: string): Promise<AdminRow | null
   try {
     const { data, error } = await supabase.from('diagnostics').select('user_id,email,data').eq('user_id', userId).maybeSingle();
     if (error || !data) return null;
-    const rec = (data.data as DiagRecord) || {};
+    const rec = adopt((data.data as DiagRecord) || {});
     return {
       userId: data.user_id as string, email: (data.email as string) || '',
       company: rec.company?.name, funnel: rec.funnel, updatedAt: rec.updatedAt,

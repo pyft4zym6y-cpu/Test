@@ -13,7 +13,7 @@ const row = {
   email: 'Owner@Shop.UA',
   record: {
     company: { name: 'Магазин «Кава»', site: 'shop.ua' },
-    accessLog: { 'AC-01': { status: 'granted' } },
+    accessLog: { 'CB-01': { status: 'granted' } },
     clientFiles: [{ title: 'P&L 2025', group: 'Фінанси' }],
     // Внутрішній шар — те, що клієнту не належить:
     notes: [{ text: 'власник уникає розмови про маржу', at: '2026-08-01' }],

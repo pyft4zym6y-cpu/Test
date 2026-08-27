@@ -45,21 +45,21 @@ const NEEDS: Record<string, { title: string; need: Need }> = {
   A3: { title: 'Product', need: { crawl: 30, file: ['skusales', 'catalog'], answers: ['product'] } },
   A4: { title: 'Customer', need: { crawl: 20, file: ['orders'], answers: ['customer'] } },
   A5: { title: 'Website', need: { crawl: 90, answers: ['website'] } },
-  A6: { title: 'SEO/GEO', need: { crawl: 60, access: ['AC-03'], answers: ['seo'] } },
-  A7: { title: 'Acquisition', need: { crawl: 15, access: ['AC-07', 'AC-08'], answers: ['acquisition'] } },
-  A8: { title: 'CRM', need: { crawl: 20, access: ['AC-09'], answers: ['crm'] } },
-  A9: { title: 'Analytics', need: { crawl: 25, access: ['AC-01', 'AC-02'], answers: ['analytics'] } },
-  A10: { title: 'Operations', need: { crawl: 30, access: ['AC-10'], answers: ['operations'] } },
-  A11: { title: 'Technology', need: { crawl: 60, access: ['AC-05'], answers: ['technology'] } },
+  A6: { title: 'SEO/GEO', need: { crawl: 60, access: ['CB-03'], answers: ['seo'] } },
+  A7: { title: 'Acquisition', need: { crawl: 15, access: ['CB-07', 'CB-08'], answers: ['acquisition'] } },
+  A8: { title: 'CRM', need: { crawl: 20, access: ['CB-09'], answers: ['crm'] } },
+  A9: { title: 'Analytics', need: { crawl: 25, access: ['CB-01', 'CB-02'], answers: ['analytics'] } },
+  A10: { title: 'Operations', need: { crawl: 30, access: ['CB-10'], answers: ['operations'] } },
+  A11: { title: 'Technology', need: { crawl: 60, access: ['CB-05'], answers: ['technology'] } },
   A12: { title: 'Organization', need: { crawl: 0, answers: ['organization'] } },
   A13: { title: 'Експансія', need: { crawl: 35, answers: ['expansion'] } },
 };
 
 /** Людські назви систем — щоб «AC-03» не потрапляло в текст для менеджера. */
 const ACCESS_LABEL: Record<string, string> = {
-  'AC-01': 'Google Analytics 4', 'AC-02': 'Google Tag Manager', 'AC-03': 'Search Console',
-  'AC-05': 'Адмінка сайту', 'AC-07': 'Google Ads', 'AC-08': 'Meta Ads', 'AC-09': 'CRM / ESP',
-  'AC-10': 'ERP / 1C / Odoo',
+  'CB-01': 'Google Analytics 4', 'CB-02': 'Google Tag Manager', 'CB-03': 'Search Console',
+  'CB-05': 'Адмінка сайту', 'CB-07': 'Google Ads', 'CB-08': 'Meta Ads', 'CB-09': 'CRM / ESP',
+  'CB-10': 'ERP / 1C / Odoo',
 };
 const FILE_LABEL: Record<string, string> = {
   pnl: 'P&L за 12–24 міс', unit: 'Юніт-економіка', orders: 'Вивантаження замовлень',

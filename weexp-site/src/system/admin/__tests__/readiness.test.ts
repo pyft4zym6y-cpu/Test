@@ -43,18 +43,18 @@ describe('assessReadiness — порожній клієнт', () => {
 describe('assessReadiness — доступи піднімають рівно свій документ', () => {
   it('Search Console піднімає SEO і не чіпає Business', () => {
     const before = assessReadiness({}, 0);
-    const after = assessReadiness(withAccess('AC-03'), 0);
+    const after = assessReadiness(withAccess('CB-03'), 0);
     expect(after.docs.find((d) => d.code === 'A6')!.pct).toBeGreaterThan(before.docs.find((d) => d.code === 'A6')!.pct);
     expect(after.docs.find((d) => d.code === 'A1')!.pct).toBe(before.docs.find((d) => d.code === 'A1')!.pct);
   });
 
   it('GA4 і GTM разом закривають Analytics повністю за наявності анкети', () => {
-    const r = assessReadiness(withAccess('AC-01', 'AC-02'), 1);
+    const r = assessReadiness(withAccess('CB-01', 'CB-02'), 1);
     expect(r.docs.find((d) => d.code === 'A9')!.pct).toBe(100);
   });
 
   it('запитаний, але не виданий доступ не рахується', () => {
-    const r = assessReadiness({ accessLog: { 'AC-03': { status: 'requested' } } } as DiagRecord, 0);
+    const r = assessReadiness({ accessLog: { 'CB-03': { status: 'requested' } } } as DiagRecord, 0);
     const seo = r.docs.find((d) => d.code === 'A6')!;
     expect(seo.missing).toContain('Search Console');
   });
@@ -94,7 +94,7 @@ describe('assessReadiness — що просити першим', () => {
   });
 
   it('те, що вже є, у списку прохань не зʼявляється', () => {
-    const r = assessReadiness(withAccess('AC-01', 'AC-02', 'AC-03'), 1);
+    const r = assessReadiness(withAccess('CB-01', 'CB-02', 'CB-03'), 1);
     expect(r.asks.some((a) => a.what === 'Search Console')).toBe(false);
   });
 });
@@ -102,7 +102,7 @@ describe('assessReadiness — що просити першим', () => {
 describe('assessReadiness — повний комплект', () => {
   it('з усіма доступами, файлами й анкетою вердикт стає впевненим', () => {
     const rec: DiagRecord = {
-      ...withAccess('AC-01', 'AC-02', 'AC-03', 'AC-05', 'AC-07', 'AC-08', 'AC-09', 'AC-10'),
+      ...withAccess('CB-01', 'CB-02', 'CB-03', 'CB-05', 'CB-07', 'CB-08', 'CB-09', 'CB-10'),
       clientFiles: [
         { id: 'f1', title: 'P&L за 12–24 міс', group: 'Фінанси' },
         { id: 'f2', title: 'Юніт-економіка', group: 'Фінанси' },
@@ -118,7 +118,7 @@ describe('assessReadiness — повний комплект', () => {
   });
 
   it('відсоток ніколи не перевищує 100', () => {
-    const r = assessReadiness(withAccess('AC-01', 'AC-02'), 1);
+    const r = assessReadiness(withAccess('CB-01', 'CB-02'), 1);
     expect(Math.max(...r.docs.map((d) => d.pct))).toBeLessThanOrEqual(100);
   });
 });
