@@ -50,7 +50,7 @@ async function callLegacy(metricValues: { value: string }[] | null) {
   process.env.GA4_SA_EMAIL = 'sa@x.iam.gserviceaccount.com';
   process.env.GA4_SA_KEY = privateKey;
   stubNetwork(metricValues);
-  const { default: handler } = await import('../../../api/ga4.js');
+  const { default: handler } = await import(/* @vite-ignore */ '../../../api/ga4.js' as string);
   const res = resStub();
   await handler({ ...STAFF }, res);
   return res.body;
@@ -97,7 +97,7 @@ describe('GA4 baseline', () => {
     delete process.env.GA4_PROPERTY_ID;
     delete process.env.GA4_SA_EMAIL;
     delete process.env.GA4_SA_KEY;
-    const { default: handler } = await import('../../../api/ga4.js');
+    const { default: handler } = await import(/* @vite-ignore */ '../../../api/ga4.js' as string);
     const res = resStub();
     await handler({ ...STAFF }, res);
     expect(res.body.error).toMatch(/GA4_PROPERTY_ID/);
@@ -106,7 +106,7 @@ describe('GA4 baseline', () => {
 
   it('без входа данные клиента не отдаются', async () => {
     stubNetwork(V('120000', '3600', '5400000'));
-    const { default: handler } = await import('../../../api/ga4.js');
+    const { default: handler } = await import(/* @vite-ignore */ '../../../api/ga4.js' as string);
     const res = resStub();
     await handler({ method: 'GET', query: {}, headers: {} }, res);  // токена нет
     expect(res.code).toBe(401);
