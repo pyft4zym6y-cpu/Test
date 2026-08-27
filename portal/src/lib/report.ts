@@ -43,6 +43,17 @@ export type Report = {
   totalL1: number;
   problems: Problem[];
   rules: Rule[];
+  /**
+   * Сколько критических разрывов реально проверено ответом клиента.
+   *
+   * Без этого числа scoreB нечитаем: «100» одинаково означало и «проверили
+   * все 18 — чисто», и «ответили на один вопрос из 22». Наружу отдаём всегда,
+   * даже когда scoreB не посчитан, — потребитель обязан знать, на чём стоит
+   * оценка риска.
+   */
+  gapCoverage: { checked: number; total: number };
+  /** Итог опирается только на зрелость: рисковая половина не проверена. */
+  scoreProvisional: boolean;
 };
 
 const YES_RE = /^(да|так|yes)/i;
@@ -119,9 +130,26 @@ export function buildReport(
       gaps.push({ ...g, evidence: q ? `${hit}: ${q.text}` : hit });
     }
   }
-  const anyGapAnswered = CRITICAL_GAPS.some((g) => g.qids.some((qid) => answers[qid]?.answer));
-  const scoreB = anyGapAnswered ? Math.max(0, 100 - gaps.reduce((s, g) => s + g.penalty, 0)) : null;
+  /*
+   * Покрытие рисковой половины. Раньше условием было «отвечен ХОТЬ ОДИН
+   * контрольный вопрос», и это давало ровно тот результат, ради недопущения
+   * которого шкала и строилась: клиент, ответивший на один вопрос из 22
+   * благополучно, получал scoreB = 100 — столько же, сколько ответивший на все
+   * 22. А scoreB весит 40% итога. Непроверенный разрыв — не пройденный разрыв.
+   *
+   * Порог по смыслу тот же, что у scoreA (`wSum >= 30`): ниже него оценка не
+   * выпускается вообще, а не выпускается заниженной или завышенной.
+   */
+  const checkedGaps = CRITICAL_GAPS.filter((g) => g.qids.some((qid) => answers[qid]?.answer)).length;
+  const gapCoverage = { checked: checkedGaps, total: CRITICAL_GAPS.length };
+  const enoughGaps = checkedGaps >= Math.ceil(CRITICAL_GAPS.length / 2);
+  const scoreB = enoughGaps ? Math.max(0, 100 - gaps.reduce((s, g) => s + g.penalty, 0)) : null;
 
+  // Подстановка scoreA вместо непосчитанного scoreB оставлена намеренно: итог
+  // тогда означает «зрелость», а не «здоровье». Чтобы это не читалось как
+  // проверенный результат, помечаем оценку предварительной — документы и промпт
+  // обязаны сказать об этом словами.
+  const scoreProvisional = scoreA !== null && scoreB === null;
   const score =
     scoreA !== null ? Math.round(0.6 * scoreA + 0.4 * (scoreB ?? scoreA)) : null;
 
@@ -154,7 +182,7 @@ export function buildReport(
     prio(a.priority) - prio(b.priority) ||
     (b.impact ?? 0) / Math.max(b.difficulty ?? 1, 1) - (a.impact ?? 0) / Math.max(a.difficulty ?? 1, 1));
 
-  return { domains, score, scoreA, scoreB, gaps, answeredL1, totalL1, problems, rules };
+  return { domains, score, scoreA, scoreB, gaps, answeredL1, totalL1, problems, rules, gapCoverage, scoreProvisional };
 }
 
 export function zone(health: number | null): { color: string; label: string } {

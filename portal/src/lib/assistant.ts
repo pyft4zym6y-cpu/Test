@@ -32,7 +32,8 @@ import {
 export type AuditSnapshot = {
   client: { name?: string; niche?: string };
   coverage: { answered: number; total: number; pct: number };
-  health: { score: number | null; band?: string; action?: string; scoreA: number | null; scoreB: number | null };
+  health: { score: number | null; band?: string; action?: string; scoreA: number | null; scoreB: number | null;
+            gapCoverage: { checked: number; total: number }; provisional: boolean };
   confidence: { score: number; factors: { label: string; delta: number }[] };
   money: {
     show: boolean;
@@ -91,7 +92,8 @@ export function buildSnapshot(
       total: report.totalL1,
       pct: report.totalL1 ? Math.round((report.answeredL1 / report.totalL1) * 100) : 0,
     },
-    health: { score: report.score, band: band?.label, action: band?.action, scoreA: report.scoreA, scoreB: report.scoreB },
+    health: { score: report.score, band: band?.label, action: band?.action, scoreA: report.scoreA, scoreB: report.scoreB,
+              gapCoverage: report.gapCoverage, provisional: report.scoreProvisional },
     confidence: conf,
     money: {
       show: Boolean(money),
@@ -133,9 +135,13 @@ export function snapshotToContext(s: AuditSnapshot): string {
   L.push(`Доступов выдано: ${s.accessGranted}`);
   L.push(`Уверенность в выводах (Confidence): ${s.confidence.score}/100`);
 
-  if (s.health.score !== null)
+  if (s.health.score !== null) {
     L.push(`Health Score: ${s.health.score}/100 — «${s.health.band}». Рекомендация метода: ${s.health.action}. (A-зрелость ${s.health.scoreA ?? '—'}, B-разрывы ${s.health.scoreB ?? '—'})`);
-  else
+    // Непроверенный разрыв — не пройденный разрыв. Без этой строки модель видит
+    // высокий балл и пустой список разрывов и делает вывод «рисков нет».
+    if (s.health.provisional)
+      L.push(`⚠️ Оценка ПРЕДВАРИТЕЛЬНАЯ: из ${s.health.gapCoverage.total} критических разрывов проверено ответом ${s.health.gapCoverage.checked}. Балл отражает только зрелость; вывода «рисков нет» делать нельзя — их не проверяли.`);
+  } else
     L.push('Health Score: пока не считается — мало заполненных доменов (нужно ≥30 ответов).');
 
   if (s.money.show) {

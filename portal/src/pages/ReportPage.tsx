@@ -219,6 +219,15 @@ export default function ReportPage() {
                 зрелость доменов ({report.scoreA ?? '—'}) + 0,4 × фундамент без критических
                 разрывов ({report.scoreB ?? '—'}).
               </p>
+              {/* Прочерк вместо балла за разрывы сам по себе ничего не говорит:
+                  клиент читает высокую оценку и считает, что рисков нет. */}
+              {report.scoreProvisional && (
+                <p className="sub" style={{ fontSize: 13, color: 'var(--amber)' }}>
+                  Оценка предварительная: из {report.gapCoverage.total} критических разрывов
+                  проверено ответом {report.gapCoverage.checked}. Балл отражает зрелость, а не
+                  отсутствие рисков — их ещё не проверяли.
+                </p>
+              )}
               <p className="mono" style={{ fontSize: 12, margin: '6px 0 0' }}>
                 Достоверность выводов:{' '}
                 <b style={{ color: conf.score >= 75 ? 'var(--lime-dark)' : conf.score >= 50 ? 'var(--amber)' : 'var(--red)' }}>
