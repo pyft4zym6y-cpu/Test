@@ -38,7 +38,10 @@ export function ContactFilm() {
   const [phoneErr, setPhoneErr] = useState('');
   // «Формат співпраці»: необовʼязковий select; префіл з ?format=1|2|3 (кнопки
   // «Обговорити формат N» на /pricing). Користувач може змінити вручну.
-  const FORMATS = [t('Формат 1 — Аудит', 'Format 1 — Audit'), t('Формат 2 — Консалтинг і супровід', 'Format 2 — Consulting & support'), t('Формат 3 — Управління під ключ', 'Format 3 — Turnkey management')];
+  // У списку — НАЗВА послуги без «Формат N —»: нумерація має сенс на сторінці
+  // цін, де картки стоять поруч, а в контактній формі це шум перед потрібним
+  // словом. Порядок масиву лишається джерелом префілу за ?format=.
+  const FORMATS = [t('Аудит', 'Audit'), t('Консалтинг і супровід', 'Consulting & support'), t('Управління під ключ', 'Turnkey management')];
   const [format, setFormat] = useState('');
   useEffect(() => {
     const m = new URLSearchParams(loc.search).get('format');
