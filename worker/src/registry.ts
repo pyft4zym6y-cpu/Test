@@ -105,7 +105,16 @@ export function computeConfidence(f: FindingInput, coverage: CoverageStatus = 'c
   const evLevel = f.evidenceLevel ?? (f.rawConfidence != null
     ? (f.rawConfidence >= 0.8 ? 'E3' : f.rawConfidence >= 0.6 ? 'E2' : 'E1')
     : 'E2');
-  const w = EVIDENCE_W[evLevel] * reproWeight(f.reproducibility) * (SOURCE_W[f.source ?? 'unknown'] ?? 0.7) * COVERAGE_W[coverage];
+  // Каждая из трёх карт может не знать пришедшего значения: находки собираются
+  // десятком модулей, часть — из ответа модели, где строка приходит как есть.
+  // Источник уже подстрахован (?? 0.7), а уровень доказательства и покрытие —
+  // нет: неизвестная строка давала NaN, и находка молча уезжала в P2 с
+  // priorityScore = NaN. quality.ts от той же карты уже защищается (?? 0.72) —
+  // значит, на это наступали. Приводим к одному поведению.
+  const w = (EVIDENCE_W[evLevel] ?? EVIDENCE_W.E2)
+    * reproWeight(f.reproducibility)
+    * (SOURCE_W[f.source ?? 'unknown'] ?? 0.7)
+    * (COVERAGE_W[coverage] ?? COVERAGE_W.covered);
   // если модуль дал свою уверенность — не даём формуле её завысить (кап raw+0.15)
   const capped = f.rawConfidence != null ? Math.min(w, f.rawConfidence + 0.15) : w;
   return Math.round(Math.max(0, Math.min(1, capped)) * 100) / 100;
@@ -159,7 +168,8 @@ export function buildRegistry(inputs: FindingInput[], ctx: RegistryCtx = {}): Fi
     if (!prev.as_is && f.as_is) prev.as_is = f.as_is;
     if (!prev.gap && f.gap) prev.gap = f.gap;
     if (!prev.funnelStep && f.funnelStep) prev.funnelStep = f.funnelStep;
-    if (f.evidenceLevel && (!prev.evidenceLevel || EVIDENCE_W[f.evidenceLevel] > EVIDENCE_W[prev.evidenceLevel])) prev.evidenceLevel = f.evidenceLevel;
+    const evW = (l?: EvidenceLevel) => (l ? EVIDENCE_W[l] ?? EVIDENCE_W.E2 : 0);
+    if (f.evidenceLevel && evW(f.evidenceLevel) > evW(prev.evidenceLevel)) prev.evidenceLevel = f.evidenceLevel;
     if (f.reproducibility && reproWeight(f.reproducibility) > reproWeight(prev.reproducibility)) prev.reproducibility = f.reproducibility;
     if (f.source && (SOURCE_W[f.source] ?? 0) > (SOURCE_W[prev.source ?? 'unknown'] ?? 0)) prev.source = f.source;
   }
@@ -176,8 +186,16 @@ export function buildRegistry(inputs: FindingInput[], ctx: RegistryCtx = {}): Fi
   // 3) атрибуция денег ПО РЫЧАГУ money.ts (несколько шагов делят один рычаг — иначе
   //    один и тот же вклад cr задваивался бы на каталог+карточку+чекаут). ₴/год рычага
   //    делятся между всеми находками этого рычага пропорционально impact×confidence.
+  //    Отрицательный вклад рычага в раздачу НЕ идёт. В money.ts он допустим и
+  //    осмыслен — это размен внутри воронки (трафик вырос, конверсия просела), —
+  //    но находке он давал отрицательный revenueExposure, а «недоотримано
+  //    −68 293 ₴/рік» в документе клиента читается как «почините — потеряете».
+  //    Раздавать по такому рычагу нечего: денег он не приносит.
   const leverContrib = new Map<LeverKey, number>();
-  if (ctx.money) for (const w of ctx.money.waterfall) leverContrib.set(w.key, (leverContrib.get(w.key) ?? 0) + w.contribYear);
+  if (ctx.money) {
+    for (const w of ctx.money.waterfall) leverContrib.set(w.key, (leverContrib.get(w.key) ?? 0) + w.contribYear);
+    for (const [k, v] of leverContrib) if (v <= 0) leverContrib.delete(k);
+  }
   const leverOf = (step?: FunnelStep): LeverKey | null => (step ? STEP_TO_LEVER[step] : null);
   const icByLever = new Map<LeverKey, number>();
   for (const f of scored) { const lv = leverOf(f.funnelStep); if (lv && leverContrib.has(lv)) icByLever.set(lv, (icByLever.get(lv) ?? 0) + f.impactConfidence); }
