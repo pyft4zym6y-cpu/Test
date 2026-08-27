@@ -111,7 +111,7 @@ export function ClientBrief({ row, code }: { row: AdminRow; code?: string }) {
       </Block>
 
       <Block title="Хронологія">
-        {events.length === 0 ? <p className="mono adm-empty">подій ще немає</p> : (
+        {events.length === 0 ? <p className="mono adm-empty">Подій ще немає — стрічка заповниться, щойно клієнт зробить перший крок або команда змінить статус.</p> : (
           <ul className="adm-kv">
             {events.map((e, i) => (
               <li key={i}><i>{rel(e.at)} · {e.who}</i><span>{e.text}</span></li>

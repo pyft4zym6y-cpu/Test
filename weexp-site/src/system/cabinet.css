@@ -737,6 +737,15 @@
 .adm-tr-funnel { grid-template-columns: 2.4fr 1.5fr 1.1fr .8fr auto; }
 .adm-c-co { color: var(--graphite); font-weight: 400; }
 @media (max-width: 720px) { .adm-tr-funnel { grid-template-columns: 1fr auto; } .adm-tr-funnel > :nth-child(3), .adm-tr-funnel > :nth-child(4) { display: none; } }
+/* Таблиця користувачів — єдина широка, у якої мобільного правила не було:
+   шість колонок на екрані 375px стискаються так, що пошта займає два символи.
+   Сусідня adm-tr-funnel таке правило мала — тобто це був пропуск, а не рішення.
+   Ховаємо лічильники (їх видно в картці), лишаємо ім'я, пошту й дію. */
+@media (max-width: 720px) {
+  .adm-tr-users { grid-template-columns: minmax(0, 1fr) auto; }
+  .adm-tr-users > :nth-child(3), .adm-tr-users > :nth-child(4), .adm-tr-users > :nth-child(5) { display: none; }
+  .adm-tr-users > :first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+}
 .adm-sort { background: none; border: 0; cursor: pointer; font: inherit; font-weight: 800; font-size: 11px;
   letter-spacing: .04em; text-transform: uppercase; color: var(--graphite); padding: 0; text-align: left; }
 .adm-sort:hover { color: var(--red); }

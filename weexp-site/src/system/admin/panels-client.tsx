@@ -224,7 +224,7 @@ export function NotesPanel({ userId, initial, author }: { userId: string; initia
         <textarea className="ab-inp" rows={2} value={text} onChange={(e) => setText(e.target.value)} placeholder="Внутрішня нотатка / коментар (бачить лише команда)…" />
         <button className="mc-btn ok" disabled={busy || !text.trim()} onClick={add}>Додати</button>
       </div>
-      {list.length === 0 ? <p className="mono adm-empty">нотаток ще немає</p> : (
+      {list.length === 0 ? <p className="mono adm-empty">Нотаток ще немає. Це внутрішній шар — сюди пишуть те, чого не варто писати клієнту: контекст розмов, домовленості, сумніви.</p> : (
         <ul className="adm-notes-list">{list.map((n) => (
           <li key={n.id} className="adm-note">
             <div className="adm-note-h mono"><b>{n.author || 'команда'}</b> · {rel(n.at)}{n.module ? ` · ${n.module}` : ''}</div>

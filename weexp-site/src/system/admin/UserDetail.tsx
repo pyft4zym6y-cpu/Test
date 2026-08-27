@@ -287,7 +287,7 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, 
             if (row.funnel?.leadAt) ev.push({ at: row.funnel.leadAt, t: 'Заявка на співпрацю з кабінету' });
             if (row.updatedAt) ev.push({ at: row.updatedAt, t: 'Оновлення профілю' });
             ev.sort((a, b) => (b.at || '').localeCompare(a.at || ''));
-            if (!ev.length) return <p className="mono adm-empty">подій ще немає</p>;
+            if (!ev.length) return <p className="mono adm-empty">Подій ще немає — тут зʼявиться все, що робили з карткою: доступи, статуси, передані документи.</p>;
             return <ul className="adm-activity">{ev.slice(0, 20).map((e, i) => (
               <li key={i}><span className="adm-act-dot" /><span className="adm-act-t">{e.t}</span><span className="mono adm-act-at">{rel(e.at)}</span></li>
             ))}</ul>;

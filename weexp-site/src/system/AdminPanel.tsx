@@ -1,4 +1,5 @@
 import { lazy, useEffect, useMemo, useRef, useState } from 'react';
+import { CommandPalette } from './admin/CommandPalette';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   currentUser,
@@ -456,6 +457,14 @@ export function AdminPanel() {
           пунктів навігації. Менеджер, який заповнює десятки полів, працює
           табом; без цього кожен вхід у розділ починається з пробігу по меню. */}
       <a href="#adm-main" className="adm-skip">До вмісту</a>
+      {/* Палітра бачить лише РОЗДІЛИ, дозволені ролі: інакше пошук пропонував би
+          перейти туди, куди людину все одно не пустять. */}
+      <CommandPalette
+        tabs={allowedTabs.map((tb) => ({ id: tb.id, label: tb.label }))}
+        rows={rows}
+        onTab={(id) => setTab(id as Parameters<typeof setTab>[0])}
+        onClient={setOpenUser}
+      />
       <aside className="adm-side">
         <Link to="/" className="adm-brand"><b>WEEXP</b><span className="mono">admin</span></Link>
         <nav className="adm-nav" role="tablist" aria-label="Розділи адмінки">

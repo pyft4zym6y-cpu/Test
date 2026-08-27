@@ -190,7 +190,7 @@ export function Dashboard({ rows, leads, traffic, period, onPeriod, onOpenClient
                         <span className="adm-dist-n mono">{d.n}</span>
                       </div>
                     ))}
-                    {analytics.statusDist.every((d) => d.n === 0) && <p className="mono adm-empty">запитів ще немає</p>}
+                    {analytics.statusDist.every((d) => d.n === 0) && <p className="mono adm-empty">Запитів на аудит ще немає. Розподіл зʼявиться після першої заявки з сайту або кабінету.</p>}
                   </div>
                 </div>
               </div>
@@ -198,7 +198,7 @@ export function Dashboard({ rows, leads, traffic, period, onPeriod, onOpenClient
 
             <div className="adm-panel">
               <span className="adm-col-h mono">Джерела заявок · {period === 0 ? 'усі' : `${period} днів`}</span>
-              {analytics.leadSources.length === 0 ? <p className="mono adm-empty">заявок за період немає</p> : (
+              {analytics.leadSources.length === 0 ? <p className="mono adm-empty">За цей період заявок не було — спробуйте ширший період угорі.</p> : (
                 <div className="adm-dist">
                   {analytics.leadSources.map((d) => {
                     const max = analytics.leadSources[0].n || 1;
@@ -219,7 +219,7 @@ export function Dashboard({ rows, leads, traffic, period, onPeriod, onOpenClient
             {rows !== null && rows.length > 0 && (
               <div className="adm-panel">
                 <span className="adm-col-h mono">Останні події · {period === 0 ? 'усі' : `${period} днів`}</span>
-                {analytics.recent.length === 0 ? <p className="mono adm-empty">за період подій немає</p> : (
+                {analytics.recent.length === 0 ? <p className="mono adm-empty">За цей період подій не було. Стрічка збирає дії клієнтів і команди — розширте період, щоб побачити попередні.</p> : (
                   <ul className="adm-feed">
                     {analytics.recent.map((e, i) => (
                       <li key={i} className={`adm-feed-i k-${e.kind}`}>
