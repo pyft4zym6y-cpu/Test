@@ -246,7 +246,7 @@ ${projRows ? `<div class="card"><h2>${escapeHtml(t('Зараз → куди мо
                 <label key={f.k} className="sysx-inp">
                   <span className="sysx-inp-l">{f.label}{f.hint && <i> · {f.hint}</i>}</span>
                   <span className="sysx-inp-row">
-                    <input type="text" inputMode="decimal" value={rawNum[f.k] ?? (inp[f.k] || '')} onChange={setNum(f.k)} placeholder="0" />
+                    <input type="text" inputMode="decimal" autoComplete="off" value={rawNum[f.k] ?? (inp[f.k] || '')} onChange={setNum(f.k)} placeholder="0" />
                     <span className="sysx-inp-u mono">{f.unit}</span>
                   </span>
                 </label>
@@ -396,11 +396,11 @@ ${projRows ? `<div class="card"><h2>${escapeHtml(t('Зараз → куди мо
                 <span className="sysx-kick">{t('Замовити аудит', 'Order the audit')}</span>
                 <p className="calc-order-lead">{t('Лишіть контакт — менеджер WEEXP звʼяжеться протягом робочого дня. Результат вашого експрес-аудиту додається до заявки автоматично.', 'Leave your contact — a WEEXP manager will reach out within one business day. Your express-audit result is attached automatically.')}</p>
                 <div className="calc-order-row">
-                  <label className="sysx-inp"><span className="sysx-inp-l">{t("Ім'я", 'Name')}</span><input value={oName} onChange={(e) => setOName(e.target.value)} placeholder={t('Ваше імʼя', 'Your name')} /></label>
-                  <label className="sysx-inp"><span className="sysx-inp-l">{t('Телефон', 'Phone')} *</span><input type="tel" value={oPhone} onChange={(e) => setOPhone(e.target.value)} placeholder="+380…" required /></label>
-                  <label className="sysx-inp"><span className="sysx-inp-l">Email</span><input type="email" value={oEmail} onChange={(e) => setOEmail(e.target.value)} placeholder="you@company.com" /></label>
+                  <label className="sysx-inp"><span className="sysx-inp-l">{t("Ім'я", 'Name')}</span><input name="name" autoComplete="name" value={oName} onChange={(e) => setOName(e.target.value)} placeholder={t('Ваше імʼя', 'Your name')} /></label>
+                  <label className="sysx-inp"><span className="sysx-inp-l">{t('Телефон', 'Phone')} *</span><input name="phone" type="tel" inputMode="tel" autoComplete="tel" value={oPhone} onChange={(e) => setOPhone(e.target.value)} placeholder="+380…" required /></label>
+                  <label className="sysx-inp"><span className="sysx-inp-l">Email</span><input name="email" type="email" inputMode="email" autoComplete="email" value={oEmail} onChange={(e) => setOEmail(e.target.value)} placeholder="you@company.com" /></label>
                 </div>
-                <label className="sysx-inp"><span className="sysx-inp-l">{t('Коментар (необовʼязково)', 'Note (optional)')}</span><input value={oMsg} onChange={(e) => setOMsg(e.target.value)} placeholder={t('Що для вас важливо?', 'What matters most to you?')} /></label>
+                <label className="sysx-inp"><span className="sysx-inp-l">{t('Коментар (необовʼязково)', 'Note (optional)')}</span><input name="note" autoComplete="off" value={oMsg} onChange={(e) => setOMsg(e.target.value)} placeholder={t('Що для вас важливо?', 'What matters most to you?')} /></label>
                 <input name="company_website" tabIndex={-1} autoComplete="off" aria-hidden="true" value={oHp} onChange={(e) => setOHp(e.target.value)} style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }} />
                 <HumanSummary res={res} lang={lang} t={t} />
                 <Turnstile onToken={setTsToken} onFail={() => setTsBroken(true)} />

@@ -62,7 +62,7 @@ export function Pricing() {
       resp: t('Якість рішень і контроль — ми. Виконання руками та результат — ваша команда.', 'Quality of decisions and control — us. Hands-on execution and the result — your team.'),
     },
     {
-      n: '03', name: t('Управління під ключ', 'Managed delivery'), tag: t('Managed · трансформація під ключ', 'Managed · turnkey transformation'), period: t('6–12 місяців', '6–12 months'),
+      n: '03', name: t('Управління під ключ', 'Managed delivery'), tag: t('Managed · трансформація', 'Managed · transformation'), period: t('6–12 місяців', '6–12 months'),
       price: t('від $4,900 / міс', 'from $4,900 / mo'), priceNote: t('залежить від масштабу проєкту; фіксується після аудиту.', 'depends on project scale; fixed after the audit.'),
       forWhom: t('Нема кому вести це зсередини. Потрібен результат, а не поради — і один відповідальний за нього.', "There's no one to lead this from inside. You need a result, not advice — and one person accountable for it."),
       includes: [

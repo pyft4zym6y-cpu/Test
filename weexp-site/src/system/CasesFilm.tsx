@@ -91,7 +91,7 @@ export function CasesFilm() {
               {lc.metrics.slice(0, 5).map((m, k) => (
                 <div key={m.label} className="cf-row" style={{ '--k': k } as React.CSSProperties}>
                   <span className="cf-row-l">{m.label}</span>
-                  <span className="cf-row-v"><i className="cf-before">{m.before}</i><em className="cf-arrow mono">→</em><b className="cf-after">{m.after}</b>{m.note && <span className="cf-note mono">{m.note}</span>}</span>
+                  <span className="cf-row-v"><i className="cf-before">{m.before}</i><em className="cf-arrow mono" aria-hidden="true">→</em><b className="cf-after">{m.after}</b>{m.note && <span className="cf-note mono">{m.note}</span>}</span>
                 </div>
               ))}
               <p className="cf-learn"><b className="mono">{t('Урок:', 'Lesson:')}</b> {lc.learning}</p>
@@ -118,7 +118,7 @@ export function CasesFilm() {
           <p className="sysx-lead">{t('Почніть із діагнозу: за 2 хвилини побачите, яка система дасть найбільшу дельту саме вам.', 'Start with the diagnosis: in 2 minutes you\'ll see which system delivers the biggest delta for you.')}</p>
           <div className="sysx-cta-row">
             <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Знайти свою дельту →', 'Find your delta →')}</Link>
-            <Link to={lp('/contact')} className="sysx-cta">{t('Написати нам', 'Contact us')} →</Link>
+            <Link to={lp('/contact')} className="sysx-cta">{t('Написати нам', 'Contact us')} <span aria-hidden="true">→</span></Link>
             <ShareButton title={t('WEEXP — докази в цифрах', 'WEEXP — proof in numbers')} />
           </div>
         </div>
