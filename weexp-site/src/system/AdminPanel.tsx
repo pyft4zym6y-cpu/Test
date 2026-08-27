@@ -451,7 +451,11 @@ export function AdminPanel() {
   ) : null;
 
   return (
-    <div className={'sysx adm' + theme.cls}>
+    <div className={'sysx adm adm-a11y-focus' + theme.cls}>
+      {/* Перший таб на сторінці має вести до вмісту, а не через двадцять
+          пунктів навігації. Менеджер, який заповнює десятки полів, працює
+          табом; без цього кожен вхід у розділ починається з пробігу по меню. */}
+      <a href="#adm-main" className="adm-skip">До вмісту</a>
       <aside className="adm-side">
         <Link to="/" className="adm-brand"><b>WEEXP</b><span className="mono">admin</span></Link>
         <nav className="adm-nav" role="tablist" aria-label="Розділи адмінки">
@@ -481,7 +485,7 @@ export function AdminPanel() {
         </div>
       </aside>
 
-      <main className="adm-main">
+      <main className="adm-main" id="adm-main" tabIndex={-1}>
         {/* ── Повна сторінка клієнта (замість бокового drawer) ── */}
         {openUser && detailLoading && !detail && <div className="adm-boot mono">Завантажуємо картку…</div>}
         {detail && <Panel title="Картка клієнта" quiet><UserDetail row={detail} leads={leads} canDelete={can(user, 'delete_data')} canAccess={can(user, 'manage_access')} selfEmail={user.email} utab={utab} onUtab={setUtab} onChanged={reloadDetail} onClose={() => setOpenUser(null)} openFile={openFile} onStatus={setStatus} onDelete={removeUser} busy={busy} /></Panel>}

@@ -18,7 +18,7 @@ import {
   type PackState
 } from '@/lib/supa';
 
-import { toast } from '@/lib/toast';
+import { toast, toastUndo } from '@/lib/toast';
 
 import { loadTemplate, uid } from '../auditTemplate';
 import type { Block as TplBlock } from '../auditTemplate';   // тип блоку шаблону ≠ UI-компонент Block
@@ -179,7 +179,7 @@ export function AdminFiles({ userId, initial, sharedInitial, author, openFile, o
             <button className={'mc-btn ' + (isShared(f.path) ? 'fr-on-ok' : 'ghost')} onClick={() => toggleShare(f)} title="Показати/приховати документ у кабінеті клієнта">
               {isShared(f.path) ? '✓ У клієнта' : '↗ Поділитися'}
             </button>
-            <button className="adm-note-x mono" disabled={busy === f.path} onClick={() => del(f)} title="Видалити">✕</button>
+            <button className="adm-note-x mono" disabled={busy === f.path} onClick={() => del(f)} aria-label={`Видалити файл ${f.name || ''}`} title="Видалити файл">✕</button>
           </li>
         ))}</ul>
       )}
@@ -195,7 +195,29 @@ export function NotesPanel({ userId, initial, author }: { userId: string; initia
   const [busy, setBusy] = useState(false);
   const persist = async (next: ProjectNote[]) => { setBusy(true); await savePatchFor(userId, { notes: next }); setBusy(false); };
   const add = () => { if (!text.trim()) return; const next = [{ id: uid('n'), at: new Date().toISOString(), author, text: text.trim() }, ...list]; setList(next); setText(''); void persist(next); };
-  const del = (id: string) => { const next = list.filter((n) => n.id !== id); setList(next); void persist(next); };
+  /**
+   * Видалення нотатки не мало ні підтвердження, ні відкату: один промах —
+   * і текст зник назавжди. Діалог тут був би гіршим розвʼязком: нотатки
+   * видаляють часто, і «ви впевнені?» на третьому разі тиснуть на автоматі.
+   * Скасування працює інакше — дія проходить одразу, а помилку можна
+   * відкотити протягом восьми секунд.
+   */
+  const del = (id: string) => {
+    const gone = list.find((n) => n.id === id);
+    const next = list.filter((n) => n.id !== id);
+    setList(next);
+    void persist(next);
+    if (!gone) return;
+    toastUndo(`Нотатку видалено${gone.text ? `: «${gone.text.slice(0, 40)}${gone.text.length > 40 ? '…' : ''}»` : ''}`, () => {
+      // Повертаємо на те саме місце, а не в початок: інакше відкат
+      // перемішує стрічку, і людина не впізнає свою ж нотатку.
+      const at = list.findIndex((n) => n.id === id);
+      const back = [...next];
+      back.splice(at < 0 ? 0 : at, 0, gone);
+      setList(back);
+      void persist(back);
+    });
+  };
   return (
     <div className="adm-notes">
       <div className="adm-notes-add">
@@ -207,7 +229,7 @@ export function NotesPanel({ userId, initial, author }: { userId: string; initia
           <li key={n.id} className="adm-note">
             <div className="adm-note-h mono"><b>{n.author || 'команда'}</b> · {rel(n.at)}{n.module ? ` · ${n.module}` : ''}</div>
             <p className="adm-note-t">{n.text}</p>
-            <button className="adm-note-x mono" onClick={() => del(n.id)} title="Видалити">✕</button>
+            <button className="adm-note-x mono" onClick={() => del(n.id)} aria-label={`Видалити нотатку від ${n.author || 'команди'}`} title="Видалити нотатку">✕</button>
           </li>
         ))}</ul>
       )}

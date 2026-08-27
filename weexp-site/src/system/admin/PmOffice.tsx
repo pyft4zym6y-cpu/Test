@@ -54,7 +54,7 @@ export function PmOffice() {
               <input className="ab-inp gg" value={s.name} onChange={(e) => setSpec(i, 'name', e.target.value)} placeholder="Імʼя" />
               <input className="ab-inp xs" value={s.role} onChange={(e) => setSpec(i, 'role', e.target.value)} placeholder="Роль" />
               <label className="pj-ed-mini">€/год<input className="ab-inp xs" type="number" min={0} value={s.rate} onChange={(e) => setSpec(i, 'rate', num(e.target.value))} /></label>
-              <button className="mc-btn ghost" onClick={() => setDir({ ...dir, specialists: specs.filter((_, j) => j !== i) })}>✕</button>
+              <button className="mc-btn ghost" aria-label={`Видалити спеціаліста ${s.role || i + 1}`} title="Видалити спеціаліста" onClick={() => setDir({ ...dir, specialists: specs.filter((_, j) => j !== i) })}>✕</button>
             </div>
           ))}
           <button className="mc-btn" onClick={() => setDir({ ...dir, specialists: [...specs, { id: uid('sp'), name: '', role: '', rate: 0 }] })}>+ Спеціаліст</button>
@@ -67,7 +67,7 @@ export function PmOffice() {
             <div key={s.id} className="pj-ed-task">
               <input className="ab-inp gg" value={s.role} onChange={(e) => setRole(i, 'role', e.target.value)} placeholder="Роль (напр. Senior dev)" />
               <label className="pj-ed-mini">€/год<input className="ab-inp xs" type="number" min={0} value={s.rate} onChange={(e) => setRole(i, 'rate', num(e.target.value))} /></label>
-              <button className="mc-btn ghost" onClick={() => setDir({ ...dir, roleRates: roles.filter((_, j) => j !== i) })}>✕</button>
+              <button className="mc-btn ghost" aria-label={`Видалити ставку ролі ${s.role || i + 1}`} title="Видалити ставку" onClick={() => setDir({ ...dir, roleRates: roles.filter((_, j) => j !== i) })}>✕</button>
             </div>
           ))}
           <button className="mc-btn" onClick={() => setDir({ ...dir, roleRates: [...roles, { id: uid('rr'), role: '', rate: 0 }] })}>+ Ставка ролі</button>
@@ -88,7 +88,7 @@ export function PmOffice() {
           <ul className="adm-files">{presets.map((pr) => (
             <li key={pr.id} className="pm-preset">
               <span><b>{pr.title || 'без назви'}</b> <i className="mono">· {(pr.tasks || []).length} задач · {(pr.team || []).length} ролей</i></span>
-              <button className="mc-btn ghost" onClick={() => setDir({ ...dir, presets: presets.filter((x) => x.id !== pr.id) })}>✕</button>
+              <button className="mc-btn ghost" aria-label={`Видалити пресет ${pr.title || 'без назви'}`} title="Видалити пресет" onClick={() => setDir({ ...dir, presets: presets.filter((x) => x.id !== pr.id) })}>✕</button>
             </li>
           ))}</ul>
         )}

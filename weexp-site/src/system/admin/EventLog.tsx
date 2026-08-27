@@ -104,14 +104,20 @@ export function EventLog({ userId, limit = 100 }: { userId?: string; limit?: num
       {!shown.length ? (
         <EmptyState icon="🔍" text="За цим фільтром записів немає — спробуйте зняти обмеження." />
       ) : (
-        <div className="adm-table adm-tr-log">
-          <div className="adm-tr adm-th adm-tr-log"><span>Коли</span><span>Хто</span><span>Що</span><span>Деталі</span></div>
+        /* Таблиця зібрана з div'ів заради сітки CSS. Без ролей екранний читач
+           читає її суцільною стіною тексту: значення не звʼязані зі стовпцями,
+           і «менеджер · зміна картки · company» перестає бути рядком. */
+        <div className="adm-table adm-tr-log" role="table" aria-label="Журнал дій команди" aria-rowcount={shown.length + 1}>
+          <div className="adm-tr adm-th adm-tr-log" role="row">
+            <span role="columnheader">Коли</span><span role="columnheader">Хто</span>
+            <span role="columnheader">Що</span><span role="columnheader">Деталі</span>
+          </div>
           {shown.map((e) => (
-            <div key={e.id} className="adm-tr adm-tr-log">
-              <span className="mono adm-c-date" title={new Date(e.at).toLocaleString('uk-UA')}>{rel(e.at)}</span>
-              <span className="mono">{e.actor}</span>
-              <span className="mono">{KIND_LABEL[e.kind] || e.kind}{e.subject ? ` · ${e.subject}` : ''}</span>
-              <span className="mono">{e.detail || '—'}</span>
+            <div key={e.id} className="adm-tr adm-tr-log" role="row">
+              <span role="cell" className="mono adm-c-date" title={new Date(e.at).toLocaleString('uk-UA')}>{rel(e.at)}</span>
+              <span role="cell" className="mono">{e.actor}</span>
+              <span role="cell" className="mono">{KIND_LABEL[e.kind] || e.kind}{e.subject ? ` · ${e.subject}` : ''}</span>
+              <span role="cell" className="mono">{e.detail || '—'}</span>
             </div>
           ))}
         </div>

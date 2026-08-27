@@ -24,6 +24,7 @@ import '../cabinet.css';
 import { gMonthLabel, SaveBadge } from './shared';
 import { useAutosave } from './useAutosave';
 import { askConfirm, askText } from './dialog';
+import { toastUndo } from '@/lib/toast';
 
 export function ProjectsManager({ userId, initial, code, company }: { userId: string; initial: Project[]; code?: string; company?: string }) {
   const [list, setList] = useState<Project[]>(initial.length ? initial : []);
@@ -75,6 +76,22 @@ export function ProjectEditor({ value, onChange, code, company }: { value: Proje
   const [ai, setAi] = useState('');   // статус AI-чернетки
   useEffect(() => { loadPmDirectory().then(setDir); }, []);
   const upd = (patch: Partial<Project>) => onChange({ ...p, ...patch });
+
+  /**
+   * Видалення рядка в проєкті (задача, роль, платіж, позиція тарифу) з відкатом.
+   * Підтвердження тут не ставимо навмисно: у плані десятки рядків, і діалог на
+   * кожен зробив би редагування нестерпним. Скасування дешевше — дія проходить
+   * одразу, а помилку видно й видно, як її повернути.
+   */
+  const undoable = (what: string, patch: Partial<Project>) => {
+    // Знімок ДО зміни: не посилання на масив, а копія — інакше відкат поверне
+    // вже змінений список і нічого не відновить.
+    const before: Partial<Project> = Object.fromEntries(
+      Object.keys(patch).map((k) => [k, structuredClone((p as unknown as Record<string, unknown>)[k])]),
+    );
+    upd(patch);
+    toastUndo(`${what} видалено`, () => onChange({ ...p, ...before }));
+  };
   const num = (v: string) => (v === '' ? 0 : Number(v));
   const rid = (pfx: string) => `${pfx}_${Math.random().toString(36).slice(2, 8)}`;
 
@@ -166,7 +183,7 @@ export function ProjectEditor({ value, onChange, code, company }: { value: Proje
             <label className="pj-ed-mini">старт<input className="ab-inp xxs" type="number" min={0} value={tk.startM} onChange={(e) => setTask(i, 'startM', num(e.target.value))} /></label>
             <label className="pj-ed-mini">трив.<input className="ab-inp xxs" type="number" min={1} value={tk.lenM} onChange={(e) => setTask(i, 'lenM', Math.max(1, num(e.target.value)))} /></label>
             <label className="pj-ed-mini">%<input className="ab-inp xxs" type="number" min={0} max={100} value={tk.progress ?? 0} onChange={(e) => setTask(i, 'progress', Math.max(0, Math.min(100, num(e.target.value))))} /></label>
-            <button className="mc-btn ghost" onClick={() => upd({ tasks: tasks.filter((_, j) => j !== i) })}>✕</button>
+            <button className="mc-btn ghost" aria-label={`Видалити задачу ${i + 1}`} title="Видалити задачу" onClick={() => undoable('Задачу', { tasks: tasks.filter((_, j) => j !== i) })}>✕</button>
           </div>
         ))}
         <button className="mc-btn" onClick={() => upd({ tasks: [...tasks, { id: uid('t'), name: '', startM: 0, lenM: 1, progress: 0 }] })}>+ Задача</button>
@@ -178,7 +195,7 @@ export function ProjectEditor({ value, onChange, code, company }: { value: Proje
           <div key={m.id} className="pj-ed-task">
             <input className="ab-inp xs" value={m.role} onChange={(e) => setMember(i, 'role', e.target.value)} placeholder="Роль" />
             <input className="ab-inp gg" value={m.name} onChange={(e) => setMember(i, 'name', e.target.value)} placeholder="Імʼя" />
-            <button className="mc-btn ghost" onClick={() => upd({ team: team.filter((_, j) => j !== i) })}>✕</button>
+            <button className="mc-btn ghost" aria-label={`Видалити з команди: ${m.name || m.role || i + 1}`} title="Видалити з команди" onClick={() => undoable('Учасника команди', { team: team.filter((_, j) => j !== i) })}>✕</button>
           </div>
         ))}
         <div className="pj-ed-add">
@@ -200,7 +217,7 @@ export function ProjectEditor({ value, onChange, code, company }: { value: Proje
             <input className="ab-inp xs" type="month" value={x.month} onChange={(e) => setPay(i, 'month', e.target.value)} />
             <label className="pj-ed-mini">€<input className="ab-inp xs" type="number" min={0} value={x.amount} onChange={(e) => setPay(i, 'amount', num(e.target.value))} /></label>
             <select className="ab-sel" value={x.status} onChange={(e) => setPay(i, 'status', e.target.value as ProjPayment['status'])}><option value="pending">Очікує</option><option value="paid">Сплачено</option></select>
-            <button className="mc-btn ghost" onClick={() => upd({ payments: pays.filter((_, j) => j !== i) })}>✕</button>
+            <button className="mc-btn ghost" aria-label={`Видалити платіж ${x.label || i + 1}`} title="Видалити платіж" onClick={() => undoable('Платіж', { payments: pays.filter((_, j) => j !== i) })}>✕</button>
           </div>
         ))}
         <button className="mc-btn" onClick={() => upd({ payments: [...pays, { id: uid('p'), label: '', month: p.startMonth || '', amount: 0, status: 'pending' }] })}>+ Платіж</button>
@@ -228,7 +245,7 @@ export function ProjectEditor({ value, onChange, code, company }: { value: Proje
                   <label className="pj-ed-mini">год<input className="ab-inp xxs" type="number" min={0} value={it.hours} onChange={(e) => setItem(mi, ii, 'hours', num(e.target.value))} /></label>
                   <label className="pj-ed-mini">€/год<input className="ab-inp xs" type="number" min={0} value={it.rate} onChange={(e) => setItem(mi, ii, 'rate', num(e.target.value))} /></label>
                   <span className="mono pj-ed-sum">€{((it.hours || 0) * (it.rate || 0)).toLocaleString('uk-UA')}</span>
-                  <button className="mc-btn ghost" onClick={() => setMonth(mi, 'items', items.filter((_, j) => j !== ii))}>✕</button>
+                  <button className="mc-btn ghost" aria-label={`Видалити рядок тарифу ${ii + 1}`} title="Видалити рядок тарифу" onClick={() => undoable('Рядок тарифу', { tariff: tariff.map((m, j) => (j === mi ? { ...m, items: items.filter((_, q) => q !== ii) } : m)) })}>✕</button>
                 </div>
               ))}
               <button className="mc-btn sm" onClick={() => setMonth(mi, 'items', [...items, { id: uid('i'), label: '', hours: 0, rate: 0 }])}>+ Рядок</button>

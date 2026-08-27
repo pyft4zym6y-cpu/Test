@@ -89,7 +89,7 @@ export function TeamManager({ selfEmail }: { selfEmail: string }) {
                   <button className="mc-btn ghost" disabled={busy === 'reset:' + m.id} onClick={() => run('reset', { email: m.email }, 'reset:' + m.id)} title="Надіслати лист скидання пароля">🔑</button>
                   {!isBootstrap && !isSelf && <button className="mc-btn ghost" disabled={busy === 'ban:' + m.id}
                     onClick={async () => { if (await askConfirm({ title: m.banned ? `Розблокувати ${m.email}?` : `Заблокувати ${m.email}?`, text: m.banned ? 'Доступ повернеться негайно.' : 'Вхід буде закрито негайно.', confirmLabel: m.banned ? 'Розблокувати' : 'Заблокувати', tone: m.banned ? 'ok' : 'bad' })) run('ban', { userId: m.id, banned: !m.banned }, 'ban:' + m.id); }}>{m.banned ? 'Розблок.' : 'Блок'}</button>}
-                  {!isBootstrap && !isSelf && <button className="mc-btn bad" disabled={busy === 'rm:' + m.id} onClick={async () => { if (await askConfirm({ title: `Видалити адміна ${m.email}?`, text: 'Обліковий запис втратить доступ до адмінки негайно.', confirmLabel: 'Видалити', tone: 'bad' })) run('remove', { userId: m.id, email: m.email }, 'rm:' + m.id); }}>✕</button>}
+                  {!isBootstrap && !isSelf && <button className="mc-btn bad" disabled={busy === 'rm:' + m.id} onClick={async () => { if (await askConfirm({ title: `Видалити адміна ${m.email}?`, text: 'Обліковий запис втратить доступ до адмінки негайно.', confirmLabel: 'Видалити', tone: 'bad' })) run('remove', { userId: m.id, email: m.email }, 'rm:' + m.id); }} aria-label={`Видалити адміністратора ${m.email}`} title="Видалити адміністратора">✕</button>}
                 </span>
               </div>
             );

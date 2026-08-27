@@ -144,7 +144,7 @@ export function AuditFill({ code, editor }: { code: string; editor?: string }) {
                             placeholder={q.type === 'multi' ? 'через кому' : 'відповідь'}
                             onKeyDown={(e) => { if (e.key === 'Enter') void commit(q); if (e.key === 'Escape') setEdit(null); }} />
                           <button className="mc-btn sm ok" disabled={saving === q.key} onClick={() => void commit(q)}>{saving === q.key ? '…' : '✓'}</button>
-                          <button className="mc-btn sm ghost" onClick={() => setEdit(null)}>✕</button>
+                          <button className="mc-btn sm ghost" aria-label="Скасувати редагування" title="Скасувати редагування" onClick={() => setEdit(null)}>✕</button>
                         </span>
                       ) : filled ? (
                         <button className="adm-fill-qv" disabled={!editor} onClick={() => startEdit(q)} title={editor ? 'Змінити від свого імені' : undefined}>
@@ -188,7 +188,7 @@ export function ExtraEditor({ code }: { code: string }) {
         <div key={q.key} className="adm-extra-q">
           <input className="ab-inp" value={q.label} onChange={(e) => set(i, 'label', e.target.value)} placeholder="Питання / що уточнити" />
           <select className="ab-sel" value={q.type} onChange={(e) => set(i, 'type', e.target.value)}>{Q_TYPES.map((t) => <option key={t.v} value={t.v}>{t.label}</option>)}</select>
-          <button className="mc-btn ghost" onClick={() => del(i)}>✕</button>
+          <button className="mc-btn ghost" aria-label={`Видалити питання ${i + 1}`} title="Видалити питання" onClick={() => del(i)}>✕</button>
         </div>
       ))}
       <div className="adm-extra-act">
@@ -424,7 +424,10 @@ export function WorkerAudit({ userId, code, rec, reviewer }: { userId: string; c
       <ReadinessPanel rec={rec} answers={wAnswers} />
       {err && <p className="cab-auth-err mono">{err}</p>}
       {job && (
-        <div className="adm-worker-log mono">
+        /* Лог прогону оновлюється сам протягом сорока хвилин. Без aria-live
+           екранний читач мовчить весь цей час: людина не знає ні що аудит іде,
+           ні коли він завершився. `polite` — щоб не переривати на кожному рядку. */
+        <div className="adm-worker-log mono" role="status" aria-live="polite" aria-busy={running}>
           <b>Статус: {String(job.status || '…')}{(() => { const mh = (job.metrics as { health?: number } | undefined)?.health; return typeof mh === 'number' ? ` · Health ${mh}/100` : ''; })()}</b>
           {logLines.map((l, i) => <div key={i} className="adm-worker-l">{l}</div>)}
           {typeof job.summary === 'string' && job.summary && <div className="adm-worker-l" style={{ opacity: 1, marginTop: 4 }}>{job.summary}</div>}
@@ -589,7 +592,7 @@ export function AuditDocEditor({ userId, email, rec }: { userId: string; email: 
             <div className="adm-doc-sec-act">
               <button className="adm-note-x mono" onClick={() => move(i, -1)} disabled={i === 0} title="Вгору">↑</button>
               <button className="adm-note-x mono" onClick={() => move(i, 1)} disabled={i === doc.sections.length - 1} title="Вниз">↓</button>
-              <button className="adm-note-x mono" onClick={() => delSec(s.id)} title="Видалити розділ">✕</button>
+              <button className="adm-note-x mono" onClick={() => delSec(s.id)} aria-label={`Видалити розділ ${s.heading || ''}`} title="Видалити розділ">✕</button>
             </div>
           </div>
           <textarea className="ab-inp adm-doc-body" rows={Math.min(14, Math.max(3, s.body.split('\n').length + 1))} value={s.body} onChange={(e) => setSec(s.id, { body: e.target.value })} />

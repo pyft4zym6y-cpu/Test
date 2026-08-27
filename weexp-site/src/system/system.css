@@ -2457,3 +2457,28 @@ body.kb-open .pf-bg { display: none !important; }
 .adm-dig-row b { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .adm-dig-row span { font-size: 12px; color: var(--deep); }
 .adm-dig-row i { font-style: normal; font-size: 10.5px; color: var(--graphite); }
+
+/* Видимий фокус на всіх керуючих елементах адмінки.
+   Було вісім точкових правил :focus-visible на всю систему — тобто клавіатурою
+   адмінку пройти можна було лише навпомацки. Це не декоративне: менеджер, який
+   заповнює десятки полів, працює табом, а не мишею. */
+.adm-a11y-focus :where(button, a[href], input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+  border-radius: 1px;
+}
+/* Пропустити навігацію: перший таб на сторінці веде одразу до вмісту. */
+.adm-skip {
+  position: absolute; left: -9999px; top: 0; z-index: 100;
+  background: var(--deep); color: var(--pure-white); padding: 10px 16px;
+  font-family: var(--sans); font-weight: 700; font-size: 13px; text-decoration: none;
+}
+.adm-skip:focus { left: 8px; top: 8px; }
+
+/* Кнопка скасування в тості. Має бути помітною: у неї є кілька секунд життя,
+   і якщо її не видно з першого погляду — вона марна. */
+.toast-act { margin-left: 10px; background: none; border: 1px solid currentColor; color: inherit;
+  font: inherit; font-size: 12px; font-weight: 700; padding: 3px 10px; cursor: pointer; white-space: nowrap; }
+.toast-act:hover { background: currentColor; }
+.toast-act:hover { color: var(--pure-white, #fff); }
+.toast-act:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
