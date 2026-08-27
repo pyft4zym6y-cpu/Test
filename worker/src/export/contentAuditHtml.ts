@@ -46,7 +46,9 @@ function cfScore(flow: ContentFlowReport): string {
   }).join('');
   return `<section class="block"><h2>Content Score — 10 напрямків</h2>
     <p class="lead">Звід оцінки контенту в один бал за 10 напрямками. «Актуальність» (ціни/наявність/дати) — вимір, який чесно вимірюється лише після доступу до CMS, тому не входить у середнє.</p>
-    <div class="cf-scorehead"><span class="cf-score-big ${s10cls(flow.score.overall)}">${flow.score.overall}</span><span class="cf-score-cap">/10 — загальний Content Score<br><i>середнє за ${flow.score.axes.filter((a) => a.score > 0).length} виміряними напрямками</i></span></div>
+    ${flow.score.overall === null
+      ? `<div class="cf-scorehead"><span class="cf-score-cap"><b>Content Score не вимірювався.</b><br><i>Жоден напрям не отримав даних — обхід не дав сторінок для розбору.</i></span></div>`
+      : `<div class="cf-scorehead"><span class="cf-score-big ${s10cls(flow.score.overall)}">${flow.score.overall}</span><span class="cf-score-cap">/10 — загальний Content Score<br><i>середнє за ${flow.score.axes.filter((a) => a.score > 0).length} виміряними напрямками</i></span></div>`}
     <table class="cfs"><tbody>${rows}</tbody></table></section>`;
 }
 

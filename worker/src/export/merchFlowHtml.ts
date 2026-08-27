@@ -24,7 +24,9 @@ function health(r: MerchFlowReport): string {
     <div class="mr-hz-l">${esc(z.label)}</div><div class="mr-hz-n">${esc(z.note)}</div></div>`).join('');
   return `<section class="block"><h2>Merchandising Health Score</h2>
     <p class="lead">Пʼять головних показників керування асортиментом.</p>
-    <div class="mr-hhead"><span class="mr-hbig ${s10(r.health.overall)}">${r.health.overall}</span><span class="mr-hcap">/10 — Merchandising Health Score<br><i>${esc(r.businessType)} · ~${r.products} товарів · ${r.categories} категорій</i></span></div>
+    ${r.health.overall === null
+      ? `<div class="mr-hhead"><span class="mr-hcap"><b>Бал не вимірювався.</b> Обхід не дав жодної сторінки — показники готовності рахувати нема з чого.</span></div>`
+      : `<div class="mr-hhead"><span class="mr-hbig ${s10(r.health.overall)}">${r.health.overall}</span><span class="mr-hcap">/10 — Merchandising Health Score<br><i>${esc(r.businessType)} · ~${r.products} товарів · ${r.categories} категорій</i></span></div>`}
     <div class="mr-hzs">${cards}</div></section>`;
 }
 
@@ -124,10 +126,10 @@ export function renderMerchFlowHtml(r: MerchFlowReport): string {
   const coverHtml = cover({
     kicker: 'E-commerce / Merchandising Audit',
     title: 'Merchandising Audit: правильний товар у правильному місці',
-    verdict: `Merchandising Health Score — ${r.health.overall}/10; Merchandising Score — ${r.score.overall}/10 (обхід).`,
+    verdict: `Merchandising Health Score — ${r.health.overall === null ? 'не вимірювався' : r.health.overall + '/10'}; Merchandising Score — ${r.score.overall}/10 (обхід).`,
     metrics: [
       { label: 'Клієнт', value: r.client },
-      { label: 'Merchandising Health', value: `${r.health.overall}/10` },
+      { label: 'Merchandising Health', value: `${r.health.overall === null ? 'не вимірювався' : r.health.overall + '/10'}` },
       { label: 'Товарів / категорій', value: `~${r.products} / ${r.categories}` },
     ],
     note: `<b>Керування асортиментом і комерційна експозиція.</b> Навіть ідеальний UX не врятує магазин, якщо користувач бачить не ті товари, bestseller унизу, а рекомендації нерелевантні. Вимірюване з обходу рахуємо детерміновано; продажі/маржа/залишки/visibility share — з бізнес-даних (GA/CRM/PIM), позначено «н/д».`,

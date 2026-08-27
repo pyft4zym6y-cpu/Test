@@ -18,6 +18,7 @@ import type { PageKind } from './crawl.js';
 import { buildSeoArch } from './seoarch.js';
 import { buildSiteAudit, type BlockState } from './pagereport.js';
 import { buildIntelligence } from './intelligence.js';
+import { flowScore, type FlowScore } from './flowScore.js';
 
 export type Priority = 'P0' | 'P1' | 'P2' | 'P3';
 
@@ -39,8 +40,8 @@ export type StructArtifact = { n: number; name: string; source: 'обхід' | '
 export type StructureFlowReport = {
   client: string; takenAt: string;
   spine: StructLayer[];
-  health: { zones: StructHealthZone[]; overall: number };
-  score: { zones: StructScoreZone[]; overall: number };
+  health: { zones: StructHealthZone[]; /** null — обходу не було, рахувати нема з чого. */ overall: number | null };
+  score: FlowScore<StructScoreZone>;
   pageTypes: PageTypeRow[];
   currentTree: { label: string; count: number; purpose: string; severity: string; note: string }[];
   targetTree: TargetBranch[];
@@ -239,13 +240,12 @@ export function buildStructureFlow(ds: AuditDataset): StructureFlowReport {
       { key: 'scalability', label: 'Scalability', score: scalability, note: 'Готовність до росту в 10–100×' },
       { key: 'seoArch', label: 'SEO Architecture', score: seoArch, note: 'Підтримка органічного пошуку' },
     ],
-    overall: clamp10((findability + logicality + connectivity + scalability + seoArch) / 5),
+    overall: pages.length ? clamp10((findability + logicality + connectivity + scalability + seoArch) / 5) : null,
   };
 
   /* ── Structure Score (18 зон) ── */
   const z = (key: string, label: string, score: number, measured = true): StructScoreZone => ({ key, label, score: measured ? clamp10(score) : 0, measured });
-  const score = {
-    zones: [
+  const zones = [
       z('ia', 'Information Architecture', logicality),
       z('tree', 'Site Tree', (typesPresent / pageTypes.length) * 10),
       z('catlogic', 'Category Logic', kinds.has('plp') ? 6 + (has('category_description') ? 2 : 0) : 2),
@@ -265,14 +265,13 @@ export function buildStructureFlow(ds: AuditDataset): StructureFlowReport {
       // Зовнішні дані:
       z('international', 'International Architecture', 0, hasLink(/\/(en|pl|de|ro|ua|ru)(\/|$)/)),
       z('cmsfit', 'CMS Fit / Competitive Benchmark', 0, false),
-    ],
-    overall: 0,
-  };
+    ];
   // international score if detected
-  const intl = score.zones.find((zz) => zz.key === 'international')!;
+  const intl = zones.find((zz) => zz.key === 'international')!;
   if (intl.measured) intl.score = clamp10(hasLink(/\/(en|pl|de|ro)(\/|$)/) ? 6 : 3);
-  const sm = score.zones.filter((zz) => zz.measured);
-  score.overall = sm.length ? clamp10(sm.reduce((s, zz) => s + zz.score, 0) / sm.length) : 0;
+  // Бал рахуємо ПІСЛЯ правки international: інакше в середнє потрапило б
+  // старе значення зони.
+  const score = flowScore(zones, pages.length);
 
   /* ── Roadmap (6 фаз) ── */
   const roadmap = [

@@ -7,6 +7,7 @@
  */
 import { esc, doc, cover, pageFooter } from './reportShell.js';
 import type { SeoFlowReport, SeoBlockCard, SeoPageCard, SeoScoreZone } from '../seoflow.js';
+import { scoreText } from '../flowScore.js';
 
 const s10 = (v: number) => (v >= 7 ? 'ok' : v >= 4 ? 'check' : 'gap');
 const s5 = (v: number) => (v >= 4 ? 'ok' : v >= 3 ? 'check' : 'gap');
@@ -36,7 +37,9 @@ function score(r: SeoFlowReport): string {
   const naCount = r.score.zones.filter((z) => !z.measured).length;
   return `<section class="block"><h2>SEO Score — зони оцінки</h2>
     <p class="lead">Звід SEO в один бал за зонами. ${naCount} зон (SERP/CTR, Backlinks, Competitors, Local, International) чесно позначені «н/д» — вони вимірюються лише з доступом до Search Console / GA / backlink-інструментів і не входять у середнє.</p>
-    <div class="sf-shead"><span class="sf-sbig ${s10(r.score.overall)}">${r.score.overall}</span><span class="sf-scap">/10 — SEO Score<br><i>середнє за ${r.score.zones.filter((z) => z.measured).length} виміряними зонами (зовнішній обхід)</i></span></div>
+    ${r.score.overall === null
+      ? `<div class="sf-shead"><span class="sf-scap"><b>SEO Score не вимірювався.</b><br><i>${scoreText(r.score)}. Бал за зонами зʼявиться після обходу — без нього число складалося б із базових констант формул, а не зі спостережень.</i></span></div>`
+      : `<div class="sf-shead"><span class="sf-sbig ${s10(r.score.overall)}">${r.score.overall}</span><span class="sf-scap">/10 — SEO Score<br><i>середнє за ${r.score.coverage.zonesMeasured} виміряними зонами з ${r.score.coverage.zonesTotal} · розібрано сторінок: ${r.score.coverage.pagesAnalysed}</i></span></div>`}
     <table class="sfs"><tbody>${rows}</tbody></table></section>`;
 }
 
@@ -196,10 +199,12 @@ export function renderSeoFlowHtml(r: SeoFlowReport): string {
   const coverHtml = cover({
     kicker: 'SEO-аудит як система',
     title: 'SEO-аудит: від стратегії до органічного росту',
-    verdict: `SEO Score — ${r.score.overall}/10 за виміряними зонами (зовнішній обхід).`,
+    verdict: r.score.overall === null
+      ? `SEO Score ${scoreText(r.score)}.`
+      : `SEO Score — ${r.score.overall}/10 за ${r.score.coverage.zonesMeasured} виміряними зонами (зовнішній обхід, ${r.score.coverage.pagesAnalysed} стор.).`,
     metrics: [
       { label: 'Клієнт', value: r.client },
-      { label: 'SEO Score', value: `${r.score.overall}/10` },
+      { label: 'SEO Score', value: scoreText(r.score) },
       { label: 'Проблем / можливостей', value: `${r.problems.length} / ${r.opportunities.length}` },
     ],
     note: `<b>Ширше за «мета-теги + індексацію»:</b> це перевірка, чи здатний сайт СИСТЕМНО отримувати органіку, масштабувати видимість і конвертувати її в гроші. Видача — 8 артефактів (Strategy · Semantic · Technical · Page · Block · Problem/Opportunity · Score · Roadmap), пов'язаних у ланцюг Structure → UX/UI → Content → SEO → CRO. Зони, що вимірюються лише з доступом (SERP/CTR, Backlinks, Competitors), позначені «н/д».`,

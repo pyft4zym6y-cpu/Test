@@ -5,6 +5,7 @@
  */
 import { esc, doc, cover, pageFooter } from './reportShell.js';
 import type { GeoFlowReport, GeoBlockCard, GeoScoreZone } from '../geoflow.js';
+import { scoreText } from '../flowScore.js';
 
 const s10 = (v: number) => (v >= 7 ? 'ok' : v >= 4 ? 'check' : 'gap');
 const s5 = (v: number) => (v >= 4 ? 'ok' : v >= 3 ? 'check' : 'gap');
@@ -38,7 +39,9 @@ function score(r: GeoFlowReport): string {
   const na = r.score.zones.filter((z) => !z.measured).length;
   return `<section class="block"><h2>GEO / AEO / LLM Score — зони</h2>
     <p class="lead">Оцінка в один бал за зонами. ${na} зон (Brand/Citation Visibility, Share of Voice, Accuracy, External Authority, AI Conversion…) чесно «н/д» — вимірюються лише живим прогоном AI-запитів чи інструментами; у середнє не входять і не вигадуються.</p>
-    <div class="gf-shead"><span class="gf-sbig ${s10(r.score.overall)}">${r.score.overall}</span><span class="gf-scap">/10 — GEO/AEO Score<br><i>середнє за ${r.score.zones.filter((z) => z.measured).length} виміряними зонами (обхід)</i></span></div>
+    ${r.score.overall === null
+      ? `<div class="gf-shead"><span class="gf-scap"><b>GEO/AEO Score не вимірювався.</b><br><i>${scoreText(r.score)}. Без обходу число склалося б із базових констант формул, а не зі спостережень.</i></span></div>`
+      : `<div class="gf-shead"><span class="gf-sbig ${s10(r.score.overall)}">${r.score.overall}</span><span class="gf-scap">/10 — GEO/AEO Score<br><i>середнє за ${r.score.coverage.zonesMeasured} виміряними зонами з ${r.score.coverage.zonesTotal} · розібрано сторінок: ${r.score.coverage.pagesAnalysed}</i></span></div>`}
     <table class="gfs"><tbody>${rows}</tbody></table></section>`;
 }
 
@@ -169,10 +172,12 @@ export function renderGeoFlowHtml(r: GeoFlowReport): string {
   const coverHtml = cover({
     kicker: 'GEO / AEO / LLM Visibility',
     title: 'GEO / AEO / LLM Visibility — аудит',
-    verdict: `GEO/AEO Score — ${r.score.overall}/10 за виміряними зонами (обхід); присутність в AI — окремий живий прогін.`,
+    verdict: r.score.overall === null
+      ? `GEO/AEO Score ${scoreText(r.score)}.`
+      : `GEO/AEO Score — ${r.score.overall}/10 за ${r.score.coverage.zonesMeasured} виміряними зонами (обхід); присутність в AI — окремий живий прогін.`,
     metrics: [
       { label: 'Клієнт', value: r.client },
-      { label: 'GEO/AEO Score', value: `${r.score.overall}/10` },
+      { label: 'GEO/AEO Score', value: scoreText(r.score) },
       { label: 'Артефактів', value: String(r.artifacts.length) },
     ],
     note: `<b>Окремий модуль, а не «добавка до SEO».</b> AEO (прямий відповідь) · GEO (шанс стати джерелом) · LLM Visibility (присутність бренду в AI). Не продаємо «магічні фактори» й не гарантуємо потрапляння в AI — вимірюємо ймовірність і фактичну присутність за ланцюгом visibility → mention → citation → accuracy → referral → conversion.`,

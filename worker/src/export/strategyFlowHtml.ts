@@ -27,7 +27,9 @@ function health(r: StrategyFlowReport): string {
     <div class="st-hz-l">${esc(z.label)}</div><div class="st-hz-n">${esc(z.note)}</div></div>`).join('');
   return `<section class="block"><h2>Strategic Health Score</h2>
     <p class="lead">Пʼять великих зон стратегічного здоровʼя проєкту. Це «шапка» аудиту — далі кожна зона розкривається детально.</p>
-    <div class="st-hhead"><span class="st-hbig ${s10(r.health.overall)}">${r.health.overall}</span><span class="st-hcap">/10 — Strategic Health Score<br><i>${esc(r.businessType)} · зрілість L${r.maturityLevel} (${esc(r.maturityName)})</i></span></div>
+    ${r.health.overall === null
+      ? `<div class="st-hhead"><span class="st-hcap"><b>Бал не вимірювався.</b> Обхід не дав жодної сторінки — показники готовності рахувати нема з чого.</span></div>`
+      : `<div class="st-hhead"><span class="st-hbig ${s10(r.health.overall)}">${r.health.overall}</span><span class="st-hcap">/10 — Strategic Health Score<br><i>${esc(r.businessType)} · зрілість L${r.maturityLevel} (${esc(r.maturityName)})</i></span></div>`}
     <div class="st-hzs">${cards}</div></section>`;
 }
 
@@ -174,10 +176,10 @@ export function renderStrategyFlowHtml(r: StrategyFlowReport): string {
   const coverHtml = cover({
     kicker: 'Strategic Audit',
     title: 'Strategic Audit: чи спроєктовано сайт як інструмент бізнесу',
-    verdict: `Strategic Health Score — ${r.health.overall}/10 за виміряними зонами (${r.businessType}, зрілість L${r.maturityLevel}).`,
+    verdict: `Strategic Health Score — ${r.health.overall === null ? 'не вимірювався' : r.health.overall + '/10'} за виміряними зонами (${r.businessType}, зрілість L${r.maturityLevel}).`,
     metrics: [
       { label: 'Клієнт', value: r.client },
-      { label: 'Strategic Health', value: `${r.health.overall}/10` },
+      { label: 'Strategic Health', value: `${r.health.overall === null ? 'не вимірювався' : r.health.overall + '/10'}` },
       { label: 'Ризиків / можливостей', value: `${r.risks.length} / ${r.opportunities.length}` },
     ],
     note: `<b>Іде першим, задає «навіщо».</b> Відповідає не «що виправити на сайті», а «навіщо і який бізнес-результат це дасть». Його висновки — вхід для UX/UI, Content, SEO, GEO/AEO, CRO. Головне питання: чи робить сайт саме те, що бізнесу потрібно для зростання виручки, прибутку, бази й бренду.`,

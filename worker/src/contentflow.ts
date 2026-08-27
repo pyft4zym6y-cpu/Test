@@ -67,7 +67,7 @@ export type ContentDecision = { verb: 'Keep' | 'Merge' | 'Rewrite' | 'Remove' | 
 
 export type ContentFlowReport = {
   spine: ContentLayer[];
-  score: { axes: CScoreAxis[]; overall: number };
+  score: { axes: CScoreAxis[]; /** null — жоден напрям не виміряний. */ overall: number | null };
   types: ContentTypeRow[];
   cards: ContentBlockCard[];
   gaps: ContentGap[];
@@ -226,7 +226,8 @@ export function buildContentFlow(ds: AuditDataset, content: ContentReport): Cont
     { key: 'freshness', label: 'Актуальність', score: 0, note: 'Ціни/наявність/дати — перевіряється після доступу до CMS' },
   ];
   const scored = axes.filter((x) => x.score > 0);
-  const overall = scored.length ? clamp10(scored.reduce((s, x) => s + x.score, 0) / scored.length) : 0;
+  // null, а не 0 — нуль неможливо відрізнити від «усе погано».
+  const overall = scored.length ? clamp10(scored.reduce((s, x) => s + x.score, 0) / scored.length) : null;
 
   /* ── C6: рішення Keep/Merge/Rewrite/Remove/Create ── */
   const keep = cards.filter((c) => c.score >= 4).length + site.pages.reduce((s, p) => s + p.rows.filter((r) => r.state === 'ok' && !NON_CONTENT.has(r.key)).length, 0);

@@ -51,7 +51,8 @@ export type BlockFlowReport = {
   architecture: { page: string; sequence: string[] }[];
   roadmap: { phase: string; items: string[] }[];
   artifacts: { n: number; name: string; source: 'обхід' | 'GA/A-B' }[];
-  overall: number;
+  /** null — блоків не знайдено, середнє рахувати нема з чого. */
+  overall: number | null;
   contextNote: string;
 };
 
@@ -207,7 +208,9 @@ export function buildBlockFlow(ds: AuditDataset): BlockFlowReport {
     'Keep/Improve/Move/Merge/Remove/Create Map', 'Priority Matrix', 'Block Improvement Roadmap', 'Детальне ТЗ на блоки',
   ].map((name, i) => ({ n: i + 1, name, source: (/(Analytics|Performance|Interaction)/.test(name) ? 'GA/A-B' : 'обхід') as 'обхід' | 'GA/A-B' }));
 
-  const overall = cards.length ? clamp10(cards.reduce((s, c) => s + c.score, 0) / cards.length) : 0;
+  // null, а не 0: нуль у документі читається як «перевірили — усе погано»,
+  // тоді як карток просто не було з чого будувати.
+  const overall = cards.length ? clamp10(cards.reduce((s, c) => s + c.score, 0) / cards.length) : null;
   const contextNote = 'Block-by-Block Audit — найдетальніший рівень: кожен блок як функціональна одиниця, а не «гарний/поганий». Іде після Page Audit. Block Score ≠ Priority: слабкий блок на високотрафіковій сторінці важливіший за середній у футері (Priority = Impact × Severity / Effort). Вимірюване з обходу рахуємо детерміновано; per-block Performance/Analytics/A-B — після інструментування (GA/тестів), позначено окремо.';
 
   const spine: BlockLayer[] = [

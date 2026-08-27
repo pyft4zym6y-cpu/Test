@@ -19,6 +19,7 @@ import type { AuditDataset } from './report.js';
 import type { PageKind } from './crawl.js';
 import { buildIntelligence } from './intelligence.js';
 import { buildSiteAudit, type BlockState } from './pagereport.js';
+import { flowScore, type FlowScore } from './flowScore.js';
 
 export type Priority = 'P0' | 'P1' | 'P2' | 'P3';
 
@@ -38,8 +39,8 @@ export type MerchGap = { title: string; why: string; create: string; priority: P
 export type MerchFlowReport = {
   client: string; takenAt: string; businessType: string; products: number; categories: number;
   spine: MerchLayer[];
-  health: { zones: HealthZone[]; overall: number };
-  score: { zones: ScoreZone[]; overall: number };
+  health: { zones: HealthZone[]; /** null — обходу не було, рахувати нема з чого. */ overall: number | null };
+  score: FlowScore<ScoreZone>;
   mechanics: MechRow[];
   cardElements: CardElement[];
   discovery: { paths: DiscoveryPath[]; count: number };
@@ -197,13 +198,12 @@ export function buildMerchFlow(ds: AuditDataset): MerchFlowReport {
       { key: 'revenueOpt', label: 'Revenue Optimization', score: revenueOpt, note: 'Cross/upsell/bundles/AOV-механіки' },
       { key: 'personalization', label: 'Personalization', score: personalization, note: 'Адаптація merchandising під користувача' },
     ],
-    overall: clamp10((discovery + relevance + commercialVis + revenueOpt + personalization) / 5),
+    overall: pages.length ? clamp10((discovery + relevance + commercialVis + revenueOpt + personalization) / 5) : null,
   };
 
   /* ── Merchandising Score (20 зон) ── */
   const z = (key: string, label: string, score: number, measured = true): ScoreZone => ({ key, label, score: measured ? clamp10(score) : 0, measured });
-  const score = {
-    zones: [
+  const zones = [
       z('strategy', 'Merchandising Strategy', (has('product_grid') ? 5 : 2) + (hasLink(/best|new|sale/) ? 3 : 0)),
       z('assortment', 'Assortment', ci.config.products > 100 ? 7 : ci.config.products > 20 ? 5 : 3),
       z('category', 'Category Management', (kinds.has('plp') ? 5 : 2) + (has('category_description') ? 2 : 0)),
@@ -225,11 +225,8 @@ export function buildMerchFlow(ds: AuditDataset): MerchFlowReport {
       z('inventory', 'Inventory Merchandising', 0, false),
       z('margin', 'Margin Merchandising', 0, false),
       z('analytics', 'Merchandising Analytics', 0, false),
-    ],
-    overall: 0,
-  };
-  const sm = score.zones.filter((zz) => zz.measured);
-  score.overall = sm.length ? clamp10(sm.reduce((s, zz) => s + zz.score, 0) / sm.length) : 0;
+    ];
+  const score = flowScore(zones, pages.length);
 
   /* ── Roadmap (5 фаз) ── */
   const roadmap = [

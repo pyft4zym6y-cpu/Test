@@ -19,6 +19,7 @@ import type { PageKind } from './crawl.js';
 import { buildIntelligence } from './intelligence.js';
 import { buildMaturity } from './maturity.js';
 import { buildSiteAudit, type BlockState } from './pagereport.js';
+import { flowScore, type FlowScore } from './flowScore.js';
 
 export type Priority = 'P0' | 'P1' | 'P2' | 'P3';
 
@@ -44,8 +45,8 @@ export type StratArtifact = { n: number; name: string; source: 'сайт' | 'б�
 export type StrategyFlowReport = {
   client: string; takenAt: string; businessType: string; maturityLevel: number; maturityName: string;
   spine: StratLayer[];
-  health: { zones: HealthZone[]; overall: number };
-  score: { zones: StratScoreZone[]; overall: number };
+  health: { zones: HealthZone[]; /** null — обходу не було, рахувати нема з чого. */ overall: number | null };
+  score: FlowScore<StratScoreZone>;
   roles: RoleRow[];
   positioning: { part: string; present: boolean; note: string }[];
   claims: ClaimProof[];
@@ -238,7 +239,7 @@ export function buildStrategyFlow(ds: AuditDataset): StrategyFlowReport {
   const productFit = clamp10((features.filter((f) => f.present).length / features.length) * 6 + (objections.filter((o) => o.ok).length / objections.length) * 4);
   const growthPot = clamp10((kinds.has('content') ? 3 : 0) + (langs.length > 1 ? 2 : 0) + (analytics ? 2 : 0) + (hasLink(/account|loyalty/) ? 3 : 0));
   const econPot = clamp10((has('related') ? 3 : 1) + (hasLink(/account|loyalty/) ? 3 : 1) + (has('trust', 'reviews') ? 3 : 1));
-  const health: { zones: HealthZone[]; overall: number } = {
+  const health: { zones: HealthZone[]; overall: number | null } = {
     zones: [
       { key: 'bizFit', label: 'Business Fit', score: bizFit, note: 'Відповідність сайту бізнес-моделі й ролі', measured: true },
       { key: 'marketFit', label: 'Market Fit', score: marketFit, note: 'Відповідність ринку, сегментам, позиціонуванню', measured: true },
@@ -246,14 +247,13 @@ export function buildStrategyFlow(ds: AuditDataset): StrategyFlowReport {
       { key: 'growthPot', label: 'Growth Potential', score: growthPot, note: 'Здатність масштабуватися (органіка/гео/retention/дані)', measured: true },
       { key: 'econPot', label: 'Economic Potential', score: econPot, note: 'Вплив на revenue/margin/LTV (AOV, retention, довіра)', measured: true },
     ],
-    overall: clamp10((bizFit + marketFit + productFit + growthPot + econPot) / 5),
+    overall: pages.length ? clamp10((bizFit + marketFit + productFit + growthPot + econPot) / 5) : null,
   };
 
   /* ── Strategic Score (22 зони: measured + бізнес-контекст) ── */
   const z = (key: string, label: string, score: number, measured = true): StratScoreZone => ({ key, label, score: measured ? clamp10(score) : 0, measured });
   const trustShare = [has('trust'), has('reviews'), has('footer_contacts'), analytics].filter(Boolean).length;
-  const score = {
-    zones: [
+  const zones = [
       z('align', 'Business Alignment', bizFit),
       z('bmodel', 'Business Model Fit', (roles.filter((r) => r.fits).length / roles.length) * 10),
       z('positioning', 'Positioning', posScore * 10),
@@ -277,11 +277,8 @@ export function buildStrategyFlow(ds: AuditDataset): StrategyFlowReport {
       z('omnichannel', 'Omnichannel / Marketplace', 0, false),
       z('data', 'Data Strategy', analytics ? 4 : 0, analytics),
       z('kpi', 'KPI System', 0, false),
-    ],
-    overall: 0,
-  };
-  const sm = score.zones.filter((zz) => zz.measured);
-  score.overall = sm.length ? clamp10(sm.reduce((s, zz) => s + zz.score, 0) / sm.length) : 0;
+    ];
+  const score = flowScore(zones, pages.length);
 
   /* ── Roadmap (6 фаз) ── */
   const roadmap = [

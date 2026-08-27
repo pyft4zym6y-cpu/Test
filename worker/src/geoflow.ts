@@ -20,6 +20,7 @@
 import type { AuditDataset } from './report.js';
 import type { PageKind } from './crawl.js';
 import { buildSiteAudit, type BlockState } from './pagereport.js';
+import { flowScore, type FlowScore } from './flowScore.js';
 
 export type Priority = 'P0' | 'P1' | 'P2' | 'P3';
 
@@ -41,7 +42,7 @@ export type GeoArtifact = { n: number; name: string; source: 'обхід' | 'ж�
 export type GeoFlowReport = {
   client: string; takenAt: string;
   spine: GeoLayer[];
-  score: { zones: GeoScoreZone[]; overall: number };
+  score: FlowScore<GeoScoreZone>;
   crawlability: BotRow[];
   entities: EntityRow[];
   answerability: AnswerRow[];
@@ -239,8 +240,7 @@ export function buildGeoFlow(ds: AuditDataset): GeoFlowReport {
     zone('recoReady', 'Recommendation Readiness', 3 + (has('specifications') ? 2 : 0) + (has('reviews') ? 2 : 0), 'Чи є чим аргументувати рекомендацію'),
     zone('aiConv', 'AI Conversion Readiness', 0, 'н/д — AI-referral → conversion (GA + utm_source=chatgpt.com)', false),
   ];
-  const measuredZones = zones.filter((z) => z.measured);
-  const overall = measuredZones.length ? clamp10(measuredZones.reduce((s, z) => s + z.score, 0) / measuredZones.length) : 0;
+  const score = flowScore(zones, pages.length);
 
   /* ── Артефакти (12) ── */
   const artifacts: GeoArtifact[] = [
@@ -272,7 +272,7 @@ export function buildGeoFlow(ds: AuditDataset): GeoFlowReport {
     { id: 'G8', title: 'G8 · GEO/AEO Roadmap', principle: 'План: Crawlability → Entity → Consistency → Structure → Coverage → Gaps → Authority → Citation/Monitoring.', state: `${roadmap.length} етапів; фінал — постійний моніторинг присутності в AI.` },
   ];
 
-  return { client, takenAt: ds.takenAt, spine, score: { zones, overall }, crawlability, entities, answerability, blockCards, gapMap, mainTable, opportunities, roadmap, artifacts, liveNote };
+  return { client, takenAt: ds.takenAt, spine, score, crawlability, entities, answerability, blockCards, gapMap, mainTable, opportunities, roadmap, artifacts, liveNote };
 }
 
 // Найімовірніший «листок» комерційного дерева — для прикладів AI-запитів (без вигадок про дані).

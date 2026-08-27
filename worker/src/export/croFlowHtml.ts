@@ -24,7 +24,9 @@ function health(r: CroFlowReport): string {
     <div class="cr-hz-l">${esc(z.label)}</div><div class="cr-hz-n">${esc(z.note)}</div></div>`).join('');
   return `<section class="block"><h2>CRO Health Score</h2>
     <p class="lead">Пʼять ключових показників готовності конвертувати.</p>
-    <div class="cr-hhead"><span class="cr-hbig ${s10(r.health.overall)}">${r.health.overall}</span><span class="cr-hcap">/10 — CRO Health Score</span></div>
+    ${r.health.overall === null
+      ? `<div class="cr-hhead"><span class="cr-hcap"><b>Бал не вимірювався.</b> Обхід не дав жодної сторінки — пʼять показників готовності рахувати нема з чого.</span></div>`
+      : `<div class="cr-hhead"><span class="cr-hbig ${s10(r.health.overall)}">${r.health.overall}</span><span class="cr-hcap">/10 — CRO Health Score</span></div>`}
     <div class="cr-hzs">${cards}</div></section>`;
 }
 
@@ -143,7 +145,9 @@ export function renderCroFlowHtml(r: CroFlowReport): string {
   const coverHtml = cover({
     kicker: 'CRO Audit',
     title: 'CRO Audit: що заважає конверсії і як її підняти',
-    verdict: `CRO Health Score — ${r.health.overall}/10; CRO Score — ${r.score.overall}/10 (обхід).`,
+    verdict: r.health.overall === null
+      ? 'CRO Health Score не вимірювався — обхід не дав жодної сторінки.'
+      : `CRO Health Score — ${r.health.overall}/10; CRO Score — ${r.score.overall}/10 (обхід).`,
     metrics: [
       { label: 'Клієнт', value: r.client },
       { label: 'CRO Health', value: `${r.health.overall}/10` },

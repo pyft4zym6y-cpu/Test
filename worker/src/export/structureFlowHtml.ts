@@ -26,7 +26,9 @@ function health(r: StructureFlowReport): string {
     <div class="sr-hz-l">${esc(z.label)}</div><div class="sr-hz-n">${esc(z.note)}</div></div>`).join('');
   return `<section class="block"><h2>Structure Health Score</h2>
     <p class="lead">Пʼять головних показників архітектури. Далі кожен розкривається детально.</p>
-    <div class="sr-hhead"><span class="sr-hbig ${s10(r.health.overall)}">${r.health.overall}</span><span class="sr-hcap">/10 — Structure Health Score</span></div>
+    ${r.health.overall === null
+      ? `<div class="sr-hhead"><span class="sr-hcap"><b>Бал не вимірювався.</b> Обхід не дав жодної сторінки — показники готовності рахувати нема з чого.</span></div>`
+      : `<div class="sr-hhead"><span class="sr-hbig ${s10(r.health.overall)}">${r.health.overall}</span><span class="sr-hcap">/10 — Structure Health Score</span></div>`}
     <div class="sr-hzs">${cards}</div></section>`;
 }
 
@@ -176,10 +178,10 @@ export function renderStructureFlowHtml(r: StructureFlowReport): string {
   const coverHtml = cover({
     kicker: 'Structure & Site Tree Audit',
     title: 'Structure & Site Tree Audit: архітектура сайту як система',
-    verdict: `Structure Health Score — ${r.health.overall}/10 за виміряними зонами (обхід).`,
+    verdict: `Structure Health Score — ${r.health.overall === null ? 'не вимірювався' : r.health.overall + '/10'} за виміряними зонами (обхід).`,
     metrics: [
       { label: 'Клієнт', value: r.client },
-      { label: 'Structure Health', value: `${r.health.overall}/10` },
+      { label: 'Structure Health', value: `${r.health.overall === null ? 'не вимірювався' : r.health.overall + '/10'}` },
       { label: 'Розривів', value: String(r.gaps.length) },
     ],
     note: `<b>Дерево + граф + осі + точки входу.</b> Відповідає, чи правильно сайт організований на рівні сутностей, розділів, звʼязків і точок входу — чи швидко знаходить користувач, чи розуміє структуру пошук, чи масштабується каталог без перебудови. Іде після Strategic і перед Page/Block-аудитами: спершу визначаємо, які сторінки МАЮТЬ існувати.`,

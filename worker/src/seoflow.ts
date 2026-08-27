@@ -18,6 +18,7 @@ import type { AuditDataset } from './report.js';
 import type { PageKind, PageAudit } from './crawl.js';
 import { buildSeoArch } from './seoarch.js';
 import { buildSiteAudit, type BlockState } from './pagereport.js';
+import { flowScore, type FlowScore } from './flowScore.js';
 
 export type Priority = 'P0' | 'P1' | 'P2' | 'P3';
 export type Intent = 'commercial' | 'transactional' | 'informational' | 'navigational';
@@ -52,7 +53,7 @@ export type SeoOpportunity = { title: string; chain: string; effect: string; pri
 export type SeoFlowReport = {
   client: string; takenAt: string;
   spine: SeoLayer[];
-  score: { zones: SeoScoreZone[]; overall: number };
+  score: FlowScore<SeoScoreZone>;
   strategy: StrategyRow[];
   semantic: SemanticRow[];
   technical: TechRow[];
@@ -236,21 +237,34 @@ export function buildSeoFlow(ds: AuditDataset): SeoFlowReport {
   /* ── SEO Score — зони /10 (виміряні зовні + н/д) ── */
   const commShare = arch.tree.length ? commercialNodes.length / arch.tree.length : 0;
   const zone = (key: string, label: string, score: number, note: string, measured = true): SeoScoreZone => ({ key, label, score: measured ? clamp10(score) : 0, note, measured });
+  /*
+   * Зона, вхідні дані якої приходять з обходу, БЕЗ обходу не вимірюється.
+   *
+   * Механізм measured тут був, але залежав тільки від «чи потрібен доступ», а не
+   * від того, чи є дані. Формули зон при цьому починаються з оптимістичних
+   * констант (5 + …, 4 + …, 3 + …), тож на нульовому обході бали бралися з цих
+   * констант: сайт, який ми взагалі не бачили, отримував SEO Score 3/10 — на око
+   * не відрізнити від 3.6/10 після повного обходу двадцяти пʼяти сторінок.
+   *
+   * Відсутність сигналу — це не посередній сигнал. Без сторінок такі зони
+   * чесніше не рахувати зовсім: overall усереднює лише виміряні.
+   */
+  const crawled = pages.length > 0;
   const zones: SeoScoreZone[] = [
     zone('strategy', 'SEO Strategy', 5 + commShare * 3, 'Чи є комерційні осі під органіку'),
-    zone('structure', 'Структура / дерево', (arch.totals.maxDepth <= 4 ? 7 : 4) + (arch.tree.length >= 6 ? 1.5 : 0), `Глибина ${arch.totals.maxDepth}, типів ${arch.tree.length}`),
-    zone('semantics', 'Семантика', 4 + semantic.filter((s) => s.status === 'ok').length * 1.2, 'Покриття кластерів посадковими'),
-    zone('intent', 'Intent-відповідність', 6 - semantic.filter((s) => s.status === 'missing').length, 'Тип сторінки під тип запиту'),
+    zone('structure', 'Структура / дерево', (arch.totals.maxDepth <= 4 ? 7 : 4) + (arch.tree.length >= 6 ? 1.5 : 0), `Глибина ${arch.totals.maxDepth}, типів ${arch.tree.length}`, crawled),
+    zone('semantics', 'Семантика', 4 + semantic.filter((s) => s.status === 'ok').length * 1.2, 'Покриття кластерів посадковими', crawled),
+    zone('intent', 'Intent-відповідність', 6 - semantic.filter((s) => s.status === 'missing').length, 'Тип сторінки під тип запиту', crawled),
     zone('indexation', 'Індексація', (cl.sitemapXml ? 4 : 1) + (cl.robotsTxt ? 3 : 1) + (cl.soft404 ? 0 : 2), 'robots/sitemap/soft404/noindex'),
-    zone('technical', 'Технічний SEO', 4 + (canonOk >= 0.9 ? 2 : 0) + (arch.totals.paramUrls <= 40 ? 2 : 0), 'canonical, параметри, редиректи'),
-    zone('onpage', 'On-page', titleOk * 3 + h1Ok * 3.5 + descOk * 2 + ogOk * 1.5, `Title ${Math.round(titleOk * 100)}%, H1 ${Math.round(h1Ok * 100)}%`),
-    zone('content', 'Контент (SEO)', 4 + (infoNodes.length ? 2 : 0) + schemaProd * 2, 'Семантична повнота, thin/дублі'),
-    zone('linking', 'Перелінковка', Math.min(10, arch.totals.links / 25) + (schemaCrumbs >= 0.5 ? 1 : 0), `${arch.totals.links} внутр. посилань, крихти ${Math.round(schemaCrumbs * 100)}%`),
-    zone('ecom', 'E-commerce SEO', 4 + (schemaProd >= 0.5 ? 2 : 0) + (arch.totals.paramUrls <= 40 ? 2 : 0), 'Фасети, картки, out-of-stock'),
-    zone('mobile', 'Mobile SEO', viewportOk * 8 + 1, `Viewport ${Math.round(viewportOk * 100)}%`),
-    zone('schema', 'Schema', schemaProd * 4 + schemaCrumbs * 3 + schemaOrg * 3, 'Product/Breadcrumb/Org покриття'),
-    zone('geoaeo', 'GEO/AEO readiness', 2 + (cl.ai?.llmsTxt ? 2 : 0) + (kindsPresent.has('faq') ? 2 : 0) + schemaProd * 2, 'llms.txt, FAQ, факти, розмітка'),
-    zone('eeat', 'E-E-A-T', 3 + (infoNodes.length ? 2 : 0) + (schemaOrg >= 0.5 ? 2 : 0), 'Автори, реквізити, довіра'),
+    zone('technical', 'Технічний SEO', 4 + (canonOk >= 0.9 ? 2 : 0) + (arch.totals.paramUrls <= 40 ? 2 : 0), 'canonical, параметри, редиректи', crawled),
+    zone('onpage', 'On-page', titleOk * 3 + h1Ok * 3.5 + descOk * 2 + ogOk * 1.5, `Title ${Math.round(titleOk * 100)}%, H1 ${Math.round(h1Ok * 100)}%`, crawled),
+    zone('content', 'Контент (SEO)', 4 + (infoNodes.length ? 2 : 0) + schemaProd * 2, 'Семантична повнота, thin/дублі', crawled),
+    zone('linking', 'Перелінковка', Math.min(10, arch.totals.links / 25) + (schemaCrumbs >= 0.5 ? 1 : 0), `${arch.totals.links} внутр. посилань, крихти ${Math.round(schemaCrumbs * 100)}%`, crawled),
+    zone('ecom', 'E-commerce SEO', 4 + (schemaProd >= 0.5 ? 2 : 0) + (arch.totals.paramUrls <= 40 ? 2 : 0), 'Фасети, картки, out-of-stock', crawled),
+    zone('mobile', 'Mobile SEO', viewportOk * 8 + 1, `Viewport ${Math.round(viewportOk * 100)}%`, crawled),
+    zone('schema', 'Schema', schemaProd * 4 + schemaCrumbs * 3 + schemaOrg * 3, 'Product/Breadcrumb/Org покриття', crawled),
+    zone('geoaeo', 'GEO/AEO readiness', 2 + (cl.ai?.llmsTxt ? 2 : 0) + (kindsPresent.has('faq') ? 2 : 0) + schemaProd * 2, 'llms.txt, FAQ, факти, розмітка', crawled),
+    zone('eeat', 'E-E-A-T', 3 + (infoNodes.length ? 2 : 0) + (schemaOrg >= 0.5 ? 2 : 0), 'Автори, реквізити, довіра', crawled),
     // Зони, які чесно вимірюються лише з доступом:
     zone('international', 'International SEO', 0, anyHreflang ? 'hreflang є — деталі після доступу' : 'н/д (немає мультимовності або даних)', false),
     zone('local', 'Local SEO', 0, 'н/д — потрібні GBP/NAP/локальні дані', false),
@@ -258,8 +272,7 @@ export function buildSeoFlow(ds: AuditDataset): SeoFlowReport {
     zone('backlinks', 'Backlinks', 0, 'н/д — потрібен backlink-інструмент', false),
     zone('competitors', 'Competitors', 0, 'н/д — потрібні дані видимості конкурентів', false),
   ];
-  const measured = zones.filter((z) => z.measured);
-  const overall = measured.length ? clamp10(measured.reduce((s, z) => s + z.score, 0) / measured.length) : 0;
+  const score = flowScore(zones, pages.length);
 
   /* ── S-роадмап (7 етапів) ── */
   const roadmap = [
@@ -311,5 +324,5 @@ export function buildSeoFlow(ds: AuditDataset): SeoFlowReport {
     { id: 'S8', title: 'S8 · Growth Roadmap', principle: 'Фінал — план росту органіки за 7 етапів: Critical → Quick Wins → Structural → Content → Authority → Scale → GEO/AEO.', state: `${roadmap.length} етапів, впорядкованих за Impact×Effort×Traffic×Value.` },
   ];
 
-  return { client, takenAt: ds.takenAt, spine, score: { zones, overall }, strategy, semantic, technical, pageCards, blockCards, problems, opportunities, roadmap };
+  return { client, takenAt: ds.takenAt, spine, score, strategy, semantic, technical, pageCards, blockCards, problems, opportunities, roadmap };
 }

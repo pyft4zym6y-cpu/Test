@@ -20,6 +20,7 @@
 import type { AuditDataset } from './report.js';
 import type { PageKind, PageAudit } from './crawl.js';
 import { buildSiteAudit, type BlockState } from './pagereport.js';
+import { flowScore, type FlowScore } from './flowScore.js';
 
 export type Priority = 'P0' | 'P1' | 'P2' | 'P3';
 
@@ -38,8 +39,8 @@ export type Hypothesis = { text: string; impact: number; confidence: number; eas
 export type CroFlowReport = {
   client: string; takenAt: string;
   spine: CroLayer[];
-  health: { zones: HealthZone[]; overall: number };
-  score: { zones: ScoreZone[]; overall: number };
+  health: { zones: HealthZone[]; /** null — обходу не було, рахувати нема з чого. */ overall: number | null };
+  score: FlowScore<ScoreZone>;
   funnel: FunnelStage[];
   friction: FrictionRow[];
   trustMap: MapRow[];
@@ -218,13 +219,12 @@ export function buildCroFlow(ds: AuditDataset): CroFlowReport {
       { key: 'trust', label: 'Trust', score: trust, note: 'Наскільки знято ризики' },
       { key: 'optMaturity', label: 'Optimization Maturity', score: optMaturity, note: `Experimentation L${expLevel}` },
     ],
-    overall: clamp10((conversionReadiness + frictionScore + persuasion + trust + optMaturity) / 5),
+    overall: pages.length ? clamp10((conversionReadiness + frictionScore + persuasion + trust + optMaturity) / 5) : null,
   };
 
   /* ── CRO Score (20 напрямів) ── */
   const z = (key: string, label: string, sc: number, measured = true): ScoreZone => ({ key, label, score: measured ? clamp10(sc) : 0, measured });
-  const score = {
-    zones: [
+  const zones = [
       z('strategy', 'Conversion Strategy', (has('hero', 'usp_bar') ? 6 : 3) + (analytics ? 2 : 0)),
       z('funnel', 'Funnel', conversionReadiness),
       z('intent', 'Intent Match', (kinds.has('plp') && kinds.has('pdp') ? 6 : 3) + (has('category_title') ? 2 : 0)),
@@ -246,11 +246,8 @@ export function buildCroFlow(ds: AuditDataset): CroFlowReport {
       z('analytics', 'Behavioral Analytics', analytics ? 4 : 0, analytics),
       z('personalization', 'Personalization', 0, false),
       z('experimentation', 'A/B Experimentation', 0, false),
-    ],
-    overall: 0,
-  };
-  const sm = score.zones.filter((zz) => zz.measured);
-  score.overall = sm.length ? clamp10(sm.reduce((s, zz) => s + zz.score, 0) / sm.length) : 0;
+    ];
+  const score = flowScore(zones, pages.length);
 
   /* ── Roadmap (5 фаз) ── */
   const roadmap = [

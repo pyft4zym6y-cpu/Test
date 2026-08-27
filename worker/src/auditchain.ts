@@ -126,7 +126,7 @@ export function buildAuditChain(ds: AuditDataset): AuditChainReport {
   };
 
   /* ── C · Content ── */
-  const cReady = clamp100(cflow.score.overall * 10);
+  const cReady = (cflow.score.overall === null ? 0 : clamp100(cflow.score.overall * 10));
   const cP0 = cflow.cards.filter((c) => c.priority === 'P0').length + cflow.gaps.filter((g) => g.priority === 'P0').length;
   const cLevel: ChainLevel = {
     id: 'C', name: 'Content', question: 'Чи веде контент до рішення: закриває питання, знімає заперечення, годує AI-видачу?',
@@ -143,7 +143,9 @@ export function buildAuditChain(ds: AuditDataset): AuditChainReport {
   };
 
   /* ── E · SEO ── */
-  const eReady = clamp100(seo.score.overall * 10);
+  // null — SEO Score не вимірювався (обходу не було). Нуль тут збрехав би
+  // інакше: він читається як «перевірили і все погано», а не «не перевіряли».
+  const eReady = seo.score.overall === null ? 0 : clamp100(seo.score.overall * 10);
   const eP0 = seo.problems.filter((p) => p.priority === 'P0').length + seo.blockCards.filter((c) => c.priority === 'P0').length;
   const eLevel: ChainLevel = {
     id: 'E', name: 'SEO', question: 'Чи здатний сайт системно отримувати органічний трафік і масштабувати видимість?',
