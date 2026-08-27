@@ -1,4 +1,4 @@
-import { Component, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Component, useCallback, useEffect, useRef, useState, type ReactNode, Suspense} from 'react';
 
 /**
  * Свій діалог замість нативних confirm/prompt.
@@ -115,17 +115,68 @@ export function DialogHost() {
  * Межа помилки навколо однієї панелі. Досі ErrorBoundary був один на весь
  * застосунок: помилка в будь-якому блоці картки забирала всю адмінку.
  */
-export class PanelBoundary extends Component<{ title?: string; children: ReactNode }, { error: Error | null }> {
-  state: { error: Error | null } = { error: null };
+/**
+ * Межа помилки навколо однієї панелі: падає панель — падає панель, а не вся
+ * адмінка. Було лише на картці клієнта, тож збій у дашборді, заявках чи
+ * проєктах гасив увесь екран у білий.
+ *
+ * Дві деталі, без яких межа марна. Перша — лічильник спроб: якщо помилка
+ * детермінована (криві дані в записі), кнопка «спробувати ще раз» просто
+ * падає знову, і людина тисне її по колу. Після двох спроб пропонуємо
+ * перезавантаження, а не третій однаковий результат. Друга — текст помилки
+ * можна розгорнути й скопіювати: менеджер перешле його як є, і не доведеться
+ * відтворювати збій наосліп.
+ */
+export class PanelBoundary extends Component<
+  { title?: string; children: ReactNode },
+  { error: Error | null; tries: number }
+> {
+  state: { error: Error | null; tries: number } = { error: null, tries: 0 };
   static getDerivedStateFromError(error: Error) { return { error }; }
+
+  componentDidCatch(error: Error, info: { componentStack?: string | null }) {
+    // У консоль — щоб збій було видно в devtools і в записі сесії, а не лише
+    // у вигляді плашки, яку легко пропустити.
+    console.error(`[admin] панель «${this.props.title || 'без назви'}» впала:`, error, info?.componentStack);
+  }
+
   render() {
-    if (!this.state.error) return this.props.children;
+    const { error, tries } = this.state;
+    if (!error) return this.props.children;
+    const canRetry = tries < 2;
     return (
       <div className="adm-panel adm-panel-broken">
         <span className="adm-col-h mono">{this.props.title || 'Блок'} — помилка</span>
-        <p className="mono adm-empty">{this.state.error.message}</p>
-        <button className="mc-btn ghost" onClick={() => this.setState({ error: null })}>Спробувати ще раз</button>
+        <p className="mono adm-empty">
+          {error.message || 'Невідома помилка'}
+          {!canRetry && ' · повторна спроба не допомогла'}
+        </p>
+        <div className="adm-ga-bar">
+          {canRetry
+            ? <button className="mc-btn ghost" onClick={() => this.setState((s) => ({ error: null, tries: s.tries + 1 }))}>Спробувати ще раз</button>
+            : <button className="mc-btn ghost" onClick={() => window.location.reload()}>Перезавантажити сторінку</button>}
+          <button className="mc-btn ghost" onClick={() => { void navigator.clipboard?.writeText(`${this.props.title || 'панель'}: ${error.message}\n${error.stack || ''}`); }}>
+            Скопіювати текст помилки
+          </button>
+        </div>
+        <details className="adm-err-more">
+          <summary className="mono">Технічні деталі</summary>
+          <pre className="adm-log">{error.stack || error.message}</pre>
+        </details>
       </div>
     );
   }
+}
+
+/**
+ * Панель = межа помилки + Suspense. Обидва потрібні разом у кожному місці, де
+ * рендериться lazy-компонент, тому тримаємо їх однією обгорткою: інакше в
+ * одному місці забудуть межу, в іншому — fallback.
+ */
+export function Panel({ title, children, quiet = false }: { title: string; children: ReactNode; quiet?: boolean }) {
+  return (
+    <PanelBoundary title={title}>
+      <Suspense fallback={quiet ? null : <p className="mc-msg mono">Завантаження…</p>}>{children}</Suspense>
+    </PanelBoundary>
+  );
 }

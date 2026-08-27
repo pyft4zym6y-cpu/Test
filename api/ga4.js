@@ -109,6 +109,7 @@ const back = (res, qs) => { res.statusCode = 302; res.setHeader('Location', `/ca
 
 import { ga4Site } from './_lib/ga4-site.js';
 import { requireSelfOrStaff, requireStaff } from './_lib/auth.js';
+import { staffRateLimited } from './_lib/guard.js';
 
 export default async function handler(req, res) {
   // /api/ga4-site → rewrite сюди з ?fn=site (ліміт 12 функцій Hobby).
@@ -131,12 +132,20 @@ export default async function handler(req, res) {
   const isOauthCallback = Boolean(q.code && q.state && !action);
   if (!isOauthCallback) {
     // Дії з даними конкретного користувача — сам користувач або команда.
+    let me = null;
     if (['status', 'disconnect', 'pull', 'pull_gsc', 'oauth_url'].includes(action)) {
-      if (!(await requireSelfOrStaff(req, res, String(q.u || '')))) return;
+      me = await requireSelfOrStaff(req, res, String(q.u || ''));
+      if (!me) return;
     } else {
       // Решта (psi та все нове) — лише команда: це наш зовнішній виклик за гроші/квоту.
-      if (!(await requireStaff(req, res))) return;
+      me = await requireStaff(req, res);
+      if (!me) return;
     }
+    // Квоти Google скінченні, а `pull_gsc` тепер тягне до 5000 рядків «сторінка ×
+    // запит» плюс друге вікно. Обмежуємо саме витратні дії: `status` і
+    // `oauth_url` дешеві й потрібні для самої процедури підключення.
+    if (['pull', 'pull_gsc', 'psi'].includes(action)
+      && await staffRateLimited(req, res, me, `ga4-${action}`, 60)) return;
   }
 
   /* ── OAuth-callback: Google повертає ?code&state на чистий /api/ga4 ── */

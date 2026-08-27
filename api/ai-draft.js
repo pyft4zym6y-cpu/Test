@@ -126,11 +126,16 @@ async function handleSufficiency(req, res, key) {
 }
 
 import { requireStaff } from './_lib/auth.js';
+import { staffRateLimited } from './_lib/guard.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ error: 'POST only' }); return; }
   // Витрачає токени Anthropic — лише команда weexp.
-  if (!(await requireStaff(req, res))) return;
+  const me = await requireStaff(req, res);
+  if (!me) return;
+  // 30 чернеток на годину на людину: більше не потрібно навіть у найактивніший
+  // день, а залипла кнопка без ліміту витратить бюджет за ніч.
+  if (await staffRateLimited(req, res, me, 'ai-draft', 30)) return;
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) { res.status(200).json({ error: 'AI не налаштовано: додайте ANTHROPIC_API_KEY у Vercel.' }); return; }
   // Диспетчер: kind='sufficiency' → модерація; масив modules (або rewrite ai-score) → оцінка; інакше — чернетка проєкту.

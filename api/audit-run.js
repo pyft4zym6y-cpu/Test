@@ -4,11 +4,13 @@
 const DEFAULT_WORKER = 'https://test-production-5713.up.railway.app';
 
 import { requireStaff } from './_lib/auth.js';
+import { staffRateLimited } from './_lib/guard.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ error: 'POST only' }); return; }
   // Запускає прогін воркера (Playwright + Claude на Railway) — лише команда.
-  if (!(await requireStaff(req, res))) return;
+  const me = await requireStaff(req, res);
+  if (!me) return;
   const base = (process.env.WORKER_URL || DEFAULT_WORKER).replace(/\/$/, '');
   const token = process.env.AUDIT_SERVER_TOKEN || process.env.WORKER_AUDIT_TOKEN;
   if (!token) { res.status(200).json({ error: 'not_configured: додайте AUDIT_SERVER_TOKEN у Vercel (те саме значення, що на воркері)' }); return; }
@@ -22,6 +24,10 @@ export default async function handler(req, res) {
       return;
     }
     if (b.action === 'start') {
+      // Ліміт саме тут, а не на всій ручці: `status` опитується поллінгом кожні
+      // кілька секунд за задумом, і обмежувати його означало б зламати прогрес.
+      // Дорогий тільки `start` — він піднімає Playwright і платний аналіз.
+      if (await staffRateLimited(req, res, me, 'audit-start', 10)) return;
       if (!b.site) { res.status(200).json({ error: 'Вкажіть сайт клієнта (домен) для аудиту' }); return; }
       // knowledge — база знань клієнта (профіль, доступи, файли, оцінки, попередні
       // прогони). Їде поруч із відповідями, щоб рушій бачив контекст усіх етапів.

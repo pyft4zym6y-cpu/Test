@@ -17,7 +17,7 @@ export function clientIp(req) {
  * Лічильник у Postgres: у serverless памʼятний лічильник у кожного інстансу
  * свій, тобто ліміту фактично не існує.
  */
-export async function rateOk(req, bucket, limit = 10, windowSeconds = 3600) {
+export async function rateOk(req, bucket, limit = 10, windowSeconds = 3600, key = null) {
   const URL_BASE = String(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '').replace(/\/$/, '');
   const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!URL_BASE || !KEY) return true;          // не налаштовано — не блокуємо
@@ -25,11 +25,35 @@ export async function rateOk(req, bucket, limit = 10, windowSeconds = 3600) {
     const r = await fetch(`${URL_BASE}/rest/v1/rpc/weexp_rate_ok`, {
       method: 'POST',
       headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ p_bucket: bucket, p_key: clientIp(req), p_limit: limit, p_window_seconds: windowSeconds }),
+      body: JSON.stringify({ p_bucket: bucket, p_key: key || clientIp(req), p_limit: limit, p_window_seconds: windowSeconds }),
     });
     if (!r.ok) return true;                     // міграція ще не застосована
     return (await r.json()) !== false;
   } catch { return true; }
+}
+
+/**
+ * Ліміт для ЗАКРИТИХ ручок команди. Відрізняється від відкритих форм двома речами.
+ *
+ * По-перше, ключем іде id користувача, а не IP: команда сидить за спільним
+ * офісним IP чи VPN, і ліміт по IP або блокує всіх разом, або не блокує нікого.
+ *
+ * По-друге, тут захищають не від спаму, а від рахунку: `ai-draft` і `aqc` палять
+ * ключ Anthropic, `audit-run start` піднімає Playwright-прогін на Railway,
+ * `ga4 pull` витрачає квоту Google. Автентифікація каже, ХТО прийшов, але не
+ * скільки разів — залипла кнопка чи скомпрометована сесія співробітника
+ * витрачає бюджет за ніч, і жодна перевірка ролі цього не помітить.
+ *
+ * Повертає true, якщо запит треба ВІДХИЛИТИ (відповідь 429 уже надіслана).
+ */
+export async function staffRateLimited(req, res, caller, bucket, limit, windowSeconds = 3600) {
+  const key = caller?.id || caller?.email || clientIp(req);
+  if (await rateOk(req, bucket, limit, windowSeconds, key)) return false;
+  const mins = Math.max(1, Math.round(windowSeconds / 60));
+  res.status(429).json({
+    error: `Забагато запитів: ліміт ${limit} за ${mins} хв. Це захист від випадкового перевитрату бюджету — спробуйте за кілька хвилин або напишіть, якщо ліміт замалий для роботи.`,
+  });
+  return true;
 }
 
 /**

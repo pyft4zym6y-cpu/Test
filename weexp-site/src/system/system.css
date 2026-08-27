@@ -2372,3 +2372,16 @@ body.kb-open .pf-bg { display: none !important; }
   /* Запас під фіксованою панеллю, щоб кнопка відправки не тулилась до неї. */
   .ctf-form { padding-bottom: 12px; }
 }
+
+/* Зламана панель. Класу не існувало взагалі: плашка помилки рендерилась без
+   стилю й зливалася з рештою інтерфейсу — тобто збій було легко не помітити. */
+.adm-panel-broken { border: 2px solid var(--red); background: var(--pure-white); padding: 16px 18px; display: grid; gap: 10px; }
+.adm-panel-broken .adm-col-h { color: var(--red); }
+.adm-panel-broken .adm-empty { color: var(--charcoal); }
+
+/* Розгортання технічних деталей у зламаній панелі: менеджеру не треба їх бачити
+   постійно, але скопіювати стек має бути можливо без devtools. */
+.adm-err-more { margin-top: 10px; }
+.adm-err-more summary { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--graphite); cursor: pointer; }
+.adm-err-more summary:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+.adm-err-more pre { margin: 8px 0 0; max-height: 12rem; overflow: auto; white-space: pre-wrap; font-size: .74rem; }

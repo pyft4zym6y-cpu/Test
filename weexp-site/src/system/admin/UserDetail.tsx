@@ -5,7 +5,7 @@ import { eur, sysLabel, actionText, type SysKey } from '../systems';
 
 import '../system.css';
 import '../cabinet.css';
-import { PanelBoundary } from './dialog';
+import { Panel, PanelBoundary } from './dialog';
 import { Block, ACCESS_SOURCES, FUNNEL, LEAD_STAGES, ST, U_TABS, coopLabel, funnelStage, rel, tierLabel, type UTab } from './shared';
 import { openClientDossier } from './docs';
 /* Вміст вкладок вантажимо на вимогу. Картка відкривається на «Огляді», а
@@ -73,10 +73,14 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, 
         </nav>
       </div>
       <div className="adm-upage-body">
-        {/* Кожен блок сам по собі: падіння однієї панелі не має забирати картку. */}
+        {/* Зовнішня межа — остання лінія: ловить те, що не в іменованій панелі
+            нижче (інлайн-блоки самої картки). Важкі під-панелі мають власні
+            межі: падіння однієї вкладки не має забирати всю картку клієнта.
+            Раніше цей коментар стояв тут, а межа була одна на все — тобто
+            обіцянка була, а ізоляції не було. */}
         <PanelBoundary title="Картка клієнта"><Suspense fallback={<p className="mc-msg mono">Завантаження…</p>}>
-          {utab === 'over' && <ClientBrief row={row} code={code} />}
-          {utab === 'kb' && <KnowledgeBase row={row} code={code} author={selfEmail} />}
+          {utab === 'over' && <PanelBoundary title="Огляд клієнта"><ClientBrief row={row} code={code} /></PanelBoundary>}
+          {utab === 'kb' && <PanelBoundary title="База знань"><KnowledgeBase row={row} code={code} author={selfEmail} /></PanelBoundary>}
           {utab === 'over' && code && (
             <Block title="Код доступу">
               <button className="adm-code adm-code-lg" onClick={() => navigator.clipboard?.writeText(code)} title="Скопіювати">🔑 {code}</button>
@@ -198,23 +202,23 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, 
             return <p className="mono adm-empty">{row.hasExpress ? 'є' : 'не рахували'}</p>;
           })()}</Block>}
 
-          {utab === 'work' && <Block title="Аудит рушієм Commerce OS"><WorkerAudit userId={row.userId} code={code} rec={rec} reviewer={selfEmail} /></Block>}
+          {utab === 'work' && <Block title="Аудит рушієм Commerce OS"><PanelBoundary title="Аудит рушієм"><WorkerAudit userId={row.userId} code={code} rec={rec} reviewer={selfEmail} /></PanelBoundary></Block>}
 
-          {utab === 'work' && <Block title="Оцінка модулів (C-level) — внутрішнє"><ModuleScoring userId={row.userId} initial={rec.assessment || {}} code={code} rec={rec} onSaved={onChanged} /></Block>}
+          {utab === 'work' && <Block title="Оцінка модулів (C-level) — внутрішнє"><PanelBoundary title="Оцінка модулів"><ModuleScoring userId={row.userId} initial={rec.assessment || {}} code={code} rec={rec} onSaved={onChanged} /></PanelBoundary></Block>}
 
-          {utab === 'data' && <Block title="Каталог доступів клієнта"><AccessCatalog userId={row.userId} initial={rec.accessLog || {}} onSaved={onChanged} /></Block>}
+          {utab === 'data' && <Block title="Каталог доступів клієнта"><PanelBoundary title="Каталог доступів"><AccessCatalog userId={row.userId} initial={rec.accessLog || {}} onSaved={onChanged} /></PanelBoundary></Block>}
 
-          {utab === 'docs' && <Block title="Аналітика клієнта (GA4 · GSC · PageSpeed)"><GaPreview userId={row.userId} siteUrl={company?.site || rec.site || ''} /></Block>}
+          {utab === 'docs' && <Block title="Аналітика клієнта (GA4 · GSC · PageSpeed)"><PanelBoundary title="Аналітика клієнта"><GaPreview userId={row.userId} siteUrl={company?.site || rec.site || ''} /></PanelBoundary></Block>}
 
-          {utab === 'over' && <Block title="Внутрішні нотатки команди"><NotesPanel userId={row.userId} initial={rec.notes || []} author={selfEmail} /></Block>}
+          {utab === 'over' && <Block title="Внутрішні нотатки команди"><PanelBoundary title="Нотатки"><NotesPanel userId={row.userId} initial={rec.notes || []} author={selfEmail} /></PanelBoundary></Block>}
 
-          {utab === 'data' && <Block title="Модерація опитувальника"><ModerationPanel userId={row.userId} code={code} rec={rec} reviewer={selfEmail} /></Block>}
+          {utab === 'data' && <Block title="Модерація опитувальника"><PanelBoundary title="Модерація опитувальника"><ModerationPanel userId={row.userId} code={code} rec={rec} reviewer={selfEmail} /></PanelBoundary></Block>}
 
-          {utab === 'pack' && <Block title="Пакет аудиту — 5 звітів"><PackChecklist userId={row.userId} email={row.email} rec={rec} /></Block>}
+          {utab === 'pack' && <Block title="Пакет аудиту — 5 звітів"><PanelBoundary title="Пакет аудиту"><PackChecklist userId={row.userId} email={row.email} rec={rec} /></PanelBoundary></Block>}
 
-          {utab === 'pack' && <Block title="Документ аудиту (редагований)"><AuditDocEditor userId={row.userId} email={row.email} rec={rec} /></Block>}
+          {utab === 'pack' && <Block title="Документ аудиту (редагований)"><PanelBoundary title="Документ аудиту"><AuditDocEditor userId={row.userId} email={row.email} rec={rec} /></PanelBoundary></Block>}
 
-          {utab === 'docs' && <Block title="Мої файли та передача клієнту"><AdminFiles userId={row.userId} initial={rec.adminFiles || []} sharedInitial={rec.sharedDocs || []} author={selfEmail} openFile={openFile} onSaved={onChanged} /></Block>}
+          {utab === 'docs' && <Block title="Мої файли та передача клієнту"><PanelBoundary title="Файли й передача"><AdminFiles userId={row.userId} initial={rec.adminFiles || []} sharedInitial={rec.sharedDocs || []} author={selfEmail} openFile={openFile} onSaved={onChanged} /></PanelBoundary></Block>}
 
           {utab === 'data' && <Block title="Запити доступів">{tiers.length ? (
             <div className="adm-drawer-tiers">
@@ -245,7 +249,7 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, 
             <Block title="Уточнення (Крок 2)"><ExtraEditor code={code} /></Block>
           )}
 
-          {utab === 'proj' && <Block title="Проект (ведення)"><ProjectsManager userId={row.userId} initial={getProjects(rec)} code={code} company={company?.name} /></Block>}
+          {utab === 'proj' && <Block title="Проект (ведення)"><PanelBoundary title="Проєкти"><ProjectsManager userId={row.userId} initial={getProjects(rec)} code={code} company={company?.name} /></PanelBoundary></Block>}
 
           {utab === 'docs' && files.length > 0 && (
             <Block title="Файли">

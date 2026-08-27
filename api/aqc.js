@@ -5,6 +5,7 @@
 import { interview } from './_lib/interview.js';
 import { fetchPage } from './_lib/fetch.js';
 import { requireStaff } from './_lib/auth.js';
+import { staffRateLimited } from './_lib/guard.js';
 
 export default async function handler(req, res) {
   // /api/interview і /api/fetch → rewrite сюди з ?fn=… (ліміт 12 функцій Hobby).
@@ -14,7 +15,11 @@ export default async function handler(req, res) {
   // Сам /api/aqc лишається задеплоєною функцією й доступний напряму, тому
   // rewrite'и його не захищають: без цієї перевірки будь-хто з інтернету палив
   // наш ключ Anthropic одним POST.
-  if (!(await requireStaff(req, res))) return;
+  const me = await requireStaff(req, res);
+  if (!me) return;
+  // Постатейний прогін іде сторінка за сторінкою, тому ліміт вищий за чернетки,
+  // але він є: без нього один цикл у коді проходить весь сайт і весь бюджет.
+  if (await staffRateLimited(req, res, me, 'aqc', 60)) return;
 
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) {

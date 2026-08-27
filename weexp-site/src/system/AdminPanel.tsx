@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   currentUser,
@@ -36,7 +36,7 @@ import {
   type LeadStatus
 } from '@/lib/supa';
 import { eur } from './systems';
-import { askConfirm, DialogHost, PanelBoundary } from './admin/dialog';
+import { askConfirm, DialogHost, Panel, PanelBoundary } from './admin/dialog';
 import { matchRow, rowMatches } from './admin/search';
 import { auditStatusOf, blockers, lastMoveAt, money, nextStep, phaseOf, slaOf, staleDays, OURS, PHASES, STAGE_OF } from './admin/auditRequests';
 import { toast } from '@/lib/toast';
@@ -484,12 +484,12 @@ export function AdminPanel() {
       <main className="adm-main">
         {/* ── Повна сторінка клієнта (замість бокового drawer) ── */}
         {openUser && detailLoading && !detail && <div className="adm-boot mono">Завантажуємо картку…</div>}
-        {detail && <Suspense fallback={null}><UserDetail row={detail} leads={leads} canDelete={can(user, 'delete_data')} canAccess={can(user, 'manage_access')} selfEmail={user.email} utab={utab} onUtab={setUtab} onChanged={reloadDetail} onClose={() => setOpenUser(null)} openFile={openFile} onStatus={setStatus} onDelete={removeUser} busy={busy} /></Suspense>}
+        {detail && <Panel title="Картка клієнта" quiet><UserDetail row={detail} leads={leads} canDelete={can(user, 'delete_data')} canAccess={can(user, 'manage_access')} selfEmail={user.email} utab={utab} onUtab={setUtab} onChanged={reloadDetail} onClose={() => setOpenUser(null)} openFile={openFile} onStatus={setStatus} onDelete={removeUser} busy={busy} /></Panel>}
         {/* ── Дашборд ── */}
         {!detail && curTab === 'overview' && (
-          <Suspense fallback={<p className="mc-msg mono">Завантаження…</p>}>
+          <Panel title="Дашборд">
             <Dashboard rows={rows} leads={leads} traffic={traffic} period={period} onPeriod={setPeriod} />
-          </Suspense>
+          </Panel>
         )}
 
         {/* ── Користувачі ── */}
@@ -597,7 +597,7 @@ export function AdminPanel() {
         {!detail && curTab === 'pm' && (
           <section className="adm-sec">
             <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Команда і ставки</h1></div>
-            <Suspense fallback={<p className="mc-msg mono">Завантаження…</p>}><PmOffice /></Suspense>
+            <Panel title="Проєкт-офіс"><PmOffice /></Panel>
           </section>
         )}
 
@@ -633,23 +633,23 @@ export function AdminPanel() {
             {/* onOpen лише відкриває картку ПОВЕРХ поточного розділу: закрив —
                 і ти знову на дошці, з якої прийшов. Раніше кожне відкриття
                 перекидало у «Користувачі», і повертатись було нікуди. */}
-            <Suspense fallback={<p className="mc-msg mono">Завантаження…</p>}>
+            <Panel title="Заявки на аудит">
               <AuditRequests rows={rows} q={q} busy={busy} onStatus={setStatus} canAccess={can(user, 'manage_access')}
                 onCloseAudit={closeAudit} onStartProject={startProject} onCloseDelivery={closeDelivery} onOpen={setOpenUser} />
-            </Suspense>
+            </Panel>
           </section>
         )}
 
         {/* ── Воркер: особистий інструмент адміністратора ── */}
         {!detail && curTab === 'worker' && (
-          <Suspense fallback={<p className="mc-msg mono">Завантаження…</p>}><WorkerTab rows={rows} /></Suspense>
+          <Panel title="Рушій аудиту"><WorkerTab rows={rows} /></Panel>
         )}
 
         {/* ── Конструктор аудиту: другий рівень під «Аудити» ── */}
         {!detail && curTab === 'builder' && (
           <section className="adm-sec">
             <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Конструктор аудиту</h1></div>
-            <Suspense fallback={<p className="mc-msg mono">Завантаження…</p>}><AuditBuilder /></Suspense>
+            <Panel title="Конструктор аудиту"><AuditBuilder /></Panel>
           </section>
         )}
 
@@ -759,7 +759,7 @@ export function AdminPanel() {
               <p className="adm-hint mono">Бутстрап-super-адміни задані в коді (<code>TEAM_ROLES</code>) — щоб не втратити доступ. Інші ролі керуються нижче й зберігаються в акаунті. Нового адміна також додайте в RLS-політики Supabase (SELECT/UPDATE на <code>diagnostics</code>), щоб він бачив дані клієнтів.</p>
             </div>
 
-            {can(user, 'manage_team') && <Suspense fallback={null}><TeamManager selfEmail={user.email} /></Suspense>}
+            {can(user, 'manage_team') && <Panel title="Команда" quiet><TeamManager selfEmail={user.email} /></Panel>}
 
             <div className="pj-card">
               <h2 className="pj-h2">Стан бази</h2>
@@ -781,7 +781,7 @@ export function AdminPanel() {
             <div className="pj-card">
               <h2 className="pj-h2">Журнал дій</h2>
               <p className="pj-sub mono">Хто що зробив у системі. Записується автоматично, не редагується.</p>
-              <Suspense fallback={<p className="mc-msg mono">Завантаження…</p>}><EventLog /></Suspense>
+              <Panel title="Журнал подій"><EventLog /></Panel>
             </div>
           </section>
         )}
@@ -790,7 +790,7 @@ export function AdminPanel() {
       <DialogHost />
 
       {/* Панель деталей заявки */}
-      {openLead && leads && <Suspense fallback={null}><LeadDetail lead={leads.find((l) => l.id === openLead)} allRows={rows || []} onClose={() => setOpenLead(null)} onStatus={moveLead} onDeal={saveDeal} onConvert={leadToProject} onDelete={removeLead} busy={busy} onOpenClient={(uid) => { setOpenLead(null); setOpenUser(uid); }} /></Suspense>}
+      {openLead && leads && <Panel title="Картка ліда" quiet><LeadDetail lead={leads.find((l) => l.id === openLead)} allRows={rows || []} onClose={() => setOpenLead(null)} onStatus={moveLead} onDeal={saveDeal} onConvert={leadToProject} onDelete={removeLead} busy={busy} onOpenClient={(uid) => { setOpenLead(null); setOpenUser(uid); }} /></Panel>}
 
       {/* Модалка причини (замість browser prompt) */}
       {ask && (
