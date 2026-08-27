@@ -6,18 +6,14 @@
 // Це чернетки — менеджер/аудитор редагує руками перед публікацією.
 // Env: ANTHROPIC_API_KEY (обовʼязково), AI_DRAFT_MODEL (за замовч. claude-sonnet-5).
 
+import { callClaudeJson } from './_lib/claude.js';
+
 async function callClaude(key, sys, prompt) {
-  const r = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-    body: JSON.stringify({ model: process.env.AI_DRAFT_MODEL || 'claude-sonnet-5', max_tokens: 4000, system: sys, messages: [{ role: 'user', content: prompt }] }),
+  const { data } = await callClaudeJson({
+    key, model: process.env.AI_DRAFT_MODEL || 'claude-sonnet-5',
+    system: sys, prompt, maxTokens: 4000, shape: '{',
   });
-  const j = await r.json();
-  if (j.error) throw new Error(j.error.message);
-  const text = (j.content ?? []).map((c) => c.text ?? '').join('');
-  const m = text.match(/\{[\s\S]*\}/);
-  if (!m) throw new Error('Модель не повернула JSON');
-  return JSON.parse(m[0]);
+  return data;
 }
 
 const flatAnswers = (answers, fallback) => (answers && typeof answers === 'object' && Object.keys(answers).length

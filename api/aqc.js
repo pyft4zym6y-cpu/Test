@@ -4,6 +4,7 @@
 // Env: ANTHROPIC_API_KEY (обязательно), AQC_MODEL (по умолчанию claude-sonnet-5).
 import { interview } from './_lib/interview.js';
 import { fetchPage, assertPublic } from './_lib/fetch.js';
+import { callClaudeJson } from './_lib/claude.js';
 import { requireStaff } from './_lib/auth.js';
 import { staffRateLimited } from './_lib/guard.js';
 
@@ -100,25 +101,13 @@ export default async function handler(req, res) {
 HTML:
 ${html}`;
 
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: process.env.AQC_MODEL || 'claude-sonnet-5',
-        max_tokens: 3000,
-        messages: [{ role: 'user', content: prompt }],
-      }),
+    const { data, truncated } = await callClaudeJson({
+      key, model: process.env.AQC_MODEL || 'claude-sonnet-5',
+      prompt, maxTokens: 3000, shape: '[',
     });
-    const j = await r.json();
-    if (j.error) throw new Error(j.error.message);
-    const text = (j.content ?? []).map((c) => c.text ?? '').join('');
-    const m = text.match(/\[[\s\S]*\]/);
-    if (!m) throw new Error('Модель не вернула JSON');
-    res.status(200).json({ verdicts: JSON.parse(m[0]), confidence: 25 });
+    // Обрезанный разбор — не полный: часть критериев осталась без вердикта, и
+    // молча показывать их как «не проверено» нельзя.
+    res.status(200).json({ verdicts: data, confidence: 25, ...(truncated ? { truncated: true } : {}) });
   } catch (e) {
     res.status(200).json({ error: String(e.message || e).slice(0, 200) });
   }

@@ -1,11 +1,18 @@
 import { requireUser } from './auth.js';
+import { callClaudeJson } from './claude.js';
 // Vercel serverless: Крок 5 — динамічне AI-інтерв'ю поглибленої діагностики.
 // Веде розмову як досвідчений консультант: ставить ПО ОДНОМУ непрямому,
 // підібраному під випадок питанню, поглиблюється туди, де у відповідях видно
 // біль чи прогалину — щоб клієнт «виклав усі карти». Коли даних достатньо (або
 // action:'finish') — повертає структурований поглиблений діагноз.
 //
-// Env: ANTHROPIC_API_KEY (обов'язково), INTERVIEW_MODEL (за замовч. claude-sonnet-5).
+// Env: ANTHROPIC_API_KEY (обов'язково), INTERVIEW_MODEL (за замовч. DEFAULT_MODEL нижче —
+// швидка модель, а не claude-sonnet-5, як тут стояло: коментар розійшовся з кодом
+// і обіцяв іншу модель, ніж викликається).
+//
+// Кеш промпту тут НЕ вмикаємо навмисно: системний промпт ≈700 токенів, це нижче
+// мінімального кешованого префікса (512–4096 залежно від моделі), тож
+// cache_control виглядав би оптимізацією і не робив би нічого.
 //
 // POST /api/interview
 //   body: { context, history:[{q,a}], action?: 'ask'|'finish' }
@@ -20,23 +27,6 @@ const TARGET_Q = 7; // орієнтир глибини; модель може з
 // Швидка модель за замовчуванням — щоб укладатися в таймаут функції й тримати діалог жвавим.
 const DEFAULT_MODEL = 'claude-haiku-4-5-20251001';
 
-// Вирізаємо перший збалансований JSON-об'єкт (модель іноді додає префікс/суфікс).
-function extractJson(text) {
-  const start = text.indexOf('{');
-  if (start < 0) return null;
-  let depth = 0, inStr = false, esc = false;
-  for (let i = start; i < text.length; i++) {
-    const c = text[i];
-    if (inStr) {
-      if (esc) esc = false;
-      else if (c === '\\') esc = true;
-      else if (c === '"') inStr = false;
-    } else if (c === '"') inStr = true;
-    else if (c === '{') depth++;
-    else if (c === '}') { depth--; if (depth === 0) return text.slice(start, i + 1); }
-  }
-  return null;
-}
 
 const clampInt = (n, lo, hi, dflt) => {
   const x = Math.round(Number(n));
@@ -101,30 +91,11 @@ ${history.length ? history.map((h, i) => `${i + 1}. Q: ${String(h.q || '').slice
 ${action === 'finish' ? 'КЛІЄНТ ПРОСИТЬ ЗАВЕРШИТИ — віддай mode:"diagnosis".' : `Дай наступний крок: ${answered >= TARGET_Q ? 'імовірно вже пора mode:"diagnosis"' : 'постав наступне питання mode:"question"'}.`}`;
 
   try {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 55000);
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      signal: ctrl.signal,
-      headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-      body: JSON.stringify({
-        model: process.env.INTERVIEW_MODEL || DEFAULT_MODEL,
-        max_tokens: 1200,
-        system,
-        messages: [{ role: 'user', content: userMsg }],
-      }),
+    const { data: out } = await callClaudeJson({
+      key, model: process.env.INTERVIEW_MODEL || DEFAULT_MODEL,
+      system, prompt: userMsg, maxTokens: 1200, shape: '{',
+      timeoutMs: 55000,   // стеля функції — 60с (config.maxDuration)
     });
-    clearTimeout(timer);
-    if (!r.ok) {
-      const t = await r.text().catch(() => '');
-      throw new Error(`Anthropic HTTP ${r.status}${t ? ': ' + t.slice(0, 160) : ''}`);
-    }
-    const j = await r.json();
-    if (j.error) throw new Error(j.error.message || 'Anthropic error');
-    const text = (j.content ?? []).map((c) => c.text ?? '').join('');
-    const raw = extractJson(text);
-    if (!raw) throw new Error('Модель не повернула JSON');
-    const out = JSON.parse(raw);
 
     if (out.mode === 'diagnosis' && out.diagnosis) {
       const d = out.diagnosis;
