@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { band, seg, setLayer as set, useScrollScene } from '@/lib/scene';
 import { useT, useLp, useLang } from '@/i18n';
@@ -29,6 +29,12 @@ const SYSTEMS_EN = ['Strategy', 'Commerce', 'Demand & Customer', 'Experience', '
 const BOTTLENECK = 2; // «Попит і клієнт» — слабка ланка у сцені кореневої причини
 
 export function SystemInMotion() {
+  // Рішення в ПЕРШОМУ рендері: lazy() тягне чанк тоді, коли елемент уперше
+  // відрендерився, тож перевірка в useEffect економила б лише малювання.
+  const [reduceMotion] = useState(() => {
+    try { return typeof window !== 'undefined' && matchMedia('(prefers-reduced-motion:reduce)').matches; }
+    catch { return false; }
+  });
   const t = useT();
   const lp = useLp();
   const lang = useLang();
@@ -86,7 +92,12 @@ export function SystemInMotion() {
       <div className="sysx-stage">
         <span className="sysx-field" aria-hidden="true" />
         <div ref={sObj} className="sysx-obj-wrap" aria-hidden="true" style={{ opacity: 0 }}>
-          <Suspense fallback={null}><CommerceSystem3D progress={progress} alerts={alerts} labels={labels} /></Suspense>
+          {/* При prefers-reduced-motion сцена й так отримує opacity 0 (див.
+              useScrollScene нижче) — тобто її не видно. Але lazy-чанк three.js
+              на 474 КБ усе одно вантажився: платимо трафіком і парсингом за
+              полотно, яке користувач попросив не показувати. Рішення «скрол-
+              фільми лишаються 3D» це не порушує: воно про тих, хто фільм бачить. */}
+          {!reduceMotion && <Suspense fallback={null}><CommerceSystem3D progress={progress} alerts={alerts} labels={labels} /></Suspense>}
         </div>
 
         {/* 7 систем-лейблів (позиціонуються rAF-ом) */}
