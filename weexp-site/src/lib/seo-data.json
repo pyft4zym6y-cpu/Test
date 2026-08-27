@@ -78,7 +78,7 @@
       ],
       "en": [
         "Audit pack contents — 5 reports · WEEXP",
-        "The full contents of the WEEXP deep audit: 5 reports — the presentation, the 12 audits, the financial report with the P&L bridge, the implementation roadmap, the proposal & handover."
+        "The full contents of the WEEXP deep audit: 5 reports — presentation, 12 audits, financial report with the P&L bridge, roadmap, proposal and handover."
       ]
     },
     "/pricing": {
@@ -96,61 +96,61 @@
     "international": {
       "uk": [
         "Міжнародна експансія — експертиза · WEEXP",
-        "Вихід за межі одного ринку — системно. Виводимо бренд на ЄС/США як систему, а не «спробуємо й подивимось»: вибір ринку за юніт-економікою, юрособа й податки, локалізація, власний сайт і маркетплейси, логістика та перші продажі."
+        "Вихід за межі одного ринку — системно. Виводимо бренд на ЄС/США: вибір ринку за юніт-економікою, юрособа й податки, локалізація, маркетплейси, логістика."
       ],
       "en": [
         "International expansion — practice · WEEXP",
-        "Beyond a single market — systematically. We take a brand into the EU/US as a system, not «let’s try and see»: market choice by unit economics, legal entity and taxes, localization, own site and marketplaces, logistics and first sales."
+        "Beyond a single market — systematically. We take a brand into the EU/US: market choice by unit economics, legal entity and taxes, localization, logistics."
       ]
     },
     "automation": {
       "uk": [
         "Бізнес-процеси — експертиза · WEEXP",
-        "Щоб бізнес працював без героїзму. Вибудовуємо й автоматизуємо бізнес-процеси, з яких витікають час і гроші: CRM і воронка продажів, інтеграції ERP / склад / доставка, ролі та регламенти, автоматичні сценарії й звітність у реальному часі."
+        "Щоб бізнес працював без героїзму. Автоматизуємо процеси, з яких витікають час і гроші: CRM і воронка, інтеграції ERP / склад / доставка, звітність онлайн."
       ],
       "en": [
         "Business processes — practice · WEEXP",
-        "So the business runs without heroics. We design and automate the business processes that leak time and money: CRM and sales pipeline, ERP / warehouse / delivery integrations, roles and playbooks, automated scenarios and real-time reporting."
+        "So the business runs without heroics. We automate the processes that leak time and money: CRM and sales pipeline, ERP / warehouse / delivery, live reporting."
       ]
     },
     "technology": {
       "uk": [
         "E-commerce Technology — експертиза · WEEXP",
-        "Магазин як інженерний актив. Уся технологічна основа комерції: Shopify / Shopify Plus, Magento, WooCommerce, OpenCart або custom-розробка — плюс frontend, backend, UX/UI, mobile, інтеграції та API, DevOps і хостинг, QA, кібербезпека й технічна підтримка. Обираємо стек під задачу, а не під моду."
+        "Магазин як інженерний актив. Shopify, Magento, WooCommerce, OpenCart або custom: frontend, backend, інтеграції та API, DevOps, QA й підтримка."
       ],
       "en": [
         "E-commerce Technology — practice · WEEXP",
-        "The store as an engineering asset. The full technology backbone of commerce: Shopify / Shopify Plus, Magento, WooCommerce, OpenCart or custom development — plus frontend, backend, UX/UI, mobile, integrations and APIs, DevOps and hosting, QA, cybersecurity and technical support. We pick the stack for"
+        "The store as an engineering asset. Shopify, Magento, WooCommerce, OpenCart or custom: frontend, backend, integrations and APIs, DevOps, QA and support."
       ]
     },
     "marketing": {
       "uk": [
         "Маркетинг — експертиза · WEEXP",
-        "Не «більше реклами» — більше прибутку. Будуємо маркетинг, що працює на юніт-економіку: перформанс, SEO, контент, CRM-маркетинг і утримання. Кожен канал — із метрикою й відповідальним, а не «для галочки»."
+        "Не «більше реклами» — більше прибутку. Маркетинг, що працює на юніт-економіку: перформанс, SEO, контент, CRM і утримання. Кожен канал — із відповідальним."
       ],
       "en": [
         "Marketing — practice · WEEXP",
-        "Not «more ads» — more profit. We build marketing that works for unit economics: performance, SEO, content, CRM marketing and retention. Every channel has a metric and an owner, not «just because»."
+        "Not «more ads» — more profit. Marketing that works for unit economics: performance, SEO, content, CRM and retention. Every channel has a metric and an owner."
       ]
     },
     "sales-channels": {
       "uk": [
         "Канали продажів — експертиза · WEEXP",
-        "Там, де ваш товар уже шукають. Розвиваємо продажі там, де вже є попит: Amazon, Allegro, eBay, Etsy, Rozetka, Prom, Kaufland, Zalando та інші маркетплейси, а також B2B, social commerce, retail-інтеграції й omnichannel. Залучаємо marketplace-інтеграторів, спеціалізовані агенції та feed-management пров"
+        "Там, де ваш товар уже шукають. Розвиваємо продажі, де вже є попит: Amazon, Allegro, eBay, Rozetka, Prom, Kaufland, Zalando, а також B2B і omnichannel."
       ],
       "en": [
         "Sales channels — practice · WEEXP",
-        "Where your product is already searched for. We grow sales where demand already lives: Amazon, Allegro, eBay, Etsy, Rozetka, Prom, Kaufland, Zalando and other marketplaces, plus B2B, social commerce, retail integrations and omnichannel. We bring in marketplace integrators, specialized agencies and fe"
+        "Where your product is already searched for. We grow sales where demand lives: Amazon, Allegro, eBay, Rozetka, Prom, Kaufland, Zalando, plus B2B and omnichannel."
       ]
     },
     "data-growth": {
       "uk": [
         "Data & Growth — експертиза · WEEXP",
-        "Рішення на цифрах, не на відчуттях. Перетворюємо дані на зростання: GA4, GTM, BI й дашборди, атрибуція, CRO та A/B-тести, персоналізація й рекомендаційні рушії, AI, forecasting, pricing, мерчандайзинг і customer analytics. Не «звіти заради звітів», а рішення, що піднімають виручку й маржу."
+        "Рішення на цифрах, не на відчуттях. Перетворюємо дані на зростання: GA4, BI й дашборди, атрибуція, CRO та A/B-тести, forecasting і customer analytics."
       ],
       "en": [
         "Data & Growth — practice · WEEXP",
-        "Decisions on numbers, not gut feel. We turn data into growth: GA4, GTM, BI and dashboards, attribution, CRO and A/B testing, personalization and recommendation engines, AI, forecasting, pricing, merchandising and customer analytics. Not «reports for reports», but decisions that lift revenue and marg"
+        "Decisions on numbers, not gut feel. We turn data into growth: GA4, BI and dashboards, attribution, CRO and A/B testing, forecasting and customer analytics."
       ]
     }
   }

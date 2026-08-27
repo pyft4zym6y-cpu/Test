@@ -25,7 +25,10 @@ export function ServicePage() {
     if (!rawSys) return;
     const s = localizeSystem(rawSys, lang);
     // Повний SEO (title/description/canonical/lang/hreflang) під поточну мову й URL.
-    applySeo(`${s.title} — ${t('послуга WEEXP', 'WEEXP service')} · Commerce OS`,
+    // Суфікс скорочено: «— послуга WEEXP · Commerce OS» це 29 символів, і
+    // найдовший заголовок виходив на 62 при межі ~60, тобто обрізався у видачі.
+    // Слово «послуга» ще й нічого не додає: його не шукають. Лишається бренд.
+    applySeo(`${s.title} · Commerce OS · WEEXP`,
       `${s.title}: ${s.bigIdea}`, pathname);
   }, [rawSys, lang, pathname, t]);
 

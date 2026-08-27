@@ -91,10 +91,18 @@ const SERVICE_META = [
   ['expansion-markets', 'Експансія та ринки', 'Expansion & Markets'],
 ];
 for (const [slug, title, en] of SERVICE_META) {
-  const promise = (SYSTEMS.find((s) => s.startsWith(title)) || '').split(' — ')[1] || '';
+  // Обіцянка береться з другої половини рядка SYSTEMS і йде в опис ПІСЛЯ крапки,
+  // а там вона з малої літери: у видачі виходило «…докази. один бізнес, одне
+  // джерело правди» — речення, що починається з малої. Ставимо велику і крапку.
+  const rawPromise = (SYSTEMS.find((s) => s.startsWith(title)) || '').split(' — ')[1] || '';
+  const promise = rawPromise ? rawPromise[0].toUpperCase() + rawPromise.slice(1).replace(/\.?$/, '.') : '';
   ROUTES.push({
     path: `/systems/${slug}`,
-    title: `${title} — послуга WEEXP · Commerce OS`,
+    // Суфікс «— послуга WEEXP · Commerce OS» — 29 символів, і найдовша назва
+    // системи виводила заголовок на 62 при межі ~60: у видачі він обрізався.
+    // Слово «послуга» ще й не шукають — лишається бренд. Та сама формула, що
+    // в ServicePage.tsx: статика й клієнт мають казати одне.
+    title: `${title} · Commerce OS · WEEXP`,
     desc: `${title}: проблема → наслідки → діагностика → рішення → процес → результат → докази. ${promise}`.slice(0, 300),
     content: `<h1>${esc(title)}</h1><p>${esc(en)}. ${esc(promise)}</p><h2>Як працюємо</h2><p>Діагностуємо систему за даними (CRM/ERP/GA4), будуємо її під ключ і доводимо до економіки — щоб бізнес працював без героя. Проблема → наслідки → діагностика → рішення → процес → результат → докази → умови.</p>`,
   });
