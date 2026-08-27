@@ -34,6 +34,35 @@ export default async function handler(req, res) {
   const setRole = (userId, role) => admin(`/users/${userId}`, { method: 'PUT', body: JSON.stringify({ app_metadata: { role } }) });
   const valid = (r) => ROLES.includes(r);
 
+  /*
+   * Пошта ЦІЛІ — з бази, а не з тіла запиту.
+   *
+   * Захист бутстрап-super-адміна перевіряв `b.email`, тобто значення, яке
+   * присилає той, хто кличе, а діяв за `b.userId`. Гард і дія не були зв'язані
+   * між собою: досить не надіслати email (тоді `String(undefined)` — це
+   * 'undefined', і його в SUPERS немає) — і бутстрап-super знижується або
+   * видаляється попри перевірку.
+   *
+   * Захист від самозниження поруч зроблено правильно — по `me.id`. Тут просто
+   * не довели до кінця те саме.
+   *
+   * Це не підвищення привілеїв ззовні: дійти сюди може лише інший super. Але
+   * саме для цього випадку рейка й стоїть — щоб один промах не лишив команду
+   * без доступу до розділу, у якому цю помилку виправляють.
+   */
+  const emailOf = async (userId) => {
+    if (!userId) return '';
+    const r = await admin(`/users/${userId}`);
+    if (!r.ok) return null;                       // не змогли перевірити — не діємо
+    const u = await r.json().catch(() => null);
+    return String(u?.email || '').toLowerCase();
+  };
+  const isBootstrap = async (userId) => {
+    const mail = await emailOf(userId);
+    if (mail === null) return null;               // невідомо
+    return SUPERS.includes(mail);
+  };
+
   // Кожна зміна складу команди — у журнал. Дія сервера, тож браузерний
   // logAdminEvent її не бачив: журнал мовчав про найчутливіші операції.
   const journal = (kind, detail) => logServerEvent(myEmail, kind, { subject: b.email || b.userId || null, detail });
@@ -96,7 +125,9 @@ export default async function handler(req, res) {
 
     if (a === 'set_role') {
       if (!b.userId || !valid(b.role)) { res.status(200).json({ error: 'bad_params' }); return; }
-      if (SUPERS.includes(String(b.email || '').toLowerCase()) && b.role !== 'super') { res.status(200).json({ error: 'Не можна знизити бутстрап-super-адміна' }); return; }
+      const boot = await isBootstrap(b.userId);
+      if (boot === null) { res.status(200).json({ error: 'Не вдалося перевірити, кого змінюємо — дію скасовано' }); return; }
+      if (boot && b.role !== 'super') { res.status(200).json({ error: 'Не можна знизити бутстрап-super-адміна' }); return; }
       // Себе понизити не можна: один промах у списку — і super лишається без
       // доступу до розділу, у якому цю помилку виправляють.
       if (String(b.userId) === String(me?.id) && b.role !== 'super') {
@@ -111,6 +142,13 @@ export default async function handler(req, res) {
     if (a === 'ban') {
       if (!b.userId) { res.status(200).json({ error: 'bad_params' }); return; }
       if (String(b.userId) === String(me?.id)) { res.status(200).json({ error: 'Не можна заблокувати себе' }); return; }
+      // Захисту тут не було зовсім, хоча блокування замикає команду так само
+      // надійно, як зниження ролі: заблокований super не увійде взагалі.
+      if (b.banned) {
+        const bootBan = await isBootstrap(b.userId);
+        if (bootBan === null) { res.status(200).json({ error: 'Не вдалося перевірити, кого блокуємо — дію скасовано' }); return; }
+        if (bootBan) { res.status(200).json({ error: 'Не можна заблокувати бутстрап-super-адміна' }); return; }
+      }
       const r = await admin(`/users/${b.userId}`, { method: 'PUT', body: JSON.stringify({ ban_duration: b.banned ? '876000h' : 'none' }) });
       if (r.ok) void journal('team_ban', `${b.email || b.userId}: ${b.banned ? 'заблоковано' : 'розблоковано'}`);
       res.status(200).json(r.ok ? { ok: true } : { error: 'ban_failed' });
@@ -127,7 +165,9 @@ export default async function handler(req, res) {
 
     if (a === 'remove') {
       if (!b.userId) { res.status(200).json({ error: 'bad_params' }); return; }
-      if (SUPERS.includes(String(b.email || '').toLowerCase())) { res.status(200).json({ error: 'Не можна видалити бутстрап-super-адміна' }); return; }
+      const bootRm = await isBootstrap(b.userId);
+      if (bootRm === null) { res.status(200).json({ error: 'Не вдалося перевірити, кого видаляємо — дію скасовано' }); return; }
+      if (bootRm) { res.status(200).json({ error: 'Не можна видалити бутстрап-super-адміна' }); return; }
       const r = await admin(`/users/${b.userId}`, { method: 'DELETE' });
       if (r.ok) void journal('team_remove', String(b.email || b.userId));
       res.status(200).json(r.ok ? { ok: true } : { error: 'remove_failed' });
