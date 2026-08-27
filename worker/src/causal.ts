@@ -67,17 +67,39 @@ export function buildCausal(a: Analysis | null, money: MoneyResult | null, det?:
   // сумму revenue exposure (а не общий ориентир воронки).
   const findings = det?.findings ?? [];
   if (findings.length) {
-    for (const node of nodes) {
+    const linksOf = (node: CausalNode) => {
       const hay = `${node.rootCause} ${node.symptoms.join(' ')}`.toLowerCase();
-      const linked = findings.filter((f) => {
+      return findings.filter((f) => {
         const words = f.title.toLowerCase().split(/[^a-zа-яё0-9]+/i).filter((w) => w.length >= 5);
         return words.some((w) => hay.includes(w)) || Boolean(f.funnelStep && hay.includes(f.funnelStep));
       });
-      if (!linked.length) continue;
-      node.findingIds = linked.map((f) => f.id).slice(0, 8);
-      const rev = linked.reduce((s, f) => s + f.revenueExposure, 0);
-      if (rev > 0) node.moneyLink = `≈ ${rub(rev)}/рік за пов'язаними знахідками (${node.findingIds.slice(0, 4).join(', ')}${node.findingIds.length > 4 ? '…' : ''})`;
-    }
+    };
+
+    /*
+     * Одна находка цепляется к нескольким узлам — и раньше КАЖДЫЙ забирал её
+     * сумму целиком. Три узла про каталог при одной находке на 300 000 заявляли
+     * 900 000 при общем потенциале 600 000: читатель, складывающий числа по
+     * карте, получал больше, чем весь недополученный оборот аудита. Ровно от
+     * этого предостерегает сноска самой карты — «не додавати розриви напряму».
+     *
+     * Делим долями: сумма по узлам теперь не превышает суммы по находкам, как и
+     * в цепочной атрибуции money.ts, где вклады не дублируются, а делятся.
+     */
+    const shareCount = new Map<string, number>();
+    const perNode = nodes.map((n) => linksOf(n));
+    for (const linked of perNode) for (const f of linked) shareCount.set(f.id, (shareCount.get(f.id) ?? 0) + 1);
+
+    nodes.forEach((node, i) => {
+      // Режем до восьми ДО подсчёта денег: иначе сумма приходила от находок,
+      // которых в списке нет, и её нечем было проверить.
+      const linked = perNode[i].slice(0, 8);
+      if (!linked.length) return;
+      node.findingIds = linked.map((f) => f.id);
+      const rev = linked.reduce((s, f) => s + f.revenueExposure / (shareCount.get(f.id) || 1), 0);
+      const shared = linked.some((f) => (shareCount.get(f.id) ?? 1) > 1);
+      if (rev > 0) node.moneyLink = `≈ ${rub(Math.round(rev))}/рік за пов'язаними знахідками (${node.findingIds.slice(0, 4).join(', ')}${node.findingIds.length > 4 ? '…' : ''})`
+        + (shared ? ' — частка спільних знахідок, суми вузлів не складаються' : '');
+    });
   }
 
   return { nodes, moneyNote };
