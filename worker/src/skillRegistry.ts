@@ -145,6 +145,19 @@ async function readSkill(name: string): Promise<string> {
   return body;
 }
 
+/* ── Пробелы в наборе линз за прогон ──
+ * Отброшенные и отсутствующие скиллы назывались в логе и (только отброшенные) в
+ * промпте. После прогона это нигде не оставалось: аудит, шедший без трёх линз,
+ * в Run Record выглядел ровно как полный. Накапливаем по домену — пайплайн
+ * забирает в конце. Тот же приём, что resetUsage/getUsage для токенов.
+ */
+export type SkillGaps = { dropped: string[]; absent: string[] };
+const skillGaps = new Map<string, SkillGaps>();
+export function resetSkillGaps(): void { skillGaps.clear(); }
+export function getSkillGaps(): Record<string, SkillGaps> {
+  return Object.fromEntries([...skillGaps].filter(([, g]) => g.dropped.length || g.absent.length));
+}
+
 /**
  * Скиллы плагинов для конкретного аудита, свёрнутые в блок для промпта.
  *
@@ -189,11 +202,15 @@ export async function pluginSkillsFor(
   }
   if (absent.length) opts.log?.(`⚠️ скиллов нет в образе (${domain}): ${absent.join(', ')}`);
   if (dropped.length) opts.log?.(`⚠️ не влезли в лимит ${MAX_TOTAL} симв. (${domain}): ${dropped.join(', ')}`);
+  if (dropped.length || absent.length) skillGaps.set(domain, { dropped, absent });
   if (!parts.length) return '';
   // Отброшенное называем и в самом промпте: модель должна знать, что смотрит
-  // не полным набором линз, а не додумывать за отсутствующие.
-  const note = dropped.length
-    ? `\n\n> Не вошли в этот прогон из-за лимита: ${dropped.join(', ')}. Выводы по их предмету делать нельзя.`
+  // не полным набором линз, а не додумывать за отсутствующие. Отсутствующие в
+  // образе раньше сюда не попадали — а это худший случай: скилла нет вовсе,
+  // и модель об этом не знала.
+  const missing = [...dropped, ...absent];
+  const note = missing.length
+    ? `\n\n> Не вошли в этот прогон: ${missing.join(', ')}. Выводы по их предмету делать нельзя.`
     : '';
   return `\n\n# ОТРАСЛЕВЫЕ СКИЛЛЫ ДЛЯ АУДИТА «${domain}» (${parts.length})\n${parts.join('\n\n')}${note}\n`;
 }

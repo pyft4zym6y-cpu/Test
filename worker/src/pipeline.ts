@@ -95,6 +95,7 @@ import { buildKp, renderKpMd, renderKpPdf } from './kp.js';
 import { exportKpDocx } from './export/methodDocs.js';
 import { knowledgeCount } from './knowledge.js';
 import { hasKey, apiErrorHint, resetUsage, getUsage } from './anthropic.js';
+import { resetSkillGaps, getSkillGaps } from './skillRegistry.js';
 import { makeDeadline } from './util/timeout.js';
 import type { Analysis } from './analyze.js';
 import type { UxUiReport } from './uxui.js';
@@ -190,6 +191,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
   const metrics: AuditMetrics = { compliance: null, confidence: null, health: null, benchmarkIndex: null, aqcFails: null, potentialYear: null };
   const t0 = Date.now(); // старт прогона — для durationMs в Audit Run Record
   resetUsage(); // обнуляем счётчик токенов на прогон (cost per audit)
+  resetSkillGaps(); // и пробелы в наборе линз — они тоже per-run
   const prelaunch = Boolean(opts.prelaunch);
   const tier: Tier = prelaunch ? 0 : ((opts.tier ?? 1) as Tier);
   const site = normalizeUrl(opts.site ?? '');
@@ -931,6 +933,15 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
       await writeFile(join(dir, 'audit-run-record.json'), JSON.stringify(rr, null, 2), 'utf8');
       log(`✓ Audit Run Record: методология ${rr.methodologyVersion}, модулей вып. ${rr.modules.executed.length}, находок ${rr.findings.total}, evidence-покрытие ${rr.findings.evidenceCoverage ?? '—'}`);
     } catch (e) { log(`⚠️ Audit Run Record не собрался (${String(e).slice(0, 140)})`); }
+
+    // Пробелы в наборе линз — в метрики прогона: аудит, шедший без трёх скиллов,
+    // не должен выглядеть в Run Record как полный.
+    const gaps = getSkillGaps();
+    if (Object.keys(gaps).length) {
+      (metrics as Record<string, unknown>).skillGaps = gaps;
+      const n = Object.values(gaps).reduce((k, g) => k + g.dropped.length + g.absent.length, 0);
+      log(`⚠️ набор линз неполный: ${n} скиллов не вошло (${Object.keys(gaps).join(', ')})`);
+    }
 
     const parts = [`${files.length} файлов`];
     // Число файлов молчит о том, чего в них НЕТ. Упавшие модули — в итог прогона,
