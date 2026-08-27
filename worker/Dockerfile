@@ -6,11 +6,12 @@ FROM mcr.microsoft.com/playwright:v1.62.1-jammy
 
 WORKDIR /app/worker
 COPY worker/package.json worker/package-lock.json ./
-# Сервер стартует через tsx (запускаем TypeScript напрямую) — tsx лежит в
-# devDependencies, поэтому ставим и их. Иначе на хостинге с NODE_ENV=production
-# npm ci пропустит tsx и контейнер упадёт на старте («Application failed to respond»).
-ENV NODE_ENV=development
-RUN npm ci --include=dev
+# Сервер стартует через tsx (запускаем TypeScript напрямую), поэтому tsx живёт
+# в dependencies, а не в dev: раньше он был dev-зависимостью, и чтобы npm ci его
+# не пропустил, весь образ собирался с NODE_ENV=development. Переменная не
+# снималась после установки — контейнер и работал в дев-режиме, а vitest и
+# @types/* ехали в боевой образ. Теперь состав честный: только прод-зависимости.
+RUN npm ci --omit=dev
 # mcporter — мост к Exa для внешнего поиска (соцсети, инфофон, отзывы). Без него
 # agentReach молча деградировал: бинаря в образе не было с самого начала.
 RUN npm i -g mcporter || echo "mcporter не установлен — внешний поиск будет помечен как недоступный" 
@@ -24,6 +25,7 @@ COPY worker/ ./worker/
 COPY portal/ ./portal/
 
 WORKDIR /app/worker
+ENV NODE_ENV=production
 ENV PORT=8787
 # Каталог результатов вынесен на постоянный том Railway (Mount path /data).
 # Внутри образа файлы не переживают редеплой — тогда документы прогонов терялись.

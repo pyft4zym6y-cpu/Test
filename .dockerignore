@@ -1,0 +1,54 @@
+# Контекст сборки образа аудит-сервера (worker/Dockerfile собирается из корня).
+#
+# Без этого файла в контекст уезжал весь репозиторий: 426 МБ вместе с
+# зависимостями и 39 МБ истории git. Хуже, что `COPY worker/ ./worker/` тянул и
+# локальный worker/node_modules — то есть затирал слой `npm ci --omit=dev`
+# ровно тем составом зависимостей, от которого мы уходили.
+#
+# ВАЖНО: markdown здесь не исключаем шаблоном. В образ едут .claude/skills/,
+# а скилл — это и есть SKILL.md; правило вроде `*.md` тихо оставило бы движок
+# без методологии, и заметно это стало бы только по качеству аудита.
+
+# Зависимости — ставятся в образе из package-lock.json, а не копируются.
+node_modules/
+**/node_modules/
+
+# История и служебное.
+.git/
+.gitignore
+.github/
+.vscode/
+
+# Сборки и результаты прогонов.
+dist/
+**/dist/
+results/
+**/results/
+.vercel/
+
+# Секреты — на случай, если локально появятся.
+.env
+.env.*
+**/.env
+**/.env.*
+
+# В образ едет только worker/ + portal/ + .claude/skills/. Остальные приложения
+# монорепозитория серверу аудита не нужны — они деплоятся отдельно.
+/src/
+/weexp-site/
+/school/
+/video/
+/public/
+/docs/
+/scripts/
+/api/
+/*.md
+/index.html
+/components.json
+/postcss.config.js
+/tailwind.config.js
+/vite.config.ts
+/vite.artifact.config.ts
+/tsconfig.json
+/package.json
+/package-lock.json
