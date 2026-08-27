@@ -27,7 +27,7 @@
 .pj-save-dirty { color: var(--warn); background: color-mix(in srgb, var(--warn) 12%, transparent); }
 .pj-save-saving { color: var(--graphite); }
 .pj-save-saved { color: var(--ok-strong); background: color-mix(in srgb, var(--ok) 12%, transparent); }
-.pj-save-error { color: var(--red); background: color-mix(in srgb, var(--red) 10%, transparent); }
+.pj-save-error { color: var(--red-ink); background: color-mix(in srgb, var(--red) 10%, transparent); }
 /* Сегментований перемикач підрозділів (Користувачі / Аудити) */
 .adm-seg { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 16px; }
 .adm-seg button { border: var(--bd); background: var(--pure-white); color: var(--deep); font-family: var(--sans); font-weight: 700; font-size: 12.5px; padding: 7px 13px; cursor: pointer; box-shadow: 3px 3px 0 var(--deep); display: inline-flex; align-items: center; gap: 7px; transition: transform .1s, box-shadow .1s; }
@@ -41,7 +41,7 @@
 .adm-activity { list-style: none; margin: 0; padding: 0; }
 .adm-activity li { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
 .adm-activity li:last-child { border-bottom: 0; }
-.adm-act-dot { flex: 0 0 auto; width: 7px; height: 7px; border-radius: 50%; background: var(--red); }
+.adm-act-dot { flex: 0 0 auto; width: 7px; height: 7px; border-radius: 50%; background: var(--red-ink); }
 .adm-act-t { flex: 1 1 auto; color: var(--deep); }
 .adm-act-at { flex: 0 0 auto; color: var(--graphite); font-size: 11px; }
 .adm-team-tbl { margin: 10px 0 16px; }
@@ -138,7 +138,7 @@
 .adm-fr-conf { color: var(--graphite); font-size: 11px; }
 .adm-fr-acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
 .mc-btn.fr-on-ok { background: var(--ok, #1F9D55); color: #fff; border-color: var(--ok, #1F9D55); }
-.mc-btn.fr-on-bad { background: var(--red); color: #fff; border-color: var(--red); }
+.mc-btn.fr-on-bad { background: var(--red-ink); color: #fff; border-color: var(--red-ink); }
 .adm-worker-learn { margin-top: 10px; }
 .adm-worker-snap { margin-top: 8px; background: var(--cream-2); border-radius: 8px; padding: 8px 10px; font-size: 11.5px; line-height: 1.6; }
 /* Редактор документа аудиту */
@@ -190,6 +190,11 @@
   --graphite: #A8A192;
   --silver: #342F27;
   --red: #FF5A3C;
+  /* У тёмной темы кабинета --red-ink совпадает с --red: #FF5A3C на её фонах
+     даёт 5.4–6.0:1, то есть уже проходит AA. Токен нужен, чтобы правило
+     «текст берёт --red-ink» работало одинаково в обеих темах и не проваливалось
+     на светлый #D8250F, который на тёмном даёт лишь 3.72:1. */
+  --red-ink: #FF5A3C;
   --yellow: #FFD200;
   --ok: #35C26B;
   --ok-strong: #46D07C;
@@ -213,13 +218,13 @@
 .cab-gate-left { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
 .cab-gate-back { display: inline-flex; align-items: center; min-height: 40px; font-weight: 800;
   text-transform: uppercase; letter-spacing: .08em; font-size: 12px; color: var(--graphite); text-decoration: none; }
-.cab-gate-back:hover { color: var(--red); }
+.cab-gate-back:hover { color: var(--red-ink); }
 .cab-gate-badge { display: inline-block; background: var(--yellow); border: var(--bd); box-shadow: var(--sh);
   padding: 8px 16px; font-weight: 800; text-transform: uppercase; letter-spacing: .12em; font-size: 12.5px; color: var(--deep); }
 .cab-gate-h { font-size: clamp(38px, 6vw, 68px); line-height: .95; margin: 6px 0 2px; color: var(--deep); }
 .cab-gate-gets { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 10px; }
 .cab-gate-gets li { position: relative; padding-left: 26px; font-size: 15px; font-weight: 600; color: var(--charcoal); line-height: 1.4; }
-.cab-gate-gets li::before { content: '→'; position: absolute; left: 0; top: 0; color: var(--red); font-weight: 900; }
+.cab-gate-gets li::before { content: '→'; position: absolute; left: 0; top: 0; color: var(--red-ink); font-weight: 900; }
 .cab-gate-right { width: 100%; }
 .cab-form { display: flex; flex-direction: column; gap: 14px; background: var(--pure-white);
   border: var(--bd); box-shadow: var(--sh-lg); padding: clamp(22px, 3vw, 32px); }
@@ -241,16 +246,16 @@
 .cab .sysx-inp > input:focus,
 .cab .sysx-inp > select:focus,
 .cab .sysx-inp > textarea:focus { box-shadow: 3px 3px 0 var(--red); }
-.cab .sysx-inp.req > select { border-color: var(--red); }
+.cab .sysx-inp.req > select { border-color: var(--red-ink); }
 
 /* Групи полів бізнес-профілю */
 .cab-formgrp { margin: 22px 0; }
-.cab-formgrp-h { display: block; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--red); margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2.5px solid var(--deep); }
+.cab-formgrp-h { display: block; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--red-ink); margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2.5px solid var(--deep); }
 .cab-formgrp .cab-ch + .cab-ch { margin-top: 14px; }
 .cab-req-hint { color: var(--warn); font-size: 12px; }
 .cab-fill { color: var(--graphite); font-size: 12px; margin-left: auto; }
 .cab .sysx-inp > input:read-only { background: var(--cream-2); color: var(--graphite); }
-.cab-auth-err { color: var(--red); font-weight: 700; font-size: 12.5px; }
+.cab-auth-err { color: var(--red-ink); font-weight: 700; font-size: 12.5px; }
 .cab-auth-note { color: var(--deep); font-weight: 600; font-size: 12.5px; }
 
 /* Таби Вхід / Реєстрація */
@@ -285,7 +290,7 @@
 .cab-confirm-p b { color: var(--deep); font-weight: 800; }
 .cab-linkbtn { appearance: none; border: 0; background: none; color: var(--graphite); cursor: pointer;
   font-size: 12.5px; padding: 2px 0; text-align: left; }
-.cab-linkbtn:hover { color: var(--red); }
+.cab-linkbtn:hover { color: var(--red-ink); }
 
 /* ═══ Каркас ═══ */
 .cab:not(.cab-gate) { display: grid; grid-template-columns: 272px 1fr; }
@@ -296,7 +301,7 @@
 .cab-brand span { color: var(--graphite); font-weight: 800; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; }
 .cab .cab-nav { display: flex; flex-direction: column; gap: 18px; flex: 1; overflow-y: auto; }
 .cab-nav-g { display: flex; flex-direction: column; gap: 4px; }
-.cab-nav-gl { color: var(--red); font-weight: 800; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; padding: 4px 6px; }
+.cab-nav-gl { color: var(--red-ink); font-weight: 800; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; padding: 4px 6px; }
 .cab-nav-i { display: flex; align-items: center; justify-content: space-between; gap: 8px; text-align: left;
   background: none; border: 2px solid transparent; cursor: pointer; padding: 9px 11px; border-radius: 0; color: var(--charcoal);
   font: inherit; font-weight: 700; font-size: 14.5px; transition: background var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast); }
@@ -308,12 +313,12 @@
 .cab-side-foot { display: grid; gap: 4px; padding: 16px 6px 0; margin-top: 12px; border-top: 2.5px solid var(--deep); }
 .cab-admin-link { display: inline-block; justify-self: start; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em;
   color: var(--cream, #fdf6ec); background: var(--deep); border: 2px solid var(--deep); padding: 6px 10px; margin-bottom: 6px; text-decoration: none; }
-.cab-admin-link:hover { background: var(--red); border-color: var(--red); color: #fff; }
+.cab-admin-link:hover { background: var(--red-ink); border-color: var(--red-ink); color: #fff; }
 .cab-user { font-weight: 600; font-size: 12px; color: var(--charcoal); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cab-user-mode { font-size: 10.5px; font-weight: 700; color: var(--graphite); }
 .cab-signout { justify-self: start; background: none; border: none; cursor: pointer; color: var(--graphite);
   font: inherit; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; font-size: 11px; padding: 6px 0 0; }
-.cab-signout:hover { color: var(--red); }
+.cab-signout:hover { color: var(--red-ink); }
 
 .cab-main { padding: clamp(26px, 4vw, 56px); max-width: 1120px; }
 
@@ -348,7 +353,7 @@
 .cab-step-dot { flex: 0 0 auto; width: 28px; height: 28px; display: grid; place-items: center;
   font: 800 12px/1 var(--sans); background: var(--pure-white); color: var(--graphite); border: 2px solid var(--deep); }
 .cab-step.done .cab-step-dot { background: var(--deep); color: var(--pure-white); }
-.cab-step.current .cab-step-dot { background: var(--red); color: #fff; }
+.cab-step.current .cab-step-dot { background: var(--red-ink); color: #fff; }
 .cab-step-b { display: flex; flex-direction: column; gap: 1px; }
 .cab-step-b b { font-weight: 800; font-size: 14.5px; color: var(--charcoal); }
 .cab-step-b i { font-weight: 600; font-size: 11px; color: var(--graphite); font-style: normal; }
@@ -496,14 +501,14 @@
 .cab-tl-dot { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 14px; height: 14px;
   border: 2.5px solid var(--deep); background: var(--pure-white); border-radius: 0; }
 .cab-tl-step.on .cab-tl-dot { background: var(--deep); }
-.cab-tl-step.cur .cab-tl-dot { background: var(--red); border-color: var(--red); box-shadow: 0 0 0 3px rgba(245,48,28,.18); }
-.cab-tl-step.bad .cab-tl-dot { background: var(--red); border-color: var(--red); }
+.cab-tl-step.cur .cab-tl-dot { background: var(--red-ink); border-color: var(--red-ink); box-shadow: 0 0 0 3px rgba(245,48,28,.18); }
+.cab-tl-step.bad .cab-tl-dot { background: var(--red-ink); border-color: var(--red-ink); }
 .cab-tl-l { font-weight: 800; font-size: 12px; letter-spacing: .01em; color: var(--charcoal); text-align: center; line-height: 1.2; }
 .cab-tl-step.on .cab-tl-l { color: var(--deep); }
 .cab-tl-at { text-align: center; font-size: 10.5px; color: var(--graphite); }
 .cab-tl-sla { font-size: 12px; font-weight: 600; color: var(--graphite); }
 .cab-tl-sla.ok { color: var(--ok, #1F9D55); font-weight: 700; }
-.cab-tl-sla.bad { color: var(--red); font-weight: 700; }
+.cab-tl-sla.bad { color: var(--red-ink); font-weight: 700; }
 
 /* Чек-лист доступів (A) */
 .cab-clist { display: flex; flex-direction: column; gap: 12px; }
@@ -530,7 +535,7 @@
 .cab-upl-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .cab-upl-i { display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 2px solid var(--deep); background: var(--cream-2); padding: 8px 12px; }
 .cab-upl-name { background: none; border: 0; cursor: pointer; color: var(--deep); font-weight: 700; font-size: 13px; text-align: left; padding: 0; }
-.cab-upl-name:hover { color: var(--red); }
+.cab-upl-name:hover { color: var(--red-ink); }
 .cab-upl-meta { font-size: 11px; color: var(--graphite); }
 .cab-drop { display: flex; flex-direction: column; gap: 4px; align-items: center; text-align: center; cursor: pointer;
   border: 2.5px dashed var(--deep); background: var(--cream); padding: 18px; transition: background .12s, border-color .12s; }
@@ -561,7 +566,7 @@
 .af-ws button b { font-weight: 600; color: var(--graphite); margin-left: 4px; }
 .af-ws button.on { background: var(--deep); color: var(--cream); box-shadow: 3px 3px 0 var(--red); }
 .af-ws button.on b { color: var(--yellow); }
-.af-prog-bar span { display: block; height: 100%; background: var(--red); transition: width .3s; }
+.af-prog-bar span { display: block; height: 100%; background: var(--red-ink); transition: width .3s; }
 .af-block { background: var(--pure-white); border: var(--bd); box-shadow: var(--sh); padding: 18px; display: flex; flex-direction: column; gap: 14px; }
 .af-block.locked { opacity: .72; }
 .af-block-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 2px solid var(--deep); padding-bottom: 10px; }
@@ -570,7 +575,7 @@
   background: var(--yellow); border: 2px solid var(--deep); padding: 2px 8px; }
 .af-q { display: flex; flex-direction: column; gap: 5px; }
 .af-lbl { font-weight: 700; font-size: 14.5px; color: var(--deep); }
-.af-req { color: var(--red); font-style: normal; margin-left: 3px; }
+.af-req { color: var(--red-ink); font-style: normal; margin-left: 3px; }
 .af-hint { font-size: 11.5px; color: var(--graphite); }
 .af-inp { border: 2.5px solid var(--deep); background: var(--cream); color: var(--deep); font: inherit; font-size: 14px; padding: 9px 12px; }
 .af-inp:focus { outline: 0; box-shadow: 3px 3px 0 var(--red); }
@@ -585,7 +590,7 @@
 .af-scale { display: flex; gap: 4px; flex-wrap: wrap; }
 .af-scale-b { width: 34px; height: 34px; border: 2px solid var(--deep); background: var(--pure-white); color: var(--deep);
   font: inherit; font-weight: 800; cursor: pointer; }
-.af-scale-b.on { background: var(--red); color: #fff; border-color: var(--red); }
+.af-scale-b.on { background: var(--red-ink); color: #fff; border-color: var(--red-ink); }
 .af-scale-b:disabled { opacity: .5; }
 .af-file { display: inline-flex; align-items: center; gap: 8px; border: 2.5px dashed var(--deep); background: var(--cream);
   padding: 10px 14px; cursor: pointer; font-weight: 700; font-size: 13px; color: var(--deep); }
@@ -601,7 +606,7 @@
 /* Банер статусу доступів у Огляді (клієнт бачить відповідь менеджера) */
 .cab-accban { background: var(--pure-white); border: var(--bd); box-shadow: var(--sh); padding: 20px 22px; display: flex; flex-direction: column; gap: 12px; }
 .cab-accban-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.cab-accban-go { background: none; border: 0; cursor: pointer; color: var(--red); font-weight: 800; font-size: 12px; padding: 0; }
+.cab-accban-go { background: none; border: 0; cursor: pointer; color: var(--red-ink); font-weight: 800; font-size: 12px; padding: 0; }
 .cab-accban-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .cab-accban-i { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border: 2px solid var(--deep); background: var(--cream); padding: 9px 12px; }
 .cab-accban-t { font-family: var(--display); font-weight: 900; font-size: 15px; color: var(--deep); }
@@ -619,10 +624,10 @@
 .mc-boot { padding: 22vh 6vw; color: var(--graphite); font-weight: 700; }
 .mc-in { max-width: 1100px; margin: 0 auto; padding: clamp(24px, 5vw, 56px) clamp(16px, 4vw, 40px) 12vh; display: flex; flex-direction: column; gap: 20px; }
 .mc-back { align-self: flex-start; color: var(--graphite); text-decoration: none; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; font-size: 12px; }
-.mc-back:hover { color: var(--red); }
+.mc-back:hover { color: var(--red-ink); }
 .mc-msg { background: var(--pure-white); border: var(--bd); box-shadow: var(--sh); padding: 22px; font-weight: 600; color: var(--charcoal); }
 .mc-msg code { background: var(--cream-2); border: 1px solid var(--deep); padding: 1px 6px; font-size: 13px; }
-.mc-link { color: var(--red); font-weight: 800; }
+.mc-link { color: var(--red-ink); font-weight: 800; }
 .mc-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .mc-h1 { font-size: clamp(28px, 4vw, 44px); color: var(--deep); line-height: .98; }
 .mc-head-r { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
@@ -640,14 +645,14 @@
 .mc-tier-l { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .mc-tid { font-family: var(--display); font-weight: 900; font-size: 15px; color: var(--deep); }
 .mc-meta { font-size: 11px; color: var(--graphite); }
-.mc-file { background: none; border: 0; cursor: pointer; color: var(--red); font-size: 12px; font-weight: 700; padding: 0; }
+.mc-file { background: none; border: 0; cursor: pointer; color: var(--red-ink); font-size: 12px; font-weight: 700; padding: 0; }
 .mc-tier-act { display: flex; gap: 6px; flex-wrap: wrap; }
 .mc-btn { border: 2px solid var(--deep); background: var(--pure-white); color: var(--deep); font-weight: 800; font-size: 12px;
   padding: 7px 11px; cursor: pointer; border-radius: 0; transition: background .12s, color .12s; }
 .mc-btn:hover:not(:disabled) { box-shadow: 2px 2px 0 var(--deep); }
 .mc-btn.ok:hover:not(:disabled) { background: var(--ok, #1F9D55); color: #fff; }
 .mc-btn.wait:hover:not(:disabled) { background: var(--warn, #C0851E); color: #fff; }
-.mc-btn.bad:hover:not(:disabled) { background: var(--red); color: #fff; }
+.mc-btn.bad:hover:not(:disabled) { background: var(--red-ink); color: #fff; }
 .mc-btn.ghost { border-color: var(--silver, #E3D9C0); color: var(--graphite); }
 .mc-btn.ghost:hover:not(:disabled) { border-color: var(--deep); color: var(--deep); }
 .mc-btn:disabled { opacity: .5; cursor: default; }
@@ -665,7 +670,7 @@
 .adm-nav-i { text-align: left; background: none; border: 0; cursor: pointer; color: rgba(250,245,233,.7);
   font: inherit; font-weight: 700; font-size: 14.5px; padding: 10px 12px; border-radius: 0; transition: background .12s, color .12s; }
 .adm-nav-i:hover { color: var(--cream); background: rgba(255,255,255,.06); }
-.adm-nav-i.on { background: var(--red); color: #fff; }
+.adm-nav-i.on { background: var(--red-ink); color: #fff; }
 .adm-foot { display: flex; flex-direction: column; gap: 6px; padding: 14px 8px 0; border-top: 1px solid rgba(255,255,255,.15); color: rgba(250,245,233,.6); font-size: 11px; }
 .adm-foot span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .adm-refresh { align-self: flex-start; background: none; border: 0; color: var(--yellow); cursor: pointer; font: inherit; font-size: 11px; padding: 0; }
@@ -692,7 +697,7 @@
 .adm-fn-row { display: grid; grid-template-columns: 130px 1fr 34px; align-items: center; gap: 10px; }
 .adm-fn-l { font-size: 12.5px; font-weight: 700; color: var(--charcoal); }
 .adm-fn-bar { height: 18px; background: var(--cream-2); border: 2px solid var(--deep); position: relative; overflow: hidden; }
-.adm-fn-fill { position: absolute; inset: 0 auto 0 0; background: var(--red); transition: width .4s var(--ease-cine); }
+.adm-fn-fill { position: absolute; inset: 0 auto 0 0; background: var(--red-ink); transition: width .4s var(--ease-cine); }
 .adm-fn-n { text-align: right; font-weight: 800; color: var(--deep); font-size: 13px; }
 
 /* Розподіл статусів */
@@ -707,7 +712,7 @@
 .adm-feed-dot { width: 9px; height: 9px; border: 2px solid var(--deep); background: var(--graphite); }
 .adm-feed-i.k-user .adm-feed-dot { background: var(--deep); }
 .adm-feed-i.k-tier .adm-feed-dot { background: var(--yellow); }
-.adm-feed-i.k-lead .adm-feed-dot { background: var(--red); }
+.adm-feed-i.k-lead .adm-feed-dot { background: var(--red-ink); }
 .adm-feed-i.k-express .adm-feed-dot { background: var(--ok); }
 
 /* Картка експрес-аудиту в картці клієнта */
@@ -730,7 +735,7 @@
 /* Тренд активності */
 .adm-trend-bars { display: flex; align-items: flex-end; gap: 3px; height: 70px; }
 .adm-trend-bar { flex: 1; background: var(--cream-2); border: 1px solid var(--deep); min-height: 2px; align-self: flex-end; }
-.adm-trend-bar.has { background: var(--red); }
+.adm-trend-bar.has { background: var(--red-ink); }
 
 /* Сортовані заголовки + користувачі */
 .adm-tr-users { grid-template-columns: 2.2fr 1.4fr .7fr .7fr .9fr auto; }
@@ -748,9 +753,9 @@
 }
 .adm-sort { background: none; border: 0; cursor: pointer; font: inherit; font-weight: 800; font-size: 11px;
   letter-spacing: .04em; text-transform: uppercase; color: var(--graphite); padding: 0; text-align: left; }
-.adm-sort:hover { color: var(--red); }
+.adm-sort:hover { color: var(--red-ink); }
 .adm-mail { color: var(--deep); text-decoration: none; }
-.adm-mail:hover { color: var(--red); text-decoration: underline; }
+.adm-mail:hover { color: var(--red-ink); text-decoration: underline; }
 .adm-tr-btn { width: 100%; background: var(--pure-white); border: 0; border-bottom: 1px solid var(--cream-2); cursor: pointer; text-align: left; font: inherit; }
 .adm-tr-btn:hover { background: var(--cream); }
 
@@ -796,7 +801,7 @@
 .adm-fill-rf { margin-left: auto; padding: 4px 9px; }
 .adm-fill-blocks { display: flex; flex-direction: column; gap: 12px; }
 .adm-fill-block { display: flex; flex-direction: column; gap: 4px; }
-.adm-fill-bt { font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--red); }
+.adm-fill-bt { font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--red-ink); }
 .adm-fill-q { display: flex; flex-direction: column; gap: 1px; padding: 5px 0; border-bottom: 1px solid var(--cream-2); }
 .adm-fill-ql { font-size: 12px; color: var(--graphite); }
 .adm-fill-q.on .adm-fill-ql { color: var(--deep); font-weight: 600; }
@@ -827,7 +832,7 @@
 .adm-cf-row { display: grid; grid-template-columns: 150px 1fr 34px; align-items: center; gap: 10px; }
 .adm-fn-fill.tst-fill-wait { background: var(--warn, #C0851E); }
 .adm-fn-fill.tst-fill-ok { background: var(--ok, #1F9D55); }
-.adm-fn-fill.tst-fill-bad { background: var(--red); }
+.adm-fn-fill.tst-fill-bad { background: var(--red-ink); }
 
 .adm-board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(190px, 1fr); gap: 12px; overflow-x: auto; padding-bottom: 8px; }
 .adm-col { background: var(--cream-2); border: 2.5px solid var(--deep); display: flex; flex-direction: column; min-height: 120px; }
@@ -849,7 +854,7 @@
 .adm-stage-b:hover:not(:disabled):not(.on) { box-shadow: 2px 2px 0 var(--deep); }
 .adm-stage-b.on.tst-wait { background: var(--warn, #C0851E); color: #fff; }
 .adm-stage-b.on.tst-ok { background: var(--ok, #1F9D55); color: #fff; }
-.adm-stage-b.on.tst-bad { background: var(--red); color: #fff; }
+.adm-stage-b.on.tst-bad { background: var(--red-ink); color: #fff; }
 .adm-stage-b:disabled { opacity: .6; cursor: default; }
 
 /* Модалка адмінки */
@@ -865,7 +870,7 @@
 .adm-traffic { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; padding-top: 20px; border-top: 2.5px solid var(--deep); }
 .adm-traffic-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .adm-traffic-col { background: var(--pure-white); border: var(--bd); box-shadow: var(--sh); padding: 16px; display: flex; flex-direction: column; gap: 8px; }
-.adm-col-h { font-weight: 800; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--red); }
+.adm-col-h { font-weight: 800; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--red-ink); }
 .adm-bar-row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--cream-2); padding-bottom: 5px; }
 .adm-bar-row:last-child { border-bottom: 0; }
 .adm-bar-l { font-size: 13px; color: var(--charcoal); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -880,7 +885,7 @@
 .adm-c-email { font-weight: 700; color: var(--deep); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .adm-c-date { font-size: 12px; color: var(--graphite); }
 .adm-c-tiers { display: flex; gap: 4px; flex-wrap: wrap; }
-.adm-open { background: none; border: 0; color: var(--red); font: inherit; font-weight: 800; font-size: 12.5px; cursor: pointer; padding: 0; white-space: nowrap; }
+.adm-open { background: none; border: 0; color: var(--red-ink); font: inherit; font-weight: 800; font-size: 12.5px; cursor: pointer; padding: 0; white-space: nowrap; }
 
 /* Панель деталей користувача */
 .adm-drawer-wrap { position: fixed; inset: 0; background: rgba(20,18,16,.4); display: flex; justify-content: flex-end; z-index: 60; }
@@ -901,7 +906,7 @@
 .adm-empty { color: var(--graphite); }
 .adm-tiers-row { display: flex; gap: 6px; flex-wrap: wrap; }
 .adm-files { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-.adm-file { background: none; border: 0; color: var(--red); font-weight: 700; font-size: 13px; cursor: pointer; padding: 0; text-align: left; }
+.adm-file { background: none; border: 0; color: var(--red-ink); font-weight: 700; font-size: 13px; cursor: pointer; padding: 0; text-align: left; }
 
 /* ── Повна сторінка клієнта (замість drawer) ── */
 .adm-userpage { display: flex; flex-direction: column; gap: 0; }
@@ -973,7 +978,7 @@
 /* Команда */
 .pj-team { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
 .pj-member { border: 2.5px solid var(--deep); background: var(--cream); padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
-.pj-m-role { font-size: 10.5px; color: var(--red); text-transform: uppercase; letter-spacing: .04em; }
+.pj-m-role { font-size: 10.5px; color: var(--red-ink); text-transform: uppercase; letter-spacing: .04em; }
 .pj-m-name { font-size: 14.5px; }
 
 /* Таблиці (фінкалендар + тарифікація) */
@@ -1051,7 +1056,7 @@
 .pj-mgr-bar { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 2px solid var(--silver); }
 .pj-mgr-save { display: flex; gap: 12px; align-items: center; }
 .pj-ed-pubrow { padding-top: 10px; border-top: 2px dashed var(--deep); }
-.mc-btn.bad { background: var(--red); color: #fff; }
+.mc-btn.bad { background: var(--red-ink); color: #fff; }
 
 /* ─── AI-чернетка + пресети ─── */
 .pj-ai { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 10px; margin-bottom: 14px; border: 2.5px dashed var(--deep); background: var(--cream-2); }
@@ -1100,7 +1105,7 @@
 .adm-bulk-lbl { color: var(--graphite); }
 .adm-lead-card { position: relative; }
 .adm-lead-card.sel { outline: 3px solid var(--red); outline-offset: 1px; }
-.adm-lead-chk { position: absolute; top: 8px; right: 8px; width: 18px; height: 18px; cursor: pointer; z-index: 2; accent-color: var(--red); }
+.adm-lead-chk { position: absolute; top: 8px; right: 8px; width: 18px; height: 18px; cursor: pointer; z-index: 2; accent-color: var(--red-ink); }
 .adm-lead-open { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 0; font: inherit; cursor: pointer; color: inherit; }
 .adm-lead-open b, .adm-lead-open span { display: block; }
 
@@ -1114,7 +1119,7 @@
 .cab-shared { border: 2.5px solid var(--deep); background: var(--pure-white); box-shadow: 4px 4px 0 var(--deep); padding: 16px 18px; margin: 4px 0 18px; }
 .cab-shared-list { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 8px; }
 .cab-shared-i { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
-.cab-shared-dl { background: none; border: 0; cursor: pointer; font: inherit; color: var(--red); font-size: 14.5px; text-align: left; padding: 0; }
+.cab-shared-dl { background: none; border: 0; cursor: pointer; font: inherit; color: var(--red-ink); font-size: 14.5px; text-align: left; padding: 0; }
 .cab-shared-dl:hover { text-decoration: underline; }
 .cab-shared-at { color: var(--graphite); font-size: 11px; }
 /* Адмінка: модерація */
@@ -1147,7 +1152,7 @@
 .cab-exres-bar { background: color-mix(in srgb, var(--charcoal) 10%, transparent); height: 8px; border-radius: 4px; overflow: hidden; }
 .cab-exres-bar i { display: block; height: 100%; border-radius: 4px; background: #1F6E4E; }
 .cab-exres-bar i[data-lvl='mid'] { background: #C58A00; }
-.cab-exres-bar i[data-lvl='bad'] { background: var(--red); }
+.cab-exres-bar i[data-lvl='bad'] { background: var(--red-ink); }
 .cab-exres-v i { font-style: normal; color: var(--graphite); font-size: 11px; }
 .cab-exres-acts { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 13.5px; line-height: 1.5; }
 
@@ -1158,10 +1163,10 @@
 @media (max-width: 860px) { .cab-team-row { grid-template-columns: 1fr 1fr; } .cab-team-del { grid-column: 2; justify-self: end; } }
 
 /* ── Документи-workspace: конектори, маркетплейси, файли ── */
-.cab-acc-conn { border: 1.5px solid var(--red); background: var(--red); color: #fff; padding: 8px 14px; font: inherit; font-weight: 700; font-size: 12.5px; cursor: pointer; }
+.cab-acc-conn { border: 1.5px solid var(--red); background: var(--red-ink); color: #fff; padding: 8px 14px; font: inherit; font-weight: 700; font-size: 12.5px; cursor: pointer; }
 .cab-acc-conn.st-progress { background: #C58A00; border-color: #C58A00; }
 .cab-acc-conn.st-on { background: #1F6E4E; border-color: #1F6E4E; }
-.cab-acc-conn.st-error { background: var(--red); }
+.cab-acc-conn.st-error { background: var(--red-ink); }
 .cab-acc-connsel { font-size: 11.5px; padding: 6px 8px; border: 1px solid var(--line); background: var(--pure-white, #fff); }
 .cab-acc-hows { display: flex; gap: 14px; margin-top: 8px; flex-wrap: wrap; }
 .cab-mp-row, .cab-file-row { display: grid; gap: 8px; align-items: center; }
@@ -1181,7 +1186,7 @@
 .cab-file-why { grid-column: 1 / -1; font-size: 11px; color: var(--graphite); }
 
 .cab-ga-ok { color: #1F6E4E; }
-.cab-ga-drop { background: none; border: 0; padding: 0; color: var(--red); font: inherit; font-size: 12px; cursor: pointer; text-decoration: underline; }
+.cab-ga-drop { background: none; border: 0; padding: 0; color: var(--red-ink); font: inherit; font-size: 12px; cursor: pointer; text-decoration: underline; }
 
 /* Сторінковий список клієнтів: кнопка «показати ще» під таблицею. */
 .adm-more { display: flex; justify-content: center; padding: 14px 0 4px; }
