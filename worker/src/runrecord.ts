@@ -100,6 +100,11 @@ export function snapshotHash(data: unknown): string {
  * Ожидаемые линзы аудита → файл-артефакт. «Выполнено» определяется по факту наличия
  * артефакта в директории прогона (честно: executed = произведён артефакт), «пропущено» —
  * ожидался, но отсутствует (например, тир не даёт данных). Файлы вне карты не считаются.
+ *
+ * Имя файла здесь ОБЯЗАНО совпадать с тем, что пайплайн реально пишет. Однажды не
+ * совпало у шести линз (`*flow.json` против `*audit.json`) — и они числились
+ * пропущенными в каждом прогоне, включая идеальный. Сверку держит lenses.test.ts:
+ * он читает pipeline.ts и сопоставляет с вызовами writeFile.
  */
 export const EXPECTED_LENSES: { module: string; file: RegExp }[] = [
   { module: 'uxui', file: /^uxui\.json$/ },
@@ -111,12 +116,12 @@ export const EXPECTED_LENSES: { module: string; file: RegExp }[] = [
   { module: 'seoflow', file: /^seoflow\.json$/ },
   { module: 'strategyaudit', file: /^strategyaudit\.json$/ },
   { module: 'structureflow', file: /^structure.*\.json$/ },
-  { module: 'pageflow', file: /^pageflow\.json$/ },
-  { module: 'blockflow', file: /^blockflow\.json$/ },
-  { module: 'merchflow', file: /^merchflow\.json$/ },
-  { module: 'croflow', file: /^croflow\.json$/ },
-  { module: 'analyticsflow', file: /^analyticsflow\.json$/ },
-  { module: 'cjmflow', file: /^cjmflow\.json$/ },
+  { module: 'pageflow', file: /^pageaudit\.json$/ },
+  { module: 'blockflow', file: /^blockaudit\.json$/ },
+  { module: 'merchflow', file: /^merchaudit\.json$/ },
+  { module: 'croflow', file: /^croaudit\.json$/ },
+  { module: 'analyticsflow', file: /^analyticsaudit\.json$/ },
+  { module: 'cjmflow', file: /^cjmaudit\.json$/ },
   { module: 'geoflow', file: /^geoflow\.json$/ },
   { module: 'auditchain', file: /^auditchain\.json$/ },
   { module: 'unitecon', file: /^unitecon\.json$/ },

@@ -173,6 +173,20 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
   // в Протокол синергии/QA — находка не теряется в логе, а становится задачей.
   const debugLog: string[] = [];
   const log = (m: string) => { if (/⚠️|✖/.test(m)) debugLog.push(m.replace(/^[⚠️✖]+\s*/, '')); baseLog(m); };
+  // Падение одного документа не убивает прогон — так и задумано. Но раньше оно
+  // и не оставляло следа нигде, кроме строки лога: Meta-Audit получал
+  // пустой список падений жёстко, а Run Record выводил статусы модулей из того,
+  // какие файлы легли на диск, — то есть упавший модуль был неотличим от
+  // осознанно пропущенного. Гейт «упавших модулей нет» не мог сработать
+  // никогда, и клиент получал зелёную строку под непроверенным утверждением.
+  //
+  // fail() пишет ту же строку в лог И регистрирует модуль. Имя модуля обязано
+  // совпадать с EXPECTED_LENSES в runrecord.ts — это проверяет тест lenses.
+  const failedModules: string[] = [];
+  const fail = (module: string, what: string, e: unknown, cut = 120) => {
+    if (!failedModules.includes(module)) failedModules.push(module);
+    log(`⚠️ ${what} (${String(e).slice(0, cut)})`);
+  };
   const metrics: AuditMetrics = { compliance: null, confidence: null, health: null, benchmarkIndex: null, aqcFails: null, potentialYear: null };
   const t0 = Date.now(); // старт прогона — для durationMs в Audit Run Record
   resetUsage(); // обнуляем счётчик токенов на прогон (cost per audit)
@@ -318,7 +332,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await writeFile(join(dir, 'journey.json'), JSON.stringify(journeyReport, null, 2), 'utf8');
         await renderPdf(cap('journey', renderJourneyHtml(journeyReport)), join(dir, 'Карта-пути-клиента-A0.pdf'), browser);
         log(`✓ Карта пути клиента A0 (PDF): пройдено ${journeyReport.passed}/${journeyReport.steps.length}, тупиков ${journeyReport.deadends}`);
-      } catch (e) { log(`⚠️ Карта пути клиента не собралась (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('journey', 'Карта пути клиента не собралась', e); }
 
       try {
         siteAudit = buildSiteAudit(ds, { journey: journeySteps });
@@ -361,7 +375,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await writeFile(join(dir, 'pagereport.json'), JSON.stringify(siteAudit, null, 2), 'utf8');
         await renderPdf(cap('uxui', renderAuditHtml(siteAudit, uxui)), join(dir, 'UX-UI-аудит-A0.pdf'), browser);
         log(`✓ UX/UI Audit A0 (PDF): соответствие эталону ${siteAudit.totalPct}%, системных дефектов ${siteAudit.systemic.length}`);
-      } catch (e) { log(`⚠️ PDF UX/UI Audit A0 не собрался (${String(e).slice(0, 120)}) — остальные материалы не затронуты`); }
+      } catch (e) { fail('pagereport', 'PDF UX/UI Audit A0 не собрался — остальные материалы не затронуты', e); }
 
       // SEO Architecture A0 — видимое дерево → проблемные узлы → рекомендуемое (A0 §10).
       try {
@@ -369,7 +383,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await writeFile(join(dir, 'seoarch.json'), JSON.stringify(seo, null, 2), 'utf8');
         await renderPdf(cap('seo', renderSeoArchHtml(seo)), join(dir, 'SEO-Architecture-A0.pdf'), browser);
         log(`✓ SEO Architecture A0 (PDF): ссылок ${seo.totals.links}, проблемных узлов ${seo.issues.length}`);
-      } catch (e) { log(`⚠️ PDF SEO Architecture A0 не собрался (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('seoarch', 'PDF SEO Architecture A0 не собрался', e); }
 
       // Технический внешний аудит A0 — категории проверок из обхода (A0).
       try {
@@ -377,7 +391,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await writeFile(join(dir, 'techaudit.json'), JSON.stringify(tech, null, 2), 'utf8');
         await renderPdf(cap('tech', renderTechAuditHtml(tech)), join(dir, 'Технический-аудит-A0.pdf'), browser);
         log(`✓ Технический аудит A0 (PDF): пройдено ${tech.score.pct}%, blocked ${tech.blocked.length}`);
-      } catch (e) { log(`⚠️ PDF Технический аудит A0 не собрался (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('techaudit', 'PDF Технический аудит A0 не собрался', e); }
 
       // Content Audit A0 — контент по способности вести к решению (A0 §11).
       try {
@@ -386,7 +400,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await writeFile(join(dir, 'contentaudit.json'), JSON.stringify(content, null, 2), 'utf8');
         await renderPdf(cap('content', renderContentAuditHtml(content, contentFlow)), join(dir, 'Content-Audit-A0.pdf'), browser);
         log(`✓ Content Audit A0 (PDF): типов страниц ${content.rows.length}`);
-      } catch (e) { log(`⚠️ PDF Content Audit A0 не собрался (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('contentaudit', 'PDF Content Audit A0 не собрался', e); }
 
       // SEO-аудит как система — 8 артефактов (Strategy/Semantic/Technical/Page/
       // Block/Problem-Opportunity/Score/Roadmap), а не «мета-теги + индексация».
@@ -395,7 +409,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await writeFile(join(dir, 'seoflow.json'), JSON.stringify(seoFlow, null, 2), 'utf8');
         await renderPdf(cap('seoflow', renderSeoFlowHtml(seoFlow)), join(dir, 'SEO-аудит-система-A0.pdf'), browser);
         log(`✓ SEO-аудит (система, PDF): SEO Score ${seoFlow.score.overall}/10, проблем ${seoFlow.problems.length}`);
-      } catch (e) { log(`⚠️ PDF SEO-аудит (система) не собрался (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('seoflow', 'PDF SEO-аудит (система) не собрался', e); }
 
       // Strategic Audit — верхнеуровневый: правильно ли сайт спроектирован как
       // инструмент бизнеса. Идёт первым; его выводы — вход для остальных аудитов.
@@ -404,7 +418,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await writeFile(join(dir, 'strategyaudit.json'), JSON.stringify(strat, null, 2), 'utf8');
         await renderPdf(cap('strategy', renderStrategyFlowHtml(strat)), join(dir, 'Strategic-Audit-A0.pdf'), browser);
         log(`✓ Strategic Audit (PDF): Health ${strat.health.overall}/10, рисков ${strat.risks.length}`);
-      } catch (e) { log(`⚠️ PDF Strategic Audit не собрался (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('strategyaudit', 'PDF Strategic Audit не собрался', e); }
 
       // Structure & Site Tree Audit — архитектура сайта как система: дерево + граф
       // + коммерческие оси + точки входа/выхода + целевое дерево + roadmap.
@@ -413,7 +427,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await writeFile(join(dir, 'structureaudit.json'), JSON.stringify(structure, null, 2), 'utf8');
         await renderPdf(cap('structure', renderStructureFlowHtml(structure)), join(dir, 'Structure-Site-Tree-A0.pdf'), browser);
         log(`✓ Structure & Site Tree (PDF): Health ${structure.health.overall}/10, разрывов ${structure.gaps.length}`);
-      } catch (e) { log(`⚠️ PDF Structure & Site Tree не собрался (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('structureflow', 'PDF Structure & Site Tree не собрался', e); }
 
       // Page Audit — каждая страница как единица бизнеса: 16 направлений на
       // страницу, Page Health Matrix, карточки с 7 вопросами, Golden Standard/Gap.
@@ -422,7 +436,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await writeFile(join(dir, 'pageaudit.json'), JSON.stringify(pageFlow, null, 2), 'utf8');
         await renderPdf(cap('pageaudit', renderPageFlowHtml(pageFlow)), join(dir, 'Page-Audit-A0.pdf'), browser);
         log(`✓ Page Audit (PDF): Health ${pageFlow.overall}/10, страниц ${pageFlow.cards.length}`);
-      } catch (e) { log(`⚠️ PDF Page Audit не собрался (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('pageflow', 'PDF Page Audit не собрался', e); }
 
       // Block-by-Block Audit — самый детальный уровень: каждый блок как
       // функциональная единица со всеми линзами (15 направлений), Block Health
@@ -432,7 +446,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await writeFile(join(dir, 'blockaudit.json'), JSON.stringify(blockFlow, null, 2), 'utf8');
         await renderPdf(cap('blockaudit', renderBlockFlowHtml(blockFlow)), join(dir, 'Block-by-Block-Audit-A0.pdf'), browser);
         log(`✓ Block-by-Block Audit (PDF): Health ${blockFlow.overall}/10, блоков ${blockFlow.cards.length}`);
-      } catch (e) { log(`⚠️ PDF Block-by-Block Audit не собрался (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('blockflow', 'PDF Block-by-Block Audit не собрался', e); }
 
       // E-commerce / Merchandising Audit — управление ассортиментом и коммерческая
       // экспозиция: механики, карточка товара, пути discovery, block-by-block.
@@ -441,7 +455,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await writeFile(join(dir, 'merchaudit.json'), JSON.stringify(merchFlow, null, 2), 'utf8');
         await renderPdf(cap('merchaudit', renderMerchFlowHtml(merchFlow)), join(dir, 'Merchandising-Audit-A0.pdf'), browser);
         log(`✓ Merchandising Audit (PDF): Health ${merchFlow.health.overall}/10, разрывов ${merchFlow.gaps.length}`);
-      } catch (e) { log(`⚠️ PDF Merchandising Audit не собрался (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('merchflow', 'PDF Merchandising Audit не собрался', e); }
 
       // CRO Audit — системное превращение посетителя в целевое действие: воронка,
       // friction/trust/CTA maps, block-cards, гипотезы (ICE), roadmap.
@@ -450,7 +464,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await writeFile(join(dir, 'croaudit.json'), JSON.stringify(croFlow, null, 2), 'utf8');
         await renderPdf(cap('croaudit', renderCroFlowHtml(croFlow)), join(dir, 'CRO-Audit-A0.pdf'), browser);
         log(`✓ CRO Audit (PDF): Health ${croFlow.health.overall}/10, гипотез ${croFlow.hypotheses.length}`);
-      } catch (e) { log(`⚠️ PDF CRO Audit не собрался (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('croflow', 'PDF CRO Audit не собрался', e); }
 
       // Analytics Audit — система измерения (GA4/GTM/CRM/attribution/reporting).
       // Честно: ~95% требует доступа; обход даёт baseline инструментирования + план.
@@ -459,7 +473,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await writeFile(join(dir, 'analyticsaudit.json'), JSON.stringify(analyticsFlow, null, 2), 'utf8');
         await renderPdf(cap('analyticsaudit', renderAnalyticsFlowHtml(analyticsFlow)), join(dir, 'Analytics-Audit-A0.pdf'), browser);
         log(`✓ Analytics Audit (PDF): baseline ${analyticsFlow.baseline.instrumentation}/10, L${analyticsFlow.maturity.floor}`);
-      } catch (e) { log(`⚠️ PDF Analytics Audit не собрался (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('analyticsflow', 'PDF Analytics Audit не собрался', e); }
 
       // Customer Journey Audit — полный путь клиента Awareness→Advocacy: on-site
       // этапы, персоны, эмоции, expectation, post-purchase. Data-зависимое — честно «н/д».
@@ -468,7 +482,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await writeFile(join(dir, 'cjmaudit.json'), JSON.stringify(cjmFlow, null, 2), 'utf8');
         await renderPdf(cap('cjmaudit', renderCjmFlowHtml(cjmFlow)), join(dir, 'Customer-Journey-Audit-A0.pdf'), browser);
         log(`✓ Customer Journey Audit (PDF): on-site ${cjmFlow.onsiteReadiness}/10, L${cjmFlow.maturity.floor}`);
-      } catch (e) { log(`⚠️ PDF Customer Journey Audit не собрался (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('cjmflow', 'PDF Customer Journey Audit не собрался', e); }
 
       // GEO / AEO / LLM Visibility — отдельный модуль: измеримое из обхода
       // (AI-crawlability, answerability, сущности, разметка) + честный шаблон под
@@ -478,7 +492,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await writeFile(join(dir, 'geoflow.json'), JSON.stringify(geoFlow, null, 2), 'utf8');
         await renderPdf(cap('geoflow', renderGeoFlowHtml(geoFlow)), join(dir, 'GEO-AEO-LLM-аудит-A0.pdf'), browser);
         log(`✓ GEO/AEO/LLM-аудит (PDF): GEO Score ${geoFlow.score.overall}/10, блоков ${geoFlow.blockCards.length}`);
-      } catch (e) { log(`⚠️ PDF GEO/AEO/LLM-аудит не собрался (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('geoflow', 'PDF GEO/AEO/LLM-аудит не собрался', e); }
 
       // Единая система аудита — связка 6 уровней (Business → Structure → UX/UI →
       // Content → SEO → CRO): конвейер готовности, хендофы и сквозной беклог Impact×Effort.
@@ -487,7 +501,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await writeFile(join(dir, 'auditchain.json'), JSON.stringify(chain, null, 2), 'utf8');
         await renderPdf(cap('chain', renderAuditChainHtml(chain)), join(dir, 'Единая-система-аудита-A0.pdf'), browser);
         log(`✓ Единая система аудита (PDF): готовность ${chain.overall.value}/100, задач ${chain.backlog.length}`);
-      } catch (e) { log(`⚠️ PDF Единая система аудита не собралась (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('auditchain', 'PDF Единая система аудита не собралась', e); }
 
       // Unit Economics Audit — framework + калькулятор-шаблон (100% на бизнес-данных,
       // не измеряется из обхода; числа не выдумываются).
@@ -496,7 +510,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await writeFile(join(dir, 'unitecon.json'), JSON.stringify(ue, null, 2), 'utf8');
         await renderPdf(cap('unitecon', renderUnitEconHtml(ue)), join(dir, 'Unit-Economics-Audit-A0.pdf'), browser);
         log(`✓ Unit Economics Audit (PDF): метрик ${ue.decomposition.length}, единиц ${ue.units.length}`);
-      } catch (e) { log(`⚠️ PDF Unit Economics не собрался (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('unitecon', 'PDF Unit Economics не собрался', e); }
 
       // GEO / New Market Expansion — readiness framework: i18n-готовность из обхода +
       // research/intake по рынку (без выдуманных данных о спросе/экономике).
@@ -505,7 +519,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await writeFile(join(dir, 'geoexpand.json'), JSON.stringify(gx, null, 2), 'utf8');
         await renderPdf(cap('geoexpand', renderGeoExpandHtml(gx)), join(dir, 'New-Market-Expansion-A0.pdf'), browser);
         log(`✓ New Market Expansion (PDF): i18n readiness ${gx.i18nReadiness.score}/10, критериев ${gx.criteria.length}`);
-      } catch (e) { log(`⚠️ PDF New Market Expansion не собрался (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('geoexpand', 'PDF New Market Expansion не собрался', e); }
 
       // Master Audit System — связка ВОЕДИНО: реестр всех аудитов по доменам, единый
       // стандарт (12 шагов) + карта находки (17 полей), последовательный ланцюг и
@@ -515,7 +529,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await writeFile(join(dir, 'auditsystem.json'), JSON.stringify(sys, null, 2), 'utf8');
         await renderPdf(cap('auditsystem', renderAuditSystemHtml(sys)), join(dir, 'Master-Audit-System-A0.pdf'), browser);
         log(`✓ Master Audit System (PDF): аудитов ${sys.coverage.total}, задач ${sys.backlog.length}, готовность ${sys.readiness.value}/10`);
-      } catch (e) { log(`⚠️ PDF Master Audit System не собрался (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('auditsystem', 'PDF Master Audit System не собрался', e); }
 
       // Commerce Intelligence Audit A0 — реконструкция бизнеса из сайта (35+ слоёв,
       // цепочки наблюдаем→дедуцируем→проверить→решение, зрелость 1–5). Флагман.
@@ -526,7 +540,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await writeFile(join(dir, 'intelligence.json'), JSON.stringify(ci, null, 2), 'utf8');
         await renderPdf(cap('intelligence', renderIntelligenceHtml(ci)), join(dir, 'Commerce-Intelligence-Audit-A0.pdf'), browser);
         log(`✓ Commerce Intelligence A0 (PDF): зрелость ${ci.maturity.level}/5 «${ci.maturity.name}», слоёв ${ci.layers.length}, цепочек ${ci.chains.length}`);
-      } catch (e) { log(`⚠️ Commerce Intelligence не собрался (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('intelligence', 'Commerce Intelligence не собрался', e); }
 
       // Маркетинговые механики A0 — реестр 34 механик (AOV/retention/конверсия/доверие/охват).
       try {
@@ -534,7 +548,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await writeFile(join(dir, 'mechanics.json'), JSON.stringify(mech, null, 2), 'utf8');
         await renderPdf(cap('mechanics', renderMechanicsHtml(mech)), join(dir, 'Маркетинговые-механики-A0.pdf'), browser);
         log(`✓ Маркетинговые механики A0 (PDF): активно ${mech.score.have}/${mech.score.measurable} (${mech.score.pct}%)`);
-      } catch (e) { log(`⚠️ PDF Маркетинговые механики не собрался (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('mechanics', 'PDF Маркетинговые механики не собрался', e); }
 
       // Внешний контур: соцсети, инфофон бренда, отзывы (сайт + внешние площадки).
       // Внешний слой собирает Claude web_search; без ключа — честный BLOCKED-режим.
@@ -543,19 +557,19 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await writeFile(join(dir, 'social.json'), JSON.stringify(social, null, 2), 'utf8');
         await renderPdf(cap('social', renderSocialHtml(social)), join(dir, 'Аудит-соцсетей-A0.pdf'), browser);
         log(`✓ Аудит соцсетей A0 (PDF): привязано ${social.linked}/${social.profiles.length}${social.searched ? ', внешний поиск выполнен' : ''}`);
-      } catch (e) { log(`⚠️ Аудит соцсетей не собрался (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('social', 'Аудит соцсетей не собрался', e); }
       try {
         const mentions = await buildMentionsAudit(ds, log);
         await writeFile(join(dir, 'mentions.json'), JSON.stringify(mentions, null, 2), 'utf8');
         await renderPdf(cap('mentions', renderMentionsHtml(mentions)), join(dir, 'Внешний-инфофон-A0.pdf'), browser);
         log(`✓ Внешний инфофон A0 (PDF): упоминаний ${mentions.mentions.length}${mentions.searched ? '' : ' (поиск заблокирован)'}`);
-      } catch (e) { log(`⚠️ Внешний инфофон не собрался (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('mentions', 'Внешний инфофон не собрался', e); }
       try {
         const reviews = await buildReviewsAudit(ds, log);
         await writeFile(join(dir, 'reviews.json'), JSON.stringify(reviews, null, 2), 'utf8');
         await renderPdf(cap('reviews', renderReviewsHtml(reviews)), join(dir, 'Аудит-отзывов-A0.pdf'), browser);
         log(`✓ Аудит отзывов A0 (PDF): источников ${reviews.sources.length}`);
-      } catch (e) { log(`⚠️ Аудит отзывов не собрался (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('reviews', 'Аудит отзывов не собрался', e); }
 
       // Аудит каналов A0 — внешние сигналы каналов (A0).
       try {
@@ -563,7 +577,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await writeFile(join(dir, 'channels.json'), JSON.stringify(channels, null, 2), 'utf8');
         await renderPdf(cap('channels', renderChannelsHtml(channels)), join(dir, 'Аудит-каналов-A0.pdf'), browser);
         log(`✓ Аудит каналов A0 (PDF): зашито ${channels.wired}/${channels.rows.length}, blocked ${channels.blocked}`);
-      } catch (e) { log(`⚠️ PDF Аудит каналов A0 не собрался (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('channels', 'PDF Аудит каналов A0 не собрался', e); }
 
       // Конкурентный бенчмарк (AD-11) — когда есть обойдённые конкуренты.
       bench = buildBenchmark(ds);
@@ -576,7 +590,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         }
         await writeFile(join(dir, 'benchmark.json'), JSON.stringify(bench, null, 2), 'utf8');
         try { await renderPdf(cap('competitor', renderCompetitorHtml(bench, clientName(ds), ds.takenAt)), join(dir, 'Конкурентный-анализ-A0.pdf'), browser); }
-        catch (e) { log(`⚠️ PDF Конкурентный анализ A0 не собрался (${String(e).slice(0, 120)})`); }
+        catch (e) { fail('competitor', 'PDF Конкурентный анализ A0 не собрался', e); }
         log(`✓ бенчмарк: индекс клиента ${bench.clientIndex}/100, место ${bench.clientRank}/${bench.totalSites}`);
       }
     }
@@ -634,7 +648,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         const hyp = buildHypotheses(analysis);
         await writeFile(join(dir, 'hypotheses.json'), JSON.stringify(hyp, null, 2), 'utf8');
         try { await renderPdf(renderHypothesesPdf(hyp, clientName(ds), new Date(ds.takenAt).toLocaleDateString('ru-RU')), join(dir, 'Реестр-гипотез-A0.pdf'), browser); }
-        catch (e) { log(`⚠️ PDF Реестр гипотез не собрался (${String(e).slice(0, 120)})`); }
+        catch (e) { fail('hypotheses', 'PDF Реестр гипотез не собрался', e); }
         log(`✓ анализ собран, реестр гипотез (${hyp.items.length})`);
       } catch (e) {
         log(`⚠️ аналитический слой не отработал: ${String(e).slice(0, 160)}${apiErrorHint(e)}`);
@@ -699,7 +713,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await writeFile(join(dir, 'registry.json'), JSON.stringify(registry, null, 2), 'utf8');
         await renderPdf(cap('registry', renderRegistryHtml(cn, ds.takenAt, registry)), join(dir, 'Реестр-находок.pdf'), browser);
         log(`✓ Реестр находок (PDF)${opts.premium ? ' + премиум' : ''}: ${rs.total} находок (P0 ${rs.p0} / P1 ${rs.p1} / P2 ${rs.p2}), exposure ≈ ${rs.exposureYear.toLocaleString('ru-RU')} ₴/год`);
-      } catch (e) { log(`⚠️ реестр находок не собран (${String(e).slice(0, 100)})`); }
+      } catch (e) { fail('registry', 'реестр находок не собран', e, 100); }
 
       // ── Итоговое резюме: команда / сроки / бюджет / тактика vs стратегия из реестра. ──
       if (registry?.length) {
@@ -708,7 +722,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
           const eng = buildEngagement(cn, ds.takenAt, registry);
           await renderPdf(cap('engagement', renderEngagementHtml(eng)), join(dir, 'Итоговое-резюме.pdf'), browser);
           log(`✓ Итоговое резюме (PDF): ${eng.tactical.count} тактических / ${eng.strategic.count} стратегических, команда ${eng.team.length} ролей`);
-        } catch (e) { log(`⚠️ итоговое резюме не собрано (${String(e).slice(0, 80)})`); }
+        } catch (e) { fail('engagement', 'итоговое резюме не собрано', e, 80); }
       }
 
       // Причинно-следственная карта → PDF (симптом → причина → деньги). Строится
@@ -734,7 +748,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         const execHtml = cap('exec', renderExecDiagnostic(ds, { siteAudit, analysis: analysisResult, engine, money, bench, coverage: cov, registry: registry ?? [] }));
         await renderPdf(execHtml, join(dir, 'Executive-Diagnostic-A0.pdf'), browser);
         log('✓ Executive Diagnostic A0 (PDF): зонтичный отчёт собран');
-      } catch (e) { log(`⚠️ Executive Diagnostic не собрался (${String(e).slice(0, 120)}) — остальные материалы не затронуты`); }
+      } catch (e) { fail('execdiag', 'Executive Diagnostic не собрался — остальные материалы не затронуты', e); }
 
       // ФЛАГМАН: «Презентація аудиту» — консультационная арка к решению, со всеми
       // данными (блок А: конкуренты/SEO/journey/механики/контент; блок Б: ресёрч
@@ -759,7 +773,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         });
         await renderPdf(cap('presentation', presHtml), join(dir, '0-Презентація-аудиту.pdf'), browser);
         log('✓ Презентація аудиту (флагман пакета) собрана');
-      } catch (e) { log(`⚠️ Презентація аудиту не собралась (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('presentation', 'Презентація аудиту не собралась', e); }
 
       // Слой синтеза — взаимосвязи всех линз в один вывод (нужен ключ).
       if (hasKey() && deadline.exceeded()) {
@@ -794,17 +808,23 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         const act = buildActivation(ds, produced);
         await writeFile(join(dir, 'activation.json'), JSON.stringify(act, null, 2), 'utf8');
         log(`${act.complete ? '✓' : '✖'} покрытие доменов (${act.businessType}): ${act.verdict}`);
-      } catch (e) { log(`⚠️ активационный гейт не отработал (${String(e).slice(0, 100)})`); }
+      } catch (e) { fail('activation', 'активационный гейт не отработал', e, 100); }
 
       // ── Сводный бэклог ИЗ реестра (реестр собран выше — единая точка правды). ──
+      // Бэклог и QA-протокол разделены: раньше они жили в одном try, и падение
+      // бэклога уносило с собой протокол синергии, а в лог обоим писалось
+      // «активационный гейт не отработал» — сообщение не от того блока.
+      const cn2 = clientName(ds);
+      let backlog: ReturnType<typeof buildBacklog> | null = null;
       try {
-        const cn2 = clientName(ds);
-        const backlog = registry ? buildBacklogFromRegistry(cn2, ds.takenAt, registry, registryRaw.length) : buildBacklog(cn2, ds.takenAt, registryRaw);
+        backlog = registry ? buildBacklogFromRegistry(cn2, ds.takenAt, registry, registryRaw.length) : buildBacklog(cn2, ds.takenAt, registryRaw);
         await writeFile(join(dir, 'backlog.json'), JSON.stringify(backlog, null, 2), 'utf8');
         await renderPdf(cap('backlog', renderBacklogHtml(backlog)), join(dir, 'Сводный-бэклог.pdf'), browser);
         log(`✓ Сводный бэклог (PDF)${registry ? ' из реестра' : ''}: ${backlog.rawCount} рекомендаций → ${backlog.items.length} работ`);
+      } catch (e) { fail('backlog', 'Сводный бэклог не собрался', e, 100); }
 
-        // ── Протокол синергии и QA: пакет проверяет сам себя, нестыковки → резолюции. ──
+      // ── Протокол синергии и QA: пакет проверяет сам себя, нестыковки → резолюции. ──
+      try {
         const qa = await buildQa(cn2, ds.takenAt, {
           siteAudit, content: contentReport, mech: mechReport, journey: journeyReport,
           tech: techReport, seo: seoReport, ci: ciReport, bench, maturity: maturityReport,
@@ -813,7 +833,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         await writeFile(join(dir, 'qa.json'), JSON.stringify(qa, null, 2), 'utf8');
         await renderPdf(renderQaHtml(qa), join(dir, 'Протокол-синергии-QA-A0.pdf'), browser);
         log(`✓ Протокол синергии/QA (PDF): проверок ${qa.checksRun}, находок ${qa.findings.length}`);
-      } catch (e) { log(`⚠️ активационный гейт не отработал (${String(e).slice(0, 100)})`); }
+      } catch (e) { fail('qa', 'Протокол синергии/QA не собрался', e, 100); }
     }
 
     // ── ГРУПУВАННЯ: 5 тематичних розділів + головний висновок з усіх лінз. ──
@@ -831,7 +851,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
           catch (e) { log(`⚠️ ${d.file}: ${String(e).slice(0, 80)}`); }
         }
         log(`✓ клієнтський пакет: ${clientDocs.length} тематичних документів (розділи + висновок)`);
-      } catch (e) { log(`⚠️ групування документів не зібралось (${String(e).slice(0, 120)})`); }
+      } catch (e) { fail('documents', 'групування документів не зібралось', e); }
     }
 
     const files = (await readdir(dir)).sort();
@@ -852,7 +872,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         const meta = runMetaAudit({
           tier, prelaunch, findings: registry, quality: q, reachabilityPassed: !prelaunch,
           pagesCrawled: client.pages.filter((p) => !p.error).length,
-          modulesExecuted: executed, modulesFailed: [], reportFiles: files,
+          modulesExecuted: executed, modulesFailed: failedModules, reportFiles: files,
           requiredReports: ['Презентація', 'Сводный-бэклог', 'Протокол-синергии'],
           methodologyVersion: METHODOLOGY_VERSION, money,
           brokenLinks: (ds.client as { linkHealth?: { broken?: unknown[] } })?.linkHealth?.broken?.length ?? null,
@@ -865,6 +885,10 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
         (metrics as Record<string, unknown>).evidenceDebt = q.evidenceDebt.debtRatio;
         const icon = meta.decision === 'BLOCK' ? '⛔' : meta.decision === 'DELIVER_WITH_WARNINGS' ? '🟡' : '✅';
         log(`${icon} Meta-Audit / Quality Gate: ${meta.decision} · ARS ${q.ars.provisional ?? '—'}/100 · блокеров ${meta.blockers.length}, предупреждений ${meta.warnings.length}`);
+      } else {
+        // Без реестра находок оценивать нечего — но молчание здесь читается как
+        // «гейт пройден». Говорим прямо, что проверки не было.
+        log('⚠️ Meta-Audit / Quality Gate не запускался: реестр находок пуст');
       }
     } catch (e) { log(`⚠️ Meta-Audit не отработал (${String(e).slice(0, 140)})`); }
 
@@ -885,6 +909,7 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
           agentic: Boolean(opts.agentic), prelaunch, premium: Boolean(opts.premium),
           webSearch: process.env.AUDIT_WEB_SEARCH !== '0', hasApiKey: hasKey(),
         },
+        failedModules,
         input: {
           site: site || null, competitors: comps.length,
           pagesCrawled: client.pages.filter((p) => !p.error).length, competitorPagesCrawled: compPages,
@@ -908,6 +933,9 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
     } catch (e) { log(`⚠️ Audit Run Record не собрался (${String(e).slice(0, 140)})`); }
 
     const parts = [`${files.length} файлов`];
+    // Число файлов молчит о том, чего в них НЕТ. Упавшие модули — в итог прогона,
+    // иначе «24 файла» читается как «всё собралось».
+    if (failedModules.length) parts.push(`не собралось модулей: ${failedModules.length} (${failedModules.join(', ')})`);
     if (metrics.compliance != null) parts.push(`соответствие ${metrics.compliance}%`);
     if (engine?.score != null) parts.push(`Health Score ${engine.score}/100`);
     if (money) parts.push(`недополучено ≈ ${Math.round(money.potentialYear).toLocaleString('ru-RU')} ₴/год`);
