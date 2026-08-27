@@ -204,6 +204,29 @@ describe.skipIf(!built)('карта сайта и правила обхода', 
     expect(missing).toEqual([]);
   });
 
+  it('у каждой страницы своя OG-карточка, а не общая заглушка', () => {
+    /*
+     * Восемь страниц систем и шесть направлений экспансии делили одну общую
+     * /og.png: в ленте все они выглядели одной и той же ссылкой. Тест держит
+     * два условия — заглушки нет ни на одной странице, и файл, на который
+     * ссылается страница, действительно лежит в сборке.
+     */
+    if (!built) return;
+    const missing: string[] = [];
+    for (const u of sitemapUrls()) {
+      const f = join(DIST, fileFor(u));
+      if (!existsSync(f)) continue;
+      const m = readFileSync(f, 'utf8').match(/<meta property="og:image" content="[^"]*?(\/og[^"]*)"/);
+      if (!m) { missing.push(`${u}: нет og:image`); continue; }
+      // Юридическим страницам своя карточка не нужна — они не продают, им
+      // достаточно брендовой. Всем остальным общая заглушка запрещена.
+      const legal = /\.html$/.test(u);
+      if (m[1] === '/og.png' && !legal) { missing.push(`${u}: общая заглушка /og.png`); continue; }
+      if (!existsSync(join(DIST, m[1]))) missing.push(`${u}: файл ${m[1]} не собран`);
+    }
+    expect(missing, missing.join('; ')).toEqual([]);
+  });
+
   it('robots.txt называет карту сайта и не закрывает сайт', () => {
     expect(robots).toMatch(/Sitemap:\s*https:\/\/weexp\.agency\/sitemap\.xml/);
     expect(robots, 'сайт закрыт от обхода').not.toMatch(/User-agent:\s*\*\s*\n\s*Disallow:\s*\/\s*$/m);

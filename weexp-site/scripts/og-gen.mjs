@@ -7,7 +7,18 @@
  *
  * Шрифти системні (без мережі): нам важлива вага і структура, не точний шрифт.
  */
-import { chromium } from 'playwright';
+/*
+ * Playwright не в зависимостях сайта: генератор запускается вручную и в сборку
+ * Vercel не входит — тянуть браузер в прод ради этого незачем. Пакет лежит в
+ * worker/, поэтому пробуем сначала обычное разрешение, потом соседний пакет,
+ * и только затем сдаёмся с внятным сообщением, а не со стеком ERR_MODULE_NOT_FOUND.
+ */
+const { chromium } = await (async () => {
+  for (const spec of ['playwright', new URL('../../worker/node_modules/playwright/index.mjs', import.meta.url).href]) {
+    try { return await import(spec); } catch { /* пробуем следующий */ }
+  }
+  throw new Error('og:gen — не найден пакет playwright. Установите его или запустите из worker/.');
+})();
 import { mkdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -25,6 +36,37 @@ const CARDS = [
   { slug: 'pricing', kick: 'Формати і ціни', title: 'Три формати — за рівнем відповідальності', metric: 'Аудит · консалтинг · управління під ключ' },
   { slug: 'contact', kick: 'Контакт', title: 'Зростання — це система. Почнімо з діагнозу.', metric: 'Для e-commerce виробників і D2C-брендів $0.5–10M' },
 ];
+
+/*
+ * Вісім сторінок систем ділили одну загальну картку /og.png — у стрічці вони
+ * виглядали однією й тією ж посиланням. Назва системи та її обіцянка беруться
+ * з того самого рядка, що йде в заголовок і опис сторінки (SYSTEMS у
+ * prerender.mjs): картка й видача мають казати одне.
+ */
+const SYSTEM_CARDS = [
+  ['strategy-management', '01 · Система', 'Стратегія та управління', 'Стратегія продажів, якою можна керувати'],
+  ['commercial-performance', '02 · Система', 'Комерційна ефективність', 'Більше виручки замало — зробіть комерцію прибутковою'],
+  ['demand-customer', '03 · Система', 'Попит і клієнт', 'Перетворюйте трафік на клієнтів, а клієнтів на цінність'],
+  ['experience-conversion', '04 · Система', 'Досвід і конверсія', 'Зробіть кожен крок клієнта робочим'],
+  ['operations-fulfillment', '05 · Система', 'Операції та fulfillment', 'Продавати марно, якщо не можеш доставити'],
+  ['data-technology', '06 · Система', 'Дані, технології, інтеграції', 'Один бізнес, одне джерело правди'],
+  ['organization-operating-model', '07 · Система', 'Організація та операційна модель', 'Побудуйте бізнес, якому не потрібні герої'],
+  ['expansion-markets', '08 · Система', 'Експансія та ринки', 'Вихід на ЄС і США як окремий контур, а не спроба'],
+];
+for (const [slug, kick, title, metric] of SYSTEM_CARDS)
+  CARDS.push({ slug: `sys-${slug}`, kick, title, metric });
+
+/* Шість напрямів експансії ділили одну картку хабу — те саме, що й у систем. */
+const EXPANSION_CARDS = [
+  ['international', 'Міжнародна експансія', 'ЄС і США як окремий контур, а не спроба'],
+  ['automation', 'Бізнес-процеси', 'Автоматизація там, де вона повертає гроші'],
+  ['technology', 'E-commerce Technology', 'Стек під задачу, а не задача під стек'],
+  ['marketing', 'Маркетинг', 'Канали, які окупаються, а не ті, що модні'],
+  ['sales-channels', 'Канали продажів', 'Власний сайт, Amazon, Allegro, локальні маркетплейси'],
+  ['data-growth', 'Data & Growth', 'Рішення за цифрами, а не за відчуттям'],
+];
+for (const [slug, title, metric] of EXPANSION_CARDS)
+  CARDS.push({ slug: `exp-${slug}`, kick: 'Експансія', title, metric });
 
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 

@@ -169,6 +169,9 @@ for (const [slug, title, en] of SERVICE_META) {
   const promise = rawPromise ? rawPromise[0].toUpperCase() + rawPromise.slice(1).replace(/\.?$/, '.') : '';
   ROUTES.push({
     path: `/systems/${slug}`,
+    // Своя OG-картка на кожну систему: до цього вісім сторінок ділили загальну
+    // /og.png і в стрічці виглядали одним і тим самим посиланням.
+    og: `sys-${slug}`,
     // Суфікс «— послуга WEEXP · Commerce OS» — 29 символів, і найдовша назва
     // системи виводила заголовок на 62 при межі ~60: у видачі він обрізався.
     // Слово «послуга» ще й не шукають — лишається бренд. Та сама формула, що
@@ -189,7 +192,7 @@ for (const r of ROUTES) {
 // Підсторінки експертиз: раніше не мали ні статики, ні навіть title у рантаймі.
 for (const [slug, m] of Object.entries(SEO.expansion)) {
   ROUTES.push({
-    path: `/expansion/${slug}`, og: 'expansion', title: m.uk[0], desc: m.uk[1],
+    path: `/expansion/${slug}`, og: `exp-${slug}`, title: m.uk[0], desc: m.uk[1],
     // Раніше тіло було одним абзацом — тим самим описом, що вже в <meta>.
     // Додаємо контекст, спільний для всіх напрямів експансії.
     content: `<h1>${esc(m.uk[0].split(' — ')[0])}</h1><p>${esc(m.uk[1])}</p><h2>Як це вбудовано в систему</h2><p>Напрям не існує окремо: він частина Commerce OS і міряється тими самими грошима, що й решта. Спершу діагностика за даними CRM/ERP/GA4, далі — план хвилями з Definition of Done, далі — робота до економіки, а не до звіту.</p>${ul(SYSTEMS)}`,
