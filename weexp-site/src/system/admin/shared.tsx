@@ -19,6 +19,7 @@ import { type Block } from '../auditTemplate';
 
 import '../system.css';
 import '../cabinet.css';
+import { escapeHtml } from '@/lib/escapeHtml';
 
 /** Домен рушія → ключ нашого модуля (реекспорт для UI імпорту зрілості). */
 export const MATURITY_MODULE_OF = MATURITY_DOMAIN_MODULE;
@@ -305,7 +306,8 @@ ${bodyHtml}
   if (!w) { toast('Дозвольте спливаючі вікна, щоб відкрити документ', 'err'); return; }
   w.document.open(); w.document.write(html); w.document.close();
 }
-export const escH = (s: unknown) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+/** Історична назва; єдина реалізація живе в lib/escapeHtml. */
+export const escH = escapeHtml;
 
 /** a02 — Карта доступів і даних: каталог × статус клієнта. */
 

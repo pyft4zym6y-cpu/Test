@@ -24,14 +24,13 @@ export async function openClientDossier(row: AdminRow) {
   const w = window.open('', '_blank');
   if (!w) { toast('Дозвольте спливаючі вікна, щоб відкрити досьє', 'err'); return; }
   w.document.write('<!doctype html><meta charset="utf-8"><body style="font-family:system-ui,sans-serif;padding:28px;color:#6B675E">Формуємо досьє…</body>');
-  const esc = (s: unknown) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const rec = row.record || {};
   const c = rec.company || {};
   const ex = rec.express;
   const tiers = Object.entries(row.funnel?.tierStatus || {});
   const code = row.funnel?.accessCode;
   const now = new Date().toLocaleString('uk-UA');
-  const kv = (rows: [string, unknown][]) => rows.filter(([, v]) => v != null && v !== '').map(([k, v]) => `<tr><td class="k">${esc(k)}</td><td>${esc(v)}</td></tr>`).join('');
+  const kv = (rows: [string, unknown][]) => rows.filter(([, v]) => v != null && v !== '').map(([k, v]) => `<tr><td class="k">${escH(k)}</td><td>${escH(v)}</td></tr>`).join('');
   const companyRows: [string, unknown][] = [
     ['Назва', c.name], ['Сфера', c.industry], ['Тип', c.bizType], ['Напрям', c.model],
     ['Категорії', c.categories], ['Ніша', c.niche], ['Ринки', c.markets], ['Країни', c.countries],
@@ -54,7 +53,7 @@ export async function openClientDossier(row: AdminRow) {
     ['Валова маржа', inp.grossMargin != null ? `${inp.grossMargin}%` : ''],
     ['CAC', inp.cac ? eur(inp.cac) : ''], ['Джерело', ex.source],
   ] : [];
-  const tierRows = tiers.map(([tid, st]) => `<tr><td class="k">${esc(tid)}</td><td>${esc(ST[st as TierStatus]?.txt || st)}</td></tr>`).join('');
+  const tierRows = tiers.map(([tid, st]) => `<tr><td class="k">${escH(tid)}</td><td>${escH(ST[st as TierStatus]?.txt || st)}</td></tr>`).join('');
   // C-level оцінка модулів (з активного шаблону — для назв модулів).
   const asm = rec.assessment || {};
   let tpl: AuditTemplate | null = null; try { tpl = await loadTemplate(); } catch { /* ignore */ }
@@ -62,8 +61,8 @@ export async function openClientDossier(row: AdminRow) {
   const asmKeys = Object.keys(asm).filter((k) => { const s = asm[k]; return s && (s.score != null || s.state || s.gap || s.rec || s.priority); });
   const asmScores = asmKeys.map((k) => asm[k].score).filter((n): n is number => typeof n === 'number');
   const asmAvg = asmScores.length ? Math.round(asmScores.reduce((a, b) => a + b, 0) / asmScores.length) : null;
-  const asmRows = asmKeys.map((k) => { const s = asm[k]; return `<tr><td>${esc(modTitle(k))}</td><td class="c">${s.score != null ? esc(s.score) : '—'}</td><td class="c">${esc(s.priority || '—')}</td><td>${esc(s.gap || s.rec || s.state || '')}</td></tr>`; }).join('');
-  const html = `<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>Досьє — ${esc(row.email)}</title><style>
+  const asmRows = asmKeys.map((k) => { const s = asm[k]; return `<tr><td>${escH(modTitle(k))}</td><td class="c">${s.score != null ? escH(s.score) : '—'}</td><td class="c">${escH(s.priority || '—')}</td><td>${escH(s.gap || s.rec || s.state || '')}</td></tr>`; }).join('');
+  const html = `<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>Досьє — ${escH(row.email)}</title><style>
 @page{margin:16mm}*{box-sizing:border-box}body{font-family:"IBM Plex Sans","Segoe UI",system-ui,Arial,sans-serif;color:#141210;margin:0;font-size:13px;line-height:1.5}
 .bar{height:8px;background:#F5301C}.wrap{padding:26px 30px}
 .top{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #141210;padding-bottom:12px;margin-bottom:18px}
@@ -78,10 +77,10 @@ td.c{text-align:center;width:56px;font-weight:600}
 @media print{.noprint{display:none}}
 </style></head><body><div class="bar"></div><div class="wrap">
 <div class="top"><div><div class="logo">WEEXP<span>.</span></div><div class="sub">Досьє клієнта · конфіденційно</div></div>
-<div class="meta">${esc(row.email)}<br>сформовано ${esc(now)}${code ? `<br>код: <span class="code">${esc(code)}</span>` : ''}</div></div>
+<div class="meta">${escH(row.email)}<br>сформовано ${escH(now)}${code ? `<br>код: <span class="code">${escH(code)}</span>` : ''}</div></div>
 <button class="noprint" onclick="window.print()" style="margin-bottom:14px;background:#F5301C;color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer">🖨 Друк / зберегти в PDF</button>
 <h2>Профіль компанії</h2>${companyRows.some(([, v]) => v) ? `<table>${kv(companyRows)}</table>` : '<p class="empty">Профіль не заповнено.</p>'}
-<h2>Експрес-аудит</h2>${ex ? `<p class="money">${esc(eur(ex.total))} <i>/ рік · витік</i></p><table>${kv(exRows)}</table>` : '<p class="empty">Експрес-аудит не проходив.</p>'}
+<h2>Експрес-аудит</h2>${ex ? `<p class="money">${escH(eur(ex.total))} <i>/ рік · витік</i></p><table>${kv(exRows)}</table>` : '<p class="empty">Експрес-аудит не проходив.</p>'}
 ${asmKeys.length ? `<h2>C-level оцінка модулів${asmAvg != null ? ` · зрілість ${asmAvg}/100` : ''}</h2><table><tr><td class="k">Модуль</td><td class="c">Score</td><td class="c">Prio</td><td>Розрив / рекомендація</td></tr>${asmRows}</table>` : ''}
 <h2>Статуси доступів T1–T4</h2>${tierRows ? `<table>${tierRows}</table>` : '<p class="empty">Запитів не було.</p>'}
 <div class="foot">WEEXP — Commerce OS · weexp.agency · hello@weexp.agency · Документ містить конфіденційні дані клієнта. Не для розповсюдження.</div>
@@ -115,10 +114,9 @@ export function seedAuditSections(rec: DiagRecord, modTitle: (k: string) => stri
 export function exportAuditDocPdf(doc: AuditDoc, email: string) {
   const w = window.open('', '_blank');
   if (!w) { toast('Дозвольте спливаючі вікна, щоб відкрити документ', 'err'); return; }
-  const esc = (s: unknown) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const now = new Date().toLocaleString('uk-UA');
-  const body = doc.sections.map((s) => `<h2>${esc(s.heading)}</h2><div class="body">${esc(s.body).replace(/\n/g, '<br>')}</div>`).join('');
-  const html = `<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>${esc(doc.title)} — ${esc(email)}</title><style>
+  const body = doc.sections.map((s) => `<h2>${escH(s.heading)}</h2><div class="body">${escH(s.body).replace(/\n/g, '<br>')}</div>`).join('');
+  const html = `<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>${escH(doc.title)} — ${escH(email)}</title><style>
 @page{margin:16mm}*{box-sizing:border-box}body{font-family:"IBM Plex Sans","Segoe UI",system-ui,Arial,sans-serif;color:#141210;margin:0;font-size:13px;line-height:1.55}
 .bar{height:8px;background:#F5301C}.wrap{padding:26px 30px;max-width:900px}
 .top{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #141210;padding-bottom:12px;margin-bottom:18px}
@@ -129,8 +127,8 @@ h2{font-size:14px;letter-spacing:.04em;color:#F5301C;margin:22px 0 8px;border-bo
 @media print{.noprint{display:none}}
 </style></head><body><div class="bar"></div><div class="wrap">
 <div class="top"><div><div class="logo">WEEXP<span>.</span></div><div class="sub">Документ аудиту · конфіденційно</div></div>
-<div class="meta">${esc(email)}<br>сформовано ${esc(now)}</div></div>
-<h1>${esc(doc.title)}</h1>
+<div class="meta">${escH(email)}<br>сформовано ${escH(now)}</div></div>
+<h1>${escH(doc.title)}</h1>
 <button class="noprint" onclick="window.print()" style="margin:14px 0;background:#F5301C;color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer">🖨 Друк / зберегти в PDF</button>
 ${body}
 <div class="foot">WEEXP — Commerce OS · weexp.agency · hello@weexp.agency · Документ містить конфіденційні дані клієнта. Не для розповсюдження.</div>

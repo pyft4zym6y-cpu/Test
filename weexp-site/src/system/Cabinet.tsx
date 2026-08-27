@@ -20,6 +20,7 @@ import { useCabTheme, ThemeToggle } from '@/lib/cabTheme';
 import { useT, useLp } from '@/i18n';
 import './system.css';
 import './cabinet.css';
+import { escapeHtml } from '@/lib/escapeHtml';
 
 /**
  * /cabinet — персональний кабінет клієнта як ХАБ однієї воронки. Зліва — розділи,
@@ -565,19 +566,18 @@ function Overview({ express, rec, go }: { express: ExpressAudit | null; rec: Dia
 function exportExpressPdf(express: ExpressAudit, email?: string) {
   const w = window.open('', '_blank');
   if (!w) { toast('Дозвольте спливаючі вікна, щоб завантажити PDF', 'err'); return; }
-  const esc = (s: unknown) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const inp = (express.input || {}) as unknown as Record<string, number | string | string[] | undefined>;
   const num = (v: unknown) => (typeof v === 'number' && v > 0 ? v : undefined);
   const symptoms = Array.isArray(inp.symptoms) ? (inp.symptoms as string[]) : [];
   const healthRows = (express.health || []).map((h) => {
     const c = h.score < 45 ? '#F5301C' : h.score < 65 ? '#C58A00' : '#1F6E4E';
-    return `<tr><td class="k">${esc(sysLabel(h.key as SysKey, 'uk'))}</td><td style="width:52%"><div style="background:#EEE7D6;height:8px;border-radius:4px"><div style="width:${Math.max(3, Math.min(100, h.score))}%;height:8px;border-radius:4px;background:${c}"></div></div></td><td style="width:56px;text-align:right;font-weight:700;color:${c}">${h.score}</td></tr>`;
+    return `<tr><td class="k">${escapeHtml(sysLabel(h.key as SysKey, 'uk'))}</td><td style="width:52%"><div style="background:#EEE7D6;height:8px;border-radius:4px"><div style="width:${Math.max(3, Math.min(100, h.score))}%;height:8px;border-radius:4px;background:${c}"></div></div></td><td style="width:56px;text-align:right;font-weight:700;color:${c}">${h.score}</td></tr>`;
   }).join('');
   const leakRows = (express.leaks || []).filter((l) => l.amount > 0).sort((x, y) => y.amount - x.amount)
-    .map((l) => `<tr><td class="k">${esc(sysLabel(l.key as SysKey, 'uk'))}</td><td style="text-align:right;font-weight:700">${esc(eur(l.amount))}<span style="color:#6B675E;font-weight:400"> / рік</span></td></tr>`).join('');
-  const actions = (express.actions || []).map((k, i) => `<li><b>${i + 1}.</b> ${esc(actionText(k as SysKey, 'uk'))}</li>`).join('');
-  const sympChips = symptoms.map((k) => `<span class="chip">${esc(sysLabel(k as SysKey, 'uk'))}</span>`).join('');
-  const kv = (rows: [string, unknown][]) => rows.filter(([, v]) => v != null && v !== '').map(([k, v]) => `<tr><td class="k">${esc(k)}</td><td>${esc(v)}</td></tr>`).join('');
+    .map((l) => `<tr><td class="k">${escapeHtml(sysLabel(l.key as SysKey, 'uk'))}</td><td style="text-align:right;font-weight:700">${escapeHtml(eur(l.amount))}<span style="color:#6B675E;font-weight:400"> / рік</span></td></tr>`).join('');
+  const actions = (express.actions || []).map((k, i) => `<li><b>${i + 1}.</b> ${escapeHtml(actionText(k as SysKey, 'uk'))}</li>`).join('');
+  const sympChips = symptoms.map((k) => `<span class="chip">${escapeHtml(sysLabel(k as SysKey, 'uk'))}</span>`).join('');
+  const kv = (rows: [string, unknown][]) => rows.filter(([, v]) => v != null && v !== '').map(([k, v]) => `<tr><td class="k">${escapeHtml(k)}</td><td>${escapeHtml(v)}</td></tr>`).join('');
   const srcRows: [string, unknown][] = [
     ['Оборот / міс', num(inp.monthlyRevenue) ? eur(inp.monthlyRevenue as number) : ''],
     ['Середній чек', num(inp.aov) ? eur(inp.aov as number) : ''],
@@ -603,11 +603,11 @@ ol{margin:6px 0 0;padding-left:0;list-style:none}ol li{padding:6px 0;border-bott
 @media print{.noprint{display:none}}
 </style></head><body><div class="bar"></div><div class="wrap">
 <div class="top"><div><div class="logo">WEEXP<span>.</span></div><div style="font-family:monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B675E">Експрес-аудит · результат</div></div>
-<div class="meta">${email ? esc(email) + '<br>' : ''}пройдено ${esc(new Date(express.at).toLocaleString('uk-UA'))}</div></div>
+<div class="meta">${email ? escapeHtml(email) + '<br>' : ''}пройдено ${escapeHtml(new Date(express.at).toLocaleString('uk-UA'))}</div></div>
 <button class="noprint" onclick="window.print()" style="margin:8px 0;background:#F5301C;color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer">🖨 Друк / зберегти в PDF</button>
-<div class="money">${esc(eur(express.total))} <i>/ рік · оцінений витік виторгу</i></div>
-<div class="sub">діапазон ${esc(eur(express.range[0]))}–${esc(eur(express.range[1]))} · Business Health ${express.overallHealth}/100</div>
-<div class="verdict"><b>Головний висновок:</b> ключова проблема — <b>${esc(sysLabel(express.primary as SysKey, 'uk'))}</b>${express.secondary ? `, друга — <b>${esc(sysLabel(express.secondary as SysKey, 'uk'))}</b>` : ''}. Потенціал зростання = повернення оціненого витоку: почніть із трьох дій нижче.</div>
+<div class="money">${escapeHtml(eur(express.total))} <i>/ рік · оцінений витік виторгу</i></div>
+<div class="sub">діапазон ${escapeHtml(eur(express.range[0]))}–${escapeHtml(eur(express.range[1]))} · Business Health ${express.overallHealth}/100</div>
+<div class="verdict"><b>Головний висновок:</b> ключова проблема — <b>${escapeHtml(sysLabel(express.primary as SysKey, 'uk'))}</b>${express.secondary ? `, друга — <b>${escapeHtml(sysLabel(express.secondary as SysKey, 'uk'))}</b>` : ''}. Потенціал зростання = повернення оціненого витоку: почніть із трьох дій нижче.</div>
 ${healthRows ? `<h2>Здоровʼя 8 систем · оцінка</h2><table>${healthRows}</table>` : ''}
 ${leakRows ? `<h2>Куди тече виторг · розрахунок</h2><table>${leakRows}</table>` : ''}
 ${sympChips ? `<h2>Позначені симптоми</h2><div>${sympChips}</div>` : ''}

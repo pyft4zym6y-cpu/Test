@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { escapeHtml } from '@/lib/escapeHtml';
 import {
   loadTemplate, saveTemplate, uid, Q_TYPES, CLIENT_ROLES, frameworkFor, customerArchetypeBlock,
   type AuditTemplate, type Block, type Question, type QType,
@@ -18,26 +19,25 @@ const WS_OF = (t: QType): Workspace => (t === 'access' ? 'access' : t === 'file'
 function exportTemplatePdf(tpl: AuditTemplate) {
   const w = window.open('', '_blank');
   if (!w) { alert('Дозвольте спливаючі вікна, щоб зберегти PDF.'); return; }
-  const esc = (x: unknown) => String(x ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const typeLabel = (t: QType) => (Q_TYPES.find((x) => x.v === t)?.label || t).replace(/Відкрите — /, '');
   const counts = { q: 0, a: 0, f: 0 };
   for (const b of tpl.blocks) for (const qq of b.questions) { const ws = WS_OF(qq.type); if (ws === 'access') counts.a++; else if (ws === 'files') counts.f++; else counts.q++; }
-  const toc = tpl.blocks.map((b, i) => `<tr><td class="n">${String(i + 1).padStart(2, '0')}</td><td>${esc(b.title)}</td><td class="r">${esc(b.role || '—')}</td><td class="c">${b.questions.length}</td></tr>`).join('');
+  const toc = tpl.blocks.map((b, i) => `<tr><td class="n">${String(i + 1).padStart(2, '0')}</td><td>${escapeHtml(b.title)}</td><td class="r">${escapeHtml(b.role || '—')}</td><td class="c">${b.questions.length}</td></tr>`).join('');
   const qHtml = (qq: Question, idx: number) => {
     const ws = WS_OF(qq.type);
-    const badge = ws === 'access' ? '<span class="tag acc">доступ</span>' : ws === 'files' ? '<span class="tag file">файл</span>' : `<span class="tag">${esc(typeLabel(qq.type))}</span>`;
-    const opts = (qq.options || []).length ? `<div class="opts">${(qq.options || []).map((o) => `<span class="opt">${esc(o)}</span>`).join('')}</div>` : '';
-    const cond = qq.condQKey ? `<div class="hint">↳ показується, якщо «${esc(qq.condQKey)}» = «${esc(qq.condValue)}»</div>` : '';
-    const hint = qq.hint ? `<div class="hint">${esc(qq.hint)}</div>` : '';
+    const badge = ws === 'access' ? '<span class="tag acc">доступ</span>' : ws === 'files' ? '<span class="tag file">файл</span>' : `<span class="tag">${escapeHtml(typeLabel(qq.type))}</span>`;
+    const opts = (qq.options || []).length ? `<div class="opts">${(qq.options || []).map((o) => `<span class="opt">${escapeHtml(o)}</span>`).join('')}</div>` : '';
+    const cond = qq.condQKey ? `<div class="hint">↳ показується, якщо «${escapeHtml(qq.condQKey)}» = «${escapeHtml(qq.condValue)}»</div>` : '';
+    const hint = qq.hint ? `<div class="hint">${escapeHtml(qq.hint)}</div>` : '';
     return `<div class="q${qq.required ? ' req' : ''}">
-      <div class="q-top"><span class="q-n">${idx}</span><span class="q-l">${esc(qq.label)}${qq.required ? ' <b class="star">*</b>' : ''}</span>${badge}</div>
+      <div class="q-top"><span class="q-n">${idx}</span><span class="q-l">${escapeHtml(qq.label)}${qq.required ? ' <b class="star">*</b>' : ''}</span>${badge}</div>
       ${opts}${hint}${cond}
     </div>`;
   };
   const blocks = tpl.blocks.map((b, i) => `
     <section class="mod">
       <div class="mod-h"><span class="mod-n">${String(i + 1).padStart(2, '0')}</span>
-        <div><h2>${esc(b.title)}</h2><span class="mod-meta">${esc(b.role ? 'заповнює: ' + b.role : '')} · ${b.questions.length} позицій</span></div></div>
+        <div><h2>${escapeHtml(b.title)}</h2><span class="mod-meta">${escapeHtml(b.role ? 'заповнює: ' + b.role : '')} · ${b.questions.length} позицій</span></div></div>
       ${b.questions.map((qq, qi) => qHtml(qq, qi + 1)).join('')}
     </section>`).join('');
   const html = `<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>Опитувальник глибокого аудиту — WEEXP</title><style>
@@ -68,7 +68,7 @@ table.toc{border-collapse:collapse;width:100%;margin-bottom:8px}
 .foot{margin-top:26px;padding-top:12px;border-top:1px solid #E3D9C0;color:#9a9488;font-size:10px}
 @media print{.noprint{display:none}}
 </style></head><body><div class="bar"></div><div class="wrap">
-<div class="top"><div class="logo">WEEXP<span>.</span></div><div class="meta">версія шаблону v${tpl.version || 1}<br>сформовано ${esc(new Date().toLocaleDateString('uk-UA'))}</div></div>
+<div class="top"><div class="logo">WEEXP<span>.</span></div><div class="meta">версія шаблону v${tpl.version || 1}<br>сформовано ${escapeHtml(new Date().toLocaleDateString('uk-UA'))}</div></div>
 <h1>Опитувальник глибокого аудиту</h1>
 <p class="lead">Єдиний вичерпний фреймворк діагностики e-commerce: ${tpl.blocks.length} модулів. Зірочка * — обовʼязкове; бейдж показує тип позиції; сірим — куди йде відповідь у пакеті документів.</p>
 <div class="kpis"><div class="kpi"><b>${tpl.blocks.length}</b><span>модулів</span></div><div class="kpi"><b>${counts.q}</b><span>питань</span></div><div class="kpi"><b>${counts.a}</b><span>доступів</span></div><div class="kpi"><b>${counts.f}</b><span>файлів</span></div></div>

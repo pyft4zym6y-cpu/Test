@@ -8,6 +8,7 @@ import { shortOf } from '@/data/xray';
 import { useT, useLp, useLang } from '@/i18n';
 import { useLiteVisuals } from '@/lib/liteVisuals';
 import './system.css';
+import { escapeHtml } from '@/lib/escapeHtml';
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
 
@@ -159,14 +160,13 @@ export function LossCalculator() {
   // Брендований PDF результату — самодостатня друкована сторінка (нова вкладка → друк/зберегти в PDF).
   const downloadBrandedPdf = () => {
     if (!res) return;
-    const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const proj = project(inp, res, lang);
-    const leaks = res.leaks.slice(0, 5).map((l) => `<tr><td>${esc(leakLabel(l, lang))}</td><td class="n">${esc(eur(l.amount))}</td></tr>`).join('');
-    const health = res.health.map((h) => `<div class="hb"><span>${esc(shortOf(h.key, lang))}</span><i><b style="width:${h.score}%"></b></i><em>${h.score}</em></div>`).join('');
-    const actions = res.actions.map((a) => `<li>${esc(actionText(a.key, lang))}</li>`).join('');
-    const projRows = proj.income.map((d) => `<tr><td>${esc(d.label)}</td><td>${esc(d.before)} → <b>${esc(d.after)}</b></td><td class="up">+${d.pct}%</td></tr>`).join('');
+    const leaks = res.leaks.slice(0, 5).map((l) => `<tr><td>${escapeHtml(leakLabel(l, lang))}</td><td class="n">${escapeHtml(eur(l.amount))}</td></tr>`).join('');
+    const health = res.health.map((h) => `<div class="hb"><span>${escapeHtml(shortOf(h.key, lang))}</span><i><b style="width:${h.score}%"></b></i><em>${h.score}</em></div>`).join('');
+    const actions = res.actions.map((a) => `<li>${escapeHtml(actionText(a.key, lang))}</li>`).join('');
+    const projRows = proj.income.map((d) => `<tr><td>${escapeHtml(d.label)}</td><td>${escapeHtml(d.before)} → <b>${escapeHtml(d.after)}</b></td><td class="up">+${d.pct}%</td></tr>`).join('');
     const doc = `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>WEEXP — ${esc(t('Експрес-аудит витоку', 'Express leak audit'))}</title><style>
+<title>WEEXP — ${escapeHtml(t('Експрес-аудит витоку', 'Express leak audit'))}</title><style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Golos Text',-apple-system,Segoe UI,Roboto,sans-serif;color:#141210;background:#FAF5E9;max-width:760px;margin:0 auto;padding:30px 26px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .bar{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #141210;padding-bottom:12px;margin-bottom:22px}
@@ -187,16 +187,16 @@ ol{margin:0 0 0 18px}ol li{font-size:13px;margin:5px 0}
 .foot{margin-top:22px;font-size:11px;color:#6B675E;border-top:1px solid #e3d9c0;padding-top:10px}
 @page{margin:14mm}
 </style></head><body>
-<div class="bar"><span class="logo">WEE<span>X</span>P</span><span class="kick">${esc(t('Експрес-аудит', 'Express audit'))}</span></div>
-<span class="kick">${esc(t('Ваш витік в e-commerce · оцінка', 'Your e-commerce leak · estimate'))}</span>
-<div class="big">${esc(eur(res.total))} <span style="font-size:.4em;color:#6B675E">/ ${esc(t('рік', 'yr'))}</span></div>
-<div class="sub">${esc(t('діапазон', 'range'))} ${esc(eur(res.range[0]))}–${esc(eur(res.range[1]))}</div>
-<div class="card"><h2>${esc(t('Куди тече виторг', 'Where revenue leaks'))}</h2><table>${leaks}</table></div>
-<div class="card red"><h2>${esc(t('Головний bottleneck', 'Main bottleneck'))}</h2><b style="font-size:18px;text-transform:uppercase">${esc(primaryLabel(res.primary))}</b><div class="sub">${esc(t('вторинний', 'secondary'))} — ${esc(primaryLabel(res.secondary))}</div></div>
+<div class="bar"><span class="logo">WEE<span>X</span>P</span><span class="kick">${escapeHtml(t('Експрес-аудит', 'Express audit'))}</span></div>
+<span class="kick">${escapeHtml(t('Ваш витік в e-commerce · оцінка', 'Your e-commerce leak · estimate'))}</span>
+<div class="big">${escapeHtml(eur(res.total))} <span style="font-size:.4em;color:#6B675E">/ ${escapeHtml(t('рік', 'yr'))}</span></div>
+<div class="sub">${escapeHtml(t('діапазон', 'range'))} ${escapeHtml(eur(res.range[0]))}–${escapeHtml(eur(res.range[1]))}</div>
+<div class="card"><h2>${escapeHtml(t('Куди тече виторг', 'Where revenue leaks'))}</h2><table>${leaks}</table></div>
+<div class="card red"><h2>${escapeHtml(t('Головний bottleneck', 'Main bottleneck'))}</h2><b style="font-size:18px;text-transform:uppercase">${escapeHtml(primaryLabel(res.primary))}</b><div class="sub">${escapeHtml(t('вторинний', 'secondary'))} — ${escapeHtml(primaryLabel(res.secondary))}</div></div>
 <div class="card"><h2>Business Health · ${res.overallHealth}/100</h2>${health}</div>
-<div class="card"><h2>${esc(t('Три перші дії', 'First three actions'))}</h2><ol>${actions}</ol></div>
-${projRows ? `<div class="card"><h2>${esc(t('Зараз → куди можемо прийти', 'Now → where we can get to'))}</h2><table>${projRows}</table></div>` : ''}
-<div class="foot">${esc(t('Оцінка за наданими даними. Не фінансовий аудит. Для точної карти «де саме й чому» — глибокий аудит WEEXP.', 'An estimate based on your data. Not a financial audit. For a precise map of “exactly where and why” — WEEXP deep audit.'))} · weexp.agency</div>
+<div class="card"><h2>${escapeHtml(t('Три перші дії', 'First three actions'))}</h2><ol>${actions}</ol></div>
+${projRows ? `<div class="card"><h2>${escapeHtml(t('Зараз → куди можемо прийти', 'Now → where we can get to'))}</h2><table>${projRows}</table></div>` : ''}
+<div class="foot">${escapeHtml(t('Оцінка за наданими даними. Не фінансовий аудит. Для точної карти «де саме й чому» — глибокий аудит WEEXP.', 'An estimate based on your data. Not a financial audit. For a precise map of “exactly where and why” — WEEXP deep audit.'))} · weexp.agency</div>
 <scr${''}ipt>window.onload=function(){setTimeout(function(){window.print()},400)}</scr${''}ipt>
 </body></html>`;
     const w = window.open('', '_blank');
