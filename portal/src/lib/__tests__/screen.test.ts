@@ -41,10 +41,18 @@ describe('L0-скрининг', () => {
     expect(pass(page('', '<p>Доставка Новою поштою, ціна 1200 ₴</p>'), 'delivery')).toBe(true);
   });
 
-  it('cookie-баннер: скрипт со словом cookie — не механика согласия', () => {
+  /*
+   * Механика согласия — это ВЫБОР. Проверка дважды оказывалась почти всегда
+   * истинной по разным причинам: сперва читала всю разметку (document.cookie
+   * в любой аналитике), потом принимала за баннер любую ссылку «Політика
+   * cookie» в футере. Ни то ни другое согласием не является.
+   */
+  it('cookie-механика: только баннер, в котором есть чем нажать', () => {
     expect(pass(page('', '<script>document.cookie="sid=1"</script>'), 'cookies')).toBe(false);
-    expect(pass(page('', '<div class="cookie-banner">Ми використовуємо файли cookie</div>'), 'cookies')).toBe(true);
-    expect(pass(page('', '<p>Ми використовуємо cookie для аналітики</p>'), 'cookies')).toBe(true);
+    expect(pass(page('', '<footer><a href="/cookies.html">Політика cookie</a></footer>'), 'cookies')).toBe(false);
+    expect(pass(page('', '<p>Ми використовуємо cookie для аналітики</p>'), 'cookies')).toBe(false);
+    expect(pass(page('', '<div class="cookie-banner">Ми використовуємо cookie <button>Прийняти</button></div>'), 'cookies')).toBe(true);
+    expect(pass(page('', '<div id="consent"><span>Cookies</span><a role="button" href="#">OK</a></div>'), 'cookies')).toBe(true);
   });
 
   /*

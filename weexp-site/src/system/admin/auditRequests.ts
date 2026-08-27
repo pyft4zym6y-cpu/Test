@@ -107,12 +107,42 @@ export function auditStatusOf(row: AdminRow): AuditReqStatus | null {
   return null;
 }
 
-/** Коли стадія востаннє рухалась — для колонки «оновлено» і сортування. */
+/**
+ * Коли стадія востаннє РУХАЛАСЬ.
+ *
+ * Тут був `rec.updatedAt` серед джерел — і це ламало весь шар SLA. updatedAt
+ * бумкає на будь-якому записі, зокрема на автозбереженні профілю компанії,
+ * яке робить сам клієнт у своєму кабінеті. Замір: заявка стоїть на стадії
+ * «Нова» дев'ять днів при нормативі два; якщо клієнт щодня дописує профіль,
+ * `staleDays` показує 0 і «в нормі» — ані лист, ані адмінка простроченого не
+ * бачать. Стадія при цьому не рухалась в обох випадках.
+ *
+ * Особливо це б'є по стадіях, де чекають НАС (нова заявка, модерація, в
+ * роботі): активність клієнта ховає наш прострочений термін.
+ *
+ * updatedAt лишається запасним варіантом і тільки ним: для старих записів без
+ * жодної позначки руху це єдиний сигнал, і мовчки віддавати по них 0 днів
+ * гірше, ніж міряти з похибкою. Що саме взято, каже clockSource.
+ */
+const moveStamps = (rec: DiagRecord): string[] => {
+  const hist = Object.values(rec.funnel?.tierHistory || {}).flat();
+  return [rec.deepModeration?.at, rec.auditClosedAt, ...hist.map((h) => h.at)]
+    .filter((x): x is string => Boolean(x) && !Number.isNaN(Date.parse(String(x))));
+};
+
 export function lastMoveAt(row: AdminRow): string {
   const rec = row.record || {};
-  const hist = Object.values(rec.funnel?.tierHistory || {}).flat();
-  const dates = [rec.deepModeration?.at, rec.auditClosedAt, rec.updatedAt, ...hist.map((h) => h.at)].filter(Boolean) as string[];
-  return dates.sort().pop() || '';
+  const moved = moveStamps(rec).sort().pop();
+  if (moved) return moved;
+  const touched = rec.updatedAt;
+  return touched && !Number.isNaN(Date.parse(touched)) ? touched : '';
+}
+
+/** Звідки взято годинник: рух стадії чи (для старих записів) будь-який запис. */
+export function clockSource(row: AdminRow): 'move' | 'touch' | 'none' {
+  const rec = row.record || {};
+  if (moveStamps(rec).length) return 'move';
+  return rec.updatedAt && !Number.isNaN(Date.parse(rec.updatedAt)) ? 'touch' : 'none';
 }
 
 /**
@@ -126,7 +156,12 @@ export function lastMoveAt(row: AdminRow): string {
 export function staleDays(row: AdminRow, now = Date.now()): number {
   const at = lastMoveAt(row);
   if (!at) return 0;
-  return Math.max(0, Math.floor((now - new Date(at).getTime()) / 86_400_000));
+  const ms = new Date(at).getTime();
+  // Непридатна дата давала NaN, а NaN не проходить жодне порівняння з порогом:
+  // запис із зіпсованою позначкою тихо випадав із SLA замість того, щоб у ній
+  // опинитись. lastMoveAt такі позначки вже відсіює, це друга лінія.
+  if (Number.isNaN(ms)) return 0;
+  return Math.max(0, Math.floor((now - ms) / 86_400_000));
 }
 
 /* ─── SLA: скільки стадія має право стояти ──────────────────────────────────

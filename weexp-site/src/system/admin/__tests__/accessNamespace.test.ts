@@ -83,9 +83,33 @@ describe('пространства имён каталогов не смешив
     expect(normalizeAccessLog(undefined)).toBeUndefined();
     // уже переведённые ключи не трогаются
     expect(Object.keys(normalizeAccessLog({ 'CB-03': 1 })!)).toEqual(['CB-03']);
+    // и посторонние ключи на «AC-» тоже: переименование касается только номеров
+    // каталога AC-01…AC-26, а не всего, что начинается на эти буквы
+    expect(Object.keys(normalizeAccessLog({ 'AC-GA4': 1, 'AC-CRM': 2 })!).sort()).toEqual(['AC-CRM', 'AC-GA4']);
     // и каждый переведённый ключ существует в каталоге
     const ids = new Set(ACCESS_CATALOG.map((a) => a.id));
     for (const k of Object.keys(now)) expect(ids.has(k), k).toBe(true);
+  });
+
+  /*
+   * Дефект найден в собственной правке этого цикла: mutateRecord — путь ЗАПИСИ —
+   * читал запись в обход нормализатора, и mergeMapFor складывал `{...старое,
+   * ...новое}`. В записи оказывались оба ключа: AC-14 из базы и CB-14 из
+   * интерфейса. Один доступ считался за два (AdminPanel показывает клиенту
+   * число ключей accessLog), попадал дважды в пакет знаний, а какое значение
+   * переживёт следующее чтение — решал порядок ключей.
+   */
+  it('встретив оба ключа, нормализатор выбирает текущий, а не тот, что позже в объекте', () => {
+    // порядок «сначала AC» — как получалось при слиянии
+    expect(normalizeAccessLog({ 'AC-14': 'старое', 'CB-14': 'новое' })).toEqual({ 'CB-14': 'новое' });
+    // и обратный порядок даёт тот же ответ
+    expect(normalizeAccessLog({ 'CB-14': 'новое', 'AC-14': 'старое' })).toEqual({ 'CB-14': 'новое' });
+  });
+
+  it('один доступ не превращается в два', () => {
+    const merged = { 'AC-01': 'g', 'AC-14': 'g', 'CB-14': 'p' };   // что попадало в базу
+    expect(Object.keys(merged)).toHaveLength(3);
+    expect(Object.keys(normalizeAccessLog(merged)!)).toHaveLength(2);
   });
 
   it('идентификаторы кабинета уникальны внутри своего каталога', () => {

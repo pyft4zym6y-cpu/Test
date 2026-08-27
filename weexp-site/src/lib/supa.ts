@@ -621,7 +621,16 @@ export function onAuth(cb: (u: DiagUser | null) => void): () => void {
 export function normalizeAccessLog<T>(log?: Record<string, T>): Record<string, T> | undefined {
   if (!log) return log;
   const out: Record<string, T> = {};
-  for (const [k, v] of Object.entries(log)) out[k.replace(/^AC-/, 'CB-')] = v;
+  // Переименование касается ТОЛЬКО номеров каталога: AC-01…AC-26. Шаблон был
+  // шире (любой ключ на «AC-»), и под него попадали посторонние ключи вроде
+  // AC-GA4 — их никто не переименовывал, значит трогать их нельзя.
+  const LEGACY = /^AC-(\d+)$/;
+  // Сначала устаревшие ключи, потом текущие: если в записи оказались оба
+  // (AC-14 и CB-14 сразу — так могло получиться при слиянии до этой правки),
+  // побеждает CB-14. Полагаться на порядок ключей в объекте здесь нельзя:
+  // он зависит от того, как запись собиралась, а не от того, что новее.
+  for (const [k, v] of Object.entries(log)) { const m = LEGACY.exec(k); if (m) out[`CB-${m[1]}`] = v; }
+  for (const [k, v] of Object.entries(log)) if (!LEGACY.test(k)) out[k] = v;
   return out;
 }
 
@@ -1087,7 +1096,7 @@ export async function mutateRecord(
   if (isOffline(userId)) {
     try {
       const k = LS_DATA(userId);
-      const prev = JSON.parse(localStorage.getItem(k) || '{}') as DiagRecord;
+      const prev = adopt(JSON.parse(localStorage.getItem(k) || '{}') as DiagRecord);
       const next = { ...mutate(prev), updatedAt: new Date().toISOString() };
       localStorage.setItem(k, JSON.stringify(next));
       return { ok: true, record: next };
@@ -1097,7 +1106,16 @@ export async function mutateRecord(
     try {
       const { data, error: readErr } = await supabase.from('diagnostics').select('data').eq('user_id', userId).maybeSingle();
       if (readErr) return { ok: false, error: readErr.message };
-      const rec = (data?.data as DiagRecord) || {};
+      /*
+       * adopt обязателен и здесь, а не только в loadDiag. mutateRecord — путь
+       * ЗАПИСИ: mergeMapFor складывает `{...прочитанное, ...изменённое}`, и без
+       * нормализации в записи оказывались оба ключа сразу — старый AC-14 из
+       * базы и новый CB-14 из интерфейса. Один доступ считался за два
+       * (AdminPanel показывает клиенту число ключей accessLog), попадал дважды
+       * в пакет знаний, а какое из двух значений переживёт нормализацию на
+       * следующем чтении, решал порядок ключей в объекте.
+       */
+      const rec = adopt((data?.data as DiagRecord) || {});
       const seen = rec.updatedAt;
       const merged: DiagRecord = { ...mutate(rec), updatedAt: new Date().toISOString() };
       let qb = supabase.from('diagnostics').update({ data: merged }).eq('user_id', userId);

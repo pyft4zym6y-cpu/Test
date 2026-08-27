@@ -281,13 +281,19 @@ export function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string,
    * практично не міг — рядок стояв у протоколі і завжди давав ✓. Механіка
    * згоди — це видимий банер і його текст.
    */
-  const consentBanner = Boolean(
-    $('[id*="cookie" i]') || $('[class*="cookie" i]') || $('[id*="consent" i]')
-    || $('[class*="consent" i]') || $('[href*="cookie" i]'),
-  );
+  /*
+   * Механіка згоди — це ВИБІР: контейнер про cookie/consent, усередині якого є
+   * чим натиснути. Перша версія цієї правки приймала за банер будь-яке
+   * `[href*="cookie"]`, тобто звичайне посилання «Політика cookie» у футері —
+   * воно є майже в усіх, і перевірка знову стала майже завжди істинною, лише
+   * з іншої причини. Посилання на документ згодою не є: у нього немає ані
+   * «прийняти», ані «відхилити».
+   */
+  const consentBanner = ($$('[id*="cookie" i], [class*="cookie" i], [id*="consent" i], [class*="consent" i]') as Element[])
+    .find((el) => el.querySelector('button, input[type="button"], input[type="submit"], [role="button"], a[onclick]'));
   add('cookies', 'Техника', 'Cookie/consent-механика (для ЕС)',
-    consentBanner || /cookie|куки|файли cookie|consent|gdpr/i.test(text),
-    consentBanner ? 'банер у розмітці' : undefined);
+    Boolean(consentBanner),
+    consentBanner ? 'банер з вибором' : 'банера з кнопкою згоди не знайдено');
   add('errors-soft', 'Техника', 'Нет текста ошибок в вёрстке', !/fatal error|exception|undefined index|stack trace/i.test(text));
 
   // Сигналы типа страницы

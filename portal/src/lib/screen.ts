@@ -92,13 +92,19 @@ export function runChecks(html: string, url: string): ScreenCheck[] {
    * его текст, значит искать надо в тексте страницы либо в явной разметке
    * баннера.
    */
-  const consentBanner = Boolean(
-    $('[id*="cookie" i]') || $('[class*="cookie" i]') || $('[id*="consent" i]') ||
-    $('[class*="consent" i]') || $('[href*="cookie" i]'),
-  );
+  /*
+   * Механика согласия — это ВЫБОР: контейнер про cookie/consent, внутри
+   * которого есть чем нажать. Первая версия этой правки принимала за баннер
+   * любой `[href*="cookie"]`, то есть обычную ссылку «Политика cookie» в
+   * футере — она есть почти у всех, и проверка снова стала почти всегда
+   * истинной, только по другой причине. Ссылка на документ согласием не
+   * является: у неё нет ни «принять», ни «отклонить».
+   */
+  const consentBanner = [...$$('[id*="cookie" i], [class*="cookie" i], [id*="consent" i], [class*="consent" i]')]
+    .find((el) => el.querySelector('button, input[type="button"], input[type="submit"], [role="button"], a[onclick]'));
   add('cookies', 'Техника', 'Cookie/consent-механика (для ЕС)',
-    consentBanner || /cookie|куки|файлы cookie|consent|gdpr/i.test(text),
-    consentBanner ? 'баннер в разметке' : undefined);
+    Boolean(consentBanner),
+    consentBanner ? 'баннер с выбором' : 'баннера с кнопкой согласия не найдено');
   add('errors-soft', 'Техника', 'Нет текста ошибок в вёрстке', !/fatal error|exception|undefined index|stack trace/i.test(text));
 
   return out;

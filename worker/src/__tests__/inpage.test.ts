@@ -111,9 +111,14 @@ describe('проверки протокола', () => {
    * любом document.cookie и в любой аналитике, так что провалить её сайт
    * практически не мог — строка стояла в протоколе и всегда давала ✓.
    */
-  it('cookie-механика: document.cookie в скрипте — не согласие', async () => {
+  it('cookie-механика: согласие — это выбор, а не упоминание', async () => {
+    // Проверка дважды оказывалась почти всегда истинной по разным причинам:
+    // сперва читала всю разметку (document.cookie в любой аналитике), потом
+    // принимала за баннер ссылку «Політика cookie» в футере — она есть у всех.
     expect(passOf(await load('<p>Магазин</p><script>document.cookie="sid=1"</script>'), 'cookies')).toBe(false);
-    expect(passOf(await load('<div class="cookie-banner">Ми використовуємо файли cookie</div>'), 'cookies')).toBe(true);
+    expect(passOf(await load('<footer><a href="/cookies">Політика cookie</a></footer>'), 'cookies')).toBe(false);
+    expect(passOf(await load('<div class="cookie-banner">Ми використовуємо файли cookie</div>'), 'cookies')).toBe(false);
+    expect(passOf(await load('<div class="cookie-banner">Ми використовуємо cookie <button>Прийняти</button></div>'), 'cookies')).toBe(true);
   });
 
   it('отзывы ищутся в тексте, а не в именах классов темы', async () => {
