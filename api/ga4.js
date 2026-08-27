@@ -341,9 +341,21 @@ export default async function handler(req, res) {
         const s2 = Number(r2.metricValues?.[0]?.value ?? 0), t2 = Number(r2.metricValues?.[1]?.value ?? 0);
         return { name: r2.dimensionValues?.[0]?.value || '—', sessions: s2, cr: s2 ? Math.round((t2 / s2) * 10000) / 100 : 0 };
       });
+      /*
+       * Нуль замовлень — це не «конверсія 0%», а «електронна торгівля в цьому
+       * GA4 не налаштована»: властивість без purchase-подій віддає сесії й нулі
+       * по transactions/revenue. Раніше звідси йшли cr = 0 і aov = 0, і в
+       * адмінці вони лягали в важелі з джерелом «GA4» — тобто рівнем
+       * достовірності E3, «дані системи». Нуля, якого немає в даних, у важелях
+       * бути не повинно.
+       */
+      const ecommerce = transactions > 0;
       res.status(200).json({ period: '30 днів', sessions, users, transactions, revenue: Math.round(revenue),
-        cr: sessions ? Math.round((transactions / sessions) * 10000) / 100 : 0,
-        aov: transactions ? Math.round(revenue / transactions) : 0,
+        cr: sessions && ecommerce ? Math.round((transactions / sessions) * 10000) / 100 : null,
+        aov: ecommerce ? Math.round(revenue / transactions) : null,
+        ecommerce,
+        note: !sessions ? 'GA4 не віддав жодної сесії за період — перевірте властивість і доступ'
+          : ecommerce ? null : 'У GA4 немає подій purchase за період: конверсію і чек звідси взяти нема з чого',
         channels, devices });
     } catch (e) {
       res.status(200).json({ error: String(e.message || e) });
@@ -372,13 +384,20 @@ export default async function handler(req, res) {
     const sessions = Number(row[0]?.value ?? 0);
     const transactions = Number(row[1]?.value ?? 0);
     const revenue = Number(row[2]?.value ?? 0);
+    // Те саме, що й у ветке `pull`: нуль замовлень — не нульова конверсія,
+    // а відсутність електронної торгівлі в даних. Ці числа адмінка кладе у
+    // важелі з джерелом «GA4», тобто з рівнем достовірності E3.
+    const ecommerce = transactions > 0;
     res.status(200).json({
       period: '90 дней',
       sessionsMonthly: Math.round(sessions / 3),
       ordersMonthly: Math.round(transactions / 3),
       revenueMonthly: Math.round(revenue / 3),
-      cr: sessions ? Math.round((transactions / sessions) * 10000) / 100 : 0,
-      aov: transactions ? Math.round(revenue / transactions) : 0,
+      cr: sessions && ecommerce ? Math.round((transactions / sessions) * 10000) / 100 : null,
+      aov: ecommerce ? Math.round(revenue / transactions) : null,
+      ecommerce,
+      note: !sessions ? 'GA4 не отдал ни одной сессии за период — проверьте свойство и доступ'
+        : ecommerce ? null : 'В GA4 нет событий purchase за период: конверсию и чек отсюда взять не из чего',
     });
   } catch (e) {
     res.status(200).json({ error: String(e.message || e) });

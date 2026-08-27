@@ -220,13 +220,24 @@ export default function AdminClientPage() {
     try {
       const j = await (await fetch('/api/ga4')).json();
       if (j.error) { setGa4Msg(j.error); return; }
+      /*
+       * Записываем в рычаг только то, что GA4 действительно измерил. Свойство
+       * без событий purchase отдаёт сессии и нули по заказам, и раньше эти нули
+       * ложились в cr и aov с источником «GA4» — то есть с уровнем достоверности
+       * E3, «данные системы». Дальше computeConfidence считала их как baseline
+       * из систем и поднимала доверие к выводам за два нуля, которых в данных
+       * нет. Ноль, которого не измеряли, в рычаг не попадает.
+       */
+      const num = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
       setLeversDraft({
         ...levers,
-        traffic: { ...levers.traffic, fact: j.sessionsMonthly, source: 'GA4' },
-        cr: { ...levers.cr, fact: j.cr, source: 'GA4' },
-        aov: levers.aov.fact ? levers.aov : { ...levers.aov, fact: j.aov, source: 'GA4' },
+        ...(num(j.sessionsMonthly) ? { traffic: { ...levers.traffic, fact: j.sessionsMonthly, source: 'GA4' } } : {}),
+        ...(num(j.cr) ? { cr: { ...levers.cr, fact: j.cr, source: 'GA4' } } : {}),
+        ...(num(j.aov) && !levers.aov.fact ? { aov: { ...levers.aov, fact: j.aov, source: 'GA4' } } : {}),
       });
-      setGa4Msg(`GA4 за ${j.period}: ${j.sessionsMonthly} сессий/мес · CR ${j.cr}% · чек ${j.aov}`);
+      setGa4Msg(j.note
+        ? `GA4 за ${j.period}: ${j.sessionsMonthly} сессий/мес. ${j.note} — конверсию и чек занесите из выгрузки заказов (AC-13).`
+        : `GA4 за ${j.period}: ${j.sessionsMonthly} сессий/мес · CR ${j.cr}% · чек ${j.aov}`);
     } catch {
       setGa4Msg('API недоступно — работает на хостинге Vercel, не в демо.');
     }

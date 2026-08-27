@@ -333,7 +333,11 @@ export function ModuleScoring({ userId, initial, code, rec, onSaved }: { userId:
 
 export function GaPreview({ userId, siteUrl }: { userId: string; siteUrl?: string }) {
   type GaStatus = { connected?: boolean; email?: string; properties?: { id: string; name: string; account: string }[]; sites?: { url: string; level: string }[]; at?: string; error?: string };
-  type GaPull = { period?: string; sessions?: number; users?: number; transactions?: number; revenue?: number; cr?: number; aov?: number;
+  // cr і aov приходять null, коли в GA4 немає подій purchase: нуль замовлень —
+  // це «електронна торгівля не налаштована», а не «конверсія 0%». `note` каже,
+  // що саме не виміряно.
+  type GaPull = { period?: string; sessions?: number; users?: number; transactions?: number; revenue?: number;
+    cr?: number | null; aov?: number | null; ecommerce?: boolean; note?: string | null;
     channels?: { name: string; sessions: number; revenue: number }[]; devices?: { name: string; sessions: number; cr: number }[]; error?: string };
   type GscPull = { period?: string; clicks?: number; impressions?: number; ctr?: number; position?: number;
     queries?: { q: string; clicks: number; impressions: number; position: number }[];
@@ -526,9 +530,10 @@ export function GaPreview({ userId, siteUrl }: { userId: string; siteUrl?: strin
               <div><b>{(data.users || 0).toLocaleString('uk-UA')}</b><span>користувачів</span></div>
               <div><b>{(data.transactions || 0).toLocaleString('uk-UA')}</b><span>замовлень</span></div>
               <div><b>{eurF(data.revenue)}</b><span>виручка</span></div>
-              <div><b>{data.cr ?? 0}%</b><span>CR</span></div>
-              <div><b>{eurF(data.aov)}</b><span>чек</span></div>
+              <div><b>{typeof data.cr === 'number' ? `${data.cr}%` : '—'}</b><span>CR</span></div>
+              <div><b>{typeof data.aov === 'number' ? eurF(data.aov) : '—'}</b><span>чек</span></div>
             </div>
+            {data.note && <p className="mono adm-ga-no">{data.note}</p>}
             {(data.channels || []).length > 0 && (
               <div className="adm-ga-tbl">
                 <span className="mono adm-ga-h">Канали · сесії / виручка</span>
