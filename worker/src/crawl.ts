@@ -180,13 +180,13 @@ export function accessFromUrl(rootUrl: string): SiteAccess | undefined {
 }
 
 /** Добавить access-query к URL для фактического запроса (навигация/fetch). */
-function applyAccess(url: string, access?: SiteAccess): string {
+export function applyAccess(url: string, access?: SiteAccess): string {
   if (!access?.query) return url;
   try { const u = new URL(url); for (const [k, v] of Object.entries(access.query)) u.searchParams.set(k, v); return u.toString(); } catch { return url; }
 }
 
 /** Убрать access-query из URL для хранения/показа (в отчёте — чистые адреса). */
-function stripAccess(url: string, access?: SiteAccess): string {
+export function stripAccess(url: string, access?: SiteAccess): string {
   if (!access?.query) return url;
   try { const u = new URL(url); for (const k of Object.keys(access.query)) u.searchParams.delete(k); return u.toString(); } catch { return url; }
 }
@@ -551,16 +551,41 @@ function inPageChecks(): { checks: L0Check[]; kindSignals: Record<string, boolea
   return { checks: out, kindSignals, tech, ux, stack };
 }
 
-function classify(url: string, sig: Record<string, boolean>, isRoot: boolean): PageKind {
+/* ── Сервисные страницы по URL ──
+ * Правило «URL важнее DOM» появилось из прод-бага: у блога, «о нас», контактов и
+ * доставки в футере висят карточки товаров, и признак manyCards уводил их в
+ * каталог. Но жёсткая граница после основы `(\/|-|$)` ловила только английские
+ * формы: украинский и русский склоняют — kontakty, povernennya, garantiya,
+ * kompaniya, statti, umovy. Из 26 реальных адресов мимо проходили 18.
+ *
+ * Цена не косметическая: тип страницы решает, по каким критериям её оценивают.
+ * Политика конфиденциальности, разобранная как категорийная страница, даёт в
+ * документе клиента находки вроде «нет фильтров и сортировки».
+ *
+ * Две группы, потому что риск у них разный.
+ */
+/** Длинные однозначные основы — с любым окончанием, но строго после «/». */
+const SERVICE_PATH = /\/(blog|news|novyn|article|statt|about|o-nas|about-us|pro-nas|company|kompan|contact|kontakt|delivery|dostavka|shipping|payment|oplata|terms|privacy|konfiden|policy|polityk|guarantee|warranty|compare|porivn|korporat|horeca|wholesale|optov)[a-z-]*(\/|$)/i;
+/**
+ * Правовые и сервисные слова, которые встречаются и в середине адреса
+ * («publichna-oferta», «obmin-ta-povernennya», «dostavka-i-oplata»). Товаром
+ * такое слово не бывает, поэтому им разрешено стоять и после дефиса.
+ */
+const SERVICE_LEGAL = /[/-](oferta|offer|umov|povern|return|refund|vozvrat|obmin|garant|harant)[a-z-]*(\/|$)/i;
+/**
+ * Короткие и двусмысленные — только с жёсткой границей. `opt` иначе съедает
+ * «/optika/» (это реальная категория, а не опт), `stat` — «/stativy/»,
+ * `korp` — «/korpusni-mebli/».
+ */
+const SERVICE_SHORT = /[/-](opt|optom|b2b|stat|korp)(\/|-|$)/i;
+
+export function classify(url: string, sig: Record<string, boolean>, isRoot: boolean): PageKind {
   if (isRoot) return 'home';
-  // Сначала — надёжная классификация по URL: сервисные/контентные страницы часто
-  // содержат карточки-виджеты в футере и ошибочно уходили в PLP (прод-баг:
-  // blog/about/contact/delivery определились как «Каталог»).
   try {
     const p = new URL(url).pathname;
     if (/^\/(en|ru|ua|uk|pl|de)\/?$/i.test(p)) return 'home'; // языковое зеркало главной
     if (/\/(faq|help|dopomoga|voprosy|pytannya|questions|q-?a)(\/|$)/i.test(p)) return 'faq';
-    if (/\/(blog|news|article|stat|about|o-nas|about-us|pro-nas|company|kompan|contact|kontakt|delivery|dostavka|payment|oplata|terms|privacy|policy|guarantee|warranty|return|povern|compare|korp-|horeca|b2b|opt|wholesale)(\/|-|$)/i.test(p)) return 'content';
+    if (SERVICE_PATH.test(p) || SERVICE_LEGAL.test(p) || SERVICE_SHORT.test(p)) return 'content';
   } catch { /* not a url */ }
   if (sig.isCheckoutUrl) return 'checkout';
   if (sig.isCartUrl) return 'cart';
@@ -762,7 +787,7 @@ async function fetchSitemapUrls(ctx: BrowserContext, origin: string, access?: Si
 }
 
 /** Отбирает представителей нужных типов страниц из найденных ссылок (несколько на тип). */
-function pickCandidates(root: string, links: string[], want: number): string[] {
+export function pickCandidates(root: string, links: string[], want: number): string[] {
   let origin: string;
   try { origin = new URL(root).origin; } catch { return []; }
   const path = (h: string) => { try { return new URL(h).pathname; } catch { return ''; } };
@@ -819,8 +844,11 @@ export const PAGE_TYPE_REGISTRY: PageTypeDef[] = [
   { id: 'sale', label: 'Акции / распродажа', mandatory: false, match: /sale|akci|akts|promo|discount|znyzhk|znizhk|rozprodazh|rasprodazh|vyprodazh/i, probes: ['/katalog/rozprodazh', '/rozprodazh/', '/sale/', '/akciyi/', '/akcii/', '/znyzhky/', '/katalog/sale'] },
   { id: 'new', label: 'Новинки', mandatory: false, match: /novynky|novinki|\/new(\/|$)/i, probes: [] },
   { id: 'reviews-page', label: 'Отзывы о магазине', mandatory: false, match: /\/(vidhuky|otzyvy|reviews|testimonials)(\/|$)/i, probes: ['/reviews/', '/vidhuky/'] },
-  { id: 'b2b', label: 'B2B / опт', mandatory: false, match: /b2b|\/opt(\/|$)|wholesale|dealer|optom/i, probes: ['/b2b/', '/opt/', '/wholesale/', '/optom/'] },
-  { id: 'corporate', label: 'Корпоративные / HoReCa', mandatory: false, match: /korp|corporate|horeca|ho-re-ca/i, probes: ['/horeca/', '/korp-podarunky/', '/korporatyvni-podarunky/', '/corporate/', '/b2b-podarunky/'] },
+  // '/b2b-podarunky/' лежала в пробах 'corporate', но своим матчером тот её не
+  // признавал — проба уходила впустую: страница отвечала 200, попадала в дерево
+  // ссылок, а тип всё равно числился ненайденным. Тут матчер её признаёт.
+  { id: 'b2b', label: 'B2B / опт', mandatory: false, match: /b2b|\/opt(\/|$)|wholesale|dealer|optom/i, probes: ['/b2b/', '/opt/', '/wholesale/', '/optom/', '/b2b-podarunky/'] },
+  { id: 'corporate', label: 'Корпоративные / HoReCa', mandatory: false, match: /korp|corporate|horeca|ho-re-ca/i, probes: ['/horeca/', '/korp-podarunky/', '/korporatyvni-podarunky/', '/corporate/'] },
   { id: 'loyalty', label: 'Программа лояльности / бонусы', mandatory: false, match: /loyal|bonus|cashback/i, probes: ['/loyalty/', '/bonus/'] },
   { id: 'account', label: 'Личный кабинет / вход', mandatory: false, match: /account|login|signin|cabinet|profil/i, probes: ['/account/', '/login/', '/index.php?route=account/login'] },
   { id: 'wishlist', label: 'Избранное / wishlist', mandatory: false, match: /wishlist|izbrannoe|obrane/i, probes: [] },
