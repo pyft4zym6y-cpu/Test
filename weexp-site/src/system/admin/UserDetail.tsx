@@ -8,6 +8,7 @@ import '../cabinet.css';
 import { Panel, PanelBoundary } from './dialog';
 import { Block, ACCESS_SOURCES, FUNNEL, LEAD_STAGES, ST, U_TABS, coopLabel, funnelStage, rel, tierLabel, type UTab } from './shared';
 import { openClientDossier } from './docs';
+import { downloadClientExport } from './exportClient';
 /* Вміст вкладок вантажимо на вимогу. Картка відкривається на «Огляді», а
    машинерія аудиту (рушій, оцінка модулів, редактор документа, проєкти) —
    найважче, що тут є; тягнути її заради перегляду профілю немає сенсу. */
@@ -57,6 +58,12 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, 
           </div>
           <span className={`cab-badge mono tst-${st.cls} adm-drawer-stage`}>{st.l}</span>
           <button className="mc-btn" onClick={() => openClientDossier(row)} title="Сформувати PDF-досьє клієнта">📄 Досьє PDF</button>
+          {/* Два різні вивантаження, і плутати їх не можна: одне йде клієнту на
+              руки, друге — наш знімок перед ризикованою правкою. */}
+          <button className="mc-btn" onClick={() => downloadClientExport(row, 'client')}
+            title="JSON з даними клієнта без наших внутрішніх нотаток і оцінок — на запит клієнта (GDPR, ст. 20)">↓ Дані клієнта</button>
+          <button className="mc-btn ghost" onClick={() => downloadClientExport(row, 'full')}
+            title="Повний знімок запису разом із внутрішнім шаром — резервна копія перед ризикованою правкою. Клієнту не передавати.">↓ Знімок</button>
         </div>
         <div className="adm-uhead-kv">
           <div className="adm-uhead-cell"><i className="mono">Контакт</i><b>{company?.contactName ? `${company.contactName}${company.contactPhone ? ' · ' + company.contactPhone : ''}` : '—'}</b></div>
