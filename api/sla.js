@@ -11,10 +11,30 @@
 //      CRON_SECRET (Vercel ставить сам), NOTIFY_EMAIL/RESEND_API_KEY — через /api/notify.
 import { requireStaff, logServerEvent } from './_lib/auth.js';
 
-// Пороги мають збігатися з SLA у weexp-site/src/system/admin/auditRequests.ts.
+/**
+ * Пороги стадій. Дублюються з `weexp-site/src/system/admin/auditRequests.ts`:
+ * два різні збирачі (Vite і serverless) не можуть імпортувати один модуль без
+ * зайвої інфраструктури. Раніше тут стояв коментар «пороги мають збігатися» —
+ * і саме так вони й розійшлись: в адмінці два рівні (warn і breach), а тут був
+ * ОДИН, рівний breach. Тобто щоденний лист приходив у день, коли стадія вже
+ * прострочена, і жодного попередження до того не було.
+ *
+ * Тепер обидва рівні тут, а збіг перевіряє тест
+ * (`admin/__tests__/slaSync.test.ts`) — він читає цей файл і падає, щойно
+ * значення розійдуться. Обіцянка в коментарі стала перевіркою.
+ */
 const SLA = {
-  new: 2, review: 2, need_data: 10, granted: 14, filling: 21, clarify: 10,
-  in_work: 21, done: 7, project: 10, delivery: 30, care: 60,
+  new: { warn: 1, breach: 2 },
+  review: { warn: 1, breach: 2 },
+  need_data: { warn: 5, breach: 10 },
+  granted: { warn: 5, breach: 14 },
+  filling: { warn: 7, breach: 21 },
+  clarify: { warn: 5, breach: 10 },
+  in_work: { warn: 10, breach: 21 },
+  done: { warn: 3, breach: 7 },
+  project: { warn: 5, breach: 10 },
+  delivery: { warn: 14, breach: 30 },
+  care: { warn: 30, breach: 60 },
 };
 const LABEL = {
   new: 'Нова заявка', review: 'На модерації', need_data: 'Потрібні дані', granted: 'Доступ надано',
@@ -83,7 +103,15 @@ export default async function handler(req, res) {
       if (from > 20000) break;   // запобіжник від нескінченного циклу
     }
 
+    /** Відповідальний зі складу проєкту — щоб лист казав не лише ЩО стоїть, а й у кого. */
+    const pmOf = (rec) => {
+      const team = projectsOf(rec).flatMap((p) => p.team || []);
+      const pm = team.find((m) => /pm|проект|менедж/i.test(m.role || ''));
+      return pm?.name || '';
+    };
+
     const overdue = [];
+    const soon = [];
     for (const row of rows) {
       const rec = row.data || {};
       const st = statusOf(rec);
@@ -91,25 +119,34 @@ export default async function handler(req, res) {
       const at = lastMoveAt(rec);
       if (!at) continue;
       const days = Math.floor((Date.now() - new Date(at).getTime()) / 86400000);
-      if (days >= SLA[st]) overdue.push({ email: row.email, company: rec.company?.name || '', st, days, limit: SLA[st] });
+      const item = { email: row.email, company: rec.company?.name || '', st, days, limit: SLA[st].breach, pm: pmOf(rec) };
+      if (days >= SLA[st].breach) overdue.push(item);
+      else if (days >= SLA[st].warn) soon.push({ ...item, limit: SLA[st].breach });
     }
     overdue.sort((a, b) => b.days - a.days);
+    soon.sort((a, b) => b.days - a.days);
 
-    if (overdue.length) {
+    if (overdue.length || soon.length) {
       const origin = process.env.SITE_ORIGIN || 'https://weexp.agency';
+      const line = (o) => `• ${o.company || o.email}${o.pm ? ` (${o.pm})` : ''} — «${LABEL[o.st]}» стоїть ${o.days} дн. (норматив ${o.limit})`;
       const text = [
-        `Прострочені стадії: ${overdue.length}`, '',
-        ...overdue.map((o) => `• ${o.company || o.email} — «${LABEL[o.st]}» стоїть ${o.days} дн. (норматив ${o.limit})`),
-        '', `Адмінка: ${origin}/admin`,
+        ...(overdue.length ? [`ПРОСТРОЧЕНО: ${overdue.length}`, '', ...overdue.map(line), ''] : []),
+        // Попередження — головна зміна: раніше лист приходив у день, коли вже
+        // пізно. День-два запасу коштують дешевше за прострочену заявку.
+        ...(soon.length ? [`НАБЛИЖАЄТЬСЯ: ${soon.length}`, '', ...soon.map(line), ''] : []),
+        `Адмінка: ${origin}/admin`,
       ].join('\n');
+      const subject = overdue.length
+        ? `SLA: ${overdue.length} прострочених${soon.length ? ` + ${soon.length} на межі` : ''}`
+        : `SLA: ${soon.length} стадій наближаються до порога`;
       await fetch(`${origin}/api/notify`, {
         method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ subject: `SLA: ${overdue.length} прострочених стадій`, text }),
+        body: JSON.stringify({ subject, text }),
       }).catch(() => {});
     }
     // Слід у журналі: інакше «чому мені прийшов цей лист» не має відповіді.
-    void logServerEvent(byCron ? 'cron' : 'manual', 'sla_check', { detail: `перевірено ${rows.length}, прострочено ${overdue.length}` });
-    res.status(200).json({ ok: true, checked: rows.length, overdue: overdue.length, items: overdue.slice(0, 50) });
+    void logServerEvent(byCron ? 'cron' : 'manual', 'sla_check', { detail: `перевірено ${rows.length}, прострочено ${overdue.length}, на межі ${soon.length}` });
+    res.status(200).json({ ok: true, checked: rows.length, overdue: overdue.length, soon: soon.length, items: overdue.slice(0, 50), soonItems: soon.slice(0, 50) });
   } catch (e) {
     res.status(200).json({ error: String(e).slice(0, 200) });
   }

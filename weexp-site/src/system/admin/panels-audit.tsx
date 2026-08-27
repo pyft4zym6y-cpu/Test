@@ -305,6 +305,33 @@ export function WorkerAudit({ userId, code, rec, reviewer }: { userId: string; c
    * Далі документ віддається клієнту кнопкою «Поділитися» у вкладці «Документи».
    */
   const [importing, setImporting] = useState('');
+
+  /**
+   * Те саме перенесення, але БЕЗ підтвердження — одразу після успішного прогону.
+   * Питати тут нема про що: документи щойно зроблені для цього клієнта, і
+   * альтернатива «не переносити» не має сенсу. Ручна кнопка лишається для
+   * старих прогонів і для повтору, якщо частина файлів не доїхала.
+   */
+  const autoImport = async (id: string) => {
+    try {
+      const st = await runWorkerAudit('status', { id });
+      const list = (st.job?.files as { name: string }[] | undefined) || [];
+      if (!list.length) return;
+      setImporting(id);
+      const r = await importRunFiles(userId, id, list, reviewer, (done, total) => setImporting(`${id}:${done}/${total}`));
+      setImporting('');
+      if (!r.added.length) return;
+      const res = await savePatchFor(userId, { adminFiles: [...r.added, ...(rec.adminFiles || [])] });
+      if (res.ok) toast(`✓ ${r.added.length} документ(ів) прогону — у файлах клієнта${r.failed.length ? ` · ${r.failed.length} не доїхало` : ''}`);
+      else toast('Документи не закріпились за клієнтом: ' + (res.error || ''), 'err');
+    } catch {
+      setImporting('');
+      // Мовчазний провал тут неприпустимий: менеджер вважатиме, що документи
+      // вже у клієнта, і не натисне ручну кнопку.
+      toast('Автоперенос документів не вдався — скористайтесь кнопкою «Перенести у файли» в історії прогонів', 'err');
+    }
+  };
+
   const importRun = async (id: string) => {
     const st = await runWorkerAudit('status', { id });
     const list = (st.job?.files as { name: string }[] | undefined) || [];
@@ -373,6 +400,12 @@ export function WorkerAudit({ userId, code, rec, reviewer }: { userId: string; c
         const upd = next.map((x) => x.id === r.id ? { ...x, status: st, summary: typeof j.summary === 'string' ? j.summary : undefined, health: typeof health === 'number' ? health : null } : x);
         saveJobs(upd);
         toast(st === 'done' ? '✓ Аудит завершено рушієм' : 'Аудит завершився з помилкою', st === 'done' ? 'ok' : 'err');
+        // Документи прогону — у файли клієнта одразу. Раніше це був окремий
+        // ручний крок після кожного прогону: менеджер мусив згадати про нього
+        // й натиснути. Забув — документи лишились усередині прогону, а прогін
+        // з часом зникає разом із томом Railway. Перенос ідемпотентний:
+        // `importRunFiles` не дублює те, що вже лежить у клієнта.
+        if (st === 'done' && r.id) void autoImport(r.id);
       }
     }, 4000);
   };
