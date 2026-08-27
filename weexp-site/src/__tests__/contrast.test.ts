@@ -37,9 +37,23 @@ const ratio = (a: string, b: string) => {
 const WHITE = '#FFFFFF';
 const AA = 4.5;
 
+/*
+ * Светлые поверхности, на которых реально лежит текст. Проверять только на
+ * белом было мало: --red-ink давал 5.01 на белом и честно проходил, а на
+ * панели #F3EFE6 — 4.37, то есть не проходил. Белый на сайте почти нигде не
+ * фон; фон — крем и панель.
+ */
+const SURFACES: Record<string, string> = {
+  'белый': WHITE,
+  'крем (--cream)': '#FAF5E9',
+  'панель (.sysh)': '#F3EFE6',
+  'бумага документов': '#FBF4E4',
+};
+
 describe('красный на светлом', () => {
-  it('--red-ink проходит AA как текст на белом', () => {
-    expect(ratio(token('red-ink'), WHITE)).toBeGreaterThanOrEqual(AA);
+  it('--red-ink проходит AA как текст на КАЖДОЙ светлой поверхности', () => {
+    for (const [name, bg] of Object.entries(SURFACES))
+      expect(ratio(token('red-ink'), bg), `--red-ink на «${name}»`).toBeGreaterThanOrEqual(AA);
   });
 
   it('белый текст на --red-ink тоже проходит: это фон кнопок', () => {
@@ -48,9 +62,16 @@ describe('красный на светлом', () => {
 
   it('семантические алиасы наследуют доступное значение', () => {
     // --data, --alert, --bad читаются как информация, то есть как текст.
-    for (const t of ['data', 'alert', 'bad']) {
-      expect(ratio(token(t), WHITE), `--${t}`).toBeGreaterThanOrEqual(AA);
-    }
+    for (const t of ['data', 'alert', 'bad'])
+      for (const [name, bg] of Object.entries(SURFACES))
+        expect(ratio(token(t), bg), `--${t} на «${name}»`).toBeGreaterThanOrEqual(AA);
+  });
+
+  it('красный в шапке (--sh-data) — тоже текст, тоже на панели', () => {
+    const m = css.match(/--sh-data:\s*(#[0-9A-Fa-f]{6})/);
+    expect(m, 'токен --sh-data не найден').toBeTruthy();
+    for (const [name, bg] of Object.entries(SURFACES))
+      expect(ratio(m![1], bg), `--sh-data на «${name}»`).toBeGreaterThanOrEqual(AA);
   });
 
   it('чистый бренд-красный на белом НЕ проходит — потому он и не для текста', () => {

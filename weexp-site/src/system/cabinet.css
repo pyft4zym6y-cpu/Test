@@ -193,7 +193,7 @@
   /* У тёмной темы кабинета --red-ink совпадает с --red: #FF5A3C на её фонах
      даёт 5.4–6.0:1, то есть уже проходит AA. Токен нужен, чтобы правило
      «текст берёт --red-ink» работало одинаково в обеих темах и не проваливалось
-     на светлый #D8250F, который на тёмном даёт лишь 3.72:1. */
+     на светлый #D0230E, который на тёмном даёт лишь 3.72:1. */
   --red-ink: #FF5A3C;
   --yellow: #FFD200;
   --ok: #35C26B;
@@ -461,7 +461,7 @@
 .cab-del { display: inline-flex; align-items: center; gap: 6px; background: none; border: 2px solid var(--silver, #E3D9C0);
   color: var(--graphite, #6B675E); font-size: 12px; letter-spacing: .04em; padding: 8px 14px; cursor: pointer; border-radius: 0;
   transition: border-color .15s, color .15s; }
-.cab-del:hover { border-color: var(--red-ink, #D8250F); color: var(--red-ink, #D8250F); }
+.cab-del:hover { border-color: var(--red-ink, #D0230E); color: var(--red-ink, #D0230E); }
 
 /* Підзаголовки кабінету — ширші й трохи менші, щоб займали 3–4 рядки, а не 7.
    Заголовки використовують повну ширину контейнера (не «два слова в три рядки»). */
@@ -472,10 +472,10 @@
 /* Керована воронка доступу: статуси рівнів (кольорові бейджі + акцент рамки картки) */
 .cab-badge.tst-wait { background: var(--warn, #C0851E); color: #fff; border-color: var(--deep); }
 .cab-badge.tst-ok { background: var(--ok, #1F9D55); color: #fff; border-color: var(--deep); }
-.cab-badge.tst-bad { background: var(--red-ink, #D8250F); color: #fff; border-color: var(--deep); }
+.cab-badge.tst-bad { background: var(--red-ink, #D0230E); color: #fff; border-color: var(--deep); }
 .cab-depth.tier-wait { border-color: var(--warn, #C0851E); }
 .cab-depth.tier-ok { border-color: var(--ok, #1F9D55); }
-.cab-depth.tier-bad { border-color: var(--red-ink, #D8250F); }
+.cab-depth.tier-bad { border-color: var(--red-ink, #D0230E); }
 .cab-access-act { flex-direction: column; align-items: flex-start; gap: 10px; }
 /* Обрана картка завжди має чорну рамку — перекриваємо статусний акцент */
 .cab-depth.on { border-color: var(--deep); }

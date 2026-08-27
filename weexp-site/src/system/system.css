@@ -30,7 +30,7 @@
    *
    * --red-ink — усе, що торкається тексту: червоний текст і червоне тло під
    * білим текстом. #F5301C на білому дає 3.95:1 при нормі WCAG AA 4.5:1 —
-   * axe знаходив 60 таких вузлів на всіх публічних сторінках. #D8250F дає 5.01:1
+   * axe знаходив 60 таких вузлів на всіх публічних сторінках. #D0230E дає 5.35:1
    * в обидва боки, а на око це той самий червоний (світлота нижча на 6%).
    *
    * Зворотний бік: на ТЕМНИХ поверхнях правило перевертається. --red-ink на
@@ -41,7 +41,7 @@
    * Токен існував і раніше, але не був підключений жодного разу.
    */
   --red: #F5301C;          /* айдентика: смуги, рамки, заливки БЕЗ тексту */
-  --red-ink: #D8250F;      /* усе, що торкається тексту (WCAG AA 4.5:1) */
+  --red-ink: #D0230E;      /* усе, що торкається тексту (WCAG AA 4.5:1) */
   --yellow: #FFD200;       /* бейджі/чипи, вторинний хайлайт */
   /*
    * Семантичні аліаси беруть ДОСТУПНЕ значення, а не чисту айдентику: усі троє
@@ -49,15 +49,15 @@
    * або підпис поруч із ним. Декоративні крапки й смуги, що теж на них стоять,
    * від зсуву світлоти на 6% не змінюються на око.
    */
-  --data: #D8250F;         /* alias старого «data» → доступний бренд-червоний */
+  --data: #D0230E;         /* alias старого «data» → доступний бренд-червоний */
   --data-soft: #FFD200;    /* alias → жовтий */
-  --alert: #D8250F;
+  --alert: #D0230E;
   /* — Семантика статусів — */
   --ok: #1F9D55;
   --ok-strong: #177A43;
   --warn: #C0851E;
   --warn-strong: #9A6A12;
-  --bad: #D8250F;          /* статус читається текстом → доступне значення */
+  --bad: #D0230E;          /* статус читається текстом → доступне значення */
   /* — Хейрлайни/рамки — */
   --line: rgba(20, 18, 16, .16);
   --line-soft: rgba(20, 18, 16, .08);
@@ -224,7 +224,7 @@
 }
 
 /* ── SHELL: cinematic-навігація превʼю-напряму ── */
-.sysh { --sh-deep: #141210; --sh-charcoal: #201D19; --sh-graphite: #6B675E; --sh-silver: #141210; --sh-data: #D8250F; --sh-warm: #FAF5E9;
+.sysh { --sh-deep: #141210; --sh-charcoal: #201D19; --sh-graphite: #6B675E; --sh-silver: #141210; --sh-data: #D0230E; --sh-warm: #FAF5E9;
   /* Єдине полотно сайту: крем + точкова сітка малюються ОДИН раз на всю висоту
      сторінки — секції прозорі, тому патерн ніде не «перезапускається». */
   background: var(--cream, #F3EFE6);
@@ -2295,7 +2295,7 @@
 .apack-block { position: relative; border: 2px solid var(--deep, #141210); background: var(--pure-white, #fff); padding: 12px 14px 10px; }
 .apack-bt { display: block; font-size: 14px; color: var(--deep, #141210); padding-right: 28px; }
 .apack-bd { margin: 4px 0 6px; font-size: 11.5px; line-height: 1.45; color: var(--graphite, #6B675E); }
-.apack-bn { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--red-ink, #D8250F); }
+.apack-bn { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--red-ink, #D0230E); }
 
 .apack-bdocs { margin: 6px 0 0; font-size: 11px; color: var(--graphite, #6B675E); line-height: 1.4; }
 
