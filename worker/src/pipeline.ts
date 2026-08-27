@@ -6,7 +6,7 @@ import { writeFile, mkdir, readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { launchBrowser, crawlSite, reachabilityDiagnosis, type SiteCrawl } from './crawl.js';
 import { computeEngine, normalizeAnswers, engineFacts, type EngineResult } from './portalEngine.js';
-import { computeMoney, moneyFacts, type Levers, type MoneyResult } from './money.js';
+import { computeMoney, moneyFacts, checkLevers, type Levers, type MoneyResult } from './money.js';
 import { renderL0Report, type AuditDataset } from './report.js';
 import { TIERS, type Tier } from './tiers.js';
 import { analyze } from './analyze.js';
@@ -186,7 +186,10 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
   const failedModules: string[] = [];
   const fail = (module: string, what: string, e: unknown, cut = 120) => {
     if (!failedModules.includes(module)) failedModules.push(module);
-    log(`⚠️ ${what} (${String(e).slice(0, cut)})`);
+    // Причина в дужках — лише коли вона є: не кожне падіння приходить винятком
+    // (гроші, наприклад, не рахуються через самі дані, і причина вже в тексті).
+    const why = String(e ?? '').slice(0, cut);
+    log(why ? `⚠️ ${what} (${why})` : `⚠️ ${what}`);
   };
   const metrics: AuditMetrics = { compliance: null, confidence: null, health: null, benchmarkIndex: null, aqcFails: null, potentialYear: null };
   const t0 = Date.now(); // старт прогона — для durationMs в Audit Run Record
@@ -626,9 +629,17 @@ export async function runAudit(opts: AuditOptions): Promise<AuditResult> {
     let money: MoneyResult | null = null;
     if (opts.baseline?.levers) {
       money = computeMoney(opts.baseline.levers, opts.baseline.extra ?? []);
-      metrics.potentialYear = money.potentialYear;
-      await writeFile(join(dir, 'money.json'), JSON.stringify(money, null, 2), 'utf8');
-      log(`· деньги: недополучено ≈ ${Math.round(money.potentialYear).toLocaleString('ru-RU')} ₴/год`);
+      if (money) {
+        metrics.potentialYear = money.potentialYear;
+        await writeFile(join(dir, 'money.json'), JSON.stringify(money, null, 2), 'utf8');
+        log(`· деньги: недополучено ≈ ${Math.round(money.potentialYear).toLocaleString('ru-RU')} ₴/год`);
+      } else {
+        // Отказ считать — это находка аудита, а не тишина: baseline пришёл, но
+        // ему нельзя верить. Раньше такой набор давал NaN, и в документ клиента
+        // уезжало «Недоотриманий оборот: не число ₴».
+        const why = checkLevers(opts.baseline.levers);
+        fail('money', `деньги не посчитаны — базовым показателям нельзя верить: ${why.join('; ')}`, null);
+      }
     }
 
     const grounding = [engine ? engineFacts(engine) : '', money ? moneyFacts(money) : ''].filter(Boolean).join('\n\n') || undefined;

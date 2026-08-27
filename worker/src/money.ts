@@ -45,14 +45,51 @@ export type MoneyResult = {
   waterfall: Waterfall[];
   consMinYear: number; // консервативная нижняя граница (нижняя половина)
   consMaxYear: number;
-  forecast: { current: number; withProgram: number; upliftPct: number };
+  /** upliftPct = null, коли поточної виручки немає: відсоток від нуля не існує. */
+  forecast: { current: number; withProgram: number; upliftPct: number | null };
   invariantOk: boolean; // Σ вкладов = потенциал
 };
 
+/**
+ * Що не так із вхідними показниками. Порожній масив = рахувати можна.
+ *
+ * Потрібне окремо від розрахунку, бо число звідси йде в дванадцять місць:
+ * презентацію, docx, exec-діагностику, карту причин, промпт аналізу, метрики
+ * прогону. Пропущений показник давав NaN, а `toLocaleString('ru-RU')` малює
+ * його як «не число» — і в документ клієнта їхало «Недоотриманий оборот:
+ * не число ₴/міс». Мовчазна відмова чесніша: кожен споживач уже вміє жити без
+ * грошей (`money ? … : 'рахується після передачі доступів'`).
+ */
 const stateFrom = (l: Levers, side: 'fact' | 'target'): State =>
   Object.fromEntries(LEVER_ORDER.map(({ key }) => [key, l[key][side]])) as State;
 
-export function computeMoney(levers: Levers, extra: ExtraStream[] = []): MoneyResult {
+export function checkLevers(l: Levers): string[] {
+  const out: string[] = [];
+  for (const { key, label } of LEVER_ORDER) {
+    const row = l[key];
+    if (!row) { out.push(`${label}: показник відсутній`); continue; }
+    for (const side of ['fact', 'target'] as const) {
+      const v = row[side];
+      if (!Number.isFinite(v)) out.push(`${label}: ${side === 'fact' ? 'факт' : 'ціль'} — не число`);
+      else if (v < 0) out.push(`${label}: ${side === 'fact' ? 'факт' : 'ціль'} відʼємний (${v})`);
+    }
+  }
+  if (out.length) return out;   // сукупну перевірку на битих числах робити нема сенсу
+
+  // Цільова воронка не може бути ГІРШОЮ за фактичну — це опечатка в цілях, а не
+  // відʼємна можливість. Без цієї перевірки в документ їхало «недоотримано
+  // −691 200 ₴/рік… це верхня рамка для бюджету програми змін».
+  // Відʼємний внесок ОДНОГО важеля при загальному плюсі — нормальний розмін
+  // усередині воронки, і він тут навмисно не ловиться.
+  const gap = revenue(stateFrom(l, 'target')) - revenue(stateFrom(l, 'fact'));
+  if (gap < 0) out.push('цільова воронка гірша за фактичну — перевірте цілі показників');
+  return out;
+}
+
+export function computeMoney(levers: Levers, extra: ExtraStream[] = []): MoneyResult | null {
+  // Порахувати «якось» тут гірше, ніж не рахувати: число піде в документ, який
+  // клієнт читає як оцінку розміру своєї проблеми.
+  if (checkLevers(levers).length) return null;
   const fact = stateFrom(levers, 'fact');
   const target = stateFrom(levers, 'target');
   const currentMonth = revenue(fact);
@@ -71,6 +108,10 @@ export function computeMoney(levers: Levers, extra: ExtraStream[] = []): MoneyRe
   const potentialYear = potentialMonth * 12;
   const extraYear = extra.reduce((s, e) => s + e.monthly * 12, 0);
 
+  // Сума внесків телескопується до targetMonth − currentMonth, тож за поточної
+  // побудови інваріант виконується завжди. Перевірка лишається не як контроль
+  // арифметики, а як сторож рефакторингу: варто комусь застосувати важіль повз
+  // цей цикл або порахувати вклад від іншого стану — вона впаде.
   const sumContrib = waterfall.reduce((s, w) => s + w.contribMonth, 0);
   const invariantOk = Math.abs(sumContrib - potentialMonth) < Math.max(1, Math.abs(potentialMonth) * 1e-6);
 
@@ -80,7 +121,13 @@ export function computeMoney(levers: Levers, extra: ExtraStream[] = []): MoneyRe
     currentMonth, targetMonth, potentialMonth, potentialYear, extraYear, waterfall,
     consMinYear: Math.round(grandYear * 0.5), // нижняя половина расчётного диапазона (метод: консервативно)
     consMaxYear: Math.round(grandYear),
-    forecast: { current: Math.round(currentYear), withProgram: Math.round(currentYear + grandYear), upliftPct: currentYear ? Math.round((grandYear / currentYear) * 100) : 0 },
+    forecast: {
+      current: Math.round(currentYear),
+      withProgram: Math.round(currentYear + grandYear),
+      // null, а не 0: у клієнта до запуску виторгу ще немає, і «+0%» поруч із
+      // півторамільйонною цифрою читається як помилка розрахунку.
+      upliftPct: currentYear > 0 ? Math.round((grandYear / currentYear) * 100) : null,
+    },
     invariantOk,
   };
 }
@@ -94,7 +141,10 @@ export function moneyFacts(m: MoneyResult): string {
   L.push(`Виручка зараз: ${fmt(m.currentMonth)}/міс. За цільової воронки: ${fmt(m.targetMonth)}/міс.`);
   L.push(`Недоотриманий оборот (наявна воронка): ${fmt(m.potentialMonth)}/міс ≈ ${fmt(m.potentialYear)}/рік.`);
   if (m.extraYear) L.push(`Нові потоки (МП/ЄС): +${fmt(m.extraYear)}/рік.`);
-  L.push(`Консервативно: ${fmt(m.consMinYear)}–${fmt(m.consMaxYear)}/рік. Прогноз 12 міс: ${fmt(m.forecast.current)} → ${fmt(m.forecast.withProgram)} (+${m.forecast.upliftPct}%).`);
+  const uplift = m.forecast.upliftPct === null
+    ? ' Бази для порівняння немає — виторг рахується з нуля.'
+    : ` (+${m.forecast.upliftPct}%).`;
+  L.push(`Консервативно: ${fmt(m.consMinYear)}–${fmt(m.consMaxYear)}/рік. Прогноз 12 міс: ${fmt(m.forecast.current)} → ${fmt(m.forecast.withProgram)}${uplift}`);
   L.push('Внесок важелів (₴/рік): ' + m.waterfall.map((w) => `${w.label} ${fmt(w.contribYear)}`).join('; '));
   if (!m.invariantOk) L.push('⚠️ Інваріант Σ внесків = потенціал порушено — перевір базові показники.');
   return L.join('\n');

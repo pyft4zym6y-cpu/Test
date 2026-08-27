@@ -161,7 +161,7 @@ function centralBranch(r: SiteAuditReport, x: PresentationExtras): string {
     ? `<div class="econ">
         <div class="econ-now"><div class="econ-cap">ЗАРАЗ / МІСЯЦЬ</div><div class="econ-big gap">${rub(money.currentMonth)}</div><div class="econ-note">за поточної конверсії</div></div>
         <div class="econ-arrow">→</div>
-        <div class="econ-tgt"><div class="econ-cap">ПОТЕНЦІАЛ / РІК</div><div class="econ-big ok">${rub(money.potentialYear)}</div><div class="econ-note">+${money.forecast.upliftPct}% до виторгу за правильної збірки</div></div>
+        <div class="econ-tgt"><div class="econ-cap">ПОТЕНЦІАЛ / РІК</div><div class="econ-big ok">${rub(money.potentialYear)}</div><div class="econ-note">${money.forecast.upliftPct === null ? 'виторг рахується з нуля — бази для порівняння немає' : `+${money.forecast.upliftPct}% до виторгу за правильної збірки`}</div></div>
       </div>
       <p class="lead">Розрахунок на ваших трьох цифрах (трафік · конверсія · чек). Консервативна вилка: ${rub(money.consMinYear)}–${rub(money.consMaxYear)} на рік.</p>`
     : `<div class="econ">

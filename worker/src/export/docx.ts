@@ -64,7 +64,7 @@ export async function exportReportDocx(ds: AuditDataset, a: Analysis, engine: En
     kids.push(P(`Выручка сейчас: ${rub(money.currentMonth)}/мес → при целевой воронке: ${rub(money.targetMonth)}/мес.`));
     kids.push(P(`Недополученный оборот: ${rub(money.potentialMonth)}/мес ≈ ${rub(money.potentialYear)}/год (существующая воронка).`, { bold: true }));
     if (money.extraYear) kids.push(P(`Новые потоки (МП/ЕС): +${rub(money.extraYear)}/год.`));
-    kids.push(P(`Консервативно: ${rub(money.consMinYear)}–${rub(money.consMaxYear)}/год. Прогноз 12 мес: ${rub(money.forecast.current)} → ${rub(money.forecast.withProgram)} (+${money.forecast.upliftPct}%).`));
+    kids.push(P(`Консервативно: ${rub(money.consMinYear)}–${rub(money.consMaxYear)}/год. Прогноз 12 мес: ${rub(money.forecast.current)} → ${rub(money.forecast.withProgram)}${money.forecast.upliftPct === null ? ' (базы для сравнения нет — выручка считается с нуля)' : ` (+${money.forecast.upliftPct}%)`}.`));
     kids.push(P('Вклад рычагов воронки (₴/год) — считаны цепной атрибуцией, не складываются напрямую:', { bold: true }));
     for (const w of [...money.waterfall].sort((x, y) => y.contribYear - x.contribYear)) kids.push(P(`${w.label}: ${rub(w.contribYear)} (${w.fact} → ${w.target})`, { bullet: true }));
     if (!money.invariantOk) kids.push(P('⚠️ Инвариант Σ вкладов = потенциал нарушен — проверьте baseline.', { italics: true }));
