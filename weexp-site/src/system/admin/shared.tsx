@@ -20,6 +20,7 @@ import { type Block } from '../auditTemplate';
 import '../system.css';
 import '../cabinet.css';
 import { escapeHtml } from '@/lib/escapeHtml';
+import { INK } from '../docInk';
 
 /** Домен рушія → ключ нашого модуля (реекспорт для UI імпорту зрілості). */
 export const MATURITY_MODULE_OF = MATURITY_DOMAIN_MODULE;
@@ -287,7 +288,7 @@ export function openPrintDoc(title: string, email: string, bodyHtml: string) {
 .bar{height:8px;background:#F5301C}.wrap{padding:26px 30px;max-width:860px}
 .top{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #141210;padding-bottom:12px;margin-bottom:18px}
 .logo{font-weight:800;font-size:22px}.logo span{color:#F5301C}.meta{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#6B675E;text-align:right}
-h1{font-size:20px;margin:2px 0 14px}h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#F5301C;margin:20px 0 8px;border-bottom:1px solid #E3D9C0;padding-bottom:4px}
+h1{font-size:20px;margin:2px 0 14px}h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:${INK.red};margin:20px 0 8px;border-bottom:1px solid #E3D9C0;padding-bottom:4px}
 table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #EEE7D6;padding:6px 8px;vertical-align:top;text-align:left;font-size:12.5px}
 th{color:#6B675E;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
 .muted{color:#9a9488}.ok{color:#177A43;font-weight:700}.warn{color:#C0851E;font-weight:700}
@@ -297,7 +298,7 @@ th{color:#6B675E;font-weight:600;font-size:11px;text-transform:uppercase;letter-
 <div class="top"><div><div class="logo">WEEXP<span>.</span></div><div style="font-family:monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B675E">Глибокий аудит · документ пакета</div></div>
 <div class="meta">${email}<br>сформовано ${now}</div></div>
 <h1>${title}</h1>
-<button class="noprint" onclick="window.print()" style="margin:0 0 14px;background:#F5301C;color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer">🖨 Друк / зберегти в PDF</button>
+<button class="noprint" onclick="window.print()" style="margin:0 0 14px;background:${INK.red};color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer">🖨 Друк / зберегти в PDF</button>
 ${bodyHtml}
 <div class="foot">WEEXP — Commerce OS · weexp.agency · hello@weexp.agency · Конфіденційно, не для розповсюдження.</div>
 </div></body></html>`;

@@ -9,6 +9,7 @@ import { useT, useLp, useLang } from '@/i18n';
 import { useLiteVisuals } from '@/lib/liteVisuals';
 import './system.css';
 import { escapeHtml } from '@/lib/escapeHtml';
+import { INK } from './docInk';
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
 
@@ -171,7 +172,7 @@ export function LossCalculator() {
 body{font-family:'Golos Text',-apple-system,Segoe UI,Roboto,sans-serif;color:#141210;background:#FAF5E9;max-width:760px;margin:0 auto;padding:30px 26px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .bar{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #141210;padding-bottom:12px;margin-bottom:22px}
 .logo{font-weight:900;text-transform:uppercase;font-size:20px;letter-spacing:-.01em}.logo span{color:#F5301C}
-.kick{font-weight:800;text-transform:uppercase;letter-spacing:.14em;font-size:11px;color:#F5301C}
+.kick{font-weight:800;text-transform:uppercase;letter-spacing:.14em;font-size:11px;color:${INK.red}}
 h1{font-size:30px;font-weight:900;text-transform:uppercase;line-height:.95;margin:14px 0 4px;letter-spacing:-.02em}
 .big{font-size:46px;font-weight:900;color:#F5301C;letter-spacing:-.03em;line-height:1;margin-top:6px}
 .sub{font-size:12px;color:#6B675E;margin-top:4px}

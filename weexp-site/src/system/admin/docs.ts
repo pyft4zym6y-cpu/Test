@@ -19,6 +19,7 @@ import { PACK_ARTIFACTS } from '@/data/auditPack';
 import '../system.css';
 import '../cabinet.css';
 import { ST, escH, openPrintDoc } from './shared';
+import { INK } from '../docInk';
 
 export async function openClientDossier(row: AdminRow) {
   const w = window.open('', '_blank');
@@ -68,7 +69,7 @@ export async function openClientDossier(row: AdminRow) {
 .top{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #141210;padding-bottom:12px;margin-bottom:18px}
 .logo{font-weight:800;font-size:22px}.logo span{color:#F5301C}.meta{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#6B675E;text-align:right}
 h1{font-size:18px;margin:2px 0 2px}.sub{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B675E}
-h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#F5301C;margin:22px 0 8px;border-bottom:1px solid #E3D9C0;padding-bottom:4px}
+h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:${INK.red};margin:22px 0 8px;border-bottom:1px solid #E3D9C0;padding-bottom:4px}
 table{border-collapse:collapse;width:100%}td{border-bottom:1px solid #EEE7D6;padding:6px 8px;vertical-align:top}td.k{width:210px;color:#6B675E;font-weight:600}
 .money{font-size:26px;font-weight:800;margin:4px 0}.money i{font-size:13px;color:#6B675E;font-weight:500;font-style:normal}
 .empty{color:#9a9488;font-style:italic}.code{font-family:"IBM Plex Mono",monospace;font-weight:700;background:#FFF6C2;padding:3px 8px;border:1px solid #E3D9C0}
@@ -78,7 +79,7 @@ td.c{text-align:center;width:56px;font-weight:600}
 </style></head><body><div class="bar"></div><div class="wrap">
 <div class="top"><div><div class="logo">WEEXP<span>.</span></div><div class="sub">Досьє клієнта · конфіденційно</div></div>
 <div class="meta">${escH(row.email)}<br>сформовано ${escH(now)}${code ? `<br>код: <span class="code">${escH(code)}</span>` : ''}</div></div>
-<button class="noprint" onclick="window.print()" style="margin-bottom:14px;background:#F5301C;color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer">🖨 Друк / зберегти в PDF</button>
+<button class="noprint" onclick="window.print()" style="margin-bottom:14px;background:${INK.red};color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer">🖨 Друк / зберегти в PDF</button>
 <h2>Профіль компанії</h2>${companyRows.some(([, v]) => v) ? `<table>${kv(companyRows)}</table>` : '<p class="empty">Профіль не заповнено.</p>'}
 <h2>Експрес-аудит</h2>${ex ? `<p class="money">${escH(eur(ex.total))} <i>/ рік · витік</i></p><table>${kv(exRows)}</table>` : '<p class="empty">Експрес-аудит не проходив.</p>'}
 ${asmKeys.length ? `<h2>C-level оцінка модулів${asmAvg != null ? ` · зрілість ${asmAvg}/100` : ''}</h2><table><tr><td class="k">Модуль</td><td class="c">Score</td><td class="c">Prio</td><td>Розрив / рекомендація</td></tr>${asmRows}</table>` : ''}
@@ -122,14 +123,14 @@ export function exportAuditDocPdf(doc: AuditDoc, email: string) {
 .top{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #141210;padding-bottom:12px;margin-bottom:18px}
 .logo{font-weight:800;font-size:22px}.logo span{color:#F5301C}.meta{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#6B675E;text-align:right}
 h1{font-size:20px;margin:2px 0 2px}.sub{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B675E}
-h2{font-size:14px;letter-spacing:.04em;color:#F5301C;margin:22px 0 8px;border-bottom:1px solid #E3D9C0;padding-bottom:4px}
+h2{font-size:14px;letter-spacing:.04em;color:${INK.red};margin:22px 0 8px;border-bottom:1px solid #E3D9C0;padding-bottom:4px}
 .body{white-space:normal}.foot{margin-top:26px;padding-top:12px;border-top:1px solid #E3D9C0;color:#9a9488;font-size:10.5px}
 @media print{.noprint{display:none}}
 </style></head><body><div class="bar"></div><div class="wrap">
 <div class="top"><div><div class="logo">WEEXP<span>.</span></div><div class="sub">Документ аудиту · конфіденційно</div></div>
 <div class="meta">${escH(email)}<br>сформовано ${escH(now)}</div></div>
 <h1>${escH(doc.title)}</h1>
-<button class="noprint" onclick="window.print()" style="margin:14px 0;background:#F5301C;color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer">🖨 Друк / зберегти в PDF</button>
+<button class="noprint" onclick="window.print()" style="margin:14px 0;background:${INK.red};color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer">🖨 Друк / зберегти в PDF</button>
 ${body}
 <div class="foot">WEEXP — Commerce OS · weexp.agency · hello@weexp.agency · Документ містить конфіденційні дані клієнта. Не для розповсюдження.</div>
 </div></body></html>`;

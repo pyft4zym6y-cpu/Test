@@ -21,6 +21,7 @@ import { useT, useLp } from '@/i18n';
 import './system.css';
 import './cabinet.css';
 import { escapeHtml } from '@/lib/escapeHtml';
+import { INK, scoreInk, scoreFill } from './docInk';
 
 /**
  * /cabinet — персональний кабінет клієнта як ХАБ однієї воронки. Зліва — розділи,
@@ -570,8 +571,11 @@ function exportExpressPdf(express: ExpressAudit, email?: string) {
   const num = (v: unknown) => (typeof v === 'number' && v > 0 ? v : undefined);
   const symptoms = Array.isArray(inp.symptoms) ? (inp.symptoms as string[]) : [];
   const healthRows = (express.health || []).map((h) => {
-    const c = h.score < 45 ? '#F5301C' : h.score < 65 ? '#C58A00' : '#1F6E4E';
-    return `<tr><td class="k">${escapeHtml(sysLabel(h.key as SysKey, 'uk'))}</td><td style="width:52%"><div style="background:#EEE7D6;height:8px;border-radius:4px"><div style="width:${Math.max(3, Math.min(100, h.score))}%;height:8px;border-radius:4px;background:${c}"></div></div></td><td style="width:56px;text-align:right;font-weight:700;color:${c}">${h.score}</td></tr>`;
+    // Заливка полосы и цвет числа — разные роли и разные пороги: 8px полоса
+    // текстом не является, а число рядом с ней — является.
+    const fill = scoreFill(h.score);
+    const c = scoreInk(h.score);
+    return `<tr><td class="k">${escapeHtml(sysLabel(h.key as SysKey, 'uk'))}</td><td style="width:52%"><div style="background:#EEE7D6;height:8px;border-radius:4px"><div style="width:${Math.max(3, Math.min(100, h.score))}%;height:8px;border-radius:4px;background:${fill}"></div></div></td><td style="width:56px;text-align:right;font-weight:700;color:${c}">${h.score}</td></tr>`;
   }).join('');
   const leakRows = (express.leaks || []).filter((l) => l.amount > 0).sort((x, y) => y.amount - x.amount)
     .map((l) => `<tr><td class="k">${escapeHtml(sysLabel(l.key as SysKey, 'uk'))}</td><td style="text-align:right;font-weight:700">${escapeHtml(eur(l.amount))}<span style="color:#6B675E;font-weight:400"> / рік</span></td></tr>`).join('');
@@ -604,7 +608,7 @@ ol{margin:6px 0 0;padding-left:0;list-style:none}ol li{padding:6px 0;border-bott
 </style></head><body><div class="bar"></div><div class="wrap">
 <div class="top"><div><div class="logo">WEEXP<span>.</span></div><div style="font-family:monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B675E">Експрес-аудит · результат</div></div>
 <div class="meta">${email ? escapeHtml(email) + '<br>' : ''}пройдено ${escapeHtml(new Date(express.at).toLocaleString('uk-UA'))}</div></div>
-<button class="noprint" onclick="window.print()" style="margin:8px 0;background:#F5301C;color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer">🖨 Друк / зберегти в PDF</button>
+<button class="noprint" onclick="window.print()" style="margin:8px 0;background:${INK.red};color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer">🖨 Друк / зберегти в PDF</button>
 <div class="money">${escapeHtml(eur(express.total))} <i>/ рік · оцінений витік виторгу</i></div>
 <div class="sub">діапазон ${escapeHtml(eur(express.range[0]))}–${escapeHtml(eur(express.range[1]))} · Business Health ${express.overallHealth}/100</div>
 <div class="verdict"><b>Головний висновок:</b> ключова проблема — <b>${escapeHtml(sysLabel(express.primary as SysKey, 'uk'))}</b>${express.secondary ? `, друга — <b>${escapeHtml(sysLabel(express.secondary as SysKey, 'uk'))}</b>` : ''}. Потенціал зростання = повернення оціненого витоку: почніть із трьох дій нижче.</div>

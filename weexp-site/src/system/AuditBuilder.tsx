@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { escapeHtml } from '@/lib/escapeHtml';
+import { INK } from './docInk';
 import {
   loadTemplate, saveTemplate, uid, Q_TYPES, CLIENT_ROLES, frameworkFor, customerArchetypeBlock,
   type AuditTemplate, type Block, type Question, type QType,
@@ -51,7 +52,7 @@ h1{font-size:24px;letter-spacing:-.01em;margin:14px 0 4px}
 .kpis{display:flex;gap:10px;margin:0 0 18px}
 .kpi{border:1.5px solid #141210;padding:8px 14px}.kpi b{font-size:18px;display:block}.kpi span{font-size:10px;color:#6B675E;letter-spacing:.08em;text-transform:uppercase}
 table.toc{border-collapse:collapse;width:100%;margin-bottom:8px}
-.toc td{border-bottom:1px solid #EEE7D6;padding:5px 8px}.toc .n{width:30px;font-family:monospace;color:#F5301C;font-weight:700}.toc .r{width:110px;color:#6B675E;font-size:11px}.toc .c{width:40px;text-align:right;font-family:monospace}
+.toc td{border-bottom:1px solid #EEE7D6;padding:5px 8px}.toc .n{width:30px;font-family:monospace;color:${INK.red};font-weight:700}.toc .r{width:110px;color:#6B675E;font-size:11px}.toc .c{width:40px;text-align:right;font-family:monospace}
 .mod{page-break-inside:avoid;margin-top:20px;border-top:2px solid #141210;padding-top:10px}
 .mod{page-break-before:auto}.mod-h{display:flex;gap:12px;align-items:baseline;margin-bottom:10px}
 .mod-n{font-family:monospace;font-weight:800;font-size:20px;color:#F5301C}
@@ -60,7 +61,7 @@ table.toc{border-collapse:collapse;width:100%;margin-bottom:8px}
 .q.req{border-left:3px solid #F5301C;padding-left:10px}
 .q-top{display:flex;gap:8px;align-items:baseline}
 .q-n{font-family:monospace;font-size:10px;color:#9a9488;min-width:18px}
-.q-l{flex:1;font-size:12.5px;font-weight:600}.star{color:#F5301C}
+.q-l{flex:1;font-size:12.5px;font-weight:600}.star{color:${INK.red}}
 .tag{font-family:monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;border:1px solid #C9C2B2;border-radius:100px;padding:2px 8px;color:#6B675E;white-space:nowrap}
 .tag.acc{border-color:#7E9DFF;color:#3d5bbd}.tag.file{border-color:#1F6E4E;color:#1F6E4E}
 .opts{margin:5px 0 0 26px}.opt{display:inline-block;border:1px solid #E3D9C0;border-radius:100px;padding:2px 9px;margin:0 5px 5px 0;font-size:10.5px}
@@ -73,7 +74,7 @@ table.toc{border-collapse:collapse;width:100%;margin-bottom:8px}
 <p class="lead">Єдиний вичерпний фреймворк діагностики e-commerce: ${tpl.blocks.length} модулів. Зірочка * — обовʼязкове; бейдж показує тип позиції; сірим — куди йде відповідь у пакеті документів.</p>
 <div class="kpis"><div class="kpi"><b>${tpl.blocks.length}</b><span>модулів</span></div><div class="kpi"><b>${counts.q}</b><span>питань</span></div><div class="kpi"><b>${counts.a}</b><span>доступів</span></div><div class="kpi"><b>${counts.f}</b><span>файлів</span></div></div>
 <table class="toc">${toc}</table>
-<button class="noprint" onclick="window.print()" style="margin:6px 0;background:#F5301C;color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer">🖨 Друк / зберегти в PDF</button>
+<button class="noprint" onclick="window.print()" style="margin:6px 0;background:${INK.red};color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer">🖨 Друк / зберегти в PDF</button>
 ${blocks}
 <div class="foot">WEEXP — Commerce OS · weexp.agency · Внутрішній робочий документ: повний перелік питань, доступів і файлів глибокого аудиту.</div>
 </div><scr${''}ipt>window.onload=function(){setTimeout(function(){window.print()},400)}</scr${''}ipt></body></html>`;
