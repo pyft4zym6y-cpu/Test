@@ -63,7 +63,9 @@ export function buildDigest(rows: AdminRow[], days = 7, now = Date.now()): Diges
     const upd = r.updatedAt ? new Date(r.updatedAt).getTime() : 0;
     if (upd >= from.getTime()) moved += 1;
 
-    const sla = slaOf(r);
+    // now, а не Date.now(): зріз має рахуватись на ту саму дату, від якої
+    // побудовано вікно, інакше SLA в звіті за минулий тиждень міряється сьогодні.
+    const sla = slaOf(r, now);
     const item: DigestItem = { userId: r.userId, who: who(r), status, days: sla.days, limit: sla.limit };
     if (sla.state === 'breach') breached.push(item);
     // У списки очікування беремо лише те, що вже вийшло за warn: свіжа картка

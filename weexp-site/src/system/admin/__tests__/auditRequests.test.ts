@@ -99,8 +99,27 @@ describe('blockers', () => {
 });
 
 describe('staleDays', () => {
+  // Фіксована дата: `now` тепер параметр, тож вік стадії перевіряється на
+  // календарі. Раніше функція брала Date.now() напряму, і будь-яка фікстура з
+  // конкретною датою давала вік «скільки минуло до дня прогону тесту».
+  const NOW = Date.parse('2026-08-20T00:00:00Z');
+  const movedAt = (iso: string) => row({ updatedAt: iso } as DiagRecord);
+
   it('без жодної дати — нуль, а не NaN', () => {
     expect(staleDays(row({}))).toBe(0);
+  });
+
+  it('рахує повні доби, а не округлює вгору', () => {
+    expect(staleDays(movedAt('2026-08-17T00:00:00Z'), NOW)).toBe(3);
+    expect(staleDays(movedAt('2026-08-16T23:00:00Z'), NOW)).toBe(3);   // 3 доби + година
+  });
+
+  it('рух сьогодні — нуль днів', () => {
+    expect(staleDays(movedAt('2026-08-20T00:00:00Z'), NOW)).toBe(0);
+  });
+
+  it('дата з майбутнього не дає відʼємний вік', () => {
+    expect(staleDays(movedAt('2026-09-01T00:00:00Z'), NOW)).toBe(0);
   });
 });
 
@@ -136,5 +155,44 @@ describe('SLA', () => {
     const old = new Date(Date.now() - 40 * 86400000).toISOString();
     const stale = { funnel: { tierStatus: { DEEP: 'requested' }, tierHistory: { DEEP: [{ st: 'requested', at: old }] } } } as DiagRecord;
     expect(slaOf(row(stale)).state).toBe('breach');
+  });
+
+  // Перехід ok → warn → breach на конкретних датах. Саме цього не можна було
+  // перевірити, доки staleDays брав Date.now() напряму: тест міг сказати лише
+  // «свіже не прострочене», але не де саме проходить межа.
+  it('межі стадії «нова заявка» — warn на 1 день, breach на 2', async () => {
+    const { slaOf } = await import('../auditRequests');
+    const NOW = Date.parse('2026-08-20T00:00:00Z');
+    const at = (iso: string) => row({
+      funnel: { deepRequested: true, tierStatus: { DEEP: 'requested' } },
+      updatedAt: iso,
+    } as unknown as DiagRecord);
+    expect(slaOf(at('2026-08-20T00:00:00Z'), NOW).state).toBe('ok');
+    expect(slaOf(at('2026-08-19T00:00:00Z'), NOW).state).toBe('warn');
+    expect(slaOf(at('2026-08-18T00:00:00Z'), NOW).state).toBe('breach');
+  });
+
+  it('одна й та сама картка не прострочена на одній стадії й прострочена на іншій', async () => {
+    const { slaOf } = await import('../auditRequests');
+    const NOW = Date.parse('2026-08-20T00:00:00Z');
+    const eightDaysAgo = '2026-08-12T00:00:00Z';
+    const asNew = row({
+      funnel: { deepRequested: true, tierStatus: { DEEP: 'requested' } }, updatedAt: eightDaysAgo,
+    } as unknown as DiagRecord);
+    const asFilling = row({
+      funnel: { tierStatus: { DEEP: 'filling' } }, updatedAt: eightDaysAgo,
+    } as unknown as DiagRecord);
+    expect(slaOf(asNew, NOW).state).toBe('breach');       // норматив 2 дні
+    expect(slaOf(asFilling, NOW).state).not.toBe('breach'); // норматив 21 день
+  });
+
+  it('відхилене не «зависає» навіть через рік', async () => {
+    const { slaOf } = await import('../auditRequests');
+    const NOW = Date.parse('2026-08-20T00:00:00Z');
+    const denied = row({
+      funnel: { deepRequested: true, tierStatus: { DEEP: 'rejected' } },
+      updatedAt: '2025-08-20T00:00:00Z',
+    } as unknown as DiagRecord);
+    expect(slaOf(denied, NOW).state).toBe('ok');
   });
 });

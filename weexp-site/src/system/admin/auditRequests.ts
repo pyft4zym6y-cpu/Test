@@ -115,11 +115,18 @@ export function lastMoveAt(row: AdminRow): string {
   return dates.sort().pop() || '';
 }
 
-/** Скільки днів заявка стоїть без руху — щоб зависле було видно, а не губилось. */
-export function staleDays(row: AdminRow): number {
+/**
+ * Скільки днів заявка стоїть без руху — щоб зависле було видно, а не губилось.
+ *
+ * `now` виноситься параметром не заради краси: без нього весь шар SLA не
+ * перевіряється на фіксованій даті. Тест на тижневий зріз довелось будувати від
+ * реального Date.now() і підганяти фікстури під день прогону — така перевірка
+ * ловить не поведінку, а календар.
+ */
+export function staleDays(row: AdminRow, now = Date.now()): number {
   const at = lastMoveAt(row);
   if (!at) return 0;
-  return Math.max(0, Math.floor((Date.now() - new Date(at).getTime()) / 86_400_000));
+  return Math.max(0, Math.floor((now - new Date(at).getTime()) / 86_400_000));
 }
 
 /* ─── SLA: скільки стадія має право стояти ──────────────────────────────────
@@ -142,9 +149,9 @@ export const SLA: Record<AuditReqStatus, { warn: number; breach: number }> = {
   denied:    { warn: 9e9, breach: 9e9 }, // відхилене не «зависає»
 };
 export type SlaState = 'ok' | 'warn' | 'breach';
-export function slaOf(row: AdminRow): { state: SlaState; days: number; limit: number } {
+export function slaOf(row: AdminRow, now = Date.now()): { state: SlaState; days: number; limit: number } {
   const st = auditStatusOf(row);
-  const days = staleDays(row);
+  const days = staleDays(row, now);
   if (!st) return { state: 'ok', days, limit: 0 };
   const r = SLA[st];
   return { state: days >= r.breach ? 'breach' : days >= r.warn ? 'warn' : 'ok', days, limit: r.breach };
