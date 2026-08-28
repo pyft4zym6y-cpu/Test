@@ -62,6 +62,24 @@ describe('назви сторінок — один перелік', () => {
     const uk = PAGES.map((p) => p.uk);
     expect(new Set(uk).size, `дублі в меню: ${uk.join(', ')}`).toBe(uk.length);
   });
+
+  it('назви не відрізняються однією літерою', () => {
+    /*
+     * «Система» (головна) і «Системи» (перелік восьми) стояли поруч у меню:
+     * формально різні рядки, на око — те саме. Порівнюємо за основою слова.
+     */
+    const stem = (x: string) => x.toLowerCase().replace(/[аиіїяьы]+$/u, '');
+    const stems = PAGES.map((p) => stem(p.uk));
+    const dupes = stems.filter((x, i) => stems.indexOf(x) !== i);
+    expect(dupes, `пункти майже однакові: ${dupes.join(', ')}`).toEqual([]);
+  });
+
+  it('головна називається в меню так само, як у крихтах', () => {
+    const crumbs = readFileSync(join(SYS, 'Breadcrumbs.tsx'), 'utf8');
+    const home = /const HOME: \[string, string\] = \['([^']+)'/.exec(crumbs);
+    expect(home, 'у Breadcrumbs не знайдено назви головної').toBeTruthy();
+    expect(nameOf('/', 'uk'), 'меню і крихти називають головну по-різному').toBe(home![1]);
+  });
 });
 
 describe('одна дія — одна назва', () => {

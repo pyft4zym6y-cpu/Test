@@ -11,12 +11,12 @@
     },
     {
       "source": "/what-we-build/:path*",
-      "destination": "/#systems",
+      "destination": "/systems",
       "permanent": true
     },
     {
       "source": "/what-we-build",
-      "destination": "/#systems",
+      "destination": "/systems",
       "permanent": true
     },
     {
@@ -26,7 +26,7 @@
     },
     {
       "source": "/challenges",
-      "destination": "/#systems",
+      "destination": "/systems",
       "permanent": true
     },
     {
@@ -46,37 +46,32 @@
     },
     {
       "source": "/how-it-works",
-      "destination": "/#systems",
+      "destination": "/systems",
       "permanent": true
     },
     {
       "source": "/approach",
-      "destination": "/#systems",
+      "destination": "/systems",
       "permanent": true
     },
     {
       "source": "/process",
-      "destination": "/#systems",
+      "destination": "/systems",
       "permanent": true
     },
     {
       "source": "/product",
-      "destination": "/#systems",
+      "destination": "/systems",
       "permanent": true
     },
     {
       "source": "/os",
-      "destination": "/#systems",
+      "destination": "/systems",
       "permanent": true
     },
     {
       "source": "/services",
-      "destination": "/#systems",
-      "permanent": true
-    },
-    {
-      "source": "/systems",
-      "destination": "/#systems",
+      "destination": "/systems",
       "permanent": true
     },
     {

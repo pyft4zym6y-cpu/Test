@@ -35,12 +35,13 @@ const ulLinks = (items, slugs, pref = '') => `<ul>${items.map((i, k) =>
 // Дзеркало PAGES із src/lib/nav.ts — статика й застосунок мають називати
 // сторінки однаково. Тест wording.test.ts стереже, щоб переліки не розійшлись.
 const NAV_PAGES = [
-  { to: '/', uk: 'Система', en: 'System' },
+  { to: '/', uk: 'Головна', en: 'Home' },
+  { to: '/systems', uk: 'Системи', en: 'Systems' },
   { to: '/proof', uk: 'Наші перемоги', en: 'Our wins' },
   { to: '/expansion', uk: 'Експертизи', en: 'Expertise' },
   { to: '/people', uk: 'Про нас', en: 'About' },
   { to: '/diagnose', uk: 'Express audit', en: 'Express audit' },
-  { to: '/pricing', uk: 'Початок співпраці', en: 'Get started' },
+  { to: '/pricing', uk: 'Ціни', en: 'Pricing' },
   { to: '/contact', uk: 'Контакт', en: 'Contact' },
   { to: '/audit-pack', uk: 'Склад пакета аудиту', en: 'Audit pack contents' },
 ];
@@ -143,6 +144,7 @@ const PACK = [
 /** Тіло EN-сторінки за її адресою. Порожньо — сторінка обійдеться описом. */
 const EN_BODY = {
   '/': `<p>${esc(SERVICES_EN)}</p><h2>Eight systems of online sales</h2>${ulLinks(SYSTEMS_EN, SYS_SLUGS, '/en')}`,
+  '/systems': `<p>Online sales are not a set of channels but eight systems working together. Revenue leaks where the weakest one is. Below — each of them: what it solves and how we build it.</p>${ulLinks(SYSTEMS_EN, SYS_SLUGS, '/en')}`,
   '/proof': `<p>Not promises — before→after deltas from CRM, ERP and GA4. Every case is anonymous; every number is real.</p>${ul(PROOF_EN)}`,
   '/people': `<p>WEEXP was founded by Pavlo Sydorenko, Founder &amp; Architect of Commerce (8+ years in international e-commerce: US · EU · MENA). Each of the eight systems of online sales has an owner accountable for the result — specialists, not generalists.</p>${ul(ROSTER_EN)}`,
   '/expansion': `<p>Europe and the US are a separate business contour. We launch systematically and across all storefronts of a market at once. Priority markets: PL, DE, CZ, USA.</p><h2>Market storefronts</h2>${ul(CHANNELS_EN)}`,
@@ -156,6 +158,9 @@ const ROUTES = [
   { path: '/', og: 'home', title: 'WEEXP — Commerce OS: система замість героїзму',
     desc: 'Commerce OS для D2C та e-commerce брендів $0.5–10M: діагноз у грошах, побудова системи й вихід на ЄС/США — щоб виторг ріс без вас.',
     content: `<h1>Система замість героїзму</h1><p>Продажі тримаються на людях і ручному режимі, а не на системі. WEEXP — Commerce OS для українських виробників і D2C-брендів $0.5–10M: діагностуємо систему онлайн-продажів, рахуємо розрив у грошах і будуємо систему, щоб бізнес працював без героя.</p><p>${esc(SERVICES)}</p><h2>Вісім систем онлайн-продажів</h2>${ulLinks(SYSTEMS, SYS_SLUGS)}` },
+  { path: '/systems', og: 'systems', title: `Вісім систем Commerce OS${SUF}`,
+    desc: 'Онлайн-продажі як вісім систем: стратегія, комерція, попит, досвід, операції, дані, організація й експансія. Виторг витікає там, де найслабша.',
+    content: `<h1>Система сильна настільки, наскільки сильна найслабша частина</h1><p>Онлайн-продажі — не набір каналів, а вісім систем, які працюють разом. Виторг витікає там, де найслабша. Нижче — кожна: що вона вирішує і як ми її будуємо.</p>${ulLinks(SYSTEMS, SYS_SLUGS)}` },
   { path: '/proof', og: 'proof', title: `Докази — трансформації в цифрах${SUF}`,
     desc: 'Флагманські кейси e-commerce: дельти до→після з CRM/ERP/GA4 — ×18 обороту, +65% продажів, ≥19 млн ₴ розриву. Не обіцянки, а числа.',
     content: `<h1>Систему видно в цифрах</h1><p>Не обіцянки — дельти до→після з CRM, ERP і GA4. Кожен кейс анонімний, але число реальне.</p>${ul(PROOF)}` },

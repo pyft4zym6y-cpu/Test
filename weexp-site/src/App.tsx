@@ -102,6 +102,7 @@ function ScrollToHash() {
 // vercel.json), щоб на сайті була ОДНА айдентика. Світла 404 — SystemNotFound.
 const SystemInMotion = lazy(() => import('@/system/SystemInMotion').then((m) => ({ default: m.SystemInMotion })));
 const SystemNotFound = lazy(() => import('@/system/SystemNotFound').then((m) => ({ default: m.SystemNotFound })));
+const SystemsHub = lazy(() => import('@/system/SystemsHub').then((m) => ({ default: m.SystemsHub })));
 const CasesFilm = lazy(() => import('@/system/CasesFilm').then((m) => ({ default: m.CasesFilm })));
 const About = lazy(() => import('@/system/About').then((m) => ({ default: m.About })));
 const ExpansionHub = lazy(() => import('@/system/ExpansionHub').then((m) => ({ default: m.ExpansionHub })));
@@ -133,6 +134,7 @@ const PAGES: { path: string; el: JSX.Element }[] = [
   { path: '/diagnose', el: <LossCalculator /> },
   { path: '/pricing', el: <Pricing /> },
   { path: '/audit-pack', el: <AuditPackPage /> },
+  { path: '/systems', el: <SystemsHub /> },
   { path: '/systems/:slug', el: <ServicePage /> },
   { path: '/contact', el: <ContactFilm /> },
 ];
@@ -169,7 +171,6 @@ export default function App() {
           {/* Клієнтські редиректи (дублюють 301 у root vercel.json — для SPA-навігації).
               Легасі темні маршрути ведуть у світлі аналоги; окремої тёмної айдентики немає. */}
           <Route path="/system" element={<Navigate to="/" replace />} />
-          <Route path="/systems" element={<Navigate to="/#systems" replace />} />
           <Route path="/loss" element={<Navigate to="/diagnose" replace />} />
           <Route path="/classic" element={<Navigate to="/" replace />} />
           <Route path="/cases" element={<Navigate to="/proof" replace />} />

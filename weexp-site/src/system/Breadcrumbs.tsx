@@ -49,7 +49,7 @@ function crumbsFor(pathname: string): Crumb[] {
   const svc = base.match(/^\/systems\/(.+)$/);
   if (svc) {
     const sys = SYSTEMS.find((s) => s.slug === svc[1]);
-    return [home, { label: pick(L2['/systems']), to: lp('/#systems') }, { label: sys?.title ?? 'System' }];
+    return [home, { label: pick(L2['/systems']), to: lp('/systems') }, { label: sys?.title ?? 'System' }];
   }
   if (/^\/cases\/.+$/.test(base)) return [home, { label: pick(L2['/proof']), to: lp('/proof') }, { label: pick(CASE) }];
   const l = L2[base];

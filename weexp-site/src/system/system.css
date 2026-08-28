@@ -246,7 +246,11 @@
 .sysh-brand { display: inline-flex; align-items: baseline; gap: 8px; text-decoration: none; }
 .sysh-brand b { font-family: 'Golos Text', system-ui, sans-serif; font-weight: 900; text-transform: uppercase; letter-spacing: -.01em; font-size: 18px; color: var(--sh-deep); }
 .sysh-brand span { font-family: 'Golos Text', system-ui, sans-serif; font-weight: 800; font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--sh-graphite); }
-.sysh-links { display: flex; align-items: center; gap: clamp(4px, 1.4vw, 20px); overflow-x: auto; scrollbar-width: none; }
+/* min-width: 0 обовʼязковий: без нього флекс-елемент не стискається нижче
+   ширини вмісту, тому overflow-x нижче ніколи не спрацьовував — меню замість
+   прокрутки НАЇЖДЖАЛО на перемикач мови. З сімома пунктами це починалось на
+   1280px, з восьмим — на 1440px. */
+.sysh-links { display: flex; align-items: center; gap: clamp(4px, 1.4vw, 20px); min-width: 0; flex: 0 1 auto; overflow-x: auto; scrollbar-width: none; }
 .sysh-links::-webkit-scrollbar { display: none; }
 .sysh-link { position: relative; font-family: 'Golos Text', system-ui, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: .02em; text-transform: uppercase; color: var(--sh-charcoal); text-decoration: none; padding: 6px 2px; white-space: nowrap; transition: color .25s; }
 .sysh-link::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--sh-data); transform: scaleX(0); transform-origin: left; transition: transform .3s cubic-bezier(.22,1,.36,1); }
@@ -293,7 +297,15 @@
   .sysh-brand span { display: none; }
   .sysh-nav { gap: 10px; padding: 10px 14px; }
 }
-@media (max-width: 860px) {
+/* Поріг бургера — 1299px, а не 860px.
+ *
+ * Замір: горизонтальний ряд пунктів разом із перемикачем мови, акаунтом і
+ * кнопкою вміщається до 1366px. Нижче не вистачає 44px на 1280 і вже 370px на
+ * 900. Смуга прокрутки в меню прихована (scrollbar-width: none), тож останні
+ * пункти просто зникали з очей: мишею до них не дістатись. Показуємо ряд
+ * лише там, де він справді вміщається; на решті — бургер, у якому той самий
+ * перелік сторінок. */
+@media (max-width: 1299px) {
   .sysh-links, .sysh-nav .sysh-cta { display: none; }
   .sysh-burger { display: inline-flex; }
   .sysh-right { margin-left: auto; }   /* група акаунта тулиться до бургера справа */
@@ -2547,6 +2559,9 @@ body.kb-open .pf-bg { display: none !important; }
  * невидим, вне потока и не влияет ни на что, кроме площади нажатия.
  * ───────────────────────────────────────────────────────────────────────── */
 .sfoot-link, .sfoot-school-a, .sxp-pick, .ckc-btn { min-height: 44px; }
+/* Короткі пункти («Ціни») вужчі за 44px — у ряду з проміжками ширину можна
+   підняти без ризику накрити сусіда. */
+.sfoot-link { min-width: 44px; justify-content: center; }
 /* Юридические ссылки подвала идут без класса — по селектору классов их
    не видно, и в первый заход они остались 36px. */
 .sfoot-legal a { display: inline-flex; align-items: center; min-height: 44px; }
@@ -2614,3 +2629,33 @@ body.kb-open .pf-bg { display: none !important; }
 /* Перехід до складу глибокого аудиту з результату калькулятора. */
 .calc-pack { margin: 16px 0 0; font-size: 12px; line-height: 1.6; color: var(--graphite); }
 .calc-pack a { color: var(--red-ink); text-underline-offset: 3px; }
+
+/* ── /systems — перелік восьми систем ──────────────────────────────────────
+ * Сторінки систем існували, але адреса /systems була редиректом на якір
+ * головної, і в кільце восьми сторінок не входило нічого ззовні. Тепер це
+ * батьківська сторінка: пункт меню, крихта й нормальний шлях до кожної.
+ * ───────────────────────────────────────────────────────────────────────── */
+.syshub { position: relative; }
+.syshub-in { max-width: 1180px; margin: 0 auto; padding: 0 clamp(18px, 4vw, 40px) 90px; position: relative; z-index: 1; }
+.syshub-head { padding: clamp(24px, 5vw, 56px) 0 clamp(20px, 3vw, 34px); max-width: 62ch; }
+.syshub-h1 { font-size: clamp(34px, 5.4vw, 60px); line-height: 1.02; letter-spacing: -.02em; margin: 12px 0 18px; text-transform: uppercase; }
+
+.syshub-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(268px, 1fr)); }
+.syshub-card { display: flex; flex-direction: column; gap: 7px; height: 100%;
+  background: var(--pure-white); border: 2.5px solid var(--deep); box-shadow: 4px 4px 0 var(--deep);
+  padding: 18px 18px 16px; text-decoration: none; color: inherit;
+  transition: transform .16s, box-shadow .16s; }
+.syshub-card:hover { transform: translate(-3px, -3px); box-shadow: 7px 7px 0 var(--red); }
+.syshub-n { font-size: 11px; font-weight: 700; letter-spacing: .16em; color: var(--red-ink); }
+.syshub-card-h { font-size: 20px; line-height: 1.16; letter-spacing: -.01em; margin: 0; text-wrap: balance; }
+.syshub-feel { margin: 2px 0 0; font-size: 13px; line-height: 1.5; color: var(--graphite); font-style: italic; }
+.syshub-idea { margin: 4px 0 0; font-size: 14px; line-height: 1.5; color: var(--deep); }
+.syshub-doms { margin-top: auto; padding-top: 10px; font-size: 11px; letter-spacing: .04em; color: var(--graphite); }
+.syshub-more { font-size: 11px; letter-spacing: .06em; color: var(--red-ink); font-weight: 700; }
+
+.syshub-cta { margin-top: 34px; display: flex; align-items: center; justify-content: space-between;
+  gap: 20px; flex-wrap: wrap; background: var(--panel, #F3EFE6); border: 2.5px solid var(--deep);
+  box-shadow: 5px 5px 0 var(--deep); padding: 22px clamp(18px, 3vw, 28px); }
+.syshub-cta-h { display: block; font-size: clamp(21px, 2.6vw, 30px); line-height: 1.14; margin-top: 6px; text-transform: uppercase; }
+@media (max-width: 640px) { .syshub-cta { flex-direction: column; align-items: flex-start; } }
