@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react';
 import { AutofillPanel } from './AutofillPanel';
 
 import { getProjects, type AdminRow, type LeadRow, type TierStatus, type LeadStatus } from '@/lib/supa';
-import { eur, sysLabel, actionText, type SysKey } from '../systems';
+import { money as fmt, curOf, AGENCY_CUR, sysLabel, actionText, type SysKey } from '../systems';
 
 import '../system.css';
 import '../cabinet.css';
@@ -152,18 +152,19 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, 
             const ex = rec.express;
             if (ex) {
               const inp = ex.input || {};
+              const cur = curOf(inp.currency);   // валюта, у якій клієнт вводив суми
               const rows: { l: string; v: string }[] = [
-                { l: 'Оборот / міс', v: inp.monthlyRevenue ? eur(inp.monthlyRevenue) : '—' },
-                { l: 'Середній чек', v: inp.aov ? eur(inp.aov) : '—' },
+                { l: 'Оборот / міс', v: inp.monthlyRevenue ? fmt(inp.monthlyRevenue, cur) : '—' },
+                { l: 'Середній чек', v: inp.aov ? fmt(inp.aov, cur) : '—' },
                 { l: 'Конверсія', v: inp.conversion != null ? `${inp.conversion}%` : '—' },
                 { l: 'Повторні покупки', v: inp.repeatRate != null ? `${inp.repeatRate}%` : '—' },
                 { l: 'Повернення+скасув.', v: inp.returnsRate != null ? `${inp.returnsRate}%` : '—' },
                 { l: 'Валова маржа', v: inp.grossMargin != null ? `${inp.grossMargin}%` : '—' },
-                { l: 'CAC', v: inp.cac ? eur(inp.cac) : '—' },
+                { l: 'CAC', v: inp.cac ? fmt(inp.cac, cur) : '—' },
               ];
               return (
                 <div className="adm-express">
-                  <p className="adm-money">{eur(ex.total)} <i>/ рік</i> <span className="mono adm-express-sub">діапазон {eur(ex.range[0])}–{eur(ex.range[1])} · Health {ex.overallHealth}/100</span></p>
+                  <p className="adm-money">{fmt(ex.total, cur)} <i>/ рік</i> <span className="mono adm-express-sub">діапазон {fmt(ex.range[0], cur)}–{fmt(ex.range[1], cur)} · Health {ex.overallHealth}/100</span></p>
                   <ul className="adm-kv">
                     <li><i>Пройдено</i><span className="mono">{new Date(ex.at).toLocaleString('uk-UA')}</span></li>
                     <li><i>Ключова проблема</i><span>{sysLabel(ex.primary as SysKey, 'uk')}</span></li>
@@ -198,7 +199,7 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, 
                   {ex.leaks && ex.leaks.length > 0 && (
                     <div className="adm-express-sec">
                       <span className="mono adm-empty">Джерела витоку:</span>
-                      <ul className="adm-leaks">{ex.leaks.slice(0, 5).map((l) => <li key={l.key}><span>{sysLabel(l.key as SysKey, 'uk')}</span><b className="mono">{eur(l.amount)}/рік</b></li>)}</ul>
+                      <ul className="adm-leaks">{ex.leaks.slice(0, 5).map((l) => <li key={l.key}><span>{sysLabel(l.key as SysKey, 'uk')}</span><b className="mono">{fmt(l.amount, cur)}/рік</b></li>)}</ul>
                     </div>
                   )}
 
@@ -211,7 +212,7 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, 
                 </div>
               );
             }
-            if (money) return <p className="adm-money">{eur(money[0])} – {eur(money[1])} <i>/ рік</i></p>;
+            if (money) return <p className="adm-money">{fmt(money[0], AGENCY_CUR)} – {fmt(money[1], AGENCY_CUR)} <i>/ рік</i></p>;
             return <p className="mono adm-empty">{row.hasExpress ? 'є' : 'не рахували'}</p>;
           })()}</Block>}
 
@@ -282,7 +283,7 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, 
 
           {utab === 'over' && <Block title="Історія активності">{(() => {
             const ev: { at: string; t: string }[] = [];
-            if (row.record?.express?.at) ev.push({ at: row.record.express.at, t: `Пройдено експрес-аудит · ${eur(row.record.express.total)}/рік` });
+            if (row.record?.express?.at) ev.push({ at: row.record.express.at, t: `Пройдено експрес-аудит · ${fmt(row.record.express.total, curOf(row.record.express.input?.currency))}/рік` });
             Object.entries(row.funnel?.tierHistory || {}).forEach(([tid, list]) => (list || []).forEach((e) => ev.push({ at: e.at, t: `${tierLabel(tid)} → ${ST[e.st]?.txt ?? e.st}${e.by === 'manager' ? ' · менеджер' : ''}` })));
             if (row.funnel?.leadAt) ev.push({ at: row.funnel.leadAt, t: 'Заявка на співпрацю з кабінету' });
             if (row.updatedAt) ev.push({ at: row.updatedAt, t: 'Оновлення профілю' });

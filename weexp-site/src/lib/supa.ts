@@ -77,7 +77,9 @@ export function genAccessCode(): string {
 export type ExpressSnapshot = {
   at: string; total: number; range: [number, number]; primary: string; secondary?: string; overallHealth: number;
   symptoms?: string[]; source?: string;
-  input?: { monthlyRevenue?: number; aov?: number; conversion?: number; repeatRate?: number; returnsRate?: number; grossMargin?: number; cac?: number };
+  // Валюта, у якій клієнт вводив суми. Записи до появи вибору її не мають —
+  // читаються як євро (curOf). Курсів у продукті немає: суми не конвертуються.
+  input?: { monthlyRevenue?: number; aov?: number; conversion?: number; repeatRate?: number; returnsRate?: number; grossMargin?: number; cac?: number; currency?: string };
   health?: { key: string; score: number }[];
   leaks?: { key: string; amount: number }[];
   actions?: string[];
@@ -90,7 +92,7 @@ export type DiagRecord = {
   site?: string;
   stage1?: unknown;
   express?: ExpressSnapshot;         // експрес-аудит, прив'язаний до акаунту (з калькулятора)
-  stage1Money?: [number, number];   // діапазон можливості з Етапу 1 (€) — якір для Етапу 3
+  stage1Money?: [number, number];   // діапазон можливості з Етапу 1 у валюті агентства (AGENCY_CUR) — якір для Етапу 3
   stage2?: unknown;
   stage2Result?: unknown;
   stage3?: Record<string, unknown>;

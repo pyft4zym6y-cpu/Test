@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { computeLoss, eur, project, localizeSys, sysLabel, leakLabel, actionText, NICHES, type LossInput, type LossResult, type SysKey, type NicheKey, type Season, type Signals } from './lossModel';
+import { computeLoss, money, curOf, signOf, CURRENCIES, project, localizeSys, sysLabel, leakLabel, actionText, NICHES, type LossInput, type LossResult, type SysKey, type NicheKey, type Season, type Signals, type Cur } from './lossModel';
 import { saveExpressAudit } from './expressLocal';
 import { sendLead } from '@/lib/leads';
 import { Turnstile, turnstileEnabled } from '@/components/Turnstile';
@@ -27,7 +27,7 @@ const HW = (s: number) => (s >= 65 ? 'ok' : s >= 40 ? 'warn' : 'bad');
  * рівень словами, потенціал, головний витік і що робити далі. Використовується у
  * формі заявки, щоб клієнт бачив зрозумілий підсумок, а не вивід системи.
  */
-function HumanSummary({ res, lang, t }: { res: LossResult; lang: 'uk' | 'en'; t: (uk: string, en: string) => string }) {
+function HumanSummary({ res, lang, t, cur }: { res: LossResult; lang: 'uk' | 'en'; t: (uk: string, en: string) => string; cur: Cur }) {
   const hw = res.overallHealth >= 65 ? t('добрий', 'good') : res.overallHealth >= 40 ? t('середній', 'moderate') : t('слабкий', 'weak');
   const action = res.actions?.[0] ? actionText(res.actions[0].key, lang) : '';
   const leak = res.leaks?.[0];
@@ -39,8 +39,8 @@ function HumanSummary({ res, lang, t }: { res: LossResult; lang: 'uk' | 'en'; t:
       <span className="calc-human-h">{t('Ваш результат коротко', 'Your result in brief')}</span>
       <Row k={t('Ключова проблема', 'Key problem')} v={<b>{sysLabel(res.primary, lang)}</b>} />
       <Row k={t('Поточний рівень', 'Current level')} v={<><b>{hw}</b> <i>({res.overallHealth}/100)</i></>} />
-      <Row k={t('Потенціал повернення', 'Recovery potential')} v={<>{t('до', 'up to')} <b>{eur(res.total)}</b>/{t('рік', 'yr')}</>} />
-      {leak && <Row k={t('Головний витік', 'Biggest leak')} v={<>{leakLabel(leak, lang)} — {eur(leak.amount)}/{t('рік', 'yr')}</>} />}
+      <Row k={t('Потенціал повернення', 'Recovery potential')} v={<>{t('до', 'up to')} <b>{money(res.total, cur)}</b>/{t('рік', 'yr')}</>} />
+      {leak && <Row k={t('Головний витік', 'Biggest leak')} v={<>{leakLabel(leak, lang)} — {money(leak.amount, cur)}/{t('рік', 'yr')}</>} />}
       {action && <Row k={t('Що радимо далі', 'Recommended next step')} v={action} />}
     </div>
   );
@@ -52,15 +52,6 @@ export function LossCalculator() {
   const lp = useLp();
   const lang = useLang();
   type NumKey = 'monthlyRevenue' | 'aov' | 'conversion' | 'repeatRate' | 'returnsRate' | 'grossMargin' | 'cac';
-  const FIELDS: { k: NumKey; label: string; unit: string; hint?: string }[] = [
-    { k: 'monthlyRevenue', label: t('Онлайн-виторг', 'Online revenue'), unit: t('€ / міс', '€ / mo') },
-    { k: 'aov', label: t('Середній чек', 'Average order value (AOV)'), unit: '€' },
-    { k: 'conversion', label: t('Конверсія', 'Conversion'), unit: '%' },
-    { k: 'repeatRate', label: t('Частка повторних', 'Repeat purchase share'), unit: '%' },
-    { k: 'returnsRate', label: t('Повернення + скасування', 'Returns + cancellations'), unit: '%' },
-    { k: 'grossMargin', label: t('Валова маржа', 'Gross margin'), unit: '%' },
-    { k: 'cac', label: t('Вартість залучення (CAC)', 'Acquisition cost (CAC)'), unit: '€', hint: t('необовʼязково', 'optional') },
-  ];
   const PAIN: Record<SysKey, string> = {
     strategy: t('Не розуміємо, куди рости', "We don't know where to grow"),
     commercial: t('Виторг є, а прибутку — ні', 'Revenue is there, profit is not'),
@@ -73,12 +64,24 @@ export function LossCalculator() {
   };
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const CALC_KEY = 'weexp:calc-inp-v1';
+  const startCur: Cur = lang === 'en' ? 'EUR' : 'UAH';
   const [inp, setInp] = useState<LossInput>(() => {
     // Відновлюємо введені цифри, щоб оновлення сторінки не скидало прогрес.
-    try { const r = localStorage.getItem(CALC_KEY); if (r) return { monthlyRevenue: 0, aov: 0, conversion: 0, repeatRate: 0, returnsRate: 0, grossMargin: 0, cac: 0, symptoms: [], ...JSON.parse(r) }; } catch { /* ignore */ }
-    return { monthlyRevenue: 0, aov: 0, conversion: 0, repeatRate: 0, returnsRate: 0, grossMargin: 0, cac: 0, symptoms: [] };
+    try { const r = localStorage.getItem(CALC_KEY); if (r) return { monthlyRevenue: 0, aov: 0, conversion: 0, repeatRate: 0, returnsRate: 0, grossMargin: 0, cac: 0, symptoms: [], currency: startCur, ...JSON.parse(r) }; } catch { /* ignore */ }
+    return { monthlyRevenue: 0, aov: 0, conversion: 0, repeatRate: 0, returnsRate: 0, grossMargin: 0, cac: 0, symptoms: [], currency: startCur };
   });
   useEffect(() => { try { localStorage.setItem(CALC_KEY, JSON.stringify(inp)); } catch { /* ignore */ } }, [inp]);
+  const cur = curOf(inp.currency);
+  const sign = signOf(cur);
+  const FIELDS: { k: NumKey; label: string; unit: string; hint?: string }[] = [
+    { k: 'monthlyRevenue', label: t('Онлайн-виторг', 'Online revenue'), unit: t(`${sign} / міс`, `${sign} / mo`) },
+    { k: 'aov', label: t('Середній чек', 'Average order value (AOV)'), unit: sign },
+    { k: 'conversion', label: t('Конверсія', 'Conversion'), unit: '%' },
+    { k: 'repeatRate', label: t('Частка повторних', 'Repeat purchase share'), unit: '%' },
+    { k: 'returnsRate', label: t('Повернення + скасування', 'Returns + cancellations'), unit: '%' },
+    { k: 'grossMargin', label: t('Валова маржа', 'Gross margin'), unit: '%' },
+    { k: 'cac', label: t('Вартість залучення (CAC)', 'Acquisition cost (CAC)'), unit: sign, hint: t('необовʼязково', 'optional') },
+  ];
   const [res, setRes] = useState<LossResult | null>(null);
   const [leadBusy, setLeadBusy] = useState(false);
   const [orderStep, setOrderStep] = useState<null | 'form' | 'sent'>(null);
@@ -148,7 +151,7 @@ export function LossCalculator() {
       company_website: oHp,
       turnstile: tsToken || undefined,
       task: REQUEST_LABEL,
-      comment: `${oMsg.trim() ? oMsg.trim() + ' · ' : ''}${t('Витік', 'Leak')}: ${eur(res.total)}/${t('рік', 'yr')} · bottleneck: ${sysLabel(res.primary, lang)} · Health ${res.overallHealth}/100`,
+      comment: `${oMsg.trim() ? oMsg.trim() + ' · ' : ''}${t('Витік', 'Leak')}: ${money(res.total, cur)}/${t('рік', 'yr')} · bottleneck: ${sysLabel(res.primary, lang)} · Health ${res.overallHealth}/100`,
       calc: `total=${res.total};range=${res.range[0]}-${res.range[1]};bottleneck=${res.primary};health=${res.overallHealth}`,
     });
     setLeadBusy(false);
@@ -162,7 +165,7 @@ export function LossCalculator() {
   const downloadBrandedPdf = () => {
     if (!res) return;
     const proj = project(inp, res, lang);
-    const leaks = res.leaks.slice(0, 5).map((l) => `<tr><td>${escapeHtml(leakLabel(l, lang))}</td><td class="n">${escapeHtml(eur(l.amount))}</td></tr>`).join('');
+    const leaks = res.leaks.slice(0, 5).map((l) => `<tr><td>${escapeHtml(leakLabel(l, lang))}</td><td class="n">${escapeHtml(money(l.amount, cur))}</td></tr>`).join('');
     const health = res.health.map((h) => `<div class="hb"><span>${escapeHtml(shortOf(h.key, lang))}</span><i><b style="width:${h.score}%"></b></i><em>${h.score}</em></div>`).join('');
     const actions = res.actions.map((a) => `<li>${escapeHtml(actionText(a.key, lang))}</li>`).join('');
     const projRows = proj.income.map((d) => `<tr><td>${escapeHtml(d.label)}</td><td>${escapeHtml(d.before)} → <b>${escapeHtml(d.after)}</b></td><td class="up">+${d.pct}%</td></tr>`).join('');
@@ -190,8 +193,8 @@ ol{margin:0 0 0 18px}ol li{font-size:13px;margin:5px 0}
 </style></head><body>
 <div class="bar"><span class="logo">WEE<span>X</span>P</span><span class="kick">${escapeHtml(t('Експрес-аудит', 'Express audit'))}</span></div>
 <span class="kick">${escapeHtml(t('Ваш витік в e-commerce · оцінка', 'Your e-commerce leak · estimate'))}</span>
-<div class="big">${escapeHtml(eur(res.total))} <span style="font-size:.4em;color:#6B675E">/ ${escapeHtml(t('рік', 'yr'))}</span></div>
-<div class="sub">${escapeHtml(t('діапазон', 'range'))} ${escapeHtml(eur(res.range[0]))}–${escapeHtml(eur(res.range[1]))}</div>
+<div class="big">${escapeHtml(money(res.total, cur))} <span style="font-size:.4em;color:#6B675E">/ ${escapeHtml(t('рік', 'yr'))}</span></div>
+<div class="sub">${escapeHtml(t('діапазон', 'range'))} ${escapeHtml(money(res.range[0], cur))}–${escapeHtml(money(res.range[1], cur))}</div>
 <div class="card"><h2>${escapeHtml(t('Куди тече виторг', 'Where revenue leaks'))}</h2><table>${leaks}</table></div>
 <div class="card red"><h2>${escapeHtml(t('Головний bottleneck', 'Main bottleneck'))}</h2><b style="font-size:18px;text-transform:uppercase">${escapeHtml(primaryLabel(res.primary))}</b><div class="sub">${escapeHtml(t('вторинний', 'secondary'))} — ${escapeHtml(primaryLabel(res.secondary))}</div></div>
 <div class="card"><h2>Business Health · ${res.overallHealth}/100</h2>${health}</div>
@@ -229,6 +232,14 @@ ${projRows ? `<div class="card"><h2>${escapeHtml(t('Зараз → куди мо
                   <select value={inp.niche || ''} onChange={(e) => setInp((s) => ({ ...s, niche: (e.target.value || undefined) as NicheKey | undefined }))}>
                     <option value="">{t('— оберіть нішу —', '— select a niche —')}</option>
                     {NICHES.map((n) => <option key={n.key} value={n.key}>{t(n.uk, n.en)}</option>)}
+                  </select>
+                </span>
+              </label>
+              <label className="sysx-inp">
+                <span className="sysx-inp-l">{t('Валюта', 'Currency')}<i> · {t('у ній вводите й отримуєте результат', 'you enter and get the result in it')}</i></span>
+                <span className="sysx-inp-row">
+                  <select value={cur} onChange={(e) => setInp((s) => ({ ...s, currency: e.target.value as Cur }))}>
+                    {CURRENCIES.map((c) => <option key={c.code} value={c.code}>{c.sign} · {t(c.uk, c.en)}</option>)}
                   </select>
                 </span>
               </label>
@@ -295,8 +306,8 @@ ${projRows ? `<div class="card"><h2>${escapeHtml(t('Зараз → куди мо
           <div className="sysx-result">
             <div className="sysx-kick">{t('Ваш витік в e-commerce · оцінка', 'Your e-commerce leak · estimate')}</div>
             <div className="sysx-total">
-              <span className="sysx-total-big sysx-display">{eur(res.total)}<span>{t('/ рік', '/ year')}</span></span>
-              <span className="sysx-total-cap mono">{t('оцінена можливість · діапазон ', 'estimated opportunity · range ')}{eur(res.range[0])}–{eur(res.range[1])}</span>
+              <span className="sysx-total-big sysx-display">{money(res.total, cur)}<span>{t('/ рік', '/ year')}</span></span>
+              <span className="sysx-total-cap mono">{t('оцінена можливість · діапазон ', 'estimated opportunity · range ')}{money(res.range[0], cur)}–{money(res.range[1], cur)}</span>
               {res.confidence !== 'high' && (
                 <span className="sysx-total-conf mono">{res.confidence === 'medium'
                   ? t('⚠ середня впевненість: заповнено не всі показники — вилка розширена. Додайте цифри, щоб уточнити.', '⚠ medium confidence: not all metrics filled — the range is widened. Add numbers to refine.')
@@ -311,7 +322,7 @@ ${projRows ? `<div class="card"><h2>${escapeHtml(t('Зараз → куди мо
                   <div key={l.label + i} className="sysx-leak">
                     <span className="sysx-leak-l">{leakLabel(l, lang)}</span>
                     <span className="sysx-leak-bar"><i style={{ width: `${Math.round((l.amount / max) * 100)}%` }} /></span>
-                    <span className="sysx-leak-v mono">{eur(l.amount)}</span>
+                    <span className="sysx-leak-v mono">{money(l.amount, cur)}</span>
                   </div>
                 );
               })}
@@ -375,7 +386,7 @@ ${projRows ? `<div class="card"><h2>${escapeHtml(t('Зараз → куди мо
               <div className="calc-order calc-ordered">
                 <span className="sysx-kick">{t('✓ Заявку надіслано', '✓ Request sent')}</span>
                 <b className="sysx-display calc-ordered-h">{oName ? `${t('Дякуємо, ', 'Thank you, ')}${oName}!` : t('Дякуємо!', 'Thank you!')}</b>
-                <p className="calc-ordered-p">{t('Ми отримали вашу заявку разом із результатом експрес-аудиту ', 'We received your request together with your express-audit result ')}<b>{eur(res.total)}/{t('рік', 'yr')}</b>{t(' і ключовою проблемою «', ' and the key problem «')}{primaryLabel(res.primary)}».</p>
+                <p className="calc-ordered-p">{t('Ми отримали вашу заявку разом із результатом експрес-аудиту ', 'We received your request together with your express-audit result ')}<b>{money(res.total, cur)}/{t('рік', 'yr')}</b>{t(' і ключовою проблемою «', ' and the key problem «')}{primaryLabel(res.primary)}».</p>
                 <div className="calc-ordered-next">
                   <span className="mono">{t('Що далі', "What's next")}:</span>
                   <ol>
@@ -402,7 +413,7 @@ ${projRows ? `<div class="card"><h2>${escapeHtml(t('Зараз → куди мо
                 </div>
                 <label className="sysx-inp"><span className="sysx-inp-l">{t('Коментар (необовʼязково)', 'Note (optional)')}</span><input name="note" autoComplete="off" value={oMsg} onChange={(e) => setOMsg(e.target.value)} placeholder={t('Що для вас важливо?', 'What matters most to you?')} /></label>
                 <input name="company_website" tabIndex={-1} autoComplete="off" aria-hidden="true" value={oHp} onChange={(e) => setOHp(e.target.value)} style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }} />
-                <HumanSummary res={res} lang={lang} t={t} />
+                <HumanSummary res={res} lang={lang} t={t} cur={cur} />
                 <Turnstile onToken={setTsToken} onFail={() => setTsBroken(true)} />
                 {oErr && <span className="s3-err mono">{oErr}</span>}
                 <div className="sysx-calc-actions">

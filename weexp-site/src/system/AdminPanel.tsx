@@ -36,7 +36,7 @@ import {
   type TierStatus,
   type LeadStatus
 } from '@/lib/supa';
-import { eur } from './systems';
+import { money as fmt, curOf, AGENCY_CUR } from './systems';
 import { askConfirm, DialogHost, Panel, PanelBoundary } from './admin/dialog';
 import { matchRow, rowMatches } from './admin/search';
 import { auditStatusOf, blockers, lastMoveAt, money, nextStep, phaseOf, slaOf, staleDays, OURS, PHASES, STAGE_OF } from './admin/auditRequests';
@@ -579,7 +579,7 @@ export function AdminPanel() {
                     <div key={r.userId} className="adm-tr adm-tr-funnel">
                       <span className="adm-c-email"><b>{r.email}</b>{r.company && <i className="mono adm-c-co"> · {r.company}</i>}</span>
                       <span><span className={`cab-badge mono tst-${st.cls}`}>{st.l}</span></span>
-                      <span className="mono">{money ? `${eur(money[0])}–${eur(money[1])}` : r.record?.express ? eur(r.record.express.total) : '—'}</span>
+                      <span className="mono">{money ? `${fmt(money[0], AGENCY_CUR)}–${fmt(money[1], AGENCY_CUR)}` : r.record?.express ? fmt(r.record.express.total, curOf(r.record.express.input?.currency)) : '—'}</span>
                       <span className="mono">{r.funnel?.accessCode ? '🔑 видано' : '—'}</span>
                       <button className="adm-open" onClick={() => setOpenUser(r.userId)}>Картка →</button>
                     </div>

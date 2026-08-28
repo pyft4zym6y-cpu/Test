@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { findAuditIdByCode, loadAuditAnswers, type AdminRow, type AuditAnswer } from '@/lib/supa';
 import { loadTemplate, type AuditTemplate } from '../auditTemplate';
-import { eur } from '../systems';
+import { money as fmt, curOf, AGENCY_CUR } from '../systems';
 import { Block, rel } from './shared';
 import { nextStep, readiness, blockers, money, timeline, auditStatusOf, STAGE_OF, phaseOf, PHASES } from './auditRequests';
 
@@ -95,17 +95,17 @@ export function ClientBrief({ row, code }: { row: AdminRow; code?: string }) {
 
       <Block title="Гроші">
         <ul className="adm-kv">
-          <li><i>Оцінка втрат (експрес)</i><span>{m.expressTotal != null ? `${eur(m.expressTotal)} / рік` : '—'}</span></li>
-          {m.expressRange && <li><i>Діапазон</i><span>{eur(m.expressRange[0])}–{eur(m.expressRange[1])}</span></li>}
+          <li><i>Оцінка втрат (експрес)</i><span>{m.expressTotal != null ? `${fmt(m.expressTotal, m.expressCur)} / рік` : '—'}</span></li>
+          {m.expressRange && <li><i>Діапазон</i><span>{fmt(m.expressRange[0], m.expressCur)}–{fmt(m.expressRange[1], m.expressCur)}</span></li>}
           <li><i>Business Health</i><span>{m.health != null ? `${m.health}/100` : '—'}</span></li>
-          <li><i>Бюджет проєктів</i><span>{m.budget ? eur(m.budget) : '—'}</span></li>
-          <li><i>Оплачено</i><span>{m.paid ? eur(m.paid) : '—'}</span></li>
-          <li><i>Очікує оплати</i><span>{m.pending ? eur(m.pending) : '—'}</span></li>
+          <li><i>Бюджет проєктів</i><span>{m.budget ? fmt(m.budget, AGENCY_CUR) : '—'}</span></li>
+          <li><i>Оплачено</i><span>{m.paid ? fmt(m.paid, AGENCY_CUR) : '—'}</span></li>
+          <li><i>Очікує оплати</i><span>{m.pending ? fmt(m.pending, AGENCY_CUR) : '—'}</span></li>
           {/* Дві половини економіки клієнта досі жили окремо: платежі в проєкті,
               ставки в проєкт-офісі. Зіставлення не було ніде. */}
-          <li><i>Наші витрати</i><span>{m.cost ? `${eur(m.cost)} · ${m.hours} год` : '—'}</span></li>
+          <li><i>Наші витрати</i><span>{m.cost ? `${fmt(m.cost, AGENCY_CUR)} · ${m.hours} год` : '—'}</span></li>
           <li><i>Маржа</i><span className={m.margin < 0 ? 'tst-bad' : ''}>
-            {m.cost || m.paid ? `${eur(m.margin)}${m.marginPct != null ? ` · ${m.marginPct}%` : ''}` : '—'}
+            {m.cost || m.paid ? `${fmt(m.margin, AGENCY_CUR)}${m.marginPct != null ? ` · ${m.marginPct}%` : ''}` : '—'}
           </span></li>
         </ul>
       </Block>

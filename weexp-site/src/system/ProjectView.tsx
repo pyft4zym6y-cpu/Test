@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { Project, ProjTask, ProjMonth } from '@/lib/supa';
+import { money, AGENCY_CUR } from '@/system/systems';
 
 /**
  * «Мій проект» — read-only вітрина для клієнта. Веде менеджер (адмінка),
@@ -8,7 +9,10 @@ import type { Project, ProjTask, ProjMonth } from '@/lib/supa';
  */
 
 const MONTHS_UK = ['січ', 'лют', 'бер', 'кві', 'тра', 'чер', 'лип', 'сер', 'вер', 'жов', 'лис', 'гру'];
-const eur = (n: number) => '€' + (n || 0).toLocaleString('uk-UA');
+// Гроші проєкту — внутрішній облік агентства. Своя копія форматувальника тут
+// жила окремо від спільної і про валюту не знала; тепер підпис і формат
+// беруться з одного місця, і рядок «у євро» нижче теж.
+const fmtP = (n: number) => money(n || 0, AGENCY_CUR);
 
 function monthLabel(startMonth: string | undefined, i: number): string {
   const m = /^(\d{4})-(\d{1,2})$/.exec(startMonth || '');
@@ -106,7 +110,7 @@ export function ProjectView({ projects, en }: { projects: Project[]; en: boolean
       {/* Фінансовий календар */}
       <div className="pj-card">
         <h2 className="pj-h2">{t('Фінансовий календар', 'Financial calendar')}</h2>
-        <p className="pj-sub mono">{t('Суми без ПДВ, у євро', 'Amounts excl. VAT, in euro')}</p>
+        <p className="pj-sub mono">{t(`Суми без ПДВ, у валюті обліку (${AGENCY_CUR})`, `Amounts excl. VAT, in ${AGENCY_CUR}`)}</p>
         {(!p.payments || p.payments.length === 0) ? <p className="pj-none mono">—</p> : (
           <>
             <table className="pj-table">
@@ -116,16 +120,16 @@ export function ProjectView({ projects, en }: { projects: Project[]; en: boolean
                   <tr key={x.id}>
                     <td>{x.label || '—'}</td>
                     <td className="mono">{monthName(x.month)}</td>
-                    <td className="r mono">{eur(x.amount)}</td>
+                    <td className="r mono">{fmtP(x.amount)}</td>
                     <td className="r"><span className={`pj-pay ${x.status}`}>{x.status === 'paid' ? t('Сплачено', 'Paid') : t('Очікує', 'Due')}</span></td>
                   </tr>
                 ))}
               </tbody>
             </table>
             <div className="pj-fin-sum">
-              <span>{t('Всього', 'Total')}: <b className="mono">{eur(fin.total)}</b></span>
-              <span>{t('Сплачено', 'Paid')}: <b className="mono ok">{eur(fin.paid)}</b></span>
-              <span>{t('Залишок', 'Remaining')}: <b className="mono">{eur(fin.left)}</b></span>
+              <span>{t('Всього', 'Total')}: <b className="mono">{fmtP(fin.total)}</b></span>
+              <span>{t('Сплачено', 'Paid')}: <b className="mono ok">{fmtP(fin.paid)}</b></span>
+              <span>{t('Залишок', 'Remaining')}: <b className="mono">{fmtP(fin.left)}</b></span>
             </div>
           </>
         )}
@@ -141,7 +145,7 @@ export function ProjectView({ projects, en }: { projects: Project[]; en: boolean
               <div key={mo.id} className="pj-tmonth">
                 <div className="pj-tm-head">
                   <b>{monthName(mo.month)}</b>
-                  <span className="mono">{rowHours(mo)} {t('год', 'h')} · {eur(rowTotal(mo))}</span>
+                  <span className="mono">{rowHours(mo)} {t('год', 'h')} · {fmtP(rowTotal(mo))}</span>
                 </div>
                 {(mo.items || []).length > 0 && (
                   <table className="pj-table sm">
@@ -151,8 +155,8 @@ export function ProjectView({ projects, en }: { projects: Project[]; en: boolean
                         <tr key={it.id}>
                           <td>{it.label || '—'}</td>
                           <td className="r mono">{it.hours || 0}</td>
-                          <td className="r mono">{eur(it.rate)}</td>
-                          <td className="r mono">{eur((it.hours || 0) * (it.rate || 0))}</td>
+                          <td className="r mono">{fmtP(it.rate)}</td>
+                          <td className="r mono">{fmtP((it.hours || 0) * (it.rate || 0))}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -160,7 +164,7 @@ export function ProjectView({ projects, en }: { projects: Project[]; en: boolean
                 )}
               </div>
             ))}
-            <div className="pj-fin-sum"><span>{t('Разом за проект', 'Project total')}: <b className="mono">{eur(tariffTotal)}</b></span></div>
+            <div className="pj-fin-sum"><span>{t('Разом за проект', 'Project total')}: <b className="mono">{fmtP(tariffTotal)}</b></span></div>
           </>
         )}
       </div>

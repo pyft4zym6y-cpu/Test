@@ -12,7 +12,7 @@ import { AuditForm } from './AuditForm';
 import { ProjectView } from './ProjectView';
 import { loadTemplate, CLIENT_ROLES, type AuditTemplate, type Question } from './auditTemplate';
 import { getExpressAudit, clearExpressAudit, syncExpressToAccount, type ExpressAudit } from './cabinetData';
-import { eur, sysLabel, actionText, type SysKey } from './lossModel';
+import { money, curOf, sysLabel, actionText, type SysKey } from './lossModel';
 import { sendLead } from '@/lib/leads';
 import { isValidCode } from '@/lib/access';
 import { toast } from '@/lib/toast';
@@ -147,7 +147,7 @@ export function Cabinet() {
               <div className="cab-gate-saved">
                 <span className="cab-gate-saved-ic" aria-hidden="true">✓</span>
                 <div>
-                  <b>{t('Ваш експрес-аудит збережено', 'Your express audit is saved')}: {eur(express.total)}<i>{t('/рік', '/yr')}</i></b>
+                  <b>{t('Ваш експрес-аудит збережено', 'Your express audit is saved')}: {money(express.total, curOf(express.input?.currency))}<i>{t('/рік', '/yr')}</i></b>
                   <span className="mono">{t('Увійдіть через Google — і він закріпиться за акаунтом. Проходити аудит заново не треба.', 'Sign in with Google — and it will be linked to your account. No need to redo the audit.')}</span>
                 </div>
               </div>
@@ -528,6 +528,7 @@ function useDeepUi(state: DeepState) {
 }
 
 function Overview({ express, rec, go }: { express: ExpressAudit | null; rec: DiagRecord | null; go: (s: SectionId) => void }) {
+  const cur = curOf(express?.input?.currency);
   const t = useT();
   const lp = useLp();
   const deep = deepStateOf(rec);
@@ -539,8 +540,8 @@ function Overview({ express, rec, go }: { express: ExpressAudit | null; rec: Dia
         <div className="cab-card cab-card-hero">
           <span className="sysx-kick">{t('Ваш експрес-аудит', 'Your express audit')}</span>
           {express
-            ? <><b className="sysx-display cab-big">{eur(express.total)}<i>{t('/ рік', '/ year')}</i></b>
-                <span className="mono cab-sub">{t('діапазон', 'range')} {eur(express.range[0])}–{eur(express.range[1])} · Health {express.overallHealth}/100 · {new Date(express.at).toLocaleDateString(t('uk-UA', 'en-GB'))}</span>
+            ? <><b className="sysx-display cab-big">{money(express.total, cur)}<i>{t('/ рік', '/ year')}</i></b>
+                <span className="mono cab-sub">{t('діапазон', 'range')} {money(express.range[0], cur)}–{money(express.range[1], cur)} · Health {express.overallHealth}/100 · {new Date(express.at).toLocaleDateString(t('uk-UA', 'en-GB'))}</span>
                 <div className="cab-audit-actions">
                   <button className="sysx-cta is-primary" onClick={() => go('audits')}>{t('Переглянути результат →', 'View result →')}</button>
                   <Link className="sysx-cta" to={lp('/diagnose')}>{t('Перерахувати', 'Recalculate')}</Link>
@@ -566,6 +567,7 @@ function Overview({ express, rec, go }: { express: ExpressAudit | null; rec: Dia
 
 /** Друкований підсумок експрес-аудиту: РЕЗУЛЬТАТ (розрахунок → аналіз → дії), не анкета. */
 function exportExpressPdf(express: ExpressAudit, email?: string) {
+  const cur = curOf(express.input?.currency);
   const w = window.open('', '_blank');
   if (!w) { toast('Дозвольте спливаючі вікна, щоб завантажити PDF', 'err'); return; }
   const inp = (express.input || {}) as unknown as Record<string, number | string | string[] | undefined>;
@@ -579,18 +581,18 @@ function exportExpressPdf(express: ExpressAudit, email?: string) {
     return `<tr><td class="k">${escapeHtml(sysLabel(h.key as SysKey, 'uk'))}</td><td style="width:52%"><div style="background:#EEE7D6;height:8px;border-radius:4px"><div style="width:${Math.max(3, Math.min(100, h.score))}%;height:8px;border-radius:4px;background:${fill}"></div></div></td><td style="width:56px;text-align:right;font-weight:700;color:${c}">${h.score}</td></tr>`;
   }).join('');
   const leakRows = (express.leaks || []).filter((l) => l.amount > 0).sort((x, y) => y.amount - x.amount)
-    .map((l) => `<tr><td class="k">${escapeHtml(sysLabel(l.key as SysKey, 'uk'))}</td><td style="text-align:right;font-weight:700">${escapeHtml(eur(l.amount))}<span style="color:#6B675E;font-weight:400"> / рік</span></td></tr>`).join('');
+    .map((l) => `<tr><td class="k">${escapeHtml(sysLabel(l.key as SysKey, 'uk'))}</td><td style="text-align:right;font-weight:700">${escapeHtml(money(l.amount, cur))}<span style="color:#6B675E;font-weight:400"> / рік</span></td></tr>`).join('');
   const actions = (express.actions || []).map((k, i) => `<li><b>${i + 1}.</b> ${escapeHtml(actionText(k as SysKey, 'uk'))}</li>`).join('');
   const sympChips = symptoms.map((k) => `<span class="chip">${escapeHtml(sysLabel(k as SysKey, 'uk'))}</span>`).join('');
   const kv = (rows: [string, unknown][]) => rows.filter(([, v]) => v != null && v !== '').map(([k, v]) => `<tr><td class="k">${escapeHtml(k)}</td><td>${escapeHtml(v)}</td></tr>`).join('');
   const srcRows: [string, unknown][] = [
-    ['Оборот / міс', num(inp.monthlyRevenue) ? eur(inp.monthlyRevenue as number) : ''],
-    ['Середній чек', num(inp.aov) ? eur(inp.aov as number) : ''],
+    ['Оборот / міс', num(inp.monthlyRevenue) ? money(inp.monthlyRevenue as number, cur) : ''],
+    ['Середній чек', num(inp.aov) ? money(inp.aov as number, cur) : ''],
     ['Конверсія', num(inp.conversion) != null && (inp.conversion as number) > 0 ? `${inp.conversion}%` : ''],
     ['Повторні покупки', num(inp.repeatRate) ? `${inp.repeatRate}%` : ''],
     ['Повернення', num(inp.returnsRate) ? `${inp.returnsRate}%` : ''],
     ['Валова маржа', num(inp.grossMargin) ? `${inp.grossMargin}%` : ''],
-    ['CAC', num(inp.cac) ? eur(inp.cac as number) : ''],
+    ['CAC', num(inp.cac) ? money(inp.cac as number, cur) : ''],
   ];
   const html = `<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>Експрес-аудит — результат — WEEXP</title><style>
 @page{margin:14mm}body{font-family:"IBM Plex Sans","Segoe UI",system-ui,Arial,sans-serif;color:#141210;margin:0;font-size:12.5px;line-height:1.5}
@@ -610,8 +612,8 @@ ol{margin:6px 0 0;padding-left:0;list-style:none}ol li{padding:6px 0;border-bott
 <div class="top"><div><div class="logo">WEEXP<span>.</span></div><div style="font-family:monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B675E">Експрес-аудит · результат</div></div>
 <div class="meta">${email ? escapeHtml(email) + '<br>' : ''}пройдено ${escapeHtml(new Date(express.at).toLocaleString('uk-UA'))}</div></div>
 ${printButton(INK.red, '8px 0')}
-<div class="money">${escapeHtml(eur(express.total))} <i>/ рік · оцінений витік виторгу</i></div>
-<div class="sub">діапазон ${escapeHtml(eur(express.range[0]))}–${escapeHtml(eur(express.range[1]))} · Business Health ${express.overallHealth}/100</div>
+<div class="money">${escapeHtml(money(express.total, cur))} <i>/ рік · оцінений витік виторгу</i></div>
+<div class="sub">діапазон ${escapeHtml(money(express.range[0], cur))}–${escapeHtml(money(express.range[1], cur))} · Business Health ${express.overallHealth}/100</div>
 <div class="verdict"><b>Головний висновок:</b> ключова проблема — <b>${escapeHtml(sysLabel(express.primary as SysKey, 'uk'))}</b>${express.secondary ? `, друга — <b>${escapeHtml(sysLabel(express.secondary as SysKey, 'uk'))}</b>` : ''}. Потенціал зростання = повернення оціненого витоку: почніть із трьох дій нижче.</div>
 ${healthRows ? `<h2>Здоровʼя 8 систем · оцінка</h2><table>${healthRows}</table>` : ''}
 ${leakRows ? `<h2>Куди тече виторг · розрахунок</h2><table>${leakRows}</table>` : ''}
@@ -626,6 +628,7 @@ ${actions ? `<h2>Три перші дії · рекомендації</h2><ol>${
 
 /** Збережений результат експрес-аудиту — прямо в кабінеті, без повторного проходження. */
 function ExpressResultView({ express }: { express: ExpressAudit }) {
+  const cur = curOf(express.input?.currency);
   const t = useT();
   const lang = t('uk', 'en') as 'uk' | 'en';
   const symptoms = (Array.isArray((express.input as unknown as { symptoms?: string[] })?.symptoms)
@@ -656,7 +659,7 @@ function ExpressResultView({ express }: { express: ExpressAudit }) {
           {leaks.map((l) => (
             <div key={l.key} className="cab-exres-row is-2">
               <span className="cab-exres-l">{sysLabel(l.key as SysKey, lang)}</span>
-              <b className="cab-exres-v mono">{eur(l.amount)}<i>{t('/рік', '/yr')}</i></b>
+              <b className="cab-exres-v mono">{money(l.amount, cur)}<i>{t('/рік', '/yr')}</i></b>
             </div>
           ))}
         </div>
@@ -679,6 +682,7 @@ function ExpressResultView({ express }: { express: ExpressAudit }) {
 }
 
 function Audits({ express, rec, user, go, onDelete }: { express: ExpressAudit | null; rec: DiagRecord | null; user: DiagUser; go: (s: SectionId) => void; onDelete: () => void }) {
+  const cur = curOf(express?.input?.currency);
   const t = useT();
   const lp = useLp();
   const [showRes, setShowRes] = useState(true);
@@ -692,8 +696,8 @@ function Audits({ express, rec, user, go, onDelete }: { express: ExpressAudit | 
         <div className="cab-audit">
           <div className="cab-audit-top"><b>{t('Експрес-аудит', 'Express audit')}</b><span className={`cab-badge mono${express ? ' tst-ok' : ''}`}>{express ? t('пройдено', 'completed') : t('не пройдено', 'not taken')}</span></div>
           {express
-            ? <><span className="sysx-display cab-audit-v">{eur(express.total)}<i>{t('/ рік', '/ year')}</i></span>
-                <span className="mono cab-sub">{t('пройдено', 'taken')} {new Date(express.at).toLocaleDateString(t('uk-UA', 'en-GB'))} · Health {express.overallHealth}/100 · {t('діапазон', 'range')} {eur(express.range[0])}–{eur(express.range[1])}</span>
+            ? <><span className="sysx-display cab-audit-v">{money(express.total, cur)}<i>{t('/ рік', '/ year')}</i></span>
+                <span className="mono cab-sub">{t('пройдено', 'taken')} {new Date(express.at).toLocaleDateString(t('uk-UA', 'en-GB'))} · Health {express.overallHealth}/100 · {t('діапазон', 'range')} {money(express.range[0], cur)}–{money(express.range[1], cur)}</span>
                 <div className="cab-audit-actions">
                   <button className="sysx-cta is-primary" onClick={() => setShowRes((v) => !v)}>{showRes ? t('Згорнути результат', 'Collapse result') : t('Переглянути результат →', 'View result →')}</button>
                   <button className="sysx-cta" onClick={() => exportExpressPdf(express, user.email)}>{t('Завантажити PDF', 'Download PDF')}</button>
@@ -880,6 +884,7 @@ const DEEP = 'DEEP';
 function deepKey(email: string) { return `weexp:deep-unlocked:${(email || '').toLowerCase()}`; }
 
 function DeepAudit({ user, rec, express, onDone, onClose, go }: { user: DiagUser; rec: DiagRecord | null; express: ExpressAudit | null; onDone: () => void; onClose: () => void; go: (s: SectionId) => void }) {
+  const cur = curOf(express?.input?.currency);
   const t = useT();
   const status = (rec?.funnel?.tierStatus?.[DEEP] || 'none') as TierStatus | 'none';
   const accessCode = rec?.funnel?.accessCode;
@@ -1037,8 +1042,8 @@ function DeepAudit({ user, rec, express, onDone, onClose, go }: { user: DiagUser
         <div className="cab-card cab-deep-info">
           <span className="sysx-kick">{t('У вас уже є безкоштовний експрес-аудит', 'You already have a free express audit')}</span>
           <div className="cab-deep-info-row">
-            <div><b className="sysx-display cab-big">{eur(express.total)}<i>{t('/ рік', '/ year')}</i></b>
-              <span className="mono cab-sub">{t('діапазон', 'range')} {eur(express.range[0])}–{eur(express.range[1])} · Health {express.overallHealth}/100</span></div>
+            <div><b className="sysx-display cab-big">{money(express.total, cur)}<i>{t('/ рік', '/ year')}</i></b>
+              <span className="mono cab-sub">{t('діапазон', 'range')} {money(express.range[0], cur)}–{money(express.range[1], cur)} · Health {express.overallHealth}/100</span></div>
             <button className="sysx-cta" onClick={() => go('audits')}>{t('Дивитись у «Мої аудити» →', 'View in “My audits” →')}</button>
           </div>
           <p className="cab-next-d">{t('Глибокий аудит стартує не з нуля — він підтвердить це число вашими даними й покаже, де саме витікає виторг.', 'The deep audit does not start from scratch — it will confirm this number with your data and show exactly where revenue leaks.')}</p>
@@ -1089,6 +1094,7 @@ function DeepAudit({ user, rec, express, onDone, onClose, go }: { user: DiagUser
 }
 
 function Collab({ user, rec, express, onDone }: { user: DiagUser; rec: DiagRecord | null; express: ExpressAudit | null; onDone: () => void }) {
+  const cur = curOf(express?.input?.currency);
   const t = useT();
   const [phone, setPhone] = useState(rec?.company?.contactPhone || '');
   const [comment, setComment] = useState('');
@@ -1096,7 +1102,7 @@ function Collab({ user, rec, express, onDone }: { user: DiagUser; rec: DiagRecor
   const [busy, setBusy] = useState(false);
   const send = async () => {
     setBusy(true);
-    const calc = express ? `Експрес-витік ${eur(express.total)}/рік (діапазон ${eur(express.range[0])}–${eur(express.range[1])}), Health ${express.overallHealth}/100` : undefined;
+    const calc = express ? `Експрес-витік ${money(express.total, cur)}/рік (діапазон ${money(express.range[0], cur)}–${money(express.range[1], cur)}), Health ${express.overallHealth}/100` : undefined;
     await sendLead({ source: 'cabinet-collab', email: user.email, phone: phone || undefined, name: rec?.company?.contactName || undefined, store: rec?.company?.site || undefined, task: 'Заявка на співпрацю з кабінету', comment: comment || undefined, calc });
     await saveDiag(user, { funnel: { ...(rec?.funnel || {}), leadAt: new Date().toISOString(), leadContact: phone || user.email } });
     setBusy(false); setSent(true); onDone();

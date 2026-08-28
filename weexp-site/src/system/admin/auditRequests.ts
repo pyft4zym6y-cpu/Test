@@ -1,5 +1,6 @@
 import { getProjects, type AdminRow, type DiagRecord, type Project, type TierStatus } from '@/lib/supa';
 import { ACCESS_CATALOG } from '@/data/accessCatalog';
+import { curOf } from '@/system/systems';
 
 /**
  * Статус заявки на глибокий аудит ВИВОДИТЬСЯ з даних, а не зберігається окремо.
@@ -288,6 +289,9 @@ export function money(row: AdminRow) {
   return {
     expressTotal: rec.express?.total ?? null,
     expressRange: rec.express?.range ?? null,
+    // Валюта, у якій клієнт вводив суми. Без неї зведення показало б €
+    // на числах, які людина вводила в гривні.
+    expressCur: curOf(rec.express?.input?.currency),
     health: rec.express?.overallHealth ?? null,
     budget, paid, pending,
     cost, hours, margin,

@@ -5,9 +5,10 @@
  * можливість = найбільший важіль + частка решти), як і в методі WEEXP.
  */
 
-import { SYS, SYS_LABEL_EN, sysLabel, ACTION, ACTION_EN, eur, type SysKey, type Lang } from './systems';
+import { SYS, SYS_LABEL_EN, sysLabel, ACTION, ACTION_EN, money, curOf, type SysKey, type Lang, type Cur } from './systems';
 // Реекспорт: решта продукту історично тягне ці імена з lossModel.
-export { SYS, SYS_LABEL_EN, sysLabel, localizeSys, actionText, eur } from './systems';
+export { SYS, SYS_LABEL_EN, sysLabel, localizeSys, actionText, money, curOf, signOf, CURRENCIES, DEFAULT_CUR, groupByCur } from './systems';
+export type { Cur } from './systems';
 export type { SysKey, Lang } from './systems';
 
 export type NicheKey = 'fashion' | 'beauty' | 'electronics' | 'home' | 'kids' | 'sports' | 'health' | 'food' | 'auto' | 'jewelry' | 'hobby' | 'digital' | 'b2b' | 'other';
@@ -24,6 +25,7 @@ export type LossInput = {
   niche?: NicheKey;       // ніша — обирає набір бенчмарків (без ніші — універсальні)
   seasonal?: Season;      // чи типовий цей місяць за виторгом (корекція річної бази)
   signals?: Signals;      // швидкі так/ні → Health стратегії/даних/орг/експансії
+  currency?: Cur;         // валюта введених сум; читається курсів немає — суми не конвертуються
 };
 
 export type Leak = { key: SysKey; label: string; labelEn: string; amount: number };
@@ -225,10 +227,11 @@ export function project(inp: LossInput, res: LossResult, lang: Lang = 'uk'): Pro
   const afterM = afterA / 12;
   const upliftPct = pctUp(nowA, afterA);
 
+  const cur = curOf(inp.currency);
   const income: Delta[] = nowM > 0 ? [
-    { label: L('Дохід / день', 'Revenue / day'), before: eur(nowM / 30), after: eur(afterM / 30), pct: upliftPct, dir: 'up' },
-    { label: L('Дохід / місяць', 'Revenue / month'), before: eur(nowM), after: eur(afterM), pct: upliftPct, dir: 'up', hero: true },
-    { label: L('Дохід / рік', 'Revenue / year'), before: eur(nowA), after: eur(afterA), pct: upliftPct, dir: 'up' },
+    { label: L('Дохід / день', 'Revenue / day'), before: money(nowM / 30, cur), after: money(afterM / 30, cur), pct: upliftPct, dir: 'up' },
+    { label: L('Дохід / місяць', 'Revenue / month'), before: money(nowM, cur), after: money(afterM, cur), pct: upliftPct, dir: 'up', hero: true },
+    { label: L('Дохід / рік', 'Revenue / year'), before: money(nowA, cur), after: money(afterA, cur), pct: upliftPct, dir: 'up' },
   ] : [];
 
   const profitNow = nowM * (marNow || bn.margin) / 100;
@@ -237,9 +240,9 @@ export function project(inp: LossInput, res: LossResult, lang: Lang = 'uk'): Pro
   const unit: Delta[] = [];
   if (crNow > 0) unit.push({ label: L('Конверсія', 'Conversion'), before: crNow + '%', after: crTgt + '%', pct: pctUp(crNow, crTgt), dir: 'up' });
   if (repNow > 0) unit.push({ label: L('Повторні продажі', 'Repeat sales'), before: repNow + '%', after: repTgt + '%', pct: pctUp(repNow, repTgt), dir: 'up' });
-  if (cacNow > 0) unit.push({ label: L('Вартість клієнта (CAC)', 'Customer cost (CAC)'), before: eur(cacNow), after: eur(cacTgt), pct: pctDown(cacNow, cacTgt), dir: 'down' });
+  if (cacNow > 0) unit.push({ label: L('Вартість клієнта (CAC)', 'Customer cost (CAC)'), before: money(cacNow, cur), after: money(cacTgt, cur), pct: pctDown(cacNow, cacTgt), dir: 'down' });
   if (marNow > 0) unit.push({ label: L('Валова маржа', 'Gross margin'), before: marNow + '%', after: marTgt + '%', pct: pctUp(marNow, marTgt), dir: 'up' });
-  if (nowM > 0) unit.push({ label: L('Прибуток / місяць', 'Profit / month'), before: eur(profitNow), after: eur(profitAfter), pct: pctUp(profitNow, profitAfter), dir: 'up' });
+  if (nowM > 0) unit.push({ label: L('Прибуток / місяць', 'Profit / month'), before: money(profitNow, cur), after: money(profitAfter, cur), pct: pctUp(profitNow, profitAfter), dir: 'up' });
 
   // Операції: час обробки замовлення — оцінка за зрілістю операцій (health).
   const ops = res.health.find((h) => h.key === 'operations')?.score ?? 55;

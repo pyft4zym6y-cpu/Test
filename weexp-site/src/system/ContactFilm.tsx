@@ -7,7 +7,7 @@ import { Turnstile, turnstileEnabled } from '@/components/Turnstile';
 import { track } from '@/lib/analytics';
 import { DIAG_SUMMARY_KEY } from '@/data/xray';
 import { getExpressAudit } from '@/system/expressLocal';
-import { eur } from '@/system/lossModel';
+import { money, curOf } from '@/system/lossModel';
 import './system.css';
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
@@ -57,7 +57,7 @@ export function ContactFilm() {
       const x = localStorage.getItem(DIAG_SUMMARY_KEY) || '';
       if (x) { setDiag(x); return; }
       const ex = getExpressAudit();
-      if (ex) setDiag(`${t('Експрес-аудит', 'Express audit')}: ${eur(ex.total)}${t('/рік', '/yr')} (${t('діапазон', 'range')} ${eur(ex.range[0])}–${eur(ex.range[1])}), Health ${ex.overallHealth}/100`);
+      if (ex) setDiag(`${t('Експрес-аудит', 'Express audit')}: ${money(ex.total, curOf(ex.input?.currency))}${t('/рік', '/yr')} (${t('діапазон', 'range')} ${money(ex.range[0], curOf(ex.input?.currency))}–${money(ex.range[1], curOf(ex.input?.currency))}), Health ${ex.overallHealth}/100`);
     } catch { /* ignore */ }
   }, [t]);
   const attach = keepDiag ? diag : '';   // додаємо лише якщо клієнт увімкнув чекбокс

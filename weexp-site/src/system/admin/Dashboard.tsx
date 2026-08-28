@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { type AdminRow, type LeadRow, type TierStatus } from '@/lib/supa';
-import { eur } from '../systems';
+import { money as fmt, curOf, AGENCY_CUR } from '../systems';
 import { ACCESS_SOURCES, EmptyState, ST, Tile, TrafficBlock, Trend, rel, srcName, type SiteTraffic } from './shared';
 import { auditStatusOf, money, phaseOf, slaOf, PHASES } from './auditRequests';
 import { DigestPanel } from './DigestPanel';
@@ -48,7 +48,7 @@ export function Dashboard({ rows, leads, traffic, period, onPeriod, onOpenClient
     const ev: Ev[] = [];
     r.forEach((x) => {
       if (x.updatedAt) ev.push({ at: x.updatedAt, kind: 'user', label: x.email, sub: x.company || 'оновлення профілю' });
-      if (x.record?.express) ev.push({ at: x.record.express.at, kind: 'express', label: x.email, sub: `експрес-аудит: ${eur(x.record.express.total)}/рік` });
+      if (x.record?.express) ev.push({ at: x.record.express.at, kind: 'express', label: x.email, sub: `експрес-аудит: ${fmt(x.record.express.total, curOf(x.record.express.input?.currency))}/рік` });
       Object.entries(x.funnel?.tierHistory || {}).forEach(([tid, list]) => (list || []).forEach((e) => {
         ev.push({ at: e.at, kind: 'tier', label: x.email, sub: `${tid} → ${ST[e.st]?.txt ?? e.st}${e.by === 'manager' ? ' · менеджер' : ''}` });
       }));
@@ -141,17 +141,17 @@ export function Dashboard({ rows, leads, traffic, period, onPeriod, onOpenClient
             {rows !== null && rows.length > 0 && (
               <div className="adm-panel">
                 <span className="adm-col-h mono">
-                  Гроші й цикл · бюджет {eur(biz.totals.budget)} · оплачено {eur(biz.totals.paid)} · очікує {eur(biz.totals.pending)}
-                  {biz.totals.cost > 0 && <> · собівартість {eur(biz.totals.cost)} · маржа <b className={biz.totals.paid - biz.totals.cost >= 0 ? '' : 'bad'}>{eur(biz.totals.paid - biz.totals.cost)}</b></>}
+                  Гроші й цикл · бюджет {fmt(biz.totals.budget, AGENCY_CUR)} · оплачено {fmt(biz.totals.paid, AGENCY_CUR)} · очікує {fmt(biz.totals.pending, AGENCY_CUR)}
+                  {biz.totals.cost > 0 && <> · собівартість {fmt(biz.totals.cost, AGENCY_CUR)} · маржа <b className={biz.totals.paid - biz.totals.cost >= 0 ? '' : 'bad'}>{fmt(biz.totals.paid - biz.totals.cost, AGENCY_CUR)}</b></>}
                 </span>
                 <div className="adm-money">
                   {biz.byPhase.map((p) => (
                     <div key={p.n} className="adm-money-cell">
                       <b className="mono">{p.l}</b>
                       <span className="mono adm-money-n">{p.n} клієнт.</span>
-                      <span className="mono">бюджет {eur(p.budget)}</span>
-                      <span className="mono adm-money-sub">оплачено {eur(p.paid)} · очікує {eur(p.pending)}</span>
-                      {p.cost > 0 && <span className="mono adm-money-sub">витрати {eur(p.cost)} · маржа {eur(p.paid - p.cost)}</span>}
+                      <span className="mono">бюджет {fmt(p.budget, AGENCY_CUR)}</span>
+                      <span className="mono adm-money-sub">оплачено {fmt(p.paid, AGENCY_CUR)} · очікує {fmt(p.pending, AGENCY_CUR)}</span>
+                      {p.cost > 0 && <span className="mono adm-money-sub">витрати {fmt(p.cost, AGENCY_CUR)} · маржа {fmt(p.paid - p.cost, AGENCY_CUR)}</span>}
                     </div>
                   ))}
                 </div>

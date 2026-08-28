@@ -10,7 +10,7 @@ import {
   type AdminRow,
   type TierStatus
 } from '@/lib/supa';
-import { eur, sysLabel, type SysKey } from '../systems';
+import { money as fmt, curOf, AGENCY_CUR, sysLabel, type SysKey } from '../systems';
 import { toast } from '@/lib/toast';
 
 import { loadTemplate, uid, type AuditTemplate } from '../auditTemplate';
@@ -42,18 +42,19 @@ export async function openClientDossier(row: AdminRow) {
     ['CRM / ERP', c.crmErp], ['Контакт', c.contactName ? `${c.contactName} ${c.contactPhone || ''}` : ''], ['Коментар', c.notes],
   ];
   const inp = ex?.input || {};
+  const cur = curOf(inp.currency);   // документ показує гроші в тій валюті, у якій їх вводив клієнт
   const exRows: [string, unknown][] = ex ? [
     ['Пройдено', new Date(ex.at).toLocaleString('uk-UA')],
-    ['Витік / рік', eur(ex.total)], ['Діапазон', `${eur(ex.range[0])}–${eur(ex.range[1])}`],
+    ['Витік / рік', fmt(ex.total, cur)], ['Діапазон', `${fmt(ex.range[0], cur)}–${fmt(ex.range[1], cur)}`],
     ['Business Health', `${ex.overallHealth}/100`],
     ['Ключова проблема', sysLabel(ex.primary as SysKey, 'uk')],
     ['Друга проблема', ex.secondary ? sysLabel(ex.secondary as SysKey, 'uk') : ''],
-    ['Оборот / міс', inp.monthlyRevenue ? eur(inp.monthlyRevenue) : ''],
-    ['Середній чек', inp.aov ? eur(inp.aov) : ''],
+    ['Оборот / міс', inp.monthlyRevenue ? fmt(inp.monthlyRevenue, cur) : ''],
+    ['Середній чек', inp.aov ? fmt(inp.aov, cur) : ''],
     ['Конверсія', inp.conversion != null ? `${inp.conversion}%` : ''],
     ['Повторні покупки', inp.repeatRate != null ? `${inp.repeatRate}%` : ''],
     ['Валова маржа', inp.grossMargin != null ? `${inp.grossMargin}%` : ''],
-    ['CAC', inp.cac ? eur(inp.cac) : ''], ['Джерело', ex.source],
+    ['CAC', inp.cac ? fmt(inp.cac, cur) : ''], ['Джерело', ex.source],
   ] : [];
   const tierRows = tiers.map(([tid, st]) => `<tr><td class="k">${escH(tid)}</td><td>${escH(ST[st as TierStatus]?.txt || st)}</td></tr>`).join('');
   // C-level оцінка модулів (з активного шаблону — для назв модулів).
@@ -82,7 +83,7 @@ td.c{text-align:center;width:56px;font-weight:600}
 <div class="meta">${escH(row.email)}<br>сформовано ${escH(now)}${code ? `<br>код: <span class="code">${escH(code)}</span>` : ''}</div></div>
 ${printButton(INK.red, '0 0 14px')}
 <h2>Профіль компанії</h2>${companyRows.some(([, v]) => v) ? `<table>${kv(companyRows)}</table>` : '<p class="empty">Профіль не заповнено.</p>'}
-<h2>Експрес-аудит</h2>${ex ? `<p class="money">${escH(eur(ex.total))} <i>/ рік · витік</i></p><table>${kv(exRows)}</table>` : '<p class="empty">Експрес-аудит не проходив.</p>'}
+<h2>Експрес-аудит</h2>${ex ? `<p class="money">${escH(fmt(ex.total, cur))} <i>/ рік · витік</i></p><table>${kv(exRows)}</table>` : '<p class="empty">Експрес-аудит не проходив.</p>'}
 ${asmKeys.length ? `<h2>C-level оцінка модулів${asmAvg != null ? ` · зрілість ${asmAvg}/100` : ''}</h2><table><tr><td class="k">Модуль</td><td class="c">Score</td><td class="c">Prio</td><td>Розрив / рекомендація</td></tr>${asmRows}</table>` : ''}
 <h2>Статуси доступів T1–T4</h2>${tierRows ? `<table>${tierRows}</table>` : '<p class="empty">Запитів не було.</p>'}
 <div class="foot">WEEXP — Commerce OS · weexp.agency · hello@weexp.agency · Документ містить конфіденційні дані клієнта. Не для розповсюдження.</div>
@@ -97,7 +98,8 @@ export function seedAuditSections(rec: DiagRecord, modTitle: (k: string) => stri
   const secs: AuditDocSection[] = [];
   const jobSum = (rec.auditJobs || []).find((j) => j.summary)?.summary;
   const ex = rec.express;
-  const resume = jobSum || (ex ? `Business Health ${ex.overallHealth}/100. Ключова проблема: ${sysLabel(ex.primary as SysKey, 'uk')}. Оцінений витік ≈ ${eur(ex.total)}/рік.` : '');
+  const exCur = curOf(ex?.input?.currency);
+  const resume = jobSum || (ex ? `Business Health ${ex.overallHealth}/100. Ключова проблема: ${sysLabel(ex.primary as SysKey, 'uk')}. Оцінений витік ≈ ${fmt(ex.total, exCur)}/рік.` : '');
   secs.push({ id: uid(), heading: 'Резюме', body: resume || 'Короткий підсумок аудиту…' });
   const asm = rec.assessment || {};
   const keys = Object.keys(asm).filter((k) => { const s = asm[k]; return s && (s.score != null || s.gap || s.rec || s.state); });

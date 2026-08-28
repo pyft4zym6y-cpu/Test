@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { setLeadDeal, type AdminRow, type LeadRow, type LeadDeal, type LeadStatus } from '@/lib/supa';
-import { eur, sysLabel, type SysKey } from '../systems';
+import { money as fmt, curOf, AGENCY_CUR, sysLabel, type SysKey } from '../systems';
 
 import '../system.css';
 import '../cabinet.css';
@@ -159,7 +159,7 @@ export function LeadDetail({ lead, allRows, onClose, onStatus, onDeal, onConvert
               {ex ? (
                 <div className="adm-lead-client">
                   <div className="adm-lead-ex">
-                    <b className="adm-money">{eur(ex.total)}<i> / рік</i></b>
+                    <b className="adm-money">{fmt(ex.total, curOf(ex.input?.currency))}<i> / рік</i></b>
                     <span className="mono adm-express-sub">{sysLabel(ex.primary as SysKey, 'uk')} · Health {ex.overallHealth}/100 · {new Date(ex.at).toLocaleDateString('uk-UA')}</span>
                   </div>
                   {ex.symptoms && ex.symptoms.length > 0 && <div className="adm-sym-tags">{ex.symptoms.slice(0, 6).map((s) => <span key={s} className="adm-sym">{sysLabel(s as SysKey, 'uk')}</span>)}</div>}
