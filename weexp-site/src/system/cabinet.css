@@ -1314,3 +1314,19 @@
 .cab-meet-opts { display: flex; flex-wrap: wrap; gap: 8px; }
 .cab-meet-o { padding: 10px 14px; font-size: 13px; min-height: 44px; }
 .cab-meet-o[aria-pressed="true"] { background: var(--yellow); color: var(--deep); }
+
+/* ── Бібліотека агенції ── */
+.adm-lib-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.adm-lib-bar .ab-inp { flex: 1 1 240px; min-width: 0; }
+.adm-lib-err { border: var(--bd); background: var(--yellow); color: var(--deep); padding: 10px 12px; font-size: 12.5px; line-height: 1.5; }
+.adm-lib { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.adm-lib-i { border: var(--bd); box-shadow: var(--sh); background: var(--pure-white); padding: 12px 14px; }
+.adm-lib-h { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: 100%; background: none; border: 0; padding: 0; cursor: pointer; text-align: left; min-height: 44px; }
+.adm-lib-h b { font-size: 15px; margin-right: auto; }
+.adm-lib-kind { font-size: 11px; color: var(--graphite); text-transform: uppercase; letter-spacing: .06em; }
+.adm-lib-sum { margin: 6px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--charcoal); max-width: 72ch; }
+.adm-lib-body { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+.adm-lib-text { margin: 0; white-space: pre-wrap; font: 400 13px/1.6 var(--sans); color: var(--charcoal); max-width: 78ch; }
+.adm-lib-ed { display: flex; flex-direction: column; gap: 12px; }
+.adm-lib-chk { display: flex; align-items: flex-start; gap: 8px; font-size: 13.5px; }
+.adm-lib-chk i { font-style: normal; color: var(--graphite); font-size: 12px; }

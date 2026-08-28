@@ -56,6 +56,7 @@ const UserDetail = lazy(() => import('./admin/UserDetail').then((m) => ({ defaul
 const LeadDetail = lazy(() => import('./admin/LeadDetail').then((m) => ({ default: m.LeadDetail })));
 const TeamManager = lazy(() => import('./admin/TeamManager').then((m) => ({ default: m.TeamManager })));
 const PmOffice = lazy(() => import('./admin/PmOffice').then((m) => ({ default: m.PmOffice })));
+const Library = lazy(() => import('./admin/Library').then((m) => ({ default: m.Library })));
 const AuditRequests = lazy(() => import('./admin/AuditRequests').then((m) => ({ default: m.AuditRequests })));
 const WorkerTab = lazy(() => import('./admin/WorkerTab').then((m) => ({ default: m.WorkerTab })));
 const EventLog = lazy(() => import('./admin/EventLog').then((m) => ({ default: m.EventLog })));
@@ -633,6 +634,16 @@ export function AdminPanel() {
           <section className="adm-sec">
             <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Команда і ставки</h1></div>
             <Panel title="Проєкт-офіс"><PmOffice /></Panel>
+          </section>
+        )}
+
+        {/* Бібліотека агенції: як ми працюємо. Читає вся команда, редагують
+            ті, хто веде методологію, — бібліотека, яку може переписати будь-хто,
+            перестає бути джерелом правди. */}
+        {!detail && curTab === 'library' && (
+          <section className="adm-sec">
+            <div className="adm-sec-head"><h1 className="sysx-display adm-h1">Бібліотека агенції</h1></div>
+            <Panel title="Бібліотека"><Library canEdit={can(user, 'edit_template')} selfEmail={user.email} /></Panel>
           </section>
         )}
 

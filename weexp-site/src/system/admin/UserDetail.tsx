@@ -27,6 +27,7 @@ const ModuleScoring = lazy(() => import('./panels-client').then((m) => ({ defaul
 const NotesPanel = lazy(() => import('./panels-client').then((m) => ({ default: m.NotesPanel })));
 const PackChecklist = lazy(() => import('./panels-client').then((m) => ({ default: m.PackChecklist })));
 const ProjectsManager = lazy(() => import('./ProjectsManager').then((m) => ({ default: m.ProjectsManager })));
+const KbSuggest = lazy(() => import('./KbSuggest').then((m) => ({ default: m.KbSuggest })));
 
 export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, onUtab, onChanged, onClose, openFile, onStatus, onDelete, busy }: { row: AdminRow; leads: LeadRow[] | null; canDelete: boolean; /** manage_access: аудитор бачить картку, але не роздає доступи */ canAccess: boolean; selfEmail: string; /** Вкладка картки живе в адресі — інакше посилання на неї відкриває «Огляд». */
   utab: UTab; onUtab: (t: UTab) => void;
@@ -256,6 +257,11 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, 
           {utab === 'over' && <Block title="Внутрішні нотатки команди"><PanelBoundary title="Нотатки"><NotesPanel userId={row.userId} initial={rec.notes || []} author={selfEmail} /></PanelBoundary></Block>}
 
           {utab === 'deep' && sec === 'q' && <Block title="Модерація опитувальника"><PanelBoundary title="Модерація опитувальника"><ModerationPanel userId={row.userId} code={code} rec={rec} reviewer={selfEmail} /></PanelBoundary></Block>}
+
+          {/* Звʼязок бібліотеки з аудитом: під слабкі системи цього клієнта
+              показуємо НАШІ методики. Без цього бібліотека лишалася б окремою
+              полицею, до якої ніхто не доходить у момент роботи. */}
+          {utab === 'deep' && sec === 'result' && <Block title="Наші методики під цього клієнта"><PanelBoundary title="Методики"><KbSuggest rec={rec} /></PanelBoundary></Block>}
 
           {utab === 'deep' && sec === 'result' && <Block title="Пакет аудиту — 5 звітів"><PanelBoundary title="Пакет аудиту"><PackChecklist userId={row.userId} email={row.email} rec={rec} /></PanelBoundary></Block>}
 

@@ -126,7 +126,7 @@ export function KnowledgeBase({ row, code, author }: { row: AdminRow; code?: str
   const empty = groups.filter((g) => g.items.length === 0).map((g) => g.title);
 
   return (
-    <Block title={`База знань · ${total} записів`}>
+    <Block title={`База знань клієнта · ${total} записів`}>
       {/* Питання «звідки це береться і хто це заповнює» виникало щоразу,
           бо відповідь була лише в коментарі до файлу. Тепер вона на екрані. */}
       <div className="adm-kb-src">
@@ -141,6 +141,7 @@ export function KnowledgeBase({ row, code, author }: { row: AdminRow; code?: str
           <li><i>рушій</i><span>прогони Commerce OS: обхід сайту, матриця зрілості</span></li>
         </ul>
         <p className="mono adm-hint">Порожній розділ означає рівно одне: цього ще ніхто не дав. «Зріз» унизу зберігає, що ми знали на дату.</p>
+        <p className="mono adm-hint">Наші власні методики, шаблони й чек-листи — це інша сутність: вони однакові для всіх клієнтів і живуть у розділі «Аудит і проєкти → Бібліотека».</p>
       </div>
       {empty.length > 0 && (
         <p className="mono adm-empty">Порожньо: {empty.join(' · ')}</p>

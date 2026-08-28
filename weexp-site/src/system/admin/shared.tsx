@@ -42,7 +42,7 @@ export type SiteTraffic = {
   period?: string; sessions?: number; users?: number; pageviews?: number; bounceRate?: number;
   sources?: { name: string; sessions: number }[]; pages?: { path: string; views: number }[]; error?: string;
 };
-export type Tab = 'overview' | 'leads' | 'auditreq' | 'express' | 'builder' | 'pm' | 'users' | 'worker' | 'settings';
+export type Tab = 'overview' | 'leads' | 'auditreq' | 'express' | 'builder' | 'pm' | 'library' | 'users' | 'worker' | 'settings';
 export type Cap = Parameters<typeof can>[1];
 // Структура меню. Один життєвий цикл клієнта — один розділ: «Аудит і проєкти».
 // Експрес-аудит (те, що було до заявки), конструктор анкети й довідник ставок —
@@ -56,6 +56,10 @@ export const TABS: { id: Tab; label: string; cap: Cap; sub?: { id: Tab; label: s
       { id: 'express', label: 'Експрес-аудити', cap: 'view_audits' },
       { id: 'builder', label: 'Конструктор аудиту', cap: 'edit_template' },
       { id: 'pm', label: 'Команда і ставки', cap: 'manage_pm' },
+      // Бібліотека агенції — наші методики, а не дані клієнта. Стоїть поруч із
+      // конструктором аудиту: обидва описують, ЯК ми працюємо, тоді як усе
+      // інше в адмінці описує, з ким.
+      { id: 'library', label: 'Бібліотека', cap: 'view_audits' },
     ],
   },
   { id: 'users', label: 'Користувачі', cap: 'view_users' },
@@ -287,7 +291,7 @@ export const U_TABS: { id: UTab; l: string; hint?: string }[] = [
   { id: 'deep', l: 'Глибокий аудит', hint: 'питання · доступи · файли · результат' },
   { id: 'proj', l: 'Проєкт', hint: 'що робить команда' },
   { id: 'files', l: 'Файли', hint: 'клієнт → агентство і агентство → клієнт' },
-  { id: 'kb', l: 'База знань', hint: 'усе відоме про клієнта, з джерелами' },
+  { id: 'kb', l: 'База знань клієнта', hint: 'усе відоме про ЦЬОГО клієнта, з джерелами; наші методики — в «Аудит і проєкти → Бібліотека»' },
   { id: 'team', l: 'Наша команда' },
 ];
 
