@@ -107,7 +107,7 @@ export function ContactFilm() {
           <div className="sysx-card cf-thanks">
             <div className="sysx-kick">{t('Заявку отримано', 'Request received')}</div>
             <h2 className="sysx-display">{t('Дякуємо! Ваш запит отримано.', 'Thank you! Your request has been received.')}</h2>
-            <p className="sysx-lead">{t('Менеджер зв’яжеться з вами протягом робочого дня.', 'A manager will contact you within one business day.')}{attach ? t(' Підсумок вашого аудиту додано до заявки.', ' Your audit summary has been attached to the request.') : ''}</p>
+            <p className="sysx-lead">{t('Менеджер зв’яжеться з вами протягом 1 робочого дня.', 'A manager will contact you within 1 business day.')}{attach ? t(' Підсумок вашого аудиту додано до заявки.', ' Your audit summary has been attached to the request.') : ''}</p>
             <a className="sysx-cta" href={`mailto:${MAIL}`}>{MAIL}</a>
           </div>
         ) : (

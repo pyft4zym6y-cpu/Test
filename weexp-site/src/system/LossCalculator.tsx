@@ -379,7 +379,7 @@ ${projRows ? `<div class="card"><h2>${escapeHtml(t('Зараз → куди мо
                 <div className="calc-ordered-next">
                   <span className="mono">{t('Що далі', "What's next")}:</span>
                   <ol>
-                    <li>{t('Менеджер WEEXP звʼяжеться з вами на ', 'A WEEXP manager will contact you at ')}<b>{oEmail}</b>{oPhone ? ` / ${oPhone}` : ''} {t('протягом робочого дня.', 'within one business day.')}</li>
+                    <li>{t('Менеджер WEEXP звʼяжеться з вами на ', 'A WEEXP manager will contact you at ')}<b>{oEmail}</b>{oPhone ? ` / ${oPhone}` : ''} {t('протягом 1 робочого дня.', 'within 1 business day.')}</li>
                     <li>{t('Короткий дзвінок (15–20 хв): звіримо контекст і цілі.', 'A short call (15–20 min): we align on context and goals.')}</li>
                     <li>{t('Надішлемо план і формат аудиту під ваш випадок.', 'We send an audit plan and format tailored to your case.')}</li>
                   </ol>
@@ -394,7 +394,7 @@ ${projRows ? `<div class="card"><h2>${escapeHtml(t('Зараз → куди мо
               <form className="calc-order" onSubmit={submitForm}>
                 <div className="calc-order-steps mono"><span className="on">1 · {t('Дані', 'Details')}</span><span>2 · {t('Готово', 'Done')}</span></div>
                 <span className="sysx-kick">{t('Замовити аудит', 'Order the audit')}</span>
-                <p className="calc-order-lead">{t('Лишіть контакт — менеджер WEEXP звʼяжеться протягом робочого дня. Результат вашого експрес-аудиту додається до заявки автоматично.', 'Leave your contact — a WEEXP manager will reach out within one business day. Your express-audit result is attached automatically.')}</p>
+                <p className="calc-order-lead">{t('Лишіть контакт — менеджер WEEXP звʼяжеться протягом 1 робочого дня. Результат вашого експрес-аудиту додається до заявки автоматично.', 'Leave your contact — a WEEXP manager will reach out within 1 business day. Your express-audit result is attached automatically.')}</p>
                 <div className="calc-order-row">
                   <label className="sysx-inp"><span className="sysx-inp-l">{t("Ім'я", 'Name')}</span><input name="name" autoComplete="name" value={oName} onChange={(e) => setOName(e.target.value)} placeholder={t('Ваше імʼя', 'Your name')} /></label>
                   <label className="sysx-inp"><span className="sysx-inp-l">{t('Телефон', 'Phone')} *</span><input name="phone" type="tel" inputMode="tel" autoComplete="tel" value={oPhone} onChange={(e) => setOPhone(e.target.value)} placeholder="+380…" required /></label>
