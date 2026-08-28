@@ -5,6 +5,7 @@ import { useT, useLp, useLang } from '@/i18n';
 import './system.css';
 
 import { PartnerMarquee } from '@/system/PartnerMarquee';
+import { HEADLINE_PROOF } from '@/data/cases';
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
 const SystemExplorer = lazy(() => import('@/system/SystemExplorer').then((m) => ({ default: m.SystemExplorer })));
@@ -118,6 +119,14 @@ export function SystemInMotion() {
             <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>
             <Link to={lp('/contact')} className="sysx-cta">{t('Залишити заявку', 'Leave a request')} →</Link>
           </div>
+          {/* Три числа з реальних кейсів — перший екран не мав жодного доказу. */}
+          <ul className="sysx-proofstrip mono">
+            {HEADLINE_PROOF.map((h) => (
+              <li key={h.metric}>
+                <b>{h.value}</b> <span>{t(h.uk, h.en)}</span>
+              </li>
+            ))}
+          </ul>
           <span className="sysx-reassure mono">{t('Безкоштовно · ~2 хв · без реєстрації та картки', 'Free · ~2 min · no sign-up, no card')}</span>
           <span className="sysx-scrollhint mono">{t('↓ або погортайте, як це працює', '↓ or scroll to see how it works')}</span>
         </div>

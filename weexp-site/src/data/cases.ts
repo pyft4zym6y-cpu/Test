@@ -994,6 +994,25 @@ export const CASES: CaseStudy[] = [
   },
 ];
 
+/**
+ * Три числа для першого екрана головної.
+ *
+ * До цього перший екран головної не містив ЖОДНОГО числа результату: єдине,
+ * що там було, — «$0.5–10M», і це розмір аудиторії, а не доказ. Найсильніше,
+ * що є в компанії, лежало на /proof — за один клік від сторінки, на яку
+ * приходять усі.
+ *
+ * Числа не вписані руками: кожне береться з метрик конкретного кейса нижче,
+ * і тест стереже, що воно там і залишилось. Порожній підпис — свідома
+ * відмова від числа, якого немає (закон бренду: жодної ілюстративної цифри).
+ */
+export type Headline = { slug: string; metric: string; value: string; uk: string; en: string };
+export const HEADLINE_PROOF: Headline[] = [
+  { slug: 'premium-textile', metric: 'Оборот/рік', value: '×18',   uk: 'обороту за рік', en: 'turnover in a year' },
+  { slug: 'premium-textile', metric: 'Конверсія',  value: '4,2%',  uk: 'конверсія — з 0,8%', en: 'conversion — from 0.8%' },
+  { slug: 'consumer-dtc',    metric: 'Продажі',    value: '+65%',  uk: 'продажів за 9 місяців', en: 'sales in 9 months' },
+];
+
 export const caseBySlug = (slug: string) => CASES.find((c) => c.slug === slug);
 
 export const STAGES: Stage[] = ['Diagnose', 'Build', 'Scale', 'Independence'];

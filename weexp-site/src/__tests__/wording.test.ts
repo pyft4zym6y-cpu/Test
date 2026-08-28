@@ -18,6 +18,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { PAGES, EXTRA_PAGES, nameOf } from '../lib/nav';
+import { HEADLINE_PROOF } from '../data/cases';
 
 const SYS = join(__dirname, '..', 'system');
 const files = readdirSync(SYS).filter((f) => f.endsWith('.tsx'));
@@ -103,6 +104,26 @@ describe('числа збігаються зі своїм джерелом', () 
     expect(n, 'у auditPack.ts не знайдено кількості аудитів').toBeTruthy();
     expect(read('system/Pricing.tsx'), `Pricing обіцяє не ${n} блоків`).toContain(`${n} блоків діагностики`);
     expect(read('lib/seo-data.json'), `опис /audit-pack обіцяє не ${n} аудитів`).toContain(`${n} аудитів`);
+  });
+
+  it('числа першого екрана справді є в кейсах, на які посилаються', () => {
+    /*
+     * Перший екран головної не містив жодного числа результату — єдине, що там
+     * стояло, це «$0.5–10M», розмір аудиторії. Тепер там три числа з кейсів.
+     * Тест тримає їх звʼязаними з джерелом: якщо метрику в кейсі змінили або
+     * прибрали, головна не має тихо продовжувати обіцяти старе.
+     */
+    const src = read('data/cases.ts');
+    expect(HEADLINE_PROOF.length, 'смуга доказів порожня').toBeGreaterThan(0);
+    for (const h of HEADLINE_PROOF) {
+      const i = src.indexOf(`slug: '${h.slug}'`);
+      expect(i, `кейса ${h.slug} не існує`).toBeGreaterThan(-1);
+      // Дивимось лише всередині цього кейса — до початку наступного.
+      const next = src.indexOf("slug: '", i + 10);
+      const block = src.slice(i, next === -1 ? undefined : next);
+      const re = new RegExp(`label: '${h.metric}'[^}]*?'${h.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'`);
+      expect(re.test(block), `${h.slug}: метрика «${h.metric}» більше не дає ${h.value}`).toBe(true);
+    }
   });
 
   it('кількість систем у шапках файлів = кількості в моделі', () => {

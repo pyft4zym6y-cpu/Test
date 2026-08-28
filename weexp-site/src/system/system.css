@@ -2587,3 +2587,11 @@ body.kb-open .pf-bg { display: none !important; }
    уводило первое поле за нижний край экрана. Здесь ему нужен отступ сверху —
    раньше его давал соседний блок формы. */
 .ctf-attach-after { margin-top: 26px; }
+
+/* Смуга доказів у першому екрані головної. Числа беруться з кейсів (cases.ts,
+   HEADLINE_PROOF) — перший екран до цього не мав жодного числа результату. */
+.sysx-proofstrip { display: flex; flex-wrap: wrap; gap: 6px 26px; list-style: none; margin: 18px 0 0; padding: 0; }
+.sysx-proofstrip li { display: inline-flex; align-items: baseline; gap: 7px; font-size: 12px; color: var(--graphite); }
+.sysx-proofstrip b { font-size: 21px; font-weight: 800; letter-spacing: -.01em; color: var(--red-ink); font-variant-numeric: tabular-nums; }
+.sysx-proofstrip span { letter-spacing: .01em; }
+@media (max-width: 700px) { .sysx-proofstrip { gap: 4px 16px; } .sysx-proofstrip b { font-size: 18px; } .sysx-proofstrip li { font-size: 11px; } }
