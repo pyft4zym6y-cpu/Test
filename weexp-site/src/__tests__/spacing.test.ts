@@ -77,3 +77,42 @@ describe('текст не упирается в рамку', () => {
   // и нашёл здесь единственного нарушителя.
 
 });
+
+/**
+ * Рядок логотипів по низу сцени (`.sysx-marquee`) — абсолютний і напівпрозорий:
+ * він не ховає те, що під ним, а лягає зверху. Нижній відступ сцени про нього
+ * не знав, тож на невисокому вікні (ноут ~840px і нижче) останні рядки —
+ * «Безкоштовно · ~2 хв» і підказка про скрол — опинялись просто в смузі
+ * логотипів. Замір: зазор був −23px, став +18px.
+ */
+describe('низ сцени: рядок логотипів', () => {
+  const marquee = readFileSync(join(__dirname, '..', 'system', 'PartnerMarquee.tsx'), 'utf8');
+
+  it('сцена резервує висоту рядка знизу', () => {
+    expect(rule('.sysx-scene')).toMatch(/var\(--sysx-marq-h/);
+  });
+
+  it('висота міряється з живого вузла, а не задана числом', () => {
+    expect(marquee).toMatch(/setProperty\('--sysx-marq-h'/);
+    expect(marquee).toMatch(/getBoundingClientRect\(\)\.height/);
+    expect(marquee).toMatch(/ResizeObserver/);
+  });
+
+  it('змінна ставиться на сцену, а не глобально', () => {
+    // Рядок є лише на головній: глобальне значення з'їдало б низ сцен там,
+    // де жодного рядка немає.
+    expect(marquee).toMatch(/closest\('\.sysx-stage'\)/);
+    expect(css).not.toMatch(/:root\s*\{[^}]*--sysx-marq-h/);
+  });
+
+  it('запасне значення нульове — сторінка без рядка не отримує порожнечу', () => {
+    expect(rule('.sysx-scene')).toMatch(/var\(--sysx-marq-h,\s*0px\)/);
+  });
+
+  it('закріплена підказка скролу стоїть НАД рядком, а не в ньому', () => {
+    const at = css.indexOf('@media (max-height: 820px)');
+    expect(at).toBeGreaterThan(0);
+    const block = css.slice(at, css.indexOf('\n}', at));
+    expect(block).toMatch(/bottom:\s*calc\(var\(--sysx-marq-h/);
+  });
+});

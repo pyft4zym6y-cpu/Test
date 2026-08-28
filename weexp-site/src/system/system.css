@@ -195,7 +195,8 @@
      і стотипіксельний заголовок героя читався крізь меню. Тепер від виміряної
      висоти. Живе саме тут, а не на .sysx-stage: сцена абсолютна, і padding
      батька її не зсуває — абсолют рахується від зовнішнього краю паддингу. */
-  padding: calc(var(--sysh-h) + clamp(18px, 4vh, 44px)) clamp(20px, 6vw, 90px) clamp(28px, 5vh, 56px);
+  padding: calc(var(--sysh-h) + clamp(18px, 4vh, 44px)) clamp(20px, 6vw, 90px)
+           calc(var(--sysx-marq-h, 0px) + clamp(20px, 3.5vh, 44px));
   pointer-events: none; will-change: opacity, transform;
 }
 /*
@@ -230,7 +231,9 @@
    заголовок під шапку. За змістом вона й належить нижньому краю кадру: там її
    і закріплюємо, з потоку прибираємо. */
 @media (max-height: 820px) {
-  .sysx-scene > .sysx-scrollhint { position: absolute; left: 50%; bottom: clamp(8px, 1.6vh, 18px); transform: translateX(-50%); margin-top: 0; }
+  /* Закріплюємо НАД рядком логотипів, а не в ньому: раніше тут стояло просто
+     bottom: 8–18px — тобто підказка лягала рівно в смугу, яку рядок і займає. */
+  .sysx-scene > .sysx-scrollhint { position: absolute; left: 50%; bottom: calc(var(--sysx-marq-h, 0px) + clamp(6px, 1.2vh, 14px)); transform: translateX(-50%); margin-top: 0; }
 }
 @keyframes sysxBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(7px); } }
 .sysx-cta-row { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
