@@ -6,21 +6,15 @@ import { CookieConsent } from '@/system/CookieConsent';
 import { RouteBreadcrumbs } from '@/system/Breadcrumbs';
 import { useT, useLp, useLang, stripLang } from '@/i18n';
 import './system.css';
+import { PAGES } from '@/lib/nav';
 
 /**
  * Оболонка cinematic-напряму: тонка світла шапка (десктоп) + app-подібна
  * навігація на мобільному. Двомовна: посилання префіксуються /en у EN-режимі,
  * підписи — через t(). Перемикач мов веде на той самий маршрут іншою мовою.
  */
-const LINKS = [
-  { to: '/', uk: 'Система', en: 'System' },
-  { to: '/proof', uk: 'Наші перемоги', en: 'Our wins' },
-  { to: '/expansion', uk: 'Експансія', en: 'Expansion' },
-  { to: '/people', uk: 'Про нас', en: 'About' },
-  { to: '/diagnose', uk: 'Express audit', en: 'Express audit' },
-  { to: '/pricing', uk: 'Початок співпраці', en: 'Get started' },
-  { to: '/contact', uk: 'Контакт', en: 'Contact' },
-];
+// Перелік і назви — з lib/nav: те саме джерело, що в підвалі й хлібних крихтах.
+const LINKS = PAGES;
 
 const I = {
   home: 'M3 11.2 12 4l9 7.2M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9',
@@ -34,12 +28,10 @@ const Icon = ({ d }: { d: string }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>
 );
 
-const TABS = [
-  { to: '/', uk: 'Система', en: 'System', icon: I.home },
-  { to: '/people', uk: 'Про нас', en: 'About', icon: I.people },
-  { to: '/diagnose', uk: 'Express audit', en: 'Express audit', icon: I.calc },
-  { to: '/contact', uk: 'Контакт', en: 'Contact', icon: I.chat },
-];
+// Нижня панель — підмножина меню. Назви звідти ж, щоб не розійшлися:
+// раніше вони жили окремим списком і збігалися лише доти, доки хтось не правив один.
+const TAB_ICON: Record<string, string> = { '/': I.home, '/people': I.people, '/diagnose': I.calc, '/contact': I.chat };
+const TABS = PAGES.filter((p) => p.to in TAB_ICON).map((p) => ({ ...p, icon: TAB_ICON[p.to] }));
 
 export function SystemShell() {
   // Клавіатура на телефоні: нижня панель має ховатись, поки людина заповнює поле.
@@ -111,7 +103,7 @@ export function SystemShell() {
             ))}
           </nav>
           <LangToggle className="sysh-sheet-lang" />
-          <Link to={lp('/diagnose')} className="sysx-cta is-primary sysh-sheet-cta">{t('Безкоштовна діагностика', 'Free diagnostics')} →</Link>
+          <Link to={lp('/diagnose')} className="sysx-cta is-primary sysh-sheet-cta">{t('Express audit', 'Express audit')} →</Link>
         </div>
       </div>
 

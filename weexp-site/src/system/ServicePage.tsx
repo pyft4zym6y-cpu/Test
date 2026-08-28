@@ -62,8 +62,8 @@ export function ServicePage() {
           <p className="svc-promise">{sys.bigIdea}</p>
           <div className="svc-when mono"><span>{t('Коли це ваше вузьке місце', 'When this is your bottleneck')}</span><b>{sys.when}</b></div>
           <div className="svc-cta-row">
-            <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Перевірити цю систему в діагностиці →', 'Check this system in the diagnostic →')}</Link>
-            <Link to={lp('/contact')} className="sysx-cta">{t('Обговорити задачу', 'Discuss your task')}</Link>
+            <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Перевірити цю систему →', 'Check this system →')}</Link>
+            <Link to={lp('/contact')} className="sysx-cta">{t('Залишити заявку', 'Leave a request')} →</Link>
           </div>
         </header>
 
@@ -130,7 +130,7 @@ export function ServicePage() {
             /* Fallback, щоб секція не зникала на системах без прив'язаних кейсів (консистентність шаблону). */
             <>
               <p className="svc-promise">{t('Ця система підсилює результат інших — сумарні дельти по всіх трансформаціях зібрані на сторінці доказів.', 'This system amplifies the others — the combined deltas across all transformations are gathered on the proof page.')}</p>
-              <Link to={lp('/proof')} className="sysx-cta">{t('Дивитись усі докази в цифрах →', 'See all the proof in numbers →')}</Link>
+              <Link to={lp('/proof')} className="sysx-cta">{t('Наші перемоги →', 'Our wins →')}</Link>
             </>
           )}
         </div>
@@ -142,8 +142,8 @@ export function ServicePage() {
             <p className="svc-txt">{t('Спершу — діагноз у грошах: скільки саме витікає у цій системі й що дасть найбільшу дельту. Обсяг і вартість робіт залежать від стану, тож фіксуємо їх після розбору.', 'First — a diagnosis in money: how much exactly is leaking in this system and what will deliver the biggest delta. Scope and cost depend on the state, so we fix them after the review.')}</p>
           </div>
           <div className="svc-next-r">
-            <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Пройти діагностику →', 'Take the diagnostic →')}</Link>
-            <Link to={lp('/contact')} className="sysx-cta">{t('Запланувати розбір', 'Schedule a review')}</Link>
+            <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік →', 'Calculate the leak →')}</Link>
+            <Link to={lp('/contact')} className="sysx-cta">{t('Залишити заявку', 'Leave a request')} →</Link>
           </div>
         </div>
 

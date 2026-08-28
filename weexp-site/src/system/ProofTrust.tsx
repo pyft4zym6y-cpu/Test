@@ -72,7 +72,7 @@ export function ProofTrust() {
           <p className="proof-ref-s">{t('Організуємо референс-дзвінок із клієнтом суміжної категорії — за запитом і з його згоди.', 'We’ll arrange a reference call with a client in an adjacent category — on request and with their consent.')}</p>
           <div className="sysx-cta-row">
             <Link to={lp('/contact')} className="sysx-cta is-primary">{t('Запросити референс →', 'Request a reference →')}</Link>
-            <Link to={lp('/diagnose')} className="sysx-cta">{t('Почати з експрес-аудиту', 'Start with the express audit')} →</Link>
+            <Link to={lp('/diagnose')} className="sysx-cta">{t('Порахувати витік', 'Calculate the leak')} →</Link>
           </div>
         </div>
       </div>

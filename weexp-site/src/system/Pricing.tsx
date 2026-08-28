@@ -35,7 +35,7 @@ export function Pricing() {
       forWhom: t('У вас сильна внутрішня команда. Потрібні не руки, а карта: де саме витікають гроші й що робити першим.', 'You have a strong in-house team. You need a map, not hands: exactly where the money leaks and what to fix first.'),
       includes: [
         t('Discovery-портал: опитувальники, передача доступів, бриф ЛПР', 'Discovery portal: questionnaires, access handover, decision-maker brief'),
-        t('E-commerce 360°: 12 блоків діагностики · 150+ спеціалізованих перевірок', 'E-commerce 360°: 12 diagnostic blocks · 150+ specialized checks'),
+        t('E-commerce 360°: 13 блоків діагностики · 150+ спеціалізованих перевірок', 'E-commerce 360°: 13 diagnostic blocks · 150+ specialized checks'),
         t('Health Score і зрілість по 18 доменах', 'Health Score and maturity across 18 domains'),
         t('Розрив у грошах: 8 важелів, baseline, прогноз на 12 місяців', 'The gap in money: 8 levers, baseline, 12-month forecast'),
         t('Повний пакет: 5 звітів + посторінкові томи «зараз → як треба» + Гант-план Excel (зміст відкритий)', 'The full pack: 5 reports + page-by-page now/should-be volumes + an Excel Gantt (contents open)'),
@@ -209,7 +209,7 @@ export function Pricing() {
         <div className="pric-always">
           <span className="pric-always-lab mono">{t('Завжди', 'Always')}</span>
           <p>{t('Будь-яка співпраця починається з діагностики — без неї ми не консультуємо і не беремо управління. Інвестиція зіставляється з упущеним оборотом із калькулятора, кожен етап — з DoD і траншами під результат.', "Any cooperation begins with diagnostics — without it we don't consult and don't take on delivery. The investment is compared with the revenue lost from the calculator, each stage — with DoD and tranches tied to results.")}</p>
-          <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Почати з діагностики', 'Start with diagnostics')} →</Link>
+          <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>
         </div>
 
         {/* Як влаштована співпраця — прозорий процес від контакту до передачі */}

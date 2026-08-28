@@ -547,7 +547,7 @@ function Overview({ express, rec, go }: { express: ExpressAudit | null; rec: Dia
                 </div></>
             : <><b className="sysx-display cab-big cab-big-empty">— €</b>
                 <span className="mono cab-sub">{t('експрес-аудит ще не пройдено — ~2 хвилини', 'the express audit has not been taken yet — ~2 minutes')}</span>
-                <Link className="sysx-cta is-primary" to={lp('/diagnose')}>{t('Пройти експрес-аудит →', 'Take the express audit →')}</Link></>}
+                <Link className="sysx-cta is-primary" to={lp('/diagnose')}>{t('Порахувати витік →', 'Calculate the leak →')}</Link></>}
         </div>
         <div className="cab-card">
           <div className="cab-deep-head">

@@ -118,7 +118,7 @@ export function CasesFilm() {
           <p className="sysx-lead">{t('Почніть із діагнозу: за 2 хвилини побачите, яка система дасть найбільшу дельту саме вам.', 'Start with the diagnosis: in 2 minutes you\'ll see which system delivers the biggest delta for you.')}</p>
           <div className="sysx-cta-row">
             <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Знайти свою дельту →', 'Find your delta →')}</Link>
-            <Link to={lp('/contact')} className="sysx-cta">{t('Написати нам', 'Contact us')} <span aria-hidden="true">→</span></Link>
+            <Link to={lp('/contact')} className="sysx-cta">{t('Залишити заявку', 'Leave a request')} <span aria-hidden="true">→</span></Link>
             <ShareButton title={t('WEEXP — докази в цифрах', 'WEEXP — proof in numbers')} />
           </div>
         </div>

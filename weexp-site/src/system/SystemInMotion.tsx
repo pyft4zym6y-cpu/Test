@@ -18,7 +18,7 @@ const HomeFaq = lazy(() => import('@/system/HomeFaq').then((m) => ({ default: m.
 /**
  * WEEXP — THE SYSTEM IN MOTION (home-film, /system). Повна драматургія головної на
  * одному WebGL-об'єкті (Commerce System), керована скролом (scroll = камера):
- *   SYMPTOM → камера входить → 7 систем збираються (лейбли) → коренева причина
+ *   SYMPTOM → камера входить → 8 систем збираються (лейбли) → коренева причина
  *   (слабка ланка червоним) → CONNECT (частини як одне) → ACTIVATION (гроші течуть)
  *   → INDEPENDENCE (CTA). Світле cinematic-полотно. Живий (темний) сайт не чіпаємо.
  */
@@ -100,7 +100,7 @@ export function SystemInMotion() {
           {!reduceMotion && <Suspense fallback={null}><CommerceSystem3D progress={progress} alerts={alerts} labels={labels} /></Suspense>}
         </div>
 
-        {/* 7 систем-лейблів (позиціонуються rAF-ом) */}
+        {/* 8 систем-лейблів (позиціонуються rAF-ом) */}
         <div className="sysx-labels" aria-hidden="true">
           {SYSTEMS.map((s, i) => (
             <div key={s} ref={(el) => { labelEls.current[i] = el; }} className={'sysx-label' + (i === BOTTLENECK ? ' is-alert' : '')}>
@@ -115,14 +115,14 @@ export function SystemInMotion() {
           <h1 className="sysx-display sysx-h1">{t('Система', 'A system')}<br />{t('замість ', 'instead of ')}<span className="sysx-em">{t('героїзму', 'heroics')}</span></h1>
           <p className="sysx-lead">{t('Продажі тримаються на людях і ручному режимі, а не на системі. Збираємо вісім систем в одну керовану — щоб виторг зростав, а бізнес не залежав від вас.', 'Sales rest on people and manual effort, not on a system. We assemble eight systems into one managed system — so revenue grows and the business no longer depends on you.')}</p>
           <div className="sysx-cta-row sysx-void-cta">
-            <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати мій витік', 'Calculate my leak')} →</Link>
+            <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>
             <Link to={lp('/contact')} className="sysx-cta">{t('Залишити заявку', 'Leave a request')} →</Link>
           </div>
           <span className="sysx-reassure mono">{t('Безкоштовно · ~2 хв · без реєстрації та картки', 'Free · ~2 min · no sign-up, no card')}</span>
           <span className="sysx-scrollhint mono">{t('↓ або погортайте, як це працює', '↓ or scroll to see how it works')}</span>
         </div>
 
-        {/* FORM — 7 систем збираються */}
+        {/* FORM — 8 систем збираються */}
         <div ref={sForm} className="sysx-scene sysx-form" style={{ opacity: 0 }}>
           <h2 className="sysx-display sysx-h2">{t('E-commerce — це ', 'E-commerce is a ')}<span className="sysx-em">{t('система', 'system')}</span><br />{t('із восьми частин.', 'of eight parts.')}</h2>
           <p className="sysx-lead">{t('Стратегія, комерція, попит і клієнт, досвід, операції, дані, організація й експансія — вони працюють лише разом.', 'Strategy, commerce, demand & customer, experience, operations, data, organization and expansion — they only work together.')}</p>
@@ -159,9 +159,9 @@ export function SystemInMotion() {
             <span>{t('D2C-бренди ', 'D2C brands ')}<b>$0.5–10M</b></span>
           </div>
           <div className="sysx-cta-row">
-            <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Знайти вузьке місце', 'Find the bottleneck')} →</Link>
-            <Link to={lp('/proof')} className="sysx-cta">{t('Дивитись докази', 'See proof')}</Link>
-            <Link to={lp('/contact')} className="sysx-cta">{t('Написати нам', 'Contact us')}</Link>
+            <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>
+            <Link to={lp('/proof')} className="sysx-cta">{t('Наші перемоги', 'Our wins')} →</Link>
+            <Link to={lp('/contact')} className="sysx-cta">{t('Залишити заявку', 'Leave a request')} →</Link>
           </div>
         </div>
 

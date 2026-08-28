@@ -34,8 +34,8 @@ export function Expertise() {
           <span className="script xp2-script">{L(e.tagline, lang)}</span>
           <p className="sysx-lead xp2-intro">{L(e.intro, lang)}</p>
           <div className="sysx-cta-row">
-            <Link to={lp('/contact')} className="sysx-cta is-primary">{t('Обговорити проєкт', 'Discuss the project')} →</Link>
-            <Link to={lp('/diagnose')} className="sysx-cta">Express Audit →</Link>
+            <Link to={lp('/contact')} className="sysx-cta is-primary">{t('Залишити заявку', 'Leave a request')} →</Link>
+            <Link to={lp('/diagnose')} className="sysx-cta">{t('Порахувати витік', 'Calculate the leak')} →</Link>
           </div>
         </header>
 

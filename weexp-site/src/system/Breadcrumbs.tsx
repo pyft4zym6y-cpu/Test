@@ -4,6 +4,7 @@ import { SYSTEMS } from '@/data/xray';
 import { ORIGIN } from '@/lib/seo';
 import { langOf, lpFor, stripLang, type Lang } from '@/i18n';
 import './system.css';
+import { PAGES, EXTRA_PAGES } from '@/lib/nav';
 
 /**
  * Хлібні крихти: видима навігація «де я» + JSON-LD BreadcrumbList для пошуку.
@@ -11,11 +12,12 @@ import './system.css';
  */
 export type Crumb = { label: string; to?: string };
 
-const L2: Record<string, [string, string]> = {
-  '/proof': ['Докази', 'Proof'], '/people': ['Команда', 'Team'], '/expansion': ['Експансія', 'Expansion'],
-  '/diagnose': ['Діагностика', 'Diagnostics'], '/contact': ['Контакт', 'Contact'],
-  '/systems': ['Системи', 'Systems'], '/pricing': ['Формати та ціни', 'Pricing & formats'],
-};
+// Назви беремо з lib/nav — того самого переліку, що малює меню й підвал.
+// Свій словник тут розійшовся з меню: «Докази» проти «Наші перемоги»,
+// «Команда» проти «Про нас», «Формати та ціни» проти «Початок співпраці».
+const L2: Record<string, [string, string]> = Object.fromEntries(
+  [...PAGES, ...EXTRA_PAGES].filter((p) => p.to !== '/').map((p) => [p.to, [p.uk, p.en] as [string, string]]),
+);
 const HOME: [string, string] = ['Головна', 'Home'];
 const CASE: [string, string] = ['Кейс', 'Case'];
 

@@ -161,7 +161,7 @@ export function ContactFilm() {
               <div className="ctf-attach ctf-attach-none ctf-attach-after">
                 <span className="ctf-attach-lab">{t('Аудит ще не пройдено', 'No audit yet')}</span>
                 <p>{t('Хочете, щоб ми відштовхувались від цифр? Пройдіть безкоштовний Express Audit — і його підсумок можна буде додати сюди.', 'Want us to start from numbers? Take the free Express Audit — its summary can then be attached here.')}</p>
-                <Link to={lp('/diagnose')} className="sysx-cta">{t('Пройти Express Audit', 'Take the Express Audit')} →</Link>
+                <Link to={lp('/diagnose')} className="sysx-cta">{t('Порахувати витік', 'Calculate the leak')} →</Link>
               </div>
             )}
           </div>

@@ -89,8 +89,8 @@ export function Credibility() {
 
         <div className="cred-cta">
           <span className="cred-cta-note mono">{t('Найкращий доказ — на ваших даних. Діагностика покаже дельту саме для вас.', 'The best proof is on your data. Diagnostics will show the delta specifically for you.')}</span>
-          <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Пройти діагностику →', 'Run diagnostics →')}</Link>
-          <Link to={lp('/proof')} className="sysx-cta">{t('Дивитись кейси', 'View cases')}</Link>
+          <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік →', 'Calculate the leak →')}</Link>
+          <Link to={lp('/proof')} className="sysx-cta">{t('Наші перемоги', 'Our wins')} →</Link>
         </div>
       </div>
     </section>

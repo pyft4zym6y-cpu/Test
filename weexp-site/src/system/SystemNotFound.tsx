@@ -25,8 +25,8 @@ export function SystemNotFound() {
         <p className="sysx-lead">{t('Можливо, посилання застаріло. Повернімося на головну або подивимось докази в цифрах.', 'The link may be outdated. Go back to the homepage or see the proof in numbers.')}</p>
         <div className="sysx-cta-row">
           <Link to={lp('/')} className="sysx-cta is-primary">{t('На головну', 'Home')} →</Link>
-          <Link to={lp('/diagnose')} className="sysx-cta">{t('Експрес-аудит', 'Express audit')} →</Link>
-          <Link to={lp('/contact')} className="sysx-cta">{t('Написати нам', 'Contact us')} →</Link>
+          <Link to={lp('/diagnose')} className="sysx-cta">{t('Порахувати витік', 'Calculate the leak')} →</Link>
+          <Link to={lp('/contact')} className="sysx-cta">{t('Залишити заявку', 'Leave a request')} →</Link>
         </div>
         <nav className="sysx-404-nav mono" aria-label={t('Популярні сторінки', 'Popular pages')}>
           <span>{t('Куди далі:', 'Where to next:')}</span>

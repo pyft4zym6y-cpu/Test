@@ -1,19 +1,12 @@
 import { Link } from 'react-router-dom';
 import { useT, useLp } from '@/i18n';
 import './system.css';
+import { PAGES, EXTRA_PAGES } from '@/lib/nav';
 
 /** Мікропідвал сайту — на всіх сторінках (під контентом у SystemShell). Двомовний. */
-// Тримаємо в синхроні з головним меню (SystemShell): ті самі назви й порядок.
-const NAV = [
-  { to: '/', uk: 'Система', en: 'System' },
-  { to: '/proof', uk: 'Наші перемоги', en: 'Our wins' },
-  { to: '/expansion', uk: 'Експансія', en: 'Expansion' },
-  { to: '/people', uk: 'Про нас', en: 'About' },
-  { to: '/diagnose', uk: 'Express audit', en: 'Express audit' },
-  { to: '/pricing', uk: 'Початок співпраці', en: 'Get started' },
-  { to: '/contact', uk: 'Контакт', en: 'Contact' },
-  { to: '/cabinet', uk: 'Кабінет', en: 'Cabinet' },
-];
+// Коментар тут обіцяв «тримаємо в синхроні з головним меню» — тобто руками.
+// Тепер синхронізувати нічого: перелік один, у lib/nav.
+const NAV = [...PAGES, ...EXTRA_PAGES.filter((p) => p.to === '/cabinet')];
 const MAIL = 'hello@weexp.agency';
 // DMCA Protection Badge — ID з dmca.com (статичний бейдж, без зовнішнього helper-скрипта → CSP не чіпаємо).
 const DMCA_ID = '715d145d-fa76-4b19-a69c-9143c8af7f20';
