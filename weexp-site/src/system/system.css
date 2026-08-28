@@ -2701,3 +2701,44 @@ body.kb-open .pf-bg { display: none !important; }
 .pric-seq { margin: 26px 0 18px; font-size: 12.5px; line-height: 1.6; color: var(--graphite);
   max-width: 74ch; border-left: 3px solid var(--red-ink); padding-left: 14px; }
 .pric-seq b { color: var(--deep); font-weight: 700; }
+
+/* ── Блоки методології: клік розкриває, що за аудитом стоїть ────────────────
+ * Було тринадцять статичних карток. Дані про кожен аудит — чим він
+ * вимірюється, який модуль рушія його збирає, які методики — лежали в
+ * каталозі й нікому не показувались. Робимо на <details>: розкривається без
+ * JS, з клавіатури працює саме собою, а вміст лишається в розмітці — його
+ * бачать і пошук, і AI-асистенти.
+ * ───────────────────────────────────────────────────────────────────────── */
+/* Картки більше не тягнуться під найвищу: розкрита сусідка залишала поруч
+   порожні прямокутники на пів-екрана. */
+.apack-blocks { align-items: start; }
+
+/* Приглушені блоки (не входять в аудит магазину) при .45 прозорості читались
+   на межі. Розкриту картку повертаємо до читабельного рівня: людина її
+   відкрила навмисно — значить хоче прочитати. */
+.apack-block.is-dim[open] { opacity: .82; }
+
+details.apack-block { cursor: pointer; }
+details.apack-block > summary { list-style: none; display: grid; gap: 5px; position: relative; padding-right: 30px; }
+details.apack-block > summary::-webkit-details-marker { display: none; }
+details.apack-block > summary:focus-visible { outline: 3px solid var(--red-ink); outline-offset: 3px; }
+
+.apack-bmore {
+  position: absolute; right: 0; top: 0; width: 26px; height: 26px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 2px solid var(--deep); background: var(--pure-white);
+  font-size: 15px; font-weight: 700; line-height: 1; color: var(--deep);
+}
+details.apack-block[open] .apack-bmore { background: var(--red-ink); border-color: var(--red-ink); color: #fff; }
+details.apack-block[open] .apack-bmore::after { content: '−'; }
+details.apack-block:not([open]) .apack-bmore::after { content: '+'; }
+.apack-bmore { font-size: 0; }            /* сам символ малює ::after */
+.apack-bmore::after { font-size: 15px; }
+
+.apack-bopen { margin-top: 12px; padding-top: 12px; border-top: 2px solid var(--deep); display: grid; gap: 10px; }
+.apack-bopen-d { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--deep); }
+.apack-bmeta { margin: 0; display: grid; gap: 6px; font-size: 11px; }
+.apack-bmeta > div { display: grid; grid-template-columns: 78px 1fr; gap: 10px; align-items: baseline; }
+.apack-bmeta dt { margin: 0; color: var(--graphite); letter-spacing: .08em; text-transform: uppercase; }
+.apack-bmeta dd { margin: 0; color: var(--deep); overflow-wrap: anywhere; }
+@media (max-width: 520px) { .apack-bmeta > div { grid-template-columns: 1fr; gap: 1px; } }

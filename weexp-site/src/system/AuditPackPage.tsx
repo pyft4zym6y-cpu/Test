@@ -1,6 +1,6 @@
 import { Link, useSearchParams } from 'react-router-dom';
-import { useT, useLp } from '@/i18n';
-import { PACK_REPORTS, PACK_VOLUMES, PACK_DOC_COUNT, PACK_AUDITS, chaptersOf, AUDIT_BLOCKS, TOTAL_CHECKS } from '@/data/auditPack';
+import { useT, useLp, useLang } from '@/i18n';
+import { PACK_REPORTS, PACK_VOLUMES, PACK_DOC_COUNT, PACK_AUDITS, chaptersOf, AUDIT_BLOCKS, TOTAL_CHECKS, auditOfBlock } from '@/data/auditPack';
 import './system.css';
 
 /**
@@ -11,6 +11,7 @@ import './system.css';
  */
 export function AuditPackPage() {
   const t = useT();
+  const lang = useLang();
   const lp = useLp();
   const [params, setParams] = useSearchParams();
   const scope = params.get('scope') === 'dept' ? 'dept' : 'store';
@@ -83,14 +84,37 @@ export function AuditPackPage() {
             {AUDIT_BLOCKS.map((b, i) => {
               const siteCore = ['product', 'customer', 'website', 'seo', 'marketing', 'crm', 'analytics'].includes(b.key);
               const dim = scope === 'store' && !siteCore;
+              const au = auditOfBlock(b.key);
               return (
-              <div key={b.key} className={'apack-block' + (dim ? ' is-dim' : '')}>
-                <span className="apack-num mono">{String(i + 1).padStart(2, '0')}</span>
-                <b className="apack-bt">{t(b.uk, b.en)}</b>
-                <p className="apack-bd">{t(b.taskUk, b.taskEn)}</p>
-                <span className="apack-bn mono">{b.checks} {t('перевірок', 'checks')}</span>
+              <details key={b.key} className={'apack-block' + (dim ? ' is-dim' : '')}>
+                {/* <details>, а не кнопка на стані: розкривається без JS,
+                    доступний з клавіатури «з коробки», і вміст лишається в
+                    розмітці — його бачать і пошук, і AI-асистенти. */}
+                <summary className="apack-bsum">
+                  <span className="apack-num mono">{String(i + 1).padStart(2, '0')}</span>
+                  <b className="apack-bt">{t(b.uk, b.en)}</b>
+                  <p className="apack-bd">{t(b.taskUk, b.taskEn)}</p>
+                  <span className="apack-bn mono">{b.checks} {t('перевірок', 'checks')}</span>
+                  <span className="apack-bmore mono" aria-hidden="true">+</span>
+                </summary>
+                {au && (
+                  <div className="apack-bopen">
+                    {/* Англійського опису в каталозі немає — показувати
+                        українську англомовному відвідувачу гірше, ніж не
+                        показувати нічого. Решта полів мовно-нейтральна. */}
+                    {lang !== 'en' && <p className="apack-bopen-d">{au.descUk}</p>}
+                    <dl className="apack-bmeta mono">
+                      <div><dt>{t('Код', 'Code')}</dt><dd>{au.code}</dd></div>
+                      <div><dt>{t('Рушій', 'Engine')}</dt>
+                        <dd>{au.engine.length ? au.engine.join(' · ') : t('збирається аналітиком', 'assembled by the analyst')}</dd></div>
+                      <div><dt>{t('Методики', 'Playbooks')}</dt><dd>{au.skills.join(' · ')}</dd></div>
+                      <div><dt>{t('Глибина', 'Depth')}</dt>
+                        <dd>{au.scope === 'dept' ? t('лише аудит відділу', 'department audit only') : t('обидва формати', 'both formats')}</dd></div>
+                    </dl>
+                  </div>
+                )}
                 <p className="apack-bdocs mono">{dim ? t('→ в аудиті відділу e-commerce', '→ in the department audit') : `→ ${t('Звіт 2, глава', 'Report 2, chapter')} 2.${String(i + 5).padStart(2, '0')}`}</p>
-              </div>
+              </details>
               );
             })}
           </div>

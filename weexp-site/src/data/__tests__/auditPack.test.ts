@@ -9,7 +9,7 @@
  * завышенная обещание, на сдаче — недостача тринадцати файлов.
  */
 import { describe, it, expect } from 'vitest';
-import { PACK_REPORTS, PACK_VOLUMES, PACK_AUDITS, PACK_CHAPTERS, PACK_DOC_COUNT } from '../auditPack';
+import { PACK_REPORTS, PACK_VOLUMES, PACK_AUDITS, PACK_CHAPTERS, PACK_DOC_COUNT, AUDIT_BLOCKS, auditOfBlock } from '../auditPack';
 
 describe('PACK_DOC_COUNT', () => {
   it('считает только то, что клиент получает файлами', () => {
@@ -37,5 +37,35 @@ describe('PACK_DOC_COUNT', () => {
   it('коды аудитов уникальны', () => {
     const codes = PACK_AUDITS.map((a) => a.code);
     expect(new Set(codes).size).toBe(codes.length);
+  });
+});
+
+
+describe('блок методології знає свій аудит', () => {
+  /*
+   * Розкривний блок на /audit-pack показує, чим аудит вимірюється і який
+   * модуль рушія його збирає. Дані беруться з PACK_AUDITS, а списки
+   * збігаються один в один, але НЕ за ключами: сьомий блок зветься
+   * `marketing`, а аудит — `a-acquisition`. Зв'язувати за позицією в масиві
+   * означає зламатись від першої вставки.
+   */
+  it('у кожного блоку знаходиться аудит', () => {
+    const missing = AUDIT_BLOCKS.filter((b) => !auditOfBlock(b.key)).map((b) => b.key);
+    expect(missing, `блоки без аудиту: ${missing.join(', ')}`).toEqual([]);
+  });
+
+  it('блоків і аудитів порівну — жоден не лишився без пари', () => {
+    expect(AUDIT_BLOCKS.length).toBe(PACK_AUDITS.length);
+    const used = new Set(AUDIT_BLOCKS.map((b) => auditOfBlock(b.key)!.id));
+    expect(used.size, 'два блоки вказують на один аудит').toBe(AUDIT_BLOCKS.length);
+  });
+
+  it('у розкритого блоку є що показати', () => {
+    for (const b of AUDIT_BLOCKS) {
+      const a = auditOfBlock(b.key)!;
+      expect(a.code, `${b.key}: немає коду`).toBeTruthy();
+      expect(a.descUk.length, `${b.key}: опис закороткий`).toBeGreaterThan(20);
+      expect(a.skills.length, `${b.key}: не вказано методик`).toBeGreaterThan(0);
+    }
   });
 });

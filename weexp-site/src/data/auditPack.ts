@@ -252,6 +252,25 @@ export const AUDIT_BLOCKS: AuditBlock[] = [
 ];
 export const TOTAL_CHECKS = AUDIT_BLOCKS.reduce((s, b) => s + b.checks, 0);
 
+/**
+ * Блок методології → спеціалізований аудит, який його виробляє.
+ *
+ * Списки збігаються один в один, але за ключами — ні: сьомий блок зветься
+ * `marketing`, а аудит — `a-acquisition`. Той самий аудит під двома іменами.
+ * Зв'язувати за позицією в масиві означає зламатись від першої вставки, тому
+ * зв'язок оголошений; тест стереже, що кожен блок знаходить свій аудит.
+ */
+const BLOCK_TO_AUDIT: Record<string, string> = {
+  business: 'a-business', market: 'a-market', product: 'a-product', customer: 'a-customer',
+  website: 'a-website', seo: 'a-seo', marketing: 'a-acquisition', crm: 'a-crm',
+  analytics: 'a-analytics', operations: 'a-operations', technology: 'a-technology',
+  organization: 'a-organization', expansion: 'a-expansion',
+};
+
+/** Аудит, що стоїть за блоком методології. undefined — зв'язок загубився. */
+export const auditOfBlock = (key: string): PackAudit | undefined =>
+  PACK_AUDITS.find((a) => a.id === BLOCK_TO_AUDIT[key]);
+
 /** Коротка назва глави за id (мапи «аудит → документ», генератори). */
 export const PACK_SHORT: Record<string, string> = Object.fromEntries(
   PACK_CHAPTERS.map((c) => [c.id, c.uk.split(':')[0].replace(/ \(.*\)$/, '')]),
