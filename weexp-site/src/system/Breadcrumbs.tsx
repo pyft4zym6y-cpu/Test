@@ -44,7 +44,11 @@ function crumbsFor(pathname: string): Crumb[] {
   const lang: Lang = langOf(pathname);
   const lp = lpFor(lang);
   const pick = (p: [string, string]) => p[lang === 'en' ? 1 : 0];
-  const base = stripLang(pathname);
+  // Кінцевий слеш прибираємо: `/proof/` — той самий маршрут, що й `/proof`, але
+  // ключ у таблиці назв лише один. Без цього сторінка, відкрита зі слешем
+  // (так робить будь-який статичний сервер каталогів), лишалась без крихт —
+  // і без розмітки BreadcrumbList для пошуку.
+  const base = stripLang(pathname).replace(/(.)\/+$/, '$1');
   const home: Crumb = { label: pick(HOME), to: lp('/') };
   const svc = base.match(/^\/systems\/(.+)$/);
   if (svc) {

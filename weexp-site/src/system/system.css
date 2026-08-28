@@ -181,10 +181,21 @@
 
 /* Сцени-оверлеї (текст) — поверх об'єкта, cinematic-типографіка */
 .sysx-scene {
-  position: absolute; inset: 0; z-index: 3; display: grid; align-content: center; justify-items: center;
-  text-align: center; gap: clamp(16px, 2.4vw, 30px);
-  /* верхній відступ під фіксовану шапку — щоб великі заголовки не налазили на меню */
-  padding: clamp(72px, 9vh, 104px) clamp(20px, 6vw, 90px) clamp(28px, 5vh, 56px);
+  /* `safe center` — центруємо, поки вміст влазить, а коли не влазить (низьке
+     вікно + великий заголовок), вирівнюємо по верху замість того, щоб вилізти
+     з обох боків: інакше запас під шапку нижче нічого не рятує. */
+  position: absolute; inset: 0; z-index: 3; display: grid; align-content: safe center; justify-items: center;
+  /* Крок між рядками сцени рахувався лише від ШИРИНИ (2.4vw). На широкому, але
+     низькому вікні (ноут 1903×660) це давало 30px × 7 проміжків — вміст сцени
+     переростав кадр, а `center` виштовхував його вгору, під шапку. Беремо
+     менше з двох: сцена обмежена саме висотою. */
+  text-align: center; gap: clamp(14px, min(2.4vw, 2.8vh), 30px);
+  /* Запас під фіксовану шапку. Був числом clamp(72px, 9vh, 104px): на низькому
+     вікні (ноут ~660px) бралася нижня межа 72px — менша за реальні 75px шапки,
+     і стотипіксельний заголовок героя читався крізь меню. Тепер від виміряної
+     висоти. Живе саме тут, а не на .sysx-stage: сцена абсолютна, і padding
+     батька її не зсуває — абсолют рахується від зовнішнього краю паддингу. */
+  padding: calc(var(--sysh-h) + clamp(18px, 4vh, 44px)) clamp(20px, 6vw, 90px) clamp(28px, 5vh, 56px);
   pointer-events: none; will-change: opacity, transform;
 }
 /*
@@ -214,6 +225,13 @@
 .sysx-label.is-alert .sysx-label-t { color: var(--alert); border-color: rgba(214, 54, 43, .3); }
 .sysx-reassure { display: block; margin-top: 12px; color: var(--graphite); font-size: 12px; letter-spacing: .04em; }
 .sysx-scrollhint { margin-top: 10px; color: var(--graphite); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; animation: sysxBob 2.6s var(--ease-cine) infinite; }
+/* На низькому вікні (ноут ~660px) підказка про скрол забирала останні ~35px
+   висоти сцени — рівно стільки, скільки не вистачало, і `center` виштовхував
+   заголовок під шапку. За змістом вона й належить нижньому краю кадру: там її
+   і закріплюємо, з потоку прибираємо. */
+@media (max-height: 820px) {
+  .sysx-scene > .sysx-scrollhint { position: absolute; left: 50%; bottom: clamp(8px, 1.6vh, 18px); transform: translateX(-50%); margin-top: 0; }
+}
 @keyframes sysxBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(7px); } }
 .sysx-cta-row { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
 
@@ -228,7 +246,7 @@
 @media (max-width: 560px) { .sysx-proofbar i { display: none; } }
 
 /* VOID сцена трохи піднята — щоб об'єкт «народжувався» знизу за текстом */
-.sysx-void { align-content: center; }
+.sysx-void { align-content: safe center; }   /* див. .sysx-scene: `safe` рятує низьке вікно */
 
 @media (max-width: 860px) {
   .sysx-film { height: auto; }
@@ -240,10 +258,20 @@
 @media (prefers-reduced-motion: reduce) {
   .sysx * { animation: none !important; transition: none !important; }
   .sysx-film { height: auto; }
-  .sysx-stage { position: static; height: auto; display: block; padding: 60px 0; }
+  .sysx-stage { position: static; height: auto; display: block; padding: calc(var(--sysh-h) + 20px) 0 60px; }
   .sysx-scene { position: static; inset: auto; opacity: 1 !important; transform: none !important; margin: 80px 0; }
   .sysx-object { position: static; height: 60vh; margin: 0 auto; }
 }
+
+/* ── Висота фіксованої шапки ──
+   Досі кожне місце, якому треба було «не залізти під шапку», носило власне
+   число: 58px у крихтах, 76px на мобільному, 60px у reduced-motion. Шапка з
+   того часу підросла до ~75px — і крихти поїхали ПІД неї, а на низькому вікні
+   під неї заїжджав заголовок героя. Тепер число одне й вимірюється з живого
+   вузла (SystemShell), а тут лише запасне значення на випадок, поки JS не
+   виміряв (і для статичних prerender-сторінок). */
+:root { --sysh-h: 76px; }
+html { scroll-padding-top: calc(var(--sysh-h) + 12px); }
 
 /* ── SHELL: cinematic-навігація превʼю-напряму ── */
 .sysh { --sh-deep: #141210; --sh-charcoal: #201D19; --sh-graphite: #6B675E; --sh-silver: #141210; --sh-data: #D0230E; --sh-warm: #FAF5E9;
@@ -299,14 +327,14 @@
 
 /* Хлібні крихти — тонка смуга під фіксованою шапкою (не на головній/кабінеті). */
 .sysx-crumbs { position: relative; z-index: 30; background: var(--warm-white); border-bottom: 1px solid var(--line-soft);
-  padding: calc(58px + env(safe-area-inset-top)) clamp(16px, 4vw, 44px) 11px; }
+  padding: calc(var(--sysh-h) + 14px + env(safe-area-inset-top)) clamp(16px, 4vw, 44px) 13px; }
 .sysx-crumbs-in { list-style: none; margin: 0 auto; padding: 0; max-width: 1180px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 12.5px; }
 .sysx-crumb { display: inline-flex; align-items: center; gap: 8px; color: var(--graphite); }
 .sysx-crumb a { color: var(--graphite); text-decoration: none; transition: color .2s; }
 .sysx-crumb a:hover { color: var(--deep); }
 .sysx-crumb span[aria-current="page"] { color: var(--deep); font-weight: 600; }
 .sysx-crumb-sep { color: var(--silver); font-style: normal; }
-@media (max-width: 860px) { .sysx-crumbs { padding-top: calc(76px + env(safe-area-inset-top)); padding-bottom: 12px; } }
+@media (max-width: 860px) { .sysx-crumbs { padding-bottom: 12px; } }
 
 /* Світла 404 (SystemNotFound) — у тій же оболонці/шапці, з відступом під фіксовану шапку. */
 .sysx-404 { min-height: 76vh; display: grid; place-items: center; text-align: center;
@@ -658,7 +686,9 @@
 .svc-txt { font-size: 13.5px; line-height: 1.6; color: var(--charcoal); text-wrap: pretty; }
 .svc-txt b { color: var(--deep); }
 .svc-note { font-size: 11px; line-height: 1.5; color: var(--graphite); }
-.svc-pains { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+/* Рамку цей список отримує з брутального шару нижче, а власний padding лишався
+   нульовим — текст упирався в рамку. Відступ живе тут, поруч зі списком. */
+.svc-pains { list-style: none; margin: 0; padding: clamp(14px, 1.7vw, 20px); display: grid; gap: 9px; }
 .svc-pains li { position: relative; padding-left: 18px; font-size: 13px; line-height: 1.45; color: var(--charcoal); }
 .svc-pains li::before { content: ''; position: absolute; left: 0; top: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--alert); box-shadow: 0 0 0 3px rgba(214,54,43,.13); }
 .svc-domains { display: flex; flex-wrap: wrap; gap: 7px; }
@@ -761,7 +791,7 @@
 .s2-x:hover { border-color: var(--graphite); color: var(--deep); }
 
 /* Квіз */
-.s2-quiz { min-height: 100vh; display: grid; align-content: center; justify-items: center; gap: 22px; padding: clamp(64px, 10vh, 96px) clamp(20px, 6vw, 60px) 60px; }
+.s2-quiz { min-height: 100vh; display: grid; align-content: safe center; justify-items: center; gap: 22px; padding: calc(var(--sysh-h) + clamp(14px, 3vh, 34px)) clamp(20px, 6vw, 60px) 60px; }
 .s2-quiz-head { width: min(680px, 92vw); display: grid; gap: 12px; }
 .s2-bar { height: 4px; background: var(--mist); border-radius: 4px; overflow: hidden; }
 .s2-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--charcoal), var(--deep)); border-radius: 4px; transition: width .4s var(--ease-cine); }
@@ -1375,7 +1405,7 @@
 
 /* ROSTER — 8 власників */
 .pf-roster {
-  position: absolute; inset: 0; z-index: 3; display: grid; align-content: center;
+  position: absolute; inset: 0; z-index: 3; display: grid; align-content: safe center;
   gap: clamp(20px, 3vw, 34px); padding: 0 clamp(24px, 6vw, 90px); pointer-events: none; will-change: opacity;
 }
 .pf-roster-h { font-size: clamp(28px, 4.3vw, 58px); text-align: center; }
@@ -1424,7 +1454,7 @@
 
 /* ── INTERNATIONAL EXPANSION (/expansion) ── */
 .sysx-expansion { height: 900vh; }   /* Expansion Engine — 8 актів + інтро + CTA */
-.xp-panel { position: absolute; inset: 0; z-index: 3; display: grid; align-content: center; gap: clamp(20px, 3vw, 34px);
+.xp-panel { position: absolute; inset: 0; z-index: 3; display: grid; align-content: safe center; gap: clamp(20px, 3vw, 34px);
   padding: 0 clamp(24px, 6vw, 96px); pointer-events: none; will-change: opacity, transform; }
 .xp-panel .mono { font-family: var(--mono); }
 .xp-head { display: grid; gap: 10px; justify-items: center; text-align: center; }
@@ -1506,7 +1536,7 @@
 @media (max-width: 900px) {
   /* Мобільний: карта зверху (повний контур), акти — стек карток */
   .sysx-expansion { height: auto; }
-  .sysx-expansion .sysx-stage { position: static; height: auto; display: block; padding: 76px 0 40px; }
+  .sysx-expansion .sysx-stage { position: static; height: auto; display: block; padding: calc(var(--sysh-h) + 16px) 0 40px; }
   .xpe-map { position: relative; inset: auto; height: 44vh; }
   .xpe-map-cap { top: auto; bottom: 6px; }
   .xpe-edge { opacity: .9 !important; } .xpe-node .xpe-node-dot { fill: var(--data); stroke: var(--data); }
@@ -1651,7 +1681,7 @@
 @media (max-width: 860px) {
   /* 2.5D fallback застосовуємо до фільмів БЕЗ opt-in .sysx-scroll-mobile */
   .sysx-film:not(.sysx-scroll-mobile) { height: auto; }
-  .sysx-film:not(.sysx-scroll-mobile) .sysx-stage { position: static; height: auto; display: block; padding: 76px 0 40px; background: transparent; }
+  .sysx-film:not(.sysx-scroll-mobile) .sysx-stage { position: static; height: auto; display: block; padding: calc(var(--sysh-h) + 16px) 0 40px; background: transparent; }
   /* На мобайлі ХОВАЄМО WebGL-об'єкти вторинних фільмів: раніше вони були
      position:fixed на весь вьюпорт і «текли» поверх героя й тексту (бруталіст-стиль
      цього не терпить). Контент-сцени стекуються чисто, без техно-підложки. */
@@ -1692,7 +1722,7 @@
 /* Lite-фолбек: без WebGL показуємо спокійний брендовий градієнт замість 3D. */
 /* Лайт-підсвітка сцен: мʼяка, щоб не «змивати» точкове полотно сайту. */
 .sysx-calc-bg.is-lite, .pf-bg.is-lite { background: radial-gradient(120% 90% at 70% 20%, color-mix(in srgb, var(--pure-white) 26%, transparent), transparent 60%), radial-gradient(90% 80% at 20% 90%, color-mix(in srgb, var(--data) 6%, transparent), transparent 55%); }
-.sysx-calc-panel { position: relative; z-index: 2; padding: clamp(88px, 11vh, 116px) clamp(24px, 5vw, 68px) clamp(28px, 6vh, 72px); display: grid; align-content: start; gap: clamp(18px, 3vh, 30px); }
+.sysx-calc-panel { position: relative; z-index: 2; padding: calc(var(--sysh-h) + clamp(16px, 4vh, 42px)) clamp(24px, 5vw, 68px) clamp(28px, 6vh, 72px); display: grid; align-content: start; gap: clamp(18px, 3vh, 30px); }
 .sysx-calc-head { display: grid; gap: 12px; }
 .sysx-calc-h1 { font-size: clamp(40px, 5.3vw, 76px); }
 .sysx-steps { display: flex; gap: 8px; align-items: center; font-size: 11px; letter-spacing: .14em; color: var(--graphite); flex-wrap: wrap; }

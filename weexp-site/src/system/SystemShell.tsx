@@ -58,6 +58,25 @@ export function SystemShell() {
     return () => io.disconnect();
   }, [base]);
   useEffect(() => { setOpen(false); }, [pathname]);
+
+  /**
+   * Висота шапки → CSS-змінна `--sysh-h`.
+   *
+   * Відступи «щоб не залізти під шапку» були розкидані числами по стилях (58px
+   * у крихтах, 76px на мобільному, 60px у reduced-motion) і від справжньої
+   * висоти вже відстали: шапка виросла до ~75px, і крихти опинились ПІД нею, а
+   * на низькому вікні під неї заїжджав заголовок героя. Міряємо живий вузол —
+   * тоді жодне число не може розійтися з реальністю: шапка змінює висоту від
+   * ширини екрана, довжини меню й розміру шрифту в системі.
+   */
+  useEffect(() => {
+    const el = nav.current; if (!el) return;
+    const set = () => document.documentElement.style.setProperty('--sysh-h', Math.round(el.getBoundingClientRect().height) + 'px');
+    set();
+    if (typeof ResizeObserver === 'undefined') { window.addEventListener('resize', set); return () => window.removeEventListener('resize', set); }
+    const ro = new ResizeObserver(set); ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   const isActive = (to: string) => (to === '/' ? base === '/' : base.startsWith(to));
 
   const LangToggle = ({ className = '' }: { className?: string }) => (
