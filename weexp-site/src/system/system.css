@@ -2595,3 +2595,15 @@ body.kb-open .pf-bg { display: none !important; }
 .sysx-proofstrip b { font-size: 21px; font-weight: 800; letter-spacing: -.01em; color: var(--red-ink); font-variant-numeric: tabular-nums; }
 .sysx-proofstrip span { letter-spacing: .01em; }
 @media (max-width: 700px) { .sysx-proofstrip { gap: 4px 16px; } .sysx-proofstrip b { font-size: 18px; } .sysx-proofstrip li { font-size: 11px; } }
+
+/* Смуга доказів і зняття ризику в першому екрані сторінки цін: до цього там
+   були лише суми — ціна йшла раніше підстави. */
+.pric-proof { margin-top: 22px; }
+.pric-reassure { margin: 12px 0 0; font-size: 12px; line-height: 1.55; color: var(--graphite); max-width: 62ch; }
+.pric-reassure b { color: var(--deep); font-weight: 700; }
+
+/* Посилання на методику поруч із числами: сам розділ «Як ми рахуємо» жив лише
+   всередині /proof, хоча підпирає кожне число на сайті. */
+.sysx-proofhow { display: inline-flex; align-items: center; min-height: 44px; font-size: 11px; letter-spacing: .04em;
+  color: var(--graphite); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.sysx-proofhow:hover { color: var(--red-ink); }

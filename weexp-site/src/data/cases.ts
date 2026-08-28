@@ -175,7 +175,7 @@ export const CASES: CaseStudy[] = [
       'Оплата заявок 63,4%, викуп 82% — гроші губились у логістиці й комунікації.',
       'SEO на позиції 14; готовий під експорт продукт без виходу в ЄС.',
     ],
-    money: '≥19 млн ₴/рік недоотриманого обороту — оформлено в бюджет $56–79K з окупністю 4–8 міс.',
+    money: '≥19 млн ₴/рік недоотриманого обороту — оформлено в бюджет $56–79K (результат міряємо у валюті клієнта, бюджет фіксуємо в доларах) з окупністю 4–8 міс.',
     system: [
       'Дорожня карта під DoD: конверсія 3,9% → 4,3–4,5%.',
       'Оплата заявок 63,4% → ≥75%, викуп 82% → ≥88%.',
@@ -202,7 +202,7 @@ export const CASES: CaseStudy[] = [
         'Order payment 63.4%, redemption 82% — money lost in logistics and communication.',
         'SEO at position 14; an export-ready product with no EU presence.',
       ],
-      money: '≥19M ₴/year of missed turnover — framed into a $56–79K budget with a 4–8 month payback.',
+      money: '≥19M ₴/year of missed turnover — framed into a $56–79K budget (results measured in the client’s currency, budgets fixed in dollars) with a 4–8 month payback.',
       system: [
         'A roadmap under DoD: conversion 3.9% → 4.3–4.5%.',
         'Order payment 63.4% → ≥75%, redemption 82% → ≥88%.',

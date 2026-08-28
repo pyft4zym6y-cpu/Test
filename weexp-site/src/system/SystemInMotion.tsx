@@ -127,6 +127,9 @@ export function SystemInMotion() {
               </li>
             ))}
           </ul>
+          <Link to={lp('/proof') + '#method'} className="sysx-proofhow mono">
+            {t('Як ми рахуємо і перевіряємо ці цифри', 'How we calculate and verify these numbers')} →
+          </Link>
           <span className="sysx-reassure mono">{t('Безкоштовно · ~2 хв · без реєстрації та картки', 'Free · ~2 min · no sign-up, no card')}</span>
           <span className="sysx-scrollhint mono">{t('↓ або погортайте, як це працює', '↓ or scroll to see how it works')}</span>
         </div>

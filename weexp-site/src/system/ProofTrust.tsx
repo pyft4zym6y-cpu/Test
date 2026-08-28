@@ -43,7 +43,7 @@ export function ProofTrust() {
   });
 
   return (
-    <section className="sysx proof-trust" aria-label={t('Як ми перевіряємо цифри', 'How we verify the numbers')}>
+    <section id="method" className="sysx proof-trust" aria-label={t('Як ми перевіряємо цифри', 'How we verify the numbers')}>
       <div className="proof-trust-in">
         <span className="sysx-kick">{t('Прозорість', 'Transparency')}</span>
         <h2 className="sysx-display proof-trust-h">{t('Як ми рахуємо і перевіряємо цифри', 'How we count and verify the numbers')}</h2>

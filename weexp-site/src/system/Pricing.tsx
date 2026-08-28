@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useT, useLp } from '@/i18n';
 import { useJsonLd } from '@/lib/seo';
 import './system.css';
+import { HEADLINE_PROOF } from '@/data/cases';
 
 /**
  * Формати співпраці — три моделі за рівнем НАШОЇ відповідальності за результат:
@@ -35,7 +36,7 @@ export function Pricing() {
       forWhom: t('У вас сильна внутрішня команда. Потрібні не руки, а карта: де саме витікають гроші й що робити першим.', 'You have a strong in-house team. You need a map, not hands: exactly where the money leaks and what to fix first.'),
       includes: [
         t('Discovery-портал: опитувальники, передача доступів, бриф ЛПР', 'Discovery portal: questionnaires, access handover, decision-maker brief'),
-        t('E-commerce 360°: 13 блоків діагностики · 150+ спеціалізованих перевірок', 'E-commerce 360°: 13 diagnostic blocks · 150+ specialized checks'),
+        t('E-commerce 360°: 13 аудитів · 35 доменів діагностики', 'E-commerce 360°: 13 audits · 35 diagnostic domains'),
         t('Health Score і зрілість по 18 доменах', 'Health Score and maturity across 18 domains'),
         t('Розрив у грошах: 8 важелів, baseline, прогноз на 12 місяців', 'The gap in money: 8 levers, baseline, 12-month forecast'),
         t('Повний пакет: 5 звітів + посторінкові томи «зараз → як треба» + Гант-план Excel (зміст відкритий)', 'The full pack: 5 reports + page-by-page now/should-be volumes + an Excel Gantt (contents open)'),
@@ -131,6 +132,22 @@ export function Pricing() {
           <span className="sysx-kick">{t('Формати співпраці · хто відповідає за результат', 'Cooperation formats · who is responsible for the result')}</span>
           <h1 className="sysx-display pric-h1">{t('Три формати — за рівнем', 'Three formats — by the level of')}<br />{t('нашої ', 'our ')}<span className="sysx-em">{t('відповідальності', 'responsibility')}</span></h1>
           <p className="sysx-lead">{t('Різниця не в «пакетах послуг», а в тому, хто несе фінальну відповідальність за результат: ваша команда з нашою картою, ваша команда під нашим контролем — чи ми повністю.', 'The difference isn\'t in "service packages" but in who bears final responsibility for the result: your team with our map, your team under our control — or us entirely.')}</p>
+          {/*
+            * У першому екрані сторінки цін стояли $2,900 і $4,900 — і жодного
+            * сигналу довіри: ні числа з кейса, ні згадки про звірку з
+            * CRM/ERP/GA4, ні зняття ризику. Ціна йшла раніше підстави.
+            * Три числа — ті самі, що на головній, з тих самих кейсів.
+            */}
+          <ul className="sysx-proofstrip mono pric-proof">
+            {HEADLINE_PROOF.map((h) => (
+              <li key={h.metric}><b>{h.value}</b> <span>{t(h.uk, h.en)}</span></li>
+            ))}
+          </ul>
+          <p className="pric-reassure mono">
+            {t('Дельти звірені з CRM / ERP / GA4 клієнта. ', 'Deltas verified against the client’s CRM / ERP / GA4. ')}
+            <b>{t('100% вартості аудиту зараховується', '100% of the audit fee is credited')}</b>
+            {t(' у перший місяць формату 03 (50% — у формат 02), якщо старт упродовж 30 днів.', ' toward the first month of format 03 (50% toward format 02) if you start within 30 days.')}
+          </p>
         </header>
 
         <div className="pric-grid">

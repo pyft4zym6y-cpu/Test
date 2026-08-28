@@ -102,8 +102,26 @@ describe('числа збігаються зі своїм джерелом', () 
     const pack = read('data/auditPack.ts');
     const n = (/(\d+) спеціалізованих аудитів/.exec(pack) || [])[1];
     expect(n, 'у auditPack.ts не знайдено кількості аудитів').toBeTruthy();
-    expect(read('system/Pricing.tsx'), `Pricing обіцяє не ${n} блоків`).toContain(`${n} блоків діагностики`);
+    expect(read('system/Pricing.tsx'), `Pricing обіцяє не ${n} аудитів`).toContain(`${n} аудитів`);
     expect(read('lib/seo-data.json'), `опис /audit-pack обіцяє не ${n} аудитів`).toContain(`${n} аудитів`);
+  });
+
+  it('кількість доменів на сторінці цін = кількості в моделі', () => {
+    /*
+     * Сторінка цін продавала «150+ спеціалізованих перевірок» — числа, якого
+     * немає ніде в коді. Решта чисел на сайті перевіряються, і одне
+     * неперевірюване роняє довіру до всіх. Замінено на домени, які можна
+     * порахувати; тест тримає їх звʼязаними з моделлю.
+     */
+    const xray = read('data/xray.ts');
+    const head = xray.slice(0, xray.indexOf('export const systemBySlug'));
+    const domains = [...head.matchAll(/^\s*domains: \[([^\]]*)\]/gm)]
+      .reduce((sum, m) => sum + m[1].split(',').length, 0);
+    expect(domains, 'не вдалося порахувати домени').toBeGreaterThan(0);
+    expect(read('system/Pricing.tsx'), `Pricing обіцяє не ${domains} доменів`)
+      .toContain(`${domains} доменів діагностики`);
+    expect(read('system/Pricing.tsx'), 'повернулось число без джерела')
+      .not.toContain('150+');
   });
 
   it('числа першого екрана справді є в кейсах, на які посилаються', () => {
