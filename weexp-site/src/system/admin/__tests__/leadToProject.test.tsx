@@ -38,11 +38,14 @@ describe('похідна стадія «конвертована»', () => {
     expect(leadStageLabel(lead({ status: 'new', deal: { projectId: 'pr_1' } })).l).toBe('Конвертована в проєкт');
   });
 
-  it('конвертувати можна із живої стадії, а не лише із «Завершеної»', () => {
-    for (const st of ['new', 'qualified', 'progress', 'done'] as const) {
+  it('конвертувати можна із будь-якої живої стадії', () => {
+    for (const st of ['new', 'qualified', 'progress'] as const) {
       expect(canConvert(lead({ status: st })), st).toBe(true);
     }
-    for (const st of ['unqualified', 'archive'] as const) {
+    // Відсіяну й закриту — ні: спершу поверніть заявку в роботу.
+    // 'done' — легасі-статус, він зводиться в «Архів»: окремої «Завершеної»
+    // між «довели до проєкту» і «закрили» більше немає.
+    for (const st of ['unqualified', 'archive', 'done'] as const) {
       expect(canConvert(lead({ status: st })), st).toBe(false);
     }
     // Двічі один проєкт не створюємо.
@@ -78,7 +81,7 @@ describe('картка заявки: наступний крок', () => {
   });
 
   it('після конвертації показує проєкт і посилання на нього', () => {
-    draw(lead({ status: 'done', deal: { projectId: 'pr_1', projectUserId: 'u1' } }));
+    draw(lead({ status: 'progress', deal: { projectId: 'pr_1', projectUserId: 'u1' } }));
     expect(screen.getByText(/Проєкт створено/)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /Перейти до проєкту/ }));
     expect(onConvert).toHaveBeenCalledTimes(1);

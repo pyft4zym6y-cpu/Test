@@ -140,22 +140,30 @@ export function Dashboard({ rows, leads, traffic, period, onPeriod, onOpenClient
 
             {rows !== null && rows.length > 0 && (
               <div className="adm-panel">
-                <span className="adm-col-h mono">
-                  Гроші й цикл · бюджет {fmt(biz.totals.budget, AGENCY_CUR)} · оплачено {fmt(biz.totals.paid, AGENCY_CUR)} · очікує {fmt(biz.totals.pending, AGENCY_CUR)}
-                  {biz.totals.cost > 0 && <> · собівартість {fmt(biz.totals.cost, AGENCY_CUR)} · маржа <b className={biz.totals.paid - biz.totals.cost >= 0 ? '' : 'bad'}>{fmt(biz.totals.paid - biz.totals.cost, AGENCY_CUR)}</b></>}
-                </span>
-                <div className="adm-money">
+                <span className="adm-col-h mono">Гроші й цикл</span>
+                {/* Підсумок винесено в окремий рядок: у заголовку панелі всі
+                    числа йшли суцільним потоком дрібним моношрифтом і читались
+                    гірше за будь-яку окрему клітинку. */}
+                <div className="adm-fin-sum">
+                  <span>бюджет <b>{fmt(biz.totals.budget, AGENCY_CUR)}</b></span>
+                  <span>оплачено <b>{fmt(biz.totals.paid, AGENCY_CUR)}</b></span>
+                  <span>очікує <b>{fmt(biz.totals.pending, AGENCY_CUR)}</b></span>
+                  {biz.totals.cost > 0 && <>
+                    <span>собівартість <b>{fmt(biz.totals.cost, AGENCY_CUR)}</b></span>
+                    <span>маржа <b className={biz.totals.paid - biz.totals.cost >= 0 ? '' : 'bad'}>{fmt(biz.totals.paid - biz.totals.cost, AGENCY_CUR)}</b></span>
+                  </>}
+                </div>
+                <div className="adm-fin">
                   {biz.byPhase.map((p) => (
-                    <div key={p.n} className="adm-money-cell">
-                      <b className="mono">{p.l}</b>
-                      <span className="mono adm-money-n">{p.n} клієнт.</span>
-                      <span className="mono">бюджет {fmt(p.budget, AGENCY_CUR)}</span>
-                      <span className="mono adm-money-sub">оплачено {fmt(p.paid, AGENCY_CUR)} · очікує {fmt(p.pending, AGENCY_CUR)}</span>
-                      {p.cost > 0 && <span className="mono adm-money-sub">витрати {fmt(p.cost, AGENCY_CUR)} · маржа {fmt(p.paid - p.cost, AGENCY_CUR)}</span>}
+                    <div key={p.n} className="adm-fin-cell">
+                      <span className="adm-fin-h"><b>{p.l}</b><i>{p.n} кл.</i></span>
+                      <span className="adm-fin-v">{fmt(p.budget, AGENCY_CUR)}</span>
+                      <span className="adm-fin-sub">оплачено {fmt(p.paid, AGENCY_CUR)} · очікує {fmt(p.pending, AGENCY_CUR)}</span>
+                      {p.cost > 0 && <span className="adm-fin-sub">витрати {fmt(p.cost, AGENCY_CUR)} · маржа {fmt(p.paid - p.cost, AGENCY_CUR)}</span>}
                     </div>
                   ))}
                 </div>
-                <div className="adm-money-kpi mono">
+                <div className="adm-fin-kpi mono">
                   <span>Середній аудит: <b>{biz.avgAudit != null ? `${biz.avgAudit} дн.` : '— (жоден ще не закритий явно)'}</b></span>
                   <span>Доходять до проєкту: <b>{biz.conv}%</b> ({biz.reachedProject} з {biz.cases})</span>
                   <span className={biz.breaches ? 'bad' : ''}>Прострочено стадій: <b>{biz.breaches}</b></span>

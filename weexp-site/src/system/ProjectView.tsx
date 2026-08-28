@@ -1,5 +1,12 @@
 import { useMemo, useState } from 'react';
-import { projectStatus, type Project, type ProjTask, type ProjMonth } from '@/lib/supa';
+import { projectStatus, projectStatusLabel, type Project, type ProjTask, type ProjMonth } from '@/lib/supa';
+
+/* Підписи типів роботи. Клієнтська вітрина не тягне адмінський модуль заради
+   чотирьох рядків — але ключі ті самі, і тест стежить, щоб не розійшлись. */
+const COOP_LABEL: Record<string, string> = {
+  express: 'Безкоштовний аудит', deep: 'Глибокий аудит', audit: 'Глибокий аудит',
+  consulting: 'Консалтинг', full: 'Повний супровід',
+};
 import { money, AGENCY_CUR } from '@/system/systems';
 
 /**
@@ -81,6 +88,15 @@ export function ProjectView({ projects, en }: { projects: Project[]; en: boolean
         <div>
           <span className="sysx-kick">{t('Мій проект', 'My project')}</span>
           <h1 className="sysx-display cab-h1">{p.title || t('План ведення', 'Delivery plan')}</h1>
+          {/* Тип роботи й стан — поруч із назвою: клієнт має бачити, ПРО ЩО
+              проєкт, а не лише його порядковий номер. */}
+          <p className="mono cab-sub">
+            {[
+              p.origin?.coopType ? COOP_LABEL[p.origin.coopType] || p.origin.coopType : '',
+              projectStatusLabel(p).l,
+              p.startMonth ? `${t('старт', 'start')} ${p.startMonth}` : '',
+            ].filter(Boolean).join(' · ')}
+          </p>
         </div>
         <button className="pj-print mono" onClick={() => window.print()}>⬇ {t('Завантажити PDF', 'Download PDF')}</button>
       </header>
@@ -88,7 +104,7 @@ export function ProjectView({ projects, en }: { projects: Project[]; en: boolean
       {pub.length > 1 && (
         <div className="pj-switch">
           {pub.map((x, i) => (
-            <button key={x.id || i} className={`pj-switch-b${i === Math.min(sel, pub.length - 1) ? ' on' : ''}`} onClick={() => setSel(i)}>{x.title || t('Проект', 'Project') + ' ' + (i + 1)}</button>
+            <button key={x.id || i} className={`pj-switch-b${i === Math.min(sel, pub.length - 1) ? ' on' : ''}`} onClick={() => setSel(i)}>{x.title || (x.origin?.coopType ? COOP_LABEL[x.origin.coopType] : '') || t('Проект', 'Project') + ' ' + (i + 1)}</button>
           ))}
         </div>
       )}

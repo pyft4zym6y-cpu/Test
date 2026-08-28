@@ -8,6 +8,8 @@
  * перемішані, і жодна вкладка не відповідала на питання цілком.
  */
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { U_TABS, DEEP_SECS, normalizeUTab, tierLabel, isLegacyTier } from '../shared';
 
 describe('вкладки картки клієнта', () => {
@@ -55,5 +57,43 @@ describe('один глибокий аудит замість рівнів', () 
   it('невідомий ключ не ламає підпис', () => {
     expect(tierLabel('SOMETHING')).toBe('SOMETHING');
     expect(isLegacyTier('SOMETHING')).toBe(false);
+  });
+});
+
+/**
+ * Друга ітерація структури картки: історія, зрозумілі проєкти, напрямки файлів
+ * і розділення «матеріали про клієнта» ↔ «внутрішнє команди».
+ */
+describe('картка клієнта: назви кажуть, що це', () => {
+  const detail = readFileSync(join(__dirname, '..', 'UserDetail.tsx'), 'utf8');
+  const files = readFileSync(join(__dirname, '..', 'panels-client.tsx'), 'utf8');
+  const proj = readFileSync(join(__dirname, '..', 'ProjectsManager.tsx'), 'utf8');
+
+  it('внутрішній шар має власну вкладку, а не лежить серед матеріалів клієнта', () => {
+    expect(U_TABS.map((t) => t.id)).toContain('inner');
+    expect(detail).toMatch(/utab === 'inner' && <Block title="Нотатки команди/);
+    expect(detail).not.toMatch(/utab === 'over' && <Block title="Внутрішні нотатки/);
+  });
+
+  it('в «Огляді» — історія взаємодії, зібрана з даних', () => {
+    expect(detail).toMatch(/Історія взаємодії/);
+    expect(detail).toMatch(/clientTimeline\(row, leads\)/);
+  });
+
+  it('файли названі за тим, що сталося, а не стрілками', () => {
+    expect(files).toContain('Отримано від клієнта');
+    expect(files).toContain('Передано клієнту');
+    expect(files).not.toMatch(/Клієнт → агентство|Агентство → клієнт/);
+  });
+
+  it('новий проєкт не називається «Проект N»', () => {
+    expect(proj).not.toMatch(/np\.title = `Проект \$\{list\.length \+ 1\}`/);
+    expect(proj).toMatch(/\[company, 'проєкт'\]/);
+  });
+
+  it('картка проєкту називає клієнта, тип роботи, відповідального і старт', () => {
+    for (const field of ['Клієнт', 'Тип роботи', 'Відповідальний', 'Старт']) {
+      expect(proj, field).toContain(`<i>${field}</i>`);
+    }
   });
 });

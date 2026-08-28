@@ -112,8 +112,10 @@ describe('wix-зеркало: работает', () => {
     app.querySelector('form.auth')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
     await tick(); await tick(); await tick();
     expect(app.textContent).toContain('Анна');
-    expect(app.textContent).toContain('Нова');
-    expect(app.textContent).toContain('Завершена');
+    expect(app.textContent).toContain('Нова заявка');
+    // Легасі-статус 'done' зводиться в «Архів»: окремої «Завершеної» стадії
+    // між «довели до проєкту» і «закрили» більше немає.
+    expect(app.textContent).toContain('Архів');
     expect(app.querySelector('.msg.bad')).toBeNull();      // ошибок не выдумали
   });
 

@@ -24,7 +24,7 @@ import { uid } from '../auditTemplate';
 
 import '../system.css';
 import '../cabinet.css';
-import { gMonthLabel, SaveBadge } from './shared';
+import { coopLabel, gMonthLabel, SaveBadge } from './shared';
 import { useAutosave } from './useAutosave';
 import { askConfirm, askText } from './dialog';
 import { toastUndo } from '@/lib/toast';
@@ -39,7 +39,16 @@ export function ProjectsManager({ userId, initial, code, company }: { userId: st
   const apply = (next: Project[]) => { setList(next); auto.touch(next); };
 
   const patchCur = (p: Project) => apply(list.map((x, i) => (i === idx ? p : x)));
-  const addProject = () => { const np = emptyProject(); np.title = `Проект ${list.length + 1}`; apply([...list, np]); setActive(list.length); };
+  /**
+   * Назва проєкту. «Проект 1» не каже нічого: ані про клієнта, ані про тип
+   * роботи. Складаємо її з того, що вже відомо, — і менеджеру, і клієнту в
+   * кабінеті видно, про що проєкт, ще до того як його заповнили.
+   */
+  const addProject = () => {
+    const np = emptyProject();
+    np.title = [company, 'проєкт'].filter(Boolean).join(' · ');
+    apply([...list, np]); setActive(list.length);
+  };
   const delProject = async () => { if (!cur) return; if (!(await askConfirm({ title: 'Видалити цей проект?', text: 'Задачі, бюджет і платежі проекту зникнуть разом з ним.', confirmLabel: 'Видалити', tone: 'bad' }))) return; const nl = list.filter((_, i) => i !== idx); apply(nl); setActive(0); };
 
   const pubN = list.filter((x) => x.published).length;
@@ -179,6 +188,15 @@ export function ProjectEditor({ value, onChange, code, company }: { value: Proje
           ))}
         </div>
         <p className="mono adm-hint">{PROJECT_STATUSES.find((x) => x.k === st)?.note}</p>
+        {/* «Проект 1 / Проект 3» — технічні записи: з них не видно ні клієнта,
+            ні типу роботи, ні хто веде. Тепер картка називає це прямо. */}
+        <ul className="adm-kv">
+          <li><i>Проєкт</i><span>{p.title || 'без назви'}</span></li>
+          {company && <li><i>Клієнт</i><span>{company}</span></li>}
+          {p.origin?.coopType && <li><i>Тип роботи</i><span>{coopLabel(p.origin.coopType)}{p.origin.coopForm ? ` · ${p.origin.coopForm}` : ''}</span></li>}
+          <li><i>Відповідальний</i><span>{(p.team || []).find((m) => /pm|проєкт|проект|менедж/i.test(m.role || ''))?.name || 'не призначений'}</span></li>
+          <li><i>Старт</i><span>{p.startMonth || 'не вказано'}</span></li>
+        </ul>
         {p.origin && (
           <div className="pj-origin">
             <span className="adm-acc-cat-h mono">Із заявки</span>

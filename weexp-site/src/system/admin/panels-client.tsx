@@ -175,8 +175,10 @@ export function AdminFiles({ userId, initial, sharedInitial, clientFiles = [], t
   return (
     <div className="adm-afiles">
       <div className="adm-fdir">
-        <span className="adm-acc-cat-h mono">Клієнт → агентство</span>
-        <p className="mono adm-hint">Те, що клієнт завантажив сам: звітність і вивантаження під аудит. Ми їх лише читаємо.</p>
+        {/* Стрілки «клієнт → агентство» самі по собі нічого не пояснюють:
+            напрямок треба ще розшифрувати. Назва має казати, що сталося. */}
+        <span className="adm-acc-cat-h mono">Отримано від клієнта</span>
+        <p className="mono adm-hint">Звітність і вивантаження, які клієнт надав під аудит. Ми їх лише читаємо.</p>
         {fromClient.length === 0 && tierFiles.length === 0 ? (
           <p className="mono adm-empty">Клієнт ще нічого не завантажив. Список потрібних файлів він бачить у кабінеті, у глибокому аудиті.</p>
         ) : (
@@ -184,13 +186,15 @@ export function AdminFiles({ userId, initial, sharedInitial, clientFiles = [], t
             {fromClient.map((f) => (
               <li key={f.id} className="adm-afile">
                 <button className="mono adm-file" onClick={() => openFile(f.path!)}>📎 {f.title || f.type || 'файл'}</button>
-                <span className="mono adm-afile-m">{f.group === 'report' ? 'звітність' : 'вивантаження'}{f.period ? ` · ${f.period}` : ''} · {rel(f.at)}</span>
+                <span className="mono adm-afile-m">{f.group === 'report' ? 'звітність' : 'вивантаження'}{f.period ? ` · ${f.period}` : ''} · від клієнта · нам · {rel(f.at)}</span>
+                <span className="cab-badge mono tst-ok">отримано</span>
               </li>
             ))}
             {tierFiles.map(({ tier, file }, i) => (
               <li key={tier + i} className="adm-afile">
                 <button className="mono adm-file" onClick={() => openFile(file.path)}>📎 {file.name}</button>
-                <span className="mono adm-afile-m">під аудит · {rel(file.at)}</span>
+                <span className="mono adm-afile-m">під аудит · від клієнта · нам · {rel(file.at)}</span>
+                <span className="cab-badge mono tst-ok">отримано</span>
               </li>
             ))}
           </ul>
@@ -198,8 +202,8 @@ export function AdminFiles({ userId, initial, sharedInitial, clientFiles = [], t
       </div>
 
       <div className="adm-fdir">
-        <span className="adm-acc-cat-h mono">Агентство → клієнт</span>
-        <p className="mono adm-hint">Наші файли: робочі дані команди й документи, які віддаємо клієнту. Клієнт бачить лише ті, якими поділились.</p>
+        <span className="adm-acc-cat-h mono">Передано клієнту</span>
+        <p className="mono adm-hint">Наші файли: робочі дані команди й документи для клієнта. Клієнт бачить у кабінеті лише ті, якими поділились.</p>
       </div>
       <div className="adm-afiles-add">
         <select className="ab-sel sm" value={kind} onChange={(e) => setKind(e.target.value as AdminFile['kind'])}>
@@ -215,7 +219,7 @@ export function AdminFiles({ userId, initial, sharedInitial, clientFiles = [], t
         <ul className="adm-files">{list.map((f) => (
           <li key={f.path} className="adm-afile">
             <button className="mono adm-file" onClick={() => openFile(f.path)}>📎 {f.name}</button>
-            <span className="mono adm-afile-m">{f.kind === 'deliverable' ? 'документ для клієнта' : f.kind === 'data' ? 'робочі дані' : 'інше'} · {rel(f.at)}</span>
+            <span className="mono adm-afile-m">{f.kind === 'deliverable' ? 'документ' : f.kind === 'data' ? 'робочі дані' : 'інше'} · {f.by || 'команда'} · {isShared(f.path) ? 'клієнту' : 'внутрішньо'} · {rel(f.at)}</span>
             <button className={'mc-btn ' + (isShared(f.path) ? 'fr-on-ok' : 'ghost')} onClick={() => toggleShare(f)} title="Показати/приховати документ у кабінеті клієнта">
               {isShared(f.path) ? '✓ У клієнта' : '↗ Поділитися'}
             </button>

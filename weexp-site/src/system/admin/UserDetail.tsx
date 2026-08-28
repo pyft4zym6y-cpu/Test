@@ -8,6 +8,7 @@ import '../system.css';
 import '../cabinet.css';
 import { Panel, PanelBoundary } from './dialog';
 import { Block, ACCESS_SOURCES, DEEP_SECS, FUNNEL, LEAD_STAGES, ST, U_TABS, coopLabel, funnelStage, isLegacyTier, rel, tierLabel, type DeepSec, type UTab } from './shared';
+import { clientTimeline, timelineKindLabel } from './timeline';
 import { openClientDossier } from './docs';
 import { downloadClientExport } from './exportClient';
 /* Вміст вкладок вантажимо на вимогу. Картка відкривається на «Огляді», а
@@ -248,13 +249,13 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, 
 
           {utab === 'deep' && sec === 'result' && <Block title="Прогін рушієм Commerce OS — внутрішнє"><PanelBoundary title="Аудит рушієм"><WorkerAudit userId={row.userId} code={code} rec={rec} reviewer={selfEmail} /></PanelBoundary></Block>}
 
-          {utab === 'deep' && sec === 'result' && <Block title="Оцінка модулів (C-level) — внутрішнє"><PanelBoundary title="Оцінка модулів"><ModuleScoring userId={row.userId} initial={rec.assessment || {}} code={code} rec={rec} onSaved={onChanged} /></PanelBoundary></Block>}
+          {utab === 'inner' && <Block title="Оцінка модулів (C-level)"><PanelBoundary title="Оцінка модулів"><ModuleScoring userId={row.userId} initial={rec.assessment || {}} code={code} rec={rec} onSaved={onChanged} /></PanelBoundary></Block>}
 
           {utab === 'deep' && sec === 'access' && <Block title="Каталог доступів клієнта"><PanelBoundary title="Каталог доступів"><AccessCatalog userId={row.userId} initial={rec.accessLog || {}} onSaved={onChanged} /></PanelBoundary></Block>}
 
           {utab === 'deep' && sec === 'access' && <Block title="Підключення аналітики (GA4 · GSC · PageSpeed)"><PanelBoundary title="Аналітика клієнта"><GaPreview userId={row.userId} siteUrl={company?.site || rec.site || ''} /></PanelBoundary></Block>}
 
-          {utab === 'over' && <Block title="Внутрішні нотатки команди"><PanelBoundary title="Нотатки"><NotesPanel userId={row.userId} initial={rec.notes || []} author={selfEmail} /></PanelBoundary></Block>}
+          {utab === 'inner' && <Block title="Нотатки команди — клієнт цього не бачить"><PanelBoundary title="Нотатки"><NotesPanel userId={row.userId} initial={rec.notes || []} author={selfEmail} /></PanelBoundary></Block>}
 
           {utab === 'deep' && sec === 'q' && <Block title="Модерація опитувальника"><PanelBoundary title="Модерація опитувальника"><ModerationPanel userId={row.userId} code={code} rec={rec} reviewer={selfEmail} /></PanelBoundary></Block>}
 
@@ -308,7 +309,7 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, 
             <Block title="Уточнення (Крок 2)"><ExtraEditor code={code} /></Block>
           )}
 
-          {utab === 'proj' && <Block title="Проект (ведення)"><PanelBoundary title="Проєкти"><ProjectsManager userId={row.userId} initial={getProjects(rec)} code={code} company={company?.name} /></PanelBoundary></Block>}
+          {utab === 'proj' && <Block title="Проєкти клієнта"><PanelBoundary title="Проєкти"><ProjectsManager userId={row.userId} initial={getProjects(rec)} code={code} company={company?.name} /></PanelBoundary></Block>}
 
           {utab === 'deep' && sec === 'files' && files.length > 0 && (
             <Block title="Файли, додані клієнтом під аудит">
@@ -326,17 +327,23 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, 
             ))}</ul>;
           })()}</Block>}
 
-          {utab === 'over' && <Block title="Історія активності">{(() => {
-            const ev: { at: string; t: string }[] = [];
-            if (row.record?.express?.at) ev.push({ at: row.record.express.at, t: `Пройдено експрес-аудит · ${fmt(row.record.express.total, curOf(row.record.express.input?.currency))}/рік` });
-            Object.entries(row.funnel?.tierHistory || {}).forEach(([tid, list]) => (list || []).forEach((e) => ev.push({ at: e.at, t: `${tierLabel(tid)} → ${ST[e.st]?.txt ?? e.st}${e.by === 'manager' ? ' · менеджер' : ''}` })));
-            if (row.funnel?.leadAt) ev.push({ at: row.funnel.leadAt, t: 'Заявка на співпрацю з кабінету' });
-            if (row.updatedAt) ev.push({ at: row.updatedAt, t: 'Оновлення профілю' });
-            ev.sort((a, b) => (b.at || '').localeCompare(a.at || ''));
-            if (!ev.length) return <p className="mono adm-empty">Подій ще немає — тут зʼявиться все, що робили з карткою: доступи, статуси, передані документи.</p>;
-            return <ul className="adm-activity">{ev.slice(0, 20).map((e, i) => (
-              <li key={i}><span className="adm-act-dot" /><span className="adm-act-t">{e.t}</span><span className="mono adm-act-at">{rel(e.at)}</span></li>
-            ))}</ul>;
+          {utab === 'over' && <Block title="Історія взаємодії">{(() => {
+            const ev = clientTimeline(row, leads);
+            if (!ev.length) return <p className="mono adm-empty">Подій ще немає. Тут зʼявиться все, що сталося з клієнтом: коли прийшла заявка й звідки, коли пройшов експрес, коли відкрили аудит, що завантажив, що ми передали, коли створили проєкт.</p>;
+            return (
+              <ul className="adm-tl">
+                {ev.map((e, i) => (
+                  <li key={i} className="adm-tl-i">
+                    <span className={`adm-tl-k mono tl-${e.kind}`}>{timelineKindLabel(e.kind)}</span>
+                    <span className="adm-tl-b">
+                      <b className="adm-tl-t">{e.text}</b>
+                      {e.note && <i className="adm-tl-n">{e.note}</i>}
+                    </span>
+                    <span className="mono adm-tl-at">{e.by ? `${e.by} · ` : ''}{rel(e.at)}</span>
+                  </li>
+                ))}
+              </ul>
+            );
           })()}</Block>}
 
           {utab === 'over' && canDelete && (

@@ -188,11 +188,10 @@ const sb = createClient(SUPA_URL, SUPA_ANON, {
       строки короткие и рядом).
    ───────────────────────────────────────────────────────────────────────── */
 const LEAD_STAGES = [
-  { k:'new',         l:'Нова',            cls:'wait' },
+  { k:'new',         l:'Нова заявка',     cls:'wait' },
   { k:'qualified',   l:'Кваліфікована',   cls:'ok'   },
   { k:'unqualified', l:'Некваліфікована', cls:'bad'  },
   { k:'progress',    l:'В роботі',        cls:'wait' },
-  { k:'done',        l:'Завершена',       cls:'ok'   },
   { k:'archive',     l:'Архів',           cls:'none' },
 ];
 /* Легаси-статусы старых записей сводятся к текущим — как в stageOf(). */
@@ -200,7 +199,9 @@ const LEAD_STAGES = [
 const CONVERTED = { k: 'converted', l: 'Конвертована в проєкт', cls: 'ok' };
 const stageView = (l) => (l.deal?.projectId ? 'converted' : stageOf(l));
 const stageOf = (l) => { const s = l.status || 'new';
-  return s === 'proposal' ? 'progress' : s === 'won' ? 'done' : s === 'lost' ? 'unqualified' : s; };
+  /* «Завершена» стадією більше не є: заявку або довели до проєкту (видно з
+     projectId), або закрили в архів. Легасі-статуси зводимо туди ж. */
+  return s === 'proposal' ? 'progress' : (s === 'won' || s === 'done') ? 'archive' : s === 'lost' ? 'unqualified' : s; };
 
 const FUNNEL = [
   { k:'registered',    l:'Зареєстрований',      cls:'none' },
@@ -212,7 +213,8 @@ const FUNNEL = [
 ];
 const ST = { none:{txt:'Не запрошено',cls:'none'}, requested:{txt:'Очікує',cls:'wait'},
   data:{txt:'Потрібні дані',cls:'wait'}, granted:{txt:'Надано',cls:'ok'}, rejected:{txt:'Відхилено',cls:'bad'} };
-const COOP = { audit:'Аудит', consulting:'Консалтинг', full:'Повний супровід', other:'Інше' };
+/* Тип роботи — інший вимір, не стадія. 'audit' і 'other' — старі ключі. */
+const COOP = { express:'Безкоштовний аудит', deep:'Глибокий аудит', consulting:'Консалтинг', full:'Повний супровід', audit:'Глибокий аудит' };
 
 /* Поля списка клиентов — зеркало LIST_KEYS в supa.ts. Тянем только их: полный
    jsonb клиента весит килобайты и списку не нужен. */
@@ -403,7 +405,7 @@ function viewBoard() {
   const kpi = (list) => `<div class="kpi">${list.map(([b,s]) => `<div><b>${b}</b><span>${s}</span></div>`).join('')}</div>`;
   return `<h2 class="sec">Заявки</h2>${kpi([
       [S.leads.length,'усього'], [n('new'),'нові'], [n('qualified'),'кваліфіковані'],
-      [n('progress'),'в роботі'], [n('done'),'завершені'], [n('converted'),'у проєкті'],
+      [n('progress'),'в роботі'], [n('archive'),'в архіві'], [n('converted'),'у проєкті'],
     ])}
     <h2 class="sec">Клієнти</h2>${kpi([
       [S.clients.length,'усього'],

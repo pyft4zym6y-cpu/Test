@@ -107,9 +107,15 @@ export function LeadDetail({ lead, allRows, onClose, onStatus, onDeal, onConvert
                 </button>
               </div>
             )}
+            {/* Повна картка клієнта — окрема сторінка з історією, компанією,
+                аудитами й проєктами. У шторці заявки цього не вмістити, а
+                посилання досі ховалось нижче, у блоці «Профіль клієнта». */}
+            {client && (
+              <button className="mc-btn adm-nextstep-link" onClick={() => onOpenClient(client.userId)}>Відкрити картку клієнта →</button>
+            )}
           </Block>
 
-          <Block title="Чек-лист угоди">
+          <Block title="Умови співпраці та оплата">
             <div className="adm-deal">
               <label className="adm-deal-row">
                 <span className="adm-deal-l mono">Тип співпраці</span>
@@ -119,30 +125,32 @@ export function LeadDetail({ lead, allRows, onClose, onStatus, onDeal, onConvert
                   ))}
                 </div>
               </label>
-              {deal.coopType === 'other' && (
-                <label className="adm-deal-row">
-                  <span className="adm-deal-l mono">Який саме</span>
-                  <input className="adm-deal-inp" value={deal.coopForm || ''} onChange={(e) => patchDeal({ coopForm: e.target.value })} placeholder="Напр.: SEO-супровід, розробка…" />
-                </label>
-              )}
-              {deal.coopType !== 'other' && (
-                <label className="adm-deal-row">
-                  <span className="adm-deal-l mono">Форма співпраці</span>
-                  <input className="adm-deal-inp" value={deal.coopForm || ''} onChange={(e) => patchDeal({ coopForm: e.target.value })} placeholder="Напр.: фікс за пакет / помісячний retainer" />
-                </label>
-              )}
+              <label className="adm-deal-row">
+                <span className="adm-deal-l mono">Форма співпраці</span>
+                <input className="adm-deal-inp" value={deal.coopForm || ''} onChange={(e) => patchDeal({ coopForm: e.target.value })} placeholder="Напр.: фікс за пакет / помісячний retainer" />
+              </label>
               <label className="adm-deal-row">
                 <span className="adm-deal-l mono">До чого домовились</span>
                 <textarea className="adm-deal-ta" rows={3} value={deal.agreed || ''} onChange={(e) => patchDeal({ agreed: e.target.value })} placeholder="Обсяг, строки, ціна, наступний крок…" />
               </label>
-              <div className="adm-deal-flags">
-                <button className={`mc-btn sm${deal.contractSigned ? ' ok' : ''}`} onClick={() => patchDeal({ contractSigned: !deal.contractSigned })}>
-                  {deal.contractSigned ? '✓ Договір укладено' : 'Договір не укладено'}
-                </button>
-                <button className={`mc-btn sm${deal.paidFirst ? ' ok' : ''}`} onClick={() => patchDeal({ paidFirst: !deal.paidFirst })}>
-                  {deal.paidFirst ? '✓ Первинна оплата отримана' : 'Первинна оплата відсутня'}
-                </button>
-              </div>
+              {/*
+                * Це були дві кнопки з підписами «Договір не укладено» і
+                * «Первинна оплата відсутня» — у статусному блоці вони читались
+                * як дії («що станеться, якщо натиснути?»), хоча насправді це
+                * прапорці стану. Тепер вони прапорцями й виглядають, і живуть
+                * там, де про гроші й домовленості: в умовах співпраці.
+                */}
+              <fieldset className="adm-deal-row adm-deal-flags">
+                <legend className="adm-deal-l mono">Стан оформлення</legend>
+                <label className="adm-deal-chk">
+                  <input type="checkbox" checked={Boolean(deal.contractSigned)} onChange={(e) => patchDeal({ contractSigned: e.target.checked })} />
+                  <span>Договір укладено</span>
+                </label>
+                <label className="adm-deal-chk">
+                  <input type="checkbox" checked={Boolean(deal.paidFirst)} onChange={(e) => patchDeal({ paidFirst: e.target.checked })} />
+                  <span>Первинну оплату отримано</span>
+                </label>
+              </fieldset>
               <div className="adm-deal-save">
                 <button className="mc-btn ok" disabled={auto.state === 'saving' || auto.state === 'idle'} onClick={() => void auto.flush()}>
                   {auto.state === 'saving' ? 'Зберігаємо…' : auto.state === 'dirty' ? 'Зберегти зараз' : '✓ Збережено'}

@@ -47,7 +47,7 @@ import { uid } from './auditTemplate';
 
 import './system.css';
 import './cabinet.css';
-import { ACCESS_SOURCES, TABS, U_TABS, CAP_SUMMARY, EmptyState, FUNNEL, LEAD_COLUMNS, normalizeUTab, LEAD_STAGES, ST, Shell, Tile, TrafficBlock, Trend, coopLabel, funnelStage, rel, srcName, stageOf, stageView, tierLabel, type FunnelStage, type LeadView, type SiteTraffic, type Tab, type UTab } from './admin/shared';
+import { ACCESS_SOURCES, TABS, U_TABS, CAP_SUMMARY, COOP_TYPES, EmptyState, FUNNEL, LEAD_COLUMNS, coopLabel, coopOf, normalizeUTab, LEAD_STAGES, ST, Shell, Tile, TrafficBlock, Trend, funnelStage, rel, srcName, stageOf, stageView, tierLabel, type FunnelStage, type LeadView, type SiteTraffic, type Tab, type UTab } from './admin/shared';
 
 /* Важкі екрани вантажимо на вимогу: адмінка відкривається на «Дашборді», а
    картка клієнта, заявка, конструктор шаблону, проєктний офіс і команда потрібні
@@ -113,6 +113,9 @@ export function AdminPanel() {
   const [ask, setAsk] = useState<{ userId: string; tier: string; status: TierStatus } | null>(null);
   const [askReason, setAskReason] = useState('');
   const [selLeads, setSelLeads] = useState<Set<string>>(new Set()); // мультивибір заявок (має бути ДО ранніх return — правило хуків)
+  // Перетягування заявок між стадіями: що тягнемо і над якою колонкою.
+  const [dragId, setDragId] = useState('');
+  const [dragOver, setDragOver] = useState('');
   const [userSeg, setUserSeg] = useState<'clients' | 'admins' | 'all'>('clients'); // підрозділ «Користувачі»
   const [auditSeg, setAuditSeg] = useState<'all' | 'express' | 'express_reg' | 'deep_req' | 'deep_work' | 'deep_done' | 'builder'>('all'); // підрозділи «Аудити»
   const [projSeg, setProjSeg] = useState<'list' | 'office'>('list');
@@ -370,14 +373,13 @@ export function AdminPanel() {
     if (!res.ok) { setBusy(''); toast('Не вдалося створити проект: ' + (res.error || ''), 'err'); return; }
     const deal: LeadDeal = { ...(lead.deal || {}), projectId: p.id, projectUserId: client.userId };
     const dr = await setLeadDeal(lead.id, deal);
-    // Стадію заявки закриваємо самі: інакше конвертована заявка й далі висіла б
-    // у «В роботі» — тобто дошка показувала б роботу, якої вже немає.
-    const sr = stageOf(lead) === 'done' ? { ok: true } : await setLeadStatus(lead.id, 'done');
+    // Статус заявки НЕ чіпаємо: «конвертована» виводиться з наявності проєкту й
+    // перекриває стадію сама. Записувати ще й статус означало б тримати другу
+    // правду про той самий факт.
     setBusy('');
     if (!dr.ok) toast('Проект створено, але звʼязку в заявці не збережено: ' + (dr.error || ''), 'err');
-    else if (!sr.ok) toast('Проект створено, але стадію заявки не оновлено: ' + (sr.error || ''), 'err');
     else toast('✓ Проект «' + title + '» створено, заявка конвертована');
-    setLeads((ls) => (ls || []).map((l) => (l.id === lead.id ? { ...l, deal, status: 'done' as LeadStatus } : l)));
+    setLeads((ls) => (ls || []).map((l) => (l.id === lead.id ? { ...l, deal } : l)));
     load();
     setOpenUser(client.userId);
   };
@@ -721,22 +723,45 @@ export function AdminPanel() {
                 const conv = total ? Math.round((won / total) * 100) : 0;
                 return (
                   <>
-                    {/* Воронка */}
-                    <div className="adm-panel">
-                      <span className="adm-col-h mono">Воронка продажів · {total} заявок · {conv}% доведено до проєкту</span>
-                      <div className="adm-crmfunnel">
-                        {LEAD_COLUMNS.map((s) => {
-                          const n = count(s.k); const pct = total ? Math.round((n / total) * 100) : 0;
-                          return (
-                            <div key={s.k} className="adm-cf-row">
-                              <span className={`cab-badge mono tst-${s.cls}`}>{s.l}</span>
-                              <div className="adm-fn-bar"><span className={`adm-fn-fill tst-fill-${s.cls}`} style={{ width: `${Math.max(pct, n ? 4 : 0)}%` }} /></div>
-                              <span className="adm-fn-n mono">{n}</span>
-                            </div>
-                          );
-                        })}
+                    {/* Одна панель на весь розділ: усередині — дві категорії
+                        (стадія і тип роботи) та дошка. Раніше це були окремі
+                        блоки, і зв'язок між ними доводилось тримати в голові. */}
+                    <div className="adm-panel adm-crm">
+                      <div className="adm-crm-cats">
+                        <div className="adm-crm-cat">
+                          <span className="adm-col-h mono">Воронка продажів · {total} заявок · {conv}% доведено до проєкту</span>
+                          <div className="adm-crmfunnel">
+                            {LEAD_COLUMNS.map((s) => {
+                              const n = count(s.k); const pct = total ? Math.round((n / total) * 100) : 0;
+                              return (
+                                <div key={s.k} className="adm-cf-row">
+                                  <span className={`cab-badge mono tst-${s.cls}`}>{s.l}</span>
+                                  <div className="adm-fn-bar"><span className={`adm-fn-fill tst-fill-${s.cls}`} style={{ width: `${Math.max(pct, n ? 4 : 0)}%` }} /></div>
+                                  <span className="adm-fn-n mono">{n}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        {/* Тип роботи — інший вимір: він не рухає заявку по
+                            воронці й тому не має стояти з нею в одному списку. */}
+                        <div className="adm-crm-cat">
+                          <span className="adm-col-h mono">Тип роботи</span>
+                          <div className="adm-crmfunnel">
+                            {[...COOP_TYPES, { k: '', l: 'Тип не вказано' }].map((c) => {
+                              const n = comm.filter((l) => coopOf(l.deal?.coopType) === c.k).length;
+                              const pct = total ? Math.round((n / total) * 100) : 0;
+                              return (
+                                <div key={c.k || 'none'} className="adm-cf-row">
+                                  <span className={`cab-badge mono tst-${c.k ? 'ok' : 'none'}`}>{c.l}</span>
+                                  <div className="adm-fn-bar"><span className="adm-fn-fill tst-fill-ok" style={{ width: `${Math.max(pct, n ? 4 : 0)}%` }} /></div>
+                                  <span className="adm-fn-n mono">{n}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
                       </div>
-                    </div>
 
                     {/* Масові дії */}
                     {selLeads.size > 0 && (
@@ -749,31 +774,49 @@ export function AdminPanel() {
                       </div>
                     )}
 
-                    {/* Пайплайн-дошка */}
-                    <div className="adm-board">
-                      {LEAD_COLUMNS.map((s) => {
-                        const col = comm.filter((l) => stageView(l) === s.k);
-                        return (
-                          <div key={s.k} className="adm-col">
-                            <div className="adm-col-head"><span className={`cab-badge mono tst-${s.cls}`}>{s.l}</span><span className="adm-col-n mono">{col.length}</span></div>
-                            <div className="adm-col-body">
-                              {col.map((l) => (
-                                <div key={l.id} className={`adm-lead-card${selLeads.has(l.id || '') ? ' sel' : ''}`}>
-                                  <input type="checkbox" className="adm-lead-chk" checked={selLeads.has(l.id || '')} onChange={() => toggleSel(l.id || '')} title="Обрати" onClick={(e) => e.stopPropagation()} />
-                                  <button className="adm-lead-open" onClick={() => setOpenLead(l.id || '')}>
-                                    <b>{l.name || l.email || l.phone || 'Заявка'}</b>
-                                    <span className="mono adm-lead-sub">{l.task || l.comment || srcName(l.source)}</span>
-                                    <span className="mono adm-lead-at">{rel(l.at)}{l.source ? ` · ${srcName(l.source)}` : ''}</span>
-                                  </button>
-                                </div>
-                              ))}
-                              {col.length === 0 && <span className="mono adm-col-empty">—</span>}
+                      {/* Пайплайн-дошка. Перетягування — швидкий шлях; кнопки
+                          стадій у картці лишаються, бо drag недоступний з
+                          клавіатури, і залишити його єдиним способом означало б
+                          закрити розділ для тих, хто мишею не працює. */}
+                      <div className="adm-board">
+                        {LEAD_COLUMNS.map((s) => {
+                          const col = comm.filter((l) => stageView(l) === s.k);
+                          const droppable = s.k !== 'converted';   // «конвертована» виводиться з проєкту, вручну не ставиться
+                          return (
+                            <div key={s.k}
+                              className={`adm-col${dragOver === s.k ? ' is-over' : ''}${!droppable ? ' is-locked' : ''}`}
+                              onDragOver={(e) => { if (!droppable || !dragId) return; e.preventDefault(); setDragOver(s.k); }}
+                              onDragLeave={() => setDragOver((v) => (v === s.k ? '' : v))}
+                              onDrop={(e) => { e.preventDefault(); setDragOver(''); if (droppable && dragId) moveLead(dragId, s.k as LeadStatus); setDragId(''); }}>
+                              <div className="adm-col-head"><span className={`cab-badge mono tst-${s.cls}`}>{s.l}</span><span className="adm-col-n mono">{col.length}</span></div>
+                              <div className="adm-col-body">
+                                {col.map((l) => {
+                                  const coop = coopLabel(l.deal?.coopType);
+                                  return (
+                                    <div key={l.id} className={`adm-lead-card${selLeads.has(l.id || '') ? ' sel' : ''}${dragId === l.id ? ' is-drag' : ''}`}
+                                      draggable={droppable} onDragStart={() => setDragId(l.id || '')} onDragEnd={() => { setDragId(''); setDragOver(''); }}>
+                                      <input type="checkbox" className="adm-lead-chk" checked={selLeads.has(l.id || '')} onChange={() => toggleSel(l.id || '')} title="Обрати" onClick={(e) => e.stopPropagation()} />
+                                      <button className="adm-lead-open" onClick={() => setOpenLead(l.id || '')}>
+                                        <b>{l.name || l.email || l.phone || 'Заявка'}</b>
+                                        <span className="mono adm-lead-sub">{l.task || l.comment || srcName(l.source)}</span>
+                                        <span className="adm-lead-tags">
+                                          <span className={`cab-badge mono tst-${s.cls}`}>{s.l}</span>
+                                          {coop && <span className="cab-badge mono tst-ok">{coop}</span>}
+                                        </span>
+                                        <span className="mono adm-lead-at">{rel(l.at)}{l.source ? ` · ${srcName(l.source)}` : ''}</span>
+                                      </button>
+                                    </div>
+                                  );
+                                })}
+                                {col.length === 0 && <span className="mono adm-col-empty">—</span>}
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
+                      <p className="adm-hint mono">Картку можна перетягнути в іншу стадію. «Конвертована в проєкт» ставиться не вручну: вона зʼявляється, щойно із заявки створено проєкт.</p>
                     </div>
-                    <p className="adm-hint mono">Доведено до проєкту: {won} · відсіяно: {lost}. Клік по картці — картка заявки: стадія, умови і кнопка «Створити проєкт». Конвертована заявка лишається в CRM і показує посилання на проєкт.</p>
+                    <p className="adm-hint mono">Доведено до проєкту: {won} · відсіяно: {lost}. Клік по картці — картка заявки: стадія, умови і кнопка «Створити проєкт».</p>
                   </>
                 );
               })()
