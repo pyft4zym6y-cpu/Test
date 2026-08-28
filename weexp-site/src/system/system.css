@@ -273,7 +273,20 @@
    під неї заїжджав заголовок героя. Тепер число одне й вимірюється з живого
    вузла (SystemShell), а тут лише запасне значення на випадок, поки JS не
    виміряв (і для статичних prerender-сторінок). */
-:root { --sysh-h: 76px; }
+/* ── Сітка сторінки ──
+   Системна причина «зажатих» сторінок: міра, придумана для АБЗАЦУ (56–62ch),
+   стояла на всьому шапковому блоці — разом із заголовком. На екрані 1846px
+   контейнер мав 1180, а заголовок — 564: він ламався на 4–5 рядків, поки
+   права половина лишалась порожньою. Міра потрібна тексту, а не заголовку.
+
+   --page-w   — ширина контенту сторінки: широка, але не на всю ширину екрана;
+   --measure  — довжина рядка абзацу, за якою око ще не губить наступний рядок. */
+:root {
+  --page-w: 1320px;
+  --measure: 66ch;
+  --sysh-h: 76px;
+}
+
 html { scroll-padding-top: calc(var(--sysh-h) + 12px); }
 
 /* ── SHELL: cinematic-навігація превʼю-напряму ── */
@@ -1727,7 +1740,7 @@ html { scroll-padding-top: calc(var(--sysh-h) + 12px); }
 .sysx-calc-bg.is-lite, .pf-bg.is-lite { background: radial-gradient(120% 90% at 70% 20%, color-mix(in srgb, var(--pure-white) 26%, transparent), transparent 60%), radial-gradient(90% 80% at 20% 90%, color-mix(in srgb, var(--data) 6%, transparent), transparent 55%); }
 .sysx-calc-panel { position: relative; z-index: 2; padding: calc(var(--sysh-h) + clamp(16px, 4vh, 42px)) clamp(24px, 5vw, 68px) clamp(28px, 6vh, 72px); display: grid; align-content: start; gap: clamp(18px, 3vh, 30px); }
 .sysx-calc-head { display: grid; gap: 12px; }
-.sysx-calc-h1 { font-size: clamp(40px, 5.3vw, 76px); }
+.sysx-calc-h1 { font-size: clamp(36px, 4vw, 62px); }
 .sysx-steps { display: flex; gap: 8px; align-items: center; font-size: 11px; letter-spacing: .14em; color: var(--graphite); flex-wrap: wrap; }
 .sysx-steps .on { color: var(--deep); }
 .sysx-steps i { color: var(--silver); font-style: normal; }
@@ -1900,11 +1913,11 @@ html { scroll-padding-top: calc(var(--sysh-h) + 12px); }
    Маску-затухання прибираємо, щоб сітка не гасла внизу довгої сторінки. */
 .pric { position: relative; background: transparent; }
 .pric > .sysx-field { display: none; }
-.pric-in { position: relative; z-index: 1; max-width: 1160px; margin: 0 auto;
+.pric-in { position: relative; z-index: 1; max-width: var(--page-w); margin: 0 auto;
   padding: calc(96px + env(safe-area-inset-top)) clamp(18px, 5vw, 44px) clamp(60px, 9vw, 110px); }
-.pric-head { max-width: 760px; margin-bottom: clamp(28px, 4vw, 48px); }
-.pric-h1 { font-size: clamp(31px, 5.3vw, 58px); margin: 12px 0 14px; }
-.pric-head .sysx-lead { max-width: 62ch; }
+.pric-head { margin-bottom: clamp(28px, 4vw, 48px); }
+.pric-h1 { font-size: clamp(31px, 4.6vw, 68px); margin: 8px 0 0; line-height: 1.04; }
+.pric-head .sysx-lead { max-width: var(--measure); }
 
 /* Картки форматів */
 .pric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(14px, 1.6vw, 20px); align-items: stretch; }
@@ -2076,11 +2089,11 @@ html { scroll-padding-top: calc(var(--sysh-h) + 12px); }
 
 /* ═══ Хаб «Експансія» + підсторінки експертиз (бруталіст) ═══ */
 .xhub, .xp2 { position: relative; min-height: 80vh; padding: calc(90px + env(safe-area-inset-top)) clamp(18px,5vw,64px) clamp(60px,8vw,110px); }
-.xhub-in, .xp2-in { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; }
-.xhub-head { max-width: 86ch; }
+.xhub-in, .xp2-in { position: relative; z-index: 1; max-width: var(--page-w); margin: 0 auto; }
+.xhub-head { }
 .xhub-h1 { max-width: 18ch; }
 .xhub-h1 { font-size: clamp(35px, 6vw, 76px); margin-top: 14px; }
-.xhub-head .sysx-lead { margin-top: 20px; max-width: 78ch; font-size: clamp(14px, 1.4vw, 17px); }
+.xhub-head .sysx-lead { margin-top: 20px; max-width: var(--measure); font-size: clamp(14px, 1.4vw, 17px); }
 .xhub-arch { margin-top: 18px; max-width: 82ch; background: var(--pure-white, #fff); border: var(--bd);
   border-left: 8px solid var(--red); box-shadow: var(--sh); padding: 16px 20px;
   font-size: clamp(13.5px, 1.35vw, 16px); line-height: 1.55; color: var(--charcoal); font-weight: 500; }
@@ -2146,11 +2159,34 @@ html { scroll-padding-top: calc(var(--sysh-h) + 12px); }
 
 /* ═══ «Про нас» (/people) — бруталіст ═══ */
 .about { position: relative; min-height: 80vh; padding: calc(90px + env(safe-area-inset-top)) clamp(18px,5vw,64px) clamp(60px,8vw,110px); }
-.about-in { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; }
-.about-head { max-width: 56ch; }
-.about-h1 { font-size: clamp(35px, 6vw, 76px); margin-top: 14px; }
+.about-in { position: relative; z-index: 1; max-width: var(--page-w); margin: 0 auto; }
+.about-head { }
+.about-h1 { font-size: clamp(35px, 5.4vw, 82px); margin: 8px 0 0; line-height: 1.03; }
 .about-script { display: block; font-size: clamp(26px, 3.5vw, 44px); margin-top: 12px; }
-.about-lead { margin: 22px 0 26px; }
+.about-lead { margin: 22px 0 26px; max-width: var(--measure); }
+
+/* ── Двоколонкові шапки сторінок ──
+   Одна колонка на широкому екрані означала: заголовок на 4 рядки ліворуч і
+   порожнеча праворуч. Ліва колонка ширша (текст веде), права несе фактаж —
+   не декор, а те, що на сторінці все одно є. Нижче 1000px — знову один потік:
+   дві колонки там перетворились би на дві вузькі. */
+.about-head, .pric-head { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 64px); align-items: start; }
+.about-head-full, .pric-head-full { grid-column: 1 / -1; }
+.about-head-l, .pric-head-l { min-width: 0; }
+.about-head-r, .pric-head-r { min-width: 0; display: flex; flex-direction: column; gap: 12px;
+  padding: clamp(18px, 2vw, 26px); border: var(--bd); box-shadow: var(--sh); background: var(--pure-white); }
+.about-facts { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.about-facts li { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: baseline; }
+.about-facts b { font-family: var(--display); font-weight: 900; font-size: clamp(24px, 2.4vw, 34px); letter-spacing: -.02em; color: var(--red-ink); }
+.about-facts span { font-size: 13.5px; line-height: 1.45; color: var(--charcoal); }
+.about-facts-note { font-size: 11.5px; line-height: 1.5; color: var(--graphite); }
+.pric-head-r .sysx-proofstrip { margin: 0; gap: 10px 0; flex-direction: column; }
+.pric-head-r .pric-reassure { margin: 0; }
+@media (max-width: 999px) {
+  .about-head, .pric-head { grid-template-columns: 1fr; }
+  .about-head-r, .pric-head-r { box-shadow: none; }
+}
+
 
 .about-mv { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(18px,2.4vw,26px); margin-top: clamp(34px,5vw,56px); }
 @media (max-width: 760px) { .about-mv { grid-template-columns: 1fr; } }
@@ -2707,8 +2743,9 @@ body.kb-open .pf-bg { display: none !important; }
  * батьківська сторінка: пункт меню, крихта й нормальний шлях до кожної.
  * ───────────────────────────────────────────────────────────────────────── */
 .syshub { position: relative; }
-.syshub-in { max-width: 1180px; margin: 0 auto; padding: 0 clamp(18px, 4vw, 40px) 90px; position: relative; z-index: 1; }
-.syshub-head { padding: clamp(24px, 5vw, 56px) 0 clamp(20px, 3vw, 34px); max-width: 62ch; }
+.syshub-in { max-width: var(--page-w); margin: 0 auto; padding: 0 clamp(18px, 4vw, 40px) 90px; position: relative; z-index: 1; }
+.syshub-head { padding: clamp(24px, 5vw, 56px) 0 clamp(20px, 3vw, 34px); }
+.syshub-head .sysx-lead { max-width: var(--measure); }
 .syshub-h1 { font-size: clamp(33px, 5.2vw, 58px); line-height: 1.02; letter-spacing: -.02em; margin: 12px 0 18px; text-transform: uppercase; }
 
 .syshub-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px;

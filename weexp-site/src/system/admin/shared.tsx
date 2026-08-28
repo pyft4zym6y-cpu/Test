@@ -390,7 +390,7 @@ th{color:#6B675E;font-weight:600;font-size:11px;text-transform:uppercase;letter-
 <h1>${title}</h1>
 ${printButton(INK.red, '0 0 14px')}
 ${bodyHtml}
-<div class="foot">WEEXP — Commerce OS · weexp.agency · hello@weexp.agency · Конфіденційно, не для розповсюдження.</div>
+<div class="foot">WEEXP · weexp.agency · hello@weexp.agency · Конфіденційно, не для розповсюдження.</div>
 </div></body></html>`;
   if (DOC_SINK) { DOC_SINK(html, title); return; }
   const w = window.open('', '_blank');

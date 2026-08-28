@@ -32,7 +32,7 @@ export function Credibility() {
   const lp = useLp();
 
   const METHOD = [
-    { t: 'Commerce OS', d: t('Вісім систем онлайн-продажів як єдине ціле, а не набір послуг.', 'Eight online-sales systems as a single whole, not a set of services.') },
+    { t: t('Система зростання', 'Growth system'), d: t('Вісім систем онлайн-продажів як єдине ціле, а не набір послуг.', 'Eight online-sales systems as a single whole, not a set of services.') },
     { t: t('Рішення за даними', 'Data-driven decisions'), d: t('Кожен висновок звірено з CRM / ERP / GA4, а не «на око».', 'Every conclusion is checked against CRM / ERP / GA4, not by gut feel.') },
     { t: 'Definition of Done', d: t('Чіткий критерій готовності кожної роботи — без «зробили і зникли».', 'A clear completion criterion for every piece of work — no “did it and vanished”.') },
     { t: t('Власник у кожної системи', 'An owner for every system'), d: t('Не універсали — відповідальний за результат у кожній частині.', 'No generalists — someone accountable for the result in each part.') },

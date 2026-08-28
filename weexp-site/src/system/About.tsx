@@ -54,22 +54,40 @@ export function About() {
     <section className="sysx about">
       <div className="sysx-field" aria-hidden="true" />
       <div className="about-in">
+        {/* Двоколонкова шапка: раніше вся сторінка тиснулась у ліву половину,
+            а права лишалась порожньою. Праворуч — не декор, а фактаж, який
+            і так є на сторінці нижче: масштаб, географія, глибина. */}
         <header className="about-head">
-          <span className="sysx-kick">{t('Про нас', 'About us')}</span>
-          <h1 className="sysx-display about-h1">{t('Ми будуємо ', 'We build a ')}<span className="hl">{t('систему', 'system')}</span>,<br />{t('а не залежність', 'not dependency')}</h1>
-          <span className="script about-script">{t('Система замість героїзму.', 'A system instead of heroics.')}</span>
-          <p className="sysx-lead about-lead">{t('WEEXP — це Commerce OS для e-commerce і D2C-брендів. Ми перетворюємо онлайн-продажі з ручного режиму на керовану систему з восьми частин — щоб виторг зростав, а бізнес не тримався на власнику в операційці.', 'WEEXP is a Commerce OS for e-commerce and D2C brands. We turn online sales from manual mode into a managed system of eight parts — so revenue grows and the business doesn’t rest on the owner’s daily grind.')}</p>
+          {/* Заголовок іде на всю ширину контейнера, а не в колонку: інакше
+              двоколонкова шапка лише міняє порожнечу праворуч на переноси
+              ліворуч. Дві колонки починаються нижче заголовка. */}
+          <span className="sysx-kick about-head-full">{t('Про нас', 'About us')}</span>
+          <h1 className="sysx-display about-h1 about-head-full">{t('Ми будуємо ', 'We build a ')}<span className="hl">{t('систему', 'system')}</span>, {t('а не залежність', 'not dependency')}</h1>
+          <span className="script about-script about-head-full">{t('Система замість героїзму.', 'A system instead of heroics.')}</span>
+          <div className="about-head-l">
+          <p className="sysx-lead about-lead">{t('WEEXP будує систему зростання для e-commerce і D2C-брендів. Ми перетворюємо онлайн-продажі з ручного режиму на керовану систему з восьми частин — щоб виторг зростав, а бізнес не тримався на власнику в операційці.', 'WEEXP builds a growth system for e-commerce and D2C brands. We turn online sales from manual mode into a managed system of eight parts — so revenue grows and the business doesn’t rest on the owner’s daily grind.')}</p>
           <div className="sysx-cta-row">
             <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>
             <Link to={lp('/contact')} className="sysx-cta">{t('Залишити заявку', 'Leave a request')} →</Link>
           </div>
+          </div>
+          <aside className="about-head-r">
+            <span className="sysx-kick">{t('Коротко', 'In short')}</span>
+            <ul className="about-facts">
+              <li><b>8</b><span>{t('систем комерції в одній керованій', 'commerce systems in one managed whole')}</span></li>
+              <li><b>11</b><span>{t('напрямів експертизи з власним пулом спеціалістів', 'practices, each with its own pool of specialists')}</span></li>
+              <li><b>17</b><span>{t('трансформацій, доведених до вимірюваного результату', 'transformations taken to a measurable result')}</span></li>
+              <li><b>US · EU · MENA</b><span>{t('ринки, на яких працює команда', 'markets the team works in')}</span></li>
+            </ul>
+            <p className="about-facts-note mono">{t('Кожне число нижче на сторінці розкрито: хто відповідає, за що і з яким результатом.', 'Every number is unpacked further down: who is accountable, for what, and with what result.')}</p>
+          </aside>
         </header>
 
         {/* Хто ми — розгорнутий блок про агентство */}
         <div className="about-sec about-who">
           <span className="sysx-kick">{t('Хто ми', 'Who we are')}</span>
           <div className="about-who-grid">
-            <p className="about-who-p">{t('WEEXP — це Commerce OS: команда й методологія, що будують онлайн-продажі як керовану систему. Ми працюємо з e-commerce і D2C-брендами $0.5–10M — від виробників до відомих брендів на ринках України, ЄС і США.', 'WEEXP is a Commerce OS: a team and methodology that build online sales as a managed system. We work with e-commerce and D2C brands $0.5–10M — from manufacturers to well-known brands across Ukraine, the EU and the US.')}</p>
+            <p className="about-who-p">{t('WEEXP — це команда й методологія, що будують онлайн-продажі як керовану систему. Ми працюємо з e-commerce і D2C-брендами — від виробників до відомих брендів на ринках України, ЄС і США.', 'WEEXP is a team and a methodology that build online sales as a managed system. We work with e-commerce and D2C brands — from manufacturers to well-known brands across Ukraine, the EU and the US.')}</p>
             <p className="about-who-p">{t('Ми не «агентство окремих послуг». Ми діагностуємо бізнес у грошах, знаходимо, де саме витікає виторг, і збираємо вісім систем комерції в одну — стратегію, комерцію, попит, досвід, операції, дані, організацію й експансію. Там, де потрібна вузька експертиза, залучаємо перевірених партнерів і лідерів ринку — але відповідальність за результат тримаємо системно.', 'We are not an “agency of separate services”. We diagnose the business in money, find exactly where revenue leaks, and assemble eight commerce systems into one — strategy, commerce, demand, experience, operations, data, organization and expansion. Where narrow expertise is needed, we bring in vetted partners and market leaders — but we hold accountability for the result systemically.')}</p>
           </div>
           <div className="about-diff">
@@ -114,7 +132,7 @@ export function About() {
         <div className="about-sec">
           <span className="sysx-kick">{t('Команда і власник', 'Team & owner')}</span>
           <h2 className="sysx-display about-team-h">{t('У кожної системи —', 'Every system has')} <span className="hl-y">{t('свій власник', 'its own owner')}</span></h2>
-          <p className="about-team-lead">{t('Ми не «універсали на все». Над вашим проєктом працює команда, структурована за системами Commerce OS: у кожного контуру — відповідальний за результат.', 'We are not “generalists for everything”. Your project is run by a team structured around the Commerce OS systems: every circuit has someone accountable for the result.')}</p>
+          <p className="about-team-lead">{t('Ми не «універсали на все». Над вашим проєктом працює команда, структурована за вісьмома системами: у кожного контуру — відповідальний за результат.', 'We are not “generalists for everything”. Your project is run by a team structured around the eight systems: every circuit has someone accountable for the result.')}</p>
 
           <div className="about-founder">
             {FOUNDER.photo && (

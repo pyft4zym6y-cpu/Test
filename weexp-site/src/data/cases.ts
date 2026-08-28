@@ -61,7 +61,7 @@ export const CASES: CaseStudy[] = [
     ],
     money: 'До €288K маржі на рік недоотримувалось через відсутність системи.',
     system: [
-      '7 шарів Commerce OS: від архітектури каталогу до retention-двигуна.',
+      '7 шарів системи: від архітектури каталогу до retention-двигуна.',
       'CRO-програма: конверсія 0,8% → 4,2% (норма сегмента 0,7–1,5%).',
       'Retention: email + сегментація підняли повторні з 12% до 28%.',
     ],
@@ -89,7 +89,7 @@ export const CASES: CaseStudy[] = [
       ],
       money: 'Up to €288K of margin a year left unrealized for lack of a system.',
       system: [
-        '7 layers of Commerce OS: from catalog architecture to a retention engine.',
+        '7 layers of the system: from catalog architecture to a retention engine.',
         'CRO program: conversion 0.8% → 4.2% (segment norm 0.7–1.5%).',
         'Retention: email + segmentation lifted repeats from 12% to 28%.',
       ],

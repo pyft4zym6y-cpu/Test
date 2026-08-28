@@ -9,10 +9,10 @@ import './system.css';
 export function HomeFaq() {
   const t = useT();
   const FAQ = [
-    { q: t('Що таке Commerce OS?', 'What is Commerce OS?'),
+    { q: t('Що таке система зростання?', 'What is a growth system?'),
       a: t('Ми збираємо вісім систем магазину — від стратегії до операцій — в одну керовану, щоб виторг зростав за рахунок системи, а не ручного режиму й окремих героїв.', 'We assemble eight store systems — from strategy to operations — into one managed system, so revenue grows through the system rather than manual effort and lone heroes.') },
     { q: t('Для кого це?', 'Who is it for?'),
-      a: t('Для D2C та e-commerce брендів $0.5–10M, яким уже тісно в ручному управлінні: продажі є, а масштабування впирається в людей і хаос у процесах.', 'For D2C and e-commerce brands $0.5–10M that have outgrown manual management: sales exist, but scaling hits a ceiling of people and process chaos.') },
+      a: t('Для D2C та e-commerce брендів, яким уже тісно в ручному управлінні: продажі є, а масштабування впирається в людей і хаос у процесах.', 'For D2C and e-commerce brands that have outgrown manual management: sales exist, but scaling hits a ceiling of people and process chaos.') },
     { q: t('З чого почати?', 'Where do I start?'),
       a: t('З безкоштовного експрес-аудиту: за ~2 хвилини він дає число — скільки виторгу витікає щороку — і головне вузьке місце. Далі можна замовити глибокий аудит.', 'With a free express audit: in ~2 minutes it gives you a number — how much revenue leaks each year — and the main bottleneck. Then you can order the deep audit.') },
     { q: t('Коли буде результат?', 'When will there be a result?'),

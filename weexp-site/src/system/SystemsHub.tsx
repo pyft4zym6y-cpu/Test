@@ -4,7 +4,7 @@ import { SYSTEMS } from '@/data/xray';
 import './system.css';
 
 /**
- * /systems — перелік восьми систем Commerce OS.
+ * /systems — перелік восьми частин системи зростання.
  *
  * Сторінки /systems/:slug існували, але адреса /systems була редиректом на
  * якір головної, і в кільце восьми сторінок не входило нічого: кожна
@@ -24,7 +24,7 @@ export function SystemsHub() {
       <span className="sysx-field" aria-hidden="true" />
       <div className="syshub-in">
         <header className="syshub-head">
-          <span className="sysx-kick">{t('Commerce OS · вісім систем', 'Commerce OS · eight systems')}</span>
+          <span className="sysx-kick">{t('Система зростання · вісім частин', 'The growth system · eight parts')}</span>
           <h1 className="sysx-display syshub-h1">
             {t('Система сильна настільки, ', 'A system is only as strong ')}
             <span className="sysx-em">{t('наскільки сильна найслабша частина', 'as its weakest part')}</span>

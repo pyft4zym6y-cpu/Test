@@ -40,7 +40,7 @@ export function ShareButton({ title, className = 'sysx-cta' }: { title?: string;
 
     if (navigator.share) {
       try {
-        await navigator.share({ title: title || 'WEEXP', text: title || 'WEEXP — Commerce OS', url });
+        await navigator.share({ title: title || 'WEEXP', text: title || 'WEEXP — система зростання для e-commerce', url });
         return;
       } catch (e) {
         // Користувач закрив системний діалог — це не помилка, мовчимо.

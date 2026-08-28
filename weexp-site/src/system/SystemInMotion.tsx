@@ -9,7 +9,7 @@ import { HEADLINE_PROOF } from '@/data/cases';
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
 const SystemExplorer = lazy(() => import('@/system/SystemExplorer').then((m) => ({ default: m.SystemExplorer })));
-// Сканована повна карта Commerce OS: 8 систем + вкладені домени (акордеон).
+// Сканована повна карта системи: 8 систем + вкладені домени (акордеон).
 // Меседжинг за роллю ЛПР (§8): одна система — різні виграші.
 const AudienceByRole = lazy(() => import('@/system/AudienceByRole').then((m) => ({ default: m.AudienceByRole })));
 // Механіка довіри (§6): метод, прозорий процес, платформи, реальні сигнали.
@@ -112,7 +112,7 @@ export function SystemInMotion() {
 
         {/* SYMPTOM / VOID */}
         <div ref={sVoid} className="sysx-scene sysx-void">
-          <div className="sysx-kick">{t('Commerce OS для e-commerce і D2C-брендів $0.5–10M', 'Commerce OS for e-commerce & D2C brands $0.5–10M')}</div>
+          <div className="sysx-kick">{t('Система зростання для e-commerce і D2C-брендів', 'A growth system for e-commerce & D2C brands')}</div>
           <h1 className="sysx-display sysx-h1">{t('Система', 'A system')}<br />{t('замість ', 'instead of ')}<span className="sysx-em">{t('героїзму', 'heroics')}</span></h1>
           <p className="sysx-lead">{t('Продажі тримаються на людях і ручному режимі, а не на системі. Збираємо вісім систем в одну керовану — щоб виторг зростав, а бізнес не залежав від вас.', 'Sales rest on people and manual effort, not on a system. We assemble eight systems into one managed system — so revenue grows and the business no longer depends on you.')}</p>
           <div className="sysx-cta-row sysx-void-cta">
@@ -168,7 +168,7 @@ export function SystemInMotion() {
             <i aria-hidden="true" />
             <span><b>8</b> {t('систем під дахом', 'systems under one roof')}</span>
             <i aria-hidden="true" />
-            <span>{t('D2C-бренди ', 'D2C brands ')}<b>$0.5–10M</b></span>
+            <span>{t('e-commerce і ', 'e-commerce & ')}<b>D2C</b></span>
           </div>
           <div className="sysx-cta-row">
             <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>

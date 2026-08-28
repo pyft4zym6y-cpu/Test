@@ -77,7 +77,7 @@ table.toc{border-collapse:collapse;width:100%;margin-bottom:8px}
 <table class="toc">${toc}</table>
 ${printButton(INK.red, '6px 0')}
 ${blocks}
-<div class="foot">WEEXP — Commerce OS · weexp.agency · Внутрішній робочий документ: повний перелік питань, доступів і файлів глибокого аудиту.</div>
+<div class="foot">WEEXP · weexp.agency · Внутрішній робочий документ: повний перелік питань, доступів і файлів глибокого аудиту.</div>
 </div><scr${''}ipt>window.onload=function(){setTimeout(function(){window.print()},400)}</scr${''}ipt></body></html>`;
   w.document.open(); w.document.write(html); w.document.close();
   bindPrint(w);

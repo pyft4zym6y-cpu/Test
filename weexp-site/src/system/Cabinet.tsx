@@ -621,7 +621,7 @@ ${leakRows ? `<h2>Куди тече виторг · розрахунок</h2><ta
 ${sympChips ? `<h2>Позначені симптоми</h2><div>${sympChips}</div>` : ''}
 ${actions ? `<h2>Три перші дії · рекомендації</h2><ol>${actions}</ol>` : ''}
 <h2>Вихідні показники, надані вами</h2><table>${kv(srcRows)}</table>
-<div class="foot">WEEXP — Commerce OS · weexp.agency · Оцінка за наданими даними та бенчмарками ніші; не фінансовий аудит. Точна карта «де саме і чому» — глибокий аудит WEEXP.</div>
+<div class="foot">WEEXP · weexp.agency · Оцінка за наданими даними та бенчмарками ніші; не фінансовий аудит. Точна карта «де саме і чому» — глибокий аудит WEEXP.</div>
 </div></body></html>`;
   w.document.open(); w.document.write(html); w.document.close();
   bindPrint(w);

@@ -247,7 +247,7 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, 
             return <p className="mono adm-empty">{row.hasExpress ? 'є' : 'не рахували'}</p>;
           })()}</Block>}
 
-          {utab === 'deep' && sec === 'result' && <Block title="Прогін рушієм Commerce OS — внутрішнє"><PanelBoundary title="Аудит рушієм"><WorkerAudit userId={row.userId} code={code} rec={rec} reviewer={selfEmail} /></PanelBoundary></Block>}
+          {utab === 'deep' && sec === 'result' && <Block title="Прогін рушієм — внутрішнє"><PanelBoundary title="Аудит рушієм"><WorkerAudit userId={row.userId} code={code} rec={rec} reviewer={selfEmail} /></PanelBoundary></Block>}
 
           {utab === 'inner' && <Block title="Оцінка модулів (C-level)"><PanelBoundary title="Оцінка модулів"><ModuleScoring userId={row.userId} initial={rec.assessment || {}} code={code} rec={rec} onSaved={onChanged} /></PanelBoundary></Block>}
 

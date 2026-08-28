@@ -86,7 +86,7 @@ ${printButton(INK.red, '0 0 14px')}
 <h2>Експрес-аудит</h2>${ex ? `<p class="money">${escH(fmt(ex.total, cur))} <i>/ рік · витік</i></p><table>${kv(exRows)}</table>` : '<p class="empty">Експрес-аудит не проходив.</p>'}
 ${asmKeys.length ? `<h2>C-level оцінка модулів${asmAvg != null ? ` · зрілість ${asmAvg}/100` : ''}</h2><table><tr><td class="k">Модуль</td><td class="c">Score</td><td class="c">Prio</td><td>Розрив / рекомендація</td></tr>${asmRows}</table>` : ''}
 <h2>Статуси доступу до глибокого аудиту</h2>${tierRows ? `<table>${tierRows}</table>` : '<p class="empty">Запитів не було.</p>'}
-<div class="foot">WEEXP — Commerce OS · weexp.agency · hello@weexp.agency · Документ містить конфіденційні дані клієнта. Не для розповсюдження.</div>
+<div class="foot">WEEXP · weexp.agency · hello@weexp.agency · Документ містить конфіденційні дані клієнта. Не для розповсюдження.</div>
 </div></body></html>`;
   w.document.open(); w.document.write(html); w.document.close();
   bindPrint(w);
@@ -136,7 +136,7 @@ h2{font-size:14px;letter-spacing:.04em;color:${INK.red};margin:22px 0 8px;border
 <h1>${escH(doc.title)}</h1>
 ${printButton(INK.red, '14px 0')}
 ${body}
-<div class="foot">WEEXP — Commerce OS · weexp.agency · hello@weexp.agency · Документ містить конфіденційні дані клієнта. Не для розповсюдження.</div>
+<div class="foot">WEEXP · weexp.agency · hello@weexp.agency · Документ містить конфіденційні дані клієнта. Не для розповсюдження.</div>
 </div></body></html>`;
   w.document.open(); w.document.write(html); w.document.close();
   bindPrint(w);

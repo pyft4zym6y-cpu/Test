@@ -100,7 +100,7 @@ export function ContactFilm() {
         <header className="sysx-calc-head">
           <div className="sysx-kick">{t('Наступний крок · Діагноз у грошах', 'Next step · A diagnosis in money')}</div>
           <h1 className="sysx-display sysx-calc-h1">{t('Зростання — це ', 'Growth is a ')}<span className="sysx-em">{t('система', 'system')}</span>.<br />{t('Почнімо з діагнозу.', 'Let’s start with a diagnosis.')}</h1>
-          <p className="sysx-lead">{t('Залиште контакт — повернемося з першим зрізом розриву у грошах. Для e-commerce виробників і D2C-брендів $0.5–10M. Це ще не робота, це діагноз.', 'Leave your contact — we’ll come back with a first read on the gap in money. For e-commerce manufacturers and D2C brands $0.5–10M. This isn’t the work yet — it’s a diagnosis.')}</p>
+          <p className="sysx-lead">{t('Залиште контакт — повернемося з першим зрізом розриву у грошах. Для e-commerce виробників і D2C-брендів. Це ще не робота, це діагноз.', 'Leave your contact — we’ll come back with a first read on the gap in money. For e-commerce manufacturers and D2C brands. This isn’t the work yet — it’s a diagnosis.')}</p>
         </header>
 
         {status === 'ok' ? (

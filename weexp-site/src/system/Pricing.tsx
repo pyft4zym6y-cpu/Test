@@ -54,7 +54,7 @@ export function Pricing() {
       includes: [
         t('Щотижневі спринт-сесії: пріоритети, розбори, рішення', 'Weekly sprint sessions: priorities, reviews, decisions'),
         t('Роадмапа та беклог трансформації під нашим контролем', 'Transformation roadmap and backlog under our control'),
-        t('Ревʼю виконаного проти DoD і еталонів Commerce OS', 'Review of delivered work against DoD and Commerce OS benchmarks'),
+        t('Ревʼю виконаного проти DoD і наших еталонів', 'Review of delivered work against DoD and our benchmarks'),
         t('Доступ до плейбуків, стандартів і чеклістів', 'Access to playbooks, standards, and checklists'),
         t('Прозорий звіт по годинах щомісяця', 'A transparent monthly hours report'),
       ],
@@ -105,7 +105,7 @@ export function Pricing() {
   // Offer-каталог трьох форматів співпраці (реальні, відкриті ціни — без вигадок).
   useJsonLd('pricing-offers', {
     '@context': 'https://schema.org', '@type': 'Service',
-    name: 'WEEXP — Commerce OS', serviceType: 'E-commerce operations & growth',
+    name: 'WEEXP — система зростання для e-commerce', serviceType: 'E-commerce operations & growth',
     provider: { '@type': 'Organization', '@id': 'https://weexp.agency/#org', name: 'WEEXP' },
     areaServed: ['UA', 'EU', 'US'],
     hasOfferCatalog: {
@@ -128,9 +128,13 @@ export function Pricing() {
     <section className="sysx pric" aria-label={t('Формати та ціни', 'Pricing & formats')}>
       <div className="sysx-field" aria-hidden="true" />
       <div className="pric-in">
+        {/* Шапка стала двоколонковою: текст ліворуч, докази праворуч. Раніше
+            все стояло однією колонкою — заголовок ламався на чотири рядки, а
+            права половина екрана лишалась порожньою. */}
         <header className="pric-head">
-          <span className="sysx-kick">{t('Формати співпраці · хто відповідає за результат', 'Cooperation formats · who is responsible for the result')}</span>
-          <h1 className="sysx-display pric-h1">{t('Три формати — за рівнем', 'Three formats — by the level of')}<br />{t('нашої ', 'our ')}<span className="sysx-em">{t('відповідальності', 'responsibility')}</span></h1>
+          <span className="sysx-kick pric-head-full">{t('Формати співпраці · хто відповідає за результат', 'Cooperation formats · who is responsible for the result')}</span>
+          <h1 className="sysx-display pric-h1 pric-head-full">{t('Три формати — за рівнем ', 'Three formats — by the level of ')}{t('нашої ', 'our ')}<span className="sysx-em">{t('відповідальності', 'responsibility')}</span></h1>
+          <div className="pric-head-l">
           <p className="sysx-lead">{t('Різниця не в «пакетах послуг», а в тому, хто несе фінальну відповідальність за результат: ваша команда з нашою картою, ваша команда під нашим контролем — чи ми повністю.', 'The difference isn\'t in "service packages" but in who bears final responsibility for the result: your team with our map, your team under our control — or us entirely.')}</p>
           {/*
             * У першому екрані сторінки цін стояли $2,900 і $4,900 — і жодного
@@ -138,16 +142,20 @@ export function Pricing() {
             * CRM/ERP/GA4, ні зняття ризику. Ціна йшла раніше підстави.
             * Три числа — ті самі, що на головній, з тих самих кейсів.
             */}
-          <ul className="sysx-proofstrip mono pric-proof">
-            {HEADLINE_PROOF.map((h) => (
-              <li key={h.metric}><b>{h.value}</b> <span>{t(h.uk, h.en)}</span></li>
-            ))}
-          </ul>
-          <p className="pric-reassure mono">
-            {t('Дельти звірені з CRM / ERP / GA4 клієнта. ', 'Deltas verified against the client’s CRM / ERP / GA4. ')}
-            <b>{t('100% вартості аудиту зараховується', '100% of the audit fee is credited')}</b>
-            {t(' у перший місяць формату 03 (50% — у формат 02), якщо старт упродовж 30 днів.', ' toward the first month of format 03 (50% toward format 02) if you start within 30 days.')}
-          </p>
+          </div>
+          <aside className="pric-head-r">
+            <span className="sysx-kick">{t('Підстава для цих цін', 'What backs these prices')}</span>
+            <ul className="sysx-proofstrip mono pric-proof">
+              {HEADLINE_PROOF.map((h) => (
+                <li key={h.metric}><b>{h.value}</b> <span>{t(h.uk, h.en)}</span></li>
+              ))}
+            </ul>
+            <p className="pric-reassure mono">
+              {t('Дельти звірені з CRM / ERP / GA4 клієнта. ', 'Deltas verified against the client’s CRM / ERP / GA4. ')}
+              <b>{t('100% вартості аудиту зараховується', '100% of the audit fee is credited')}</b>
+              {t(' у перший місяць формату 03 (50% — у формат 02), якщо старт упродовж 30 днів.', ' toward the first month of format 03 (50% toward format 02) if you start within 30 days.')}
+            </p>
+          </aside>
         </header>
 
         {/* Аудит — обовʼязкові ворота: «Старт — тільки після аудиту» стоїть і в
