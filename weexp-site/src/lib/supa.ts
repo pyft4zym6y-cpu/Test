@@ -276,9 +276,60 @@ export type ProjMember = { id: string; role: string; name: string };
 export type ProjPayment = { id: string; label: string; month: string; amount: number; status: 'paid' | 'pending' };
 export type ProjTariffItem = { id: string; label: string; hours: number; rate: number };
 export type ProjMonth = { id: string; month: string; items: ProjTariffItem[] };
+/**
+ * Життєвий цикл проєкту.
+ *
+ * Досі стан проєкту читався з двох булевих полів (`published`, `closedAt`), і
+ * «проєкт створено, але ще не почали» ніяк не відрізнялось від «на паузі» —
+ * менеджер бачив «Чернетка» і мусив здогадуватись. Кваліфікація живе в заявці
+ * і сюди не дублюється: у «Проєкти» потрапляє лише той, за ким уже вирішили
+ * працювати.
+ */
+export type ProjectStatus = 'new' | 'prep' | 'active' | 'paused' | 'done' | 'archived';
+export const PROJECT_STATUSES: { k: ProjectStatus; l: string; cls: string; note: string }[] = [
+  { k: 'new',      l: 'Новий проєкт', cls: 'wait', note: 'створено із заявки, роботи ще не почались' },
+  { k: 'prep',     l: 'Підготовка',   cls: 'wait', note: 'збираємо дані й доступи, готуємо план' },
+  { k: 'active',   l: 'В роботі',     cls: 'ok',   note: 'план опублікований клієнту й виконується' },
+  { k: 'paused',   l: 'На паузі',     cls: 'wait', note: 'роботи призупинені' },
+  { k: 'done',     l: 'Завершено',    cls: 'ok',   note: 'впровадження закрито' },
+  { k: 'archived', l: 'Архів',        cls: 'none', note: 'прибрано з активної дошки' },
+];
+/**
+ * Стан проєкту. Явне поле має пріоритет; для записів, створених до появи
+ * статусу, виводимо його зі старих ознак — інакше вся історія стала б
+ * «Новий проєкт» і дошка збрехала б у перший же день.
+ */
+export function projectStatus(p?: Project | null): ProjectStatus {
+  if (!p) return 'new';
+  if (p.status) return p.status;
+  if (p.closedAt) return 'done';
+  if (p.published) return 'active';
+  return 'new';
+}
+export const projectStatusLabel = (p?: Project | null) =>
+  PROJECT_STATUSES.find((s) => s.k === projectStatus(p)) || PROJECT_STATUSES[0];
+
+/**
+ * Звідки взявся проєкт. Заявка, клієнт і проєкт — різні сутності, але ланцюг
+ * між ними має бути видно з проєкту, а не відновлюватись пошуком по пошті.
+ * Копіюємо сюди лише те, що на момент створення було в заявці: аудити НЕ
+ * копіюємо — вони живуть у тому ж записі клієнта, і друга копія неминуче
+ * розійшлася б з першою.
+ */
+export type ProjectOrigin = {
+  leadId?: string; at?: string; by?: string;
+  name?: string; email?: string; phone?: string;
+  source?: string; task?: string; timeline?: string; budget?: string; comment?: string;
+  coopType?: string; coopForm?: string; agreed?: string;
+};
+
 export type Project = {
   id?: string;
   title?: string;
+  /** Стан життєвого циклу (див. PROJECT_STATUSES). Порожнє = виводимо зі старих полів. */
+  status?: ProjectStatus;
+  /** Заявка, з якої виріс проєкт (звʼязка «заявка → проєкт»). */
+  origin?: ProjectOrigin;
   startMonth?: string;   // 'YYYY-MM' — місяць 0 діаграми Ганта
   span?: number;         // кількість місяців у діаграмі
   tasks?: ProjTask[];
@@ -292,7 +343,7 @@ export type Project = {
   updatedAt?: string;
 };
 export function emptyProject(): Project {
-  return { id: 'pr_' + Math.random().toString(36).slice(2, 9), title: '', startMonth: '', span: 6, tasks: [], team: [], payments: [], tariff: [], budget: {}, published: false };
+  return { id: 'pr_' + Math.random().toString(36).slice(2, 9), title: '', status: 'new', startMonth: '', span: 6, tasks: [], team: [], payments: [], tariff: [], budget: {}, published: false };
 }
 /** Список проектів клієнта з міграцією зі старого одиночного `project`. */
 export function getProjects(rec?: DiagRecord | null): Project[] {

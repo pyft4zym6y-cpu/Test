@@ -15,6 +15,7 @@ import {
   setTierStatusFor,
   clearTierStatusFor,
   setLeadStatus,
+  type ProjectOrigin,
   setLeadDeal,
   deleteLead,
   deleteDiagnostics,
@@ -46,7 +47,7 @@ import { uid } from './auditTemplate';
 
 import './system.css';
 import './cabinet.css';
-import { ACCESS_SOURCES, TABS, U_TABS, CAP_SUMMARY, EmptyState, FUNNEL, LEAD_STAGES, ST, Shell, Tile, TrafficBlock, Trend, coopLabel, funnelStage, rel, srcName, stageOf, tierLabel, type FunnelStage, type SiteTraffic, type Tab, type UTab } from './admin/shared';
+import { ACCESS_SOURCES, TABS, U_TABS, CAP_SUMMARY, EmptyState, FUNNEL, LEAD_COLUMNS, LEAD_STAGES, ST, Shell, Tile, TrafficBlock, Trend, coopLabel, funnelStage, rel, srcName, stageOf, stageView, tierLabel, type FunnelStage, type LeadView, type SiteTraffic, type Tab, type UTab } from './admin/shared';
 
 /* Важкі екрани вантажимо на вимогу: адмінка відкривається на «Дашборді», а
    картка клієнта, заявка, конструктор шаблону, проєктний офіс і команда потрібні
@@ -336,27 +337,48 @@ export function AdminPanel() {
     setLeads((ls) => (ls || []).map((l) => (l.id === id ? { ...l, deal } : l)));
   };
 
-  // «Завершена» → перевести заявку в проект: створюємо проект у кабінеті клієнта
-  // з даними угоди, звʼязуємо заявку з проектом (deal.projectId), заявку не видаляємо.
+  /**
+   * Заявка → проєкт: єдиний перехід від первинного контакту до роботи.
+   *
+   * Раніше кнопка жила лише на стадії «Завершена», а сама «Завершена» читалась
+   * як «заявку закрито» — менеджер після дзвінка не знав, куди «перетягнути»
+   * клієнта, і поруч існували дві воронки. Тепер: створити проєкт можна з
+   * будь-якої живої стадії, а конвертація сама переводить заявку в кінцевий
+   * стан. Перенесення даних — тут, а не руками в двох місцях.
+   *
+   * Аудити НЕ копіюємо: експрес і глибокий лежать у тому самому записі
+   * клієнта, і копія неминуче розійшлася б з оригіналом. Проєкт бачить їх
+   * через `projectUserId`.
+   */
   const leadToProject = async (lead: LeadRow) => {
     if (!lead.id) return;
     const client = lead.email ? (rows || []).find((r) => (r.email || '').toLowerCase() === lead.email!.toLowerCase()) : undefined;
-    if (!client) { toast('Немає кабінету з email заявки — попросіть клієнта зареєструватись або створіть проект вручну в «Аудит і проєкти».', 'err'); return; }
+    if (!client) { toast('Немає кабінету з email заявки — попросіть клієнта зареєструватись цією ж поштою.', 'err'); return; }
     if (lead.deal?.projectId) { toast('Проект уже створено з цієї заявки — відкриваю картку клієнта'); setOpenLead(null); setOpenUser(client.userId); return; }
     setBusy('conv:' + lead.id);
     const existing = getProjects(client.record);
     const title = `${coopLabel(lead.deal?.coopType) || 'Проект'} · ${client.company || lead.name || lead.email}`;
-    const p = { ...emptyProject(), title, startMonth: new Date().toISOString().slice(0, 7) };
+    const origin: ProjectOrigin = {
+      leadId: lead.id, at: new Date().toISOString(), by: user?.email,
+      name: lead.name, email: lead.email, phone: lead.phone,
+      source: lead.source, task: lead.task, timeline: lead.timeline, budget: lead.budget, comment: lead.comment,
+      coopType: lead.deal?.coopType, coopForm: lead.deal?.coopForm, agreed: lead.deal?.agreed,
+    };
+    const p = { ...emptyProject(), title, status: 'new' as const, origin, startMonth: new Date().toISOString().slice(0, 7) };
     const res = await saveProjectsFor(client.userId, [...existing, p]);
     if (!res.ok) { setBusy(''); toast('Не вдалося створити проект: ' + (res.error || ''), 'err'); return; }
     const deal: LeadDeal = { ...(lead.deal || {}), projectId: p.id, projectUserId: client.userId };
     const dr = await setLeadDeal(lead.id, deal);
+    // Стадію заявки закриваємо самі: інакше конвертована заявка й далі висіла б
+    // у «В роботі» — тобто дошка показувала б роботу, якої вже немає.
+    const sr = stageOf(lead) === 'done' ? { ok: true } : await setLeadStatus(lead.id, 'done');
     setBusy('');
     if (!dr.ok) toast('Проект створено, але звʼязку в заявці не збережено: ' + (dr.error || ''), 'err');
-    else toast('✓ Проект «' + title + '» створено і звʼязано з заявкою');
-    setLeads((ls) => (ls || []).map((l) => (l.id === lead.id ? { ...l, deal } : l)));
+    else if (!sr.ok) toast('Проект створено, але стадію заявки не оновлено: ' + (sr.error || ''), 'err');
+    else toast('✓ Проект «' + title + '» створено, заявка конвертована');
+    setLeads((ls) => (ls || []).map((l) => (l.id === lead.id ? { ...l, deal, status: 'done' as LeadStatus } : l)));
     load();
-    setOpenLead(null); setOpenUser(client.userId);
+    setOpenUser(client.userId);
   };
   // Масові дії над заявками (мультивибір).
   const toggleSel = (id: string) => setSelLeads((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
@@ -678,16 +700,21 @@ export function AdminPanel() {
               leads === null ? <p className="mc-msg mono">Завантаження…</p>
               : comm.length === 0 ? <EmptyState icon="✉" text="Первинних заявок ще немає. Вони зʼявляться тут автоматично з форм сайту (і дублюються на пошту)." />
               : (() => {
-                const count = (k: LeadStatus) => comm.filter((l) => stageOf(l) === k).length;
-                const won = count('won'), total = comm.length, lost = count('lost');
+                // `count` рахує ПОКАЗОВУ стадію (з похідною «конвертована»), а не
+                // сиру: інакше конвертовані заявки лишались би в «Завершених».
+                const count = (k: LeadView) => comm.filter((l) => stageView(l) === k).length;
+                // Раніше тут рахувались 'won' і 'lost' — статуси, яких stageOf не
+                // повертає ніколи (легасі зводяться до done/unqualified). Тобто
+                // «виграно» структурно завжди дорівнювало нулю, а конверсія — 0%.
+                const won = count('converted'), total = comm.length, lost = count('unqualified');
                 const conv = total ? Math.round((won / total) * 100) : 0;
                 return (
                   <>
                     {/* Воронка */}
                     <div className="adm-panel">
-                      <span className="adm-col-h mono">Воронка продажів · {total} заявок · {conv}% виграно</span>
+                      <span className="adm-col-h mono">Воронка продажів · {total} заявок · {conv}% доведено до проєкту</span>
                       <div className="adm-crmfunnel">
-                        {LEAD_STAGES.map((s) => {
+                        {LEAD_COLUMNS.map((s) => {
                           const n = count(s.k); const pct = total ? Math.round((n / total) * 100) : 0;
                           return (
                             <div key={s.k} className="adm-cf-row">
@@ -713,8 +740,8 @@ export function AdminPanel() {
 
                     {/* Пайплайн-дошка */}
                     <div className="adm-board">
-                      {LEAD_STAGES.map((s) => {
-                        const col = comm.filter((l) => stageOf(l) === s.k);
+                      {LEAD_COLUMNS.map((s) => {
+                        const col = comm.filter((l) => stageView(l) === s.k);
                         return (
                           <div key={s.k} className="adm-col">
                             <div className="adm-col-head"><span className={`cab-badge mono tst-${s.cls}`}>{s.l}</span><span className="adm-col-n mono">{col.length}</span></div>
@@ -735,10 +762,7 @@ export function AdminPanel() {
                         );
                       })}
                     </div>
-                    {/* Підказка мовчала про головне: як заявка стає проектом. Саме це
-                        питання й виникало — кнопка є, але живе в картці й лише
-                        на стадії «Завершена». */}
-                    <p className="adm-hint mono">Виграно: {won} · Втрачено: {lost}. Клік по картці — картка заявки, зміна стадії й переведення в проект (зі стадії «Завершена»).</p>
+                    <p className="adm-hint mono">Доведено до проєкту: {won} · відсіяно: {lost}. Клік по картці — картка заявки: стадія, умови і кнопка «Створити проєкт». Конвертована заявка лишається в CRM і показує посилання на проєкт.</p>
                   </>
                 );
               })()

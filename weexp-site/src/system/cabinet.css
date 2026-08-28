@@ -1271,3 +1271,21 @@
 /* Пошук: показуємо, ДЕ саме знайшлось, якщо це не email. */
 .adm-hits { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 2px; font-size: 11px; opacity: .7; padding-left: 2px; }
 .adm-hits i { font-style: normal; }
+
+/* ── Заявка → проєкт: наступний крок і стан проєкту ─────────────────────────
+   Блок «Наступний крок» був сірим текстом на світлому тлі (graphite на cream —
+   контраст нижчий за 4.5:1), тобто головна дія картки читалась найгірше за
+   все на екрані. Тепер це видима панель із рамкою, а не примітка. */
+.adm-nextstep { display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+  padding: 14px 16px; border: var(--bd); box-shadow: var(--sh); background: var(--pure-white); }
+.adm-nextstep.is-done { background: var(--yellow); }
+.adm-nextstep.is-wait { background: var(--mist, #F1E9D4); }
+.adm-nextstep-h { font-size: 15px; font-weight: 800; letter-spacing: -.01em; color: var(--deep); }
+.adm-nextstep-p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--charcoal); max-width: 62ch; }
+.adm-nextstep-p b { color: var(--deep); }
+
+.pj-state { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; margin-bottom: 14px;
+  border: var(--bd); box-shadow: var(--sh); background: var(--pure-white); }
+.pj-state-pick { display: flex; flex-wrap: wrap; gap: 6px; }
+.pj-switch-st { margin-left: 8px; }
+.pj-origin { display: flex; flex-direction: column; gap: 6px; padding-top: 10px; border-top: 1px solid var(--line); }

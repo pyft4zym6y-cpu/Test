@@ -109,6 +109,23 @@ export const stageOf = (l: LeadRow): LeadStatus => {
   const s = l.status || 'new';
   return s === 'proposal' ? 'progress' : s === 'won' ? 'done' : s === 'lost' ? 'unqualified' : s;
 };
+
+/**
+ * «Конвертована в проєкт» — НЕ окремий статус у базі, а факт: із заявки виріс
+ * проєкт. Тримати це ще й статусом означало б дві правди, які розійдуться в
+ * перший же раз, коли проєкт створять, а статус забудуть перевести.
+ */
+export const LEAD_CONVERTED = { k: 'converted' as const, l: 'Конвертована в проєкт', cls: 'ok' };
+export type LeadView = LeadStatus | 'converted';
+export const stageView = (l: LeadRow): LeadView => (l.deal?.projectId ? 'converted' : stageOf(l));
+/** Колонки дошки й воронки: стадії + похідна «конвертована». */
+export const LEAD_COLUMNS: { k: LeadView; l: string; cls: string }[] = [...LEAD_STAGES, LEAD_CONVERTED];
+export const leadStageLabel = (l: LeadRow) => LEAD_COLUMNS.find((s) => s.k === stageView(l)) || LEAD_COLUMNS[0];
+/** Заявку, за якою вже вирішили працювати, можна вести в проєкт. */
+export const canConvert = (l: LeadRow): boolean => {
+  const st = stageOf(l);
+  return !l.deal?.projectId && st !== 'unqualified' && st !== 'archive';
+};
 // Клієнту показуємо єдину послугу «Глибокий аудит» (ключ DEEP). Старі T1–T4 — легасі.
 export const tierLabel = (tid: string) => (tid === 'DEEP' ? 'Глибокий аудит' : tid);
 

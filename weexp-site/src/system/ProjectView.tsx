@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import type { Project, ProjTask, ProjMonth } from '@/lib/supa';
+import { projectStatus, type Project, type ProjTask, type ProjMonth } from '@/lib/supa';
 import { money, AGENCY_CUR } from '@/system/systems';
 
 /**
@@ -46,14 +46,31 @@ export function ProjectView({ projects, en }: { projects: Project[]; en: boolean
   const tariffTotal = useMemo(() => (p?.tariff || []).reduce((s, mo) => s + rowTotal(mo), 0), [p]);
 
   if (!p) {
+    /*
+     * Проєкт може вже існувати й бути ще не опублікованим. Досі клієнт у
+     * будь-якому разі бачив «Очікує на публікацію менеджером» — опис НАШОЇ
+     * механіки, з якого не зрозуміло, чи чекають чогось від нього. Тепер стан
+     * названо, і якщо хід за клієнтом — сказано, що саме зробити.
+     */
+    const draft = (projects || [])[0];
+    const st = draft ? projectStatus(draft) : null;
+    const waitsForClient = st === 'new' || st === 'prep';
     return (
       <section className="cab-sec">
         <header className="cab-sec-head">
           <span className="sysx-kick">{t('Мій проект', 'My project')}</span>
-          <h1 className="sysx-display cab-h1">{t('Проект готується', 'Project is being prepared')}</h1>
-          <p className="cab-lead">{t('Тут зʼявиться повний план ведення: діаграма Ганта, команда, фінансовий календар і помісячна тарифікація. Розділ вмикається, коли менеджер опублікує проект.', 'Your full delivery plan will appear here: Gantt chart, team, financial calendar and monthly tariffication. It turns on once your manager publishes the project.')}</p>
+          <h1 className="sysx-display cab-h1">
+            {!draft ? t('Проект готується', 'Project is being prepared')
+              : waitsForClient ? t('Проєкт створено', 'Project created')
+              : t('Проєкт готується до публікації', 'Project is being finalised')}
+          </h1>
+          <p className="cab-lead">{t('Тут зʼявиться повний план ведення: діаграма Ганта, команда, фінансовий календар і помісячна тарифікація.', 'Your full delivery plan will appear here: Gantt chart, team, financial calendar and monthly tariffication.')}</p>
         </header>
-        <div className="pj-empty mono">{t('Очікує на публікацію менеджером', 'Awaiting publication by your manager')}</div>
+        <div className="pj-empty mono">
+          {!draft ? t('Очікуємо початку роботи над проєктом', 'Waiting for the project to start')
+            : waitsForClient ? t('Очікуємо дії клієнта: відкрийте глибокий аудит і надайте потрібні дані та доступи — саме з них збирається план проєкту.', 'Waiting on you: open the deep audit and provide the required data and access — the project plan is built from them.')
+            : t('Хід за нами: збираємо план і скоро відкриємо цей розділ.', 'On us: we are assembling the plan and will open this section shortly.')}
+        </div>
       </section>
     );
   }

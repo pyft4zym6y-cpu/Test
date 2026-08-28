@@ -5,7 +5,7 @@ import { money as fmt, curOf, AGENCY_CUR, sysLabel, type SysKey } from '../syste
 
 import '../system.css';
 import '../cabinet.css';
-import { Block, COOP_TYPES, LEAD_STAGES, SaveBadge, stageOf } from './shared';
+import { Block, COOP_TYPES, LEAD_STAGES, SaveBadge, canConvert, leadStageLabel, stageOf } from './shared';
 import { useAutosave } from './useAutosave';
 import { auditStatusOf, nextStep, phaseOf, slaOf, PHASES, STAGE_OF } from './auditRequests';
 
@@ -65,6 +65,48 @@ export function LeadDetail({ lead, allRows, onClose, onStatus, onDeal, onConvert
                   onClick={() => cur !== s.k && onStatus(lead.id || '', s.k)}>{s.l}</button>
               ))}
             </div>
+            {/* «Конвертована» кнопкою не ставиться: це не думка менеджера про
+                заявку, а факт наявності проєкту. Дві правди тут розійшлися б у
+                перший же раз, коли проєкт створять, а статус забудуть. */}
+            {deal.projectId && <p className="mono adm-hint">Стан: <b>{leadStageLabel({ ...lead, deal }).l}</b> — виводиться з наявності проєкту, вручну не ставиться.</p>}
+          </Block>
+
+          {/*
+            * Головний перехід усієї CRM: заявка → проєкт.
+            *
+            * Раніше кнопка ховалась до стадії «Завершена», а «Завершена»
+            * читалась як «заявку закрито» — після дзвінка менеджер не знав,
+            * куди подіти клієнта, і шукав його між двома воронками. Тепер це
+            * перший блок картки: одна дія, і видно, чого бракує, якщо вона
+            * поки недоступна.
+            */}
+          <Block title="Наступний крок">
+            {deal.projectId ? (
+              <div className="adm-nextstep is-done">
+                <b className="adm-nextstep-h">✓ Проєкт створено</b>
+                <p className="adm-nextstep-p">Заявка конвертована. Дані контакту, умови угоди й задача перенесені в проєкт; аудити клієнта звʼязані через його кабінет.</p>
+                <button className="mc-btn ok" onClick={() => onConvert(lead)}>Перейти до проєкту →</button>
+              </div>
+            ) : !canConvert(lead) ? (
+              <div className="adm-nextstep is-wait">
+                <b className="adm-nextstep-h">Заявка поза роботою</b>
+                <p className="adm-nextstep-p">Стадія — «{LEAD_STAGES.find((x) => x.k === cur)?.l || cur}». Проєкт створюють за заявкою, з якою працюють: поверніть її в «Кваліфікована» або «В роботі».</p>
+              </div>
+            ) : !client ? (
+              <div className="adm-nextstep is-wait">
+                <b className="adm-nextstep-h">Потрібен кабінет клієнта</b>
+                <p className="adm-nextstep-p">Проєкт живе в кабінеті клієнта, а кабінету з поштою <b>{lead.email || '—'}</b> ще немає. Запросіть клієнта зареєструватись цією ж поштою — після цього кнопка запрацює.</p>
+                {lead.email && <a className="mc-btn" href={`mailto:${lead.email}?subject=${encodeURIComponent('Доступ до кабінету weexp')}`}>Написати клієнту →</a>}
+              </div>
+            ) : (
+              <div className="adm-nextstep">
+                <b className="adm-nextstep-h">Створити проєкт</b>
+                <p className="adm-nextstep-p">Після дзвінка й рішення працювати. Перенесемо контакти, задачу, терміни, бюджет і умови угоди; заявка отримає стан «Конвертована в проєкт» і залишиться в CRM.</p>
+                <button className="mc-btn ok" disabled={busy === 'conv:' + lead.id} onClick={() => onConvert(lead)}>
+                  {busy === 'conv:' + lead.id ? 'Створюємо проєкт…' : 'Створити проєкт →'}
+                </button>
+              </div>
+            )}
           </Block>
 
           <Block title="Чек-лист угоди">
@@ -110,45 +152,6 @@ export function LeadDetail({ lead, allRows, onClose, onStatus, onDeal, onConvert
             </div>
           </Block>
 
-          {/*
-            * Блок показувався ЛИШЕ на стадії «Завершена». Менеджер, дивлячись
-            * на «Нову» заявку, не бачив ні кнопки, ні натяку, що переведення в
-            * проект узагалі існує — звідси питання «як перевести клієнта з
-            * воронки в проект». Тепер крок видно завжди: якщо ще рано або
-            * немає кабінету, блок каже, ЧОГО саме бракує, замість того щоб
-            * зникнути. Правило «проект створюємо із завершеної заявки»
-            * лишається — воно просто перестало бути невидимим.
-            */}
-          <Block title="Наступний крок">
-            {deal.projectId ? (
-                <div className="adm-deal-conv">
-                  <p className="mono adm-empty">Проект уже створено з цієї заявки.</p>
-                  <button className="mc-btn ok" onClick={() => onConvert(lead)}>Відкрити проект клієнта →</button>
-                </div>
-              ) : cur !== 'done' ? (
-                <div className="adm-deal-conv">
-                  <p className="mono adm-empty">
-                    Проект створюється із <b>завершеної</b> заявки. Зараз стадія — «{LEAD_STAGES.find((x) => x.k === cur)?.l || cur}»:
-                    переведіть заявку в «Завершена» (кнопки стадій угорі картки), і тут зʼявиться кнопка.
-                  </p>
-                  <button className="mc-btn ok" onClick={() => lead.id && onStatus(lead.id, 'done')}>Позначити завершеною →</button>
-                </div>
-              ) : !client ? (
-                <div className="adm-deal-conv">
-                  <p className="mono adm-empty">
-                    Проект створюється в кабінеті клієнта, а кабінету з поштою <b>{lead.email || '—'}</b> ще немає.
-                    Запросіть клієнта зареєструватись цією ж поштою — після цього кнопка запрацює.
-                  </p>
-                </div>
-              ) : (
-                <div className="adm-deal-conv">
-                  <p className="mono adm-empty">Заявка завершена — переведіть її в проект: створимо проект у «Проектах», підтягнемо клієнта, компанію і умови угоди. Заявка залишиться в CRM.</p>
-                  <button className="mc-btn ok" disabled={busy === 'conv:' + lead.id} onClick={() => onConvert(lead)}>
-                    {busy === 'conv:' + lead.id ? 'Створюємо проект…' : '⇢ Перевести в проєкти'}
-                  </button>
-                </div>
-              )}
-          </Block>
           <Block title="Заявка">
             <ul className="adm-kv">
               {rows.filter(([, v]) => v).map(([k, v]) => <li key={k}><i>{k}</i><span>{v}</span></li>)}

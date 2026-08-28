@@ -6,6 +6,9 @@ import {
   saveProjectsFor,
   emptyProject,
   loadPmDirectory,
+  PROJECT_STATUSES,
+  projectStatus,
+  projectStatusLabel,
   savePmDirectory,
   aiDraftProject,
   type Project,
@@ -40,14 +43,16 @@ export function ProjectsManager({ userId, initial, code, company }: { userId: st
   const delProject = async () => { if (!cur) return; if (!(await askConfirm({ title: 'Видалити цей проект?', text: 'Задачі, бюджет і платежі проекту зникнуть разом з ним.', confirmLabel: 'Видалити', tone: 'bad' }))) return; const nl = list.filter((_, i) => i !== idx); apply(nl); setActive(0); };
 
   const pubN = list.filter((x) => x.published).length;
-  const savedNote = `${list.length} проект(и), ${pubN} видно клієнту`;
+  const activeN = list.filter((x) => projectStatus(x) === 'active').length;
+  const savedNote = `${list.length} проект(и), ${activeN} у роботі, ${pubN} видно клієнту`;
 
   return (
     <div className="pj-mgr">
       <div className="pj-mgr-bar">
         {list.map((x, i) => (
           <button key={x.id || i} className={`pj-switch-b${i === idx ? ' on' : ''}`} onClick={() => setActive(i)}>
-            {x.published ? '● ' : '○ '}{x.title || `Проект ${i + 1}`}
+            {x.title || `Проект ${i + 1}`}
+            <span className={`cab-badge mono tst-${projectStatusLabel(x).cls} pj-switch-st`}>{projectStatusLabel(x).l}</span>
           </button>
         ))}
         <button className="mc-btn sm" onClick={addProject}>+ Проект</button>
@@ -97,7 +102,10 @@ export function ProjectEditor({ value, onChange, code, company }: { value: Proje
 
   // 🪄 Згенерувати чернетку плану з відповідей аудиту клієнта.
   const genDraft = async () => {
-    if (!code) { setAi('Немає коду аудиту — клієнт ще не відкрив розділ.'); return; }
+    // Було: «Немає коду аудиту — клієнт ще не відкрив розділ». Це опис нашої
+    // внутрішньої механіки; ані менеджеру, ані клієнту з нього не зрозуміло,
+    // чия черга ходити.
+    if (!code) { setAi('Чернетку складаємо з відповідей глибокого аудиту, а клієнт його ще не почав. Відкрийте клієнту глибокий аудит і попросіть заповнити анкету — після цього кнопка спрацює.'); return; }
     setAi('Читаю аудит…');
     const id = await findAuditIdByCode(code);
     if (!id) { setAi('Аудит не знайдено.'); return; }
@@ -154,8 +162,40 @@ export function ProjectEditor({ value, onChange, code, company }: { value: Proje
   const patchItem = (mi: number, ii: number, patch: Partial<ProjTariffItem>) =>
     upd({ tariff: tariff.map((m, j) => (j === mi ? { ...m, items: (m.items || []).map((it, q) => (q === ii ? { ...it, ...patch } : it)) } : m)) });
 
+  const st = projectStatus(p);
   return (
     <div className="pj-ed">
+      {/*
+        * Стан проєкту й звідки він узявся — перше, що має бачити менеджер.
+        * Досі стан читався з двох галочок («опубліковано», «закрито»), і
+        * «проєкт створено, роботи ще не почались» виглядало як «Чернетка» —
+        * слово, яке нічого не каже ні про чергу, ні про наступний крок.
+        */}
+      <div className="pj-state">
+        <div className="pj-state-pick">
+          {PROJECT_STATUSES.map((x) => (
+            <button key={x.k} className={`adm-stage-b tst-${x.cls}${st === x.k ? ' on' : ''}`}
+              title={x.note} onClick={() => st !== x.k && upd({ status: x.k })}>{x.l}</button>
+          ))}
+        </div>
+        <p className="mono adm-hint">{PROJECT_STATUSES.find((x) => x.k === st)?.note}</p>
+        {p.origin && (
+          <div className="pj-origin">
+            <span className="adm-acc-cat-h mono">Із заявки</span>
+            <ul className="adm-kv">
+              {p.origin.at && <li><i>Конвертовано</i><span>{new Date(p.origin.at).toLocaleDateString('uk-UA')}{p.origin.by ? ` · ${p.origin.by}` : ''}</span></li>}
+              {p.origin.name && <li><i>Контакт</i><span>{p.origin.name}{p.origin.phone ? ` · ${p.origin.phone}` : ''}{p.origin.email ? ` · ${p.origin.email}` : ''}</span></li>}
+              {p.origin.source && <li><i>Джерело</i><span>{p.origin.source}</span></li>}
+              {p.origin.task && <li><i>Задача</i><span>{p.origin.task}</span></li>}
+              {p.origin.timeline && <li><i>Терміни</i><span>{p.origin.timeline}</span></li>}
+              {p.origin.budget && <li><i>Бюджет із заявки</i><span>{p.origin.budget}</span></li>}
+              {p.origin.coopType && <li><i>Тип співпраці</i><span>{p.origin.coopType}{p.origin.coopForm ? ` · ${p.origin.coopForm}` : ''}</span></li>}
+              {p.origin.agreed && <li><i>Домовились</i><span>{p.origin.agreed}</span></li>}
+            </ul>
+            <p className="mono adm-hint">Аудити клієнта не копіюються в проєкт — вони живуть у цьому ж кабінеті, вкладки «Експрес-аудит» і «Глибокий аудит».</p>
+          </div>
+        )}
+      </div>
       <div className="pj-ai">
         <button className="mc-btn ai" onClick={genDraft}>🪄 AI-чернетка з аудиту</button>
         {presets.length > 0 && (

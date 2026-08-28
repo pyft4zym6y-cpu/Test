@@ -196,6 +196,9 @@ const LEAD_STAGES = [
   { k:'archive',     l:'Архів',           cls:'none' },
 ];
 /* Легаси-статусы старых записей сводятся к текущим — как в stageOf(). */
+/* «Конвертована в проєкт» — не статус у базі, а факт наявності проєкту. */
+const CONVERTED = { k: 'converted', l: 'Конвертована в проєкт', cls: 'ok' };
+const stageView = (l) => (l.deal?.projectId ? 'converted' : stageOf(l));
 const stageOf = (l) => { const s = l.status || 'new';
   return s === 'proposal' ? 'progress' : s === 'won' ? 'done' : s === 'lost' ? 'unqualified' : s; };
 
@@ -362,7 +365,7 @@ const hit = (o, q) => !q || JSON.stringify(o).toLowerCase().includes(q.toLowerCa
 function viewLeads() {
   const rows = S.leads.filter((l) => hit(l, S.q));
   if (!rows.length) return bar('Пошук по заявках') + `<p class="empty">${S.q ? 'Нічого не знайшлось.' : 'Заявок поки немає.'}</p>`;
-  const by = LEAD_STAGES.map((st) => [st, rows.filter((l) => stageOf(l) === st.k)]).filter(([,r]) => r.length);
+  const by = [...LEAD_STAGES, CONVERTED].map((st) => [st, rows.filter((l) => stageView(l) === st.k)]).filter(([,r]) => r.length);
   return bar('Пошук по заявках') + by.map(([st, list]) => `
     <h2 class="sec">${st.l} · ${list.length}</h2>
     <div class="grid">${list.map((l) => `
@@ -395,12 +398,12 @@ function viewClients() {
 }
 
 function viewBoard() {
-  const n = (k) => S.leads.filter((l) => stageOf(l) === k).length;
+  const n = (k) => S.leads.filter((l) => stageView(l) === k).length;
   const fun = (k) => S.clients.filter((c) => funnelStage(c) === k).length;
   const kpi = (list) => `<div class="kpi">${list.map(([b,s]) => `<div><b>${b}</b><span>${s}</span></div>`).join('')}</div>`;
   return `<h2 class="sec">Заявки</h2>${kpi([
       [S.leads.length,'усього'], [n('new'),'нові'], [n('qualified'),'кваліфіковані'],
-      [n('progress'),'в роботі'], [n('done'),'завершені'],
+      [n('progress'),'в роботі'], [n('done'),'завершені'], [n('converted'),'у проєкті'],
     ])}
     <h2 class="sec">Клієнти</h2>${kpi([
       [S.clients.length,'усього'],
@@ -450,7 +453,8 @@ function panelLead(id) {
     </dl></div>
     ${Object.keys(d).length ? `<div class="blk"><h4>Угода</h4><dl>
       ${row('Тип', COOP[d.coopType] || d.coopType)}${row('Форма', d.coopForm)}
-      ${row('Сума', Number.isFinite(d.amount) ? money(d.amount, d.currency) : d.amount)}
+      ${row('Домовились', d.agreed)}
+      ${d.contractSigned ? '<dt>Договір</dt><dd>укладено</dd>' : ''}
       ${d.paidFirst ? '<dt>Оплата</dt><dd>перший платіж отримано</dd>' : ''}
       ${d.projectId ? `<dt>Проект</dt><dd>${esc(d.projectId)}</dd>` : ''}
     </dl></div>` : ''}
@@ -512,7 +516,7 @@ function csv() {
     ? [['email','company','stage','updated'], ...S.clients.filter((c)=>hit(c,S.q))
         .map((c) => [c.email, c.company||'', funnelStage(c), c.updatedAt||''])]
     : [['created','name','email','phone','stage','source','task','budget'], ...S.leads.filter((l)=>hit(l,S.q))
-        .map((l) => [l.at||'', l.name||'', l.email||'', l.phone||'', stageOf(l), l.source||'', l.task||'', l.budget||''])];
+        .map((l) => [l.at||'', l.name||'', l.email||'', l.phone||'', stageView(l), l.source||'', l.task||'', l.budget||''])];
   const text = rows.map((r) => r.map((v) => '"' + String(v ?? '').replace(/"/g,'""') + '"').join(',')).join('\n');
   const url = URL.createObjectURL(new Blob(['﻿' + text], { type:'text/csv;charset=utf-8' }));
   const a = document.createElement('a');
