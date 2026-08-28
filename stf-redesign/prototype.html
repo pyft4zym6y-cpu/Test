@@ -1,314 +1,381 @@
 <title>Миловарні традиції — прототип</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500;600&family=Onest:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500;600;700&family=Onest:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
+/* ============================================================
+   ТОКЕНИ
+   Контраст перевірено за WCAG: основний текст ≥ 4.5:1,
+   дрібні мітки в темній темі ≈ 7:1 (рекомендація HIG для Dark Mode).
+   ============================================================ */
 :root{
   --ground:#EDF0EA;
   --paper:#FFFFFF;
   --paper-2:#E4E9DE;
-  --ink:#14180F;
-  --ink-2:#4C5545;
-  --ink-3:#78826F;
+  --ink:#14180F;        /* 16.2:1 на --ground */
+  --ink-2:#4C5545;      /*  7.9:1 на --ground */
+  --ink-3:#5E6857;      /*  5.1:1 на --ground */
   --line:#CBD3C3;
   --line-soft:#DCE2D5;
-  --gold:#8E6A0E;
-  --gold-fill:#D9A82B;
-  --gold-hov:#C4952010;
-  --deep:#16302A;
-  --deep-2:#1E4038;
+  --gold:#7A5B0B;       /*  5.5:1 на --ground — золото для тексту */
+  --gold-fill:#D9A82B;  /* золото для заливок і ліній */
+  --gold-soft:#D9A82B1A;
+  --deep:#132B24;
+  --deep-2:#1B3A31;
+  --deep-3:#0D1F1A;
   --pl-mark:#1E4038;
-  --on-deep:#E7EEE7;
-  --on-deep-2:#A8BBAF;
-  --maxw:1220px;
+  --on-deep:#EAF1E9;    /* 14.4:1 на --deep */
+  --on-deep-2:#A8BBAF;  /*  7.0:1 на --deep */
+  --hair-deep:rgba(234,241,233,.16);
+  --film:rgba(234,241,233,.055);
+  --maxw:1240px;
   --f-display:"Unbounded","Trebuchet MS",system-ui,sans-serif;
   --f-body:"Onest","Segoe UI",system-ui,sans-serif;
   --f-mono:"JetBrains Mono","SFMono-Regular",Consolas,monospace;
+  --ease:cubic-bezier(.22,.61,.36,1);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --ground:#0F130E;--paper:#161B15;--paper-2:#1D231B;
-    --ink:#E9EDE3;--ink-2:#A7B19D;--ink-3:#7C8674;
-    --line:#2E362B;--line-soft:#242B22;
-    --gold:#E0B341;--gold-fill:#D9A82B;--gold-hov:#D9A82B14;
-    --deep:#12271F;--deep-2:#1A3830;--pl-mark:#5E9A80;--on-deep:#DDE7DC;--on-deep-2:#93A899;
+    --ink:#E9EDE3;--ink-2:#AEB8A4;--ink-3:#97A18E;   /* 6.9:1 на --ground */
+    --line:#303829;--line-soft:#242B22;
+    --gold:#E7BC4E;--gold-fill:#D9A82B;--gold-soft:#D9A82B1F;
+    --deep:#101F1B;--deep-2:#18302A;--deep-3:#0A1614;--pl-mark:#5E9A80;
+    --on-deep:#E4ECE3;--on-deep-2:#9FB3A6;
   }
 }
 :root[data-theme="dark"]{
   --ground:#0F130E;--paper:#161B15;--paper-2:#1D231B;
-  --ink:#E9EDE3;--ink-2:#A7B19D;--ink-3:#7C8674;
-  --line:#2E362B;--line-soft:#242B22;
-  --gold:#E0B341;--gold-fill:#D9A82B;--gold-hov:#D9A82B14;
-  --deep:#12271F;--deep-2:#1A3830;--pl-mark:#5E9A80;--on-deep:#DDE7DC;--on-deep-2:#93A899;
+  --ink:#E9EDE3;--ink-2:#AEB8A4;--ink-3:#97A18E;
+  --line:#303829;--line-soft:#242B22;
+  --gold:#E7BC4E;--gold-fill:#D9A82B;--gold-soft:#D9A82B1F;
+  --deep:#101F1B;--deep-2:#18302A;--deep-3:#0A1614;--pl-mark:#5E9A80;
+  --on-deep:#E4ECE3;--on-deep-2:#9FB3A6;
 }
+
 *{box-sizing:border-box}
-body{background:var(--ground);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;padding-bottom:0}
-.wrap{max-width:var(--maxw);margin:0 auto;padding-left:26px;padding-right:26px}
-@media (max-width:640px){.wrap{padding-left:16px;padding-right:16px}}
+body{background:var(--ground);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:var(--maxw);margin:0 auto;padding-left:28px;padding-right:28px}
+@media (max-width:640px){.wrap{padding-left:18px;padding-right:18px}}
+
+/* ---- типографічна шкала ---- */
 h1,h2,h3,h4{font-family:var(--f-display);margin:0;text-wrap:balance;font-weight:500}
-h1{font-size:clamp(2rem,4.8vw,3.5rem);line-height:1.05;letter-spacing:-.038em}
-h2{font-size:clamp(1.45rem,2.9vw,2.1rem);line-height:1.13;letter-spacing:-.032em}
-h3{font-size:1.05rem;line-height:1.3;letter-spacing:-.018em}
-h4{font-size:.92rem;letter-spacing:-.01em}
+h1{font-size:clamp(2.15rem,5.6vw,4.15rem);line-height:.99;letter-spacing:-.045em;font-weight:600}
+h2{font-size:clamp(1.6rem,3.4vw,2.6rem);line-height:1.06;letter-spacing:-.038em;font-weight:600}
+h3{font-size:1.06rem;line-height:1.28;letter-spacing:-.02em}
+h4{font-size:.94rem;letter-spacing:-.012em}
 p{margin:0}
 a{color:inherit;text-decoration:none}
-ul{margin:0;padding:0;list-style:none}
-button{font:inherit;color:inherit;cursor:pointer}
+ul,ol{margin:0;padding:0;list-style:none}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:none}
 .mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
-.eyebrow{font-family:var(--f-mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.16em;color:var(--ink-3)}
-:focus-visible{outline:2px solid var(--gold-fill);outline-offset:3px}
+.eyebrow{font-family:var(--f-mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.18em;color:var(--ink-3)}
+:focus-visible{outline:2px solid var(--gold-fill);outline-offset:3px;border-radius:2px}
+[hidden]{display:none!important}
+
+/* ---- кнопки: ціль натискання ≥ 44px (HIG) ---- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  min-height:44px;padding:12px 20px;border:1px solid var(--gold-fill);
+  background:var(--gold-fill);color:#1A1405;font-weight:600;font-size:.88rem;border-radius:3px;
+  transition:transform .18s var(--ease),filter .18s var(--ease);white-space:nowrap;
+}
+.btn:hover{filter:brightness(1.06);transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--ink-2);background:var(--gold-soft)}
+.btn.on-deep-ghost{background:transparent;color:var(--on-deep);border-color:var(--hair-deep)}
+.btn.on-deep-ghost:hover{border-color:var(--gold-fill);background:var(--film)}
+.btn.sm{min-height:40px;padding:9px 16px;font-size:.82rem}
+.btn.lg{min-height:52px;padding:15px 26px;font-size:.95rem}
 
 /* ---- банер прототипу ---- */
-.protobar{
-  background:var(--deep);color:var(--on-deep-2);font-family:var(--f-mono);font-size:.7rem;
-  letter-spacing:.06em;padding:8px 0;text-align:center;
-}
+.protobar{background:var(--deep-3);color:var(--on-deep-2);font-family:var(--f-mono);font-size:.68rem;letter-spacing:.08em;padding:9px 18px;text-align:center}
 .protobar b{color:var(--gold-fill);font-weight:500}
 
 /* ---- шапка ---- */
-.hdr{
-  position:sticky;top:0;z-index:40;background:var(--ground);
-  border-bottom:1px solid var(--line);
+.hdr{position:sticky;top:0;z-index:60;background:var(--deep-3);border-bottom:1px solid var(--hair-deep);color:var(--on-deep)}
+.hdr-in{display:flex;align-items:center;gap:28px;height:66px}
+.logo{display:flex;flex-direction:column;line-height:1.12;flex:none}
+.logo .l1{font-family:var(--f-display);font-weight:600;font-size:1.02rem;letter-spacing:-.035em}
+.logo .l2{font-family:var(--f-mono);font-size:.58rem;letter-spacing:.16em;color:var(--on-deep-2);text-transform:uppercase}
+.nav{display:flex;gap:22px;font-size:.88rem;margin-left:auto}
+.nav a{display:flex;align-items:center;min-height:44px;color:var(--on-deep-2);border-bottom:1px solid transparent;transition:color .16s,border-color .16s}
+.nav a:hover{color:var(--on-deep);border-bottom-color:var(--gold-fill)}
+@media (max-width:1040px){.nav{display:none}}
+.hdr-act{display:flex;align-items:center;gap:14px;margin-left:auto}
+@media (min-width:1041px){.hdr-act{margin-left:0}}
+.tel{font-family:var(--f-mono);font-size:.82rem;color:var(--on-deep);white-space:nowrap}
+@media (max-width:820px){.tel{display:none}}
+
+/* ============================================================
+   ГЕРОЙ — цеховий екран
+   ============================================================ */
+.hero{background:var(--deep);color:var(--on-deep);position:relative;overflow:hidden}
+.hero::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(120% 90% at 78% 18%, rgba(217,168,43,.10), transparent 62%);
 }
-.hdr-in{display:flex;align-items:center;gap:26px;height:64px}
-.logo{display:flex;flex-direction:column;line-height:1.1;flex:none}
-.logo .l1{font-family:var(--f-display);font-weight:600;font-size:1rem;letter-spacing:-.03em}
-.logo .l2{font-family:var(--f-mono);font-size:.6rem;letter-spacing:.14em;color:var(--ink-3);text-transform:uppercase}
-.nav{display:flex;gap:20px;font-size:.88rem;margin-left:auto}
-.nav a{padding:4px 0;border-bottom:1px solid transparent;color:var(--ink-2);transition:color .15s,border-color .15s}
-.nav a:hover,.nav a:focus-visible{color:var(--ink);border-color:var(--gold-fill)}
-@media (max-width:1000px){.nav{display:none}}
-.hdr-act{display:flex;align-items:center;gap:12px;margin-left:auto}
-@media (min-width:1001px){.hdr-act{margin-left:0}}
-.tel{font-family:var(--f-mono);font-size:.82rem;white-space:nowrap}
-@media (max-width:760px){.tel{display:none}}
+.hero-in{position:relative;z-index:1;padding-top:58px;padding-bottom:0}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr);gap:54px;align-items:center}
+@media (max-width:1000px){.hero-grid{grid-template-columns:minmax(0,1fr);gap:36px}}
+.hero-l{display:flex;flex-direction:column;gap:24px}
+.hero .eyebrow{color:var(--gold-fill)}
+.hero h1{color:var(--on-deep)}
+.hero h1 .thin{font-weight:400;color:var(--on-deep-2)}
+.hero p.sub{font-size:clamp(1rem,1.4vw,1.16rem);color:var(--on-deep-2);max-width:50ch}
 
-.btn{
-  display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border:1px solid var(--gold-fill);
-  background:var(--gold-fill);color:#1A1405;font-weight:600;font-size:.86rem;border-radius:2px;
-  transition:filter .15s;white-space:nowrap;
-}
-.btn:hover{filter:brightness(1.07)}
-.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
-.btn.ghost:hover{border-color:var(--ink-2);background:var(--gold-hov)}
-.btn.on-deep{background:var(--gold-fill);color:#1A1405;border-color:var(--gold-fill)}
-.btn.on-deep.ghost{background:transparent;color:var(--on-deep);border-color:rgba(231,238,231,.35)}
-.btn.sm{padding:8px 14px;font-size:.8rem}
-.btn.lg{padding:14px 24px;font-size:.92rem}
-
-/* ---- герой ---- */
-.hero{padding-top:60px}
-.hero-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.85fr);gap:52px;align-items:start}
-@media (max-width:940px){.hero-grid{grid-template-columns:minmax(0,1fr);gap:34px}}
-.hero-l{display:flex;flex-direction:column;gap:22px}
-.hero p.sub{font-size:clamp(1rem,1.5vw,1.14rem);color:var(--ink-2);max-width:54ch}
-
-.paths{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:6px}
-@media (max-width:560px){.paths{grid-template-columns:minmax(0,1fr)}}
+/* дві траєкторії — матеріал поверх фону */
+.paths{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:600px){.paths{grid-template-columns:minmax(0,1fr)}}
 .path{
-  display:flex;flex-direction:column;gap:9px;padding:20px 20px 18px;background:var(--paper);
-  border:1px solid var(--line);border-top:3px solid var(--gold-fill);border-radius:2px;
-  transition:border-color .18s,transform .18s;
+  position:relative;display:flex;flex-direction:column;gap:9px;padding:20px 20px 18px;
+  background:var(--film);border:1px solid var(--hair-deep);border-radius:4px;overflow:hidden;
+  transition:background .2s var(--ease),border-color .2s var(--ease),transform .2s var(--ease);
 }
-.path:hover{border-color:var(--ink-2);border-top-color:var(--gold-fill);transform:translateY(-2px)}
-.path.pl{border-top-color:var(--pl-mark)}
-.path .k{font-family:var(--f-mono);font-size:.66rem;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3)}
-.path h3{font-size:1.08rem}
-.path p{font-size:.85rem;color:var(--ink-2);line-height:1.45}
-.path .go{margin-top:6px;font-size:.84rem;font-weight:600;color:var(--gold);display:flex;align-items:center;gap:7px}
-.path:hover .go{gap:11px}
-.path .go svg{transition:transform .18s}
+.path::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--gold-fill)}
+.path.pl::before{background:var(--pl-mark)}
+.path:hover{background:rgba(234,241,233,.1);border-color:rgba(234,241,233,.34);transform:translateY(-3px)}
+.path .k{font-family:var(--f-mono);font-size:.64rem;letter-spacing:.15em;text-transform:uppercase;color:var(--on-deep-2)}
+.path h3{color:var(--on-deep)}
+.path p{font-size:.85rem;color:var(--on-deep-2);line-height:1.45}
+.path .go{margin-top:8px;display:flex;align-items:center;gap:8px;font-size:.85rem;font-weight:600;color:var(--gold-fill);min-height:24px}
+.path .go svg{transition:transform .2s var(--ease)}
+.path:hover .go svg{transform:translateX(4px)}
 
-/* виробничий талон */
-.ticket{background:var(--deep);color:var(--on-deep);border-radius:2px;padding:24px 22px;display:flex;flex-direction:column;gap:0}
-.ticket .t-h{
-  display:flex;justify-content:space-between;align-items:baseline;gap:12px;
-  padding-bottom:12px;border-bottom:1px solid rgba(231,238,231,.22);
-  font-family:var(--f-mono);font-size:.66rem;letter-spacing:.13em;text-transform:uppercase;color:var(--on-deep-2);
+/* екран лінії */
+.screen{border:1px solid var(--hair-deep);border-radius:4px;background:var(--deep-3);overflow:hidden}
+.screen-bar{
+  display:flex;justify-content:space-between;align-items:center;gap:14px;padding:10px 14px;
+  border-bottom:1px solid var(--hair-deep);font-family:var(--f-mono);font-size:.63rem;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--on-deep-2);
 }
-.t-row{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:13px 0;border-bottom:1px solid rgba(231,238,231,.12)}
-.t-row:last-of-type{border-bottom:none}
-.t-row .lbl{font-size:.82rem;color:var(--on-deep-2);max-width:16ch}
-.t-row .val{font-family:var(--f-display);font-weight:500;font-size:1.5rem;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
-.t-row .val small{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.06em;font-weight:400;color:var(--on-deep-2);margin-left:5px}
-.ticket .t-f{padding-top:13px;border-top:1px solid rgba(231,238,231,.22);font-family:var(--f-mono);font-size:.64rem;color:var(--on-deep-2);letter-spacing:.05em;line-height:1.5}
+.screen-bar .live{display:flex;align-items:center;gap:7px;color:var(--gold-fill)}
+.pulse{width:6px;height:6px;border-radius:50%;background:var(--gold-fill);animation:pulse 2.4s var(--ease) infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+#line{display:block;width:100%;height:262px}
+@media (max-width:600px){#line{height:190px}}
+.screen-foot{
+  display:flex;justify-content:space-between;gap:12px;padding:10px 14px;border-top:1px solid var(--hair-deep);
+  font-family:var(--f-mono);font-size:.63rem;color:var(--on-deep-2);letter-spacing:.06em;flex-wrap:wrap;
+}
+.screen-foot b{color:var(--on-deep);font-weight:500}
 
-/* ---- смуга доказів ---- */
-.proof{margin-top:58px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:20px 0}
-.proof-in{display:flex;align-items:center;gap:28px;flex-wrap:wrap;justify-content:space-between}
-.proof .lab{font-family:var(--f-mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);flex:none}
-.marks{display:flex;gap:12px;flex-wrap:wrap}
-.mark{
-  font-family:var(--f-display);font-weight:600;font-size:.82rem;letter-spacing:.02em;
-  padding:7px 14px;border:1px solid var(--line);color:var(--ink-2);border-radius:2px;
+/* смуга цифр */
+.figures{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;
+  margin-top:52px;border-top:1px solid var(--hair-deep);
 }
+@media (max-width:760px){.figures{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.fig{padding:22px 22px 26px;border-right:1px solid var(--hair-deep);display:flex;flex-direction:column;gap:5px}
+.fig:first-child{padding-left:0}
+.fig:last-child{border-right:none}
+@media (max-width:760px){.fig:nth-child(2n){border-right:none}.fig:nth-child(3),.fig:nth-child(4){border-top:1px solid var(--hair-deep)}.fig:nth-child(odd){padding-left:0}}
+.fig .v{font-family:var(--f-display);font-weight:600;font-size:clamp(1.7rem,3.4vw,2.5rem);letter-spacing:-.045em;font-variant-numeric:tabular-nums;line-height:1}
+.fig .v small{font-family:var(--f-mono);font-size:.62rem;letter-spacing:.12em;font-weight:400;color:var(--gold-fill);margin-left:7px;vertical-align:.45em}
+.fig .l{font-size:.82rem;color:var(--on-deep-2);line-height:1.35}
 
 /* ---- секції ---- */
-section{padding-top:74px;padding-bottom:74px}
-.sec-h{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:30px;flex-wrap:wrap}
-.sec-h .l{display:flex;flex-direction:column;gap:10px;max-width:56ch}
-.sec-h p{color:var(--ink-2);font-size:.96rem}
+section{padding-top:88px;padding-bottom:88px}
+.sec-h{display:flex;justify-content:space-between;align-items:flex-end;gap:26px;margin-bottom:34px;flex-wrap:wrap}
+.sec-h .l{display:flex;flex-direction:column;gap:12px;max-width:58ch}
+.sec-h p{color:var(--ink-2);font-size:.97rem}
 
-/* категорії */
-.cats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:2px;overflow:hidden}
-@media (max-width:880px){.cats{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:560px){.cats{grid-template-columns:minmax(0,1fr)}}
-.cat{background:var(--paper);padding:22px 20px;display:flex;flex-direction:column;gap:12px;transition:background .15s}
-.cat:hover{background:var(--gold-hov)}
-.cat .ico{color:var(--gold);height:34px;display:flex;align-items:center}
-.cat h3{font-size:1rem}
-.cat .meta{font-family:var(--f-mono);font-size:.72rem;color:var(--ink-3);line-height:1.7;margin-top:auto;padding-top:12px;border-top:1px solid var(--line-soft)}
-.cat .brands{font-size:.8rem;color:var(--ink-2)}
+/* ---- смуга партнерів ---- */
+.proof{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding-top:22px;padding-bottom:22px}
+.proof-in{display:flex;align-items:center;gap:30px;flex-wrap:wrap;justify-content:space-between}
+.proof .lab{font-family:var(--f-mono);font-size:.66rem;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-3);flex:none}
+.marks{display:flex;gap:10px;flex-wrap:wrap}
+.mark{font-family:var(--f-display);font-weight:600;font-size:.8rem;letter-spacing:.01em;padding:9px 15px;border:1px solid var(--line);color:var(--ink-2);border-radius:3px}
 
-.after-cats{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:22px}
-.after-cats .hint{font-size:.84rem;color:var(--ink-3)}
+/* ---- категорії ---- */
+.cats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+@media (max-width:900px){.cats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:580px){.cats{grid-template-columns:minmax(0,1fr)}}
+.cat{
+  position:relative;background:var(--paper);padding:24px 22px;display:flex;flex-direction:column;gap:13px;
+  min-height:216px;transition:background .18s var(--ease);
+}
+.cat::after{content:"";position:absolute;left:0;bottom:0;height:2px;width:0;background:var(--gold-fill);transition:width .28s var(--ease)}
+.cat:hover{background:var(--gold-soft)}
+.cat:hover::after{width:100%}
+.cat .art{height:52px;display:flex;align-items:flex-end;color:var(--gold)}
+.cat h3{font-size:1.02rem}
+.cat .brands{font-size:.81rem;color:var(--ink-2)}
+.cat .meta{font-family:var(--f-mono);font-size:.71rem;color:var(--ink-3);line-height:1.7;margin-top:auto;padding-top:13px;border-top:1px solid var(--line-soft)}
+.after-cats{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:24px}
+.after-cats .hint{font-size:.85rem;color:var(--ink-3)}
 
-/* ---- Private Label ---- */
-.pl-sec{background:var(--deep);color:var(--on-deep);padding:74px 0}
+/* ============================================================
+   PRIVATE LABEL
+   ============================================================ */
+.pl-sec{background:var(--deep);color:var(--on-deep);padding-top:88px;padding-bottom:88px}
 .pl-sec h2{color:var(--on-deep)}
 .pl-sec .eyebrow{color:var(--gold-fill)}
-.pl-top{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:48px;align-items:start;margin-bottom:44px}
-@media (max-width:900px){.pl-top{grid-template-columns:minmax(0,1fr);gap:30px}}
-.pl-top p{color:var(--on-deep-2);font-size:1rem;max-width:52ch}
-.pl-nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:rgba(231,238,231,.2);border:1px solid rgba(231,238,231,.2);border-radius:2px}
-.pl-num{background:var(--deep);padding:16px 14px;display:flex;flex-direction:column;gap:4px}
-.pl-num .v{font-family:var(--f-display);font-size:1.5rem;font-weight:500;letter-spacing:-.03em;color:var(--on-deep)}
+.pl-top{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:52px;align-items:end;margin-bottom:52px}
+@media (max-width:960px){.pl-top{grid-template-columns:minmax(0,1fr);gap:30px;align-items:start}}
+.pl-top p{color:var(--on-deep-2);max-width:50ch}
+.pl-nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--hair-deep);border:1px solid var(--hair-deep);border-radius:4px;overflow:hidden}
+.pl-num{background:var(--deep);padding:17px 15px;display:flex;flex-direction:column;gap:5px}
+.pl-num .v{font-family:var(--f-display);font-size:1.45rem;font-weight:600;letter-spacing:-.04em}
 .pl-num .l{font-size:.76rem;color:var(--on-deep-2);line-height:1.35}
 
-.steps{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;background:rgba(231,238,231,.18);border:1px solid rgba(231,238,231,.18);border-radius:2px;margin-bottom:44px}
-@media (max-width:1000px){.steps{grid-template-columns:repeat(4,minmax(0,1fr))}}
-@media (max-width:620px){.steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.step{background:var(--deep);padding:15px 13px;display:flex;flex-direction:column;gap:6px;min-height:104px}
-.step .n{font-family:var(--f-mono);font-size:.66rem;color:var(--gold-fill)}
-.step .t{font-size:.85rem;font-weight:600;line-height:1.3}
-.step .d{font-family:var(--f-mono);font-size:.66rem;color:var(--on-deep-2);margin-top:auto}
+/* конвеєр процесу */
+.track{position:relative;margin-bottom:52px}
+.track-rail{position:relative;height:2px;background:var(--hair-deep);margin:0 0 0 0}
+.track-fill{position:absolute;left:0;top:0;height:2px;background:var(--gold-fill);width:calc(var(--p,0) * 100%);transition:width .12s linear}
+.track-bar{
+  position:absolute;top:-9px;left:calc(var(--p,0) * 100%);width:26px;height:20px;margin-left:-13px;
+  background:linear-gradient(180deg,#F5F0E2,#DCD2B8);border-radius:3px;
+  box-shadow:0 2px 10px rgba(0,0,0,.34);transition:left .12s linear;
+}
+.track-bar::after{content:"";position:absolute;inset:5px 6px;border:1px solid rgba(19,43,36,.32);border-radius:1px}
+.stations{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;margin-top:22px}
+@media (max-width:1000px){.stations{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.track-rail,.track-bar{display:none}}
+@media (max-width:620px){.stations{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.st{
+  padding:15px 14px 16px;border-left:1px solid var(--hair-deep);display:flex;flex-direction:column;gap:6px;min-height:112px;
+  opacity:.42;transition:opacity .35s var(--ease);
+}
+.st:first-child{border-left:none;padding-left:0}
+@media (max-width:1000px){.st{border-left:none;padding-left:0;border-top:1px solid var(--hair-deep);padding-top:13px;min-height:0}}
+.st.on{opacity:1}
+.st .n{font-family:var(--f-mono);font-size:.64rem;color:var(--gold-fill);letter-spacing:.1em}
+.st .t{font-size:.87rem;font-weight:600;line-height:1.28}
+.st .d{font-family:var(--f-mono);font-size:.65rem;color:var(--on-deep-2);margin-top:auto}
 
 /* калькулятор */
-.calc{background:var(--deep-2);border:1px solid rgba(231,238,231,.2);border-radius:2px;padding:26px 24px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:36px}
-@media (max-width:860px){.calc{grid-template-columns:minmax(0,1fr);gap:26px}}
-.calc-l{display:flex;flex-direction:column;gap:20px}
-.f-group{display:flex;flex-direction:column;gap:9px}
-.f-group .lbl{font-family:var(--f-mono);font-size:.66rem;letter-spacing:.13em;text-transform:uppercase;color:var(--gold-fill)}
+.calc{background:var(--deep-2);border:1px solid var(--hair-deep);border-radius:4px;padding:28px 26px;display:grid;grid-template-columns:minmax(0,1.28fr) minmax(0,1fr);gap:38px}
+@media (max-width:900px){.calc{grid-template-columns:minmax(0,1fr);gap:28px;padding:22px 18px}}
+.calc-l{display:flex;flex-direction:column;gap:22px}
+.f-group{display:flex;flex-direction:column;gap:10px}
+.f-group .lbl{font-family:var(--f-mono);font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold-fill)}
 .opts{display:flex;flex-wrap:wrap;gap:8px}
 .opt{
-  padding:8px 14px;border:1px solid rgba(231,238,231,.3);background:transparent;color:var(--on-deep);
-  font-size:.83rem;border-radius:2px;transition:background .14s,border-color .14s;
+  min-height:44px;padding:10px 16px;border:1px solid var(--hair-deep);color:var(--on-deep);
+  font-size:.84rem;border-radius:3px;transition:background .15s var(--ease),border-color .15s var(--ease);
 }
 .opt:hover{border-color:var(--gold-fill)}
 .opt[aria-pressed="true"]{background:var(--gold-fill);border-color:var(--gold-fill);color:#1A1405;font-weight:600}
-input[type=range]{width:100%;accent-color:var(--gold-fill)}
-.range-row{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:.7rem;color:var(--on-deep-2)}
-.calc-r{background:var(--deep);border:1px solid rgba(231,238,231,.2);border-radius:2px;padding:20px 18px;display:flex;flex-direction:column;gap:14px}
-.res-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding-bottom:11px;border-bottom:1px solid rgba(231,238,231,.14)}
+input[type=range]{width:100%;accent-color:var(--gold-fill);min-height:44px}
+.range-row{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:.71rem;color:var(--on-deep-2)}
+.range-row b{color:var(--gold-fill);font-weight:500}
+.calc-r{background:var(--deep-3);border:1px solid var(--hair-deep);border-radius:4px;padding:22px 20px;display:flex;flex-direction:column;gap:15px}
+.res-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--hair-deep)}
 .res-row:last-of-type{border-bottom:none;padding-bottom:0}
 .res-row .rl{font-size:.8rem;color:var(--on-deep-2)}
-.res-row .rv{font-family:var(--f-display);font-weight:500;font-size:1.22rem;letter-spacing:-.03em;font-variant-numeric:tabular-nums;text-align:right}
-.res-note{font-family:var(--f-mono);font-size:.64rem;color:var(--on-deep-2);line-height:1.55}
+.res-row .rv{font-family:var(--f-display);font-weight:600;font-size:1.2rem;letter-spacing:-.04em;font-variant-numeric:tabular-nums;text-align:right}
+.res-note{font-family:var(--f-mono);font-size:.65rem;color:var(--on-deep-2);line-height:1.6}
+.calc-r .res-note:last-child{margin-top:auto;padding-top:10px}
 
 /* ---- виробництво ---- */
-.prod{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:44px;align-items:start}
-@media (max-width:880px){.prod{grid-template-columns:minmax(0,1fr);gap:28px}}
-.lines{border-top:1px solid var(--line)}
-.line{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;padding:13px 0;border-bottom:1px solid var(--line-soft);align-items:baseline}
-.line .ln{font-size:.92rem}
+.prod{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:46px;align-items:start}
+@media (max-width:900px){.prod{grid-template-columns:minmax(0,1fr);gap:30px}}
+.lines{border-top:1px solid var(--line);margin-top:15px}
+.line{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;padding:14px 0;border-bottom:1px solid var(--line-soft);align-items:baseline}
+.line .ln{font-size:.93rem}
 .line .lv{font-family:var(--f-mono);font-size:.8rem;color:var(--ink-2);white-space:nowrap}
-.docs{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:2px}
-.doc{background:var(--paper);padding:13px 16px;display:flex;justify-content:space-between;gap:14px;align-items:center;transition:background .15s}
-.doc:hover{background:var(--gold-hov)}
-.doc .dn{font-size:.88rem}
+.docs{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-top:15px}
+.doc{background:var(--paper);min-height:52px;padding:14px 17px;display:flex;justify-content:space-between;gap:14px;align-items:center;transition:background .15s var(--ease)}
+.doc:hover{background:var(--gold-soft)}
+.doc .dn{font-size:.89rem}
 .doc .dt{font-family:var(--f-mono);font-size:.68rem;color:var(--ink-3);white-space:nowrap}
 
-/* ---- бренди ---- */
-.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:2px;background:var(--paper)}
-table{width:100%;border-collapse:collapse;font-size:.88rem;min-width:640px}
-th,td{text-align:left;padding:12px 15px;border-bottom:1px solid var(--line-soft);vertical-align:top}
-th{font-family:var(--f-mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.11em;color:var(--ink-3);font-weight:400;background:var(--paper-2);white-space:nowrap}
+/* ---- таблиці ---- */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:4px;background:var(--paper)}
+table{width:100%;border-collapse:collapse;font-size:.88rem;min-width:660px}
+th,td{text-align:left;padding:13px 16px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-family:var(--f-mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-3);font-weight:400;background:var(--paper-2);white-space:nowrap}
 tbody tr:last-child td{border-bottom:none}
-td.bname{font-family:var(--f-display);font-weight:500;letter-spacing:-.02em;white-space:nowrap}
-.seg{font-family:var(--f-mono);font-size:.68rem;padding:2px 8px;border:1px solid var(--line);color:var(--ink-2);white-space:nowrap;border-radius:2px}
+tbody tr{transition:background .14s var(--ease)}
+tbody tr:hover{background:var(--gold-soft)}
+td.bname{font-family:var(--f-display);font-weight:600;letter-spacing:-.03em;white-space:nowrap}
+.seg{font-family:var(--f-mono);font-size:.68rem;padding:3px 9px;border:1px solid var(--line);color:var(--ink-2);white-space:nowrap;border-radius:3px}
 
 /* ---- як працюємо ---- */
-.flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:2px}
-@media (max-width:820px){.flow{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:520px){.flow{grid-template-columns:minmax(0,1fr)}}
-.fl{background:var(--paper);padding:20px 18px;display:flex;flex-direction:column;gap:8px}
-.fl .fn{font-family:var(--f-mono);font-size:.66rem;color:var(--gold)}
-.fl p{font-size:.85rem;color:var(--ink-2)}
-.fl .ft{margin-top:auto;padding-top:12px;border-top:1px solid var(--line-soft);font-family:var(--f-mono);font-size:.7rem;color:var(--ink-3)}
+.flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+@media (max-width:860px){.flow{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:540px){.flow{grid-template-columns:minmax(0,1fr)}}
+.fl{background:var(--paper);padding:22px 20px;display:flex;flex-direction:column;gap:9px}
+.fl .fn{font-family:var(--f-mono);font-size:.65rem;color:var(--gold);letter-spacing:.1em}
+.fl p{font-size:.86rem;color:var(--ink-2)}
+.fl .ft{margin-top:auto;padding-top:13px;border-top:1px solid var(--line-soft);font-family:var(--f-mono);font-size:.71rem;color:var(--ink-3)}
 
 /* ---- FAQ ---- */
 .faq{border-top:1px solid var(--line)}
 .q{border-bottom:1px solid var(--line-soft)}
-.q button{
-  width:100%;background:none;border:none;padding:16px 0;display:flex;justify-content:space-between;
-  gap:18px;align-items:baseline;text-align:left;font-size:.98rem;font-weight:500;
-}
+.q button{width:100%;min-height:56px;padding:17px 0;display:flex;justify-content:space-between;gap:20px;align-items:baseline;text-align:left;font-size:1rem;font-weight:500;transition:color .15s}
 .q button:hover{color:var(--gold)}
-.q .sign{font-family:var(--f-mono);color:var(--gold);flex:none;font-size:1rem;line-height:1}
-.q .a{display:none;padding:0 0 18px;font-size:.9rem;color:var(--ink-2);max-width:70ch}
-.q.open .a{display:block}
+.q .sign{font-family:var(--f-mono);color:var(--gold);flex:none;font-size:1.05rem;line-height:1}
+.q .a{padding:0 0 20px;font-size:.91rem;color:var(--ink-2);max-width:72ch}
 
 /* ---- фінальний CTA ---- */
-.cta{background:var(--deep);color:var(--on-deep);padding:70px 0}
+.cta{background:var(--deep);color:var(--on-deep);padding-top:84px;padding-bottom:84px}
 .cta h2{color:var(--on-deep)}
-.cta-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.85fr);gap:52px;align-items:start}
-@media (max-width:900px){.cta-grid{grid-template-columns:minmax(0,1fr);gap:32px}}
-.cta p.sub{color:var(--on-deep-2);max-width:48ch;margin-top:14px}
-form{display:flex;flex-direction:column;gap:16px;margin-top:26px}
-.field{display:flex;flex-direction:column;gap:7px}
-.field label{font-family:var(--f-mono);font-size:.66rem;letter-spacing:.13em;text-transform:uppercase;color:var(--gold-fill)}
+.cta .eyebrow{color:var(--gold-fill)}
+.cta-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.82fr);gap:54px;align-items:start}
+@media (max-width:940px){.cta-grid{grid-template-columns:minmax(0,1fr);gap:34px}}
+.cta p.sub{color:var(--on-deep-2);max-width:46ch;margin-top:15px}
+form{display:flex;flex-direction:column;gap:18px;margin-top:30px}
+.field{display:flex;flex-direction:column;gap:8px}
+.field .flbl{font-family:var(--f-mono);font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold-fill)}
 .field input{
-  background:var(--deep-2);border:1px solid rgba(231,238,231,.28);color:var(--on-deep);
-  padding:12px 14px;font:inherit;font-size:.92rem;border-radius:2px;
+  background:var(--deep-2);border:1px solid var(--hair-deep);color:var(--on-deep);
+  min-height:50px;padding:13px 15px;font:inherit;font-size:.93rem;border-radius:3px;
+  transition:border-color .15s var(--ease);
 }
-.field input::placeholder{color:rgba(168,187,175,.7)}
+.field input::placeholder{color:rgba(168,187,175,.72)}
 .field input:focus{border-color:var(--gold-fill);outline:none}
 .consent{font-family:var(--f-mono);font-size:.66rem;color:var(--on-deep-2);line-height:1.6}
-.mgr{background:var(--deep-2);border:1px solid rgba(231,238,231,.2);border-radius:2px;padding:22px 20px;display:flex;flex-direction:column;gap:14px}
-.mgr .who{display:flex;gap:14px;align-items:center}
-.avatar{
-  width:52px;height:52px;flex:none;border-radius:50%;background:var(--gold-fill);color:#1A1405;
-  display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-weight:600;font-size:1.05rem;
-}
+.mgr{background:var(--deep-2);border:1px solid var(--hair-deep);border-radius:4px;padding:24px 22px;display:flex;flex-direction:column;gap:16px}
+.mgr .who{display:flex;gap:15px;align-items:center}
+.avatar{width:56px;height:56px;flex:none;border-radius:50%;background:var(--gold-fill);color:#1A1405;display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-weight:600;font-size:1.08rem}
 .mgr .nm{font-weight:600}
-.mgr .ro{font-size:.8rem;color:var(--on-deep-2)}
-.mgr .contacts{display:flex;flex-direction:column;gap:9px;padding-top:14px;border-top:1px solid rgba(231,238,231,.18)}
-.mgr .contacts a{font-family:var(--f-mono);font-size:.84rem;display:flex;gap:9px;align-items:center}
+.mgr .ro{font-size:.81rem;color:var(--on-deep-2)}
+.mgr .contacts{display:flex;flex-direction:column;gap:2px;padding-top:15px;border-top:1px solid var(--hair-deep)}
+.mgr .contacts a{min-height:44px;display:flex;gap:11px;align-items:center;font-family:var(--f-mono);font-size:.85rem;transition:color .15s}
 .mgr .contacts a:hover{color:var(--gold-fill)}
-.mgr .sla{font-family:var(--f-mono);font-size:.66rem;color:var(--gold-fill);letter-spacing:.06em}
+.mgr .sla{font-family:var(--f-mono);font-size:.66rem;color:var(--gold-fill);letter-spacing:.07em}
 
 /* ---- підвал ---- */
-.ftr{border-top:1px solid var(--line);padding:44px 0 40px}
-.ftr-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:32px}
-@media (max-width:820px){.ftr-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:480px){.ftr-grid{grid-template-columns:minmax(0,1fr)}}
-.fcol{display:flex;flex-direction:column;gap:9px}
-.fcol .fh{font-family:var(--f-mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px}
-.fcol a{font-size:.87rem;color:var(--ink-2)}
+.ftr{border-top:1px solid var(--line);padding-top:48px;padding-bottom:44px}
+.ftr-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:34px}
+@media (max-width:860px){.ftr-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:500px){.ftr-grid{grid-template-columns:minmax(0,1fr)}}
+.fcol{display:flex;flex-direction:column;gap:2px}
+.fcol .fh{font-family:var(--f-mono);font-size:.66rem;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px}
+.fcol a{min-height:34px;display:flex;align-items:center;font-size:.88rem;color:var(--ink-2);transition:color .15s}
 .fcol a:hover{color:var(--ink)}
-.ftr-bot{margin-top:36px;padding-top:20px;border-top:1px solid var(--line-soft);display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;font-family:var(--f-mono);font-size:.68rem;color:var(--ink-3)}
+.ftr-bot{margin-top:38px;padding-top:22px;border-top:1px solid var(--line-soft);display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;font-family:var(--f-mono);font-size:.68rem;color:var(--ink-3)}
 
-/* ---- липкий рядок дій (мобільний) ---- */
+/* ---- липкий рядок дій ---- */
 .sticky{
-  position:fixed;left:0;right:0;bottom:0;z-index:50;display:none;
-  background:var(--paper);border-top:1px solid var(--line);padding:9px 12px;
-  gap:8px;box-shadow:0 -6px 20px rgba(0,0,0,.09);
+  position:fixed;left:12px;right:12px;bottom:12px;z-index:70;display:none;gap:8px;
+  background:var(--deep-3);border:1px solid var(--hair-deep);border-radius:5px;padding:8px;
+  box-shadow:0 8px 28px rgba(0,0,0,.34);
+  transform:translateY(130%);transition:transform .32s var(--ease);
 }
-.sticky.show{display:flex}
-@media (min-width:761px){.sticky{display:none!important}}
+.sticky.on{display:flex;transform:translateY(0)}
+@media (min-width:821px){.sticky{display:none!important}}
 .sticky a{
-  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;
-  font-family:var(--f-mono);font-size:.6rem;letter-spacing:.06em;color:var(--ink-2);text-transform:uppercase;
+  flex:1;min-height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  font-family:var(--f-mono);font-size:.6rem;letter-spacing:.1em;color:var(--on-deep-2);text-transform:uppercase;border-radius:3px;
 }
-.sticky a.main{background:var(--gold-fill);color:#1A1405;font-weight:600;border-radius:2px;flex:1.6}
-@media (max-width:760px){body{padding-bottom:64px}}
+.sticky a.main{background:var(--gold-fill);color:#1A1405;font-weight:600;flex:1.5}
+@media (max-width:820px){body{padding-bottom:76px}}
 
-[hidden]{display:none!important}
-.lbl-like{font-family:var(--f-mono);font-size:.66rem;letter-spacing:.13em;text-transform:uppercase;color:var(--gold-fill)}
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* ---- поява секцій ---- */
+.rise{opacity:0;transform:translateY(18px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
+.rise.in{opacity:1;transform:none}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+  .rise{opacity:1;transform:none}
+  .st{opacity:1}
+}
 </style>
 
-<div class="protobar">ПРОТОТИП ГОЛОВНОЇ · <b>stf.com.ua</b> · цифри й логотипи — плейсхолдери формату, замінюються фактичними даними фабрики</div>
+<div class="protobar">ПРОТОТИП ГОЛОВНОЇ · <b>stf.com.ua</b> · цифри, логотипи й коефіцієнти калькулятора — плейсхолдери формату</div>
 
 <header class="hdr">
   <div class="wrap hdr-in">
@@ -316,7 +383,7 @@ form{display:flex;flex-direction:column;gap:16px;margin-top:26px}
       <span class="l1">Миловарні традиції</span>
       <span class="l2">Фабрика мила · з 2015</span>
     </a>
-    <nav class="nav">
+    <nav class="nav" aria-label="Головне меню">
       <a href="#cats">Продукція</a>
       <a href="#pl">Private Label</a>
       <a href="#production">Виробництво</a>
@@ -333,61 +400,75 @@ form{display:flex;flex-direction:column;gap:16px;margin-top:26px}
 
 <main id="top">
 
-  <!-- ГЕРОЙ -->
-  <div class="wrap hero">
-    <div class="hero-grid">
-      <div class="hero-l">
-        <span class="eyebrow">Українська фабрика повного циклу</span>
-        <h1>Мило, гелі та побутова хімія — від рецептури до палети</h1>
-        <p class="sub">Виробляємо під власними торговими марками й під брендом замовника. Понад 7 540 тонн відвантажено національним мережам і дистриб'юторам.</p>
+  <!-- ============ ГЕРОЙ ============ -->
+  <div class="hero">
+    <div class="wrap hero-in">
+      <div class="hero-grid">
+        <div class="hero-l">
+          <span class="eyebrow">Українська фабрика повного циклу</span>
+          <h1>Мило, гелі та побутова хімія <span class="thin">— від рецептури до палети</span></h1>
+          <p class="sub">Виробляємо під власними торговими марками й під брендом замовника. Понад 7 540 тонн відвантажено національним мережам і дистриб'юторам.</p>
 
-        <div class="paths">
-          <a class="path" href="#cats">
-            <span class="k">Шлях 1 · Опт</span>
-            <h3>Закупівля готової продукції</h3>
-            <p>Шість категорій, сім торгових марок, матриця під полицю мережі або дистрибуцію.</p>
-            <span class="go">Дивитися каталог і прайс
-              <svg width="15" height="10" viewBox="0 0 15 10" fill="none" aria-hidden="true"><path d="M0 5h13M9 1l4 4-4 4" stroke="currentColor" stroke-width="1.4"/></svg>
-            </span>
-          </a>
-          <a class="path pl" href="#pl">
-            <span class="k">Шлях 2 · Private Label</span>
-            <h3>Виробництво під вашим брендом</h3>
-            <p>Рецептура, зразки, упаковка й документи на нашому боці. Від 1 000 кг на позицію.</p>
-            <span class="go">Прорахувати тираж
-              <svg width="15" height="10" viewBox="0 0 15 10" fill="none" aria-hidden="true"><path d="M0 5h13M9 1l4 4-4 4" stroke="currentColor" stroke-width="1.4"/></svg>
-            </span>
-          </a>
+          <div class="paths">
+            <a class="path" href="#cats">
+              <span class="k">Шлях 1 · Опт</span>
+              <h3>Закупівля готової продукції</h3>
+              <p>Шість категорій, сім торгових марок, матриця під полицю мережі або дистрибуцію.</p>
+              <span class="go">Каталог і прайс
+                <svg width="16" height="10" viewBox="0 0 16 10" fill="none" aria-hidden="true"><path d="M0 5h14M10 1l4 4-4 4" stroke="currentColor" stroke-width="1.5"/></svg>
+              </span>
+            </a>
+            <a class="path pl" href="#pl">
+              <span class="k">Шлях 2 · Private Label</span>
+              <h3>Виробництво під вашим брендом</h3>
+              <p>Рецептура, зразки, упаковка й документи на нашому боці. Від 1 000 кг на позицію.</p>
+              <span class="go">Прорахувати тираж
+                <svg width="16" height="10" viewBox="0 0 16 10" fill="none" aria-hidden="true"><path d="M0 5h14M10 1l4 4-4 4" stroke="currentColor" stroke-width="1.5"/></svg>
+              </span>
+            </a>
+          </div>
+        </div>
+
+        <div class="screen">
+          <div class="screen-bar">
+            <span>Лінія №1 · екструзія → різання → штамп</span>
+            <span class="live"><i class="pulse" aria-hidden="true"></i> у роботі</span>
+          </div>
+          <canvas id="line" role="img" aria-label="Схема роботи лінії: мильний брус виходить з екструдера, розрізається на бруски й проходить під штампом"></canvas>
+          <div class="screen-foot">
+            <span>Такт різання <b>2,4 с</b></span>
+            <span>Брусків за зміну <b>~48 000</b></span>
+            <span>Формат <b>70 / 90 / 125 г</b></span>
+          </div>
         </div>
       </div>
 
-      <aside class="ticket" aria-label="Показники виробництва">
-        <div class="t-h"><span>Фабрика в цифрах</span><span>2026</span></div>
-        <div class="t-row"><span class="lbl">Відвантажено продукції</span><span class="val" data-count="7540">0<small>Т</small></span></div>
-        <div class="t-row"><span class="lbl">Активних позицій у матриці</span><span class="val" data-count="180">0<small>SKU</small></span></div>
-        <div class="t-row"><span class="lbl">Власних торгових марок</span><span class="val" data-count="7">0</span></div>
-        <div class="t-row"><span class="lbl">Років на ринку</span><span class="val" data-count="11">0</span></div>
-        <div class="t-f">Тверде та рідке мило · гелі · шампуні · побутова хімія<br>Італійські лінії · власна лабораторія рецептур</div>
-      </aside>
-    </div>
-
-    <div class="proof">
-      <div class="proof-in">
-        <span class="lab">Працюємо з мережами й дистриб'юторами</span>
-        <div class="marks">
-          <span class="mark">МЕРЕЖА А</span>
-          <span class="mark">МЕРЕЖА Б</span>
-          <span class="mark">МЕРЕЖА В</span>
-          <span class="mark">ДИСТРИБ'ЮТОР Г</span>
-          <span class="mark">МАРКЕТПЛЕЙС Д</span>
-        </div>
+      <div class="figures">
+        <div class="fig"><span class="v" data-count="7540">0<small>Т</small></span><span class="l">відвантажено продукції</span></div>
+        <div class="fig"><span class="v" data-count="180">0<small>SKU</small></span><span class="l">активних позицій у матриці</span></div>
+        <div class="fig"><span class="v" data-count="7">0</span><span class="l">власних торгових марок</span></div>
+        <div class="fig"><span class="v" data-count="11">0</span><span class="l">років на ринку</span></div>
       </div>
     </div>
   </div>
 
-  <!-- КАТЕГОРІЇ -->
+  <!-- ============ ПАРТНЕРИ ============ -->
+  <div class="wrap proof">
+    <div class="proof-in">
+      <span class="lab">Працюємо з мережами й дистриб'юторами</span>
+      <div class="marks">
+        <span class="mark">МЕРЕЖА А</span>
+        <span class="mark">МЕРЕЖА Б</span>
+        <span class="mark">МЕРЕЖА В</span>
+        <span class="mark">ДИСТРИБ'ЮТОР Г</span>
+        <span class="mark">МАРКЕТПЛЕЙС Д</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ КАТЕГОРІЇ ============ -->
   <section id="cats" class="wrap">
-    <div class="sec-h">
+    <div class="sec-h rise">
       <div class="l">
         <span class="eyebrow">Продукція</span>
         <h2>Шість категорій, 180 активних позицій</h2>
@@ -396,59 +477,59 @@ form{display:flex;flex-direction:column;gap:16px;margin-top:26px}
       <a class="btn ghost" href="#contact">Завантажити матрицю XLS</a>
     </div>
 
-    <div class="cats">
+    <div class="cats rise">
       <a class="cat" href="#">
-        <span class="ico"><svg width="34" height="24" viewBox="0 0 34 24" fill="none" aria-hidden="true"><rect x="1" y="6" width="26" height="14" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M5 6V4a3 3 0 013-3h18a3 3 0 013 3v11a3 3 0 01-2 2.83" stroke="currentColor" stroke-width="1.5"/><path d="M7 13h14" stroke="currentColor" stroke-width="1.5"/></svg></span>
+        <span class="art" aria-hidden="true"><svg width="64" height="46" viewBox="0 0 64 46" fill="none"><rect x="4" y="16" width="42" height="24" rx="5" fill="currentColor" fill-opacity=".13" stroke="currentColor" stroke-width="1.6"/><rect x="12" y="8" width="42" height="24" rx="5" fill="currentColor" fill-opacity=".07" stroke="currentColor" stroke-width="1.6"/><ellipse cx="33" cy="20" rx="11" ry="6" stroke="currentColor" stroke-width="1.3" stroke-dasharray="2 3"/></svg></span>
         <h3>Тверде туалетне мило</h3>
         <span class="brands">Миловарні традиції · MonAmi · Maestro</span>
         <span class="meta">54 SKU · 70 / 90 / 125 г<br>штучне та в наборах</span>
       </a>
       <a class="cat" href="#">
-        <span class="ico"><svg width="34" height="24" viewBox="0 0 34 24" fill="none" aria-hidden="true"><rect x="3" y="4" width="22" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 9h22M11 4v16" stroke="currentColor" stroke-width="1.5"/><path d="M28 8v8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+        <span class="art" aria-hidden="true"><svg width="64" height="46" viewBox="0 0 64 46" fill="none"><rect x="6" y="10" width="34" height="30" rx="2" fill="currentColor" fill-opacity=".13" stroke="currentColor" stroke-width="1.6"/><path d="M6 20h34M23 10v30" stroke="currentColor" stroke-width="1.3"/><text x="46" y="27" font-family="monospace" font-size="11" fill="currentColor">72%</text></svg></span>
         <h3>Господарське мило</h3>
         <span class="brands">Dobra · Grand Шарм MAXI</span>
         <span class="meta">28 SKU · ТФМ 65 / 70 / 72 %<br>125 / 200 / 250 г</span>
       </a>
       <a class="cat" href="#">
-        <span class="ico"><svg width="34" height="24" viewBox="0 0 34 24" fill="none" aria-hidden="true"><path d="M12 1h6v3l3 4v14a1 1 0 01-1 1H10a1 1 0 01-1-1V8l3-4V1z" stroke="currentColor" stroke-width="1.5"/><path d="M9 12h12" stroke="currentColor" stroke-width="1.5"/><path d="M25 5h5v5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+        <span class="art" aria-hidden="true"><svg width="64" height="46" viewBox="0 0 64 46" fill="none"><path d="M20 14h12v4l4 5v21a2 2 0 01-2 2H18a2 2 0 01-2-2V23l4-5v-4z" fill="currentColor" fill-opacity=".13" stroke="currentColor" stroke-width="1.6"/><path d="M23 8h6v6h-6z" stroke="currentColor" stroke-width="1.6"/><path d="M16 30h20" stroke="currentColor" stroke-width="1.3"/><path d="M44 18c2 3 2 5 0 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></span>
         <h3>Рідке мило</h3>
         <span class="brands">Mio beauty · Dobra</span>
         <span class="meta">36 SKU · 300 / 500 мл<br>каністри 1 / 5 л для HoReCa</span>
       </a>
       <a class="cat" href="#">
-        <span class="ico"><svg width="34" height="24" viewBox="0 0 34 24" fill="none" aria-hidden="true"><rect x="9" y="6" width="12" height="17" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M13 6V3a2 2 0 012-2h0a2 2 0 012 2v3" stroke="currentColor" stroke-width="1.5"/><path d="M9 12h12" stroke="currentColor" stroke-width="1.5"/><circle cx="27" cy="9" r="2" stroke="currentColor" stroke-width="1.5"/></svg></span>
+        <span class="art" aria-hidden="true"><svg width="64" height="46" viewBox="0 0 64 46" fill="none"><rect x="18" y="12" width="18" height="32" rx="3" fill="currentColor" fill-opacity=".13" stroke="currentColor" stroke-width="1.6"/><path d="M24 12V6a3 3 0 016 0v6" stroke="currentColor" stroke-width="1.6"/><path d="M18 24h18" stroke="currentColor" stroke-width="1.3"/><circle cx="46" cy="16" r="3" stroke="currentColor" stroke-width="1.4"/><circle cx="52" cy="26" r="2" stroke="currentColor" stroke-width="1.4"/></svg></span>
         <h3>Гелі для душу</h3>
         <span class="brands">Mio beauty · Ti Amo Crema</span>
         <span class="meta">22 SKU · 250 / 400 / 750 мл<br>лінійки за ароматами</span>
       </a>
       <a class="cat" href="#">
-        <span class="ico"><svg width="34" height="24" viewBox="0 0 34 24" fill="none" aria-hidden="true"><path d="M11 8h10l2 14a1 1 0 01-1 1H10a1 1 0 01-1-1L11 8z" stroke="currentColor" stroke-width="1.5"/><path d="M13 8V4h6v4" stroke="currentColor" stroke-width="1.5"/><path d="M26 4c1.5 2 1.5 3 0 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+        <span class="art" aria-hidden="true"><svg width="64" height="46" viewBox="0 0 64 46" fill="none"><path d="M20 16h16l3 26a2 2 0 01-2 2H19a2 2 0 01-2-2l3-26z" fill="currentColor" fill-opacity=".13" stroke="currentColor" stroke-width="1.6"/><path d="M23 16V8h10v8" stroke="currentColor" stroke-width="1.6"/><path d="M47 8c2.5 3.5 2.5 6 0 9.5M53 12c1.6 2.2 1.6 3.8 0 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></span>
         <h3>Шампуні та бальзами</h3>
         <span class="brands">Mio beauty · Ti Amo Crema</span>
         <span class="meta">19 SKU · 250 / 400 мл<br>сімейний та професійний формат</span>
       </a>
       <a class="cat" href="#">
-        <span class="ico"><svg width="34" height="24" viewBox="0 0 34 24" fill="none" aria-hidden="true"><rect x="4" y="7" width="14" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M8 7V4a2 2 0 012-2h2a2 2 0 012 2v3" stroke="currentColor" stroke-width="1.5"/><path d="M23 10h7v13h-7z" stroke="currentColor" stroke-width="1.5"/><path d="M25 10V7h3v3" stroke="currentColor" stroke-width="1.5"/></svg></span>
+        <span class="art" aria-hidden="true"><svg width="64" height="46" viewBox="0 0 64 46" fill="none"><rect x="8" y="14" width="20" height="30" rx="3" fill="currentColor" fill-opacity=".13" stroke="currentColor" stroke-width="1.6"/><path d="M14 14V8a3 3 0 013-3h2a3 3 0 013 3v6" stroke="currentColor" stroke-width="1.6"/><rect x="36" y="18" width="20" height="26" rx="2" fill="currentColor" fill-opacity=".07" stroke="currentColor" stroke-width="1.6"/><path d="M42 18v-5h8v5" stroke="currentColor" stroke-width="1.6"/></svg></span>
         <h3>Побутова хімія</h3>
         <span class="brands">Dobra · Grand Шарм MAXI</span>
         <span class="meta">21 SKU · універсальні засоби<br>500 мл / 1 л / 5 л</span>
       </a>
     </div>
 
-    <div class="after-cats">
+    <div class="after-cats rise">
       <a class="btn" href="#contact">Отримати прайс за 15 хвилин</a>
       <a class="btn ghost" href="#contact">Замовити зразки</a>
       <span class="hint">Відповідаємо до 2 годин у робочий час</span>
     </div>
   </section>
 
-  <!-- PRIVATE LABEL -->
+  <!-- ============ PRIVATE LABEL ============ -->
   <section id="pl" class="pl-sec">
     <div class="wrap">
       <div class="pl-top">
         <div>
           <span class="eyebrow">Private Label · СТМ · ВТМ</span>
-          <h2 style="margin:10px 0 14px">Ваш бренд мила — від брифу до палети за 45 днів</h2>
+          <h2 style="margin:12px 0 16px">Ваш бренд мила — від брифу до палети за 45 днів</h2>
           <p>Ви приносите ідею й канал збуту. Ми беремо на себе рецептуру, зразки, підбір упаковки, маркування за регламентом і документи. Мінімальний тираж — 1 000 кг на позицію.</p>
         </div>
         <div class="pl-nums">
@@ -458,50 +539,54 @@ form{display:flex;flex-direction:column;gap:16px;margin-top:26px}
         </div>
       </div>
 
-      <ol class="steps">
-        <li class="step"><span class="n">01</span><span class="t">Бриф</span><span class="d">1 день</span></li>
-        <li class="step"><span class="n">02</span><span class="t">Рецептура й розрахунок</span><span class="d">3–5 днів</span></li>
-        <li class="step"><span class="n">03</span><span class="t">Зразки</span><span class="d">7–10 днів</span></li>
-        <li class="step"><span class="n">04</span><span class="t">Упаковка й дизайн</span><span class="d">паралельно</span></li>
-        <li class="step"><span class="n">05</span><span class="t">Маркування й документи</span><span class="d">5–7 днів</span></li>
-        <li class="step"><span class="n">06</span><span class="t">Виробництво партії</span><span class="d">14–20 днів</span></li>
-        <li class="step"><span class="n">07</span><span class="t">Відвантаження</span><span class="d">за графіком</span></li>
-      </ol>
+      <div class="track" id="track">
+        <div class="track-rail"><div class="track-fill"></div></div>
+        <div class="track-bar" aria-hidden="true"></div>
+        <ol class="stations">
+          <li class="st"><span class="n">01</span><span class="t">Бриф</span><span class="d">1 день</span></li>
+          <li class="st"><span class="n">02</span><span class="t">Рецептура й розрахунок</span><span class="d">3–5 днів</span></li>
+          <li class="st"><span class="n">03</span><span class="t">Зразки</span><span class="d">7–10 днів</span></li>
+          <li class="st"><span class="n">04</span><span class="t">Упаковка й дизайн</span><span class="d">паралельно</span></li>
+          <li class="st"><span class="n">05</span><span class="t">Маркування й документи</span><span class="d">5–7 днів</span></li>
+          <li class="st"><span class="n">06</span><span class="t">Виробництво партії</span><span class="d">14–20 днів</span></li>
+          <li class="st"><span class="n">07</span><span class="t">Відвантаження</span><span class="d">за графіком</span></li>
+        </ol>
+      </div>
 
       <div class="calc" id="calc">
         <div class="calc-l">
           <div class="f-group">
             <span class="lbl" id="lb-cat">Крок 1 · Категорія</span>
             <div class="opts" role="group" aria-labelledby="lb-cat">
-              <button class="opt" data-cat="Тверде мило" data-price="2.4" aria-pressed="true">Тверде мило</button>
-              <button class="opt" data-cat="Рідке мило" data-price="1.7" aria-pressed="false">Рідке мило</button>
-              <button class="opt" data-cat="Гель для душу" data-price="2.9" aria-pressed="false">Гель для душу</button>
-              <button class="opt" data-cat="Шампунь" data-price="3.2" aria-pressed="false">Шампунь</button>
-              <button class="opt" data-cat="Побутова хімія" data-price="1.4" aria-pressed="false">Побутова хімія</button>
+              <button class="opt" type="button" data-cat="Тверде мило" data-price="2.4" aria-pressed="true">Тверде мило</button>
+              <button class="opt" type="button" data-cat="Рідке мило" data-price="1.7" aria-pressed="false">Рідке мило</button>
+              <button class="opt" type="button" data-cat="Гель для душу" data-price="2.9" aria-pressed="false">Гель для душу</button>
+              <button class="opt" type="button" data-cat="Шампунь" data-price="3.2" aria-pressed="false">Шампунь</button>
+              <button class="opt" type="button" data-cat="Побутова хімія" data-price="1.4" aria-pressed="false">Побутова хімія</button>
             </div>
           </div>
           <div class="f-group">
             <span class="lbl" id="lb-pack">Крок 2 · Фасування</span>
             <div class="opts" role="group" aria-labelledby="lb-pack">
-              <button class="opt" data-pack="90 г" data-k="1" aria-pressed="true">90 г</button>
-              <button class="opt" data-pack="125 г" data-k="0.96" aria-pressed="false">125 г</button>
-              <button class="opt" data-pack="500 мл" data-k="0.9" aria-pressed="false">500 мл</button>
-              <button class="opt" data-pack="1 л" data-k="0.84" aria-pressed="false">1 л</button>
-              <button class="opt" data-pack="5 л" data-k="0.72" aria-pressed="false">5 л</button>
+              <button class="opt" type="button" data-pack="90 г" data-k="1" aria-pressed="true">90 г</button>
+              <button class="opt" type="button" data-pack="125 г" data-k="0.96" aria-pressed="false">125 г</button>
+              <button class="opt" type="button" data-pack="500 мл" data-k="0.9" aria-pressed="false">500 мл</button>
+              <button class="opt" type="button" data-pack="1 л" data-k="0.84" aria-pressed="false">1 л</button>
+              <button class="opt" type="button" data-pack="5 л" data-k="0.72" aria-pressed="false">5 л</button>
             </div>
           </div>
           <div class="f-group">
-            <span class="lbl"><label for="vol">Крок 3 · Тираж, кг</label></span>
+            <label class="lbl" for="vol">Крок 3 · Тираж</label>
             <input type="range" id="vol" min="1000" max="20000" step="500" value="3000">
-            <div class="range-row"><span>1 000 кг</span><span id="volOut" class="mono">3 000 кг</span><span>20 000 кг</span></div>
+            <div class="range-row"><span>1 000 кг</span><b id="volOut">3 000 кг</b><span>20 000 кг</span></div>
           </div>
           <div class="f-group">
             <span class="lbl" id="lb-svc">Крок 4 · Що потрібно від фабрики</span>
             <div class="opts" role="group" aria-labelledby="lb-svc">
-              <button class="opt" data-svc="Рецептура" data-add="0.12" aria-pressed="true">Рецептура</button>
-              <button class="opt" data-svc="Упаковка" data-add="0.18" aria-pressed="true">Упаковка</button>
-              <button class="opt" data-svc="Дизайн етикетки" data-add="0.09" aria-pressed="false">Дизайн етикетки</button>
-              <button class="opt" data-svc="Документи" data-add="0.07" aria-pressed="true">Документи й маркування</button>
+              <button class="opt" type="button" data-svc="рецептура" data-add="0.12" aria-pressed="true">Рецептура</button>
+              <button class="opt" type="button" data-svc="упаковка" data-add="0.18" aria-pressed="true">Упаковка</button>
+              <button class="opt" type="button" data-svc="дизайн етикетки" data-add="0.09" aria-pressed="false">Дизайн етикетки</button>
+              <button class="opt" type="button" data-svc="документи" data-add="0.07" aria-pressed="true">Документи й маркування</button>
             </div>
           </div>
         </div>
@@ -510,17 +595,17 @@ form{display:flex;flex-direction:column;gap:16px;margin-top:26px}
           <div class="res-row"><span class="rl">Орієнтовна ціна за одиницю</span><span class="rv" id="rUnit">— грн</span></div>
           <div class="res-row"><span class="rl">Партія, одиниць</span><span class="rv" id="rUnits">—</span></div>
           <div class="res-row"><span class="rl">Строк виготовлення</span><span class="rv" id="rTerm">— днів</span></div>
-          <p class="res-note" id="rSum">Оберіть параметри — покажемо вилку без запиту контактів.</p>
-          <a class="btn on-deep" href="#contact" style="justify-content:center">Надіслати параметри менеджеру</a>
+          <p class="res-note" id="rSum">Оберіть параметри — вилку покажемо без запиту контактів.</p>
+          <a class="btn" href="#contact">Надіслати параметри менеджеру</a>
           <p class="res-note">Розрахунок орієнтовний і не є публічною офертою. Точну ціну менеджер підтверджує після брифу. У прототипі використано умовні коефіцієнти.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ВИРОБНИЦТВО -->
+  <!-- ============ ВИРОБНИЦТВО ============ -->
   <section id="production" class="wrap">
-    <div class="sec-h">
+    <div class="sec-h rise">
       <div class="l">
         <span class="eyebrow">Виробництво</span>
         <h2>Італійські лінії, власна лабораторія, повний цикл на одному майданчику</h2>
@@ -529,10 +614,10 @@ form{display:flex;flex-direction:column;gap:16px;margin-top:26px}
       <a class="btn ghost" href="#contact">Записатися на аудит фабрики</a>
     </div>
 
-    <div class="prod">
+    <div class="prod rise">
       <div>
         <span class="eyebrow">Лінії та потужність</span>
-        <div class="lines" style="margin-top:14px">
+        <div class="lines">
           <div class="line"><span class="ln">Лінія твердого мила (варка + пилірування)</span><span class="lv">XX т / міс</span></div>
           <div class="line"><span class="ln">Штампування та первинне пакування</span><span class="lv">XX тис. шт / зміна</span></div>
           <div class="line"><span class="ln">Лінія рідких засобів і розливу</span><span class="lv">XX т / міс</span></div>
@@ -543,8 +628,8 @@ form{display:flex;flex-direction:column;gap:16px;margin-top:26px}
       </div>
       <div>
         <span class="eyebrow">Документи — без запиту, одразу файлом</span>
-        <div class="docs" style="margin-top:14px">
-          <a class="doc" href="#"><span class="dn">Декларації відповідності на продукцію</span><span class="dt">PDF · XX стор.</span></a>
+        <div class="docs">
+          <a class="doc" href="#"><span class="dn">Декларації відповідності на продукцію</span><span class="dt">PDF</span></a>
           <a class="doc" href="#"><span class="dn">Протоколи лабораторних досліджень</span><span class="dt">PDF</span></a>
           <a class="doc" href="#"><span class="dn">Свідоцтва на торгові марки</span><span class="dt">PDF</span></a>
           <a class="doc" href="#"><span class="dn">Реквізити та витяг з ЄДР</span><span class="dt">PDF</span></a>
@@ -554,16 +639,16 @@ form{display:flex;flex-direction:column;gap:16px;margin-top:26px}
     </div>
   </section>
 
-  <!-- БРЕНДИ -->
+  <!-- ============ БРЕНДИ ============ -->
   <section id="brands" class="wrap" style="padding-top:0">
-    <div class="sec-h">
+    <div class="sec-h rise">
       <div class="l">
         <span class="eyebrow">Портфель</span>
         <h2>Сім торгових марок під різні полиці</h2>
         <p>Таблиця ролей замість ряду логотипів: за хвилину видно, що з портфеля лягає у вашу цінову матрицю й канал збуту.</p>
       </div>
     </div>
-    <div class="tbl-wrap">
+    <div class="tbl-wrap rise">
       <table>
         <thead><tr><th>Торгова марка</th><th>Сегмент</th><th>Категорії</th><th>Фасування</th><th>Канал</th></tr></thead>
         <tbody>
@@ -579,10 +664,10 @@ form{display:flex;flex-direction:column;gap:16px;margin-top:26px}
     </div>
   </section>
 
-  <!-- ЯК ПРАЦЮЄМО -->
+  <!-- ============ ЯК ПРАЦЮЄМО ============ -->
   <section class="wrap" style="padding-top:0">
-    <div class="sec-h"><div class="l"><span class="eyebrow">Після заявки</span><h2>Що станеться, коли ви натиснете кнопку</h2></div></div>
-    <div class="flow">
+    <div class="sec-h rise"><div class="l"><span class="eyebrow">Після заявки</span><h2>Що станеться, коли ви натиснете кнопку</h2></div></div>
+    <div class="flow rise">
       <div class="fl"><span class="fn">КРОК 1</span><h4>Дзвінок менеджера</h4><p>Уточнюємо категорію, обсяг і канал збуту. Без анкет на двадцять питань.</p><span class="ft">до 2 годин</span></div>
       <div class="fl"><span class="fn">КРОК 2</span><h4>Прайс і специфікації</h4><p>Надсилаємо ціни під ваш обсяг, PDF-специфікації позицій і норми палети.</p><span class="ft">того ж дня</span></div>
       <div class="fl"><span class="fn">КРОК 3</span><h4>Зразки</h4><p>Відправляємо зразки Новою поштою на вашу адресу для оцінки якості.</p><span class="ft">2–3 дні</span></div>
@@ -590,57 +675,56 @@ form{display:flex;flex-direction:column;gap:16px;margin-top:26px}
     </div>
   </section>
 
-  <!-- FAQ -->
+  <!-- ============ FAQ ============ -->
   <section id="faq" class="wrap" style="padding-top:0">
-    <div class="sec-h"><div class="l"><span class="eyebrow">Часті питання</span><h2>Те, про що питають щодня</h2></div></div>
-    <div class="faq">
-      <div class="q open"><button type="button" aria-expanded="true">Яка мінімальна партія для відвантаження?<span class="sign">−</span></button><div class="a">Для готової продукції під нашими ТМ мінімум формується від суми замовлення й кратності коробів. Для виробництва під вашим брендом мінімальний тираж — 1 000 кг на одну позицію: це технологічний мінімум завантаження лінії, менший обсяг робить собівартість непрогнозованою.</div></div>
-      <div class="q"><button type="button" aria-expanded="false">Скільки часу займає запуск власної торгової марки?<span class="sign">+</span></button><div class="a">Орієнтовно 45 днів від затвердженого брифу до відвантаження, якщо використовується готова рецептура з нашої бази й стандартна упаковка. Розробка рецептури з нуля або нестандартний флакон додають 2–4 тижні. Точний графік фіксуємо в договорі.</div></div>
-      <div class="q"><button type="button" aria-expanded="false">Хто відповідає за упаковку й дизайн етикетки?<span class="sign">+</span></button><div class="a">Обидва варіанти робочі. Ви можете передати готовий макет за нашими технічними вимогами або замовити дизайн у нас. Упаковку підбираємо з доступних форматів або закуповуємо під ваш проєкт — у другому випадку строк і мінімальний тираж зростають.</div></div>
-      <div class="q"><button type="button" aria-expanded="false">Чи готуєте документи для роботи з мережами й тендерами?<span class="sign">+</span></button><div class="a">Так. Декларації відповідності, протоколи лабораторії, специфікації з нормами палети, штрихкоди й реквізити доступні на сайті файлами. Пакет під конкретну тендерну процедуру формує менеджер напряму.</div></div>
-      <div class="q"><button type="button" aria-expanded="false">Ви працюєте на експорт?<span class="sign">+</span></button><div class="a">Так, за контейнерними нормами. Умови постачання узгоджуємо за Інкотермс, маркування адаптуємо під вимоги країни призначення. Деталі — у розділі «Партнерам → Експорт».</div></div>
-      <div class="q"><button type="button" aria-expanded="false">Чи можна змінити аромат або колір у стандартній рецептурі?<span class="sign">+</span></button><div class="a">Так. Заміна віддушки й барвника — найпростіша адаптація, вона не змінює строк виробництва й майже не впливає на ціну. Зміна жирової основи чи показника ТФМ — це вже нова рецептура з лабораторним циклом і зразками.</div></div>
-      <div class="q"><button type="button" aria-expanded="false">Яка логістика й хто платить за доставку?<span class="sign">+</span></button><div class="a">Самовивіз зі складу або доставка до вашого розподільчого центру. Умови залежать від обсягу партії й регіону — фіксуємо в договорі разом із графіком відвантажень.</div></div>
-      <div class="q"><button type="button" aria-expanded="false">Чи можна отримати зразки перед замовленням?<span class="sign">+</span></button><div class="a">Так, це звичайна практика. Зразки готової продукції надсилаємо безкоштовно. Дослідні зразки під власну рецептуру виготовляємо після брифу — умови залежать від складності розробки.</div></div>
+    <div class="sec-h rise"><div class="l"><span class="eyebrow">Часті питання</span><h2>Те, про що питають щодня</h2></div></div>
+    <div class="faq rise">
+      <div class="q"><button type="button" aria-expanded="true">Яка мінімальна партія для відвантаження?<span class="sign">−</span></button><div class="a">Для готової продукції під нашими ТМ мінімум формується від суми замовлення й кратності коробів. Для виробництва під вашим брендом мінімальний тираж — 1 000 кг на одну позицію: це технологічний мінімум завантаження лінії, менший обсяг робить собівартість непрогнозованою.</div></div>
+      <div class="q"><button type="button" aria-expanded="false">Скільки часу займає запуск власної торгової марки?<span class="sign">+</span></button><div class="a" hidden>Орієнтовно 45 днів від затвердженого брифу до відвантаження, якщо використовується готова рецептура з нашої бази й стандартна упаковка. Розробка рецептури з нуля або нестандартний флакон додають 2–4 тижні. Точний графік фіксуємо в договорі.</div></div>
+      <div class="q"><button type="button" aria-expanded="false">Хто відповідає за упаковку й дизайн етикетки?<span class="sign">+</span></button><div class="a" hidden>Обидва варіанти робочі. Ви можете передати готовий макет за нашими технічними вимогами або замовити дизайн у нас. Упаковку підбираємо з доступних форматів або закуповуємо під ваш проєкт — у другому випадку строк і мінімальний тираж зростають.</div></div>
+      <div class="q"><button type="button" aria-expanded="false">Чи готуєте документи для роботи з мережами й тендерами?<span class="sign">+</span></button><div class="a" hidden>Так. Декларації відповідності, протоколи лабораторії, специфікації з нормами палети, штрихкоди й реквізити доступні на сайті файлами. Пакет під конкретну тендерну процедуру формує менеджер напряму.</div></div>
+      <div class="q"><button type="button" aria-expanded="false">Ви працюєте на експорт?<span class="sign">+</span></button><div class="a" hidden>Так, за контейнерними нормами. Умови постачання узгоджуємо за Інкотермс, маркування адаптуємо під вимоги країни призначення. Деталі — у розділі «Партнерам → Експорт».</div></div>
+      <div class="q"><button type="button" aria-expanded="false">Чи можна змінити аромат або колір у стандартній рецептурі?<span class="sign">+</span></button><div class="a" hidden>Так. Заміна віддушки й барвника — найпростіша адаптація, вона не змінює строк виробництва й майже не впливає на ціну. Зміна жирової основи чи показника ТФМ — це вже нова рецептура з лабораторним циклом і зразками.</div></div>
+      <div class="q"><button type="button" aria-expanded="false">Яка логістика й хто платить за доставку?<span class="sign">+</span></button><div class="a" hidden>Самовивіз зі складу або доставка до вашого розподільчого центру. Умови залежать від обсягу партії й регіону — фіксуємо в договорі разом із графіком відвантажень.</div></div>
+      <div class="q"><button type="button" aria-expanded="false">Чи можна отримати зразки перед замовленням?<span class="sign">+</span></button><div class="a" hidden>Так, це звичайна практика. Зразки готової продукції надсилаємо безкоштовно. Дослідні зразки під власну рецептуру виготовляємо після брифу — умови залежать від складності розробки.</div></div>
     </div>
   </section>
 
-  <!-- ФІНАЛЬНИЙ CTA -->
+  <!-- ============ ЗАЯВКА ============ -->
   <section id="contact" class="cta">
     <div class="wrap cta-grid">
       <div>
-        <span class="eyebrow" style="color:var(--gold-fill)">Заявка</span>
-        <h2 style="margin-top:10px">Надішліть запит — повернемо прайс і специфікації</h2>
+        <span class="eyebrow">Заявка</span>
+        <h2 style="margin-top:12px">Надішліть запит — повернемо прайс і специфікації</h2>
         <p class="sub">Три поля. Усе інше менеджер уточнить у розмові — без анкет і реєстрацій.</p>
-        <form onsubmit="event.preventDefault();this.querySelector('.done').hidden=false;">
+        <form id="lead">
           <div class="field">
-            <span class="lbl-like" id="dirLbl">Напрям</span>
+            <span class="flbl" id="dirLbl">Напрям</span>
             <div class="opts" role="group" aria-labelledby="dirLbl">
               <button class="opt" type="button" aria-pressed="true">Закупівля оптом</button>
               <button class="opt" type="button" aria-pressed="false">Власний бренд</button>
               <button class="opt" type="button" aria-pressed="false">Тендер / HoReCa</button>
             </div>
-            <input id="dir" type="hidden" value="opt">
           </div>
           <div class="field">
-            <label for="cnt">Телефон або e-mail</label>
+            <label class="flbl" for="cnt">Телефон або e-mail</label>
             <input id="cnt" type="text" placeholder="+38 (0__) ___-__-__ або name@company.ua" autocomplete="tel email">
           </div>
           <div class="field">
-            <label for="co">Компанія</label>
+            <label class="flbl" for="co">Компанія</label>
             <input id="co" type="text" placeholder="Назва компанії або мережі" autocomplete="organization">
           </div>
-          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-            <button class="btn on-deep lg" type="submit">Отримати прайс</button>
+          <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+            <button class="btn lg" type="submit">Отримати прайс</button>
             <span class="consent">Відповідаємо до 2 годин у робочий час</span>
           </div>
-          <p class="consent done" hidden style="color:var(--gold-fill)">Заявку прийнято. У прототипі форма нікуди не надсилається.</p>
+          <p class="consent" id="leadDone" hidden style="color:var(--gold-fill)">Заявку прийнято. У прототипі форма нікуди не надсилається.</p>
           <p class="consent">Надсилаючи форму, ви погоджуєтесь з обробкою даних для підготовки комерційної пропозиції.</p>
         </form>
       </div>
 
       <aside class="mgr">
-        <span class="eyebrow" style="color:var(--gold-fill)">Ваш менеджер напряму</span>
+        <span class="eyebrow">Ваш менеджер напряму</span>
         <div class="who">
           <div class="avatar" aria-hidden="true">ІП</div>
           <div><div class="nm">Ім'я Прізвище</div><div class="ro">Керівник відділу оптових продажів</div></div>
@@ -714,63 +798,222 @@ form{display:flex;flex-direction:column;gap:16px;margin-top:26px}
 (function(){
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* лічильники в талоні — один раз при появі */
-  var counters = document.querySelectorAll('[data-count]');
-  function runCounter(el){
-    var target = parseInt(el.dataset.count, 10);
-    var small = el.querySelector('small');
-    var suffix = small ? small.outerHTML : '';
-    if(reduce){ el.innerHTML = target.toLocaleString('uk-UA') + suffix; return; }
-    var start = performance.now(), dur = 900;
-    function tick(now){
-      var p = Math.min((now - start) / dur, 1);
-      var eased = 1 - Math.pow(1 - p, 3);
-      el.innerHTML = Math.round(target * eased).toLocaleString('uk-UA') + suffix;
-      if(p < 1) requestAnimationFrame(tick);
+  /* ---------------------------------------------------------
+     ЛІНІЯ: брус виходить з екструдера → різання → штамп.
+     Ambient, повільна, зупиняється поза екраном і у фоновій вкладці.
+     --------------------------------------------------------- */
+  var cv = document.getElementById('line'), ctx = cv && cv.getContext('2d');
+  if(ctx){
+    var W=0,H=0,dpr=1, bars=[], t0=performance.now(), lastCut=0, raf=null, visible=true;
+    var SPEED=42;            /* px/с */
+    var BAR=58, GAP=7;       /* довжина бруска і зазор */
+    var CUT=0.72, STAMP=0.44; /* станції за напрямком руху: спершу різання, далі штамп */
+    var stampAt=-1;
+
+    function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+    function resize(){
+      dpr = Math.min(window.devicePixelRatio||1, 2);
+      W = cv.clientWidth; H = cv.clientHeight;
+      cv.width = Math.round(W*dpr); cv.height = Math.round(H*dpr);
+      ctx.setTransform(dpr,0,0,dpr,0,0);
     }
-    requestAnimationFrame(tick);
-  }
-  if('IntersectionObserver' in window){
-    var io = new IntersectionObserver(function(entries){
-      entries.forEach(function(e){ if(e.isIntersecting){ runCounter(e.target); io.unobserve(e.target); } });
-    }, {threshold:.4});
-    counters.forEach(function(c){ io.observe(c); });
-  } else {
-    counters.forEach(runCounter);
+
+    function roundRect(x,y,w,h,r){
+      ctx.beginPath();
+      ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+      ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+      ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+      ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
+    }
+
+    function drawBar(b, cy, bh){
+      var g = ctx.createLinearGradient(0, cy-bh/2, 0, cy+bh/2);
+      g.addColorStop(0,'#F6F1E3'); g.addColorStop(1,'#D8CDB2');
+      ctx.fillStyle=g; roundRect(b.x, cy-bh/2, b.w, bh, 4); ctx.fill();
+      ctx.strokeStyle='rgba(19,43,36,.22)'; ctx.lineWidth=1;
+      roundRect(b.x+5, cy-bh/2+5, b.w-10, bh-10, 2); ctx.stroke();
+      if(b.stamped){
+        ctx.fillStyle='rgba(19,43,36,.34)';
+        ctx.font='500 8px "JetBrains Mono", monospace';
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText('STF', b.x + b.w/2, cy);
+      }
+    }
+
+    function frame(now){
+      var dt = Math.min((now - t0)/1000, .05); t0 = now;
+      var cy = H*0.56, bh = 30;
+      var cutX = W*CUT, stampX = W*STAMP;
+
+      ctx.clearRect(0,0,W,H);
+
+      /* сітка-фон */
+      ctx.strokeStyle='rgba(234,241,233,.05)'; ctx.lineWidth=1;
+      for(var gx=0; gx<W; gx+=26){ ctx.beginPath(); ctx.moveTo(gx+.5,0); ctx.lineTo(gx+.5,H); ctx.stroke(); }
+
+      /* безперервний брус з екструдера — від правого краю до різака */
+      var g2 = ctx.createLinearGradient(0, cy-bh/2, 0, cy+bh/2);
+      g2.addColorStop(0,'#F6F1E3'); g2.addColorStop(1,'#D8CDB2');
+      ctx.fillStyle=g2;
+      var billetStart = bars.length ? Math.max(cutX, bars[bars.length-1].x + bars[bars.length-1].w + GAP) : cutX;
+      roundRect(billetStart, cy-bh/2, W-billetStart+6, bh, 4); ctx.fill();
+
+      /* фільєра екструдера праворуч */
+      ctx.fillStyle='rgba(234,241,233,.1)';
+      ctx.fillRect(W-16, cy-bh/2-13, 16, bh+26);
+      ctx.strokeStyle='rgba(234,241,233,.28)'; ctx.strokeRect(W-16.5, cy-bh/2-13.5, 16, bh+26);
+
+      /* рух і поява брусків */
+      if(!reduce){
+        for(var i=0;i<bars.length;i++) bars[i].x -= SPEED*dt;
+        if(now - lastCut > (BAR+GAP)/SPEED*1000){
+          lastCut = now;
+          bars.push({x: cutX - BAR, w: BAR, stamped:false});
+        }
+        while(bars.length && bars[0].x + bars[0].w < -10) bars.shift();
+      } else if(!bars.length){
+        for(var k=0;k<6;k++) bars.push({x: cutX - BAR - k*(BAR+GAP), w: BAR, stamped: (cutX - BAR - k*(BAR+GAP)) < stampX - BAR});
+      }
+
+      /* штамп */
+      for(var j=0;j<bars.length;j++){
+        var b=bars[j];
+        if(!b.stamped && b.x + b.w/2 <= stampX){ b.stamped = true; stampAt = now; }
+        drawBar(b, cy, bh);
+      }
+
+      /* станція різання */
+      var gold = css('--gold-fill') || '#D9A82B';
+      ctx.strokeStyle=gold; ctx.globalAlpha=.55; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(cutX+.5, 12); ctx.lineTo(cutX+.5, H-24); ctx.stroke();
+      ctx.globalAlpha=1;
+      ctx.fillStyle=gold; ctx.fillRect(cutX-7, 12, 14, 16);
+
+      /* станція штампа — прес опускається на такті */
+      var press = 0;
+      if(stampAt > 0){
+        var e = (now - stampAt)/260;
+        if(e < 1) press = Math.sin(Math.min(e,1)*Math.PI) * 13;
+      }
+      ctx.strokeStyle=gold; ctx.globalAlpha=.55;
+      ctx.beginPath(); ctx.moveTo(stampX+.5, 12); ctx.lineTo(stampX+.5, H-24); ctx.stroke();
+      ctx.globalAlpha=1;
+      ctx.fillStyle=gold;
+      ctx.fillRect(stampX-13, 12 + press, 26, 15);
+
+      /* конвеєрна стрічка */
+      ctx.strokeStyle='rgba(234,241,233,.2)'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(0, cy+bh/2+9.5); ctx.lineTo(W, cy+bh/2+9.5); ctx.stroke();
+      var off = reduce ? 0 : ((now/1000*SPEED) % 16);
+      ctx.strokeStyle='rgba(234,241,233,.12)';
+      for(var rx = W - off; rx > -16; rx -= 16){
+        ctx.beginPath(); ctx.moveTo(rx, cy+bh/2+9.5); ctx.lineTo(rx-5, cy+bh/2+16); ctx.stroke();
+      }
+
+      /* підписи станцій */
+      ctx.fillStyle='rgba(234,241,233,.55)';
+      ctx.font='400 8px "JetBrains Mono", monospace';
+      ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+      ctx.fillText('РІЗАННЯ', cutX, H-9);
+      ctx.fillText('ШТАМП', stampX, H-9);
+      ctx.textAlign='right';
+      ctx.fillText('ЕКСТРУДЕР', W-4, H-9);
+
+      if(!reduce && visible) raf = requestAnimationFrame(frame);
+    }
+
+    function start(){ if(raf==null){ t0=performance.now(); raf=requestAnimationFrame(frame); } }
+    function stop(){ if(raf!=null){ cancelAnimationFrame(raf); raf=null; } }
+
+    resize();
+    window.addEventListener('resize', function(){ resize(); if(reduce){ bars=[]; frame(performance.now()); } });
+    document.addEventListener('visibilitychange', function(){
+      visible = !document.hidden;
+      if(visible && !reduce) start(); else stop();
+    });
+
+    if(reduce){ frame(performance.now()); }
+    else if('IntersectionObserver' in window){
+      new IntersectionObserver(function(es){
+        es.forEach(function(e){ visible = e.isIntersecting; if(visible) start(); else stop(); });
+      },{threshold:.05}).observe(cv);
+    } else start();
   }
 
-  /* акордеон FAQ */
+  /* --------- лічильники --------- */
+  var counters = document.querySelectorAll('[data-count]');
+  function runCounter(el){
+    var target = parseInt(el.dataset.count,10), small = el.querySelector('small');
+    var suffix = small ? small.outerHTML : '';
+    if(reduce){ el.innerHTML = target.toLocaleString('uk-UA') + suffix; return; }
+    var s = performance.now(), d = 950;
+    (function tick(now){
+      var p = Math.min((now-s)/d, 1), e = 1 - Math.pow(1-p, 3);
+      el.innerHTML = Math.round(target*e).toLocaleString('uk-UA') + suffix;
+      if(p<1) requestAnimationFrame(tick);
+    })(s);
+  }
+  if('IntersectionObserver' in window){
+    var ioC = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ runCounter(e.target); ioC.unobserve(e.target); } });
+    },{threshold:.4});
+    counters.forEach(function(c){ ioC.observe(c); });
+  } else counters.forEach(runCounter);
+
+  /* --------- поява секцій --------- */
+  if('IntersectionObserver' in window && !reduce){
+    var ioR = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); ioR.unobserve(e.target); } });
+    },{threshold:.12});
+    document.querySelectorAll('.rise').forEach(function(n){ ioR.observe(n); });
+  } else document.querySelectorAll('.rise').forEach(function(n){ n.classList.add('in'); });
+
+  /* --------- конвеєр процесу Private Label --------- */
+  var track = document.getElementById('track');
+  if(track){
+    var sts = track.querySelectorAll('.st');
+    function trackProgress(){
+      var r = track.getBoundingClientRect(), vh = window.innerHeight;
+      var p = (vh*0.82 - r.top) / (vh*0.6);
+      p = Math.max(0, Math.min(1, p));
+      track.style.setProperty('--p', p.toFixed(3));
+      sts.forEach(function(s,i){ s.classList.toggle('on', p >= (i+0.4)/sts.length); });
+    }
+    if(reduce){ track.style.setProperty('--p','1'); sts.forEach(function(s){ s.classList.add('on'); }); }
+    else { window.addEventListener('scroll', trackProgress, {passive:true}); window.addEventListener('resize', trackProgress); trackProgress(); }
+  }
+
+  /* --------- FAQ --------- */
   document.querySelectorAll('.q button').forEach(function(b){
     b.addEventListener('click', function(){
-      var q = b.parentElement, open = q.classList.toggle('open');
-      b.setAttribute('aria-expanded', open ? 'true' : 'false');
-      b.querySelector('.sign').textContent = open ? '−' : '+';
+      var open = b.getAttribute('aria-expanded') === 'true';
+      b.setAttribute('aria-expanded', open ? 'false' : 'true');
+      b.parentElement.querySelector('.a').hidden = open;
+      b.querySelector('.sign').textContent = open ? '+' : '−';
     });
   });
 
-  /* перемикачі «напрям» у формі — один активний */
-  document.querySelectorAll('form .opts .opt').forEach(function(o){
+  /* --------- форма: один активний напрям --------- */
+  document.querySelectorAll('#lead .opts .opt').forEach(function(o){
     o.addEventListener('click', function(){
       o.parentElement.querySelectorAll('.opt').forEach(function(s){ s.setAttribute('aria-pressed','false'); });
       o.setAttribute('aria-pressed','true');
     });
   });
+  var lead = document.getElementById('lead');
+  if(lead) lead.addEventListener('submit', function(e){ e.preventDefault(); document.getElementById('leadDone').hidden = false; });
 
-  /* калькулятор Private Label */
+  /* --------- калькулятор --------- */
   var calc = document.getElementById('calc');
   if(calc){
     var vol = document.getElementById('vol'), volOut = document.getElementById('volOut');
     var groups = calc.querySelectorAll('.opts');
-
-    groups.forEach(function(g, i){
+    groups.forEach(function(g,i){
       g.querySelectorAll('.opt').forEach(function(o){
         o.addEventListener('click', function(){
-          if(i === 3){ // послуги — множинний вибір
-            o.setAttribute('aria-pressed', o.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
-          } else {
-            g.querySelectorAll('.opt').forEach(function(s){ s.setAttribute('aria-pressed','false'); });
-            o.setAttribute('aria-pressed','true');
-          }
+          if(i === 3) o.setAttribute('aria-pressed', o.getAttribute('aria-pressed')==='true' ? 'false' : 'true');
+          else { g.querySelectorAll('.opt').forEach(function(s){ s.setAttribute('aria-pressed','false'); }); o.setAttribute('aria-pressed','true'); }
           update();
         });
       });
@@ -781,45 +1024,38 @@ form{display:flex;flex-direction:column;gap:16px;margin-top:26px}
 
     function update(){
       var cat = pick('[data-cat]'), pack = pick('[data-pack]');
-      var kg = parseInt(vol.value, 10);
+      var kg = parseInt(vol.value,10);
       volOut.textContent = kg.toLocaleString('uk-UA') + ' кг';
       if(!cat || !pack) return;
 
-      var base = parseFloat(cat.dataset.price);
-      var packK = parseFloat(pack.dataset.k);
-      var add = 0, svcNames = [];
+      var add = 0, svc = [];
       calc.querySelectorAll('[data-svc][aria-pressed="true"]').forEach(function(s){
-        add += parseFloat(s.dataset.add); svcNames.push(s.dataset.svc.toLowerCase());
+        add += parseFloat(s.dataset.add); svc.push(s.dataset.svc);
       });
 
       /* що більший тираж — то нижча ціна за одиницю */
-      var scale = 1 - Math.min(Math.log(kg / 1000) / Math.log(20) * 0.28, 0.28);
-      var unit = (base * packK + add) * scale;
-      var low = unit * 0.92, high = unit * 1.12;
+      var scale = 1 - Math.min(Math.log(kg/1000)/Math.log(20) * 0.28, 0.28);
+      var unit = (parseFloat(cat.dataset.price) * parseFloat(pack.dataset.k) + add) * scale;
 
-      /* умовна вага одиниці за фасуванням */
-      var wMap = {'90 г':0.09, '125 г':0.125, '500 мл':0.5, '1 л':1, '5 л':5};
-      var w = wMap[pack.dataset.pack] || 0.1;
-      var units = Math.round(kg / w / 100) * 100;
+      var wMap = {'90 г':0.09,'125 г':0.125,'500 мл':0.5,'1 л':1,'5 л':5};
+      var units = Math.round(kg / (wMap[pack.dataset.pack] || 0.1) / 100) * 100;
+      var term = 30 + Math.round(kg/2000)*3 + (svc.indexOf('упаковка') > -1 ? 7 : 0);
 
-      var term = 30 + Math.round(kg / 2000) * 3 + (svcNames.indexOf('упаковка') > -1 ? 7 : 0);
-
-      document.getElementById('rUnit').textContent = low.toFixed(2).replace('.', ',') + '–' + high.toFixed(2).replace('.', ',') + ' грн';
+      document.getElementById('rUnit').textContent =
+        (unit*0.92).toFixed(2).replace('.',',') + '–' + (unit*1.12).toFixed(2).replace('.',',') + ' грн';
       document.getElementById('rUnits').textContent = units.toLocaleString('uk-UA') + ' шт';
       document.getElementById('rTerm').textContent = term + ' днів';
       document.getElementById('rSum').textContent =
         cat.dataset.cat + ' · ' + pack.dataset.pack + ' · ' + kg.toLocaleString('uk-UA') + ' кг' +
-        (svcNames.length ? ' · від фабрики: ' + svcNames.join(', ') : '');
+        (svc.length ? ' · від фабрики: ' + svc.join(', ') : '');
     }
     update();
   }
 
-  /* липкий рядок дій — з'являється після першого екрана */
+  /* --------- липкий рядок дій --------- */
   var sticky = document.getElementById('sticky');
-  function onScroll(){
-    if(window.scrollY > 520) sticky.classList.add('show'); else sticky.classList.remove('show');
-  }
-  window.addEventListener('scroll', onScroll, {passive:true});
-  onScroll();
+  window.addEventListener('scroll', function(){
+    sticky.classList.toggle('on', window.scrollY > 560);
+  }, {passive:true});
 })();
 </script>
