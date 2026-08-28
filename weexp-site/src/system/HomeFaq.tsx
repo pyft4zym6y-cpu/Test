@@ -31,7 +31,7 @@ export function HomeFaq() {
     <section className="sysx home-faq" aria-label="FAQ">
       <div className="home-faq-in">
         <span className="sysx-kick">FAQ</span>
-        <h2 className="sysx-display home-faq-h">{t('Часті запитання', 'Frequently asked')}</h2>
+        <h2 className="sysx-display home-faq-h">{t('Відповідаємо до того, як ви запитаєте', 'We answer before you ask')}</h2>
         <div className="home-faq-list">
           {FAQ.map((f, i) => (
             <details key={i} className="home-faq-item">

@@ -150,6 +150,16 @@ export function Pricing() {
           </p>
         </header>
 
+        {/* Аудит — обовʼязкові ворота: «Старт — тільки після аудиту» стоїть і в
+            02, і в 03. Три рівні картки змушували порівнювати $2,900 з
+            «від $4,900/міс» — тобто вибирати між тим, між чим вибору немає.
+            Робимо послідовність видимою, витрину лишаємо як карту маршруту. */}
+        <p className="pric-seq mono">
+          <b>{t('Крок 1 — аудит.', 'Step 1 — the audit.')}</b>{' '}
+          {t('Він обовʼязковий: без діагностики ми не консультуємо і не беремо управління. Чим продовжити — 02 чи 03 — вирішуєте за його результатом, через 4–6 тижнів.',
+             'It is mandatory: without the diagnosis we neither advise nor take over delivery. Which way to continue — 02 or 03 — you decide from its result, in 4–6 weeks.')}
+        </p>
+
         <div className="pric-grid">
           {MODELS.map((m) => (
             <article key={m.n} className={'pric-card' + (m.featured ? ' is-featured' : '')}>
