@@ -306,23 +306,14 @@
  * лише там, де він справді вміщається; на решті — бургер, у якому той самий
  * перелік сторінок. */
 @media (max-width: 1299px) {
-  .sysh-links, .sysh-nav .sysh-cta { display: none; }
+  /* Ряд посилань поступається бургеру там, де перестає вміщатись (замір: до
+     1366px вміщається, на 1280 бракує 44px). Кнопку заклику ЛИШАЄМО: вона
+     головний шлях до конверсії, а без ряду посилань місця для неї вдосталь. */
+
+  .sysh-links { display: none; }
   .sysh-burger { display: inline-flex; }
   .sysh-right { margin-left: auto; }   /* група акаунта тулиться до бургера справа */
   .sysh-account { width: 36px; height: 36px; }
-
-  /* Нижня app-панель — напівпрозора «окантовка» з ключовими сторінками */
-  .sysh-tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 62;
-    display: grid; grid-template-columns: repeat(5, 1fr); align-items: stretch;
-    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
-    background: color-mix(in srgb, var(--sh-warm, #F7F7F5) 94%, transparent);
-    backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4);
-    border-top: 1px solid var(--sh-silver, #D9DDE1); }
-  .sysh-tab { display: grid; justify-items: center; gap: 3px; padding: 7px 2px; text-decoration: none;
-    color: var(--sh-graphite); background: none; border: 0; cursor: pointer; font: inherit; transition: color .2s; }
-  .sysh-tab svg { width: 22px; height: 22px; }
-  .sysh-tab span { font-size: 11px; letter-spacing: .01em; }
-  .sysh-tab.is-on { color: var(--sh-deep); }
 
   /* Оверлей-меню (класичний бургер) */
   .sysh-sheet { display: block; position: fixed; inset: 0; z-index: 72; pointer-events: none;
@@ -341,6 +332,30 @@
   .sysh-sheet-link { display: block; padding: 14px 4px; font-size: 17px; color: var(--sh-deep); text-decoration: none; border-bottom: 1px solid rgba(58,61,66,.1); min-height: 48px; }
   .sysh-sheet-link.is-on { color: var(--sh-data); }
   .sysh-sheet-cta { margin-top: 16px; width: 100%; justify-content: center; }
+
+  }
+
+/* Нижня таб-панель — мобільний патерн під великий палець. На ноутбуці з
+   мишею вона зайва й забирає 62px висоти назавжди, тому лишається на
+   телефонах. Раніше цей блок їхав разом із меню й вискакував на 1280px. */
+@media (max-width: 860px) {
+  /* На телефоні кнопку заклику з шапки прибираємо. Замір: із нею права група
+     разом із бургером виїжджає на 42px за екран при 390px — тобто єдина
+     навігація на телефоні стає недосяжною. Конверсію тут несуть кнопка в
+     першому екрані й нижня панель. */
+  .sysh-nav .sysh-cta { display: none; }
+/* Нижня app-панель — напівпрозора «окантовка» з ключовими сторінками */
+  .sysh-tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 62;
+    display: grid; grid-template-columns: repeat(5, 1fr); align-items: stretch;
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--sh-warm, #F7F7F5) 94%, transparent);
+    backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    border-top: 1px solid var(--sh-silver, #D9DDE1); }
+  .sysh-tab { display: grid; justify-items: center; gap: 3px; padding: 7px 2px; text-decoration: none;
+    color: var(--sh-graphite); background: none; border: 0; cursor: pointer; font: inherit; transition: color .2s; }
+  .sysh-tab svg { width: 22px; height: 22px; }
+  .sysh-tab span { font-size: 11px; letter-spacing: .01em; }
+  .sysh-tab.is-on { color: var(--sh-deep); }
 
   /* Щоб контент не ховався за нижньою панеллю */
   .sysx-marquee { bottom: calc(58px + env(safe-area-inset-bottom)) !important; }

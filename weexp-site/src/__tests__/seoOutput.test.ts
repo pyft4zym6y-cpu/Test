@@ -235,6 +235,34 @@ describe.skipIf(!built)('карта сайта и правила обхода', 
     expect(unreachable, `от главной не дойти: ${unreachable.join(', ')}`).toEqual([]);
   });
 
+  it('текст ссылки говорит, куда она ведёт — а не повторяет слаг', () => {
+    /*
+     * В статике /expansion ссылки на шесть направлений были подписаны слагами:
+     * «international», «automation», «technology». Ни человеку, ни краулеру
+     * это ничего не сообщает — а именно текст ссылки и есть сигнал о цели.
+     */
+    if (!built) return;
+    const bad: string[] = [];
+    /*
+     * Только украинские страницы: там латинский слаг заведомо не может быть
+     * названием. На английской «Marketing» законно совпадает со слагом
+     * marketing — это имя направления, а не машинный идентификатор.
+     */
+    for (const u of sitemapUrls().filter((x) => !x.endsWith('.html') && !x.startsWith('/en'))) {
+      const f = join(DIST, fileFor(u));
+      if (!existsSync(f)) continue;
+      for (const m of readFileSync(f, 'utf8').matchAll(/<a href="(\/[a-z/-]+)"[^>]*>([^<]{1,60})<\/a>/g)) {
+        const [, href, text] = m;
+        // Только вложенные адреса: /en/systems — это пункт меню, и «Systems»
+        // там законная английская НАЗВА страницы, а не пересказ слага.
+        const segs = href.replace(/^\/en(?=\/|$)/, '').split('/').filter(Boolean);
+        if (segs.length < 2) continue;
+        if (text.trim().toLowerCase() === segs[segs.length - 1]) bad.push(`${u}: «${text}»`);
+      }
+    }
+    expect(bad, `текст ссылки = слаг: ${bad.slice(0, 6).join('; ')}`).toEqual([]);
+  });
+
   it('у каждой страницы своя OG-карточка, а не общая заглушка', () => {
     /*
      * Восемь страниц систем и шесть направлений экспансии делили одну общую
@@ -309,6 +337,27 @@ describe('серверные правила (vercel.json)', () => {
     expect(cfg.outputDirectory, 'корневой конфиг обязан собирать weexp-site').toBe('weexp-site/dist');
     expect((cfg.rewrites ?? []).some((r: { source: string }) => r.source === '/(.*)'),
       'нет SPA-fallback: любая вложенная ссылка отдаст 404').toBe(true);
+  });
+
+  it('клиентские и серверные редиректы ведут в одно место', () => {
+    /*
+     * У одного адреса было ДВА назначения. Сервер (vercel.json) отправлял
+     * /challenges, /what-we-build и /how-it-works на страницу /systems, а
+     * клиентский <Navigate> в App.tsx — на якорь главной /#systems. Куда
+     * попадёт человек, зависело от того, отработал ли серверный редирект
+     * раньше: при переходе по внутренней ссылке — не отработает.
+     */
+    const app = readFileSync(join(ROOT, 'weexp-site', 'src', 'App.tsx'), 'utf8');
+    const server = new Map<string, string>(
+      (cfg.redirects ?? []).map((r: { source: string; destination: string }) => [r.source, r.destination]),
+    );
+    const mismatched: string[] = [];
+    for (const m of app.matchAll(/<Route path="(\/[a-z-]+)" element=\{<Navigate to="([^"]+)"/g)) {
+      const [, path, to] = m;
+      const srv = server.get(path);
+      if (srv && srv !== to) mismatched.push(`${path}: сервер → ${srv}, клиент → ${to}`);
+    }
+    expect(mismatched, mismatched.join('; ')).toEqual([]);
   });
 
   it('редиректы не строят цепочку из двух прыжков', () => {

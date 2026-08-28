@@ -45,7 +45,7 @@ export function ServicePage() {
   })() : null;
   useJsonLd('service', svcLd);
 
-  if (!rawSys) return <Navigate to="/#systems" replace />;
+  if (!rawSys) return <Navigate to="/systems" replace />;
 
   const sys = localizeSystem(rawSys, lang);
   const proofs = CASES.filter((c) => c.systems.includes(sys.key)).slice(0, 3);
@@ -149,7 +149,7 @@ export function ServicePage() {
 
         <nav className="svc-siblings">
           <Link to={lp(`/systems/${prev.slug}`)} className="svc-sib">← {localizeSystem(prev, lang).title}</Link>
-          <Link to={lp('/#systems')} className="svc-sib is-mid mono">{t('Усі 8 систем', 'All 8 systems')}</Link>
+          <Link to={lp('/systems')} className="svc-sib is-mid mono">{t('Усі 8 систем', 'All 8 systems')}</Link>
           <Link to={lp(`/systems/${next.slug}`)} className="svc-sib">{localizeSystem(next, lang).title} →</Link>
         </nav>
       </div>

@@ -120,7 +120,7 @@ const AuditPackPage = lazy(() => import('@/system/AuditPackPage').then((m) => ({
 // (слаги збігаються), щоб зберегти глибокі посилання, а не кидати все на індекс.
 function ChallengeRedirect() {
   const { slug } = useParams();
-  return <Navigate to={slug ? `/systems/${slug}` : '/#systems'} replace />;
+  return <Navigate to={slug ? `/systems/${slug}` : '/systems'} replace />;
 }
 
 // Єдиний перелік сторінок — рендериться двічі (UK на «/», EN на «/en»).
@@ -175,13 +175,13 @@ export default function App() {
           <Route path="/classic" element={<Navigate to="/" replace />} />
           <Route path="/cases" element={<Navigate to="/proof" replace />} />
           <Route path="/cases/:slug" element={<Navigate to="/proof" replace />} />
-          <Route path="/challenges" element={<Navigate to="/#systems" replace />} />
+          <Route path="/challenges" element={<Navigate to="/systems" replace />} />
           <Route path="/challenges/:slug" element={<ChallengeRedirect />} />
-          <Route path="/what-we-build" element={<Navigate to="/#systems" replace />} />
+          <Route path="/what-we-build" element={<Navigate to="/systems" replace />} />
           <Route path="/what-we-build/eu-expansion" element={<Navigate to="/expansion" replace />} />
           <Route path="/expansion/web" element={<Navigate to="/expansion/technology" replace />} />
           <Route path="/en/expansion/web" element={<Navigate to="/en/expansion/technology" replace />} />
-          <Route path="/how-it-works" element={<Navigate to="/#systems" replace />} />
+          <Route path="/how-it-works" element={<Navigate to="/systems" replace />} />
           <Route path="/how-it-works/business-health" element={<Navigate to="/diagnose" replace />} />
           <Route path="/how-it-works/independence-score" element={<Navigate to="/diagnose" replace />} />
           <Route path="/how-it-works/benchmark" element={<Navigate to="/diagnose" replace />} />

@@ -45,11 +45,22 @@ const NAV_PAGES = [
   { to: '/contact', uk: 'Контакт', en: 'Contact' },
   { to: '/audit-pack', uk: 'Склад пакета аудиту', en: 'Audit pack contents' },
 ];
-// Шість напрямів експертизи: хаб не посилався на них у статиці, і без JS
-// вони були недосяжні так само, як сторінки систем.
-const EXPANSION_LINKS = `<h2>Напрями експертизи</h2><ul>${
-  ['international', 'automation', 'technology', 'marketing', 'sales-channels', 'data-growth']
-    .map((k) => `<li><a href="/expansion/${k}">${k}</a></li>`).join('')}</ul>`;
+/*
+ * Шість напрямів експертизи: хаб не посилався на них у статиці, і без JS
+ * вони були недосяжні так само, як сторінки систем.
+ *
+ * Назви беруться з seo-data (та сама таблиця, що дає заголовки самим
+ * сторінкам). Спершу тут стояли слуги — «international», «automation» —
+ * тобто текст посилання не казав, куди воно веде. Рівно те, за що я
+ * чіплявся в аудиті, у власній правці.
+ */
+const expName = (m, lang) => (lang === 'en' ? m.en[0] : m.uk[0]).split(' — ')[0].replace(' · WEEXP', '');
+const expansionLinks = (lang) => {
+  const head = lang === 'en' ? 'Areas of expertise' : 'Напрями експертизи';
+  const pref = lang === 'en' ? '/en' : '';
+  return `<h2>${head}</h2><ul>${Object.entries(SEO.expansion)
+    .map(([k, m]) => `<li><a href="${pref}/expansion/${k}">${esc(expName(m, lang))}</a></li>`).join('')}</ul>`;
+};
 const SYS_SLUGS = ['strategy-management','commercial-performance','demand-customer','experience-conversion','operations-fulfillment','data-technology','organization-operating-model','expansion-markets'];
 const SYSTEMS = [
   'Стратегія та управління — стратегія продажів, якою можна керувати',
@@ -147,7 +158,7 @@ const EN_BODY = {
   '/systems': `<p>Online sales are not a set of channels but eight systems working together. Revenue leaks where the weakest one is. Below — each of them: what it solves and how we build it.</p>${ulLinks(SYSTEMS_EN, SYS_SLUGS, '/en')}`,
   '/proof': `<p>Not promises — before→after deltas from CRM, ERP and GA4. Every case is anonymous; every number is real.</p>${ul(PROOF_EN)}`,
   '/people': `<p>WEEXP was founded by Pavlo Sydorenko, Founder &amp; Architect of Commerce (8+ years in international e-commerce: US · EU · MENA). Each of the eight systems of online sales has an owner accountable for the result — specialists, not generalists.</p>${ul(ROSTER_EN)}`,
-  '/expansion': `<p>Europe and the US are a separate business contour. We launch systematically and across all storefronts of a market at once. Priority markets: PL, DE, CZ, USA.</p><h2>Market storefronts</h2>${ul(CHANNELS_EN)}`,
+  '/expansion': `<p>Europe and the US are a separate business contour. We launch systematically and across all storefronts of a market at once. Priority markets: PL, DE, CZ, USA.</p><h2>Market storefronts</h2>${ul(CHANNELS_EN)}${expansionLinks('en')}`,
   '/diagnose': `<p>One instrument, not two: first we count how much leaks every year; then the map of eight systems, the main bottleneck, a cabinet with your data and an in-depth AI review. These are steps of one diagnosis.</p><h2>Steps of the diagnosis</h2>${ul(DIAG_STEPS_EN)}`,
   '/contact': `<p>Leave a contact — we come back with the first cut of the gap, in money. For e-commerce manufacturers and D2C brands at $0.5–10M. This is not work yet; this is a diagnosis.</p>`,
   '/audit-pack': `<p>Before the start you see the full list of documents you will receive: intake (Discovery), the audit core, the evidence base, the plan and the handover.</p>`,
@@ -169,7 +180,7 @@ const ROUTES = [
     content: `<h1>Систему будують власники, не герої</h1><p>Засновник WEEXP — Павло Сидоренко, Founder & Architect of Commerce (8+ років у міжнародному e-commerce: US · EU · MENA). У кожної з восьми систем онлайн-продажів є відповідальний за результат. Не універсали — власники конкретного контуру.</p>${ul(ROSTER)}` },
   { path: '/expansion', og: 'expansion', title: `Міжнародна експансія — ЄС і США${SUF}`,
     desc: 'Системний вивід брендів на ринки ЄС і США: власний сайт, Amazon, Allegro, eBay та локальні маркетплейси — з локалізацією, логістикою, юридичним контуром і юніт-економікою ринку.',
-    content: `<h1>Вихід у ЄС і США як система, не спроба</h1><p>Європа і Штати — окремий бізнес-контур. Виводимо системно й одразу на всіх вітринах ринку. Пріоритетні ринки: PL, DE, CZ, США.</p><h2>Вітрини ринку</h2>${ul(CHANNELS)}${EXPANSION_LINKS}` },
+    content: `<h1>Вихід у ЄС і США як система, не спроба</h1><p>Європа і Штати — окремий бізнес-контур. Виводимо системно й одразу на всіх вітринах ринку. Пріоритетні ринки: PL, DE, CZ, США.</p><h2>Вітрини ринку</h2>${ul(CHANNELS)}${expansionLinks('uk')}` },
   { path: '/diagnose', og: 'diagnose', title: `Діагностика e-commerce — від числа до плану${SUF}`,
     desc: 'Єдина діагностика онлайн-продажів: за 5 хвилин порахуйте втрати, отримайте карту 8 систем, головний bottleneck і кабінет із планом повернення виторгу.',
     content: `<h1>Діагностика e-commerce: від числа до плану</h1><p>Один інструмент, а не два: спершу рахуємо, скільки витікає щороку; далі — карта восьми систем, головний bottleneck, кабінет із вашими даними та поглиблений AI-розбір. Це кроки однієї діагностики.</p><h2>Кроки діагностики</h2>${ul(['Профіль і симптоми', 'Ваш витік у грошах', 'Карта восьми систем', 'Кабінет Tier-2', 'Поглиблений AI-розбір'])}` },
