@@ -29,6 +29,10 @@ export function ExpansionHub() {
               <span className="xhub-tag">{L(e.tag, lang)}</span>
               <h2 className="sysx-display xhub-card-h">{L(e.title, lang)}</h2>
               <span className="script xhub-script">{L(e.tagline, lang)}</span>
+              {/* Спершу задача власника, потім наш опис. Без цього рядка блок
+                  читається як перелік послуг, з якого клієнт має сам здогадатись,
+                  навіщо це йому. */}
+              <p className="xhub-job">{L(e.job, lang)}</p>
               <p className="xhub-card-p">{L(e.intro, lang)}</p>
               <span className="xhub-more">{t('Детальніше', 'Learn more')} →</span>
             </Link>

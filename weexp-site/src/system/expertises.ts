@@ -17,11 +17,21 @@ export type Expertise = {
   deliverables: P[];
   process: { t: P; d: P }[];
   outcome: P;
+  /**
+   * Яку БІЗНЕС-ЗАДАЧУ закриває експертиза. Без цього поля список неминуче
+   * читається як перелік послуг: «брендинг, UX, розробка» — і клієнт сам має
+   * здогадатись, навіщо це йому. Одне речення, мовою власника, не нашою.
+   */
+  job: P;
 };
 
 export const EXPERTISES: Expertise[] = [
   {
     slug: 'international',
+    job: [
+      'Ринок вичерпано, а зростати треба — і незрозуміло, який ринок узяти наступним і чи вистачить маржі.',
+      'The market is saturated but you must grow — and it is unclear which market to take next and whether margin will hold.',
+    ],
     tag: ['Ринки ЄС і США', 'EU & US markets'],
     title: ['Міжнародна експансія', 'International expansion'],
     tagline: ['Вихід за межі одного ринку — системно.', 'Beyond a single market — systematically.'],
@@ -57,6 +67,10 @@ export const EXPERTISES: Expertise[] = [
   },
   {
     slug: 'automation',
+    job: [
+      'Бізнес тримається на памʼяті кількох людей: замовлення губляться, цифри в кожного свої, власник у операційці.',
+      'The business rests on a few people’s memory: orders slip, everyone has their own numbers, the owner is stuck in operations.',
+    ],
     tag: ['Операції без ручного режиму', 'Operations without manual mode'],
     title: ['Бізнес-процеси', 'Business processes'],
     tagline: ['Щоб бізнес працював без героїзму.', 'So the business runs without heroics.'],
@@ -91,7 +105,128 @@ export const EXPERTISES: Expertise[] = [
     ],
   },
   {
+    slug: 'branding',
+    job: [
+      'Вас порівнюють лише за ціною: бренд нічим не відрізняється, і кожен продаж доводиться вигризати знижкою.',
+      'You are compared on price alone: the brand stands for nothing, and every sale has to be bought with a discount.',
+    ],
+    tag: ['Позиціонування й айдентика', 'Positioning & identity'],
+    title: ['Брендинг', 'Branding'],
+    tagline: ['Щоб вибирали вас, а не дешевше.', 'So they choose you, not the cheaper one.'],
+    intro: [
+      'Будуємо бренд як комерційний інструмент: позиціонування, яке пояснює, чому дорожче; візуальну систему, яку впізнають; і мову, якою бренд говорить однаково в рекламі, на сайті й у підтримці.',
+      'We build the brand as a commercial instrument: positioning that explains why you cost more, a visual system people recognize, and a voice the brand speaks consistently in ads, on site and in support.',
+    ],
+    services: [
+      { name: ['Позиціонування', 'Positioning'], desc: ['Для кого, проти кого і чому дорожче — у одному реченні.', 'For whom, against whom and why you cost more — in one sentence.'] },
+      { name: ['Бренд-стратегія', 'Brand strategy'], desc: ['Обіцянка, докази, архітектура брендів і продуктів.', 'Promise, proof, architecture of brands and products.'] },
+      { name: ['Brand Identity', 'Brand identity'], desc: ['Логотип, знак, константи — впізнаваність без пояснень.', 'Logo, mark, constants — recognition without explanation.'] },
+      { name: ['Візуальна система', 'Visual system'], desc: ['Типографіка, колір, сітка, фото, шаблони під усі носії.', 'Type, color, grid, imagery, templates for every surface.'] },
+      { name: ['Tone of voice', 'Tone of voice'], desc: ['Як бренд говорить у рекламі, на сайті й у підтримці.', 'How the brand speaks in ads, on site and in support.'] },
+      { name: ['Бренд-бук', 'Brand book'], desc: ['Правила, за якими бренд не розсиплеться без нас.', 'Rules that keep the brand intact without us.'] },
+    ],
+    deliverables: [
+      ['Платформа бренду: позиціонування й обіцянка', 'Brand platform: positioning and promise'],
+      ['Айдентика й візуальна система', 'Identity and visual system'],
+      ['Tone of voice з прикладами', 'Tone of voice with examples'],
+      ['Бренд-бук і шаблони носіїв', 'Brand book and asset templates'],
+    ],
+    process: [
+      { t: ['Дослідження', 'Research'], d: ['Категорія, конкуренти, мова клієнта.', 'Category, competitors, the customer’s language.'] },
+      { t: ['Позиціонування', 'Positioning'], d: ['Чим ви відрізняєтесь і чим це доводите.', 'What sets you apart and what proves it.'] },
+      { t: ['Айдентика', 'Identity'], d: ['Знак, система, носії.', 'Mark, system, assets.'] },
+      { t: ['Впровадження', 'Rollout'], d: ['Сайт, реклама, упаковка, комунікація.', 'Site, ads, packaging, communication.'] },
+      { t: ['Стандарт', 'Standard'], d: ['Бренд-бук і навчання команди.', 'Brand book and team enablement.'] },
+    ],
+    outcome: [
+      'Бренд, за який готові платити більше, і команда, яка вміє його тримати без нас.',
+      'A brand people pay more for, and a team able to hold it without us.',
+    ],
+  },
+  {
+    slug: 'ux-ui',
+    job: [
+      'Трафік є, а замовлень мало: люди доходять до кошика й зникають.',
+      'Traffic is there but orders are not: people reach the cart and vanish.',
+    ],
+    tag: ['Досвід і конверсія', 'Experience & conversion'],
+    title: ['UX/UI дизайн', 'UX/UI design'],
+    tagline: ['Кожен зайвий крок коштує замовлення.', 'Every extra step costs an order.'],
+    intro: [
+      'Проєктуємо шлях клієнта від першого дотику до повторної покупки й перетворюємо його на конверсію: дослідження, сценарії, інтерфейс, тестування гіпотез на реальних грошах, а не на смаку.',
+      'We design the customer journey from first touch to repeat purchase and turn it into conversion: research, flows, interface, hypotheses tested on real money rather than taste.',
+    ],
+    services: [
+      { name: ['UX-дослідження', 'UX research'], desc: ['Де саме люди зупиняються й чому — за даними й сесіями.', 'Where exactly people stop and why — from data and sessions.'] },
+      { name: ['Customer journey', 'Customer journey'], desc: ['Шлях від першого дотику до повторної покупки.', 'The path from first touch to repeat purchase.'] },
+      { name: ['UI та дизайн-система', 'UI & design system'], desc: ['Інтерфейс і компоненти, які масштабуються без хаосу.', 'Interface and components that scale without chaos.'] },
+      { name: ['CRO', 'CRO'], desc: ['Гіпотези, тести, зміни, які видно у виторгу.', 'Hypotheses, tests, changes visible in revenue.'] },
+      { name: ['Каталог і картка', 'Catalog & product page'], desc: ['Пошук, фільтри, картка товару, кошик, checkout.', 'Search, filters, product page, cart, checkout.'] },
+      { name: ['Мобільний досвід', 'Mobile experience'], desc: ['Більшість трафіку — з телефона; дизайн починається з нього.', 'Most traffic is mobile; design starts there.'] },
+    ],
+    deliverables: [
+      ['Карта шляху клієнта з вузькими місцями', 'Customer journey map with bottlenecks'],
+      ['Прототипи ключових екранів', 'Prototypes of the key screens'],
+      ['UI-кіт і дизайн-система', 'UI kit and design system'],
+      ['Беклог CRO-гіпотез з оцінкою впливу', 'CRO hypothesis backlog with impact estimates'],
+    ],
+    process: [
+      { t: ['Аналіз', 'Analysis'], d: ['Дані, записи сесій, воронка по кроках.', 'Data, session recordings, step-by-step funnel.'] },
+      { t: ['Сценарії', 'Flows'], d: ['Як має бути, щоб кроків стало менше.', 'How it should work with fewer steps.'] },
+      { t: ['Дизайн', 'Design'], d: ['Прототип, UI, дизайн-система.', 'Prototype, UI, design system.'] },
+      { t: ['Тести', 'Tests'], d: ['Перевіряємо на трафіку, а не на думках.', 'Validated on traffic, not opinions.'] },
+      { t: ['Впровадження', 'Rollout'], d: ['Передача в розробку й контроль результату.', 'Handover to development and result control.'] },
+    ],
+    outcome: [
+      'Вищий відсоток замовлень із того самого трафіку — і документована система, за якою це можна повторювати.',
+      'A higher share of orders from the same traffic — and a documented system to repeat it.',
+    ],
+  },
+  {
+    slug: 'web-development',
+    job: [
+      'Кожна зміна на сайті — це тижні очікування й ризик щось зламати.',
+      'Every change to the site means weeks of waiting and the risk of breaking something.',
+    ],
+    tag: ['E-commerce розробка', 'E-commerce development'],
+    title: ['Веб-розробка', 'Web development'],
+    tagline: ['Сайт має заробляти, а не вимагати уваги.', 'A site should earn, not demand attention.'],
+    intro: [
+      'Будуємо й розвиваємо магазин так, щоб він витримував зростання: платформа під вашу модель, інтеграції з обліком і логістикою, кастомна логіка там, де коробка не вміє, і швидкість, яку видно в конверсії.',
+      'We build and evolve the store so it survives growth: a platform matched to your model, integrations with accounting and logistics, custom logic where off-the-shelf fails, and speed you can see in conversion.',
+    ],
+    services: [
+      { name: ['E-commerce розробка', 'E-commerce development'], desc: ['Магазин під вашу модель продажів, а не навпаки.', 'A store built around your sales model, not the reverse.'] },
+      { name: ['CMS і платформи', 'CMS & platforms'], desc: ['Shopify, Magento, WooCommerce, кастом — вибір за задачею.', 'Shopify, Magento, WooCommerce, custom — chosen by the task.'] },
+      { name: ['Інтеграції', 'Integrations'], desc: ['ERP, CRM, склад, доставка, платежі, маркетплейси.', 'ERP, CRM, warehouse, delivery, payments, marketplaces.'] },
+      { name: ['Custom development', 'Custom development'], desc: ['Логіка, якої немає в коробці: тарифи, конфігуратори, B2B.', 'Logic no box provides: pricing, configurators, B2B.'] },
+      { name: ['Швидкість і стабільність', 'Speed & reliability'], desc: ['Core Web Vitals, навантаження в пік, моніторинг.', 'Core Web Vitals, peak load, monitoring.'] },
+      { name: ['Підтримка й розвиток', 'Support & evolution'], desc: ['Релізи без страху: тести, стенди, відкат.', 'Releases without fear: tests, staging, rollback.'] },
+    ],
+    deliverables: [
+      ['Технічна архітектура рішення', 'Technical architecture of the solution'],
+      ['Робочий магазин з інтеграціями', 'A working store with integrations'],
+      ['Регламент релізів і моніторинг', 'Release playbook and monitoring'],
+      ['Документація для вашої команди', 'Documentation for your team'],
+    ],
+    process: [
+      { t: ['Технічний аудит', 'Technical audit'], d: ['Що гальмує й що ламається.', 'What slows down and what breaks.'] },
+      { t: ['Архітектура', 'Architecture'], d: ['Платформа, інтеграції, межі кастому.', 'Platform, integrations, limits of custom code.'] },
+      { t: ['Розробка', 'Development'], d: ['Ітераціями, з демо й тестами.', 'In iterations, with demos and tests.'] },
+      { t: ['Запуск', 'Launch'], d: ['Міграція, перевірка, план відкату.', 'Migration, verification, rollback plan.'] },
+      { t: ['Розвиток', 'Evolution'], d: ['Релізи без ризику для продажів.', 'Releases without risk to sales.'] },
+    ],
+    outcome: [
+      'Магазин, який витримує зростання, і команда, яка може змінювати його швидко й без страху.',
+      'A store that survives growth, and a team able to change it fast and without fear.',
+    ],
+  },
+  {
     slug: 'technology',
+    job: [
+      'Сайт гальмує зростання: повільний, падає в пік, кожна зміна коштує тижнів.',
+      'The site is capping growth: slow, breaks at peak, every change costs weeks.',
+    ],
     tag: ['Платформа, код, інфраструктура', 'Platform, code, infrastructure'],
     title: ['E-commerce Technology', 'E-commerce Technology'],
     tagline: ['Магазин як інженерний актив.', 'The store as an engineering asset.'],
@@ -127,6 +262,10 @@ export const EXPERTISES: Expertise[] = [
   },
   {
     slug: 'marketing',
+    job: [
+      'Реклама зʼїдає бюджет, а прибутку не додає: ліди є, окупності немає.',
+      'Ads eat the budget without adding profit: leads exist, payback does not.',
+    ],
     tag: ['Трафік і попит під економіку', 'Traffic and demand for the economics'],
     title: ['Маркетинг', 'Marketing'],
     tagline: ['Не «більше реклами» — більше прибутку.', 'Not «more ads» — more profit.'],
@@ -162,6 +301,10 @@ export const EXPERTISES: Expertise[] = [
   },
   {
     slug: 'sales-channels',
+    job: [
+      'Один канал дає майже весь виторг — і будь-який його збій зупиняє бізнес.',
+      'One channel carries nearly all revenue — and any hiccup in it stops the business.',
+    ],
     tag: ['Продажі поза власним сайтом', 'Sales beyond your own site'],
     title: ['Канали продажів', 'Sales channels'],
     tagline: ['Там, де ваш товар уже шукають.', 'Where your product is already searched for.'],
@@ -197,6 +340,10 @@ export const EXPERTISES: Expertise[] = [
   },
   {
     slug: 'data-growth',
+    job: [
+      'Рішення ухвалюються на відчуттях, бо цифрам не можна вірити.',
+      'Decisions are made on gut feel, because the numbers cannot be trusted.',
+    ],
     tag: ['Дані, що керують зростанням', 'Data that drives growth'],
     title: ['Data & Growth', 'Data & Growth'],
     tagline: ['Рішення на цифрах, не на відчуттях.', 'Decisions on numbers, not gut feel.'],
