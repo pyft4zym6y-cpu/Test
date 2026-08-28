@@ -6,6 +6,7 @@ import {
   loadTemplate, saveTemplate, uid, Q_TYPES, CLIENT_ROLES, frameworkFor, customerArchetypeBlock,
   type AuditTemplate, type Block, type Question, type QType,
 } from './auditTemplate';
+import { DOC_LOGO, DOC_LOGO_CSS } from '@/system/docLogo';
 
 /**
  * Конструктор шаблону глибокого аудиту (адмінка). Блоки → питання: типи,
@@ -46,7 +47,7 @@ function exportTemplatePdf(tpl: AuditTemplate) {
 @page{margin:14mm}body{font-family:"IBM Plex Sans","Segoe UI",system-ui,Arial,sans-serif;color:#141210;margin:0;font-size:12px;line-height:1.5}
 .bar{height:8px;background:#F5301C}.wrap{padding:24px 30px;max-width:800px;margin:0 auto}
 .top{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #141210;padding-bottom:12px;margin-bottom:6px}
-.logo{font-weight:800;font-size:22px}.logo span{color:#F5301C}
+${DOC_LOGO_CSS}
 .meta{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#6B675E;text-align:right}
 h1{font-size:24px;letter-spacing:-.01em;margin:14px 0 4px}
 .lead{color:#3d3a35;max-width:64ch;margin:0 0 14px}
@@ -70,7 +71,7 @@ table.toc{border-collapse:collapse;width:100%;margin-bottom:8px}
 .foot{margin-top:26px;padding-top:12px;border-top:1px solid #E3D9C0;color:#9a9488;font-size:10px}
 @media print{.noprint{display:none}}
 </style></head><body><div class="bar"></div><div class="wrap">
-<div class="top"><div class="logo">WEEXP<span>.</span></div><div class="meta">версія шаблону v${tpl.version || 1}<br>сформовано ${escapeHtml(new Date().toLocaleDateString('uk-UA'))}</div></div>
+<div class="top">${DOC_LOGO}<div class="meta">версія шаблону v${tpl.version || 1}<br>сформовано ${escapeHtml(new Date().toLocaleDateString('uk-UA'))}</div></div>
 <h1>Опитувальник глибокого аудиту</h1>
 <p class="lead">Єдиний вичерпний фреймворк діагностики e-commerce: ${tpl.blocks.length} модулів. Зірочка * — обовʼязкове; бейдж показує тип позиції; сірим — куди йде відповідь у пакеті документів.</p>
 <div class="kpis"><div class="kpi"><b>${tpl.blocks.length}</b><span>модулів</span></div><div class="kpi"><b>${counts.q}</b><span>питань</span></div><div class="kpi"><b>${counts.a}</b><span>доступів</span></div><div class="kpi"><b>${counts.f}</b><span>файлів</span></div></div>

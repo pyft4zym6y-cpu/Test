@@ -22,6 +22,7 @@ import '../cabinet.css';
 import { escapeHtml } from '@/lib/escapeHtml';
 import { INK } from '../docInk';
 import { bindPrint, printButton } from '@/lib/printDoc';
+import { DOC_LOGO, DOC_LOGO_CSS } from '@/system/docLogo';
 
 /** Домен рушія → ключ нашого модуля (реекспорт для UI імпорту зрілості). */
 export const MATURITY_MODULE_OF = MATURITY_DOMAIN_MODULE;
@@ -377,7 +378,7 @@ export function openPrintDoc(title: string, email: string, bodyHtml: string) {
 @page{margin:16mm}body{font-family:"IBM Plex Sans","Segoe UI",system-ui,Arial,sans-serif;color:#141210;margin:0;font-size:13px;line-height:1.55}
 .bar{height:8px;background:#F5301C}.wrap{padding:26px 30px;max-width:860px}
 .top{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #141210;padding-bottom:12px;margin-bottom:18px}
-.logo{font-weight:800;font-size:22px}.logo span{color:#F5301C}.meta{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#6B675E;text-align:right}
+${DOC_LOGO_CSS}.meta{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#6B675E;text-align:right}
 h1{font-size:20px;margin:2px 0 14px}h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:${INK.red};margin:20px 0 8px;border-bottom:1px solid #E3D9C0;padding-bottom:4px}
 table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #EEE7D6;padding:6px 8px;vertical-align:top;text-align:left;font-size:12.5px}
 th{color:#6B675E;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
@@ -385,7 +386,7 @@ th{color:#6B675E;font-weight:600;font-size:11px;text-transform:uppercase;letter-
 .foot{margin-top:26px;padding-top:12px;border-top:1px solid #E3D9C0;color:#9a9488;font-size:10.5px}
 @media print{.noprint{display:none}}
 </style></head><body><div class="bar"></div><div class="wrap">
-<div class="top"><div><div class="logo">WEEXP<span>.</span></div><div style="font-family:monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B675E">Глибокий аудит · документ пакета</div></div>
+<div class="top"><div>${DOC_LOGO}<div style="font-family:monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B675E">Глибокий аудит · документ пакета</div></div>
 <div class="meta">${email}<br>сформовано ${now}</div></div>
 <h1>${title}</h1>
 ${printButton(INK.red, '0 0 14px')}

@@ -1,5 +1,6 @@
 import { lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { CommandPalette } from './admin/CommandPalette';
+import { Logo } from './Logo';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   currentUser,
@@ -491,7 +492,7 @@ export function AdminPanel() {
         onClient={setOpenUser}
       />
       <aside className="adm-side">
-        <Link to="/" className="adm-brand"><b>WEEXP</b><span className="mono">admin</span></Link>
+        <Link to="/" className="adm-brand" aria-label="WEEXP"><Logo title="WEEXP" monochrome /><span className="mono">admin</span></Link>
         <nav className="adm-nav" role="tablist" aria-label="Розділи адмінки">
           {allowedTabs.map((tb) => (
             <div key={tb.id}>

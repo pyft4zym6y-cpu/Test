@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useKeyboardClass } from '@/lib/keyboardClass';
 import { NavLink, Link, Outlet, useLocation } from 'react-router-dom';
+import { Logo } from '@/system/Logo';
 import { SiteFooter } from '@/system/SiteFooter';
 import { CookieConsent } from '@/system/CookieConsent';
 import { RouteBreadcrumbs } from '@/system/Breadcrumbs';
@@ -93,7 +94,7 @@ export function SystemShell() {
       <ReadingProgress />
       <span ref={sentinel} className="sysh-sentinel" aria-hidden="true" />
       <header ref={nav} className="sysh-nav">
-        <Link to={lp('/')} className="sysh-brand"><b>WEEXP</b><span className="mono">system</span></Link>
+        <Link to={lp('/')} className="sysh-brand" aria-label="WEEXP"><Logo title="WEEXP" /></Link>
         <nav className="sysh-links">
           {LINKS.map((l) => (
             <NavLink key={l.to} to={lp(l.to)} end={l.to === '/'} className={({ isActive }) => 'sysh-link mono' + (isActive ? ' is-on' : '')}>{t(l.uk, l.en)}</NavLink>

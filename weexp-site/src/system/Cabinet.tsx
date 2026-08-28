@@ -9,6 +9,7 @@ import {
 } from '@/lib/supa';
 import { ACCESS_CATALOG, AUDIT_EMAIL, DATA_EMAIL, ACCESS_METHOD_LABEL, CONN_STATUS_LABEL, MARKETPLACE_PRESETS, MARKETPLACE_SCOPES, REPORT_TYPES, EXPORT_TYPES, REQUIRED_FILES, type AccessMethod } from '@/data/accessCatalog';
 import { AuditForm } from './AuditForm';
+import { Logo } from './Logo';
 import { ProjectView } from './ProjectView';
 import { loadTemplate, CLIENT_ROLES, type AuditTemplate, type Question } from './auditTemplate';
 import { getExpressAudit, clearExpressAudit, syncExpressToAccount, type ExpressAudit } from './cabinetData';
@@ -23,6 +24,7 @@ import './cabinet.css';
 import { escapeHtml } from '@/lib/escapeHtml';
 import { INK, scoreInk, scoreFill } from './docInk';
 import { bindPrint, printButton } from '@/lib/printDoc';
+import { DOC_LOGO, DOC_LOGO_CSS } from '@/system/docLogo';
 
 /**
  * /cabinet — персональний кабінет клієнта як ХАБ однієї воронки. Зліва — розділи,
@@ -183,7 +185,7 @@ export function Cabinet() {
     <div className={'sysx cab' + theme.cls}>
       {/* Сайдбар */}
       <aside className="cab-side">
-        <Link to={lp('/')} className="cab-brand"><b>WEEXP</b><span className="mono">{t('кабінет', 'cabinet')}</span></Link>
+        <Link to={lp('/')} className="cab-brand" aria-label="WEEXP"><Logo title="WEEXP" /><span className="mono">{t('кабінет', 'cabinet')}</span></Link>
         <nav className="cab-nav">
           {NAV.map((g) => (
             <div key={g.group} className="cab-nav-g">
@@ -599,7 +601,7 @@ function exportExpressPdf(express: ExpressAudit, email?: string) {
 @page{margin:14mm}body{font-family:"IBM Plex Sans","Segoe UI",system-ui,Arial,sans-serif;color:#141210;margin:0;font-size:12.5px;line-height:1.5}
 .bar{height:8px;background:#F5301C}.wrap{padding:24px 30px;max-width:780px}
 .top{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #141210;padding-bottom:12px;margin-bottom:16px}
-.logo{font-weight:800;font-size:22px}.logo span{color:#F5301C}.meta{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#6B675E;text-align:right}
+${DOC_LOGO_CSS}.meta{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#6B675E;text-align:right}
 .money{font-size:32px;font-weight:800;margin:8px 0 0}.money i{font-size:13px;color:#6B675E;font-weight:500;font-style:normal}
 .sub{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#6B675E;margin:2px 0 14px}
 h2{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#6B675E;margin:20px 0 8px;border-bottom:1px solid #E3D9C0;padding-bottom:4px}
@@ -610,7 +612,7 @@ ol{margin:6px 0 0;padding-left:0;list-style:none}ol li{padding:6px 0;border-bott
 .foot{margin-top:22px;padding-top:10px;border-top:1px solid #E3D9C0;color:#9a9488;font-size:10.5px}
 @media print{.noprint{display:none}}
 </style></head><body><div class="bar"></div><div class="wrap">
-<div class="top"><div><div class="logo">WEEXP<span>.</span></div><div style="font-family:monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B675E">Експрес-аудит · результат</div></div>
+<div class="top"><div>${DOC_LOGO}<div style="font-family:monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B675E">Експрес-аудит · результат</div></div>
 <div class="meta">${email ? escapeHtml(email) + '<br>' : ''}пройдено ${escapeHtml(new Date(express.at).toLocaleString('uk-UA'))}</div></div>
 ${printButton(INK.red, '8px 0')}
 <div class="money">${escapeHtml(money(express.total, cur))} <i>/ рік · оцінений витік виторгу</i></div>

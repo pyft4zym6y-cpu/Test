@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Logo } from '@/system/Logo';
 import { useT, useLp } from '@/i18n';
 import './system.css';
 import { PAGES, EXTRA_PAGES } from '@/lib/nav';
@@ -39,7 +40,7 @@ export function SiteFooter() {
     <footer className="sfoot sysx">
       <div className="sfoot-in">
         <div className="sfoot-brand">
-          <b>WEEXP</b>
+          <Logo className="sfoot-logo" title="WEEXP" />
           <span className="sfoot-tag">{t('Система замість героїзму', 'A system instead of heroics')}</span>
         </div>
         <div className="sfoot-school">

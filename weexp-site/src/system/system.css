@@ -317,9 +317,9 @@ html { scroll-padding-top: calc(var(--sysh-h) + 12px); }
   background: var(--sh-warm); backdrop-filter: none; -webkit-backdrop-filter: none;
   border-bottom: 2.5px solid var(--sh-deep);
 }
-.sysh-brand { display: inline-flex; align-items: baseline; gap: 8px; text-decoration: none; }
-.sysh-brand b { font-family: 'Golos Text', system-ui, sans-serif; font-weight: 900; text-transform: uppercase; letter-spacing: -.01em; font-size: 18px; color: var(--sh-deep); }
-.sysh-brand span { font-family: 'Golos Text', system-ui, sans-serif; font-weight: 800; font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--sh-graphite); }
+.sysh-brand { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; --logo-ink: var(--sh-deep); }
+.sysh-brand .wx-logo { height: 26px; }
+@media (max-width: 640px) { .sysh-brand .wx-logo { height: 21px; } }
 /* min-width: 0 обовʼязковий: без нього флекс-елемент не стискається нижче
    ширини вмісту, тому overflow-x нижче ніколи не спрацьовував — меню замість
    прокрутки НАЇЖДЖАЛО на перемикач мови. З сімома пунктами це починалось на
@@ -368,7 +368,6 @@ html { scroll-padding-top: calc(var(--sysh-h) + 12px); }
 .sysx-404 .sysx-cta-row { margin-top: 6px; }
 
 @media (max-width: 720px) {
-  .sysh-brand span { display: none; }
   .sysh-nav { gap: 10px; padding: 10px 14px; }
 }
 /* Поріг бургера — 1299px, а не 860px.
@@ -1200,6 +1199,11 @@ html { scroll-padding-top: calc(var(--sysh-h) + 12px); }
 .sfoot { position: relative; z-index: 1; background: var(--deep); color: #cfd4da; padding: clamp(30px, 5vw, 48px) 0 20px; }
 .sfoot-in { max-width: 1180px; margin: 0 auto; padding: 0 clamp(18px, 5vw, 40px); display: flex; flex-wrap: wrap; gap: 22px 40px; align-items: flex-start; justify-content: space-between; }
 .sfoot-brand { display: grid; gap: 4px; }
+/* Підвал темний: чорнило знака на ньому не видно — лишався б самий червоний X.
+   Специфічність теж має значення: базове правило .wx-logo стоїть нижче за
+   текстом, тож контекстні правила мають бути «через батька», інакше перемагає
+   базова висота 1em і знак стискається до розміру шрифту. */
+.sfoot-brand .wx-logo { height: 30px; margin-bottom: 8px; --logo-ink: var(--cream); }
 .sfoot-brand b { font-family: var(--display); font-size: 22px; letter-spacing: .04em; color: #fff; }
 .sfoot-tag { font-size: 12px; color: #8b929b; }
 .sfoot-school { display: grid; gap: 4px; }
@@ -2831,3 +2835,10 @@ details.apack-block:not([open]) .apack-bmore::after { content: '+'; }
 .apack-bmeta dt { margin: 0; color: var(--graphite); letter-spacing: .08em; text-transform: uppercase; }
 .apack-bmeta dd { margin: 0; color: var(--deep); overflow-wrap: anywhere; }
 @media (max-width: 520px) { .apack-bmeta > div { grid-template-columns: 1fr; gap: 1px; } }
+
+/* ── Логотип ──
+   Кольори — токенами, а не в самому SVG: знак має однаково стояти на кремі,
+   на чорній шапці адмінки й у друкованому документі, де фон завжди білий. */
+.wx-logo { display: block; height: 1em; width: auto; }
+.wx-logo-ink { fill: var(--logo-ink, #141210); }
+.wx-logo-x { fill: var(--logo-x, #D0230E); }

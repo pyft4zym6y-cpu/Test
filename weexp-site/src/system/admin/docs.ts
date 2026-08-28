@@ -21,6 +21,7 @@ import '../cabinet.css';
 import { ST, escH, openPrintDoc } from './shared';
 import { INK } from '../docInk';
 import { bindPrint, printButton } from '@/lib/printDoc';
+import { DOC_LOGO, DOC_LOGO_CSS } from '@/system/docLogo';
 
 export async function openClientDossier(row: AdminRow) {
   const w = window.open('', '_blank');
@@ -69,7 +70,7 @@ export async function openClientDossier(row: AdminRow) {
 @page{margin:16mm}*{box-sizing:border-box}body{font-family:"IBM Plex Sans","Segoe UI",system-ui,Arial,sans-serif;color:#141210;margin:0;font-size:13px;line-height:1.5}
 .bar{height:8px;background:#F5301C}.wrap{padding:26px 30px}
 .top{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #141210;padding-bottom:12px;margin-bottom:18px}
-.logo{font-weight:800;font-size:22px}.logo span{color:#F5301C}.meta{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#6B675E;text-align:right}
+${DOC_LOGO_CSS}.meta{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#6B675E;text-align:right}
 h1{font-size:18px;margin:2px 0 2px}.sub{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B675E}
 h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:${INK.red};margin:22px 0 8px;border-bottom:1px solid #E3D9C0;padding-bottom:4px}
 table{border-collapse:collapse;width:100%}td{border-bottom:1px solid #EEE7D6;padding:6px 8px;vertical-align:top}td.k{width:210px;color:#6B675E;font-weight:600}
@@ -79,7 +80,7 @@ td.c{text-align:center;width:56px;font-weight:600}
 .foot{margin-top:26px;padding-top:12px;border-top:1px solid #E3D9C0;color:#9a9488;font-size:10.5px}
 @media print{.noprint{display:none}}
 </style></head><body><div class="bar"></div><div class="wrap">
-<div class="top"><div><div class="logo">WEEXP<span>.</span></div><div class="sub">Досьє клієнта · конфіденційно</div></div>
+<div class="top"><div>${DOC_LOGO}<div class="sub">Досьє клієнта · конфіденційно</div></div>
 <div class="meta">${escH(row.email)}<br>сформовано ${escH(now)}${code ? `<br>код: <span class="code">${escH(code)}</span>` : ''}</div></div>
 ${printButton(INK.red, '0 0 14px')}
 <h2>Профіль компанії</h2>${companyRows.some(([, v]) => v) ? `<table>${kv(companyRows)}</table>` : '<p class="empty">Профіль не заповнено.</p>'}
@@ -125,13 +126,13 @@ export function exportAuditDocPdf(doc: AuditDoc, email: string) {
 @page{margin:16mm}*{box-sizing:border-box}body{font-family:"IBM Plex Sans","Segoe UI",system-ui,Arial,sans-serif;color:#141210;margin:0;font-size:13px;line-height:1.55}
 .bar{height:8px;background:#F5301C}.wrap{padding:26px 30px;max-width:900px}
 .top{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #141210;padding-bottom:12px;margin-bottom:18px}
-.logo{font-weight:800;font-size:22px}.logo span{color:#F5301C}.meta{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#6B675E;text-align:right}
+${DOC_LOGO_CSS}.meta{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#6B675E;text-align:right}
 h1{font-size:20px;margin:2px 0 2px}.sub{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B675E}
 h2{font-size:14px;letter-spacing:.04em;color:${INK.red};margin:22px 0 8px;border-bottom:1px solid #E3D9C0;padding-bottom:4px}
 .body{white-space:normal}.foot{margin-top:26px;padding-top:12px;border-top:1px solid #E3D9C0;color:#9a9488;font-size:10.5px}
 @media print{.noprint{display:none}}
 </style></head><body><div class="bar"></div><div class="wrap">
-<div class="top"><div><div class="logo">WEEXP<span>.</span></div><div class="sub">Документ аудиту · конфіденційно</div></div>
+<div class="top"><div>${DOC_LOGO}<div class="sub">Документ аудиту · конфіденційно</div></div>
 <div class="meta">${escH(email)}<br>сформовано ${escH(now)}</div></div>
 <h1>${escH(doc.title)}</h1>
 ${printButton(INK.red, '14px 0')}

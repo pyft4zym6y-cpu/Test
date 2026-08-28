@@ -1,0 +1,29 @@
+import './system.css';
+
+/**
+ * Логотип WEEXP — єдине джерело знака на весь продукт.
+ *
+ * Вектор, а не картинка: знак стоїть у шапці сайту, у кабінеті, в адмінці й у
+ * друкованих документах для клієнта — растр у цих місцях або мило б на екрані
+ * Retina, або важив би зайві кілобайти в кожному документі. Геометрію знято з
+ * оригіналу трасуванням; кольори — брендові токени (--deep / --red-ink), а не
+ * піпетка з фотографії, щоб знак жив в одній системі з рештою сайту.
+ *
+ * `title` малюється лише коли знак стоїть сам за себе (посилання-логотип). Там,
+ * де поруч є текстова назва, знак декоративний — і тоді він `aria-hidden`,
+ * інакше скрінрідер читає «WEEXP WEEXP».
+ */
+export const LOGO_VIEWBOX = '0 0 1731 456';
+const INK = 'M990 0 L1410 1 L1410 35 L1442 35 L1442 456 L991 456 L990 425 L957 425 L957 1 Z M975 18 L975 408 L1393 408 L1392 18 Z M0 106 L96 106 L117 208 L119 208 L143 106 L225 106 L247 208 L249 208 L271 106 L367 106 L312 343 L207 343 L184 257 L157 343 L55 343 Z M389 106 L620 106 L620 172 L490 173 L490 193 L604 193 L604 253 L491 253 L490 273 L620 274 L620 343 L389 342 Z M649 106 L880 106 L880 172 L752 173 L752 193 L863 193 L864 253 L753 253 L752 273 L880 274 L879 343 L649 343 Z M1484 106 L1670 106 L1682 108 L1701 116 L1719 135 L1727 155 L1730 171 L1731 204 L1729 223 L1718 254 L1700 273 L1683 280 L1585 281 L1585 344 L1484 344 Z M1608 172 L1585 173 L1585 215 L1619 215 L1629 209 L1632 202 L1632 186 L1629 179 L1621 173 Z';
+const RED = 'M1012 60 L1140 60 L1188 130 L1239 60 L1362 60 L1274 174 L1247 210 L1247 213 L1363 369 L1242 369 L1189 293 L1135 369 L1011 369 L1129 212 Z';
+
+export function Logo({ className = '', title, monochrome = false }: { className?: string; title?: string; monochrome?: boolean }) {
+  return (
+    <svg className={'wx-logo ' + className} viewBox={LOGO_VIEWBOX} role={title ? 'img' : undefined}
+      aria-hidden={title ? undefined : true} aria-label={title} focusable="false">
+      {title && <title>{title}</title>}
+      <path className="wx-logo-ink" fillRule="evenodd" d={INK} />
+      <path className={monochrome ? 'wx-logo-ink' : 'wx-logo-x'} fillRule="evenodd" d={RED} />
+    </svg>
+  );
+}
