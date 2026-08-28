@@ -8,7 +8,7 @@ import './system.css';
  * зовнішнього рев'ю: як ми рахуємо й перевіряємо цифри, чому кейси анонімні,
  * хто працює над проєктом, як влаштований договір і відповідальність, і що
  * можна почати з пілота. Нічого не вигадуємо — лише робимо прозорою методику
- * та даємо шлях до перевірки (референси за запитом під NDA). Плюс FAQPage-
+ * та даємо шлях до перевірки (джерело кожної цифри, звірка на дзвінку). Плюс FAQPage-
  * розмітка, щоб ці відповіді бачив і Google, і AI-асистенти.
  */
 export function ProofTrust() {
@@ -28,7 +28,7 @@ export function ProofTrust() {
 
   const FAQ = [
     { q: t('Кейси анонімні — як їх перевірити?', 'Cases are anonymous — how can I verify them?'),
-      a: t('Цифри в кейсах — це дельти з CRM/ERP/GA4 клієнта, а не маркетингові оцінки. Назви прибрані за NDA. На дзвінку ми показуємо методику розрахунку, а за запитом організовуємо референс-дзвінок із клієнтом суміжної категорії — з його згоди.', 'The numbers in the cases are deltas from the client’s CRM/ERP/GA4, not marketing estimates. Names are removed under NDA. On a call we walk through the calculation methodology, and on request we arrange a reference call with a client in an adjacent category — with their consent.') },
+      a: t('Цифри в кейсах — це дельти з CRM/ERP/GA4 клієнта, а не маркетингові оцінки. Назви прибрані за NDA. На дзвінку ми показуємо методику розрахунку — джерело кожної цифри, горизонт і те, що НЕ перевірялось.', 'The numbers in the cases are deltas from the client’s CRM/ERP/GA4, not marketing estimates. Names are removed under NDA. On a call we walk through the calculation methodology — the source of every number, the horizon, and what was NOT verified.') },
     { q: t('Хто саме працюватиме над моїм проєктом?', 'Who exactly will work on my project?'),
       a: t('Проєкт веде Head of E-commerce як лід доставки результату. Під конкретні задачі підключаються профільні ролі — стратегія, performance, retention/CRM, UX/CRO, аналітика, операції. У кожному кейсі показано, які ролі були задіяні. Склад команди під ваш проєкт фіксуємо в угоді до старту.', 'The project is led by a Head of E-commerce as the delivery lead. Specialist roles plug in per task — strategy, performance, retention/CRM, UX/CRO, analytics, operations. Each case shows which roles were engaged. The exact team for your project is fixed in the agreement before kickoff.') },
     { q: t('Як влаштований договір і відповідальність?', 'How are the contract and liability handled?'),
@@ -67,12 +67,14 @@ export function ProofTrust() {
           ))}
         </div>
 
+        {/* Тут пропонувався референс-дзвінок із клієнтом суміжної категорії.
+            Обіцянка знята: замість чужого досвіду пропонуємо перевірити ту
+            саму методику на власних числах — це те, що ми справді робимо. */}
         <div className="proof-ref">
-          <p className="proof-ref-t">{t('Хочете референс конкретного клієнта?', 'Want a specific client reference?')}</p>
-          <p className="proof-ref-s">{t('Організуємо референс-дзвінок із клієнтом суміжної категорії — за запитом і з його згоди.', 'We’ll arrange a reference call with a client in an adjacent category — on request and with their consent.')}</p>
+          <p className="proof-ref-t">{t('Перевірте методику на своїх числах', 'Check the method against your own numbers')}</p>
+          <p className="proof-ref-s">{t('Express Audit рахує ваш розрив за тією самою логікою, що й кейси вище: дані → бенчмарк → розрив → пріоритет. Безкоштовно, ~2 хвилини, без реєстрації.', 'The Express Audit calculates your gap with the same logic as the cases above: data → benchmark → gap → priority. Free, ~2 minutes, no sign-up.')}</p>
           <div className="sysx-cta-row">
-            <Link to={lp('/contact')} className="sysx-cta is-primary">{t('Запросити референс →', 'Request a reference →')}</Link>
-            <Link to={lp('/diagnose')} className="sysx-cta">{t('Порахувати витік', 'Calculate the leak')} →</Link>
+            <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>
           </div>
         </div>
       </div>

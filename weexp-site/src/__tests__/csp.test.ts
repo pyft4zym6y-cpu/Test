@@ -58,3 +58,49 @@ describe('CSP', () => {
     expect(directive('base-uri')).toBe("'self'");
   });
 });
+
+
+describe('интерактивное остаётся интерактивным', () => {
+  /*
+   * Сцены скролл-фильма гасят события (pointer-events: none), чтобы мышь
+   * доставала WebGL-объект позади. Возвращало их правило ТОЛЬКО для <a> —
+   * поэтому кнопка «Поділитися» на /proof была мертва: две соседние ссылки
+   * работали, она нет. Визуально не отличить: нажимаешь, ничего не происходит.
+   */
+  const css = readFileSync(join(__dirname, '..', 'system', 'system.css'), 'utf8');
+
+  it('возврат событий написан не только для ссылок', () => {
+    const restore = css.match(/[^}]*pointer-events: *auto[^}]*/g) || [];
+    const scene = restore.find((r) => r.includes('sysx-scene'));
+    expect(scene, 'в .sysx-scene нет правила, возвращающего pointer-events').toBeTruthy();
+    for (const tag of ['button', 'input', 'select', 'textarea']) {
+      expect(scene, `сцена не возвращает события для <${tag}>`).toContain(tag);
+    }
+  });
+
+  it('гашение событий всегда парно с возвратом', () => {
+    // Каждый класс, который гасит события у ЦЕЛОГО блока с содержимым,
+    // должен иметь парное правило возврата для управляющих элементов.
+    /*
+     * Разбираем по блокам, а не одной сквозной регуляркой: правило возврата
+     * написано списком селекторов через запятую, и глобальный поиск съедал
+     * первый вместе со вторым — .cf-act во втором селекторе не находился.
+     */
+    const killers: string[] = [];
+    const restored = new Set<string>();
+    for (const block of css.split('}')) {
+      const i = block.lastIndexOf('{');
+      if (i < 0) continue;
+      const selector = block.slice(0, i);
+      const body = block.slice(i + 1);
+      const classes = [...selector.matchAll(/\.([a-z0-9-]+)/g)].map((m) => m[1]);
+      if (/pointer-events: *none/.test(body)) killers.push(...classes);
+      if (/pointer-events: *auto/.test(body)) for (const c of classes) restored.add(c);
+    }
+    // .cf-act и .sysx-scene держат контент с кнопками — их проверяем строго.
+    for (const k of ['cf-act', 'sysx-scene']) {
+      if (!killers.includes(k)) continue;
+      expect(restored.has(k), `.${k} гасит события и ничего не возвращает`).toBe(true);
+    }
+  });
+});

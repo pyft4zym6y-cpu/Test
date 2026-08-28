@@ -91,7 +91,18 @@
   font-family: var(--script); font-weight: 700; color: var(--red-ink);
   text-transform: none; letter-spacing: .01em; line-height: 1;
 }
-/* Хайлайт-бокс на слові (червоний / жовтий) */
+/* Хайлайт-бокс на слові (червоний / жовтий).
+ *
+ * Фон рядкового елемента малюється по МЕТРИКАХ шрифта, а не по line-height:
+ * у Golos Text це ≈1.23 від кегля. Дисплейні заголовки набрані line-height .92
+ * — тобто крок рядка МЕНШИЙ за висоту фону, і підсвічене слово на другому
+ * рядку накривало текст першого. Замір: 8–24px перекриття, на десктопі теж
+ * (заголовок /people — 24px). Текст поверх тексту.
+ *
+ * Заголовкам, де підсвітка є, даємо інтервал не менший за висоту фону.
+ * Решта дисплейних заголовків лишається щільною, як задумано. */
+.sysx-display:has(.hl), .sysx-display:has(.hl-y) { line-height: 1.28; }
+
 .sysx .hl { background: var(--red-ink); color: #fff; padding: .02em .2em;
   -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 .sysx .hl-y { background: var(--yellow); color: var(--deep); padding: .02em .2em;
@@ -176,7 +187,18 @@
   padding: clamp(72px, 9vh, 104px) clamp(20px, 6vw, 90px) clamp(28px, 5vh, 56px);
   pointer-events: none; will-change: opacity, transform;
 }
-.sysx-scene a { pointer-events: auto; }
+/*
+ * Сцени скрол-фільму гасять події (pointer-events: none), щоб миша діставала
+ * WebGL-обʼєкт позаду. Повертало їх правило ЛИШЕ для <a> — тому кнопка
+ * «Поділитися» на /proof була мертва: сусідні дві посилання працювали, вона ні.
+ * Візуально не відрізнити — натискаєш, і нічого не відбувається.
+ *
+ * Повертаємо всім, чим узагалі можна керувати, а не одному типу тега.
+ */
+.sysx-scene :is(a[href], button, input, select, textarea, summary, [role="button"], [tabindex]:not([tabindex="-1"])),
+.cf-act :is(a[href], button, input, select, textarea, summary, [role="button"], [tabindex]:not([tabindex="-1"])) {
+  pointer-events: auto;
+}
 .sysx-h1 { font-size: clamp(37px, 6.7vw, 100px); }
 .sysx-h2 { font-size: clamp(29px, 4.8vw, 76px); color: var(--deep); }
 .sysx-em { color: var(--data); font-style: normal; }
