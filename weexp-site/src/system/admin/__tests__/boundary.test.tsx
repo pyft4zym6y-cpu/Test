@@ -119,3 +119,41 @@ describe('askConfirm / askText', () => {
     expect(await p).toBeNull();
   });
 });
+
+
+describe('застарілий бандл після деплою', () => {
+  /*
+   * Реальний збій у проді: адмінка не відкривала картку клієнта й картку
+   * заявки — «Failed to fetch dynamically imported module … UserDetail-*.js ·
+   * повторна спроба не допомогла». Ця межа стоїть усередині застосунку й
+   * ловила збій раніше за глобальну, тому пропонувала повтор. Повторити
+   * завантаження чанка, якого більше немає, неможливо: другий запит дає той
+   * самий 404.
+   */
+  const Boom = ({ msg }: { msg: string }) => { throw new Error(msg); };
+  const STALE = 'Failed to fetch dynamically imported module: https://weexp.agency/assets/UserDetail-4DKZFaHF.js';
+
+  it('на зниклому чанку не пропонує повтор, а веде на перезавантаження', () => {
+    render(<PanelBoundary title="Картка клієнта"><Boom msg={STALE} /></PanelBoundary>);
+    expect(screen.queryByText(/Спробувати ще раз/)).not.toBeInTheDocument();
+    expect(screen.getByText(/Перезавантажити сторінку/)).toBeInTheDocument();
+    expect(screen.queryByText(/повторна спроба не допомогла/)).not.toBeInTheDocument();
+  });
+
+  it('пояснює причину людською мовою — а стектрейс лишає під «технічними деталями»', () => {
+    render(<PanelBoundary title="Картка заявки"><Boom msg={STALE} /></PanelBoundary>);
+    // Зверху — причина словами, зрозумілими менеджеру.
+    expect(screen.getByText(/нова версія сайту/i)).toBeInTheDocument();
+    // Сирий текст нікуди не зник: його копіюють у підтримку. Але він у
+    // згорнутому блоці, а не замість пояснення.
+    expect(screen.getByText(/Технічні деталі/)).toBeInTheDocument();
+    expect(screen.getByText(/UserDetail-4DKZFaHF/)).toBeInTheDocument();
+  });
+
+  it('звичайний збій панелі поводиться як раніше — повтор лишається', () => {
+    render(<PanelBoundary title="Дашборд"><Boom msg="Cannot read properties of undefined" /></PanelBoundary>);
+    expect(screen.getByText(/Спробувати ще раз/)).toBeInTheDocument();
+    // Текст видно і в плашці, і в технічних деталях — обидва місця доречні.
+    expect(screen.getAllByText(/Cannot read properties of undefined/).length).toBeGreaterThan(0);
+  });
+});

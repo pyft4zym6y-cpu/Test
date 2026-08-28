@@ -5,6 +5,7 @@ import { Engagement } from '@/lib/engagement';
 import { Toaster } from '@/lib/toast';
 import '@/lib/primitives.css';
 import { langOf } from '@/i18n';
+import { reloadOnceForChunk } from '@/lib/chunkReload';
 
 /**
  * Переклад без контексту: мова визначається прямо з URL.
@@ -30,12 +31,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
   static getDerivedStateFromError(error: Error) { return { error }; }
   componentDidCatch(error: Error) {
     // Застарілий бандл після деплою → тихе перезавантаження (guard від циклу).
-    if (/dynamically imported module|Loading chunk|ChunkLoadError|module script failed/i.test(String(error?.message))) {
-      try {
-        const now = Date.now(); const last = Number(sessionStorage.getItem('weexp-eb-reload') || 0);
-        if (now - last > 20000) { sessionStorage.setItem('weexp-eb-reload', String(now)); location.reload(); }
-      } catch { /* ignore */ }
-    }
+    reloadOnceForChunk(error?.message, 'boundary');
   }
   render() {
     if (!this.state.error) return this.props.children;

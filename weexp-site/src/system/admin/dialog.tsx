@@ -1,4 +1,5 @@
 import { Component, useCallback, useEffect, useRef, useState, type ReactNode, Suspense} from 'react';
+import { isChunkLoadError, reloadOnceForChunk } from '@/lib/chunkReload';
 
 /**
  * Свій діалог замість нативних confirm/prompt.
@@ -138,18 +139,28 @@ export class PanelBoundary extends Component<
     // У консоль — щоб збій було видно в devtools і в записі сесії, а не лише
     // у вигляді плашки, яку легко пропустити.
     console.error(`[admin] панель «${this.props.title || 'без назви'}» впала:`, error, info?.componentStack);
+    /*
+     * Застарілий бандл після деплою. Ця межа стоїть УСЕРЕДИНІ застосунку, тому
+     * ловить збій раніше за глобальну — і раніше пропонувала «спробувати ще
+     * раз». Повтор тут безнадійний: чанка зі старим хешем більше не існує,
+     * друга спроба дасть той самий 404. Перезавантажуємось один раз.
+     */
+    reloadOnceForChunk(error?.message, 'panel');
   }
 
   render() {
     const { error, tries } = this.state;
     if (!error) return this.props.children;
-    const canRetry = tries < 2;
+    const stale = isChunkLoadError(error.message);
+    // Повторювати завантаження зниклого чанка немає сенсу — лише перезавантаження.
+    const canRetry = !stale && tries < 2;
     return (
       <div className="adm-panel adm-panel-broken">
         <span className="adm-col-h mono">{this.props.title || 'Блок'} — помилка</span>
         <p className="mono adm-empty">
-          {error.message || 'Невідома помилка'}
-          {!canRetry && ' · повторна спроба не допомогла'}
+          {stale
+            ? 'Вийшла нова версія сайту, а вкладка лишалась зі старою. Перезавантажте сторінку — дані на місці.'
+            : <>{error.message || 'Невідома помилка'}{!canRetry && ' · повторна спроба не допомогла'}</>}
         </p>
         <div className="adm-ga-bar">
           {canRetry
