@@ -1,0 +1,840 @@
+<title>Редизайн stf.com.ua</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500;600&family=Onest:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ground:#EDF0EA;
+  --paper:#FFFFFF;
+  --paper-2:#E4E9DE;
+  --ink:#14180F;
+  --ink-2:#4C5545;
+  --ink-3:#78826F;
+  --line:#CBD3C3;
+  --line-soft:#DCE2D5;
+  --gold:#8E6A0E;
+  --gold-fill:#D9A82B;
+  --deep:#16302A;
+  --deep-2:#1E4038;
+  --on-deep:#E7EEE7;
+  --good:#2F6B45;
+  --warn:#9A4A12;
+  --maxw:1180px;
+  --f-display:"Unbounded","Trebuchet MS",system-ui,sans-serif;
+  --f-body:"Onest","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono","SFMono-Regular",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0F130E;
+    --paper:#161B15;
+    --paper-2:#1D231B;
+    --ink:#E9EDE3;
+    --ink-2:#A7B19D;
+    --ink-3:#7C8674;
+    --line:#2E362B;
+    --line-soft:#242B22;
+    --gold:#E0B341;
+    --gold-fill:#D9A82B;
+    --deep:#12271F;
+    --deep-2:#1A3830;
+    --on-deep:#DDE7DC;
+    --good:#6FB187;
+    --warn:#D9843F;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0F130E;
+  --paper:#161B15;
+  --paper-2:#1D231B;
+  --ink:#E9EDE3;
+  --ink-2:#A7B19D;
+  --ink-3:#7C8674;
+  --line:#2E362B;
+  --line-soft:#242B22;
+  --gold:#E0B341;
+  --gold-fill:#D9A82B;
+  --deep:#12271F;
+  --deep-2:#1A3830;
+  --on-deep:#DDE7DC;
+  --good:#6FB187;
+  --warn:#D9843F;
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--ground);
+  color:var(--ink);
+  font-family:var(--f-body);
+  font-size:16px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+@media (max-width:640px){.wrap{padding:0 18px}}
+
+/* ---------- типографіка ---------- */
+h1,h2,h3,h4{font-family:var(--f-display);font-weight:400;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.1rem,5.2vw,3.9rem);line-height:1.04;letter-spacing:-.035em;font-weight:500}
+h2{font-size:clamp(1.5rem,3vw,2.15rem);line-height:1.12;letter-spacing:-.03em;font-weight:500}
+h3{font-size:1.06rem;line-height:1.3;letter-spacing:-.015em;font-weight:500}
+h4{font-size:.94rem;letter-spacing:-.01em;font-weight:500}
+p{margin:0}
+.lede{font-size:clamp(1.02rem,1.6vw,1.2rem);line-height:1.6;color:var(--ink-2);max-width:62ch}
+.body-col{max-width:66ch}
+.eyebrow{
+  font-family:var(--f-mono);font-size:.7rem;text-transform:uppercase;
+  letter-spacing:.16em;color:var(--ink-3);
+}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+strong{font-weight:600;color:var(--ink)}
+a{color:inherit}
+
+/* ---------- каркас ---------- */
+.doc{display:grid;grid-template-columns:214px minmax(0,1fr);gap:56px;align-items:start}
+@media (max-width:900px){.doc{grid-template-columns:minmax(0,1fr);gap:0}}
+
+.rail{position:sticky;top:32px;padding:8px 0 40px;display:flex;flex-direction:column;gap:2px}
+@media (max-width:900px){.rail{display:none}}
+.rail a{
+  display:flex;gap:11px;align-items:baseline;text-decoration:none;
+  padding:5px 0;font-size:.85rem;color:var(--ink-3);
+  border-bottom:1px solid transparent;transition:color .15s;
+}
+.rail a:hover,.rail a:focus-visible{color:var(--ink)}
+.rail a .n{font-family:var(--f-mono);font-size:.68rem;color:var(--gold);flex:none;width:1.4em}
+.rail .rail-head{
+  font-family:var(--f-mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.16em;
+  color:var(--ink-3);padding-bottom:10px;margin-bottom:8px;border-bottom:1px solid var(--line);
+}
+
+section{padding:64px 0;border-top:1px solid var(--line-soft)}
+section:first-of-type{border-top:none}
+.sec-head{display:flex;gap:16px;align-items:baseline;margin-bottom:26px}
+.sec-head .num{
+  font-family:var(--f-mono);font-size:.74rem;color:var(--gold);
+  padding-top:.35em;flex:none;font-variant-numeric:tabular-nums;
+}
+.stack{display:flex;flex-direction:column;gap:18px}
+.stack-lg{display:flex;flex-direction:column;gap:34px}
+
+/* ---------- шапка ---------- */
+.masthead{padding:72px 0 30px}
+.mast-top{
+  display:flex;justify-content:space-between;align-items:baseline;gap:20px;
+  padding-bottom:18px;margin-bottom:38px;border-bottom:1px solid var(--ink);flex-wrap:wrap;
+}
+.mast-logo{font-family:var(--f-display);font-weight:500;letter-spacing:-.02em;font-size:1rem}
+.mast-meta{font-family:var(--f-mono);font-size:.7rem;color:var(--ink-3);letter-spacing:.06em}
+.mast-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:48px;align-items:end}
+@media (max-width:820px){.mast-grid{grid-template-columns:minmax(0,1fr);gap:28px;align-items:start}}
+.mast-facts{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line)}
+.fact{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:.86rem}
+.fact dt{color:var(--ink-3)}
+.fact dd{margin:0;text-align:right;font-family:var(--f-mono);font-size:.8rem;color:var(--ink)}
+
+.note{
+  background:var(--paper);border:1px solid var(--line);border-left:3px solid var(--gold-fill);
+  padding:16px 20px;font-size:.88rem;color:var(--ink-2);margin-top:34px;
+}
+.note strong{color:var(--ink)}
+
+/* ---------- сегменти ---------- */
+.cards-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+@media (max-width:860px){.cards-3{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--paper);padding:24px 22px;display:flex;flex-direction:column;gap:14px}
+.card .tag{
+  font-family:var(--f-mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);
+}
+.card p{font-size:.9rem;color:var(--ink-2)}
+.qlist{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:7px}
+.qlist li{font-size:.86rem;color:var(--ink-2);padding-left:16px;position:relative;line-height:1.45}
+.qlist li::before{content:"";position:absolute;left:0;top:.62em;width:7px;height:1px;background:var(--gold-fill)}
+.card .share{margin-top:auto;padding-top:14px;border-top:1px solid var(--line-soft);font-family:var(--f-mono);font-size:.72rem;color:var(--ink-3)}
+
+/* ---------- проблеми ---------- */
+.probs{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.prob{
+  display:grid;grid-template-columns:132px minmax(0,1fr) 96px;gap:24px;
+  padding:18px 0;border-bottom:1px solid var(--line-soft);align-items:start;
+}
+@media (max-width:760px){.prob{grid-template-columns:minmax(0,1fr);gap:8px}}
+.prob .area{font-family:var(--f-mono);font-size:.74rem;text-transform:uppercase;letter-spacing:.09em;color:var(--ink-3);padding-top:.25em}
+.prob .txt{font-size:.92rem;color:var(--ink-2)}
+.prob .txt b{color:var(--ink);font-weight:600}
+.sev{
+  justify-self:start;font-family:var(--f-mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;
+  padding:3px 9px;border:1px solid currentColor;white-space:nowrap;
+}
+@media (max-width:760px){.sev{justify-self:start;margin-top:4px}}
+.sev.high{color:var(--warn)}
+.sev.mid{color:var(--gold)}
+.sev.low{color:var(--ink-3)}
+
+/* ---------- меседж-хаус ---------- */
+.msg{background:var(--deep);color:var(--on-deep);padding:34px 32px;display:flex;flex-direction:column;gap:24px}
+.msg .claim{font-family:var(--f-display);font-size:clamp(1.3rem,2.8vw,1.9rem);line-height:1.16;letter-spacing:-.03em;font-weight:400;text-wrap:balance}
+.msg .claim em{font-style:normal;color:var(--gold-fill)}
+.pillars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:rgba(255,255,255,.14)}
+@media (max-width:760px){.pillars{grid-template-columns:minmax(0,1fr)}}
+.pillar{background:var(--deep);padding:18px 18px 20px;display:flex;flex-direction:column;gap:8px}
+.pillar h4{color:var(--on-deep)}
+.pillar p{font-size:.85rem;color:rgba(231,238,231,.72);line-height:1.5}
+.pillar .k{font-family:var(--f-mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-fill)}
+
+/* ---------- дерево структури ---------- */
+.tree{
+  background:var(--paper);border:1px solid var(--line);padding:24px 22px;overflow-x:auto;
+  font-family:var(--f-mono);font-size:.79rem;line-height:1.95;color:var(--ink-2);
+}
+.tree b{color:var(--ink);font-weight:500}
+.tree .u{color:var(--gold);font-weight:500}
+.tree .c{color:var(--ink-3)}
+.tree pre{margin:0;white-space:pre}
+.legend{display:flex;gap:20px;flex-wrap:wrap;font-size:.78rem;color:var(--ink-3);margin-top:14px}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.dot{width:8px;height:8px;flex:none;display:inline-block}
+.dot.gold{background:var(--gold-fill)}
+.dot.ink{background:var(--ink-2)}
+
+/* ---------- розкадровка ---------- */
+.frames{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line)}
+.frame{background:var(--paper);display:grid;grid-template-columns:58px minmax(0,1fr);gap:0}
+.frame .idx{
+  border-right:1px solid var(--line-soft);display:flex;justify-content:center;padding-top:22px;
+  font-family:var(--f-mono);font-size:.72rem;color:var(--gold);
+}
+.frame .fbody{padding:20px 22px;display:flex;flex-direction:column;gap:11px}
+.frame .fhead{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+.frame .goal{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.copy{
+  border-left:2px solid var(--gold-fill);padding:2px 0 2px 14px;
+  font-family:var(--f-display);font-weight:400;font-size:1.02rem;line-height:1.32;letter-spacing:-.02em;
+}
+.copy .sub{display:block;font-family:var(--f-body);font-size:.88rem;line-height:1.5;color:var(--ink-2);margin-top:7px;letter-spacing:0}
+.frame .why{font-size:.85rem;color:var(--ink-2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{
+  font-family:var(--f-mono);font-size:.68rem;padding:3px 9px;border:1px solid var(--line);
+  color:var(--ink-3);white-space:nowrap;
+}
+.chip.act{color:var(--gold);border-color:var(--gold-fill)}
+
+/* ---------- дизайн-система ---------- */
+.ds{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+@media (max-width:820px){.ds{grid-template-columns:minmax(0,1fr)}}
+.ds-cell{background:var(--paper);padding:22px;display:flex;flex-direction:column;gap:14px}
+.swatches{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.sw{display:flex;flex-direction:column;gap:6px}
+.sw .chipc{height:52px;border:1px solid var(--line)}
+.sw .nm{font-size:.78rem;line-height:1.3}
+.sw .hx{font-family:var(--f-mono);font-size:.68rem;color:var(--ink-3)}
+.type-demo{display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--line-soft);padding-top:14px}
+.type-demo .row{display:flex;justify-content:space-between;gap:14px;align-items:baseline;border-bottom:1px solid var(--line-soft);padding-bottom:9px}
+.type-demo .row:last-child{border-bottom:none;padding-bottom:0}
+.type-demo .spec{font-family:var(--f-mono);font-size:.66rem;color:var(--ink-3);text-align:right;flex:none}
+.s-disp{font-family:var(--f-display);font-size:1.35rem;letter-spacing:-.03em;font-weight:500}
+.s-body{font-family:var(--f-body);font-size:1rem}
+.s-mono{font-family:var(--f-mono);font-size:.9rem}
+
+/* ---------- CRO ---------- */
+.funnel{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+@media (max-width:860px){.funnel{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.funnel{grid-template-columns:minmax(0,1fr)}}
+.step{background:var(--paper);padding:18px 16px;display:flex;flex-direction:column;gap:9px}
+.step .st{font-family:var(--f-mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+.step p{font-size:.84rem;color:var(--ink-2)}
+.step .metric{margin-top:auto;padding-top:10px;border-top:1px solid var(--line-soft);font-family:var(--f-mono);font-size:.72rem;color:var(--ink-3)}
+
+table{width:100%;border-collapse:collapse;font-size:.87rem}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);background:var(--paper)}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{
+  font-family:var(--f-mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--ink-3);font-weight:400;white-space:nowrap;background:var(--paper-2);
+}
+tbody tr:last-child td{border-bottom:none}
+td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td b{font-weight:600}
+
+/* ---------- дорожня карта ---------- */
+.waves{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line)}
+.wave{background:var(--paper);padding:20px 22px;display:grid;grid-template-columns:150px minmax(0,1fr);gap:22px}
+@media (max-width:760px){.wave{grid-template-columns:minmax(0,1fr);gap:10px}}
+.wave .wl{display:flex;flex-direction:column;gap:4px}
+.wave .wl .w-n{font-family:var(--f-display);font-size:1.05rem;font-weight:500;letter-spacing:-.02em}
+.wave .wl .w-t{font-family:var(--f-mono);font-size:.7rem;color:var(--ink-3);letter-spacing:.08em}
+.wave ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px;font-size:.88rem;color:var(--ink-2)}
+.wave ul li::marker{color:var(--gold-fill)}
+
+/* ---------- підвал ---------- */
+.foot{padding:44px 0 68px;border-top:1px solid var(--ink);margin-top:56px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:baseline}
+.foot .f-l{font-family:var(--f-display);font-size:1rem;font-weight:500;letter-spacing:-.02em}
+.foot .f-r{font-family:var(--f-mono);font-size:.72rem;color:var(--ink-3)}
+
+:focus-visible{outline:2px solid var(--gold-fill);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="mast-top">
+      <div class="mast-logo">Миловарні традиції · stf.com.ua</div>
+      <div class="mast-meta">UX / UI / CRO · концепція редизайну</div>
+    </div>
+    <div class="mast-grid">
+      <div class="stack">
+        <span class="eyebrow">Фабрика мила та побутової хімії · B2B</span>
+        <h1>Сайт, який продає тонни, а не показує асортимент</h1>
+        <p class="lede">Зараз сайт фабрики розповідає, що вона існує. Нова версія має робити іншу роботу: за одну сесію доводити категорійному менеджеру мережі й власнику бренду, що фабрика витягне їхній обсяг — і забирати заявку зі специфікацією, а не «зв'яжіться з нами».</p>
+      </div>
+      <dl class="mast-facts">
+        <div class="fact"><dt>Клієнт</dt><dd>ТОВ «ФМТ»</dd></div>
+        <div class="fact"><dt>Модель</dt><dd>власні ТМ + Private&nbsp;Label</dd></div>
+        <div class="fact"><dt>Головна дія</dt><dd>заявка на прайс / прорахунок</dd></div>
+        <div class="fact"><dt>Мовні версії</dt><dd>UA · RU · EN</dd></div>
+        <div class="fact"><dt>Обсяг документа</dt><dd>10 розділів</dd></div>
+      </dl>
+    </div>
+    <div class="note">
+      <strong>Про джерела.</strong> Прямий доступ до stf.com.ua із робочого середовища закритий мережевою політикою, тому чинний сайт розібрано за індексованими сторінками та публічними даними компанії: фабрика мила й побутової хімії, власні ТМ (Миловарні традиції, Dobra, Mio&nbsp;beauty, Maestro, MonAmi, Grand&nbsp;Шарм&nbsp;MAXI, Ti&nbsp;Amo&nbsp;Crema), напрям Private&nbsp;Label, понад 7&nbsp;540&nbsp;т продукції для національних мереж і дистриб'юторів, італійське обладнання. Усі цифри в макетах — плейсхолдери формату, які замінюються фактичними перед версткою.
+    </div>
+  </header>
+
+  <div class="doc">
+
+    <nav class="rail" aria-label="Розділи документа">
+      <div class="rail-head">Розділи</div>
+      <a href="#segments"><span class="n">01</span>Хто приходить</a>
+      <a href="#audit"><span class="n">02</span>Що заважає</a>
+      <a href="#position"><span class="n">03</span>Позиціонування</a>
+      <a href="#ia"><span class="n">04</span>Структура сайту</a>
+      <a href="#home"><span class="n">05</span>Головна</a>
+      <a href="#pl"><span class="n">06</span>Private Label</a>
+      <a href="#catalog"><span class="n">07</span>Каталог і SKU</a>
+      <a href="#design"><span class="n">08</span>Дизайн-система</a>
+      <a href="#cro"><span class="n">09</span>Конверсія</a>
+      <a href="#road"><span class="n">10</span>Порядок робіт</a>
+    </nav>
+
+    <main>
+
+      <!-- 01 -->
+      <section id="segments">
+        <div class="sec-head"><span class="num">01</span><h2>Хто приходить на сайт фабрики</h2></div>
+        <p class="lede" style="margin-bottom:26px">Три різні люди з трьома різними питаннями. Зараз сайт відповідає всім однаково — описом компанії. Кожен сегмент має отримати власний вхід уже з першого екрана.</p>
+        <div class="cards-3">
+          <article class="card">
+            <span class="tag">Сегмент А</span>
+            <h3>Категорійний менеджер мережі</h3>
+            <p>Заводить нову позицію в поличку або шукає заміну постачальнику, що зірвав постачання.</p>
+            <ul class="qlist">
+              <li>Чи потягнете 40 фур на рік і піки перед святами?</li>
+              <li>Скільки коштує паллета, який штрихкод, яка кратність?</li>
+              <li>Хто ще з мереж уже працює з вами?</li>
+              <li>Що з документами: декларації, безпечність, ДСТУ?</li>
+            </ul>
+            <div class="share">Найдорожчий трафік · прямі заходи й рекомендації</div>
+          </article>
+          <article class="card">
+            <span class="tag">Сегмент Б</span>
+            <h3>Власник бренду / Private Label</h3>
+            <p>Хоче свою ТМ мила чи гелю: маркетплейс, мережа АЗС, аптека, HoReCa, свій e-commerce.</p>
+            <ul class="qlist">
+              <li>Який мінімальний тираж і скільки це грошей?</li>
+              <li>Ви розробите рецептуру чи тільки ллєте моє?</li>
+              <li>Чия упаковка, чий дизайн, чия сертифікація?</li>
+              <li>Скільки тижнів від брифу до палети на складі?</li>
+            </ul>
+            <div class="share">Найвища маржа · пошук + реклама за запитами «контрактне виробництво»</div>
+          </article>
+          <article class="card">
+            <span class="tag">Сегмент В</span>
+            <h3>Опт, HoReCa, тендери</h3>
+            <p>Дистриб'ютор, клінінг, готель, лікарня, закупівельник за Prozorro.</p>
+            <ul class="qlist">
+              <li>Де прайс і від якої суми відвантажуєте?</li>
+              <li>Є економформат у великій фасовці?</li>
+              <li>Дасте документи для тендерної пропозиції?</li>
+              <li>Логістика — самовивіз чи доставка в область?</li>
+            </ul>
+            <div class="share">Найбільший обсяг сесій · пошук за товарними запитами</div>
+          </article>
+        </div>
+      </section>
+
+      <!-- 02 -->
+      <section id="audit">
+        <div class="sec-head"><span class="num">02</span><h2>Що заважає сайту конвертувати</h2></div>
+        <p class="lede" style="margin-bottom:26px">Типовий набір проблем сайту-візитівки виробника. Пріоритет — за впливом на заявку, а не за складністю виправлення.</p>
+        <div class="probs">
+          <div class="prob">
+            <div class="area">Перший екран</div>
+            <div class="txt"><b>Сайт не називає роботу, яку виконує.</b> Відвідувач бачить назву фабрики й фото продукції, але не отримує відповіді «що я тут можу отримати і за скільки». Перший екран має розводити три сегменти на три різні шляхи, а не показувати слайдер.</div>
+            <span class="sev high">Критично</span>
+          </div>
+          <div class="prob">
+            <div class="area">Продукт</div>
+            <div class="txt"><b>Каталог без комерційних параметрів.</b> Для B2B картка без фасування, кратності, ваги палети, штрихкоду й терміну придатності — це не картка товару, а фотографія. Менеджер мережі не може порахувати економіку й іде писати листа конкуренту, у якого є PDF-специфікація.</div>
+            <span class="sev high">Критично</span>
+          </div>
+          <div class="prob">
+            <div class="area">Private Label</div>
+            <div class="txt"><b>Найдорожча послуга живе на одній текстовій сторінці.</b> Немає ані процесу, ані мінімального тиражу, ані бази рецептур, ані прикладу «було / стало». Клієнт не розуміє, з чого починається розмова, і не пише.</div>
+            <span class="sev high">Критично</span>
+          </div>
+          <div class="prob">
+            <div class="area">Конверсія</div>
+            <div class="txt"><b>Один вид дії — «зв'язатися».</b> Немає прайсу, каталогу PDF, замовлення зразків, прорахунку. Ті, хто ще не готовий говорити з менеджером, не залишають по собі жодного сліду.</div>
+            <span class="sev high">Критично</span>
+          </div>
+          <div class="prob">
+            <div class="area">Довіра</div>
+            <div class="txt"><b>Докази розсипані або відсутні.</b> Обсяги, обладнання, лабораторія, сертифікати, логотипи мереж, роки роботи — це найсильніший аргумент фабрики, і він має бути зібраний у структурований блок, а не згадуватися в тексті «про нас».</div>
+            <span class="sev mid">Високий</span>
+          </div>
+          <div class="prob">
+            <div class="area">Бренди</div>
+            <div class="txt"><b>Сім ТМ без ролей.</b> Розділ брендів показує логотипи, але не пояснює, який бренд для якої полиці й цінового сегмента. Закупівельник не може швидко зіставити свою матрицю з вашою.</div>
+            <span class="sev mid">Високий</span>
+          </div>
+          <div class="prob">
+            <div class="area">Мобільний</div>
+            <div class="txt"><b>Заявка з телефона довша, ніж дзвінок.</b> Половина B2B-сесій — мобільні, часто зі складу чи авто. Потрібні великі цілі натискання, липкий рядок дій і месенджери в один тап.</div>
+            <span class="sev mid">Високий</span>
+          </div>
+          <div class="prob">
+            <div class="area">Пошук</div>
+            <div class="txt"><b>Немає посадкових під комерційні запити.</b> «Мило господарське оптом», «виробництво мила під власною торговою маркою», «рідке мило 5 л оптом» — під кожен кластер потрібна окрема сторінка з ціною-орієнтиром, а не загальний каталог.</div>
+            <span class="sev mid">Високий</span>
+          </div>
+          <div class="prob">
+            <div class="area">Мови</div>
+            <div class="txt"><b>Три версії — три різні воронки.</b> UA — основна, RU — для частини ринку, EN — це експорт, і вона потребує власного змісту: інкотермс, сертифікація ЄС, контейнерні норми, а не машинного перекладу української.</div>
+            <span class="sev low">Середній</span>
+          </div>
+          <div class="prob">
+            <div class="area">Аналітика</div>
+            <div class="txt"><b>Без подій немає оптимізації.</b> Поки не розмічені кліки по прайсу, завантаження PDF, кроки калькулятора й джерела заявок, будь-які зміни на сайті — це смак, а не CRO.</div>
+            <span class="sev low">Середній</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 03 -->
+      <section id="position">
+        <div class="sec-head"><span class="num">03</span><h2>Позиціонування й меседж-хаус</h2></div>
+        <div class="msg">
+          <p class="claim">Українська фабрика повного циклу: <em>від рецептури до палети</em> — власні бренди на поличці й ваш бренд під ключ.</p>
+          <div class="pillars">
+            <div class="pillar">
+              <span class="k">Опора 1</span>
+              <h4>Виробництво, а не перепродаж</h4>
+              <p>Власні лінії твердого й рідкого мила, італійське обладнання, лабораторія й розробка рецептур на місці. Ви говорите з тим, хто варить, а не з посередником.</p>
+            </div>
+            <div class="pillar">
+              <span class="k">Опора 2</span>
+              <h4>Доведений обсяг</h4>
+              <p>Понад 7 540 т відвантажено національним мережам і дистриб'юторам. Сезонні піки й регулярні контракти — не виняток, а звичайний режим роботи.</p>
+            </div>
+            <div class="pillar">
+              <span class="k">Опора 3</span>
+              <h4>Дві траєкторії, один майданчик</h4>
+              <p>Готова матриця з семи ТМ, якщо потрібна поличка вже завтра. Private Label, якщо потрібен власний бренд — з рецептурою, упаковкою й документами.</p>
+            </div>
+          </div>
+        </div>
+        <div class="stack" style="margin-top:26px">
+          <h3>Правила копірайтингу для всього сайту</h3>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Замість</th><th>Пишемо</th><th>Чому</th></tr></thead>
+              <tbody>
+                <tr><td>«Висока якість продукції»</td><td>«ТФМ 72&nbsp;% у господарському милі, партія — з протоколом лабораторії»</td><td>Перевірюване число замість оцінки</td></tr>
+                <tr><td>«Індивідуальний підхід»</td><td>«Мінімальний тираж — 1 000 кг на SKU, рецептура під ваш бриф»</td><td>Знімає головне питання клієнта</td></tr>
+                <tr><td>«Сучасне обладнання»</td><td>«Італійські лінії, ХХ т готової продукції на місяць»</td><td>Обладнання цікаве лише як потужність</td></tr>
+                <tr><td>«Зв'яжіться з нами»</td><td>«Отримати прайс за 15 хвилин» / «Прорахувати тираж»</td><td>Кнопка називає результат, а не дію</td></tr>
+                <tr><td>«Широкий асортимент»</td><td>«ХХ SKU у 6 категоріях — завантажити матрицю в XLS»</td><td>Асортимент стає інструментом закупівельника</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 04 -->
+      <section id="ia">
+        <div class="sec-head"><span class="num">04</span><h2>Структура сайту</h2></div>
+        <p class="lede" style="margin-bottom:22px">Верхнє меню — шість пунктів і одна кнопка. Логіка: спершу те, що купують (продукція, Private&nbsp;Label), потім те, чим доводять (виробництво), потім те, що читають перед рішенням (бренди, компанія).</p>
+        <div class="tree"><pre><span class="c">Меню:</span> <b>Продукція · Private Label · Виробництво · Бренди · Компанія · Контакти</b>  <span class="u">[ Отримати прайс ]</span>
+
+<b>/</b>                              <span class="c">головна: два входи — опт і власний бренд</span>
+├── <b>/products/</b>                 <span class="c">каталог з фільтрами: тип · бренд · фасування · бренд-сегмент</span>
+│   ├── /products/tverde-mylo/       <span class="c">тверде туалетне мило</span>
+│   ├── /products/hospodarske/       <span class="c">господарське мило</span>  <span class="u">← SEO-кластер</span>
+│   ├── /products/ridke-mylo/        <span class="c">рідке мило, зокрема каністри 5 л</span>  <span class="u">← SEO-кластер</span>
+│   ├── /products/gel-dush/          <span class="c">гелі для душу</span>
+│   ├── /products/shampuni/          <span class="c">шампуні та бальзами</span>
+│   ├── /products/pobutova-himiya/   <span class="c">побутова хімія</span>
+│   └── /products/&lt;sku&gt;/             <span class="u">картка SKU: специфікація, палета, штрихкод, PDF</span>
+│
+├── <b>/private-label/</b>            <span class="u">головна грошова сторінка</span>
+│   ├── /private-label/process/      <span class="c">7 кроків від брифу до відвантаження</span>
+│   ├── /private-label/formulations/ <span class="c">база готових рецептур і що змінюється під клієнта</span>
+│   ├── /private-label/packaging/    <span class="c">формати упаковки, дизайн, друк, маркування</span>
+│   ├── /private-label/calculator/   <span class="u">калькулятор тиражу → бриф</span>
+│   └── /private-label/cases/        <span class="c">кейси запусків: категорія, тираж, строк</span>
+│
+├── <b>/production/</b>               <span class="c">лінії, потужності, обладнання</span>
+│   ├── /production/quality/         <span class="c">контроль якості, сертифікати, документи</span>
+│   ├── /production/lab/             <span class="c">лабораторія й розробка рецептур</span>
+│   └── /production/tour/            <span class="c">фото- й відеотур цехом</span>
+│
+├── <b>/brands/</b>                   <span class="c">портфель ТМ із ролями та ціновими сегментами</span>
+│   ├── /brands/soap-making-traditions/
+│   ├── /brands/dobra/
+│   ├── /brands/mio-beauty/
+│   ├── /brands/maestro/
+│   ├── /brands/monami/
+│   ├── /brands/grand-sharm-maxi/
+│   └── /brands/ti-amo-crema/
+│
+├── <b>/partners/</b>                 <span class="c">умови співпраці</span>
+│   ├── /partners/retail/            <span class="c">мережам: логістика, EDI, промо, документи</span>
+│   ├── /partners/distributors/      <span class="c">дистриб'юторам: території, знижки, підтримка</span>
+│   └── /partners/export/            <span class="u">експорт: інкотермс, контейнерна норма, сертифікація</span>
+│
+├── <b>/company/</b>                  <span class="c">про фабрику, історія, команда</span>
+│   ├── /company/documents/          <span class="c">реквізити, декларації, сертифікати — файлами</span>
+│   ├── /company/news/               <span class="c">запуски ліній, нові SKU, виставки</span>
+│   └── /company/careers/            <span class="c">вакансії — окрема воронка, не змішувати з B2B</span>
+│
+├── <b>/blog/</b>                     <span class="u">SEO-хаб: як обрати мило для мережі, що таке ТФМ, регламенти</span>
+├── <b>/contacts/</b>                 <span class="c">менеджери за напрямами, склад, карта, реквізити</span>
+└── <b>/uk/ · /ru/ · /en/</b>         <span class="c">три версії; EN — власний зміст під експорт</span></pre></div>
+        <div class="legend">
+          <span><i class="dot gold"></i> нове або суттєво перероблене</span>
+          <span><i class="dot ink"></i> існує, переноситься з новою подачею</span>
+        </div>
+      </section>
+
+      <!-- 05 -->
+      <section id="home">
+        <div class="sec-head"><span class="num">05</span><h2>Головна: посекційна розкадровка</h2></div>
+        <p class="lede" style="margin-bottom:24px">Дев'ять екранів. Кожен закриває одне заперечення й веде до однієї з двох дій. Готовий текст — у блоках із золотою лінією.</p>
+        <div class="frames">
+
+          <div class="frame">
+            <div class="idx">01</div>
+            <div class="fbody">
+              <div class="fhead"><h3>Перший екран — розвилка</h3><span class="goal">мета: обрати шлях за 5 секунд</span></div>
+              <div class="copy">Мило, гелі та побутова хімія з української фабрики повного циклу<span class="sub">Виробляємо під власними ТМ і під вашим брендом. Понад 7 540 тонн відвантажено мережам і дистриб'юторам.</span></div>
+              <p class="why">Дві рівнозначні картки-входи замість одного банера: <strong>«Закупівля оптом»</strong> (веде в каталог із прайсом) і <strong>«Виробництво під вашим брендом»</strong> (веде в калькулятор Private Label). Праворуч — рядок фактів: років роботи, тонн, SKU, мереж. Фон — макрозйомка різаного мильного бруска, а не стокова ванна з піною.</p>
+              <div class="chips"><span class="chip act">CTA: Отримати прайс</span><span class="chip act">CTA: Прорахувати свій бренд</span><span class="chip">Телефон і месенджери в шапці</span></div>
+            </div>
+          </div>
+
+          <div class="frame">
+            <div class="idx">02</div>
+            <div class="fbody">
+              <div class="fhead"><h3>Смуга доказів</h3><span class="goal">мета: зняти сумнів «чи ви серйозні»</span></div>
+              <div class="copy">Нас уже поставили на полицю<span class="sub">Логотипи мереж і дистриб'юторів · роки роботи · тонн на місяць · SKU в матриці · країн експорту</span></div>
+              <p class="why">Одна горизонтальна смуга одразу під героєм: 4–6 логотипів партнерів (за погодженням) і чотири числа моноширинним шрифтом. Числа анімуються один раз при появі й мають підпис-джерело, щоб не читалися як маркетинг.</p>
+              <div class="chips"><span class="chip">Мікроконверсія: клік на логотип → кейс</span></div>
+            </div>
+          </div>
+
+          <div class="frame">
+            <div class="idx">03</div>
+            <div class="fbody">
+              <div class="fhead"><h3>Категорії продукції</h3><span class="goal">мета: довести до потрібної полиці</span></div>
+              <div class="copy">Шість категорій, ХХ активних SKU<span class="sub">Тверде мило · господарське · рідке мило · гелі для душу · шампуні й бальзами · побутова хімія</span></div>
+              <p class="why">Плитка з шести карток: фото, кількість SKU, діапазон фасувань, під якими ТМ випускається. Кожна картка — окрема посадкова під SEO-кластер. Тут же кнопка «Завантажити повну матрицю XLS» — головний лід-магніт для закупівельника.</p>
+              <div class="chips"><span class="chip act">Лід-магніт: матриця XLS</span><span class="chip">Фільтр каталогу без перезавантаження</span></div>
+            </div>
+          </div>
+
+          <div class="frame">
+            <div class="idx">04</div>
+            <div class="fbody">
+              <div class="fhead"><h3>Блок Private Label</h3><span class="goal">мета: перевести з «цікаво» в «порахуйте»</span></div>
+              <div class="copy">Ваш бренд мила — від брифу до палети за ХХ днів<span class="sub">Рецептура, зразки, упаковка, маркування й документи — на нашому боці. Мінімальний тираж — 1 000 кг на позицію.</span></div>
+              <p class="why">Темна секція — візуально відділяє другу траєкторію від оптової. Усередині: сім кроків процесу горизонтальною стрічкою, три цифри-якорі (мінімальний тираж, строк, кількість готових рецептур) і вбудований перший крок калькулятора просто в секції — вибір категорії. Клік по категорії відкриває калькулятор із уже заповненим полем.</p>
+              <div class="chips"><span class="chip act">CTA: Прорахувати тираж</span><span class="chip act">CTA: Замовити зразки</span></div>
+            </div>
+          </div>
+
+          <div class="frame">
+            <div class="idx">05</div>
+            <div class="fbody">
+              <div class="fhead"><h3>Виробництво</h3><span class="goal">мета: замінити слова на потужність</span></div>
+              <div class="copy">Італійські лінії, власна лабораторія, ХХ тонн на місяць<span class="sub">Варка, пилірування, штампування, розлив і фасування — на одному майданчику</span></div>
+              <p class="why">Дві колонки: коротке відео цеху (беззвучне, автоплей, із перемикачем) і список ліній із паспортною потужністю. Внизу — рядок документів: декларації відповідності, протоколи, сертифікати — кожен клікабельний PDF. Це закриває тендерні й мережеві питання без листування.</p>
+              <div class="chips"><span class="chip">Мікроконверсія: перегляд документа</span><span class="chip">CTA: Записатися на аудит фабрики</span></div>
+            </div>
+          </div>
+
+          <div class="frame">
+            <div class="idx">06</div>
+            <div class="fbody">
+              <div class="fhead"><h3>Портфель брендів</h3><span class="goal">мета: зіставити з матрицею закупівельника</span></div>
+              <div class="copy">Сім торгових марок під різні полиці<span class="sub">Від економсегмента до косметичної лінійки — щоб закрити категорію одним постачальником</span></div>
+              <p class="why">Не логотипи в ряд, а таблиця ролей: бренд → сегмент → категорії → фасування → для якого каналу. Це єдиний блок на сайті, який дозволяє менеджеру мережі за хвилину зрозуміти, що з портфеля лягає в його матрицю.</p>
+              <div class="chips"><span class="chip">Перехід на сторінку бренду</span></div>
+            </div>
+          </div>
+
+          <div class="frame">
+            <div class="idx">07</div>
+            <div class="fbody">
+              <div class="fhead"><h3>Як ми працюємо</h3><span class="goal">мета: показати, що буде після заявки</span></div>
+              <div class="copy">Що станеться після того, як ви натиснете кнопку<span class="sub">Відповідь менеджера — до 2 годин у робочий час. Прайс — у першому ж листі.</span></div>
+              <p class="why">Чотири кроки з часом на кожному: заявка → прайс і специфікації → зразки → договір і перше відвантаження. Найдешевший спосіб підняти конверсію форми — прибрати страх невідомості перед натисканням.</p>
+              <div class="chips"><span class="chip">Знімає тертя перед формою</span></div>
+            </div>
+          </div>
+
+          <div class="frame">
+            <div class="idx">08</div>
+            <div class="fbody">
+              <div class="fhead"><h3>Часті питання</h3><span class="goal">мета: зняти заперечення, які гальмують заявку</span></div>
+              <div class="copy">Мінімальна партія, строки, документи, доставка<span class="sub">Вісім питань, на які менеджери відповідають щодня</span></div>
+              <p class="why">Акордеон із реальними питаннями: мінімальне відвантаження, відстрочка, наявність на складі, робота з мережами через EDI, експорт, чи можна змінити аромат, чий дизайн упаковки, хто реєструє продукт. Розмітка FAQPage — сюди ж по розширені сніпети.</p>
+              <div class="chips"><span class="chip">Schema.org FAQPage</span></div>
+            </div>
+          </div>
+
+          <div class="frame">
+            <div class="idx">09</div>
+            <div class="fbody">
+              <div class="fhead"><h3>Фінальна форма</h3><span class="goal">мета: забрати контакт</span></div>
+              <div class="copy">Надішліть запит — повернемо прайс і специфікації<span class="sub">Три поля. Решту менеджер уточнить у розмові.</span></div>
+              <p class="why">Форма на темному тлі, три поля: <strong>напрям</strong> (опт / власний бренд), <strong>контакт</strong> (телефон або e-mail — одне поле), <strong>компанія</strong>. Поруч — фото менеджера з ім'ям і прямим номером: у B2B персона піднімає довіру сильніше, ніж будь-який бейдж. Альтернатива для тих, хто не заповнює форми, — три месенджери в один тап.</p>
+              <div class="chips"><span class="chip act">Головна конверсія</span><span class="chip">Липкий рядок дій на мобільному</span></div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 06 -->
+      <section id="pl">
+        <div class="sec-head"><span class="num">06</span><h2>Private Label: сторінка, що приносить найбільше</h2></div>
+        <p class="lede" style="margin-bottom:24px">Одна текстова сторінка перетворюється на розділ із власною воронкою. Ядро — калькулятор, який замінює перше листування й одразу кваліфікує лід.</p>
+        <div class="ds">
+          <div class="ds-cell">
+            <span class="eyebrow">Калькулятор тиражу · 4 кроки</span>
+            <h3>Замість «напишіть нам» — оцінка за 40 секунд</h3>
+            <ul class="qlist">
+              <li><strong>Крок 1.</strong> Категорія: тверде мило · рідке мило · гель для душу · шампунь · побутова хімія</li>
+              <li><strong>Крок 2.</strong> Формат і фасування: брусок 70/90/125 г, флакон 300/500 мл, каністра 5 л</li>
+              <li><strong>Крок 3.</strong> Тираж повзунком: від 1 000 кг — із підсвіткою, як змінюється ціна за одиницю</li>
+              <li><strong>Крок 4.</strong> Що потрібно від фабрики: рецептура · упаковка · дизайн · сертифікація</li>
+            </ul>
+            <p class="why" style="font-size:.86rem;color:var(--ink-2)">Результат — вилка ціни за одиницю, орієнтовний строк і перелік того, що входить. Контакт запитуємо <strong>після</strong> показу результату: обмін «ви дали цифру — я дав пошту» відчувається чесним і дає вищу конверсію, ніж форма перед розрахунком.</p>
+          </div>
+          <div class="ds-cell">
+            <span class="eyebrow">Решта розділу</span>
+            <h3>Що ще має бути, щоб клієнт не пішов до конкурента</h3>
+            <ul class="qlist">
+              <li><strong>Процес із 7 кроків</strong> із часом на кожному: бриф → рецептура → зразки → погодження → маркування й документи → виробництво → відвантаження</li>
+              <li><strong>База рецептур</strong>: що вже готове й лише адаптується під бриф — це головний аргумент швидкості</li>
+              <li><strong>Упаковка</strong>: доступні формати, хто друкує етикетку, чий дизайн, вимоги до макета</li>
+              <li><strong>Хто відповідає за документи</strong>: маркування за регламентом, декларації, реєстрація — з розподілом зон відповідальності таблицею</li>
+              <li><strong>Два-три кейси</strong> у форматі «категорія · тираж · строк · що робили ми»</li>
+              <li><strong>Замовлення зразків</strong> як окрема мікроконверсія для тих, хто ще не готовий рахувати</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 07 -->
+      <section id="catalog">
+        <div class="sec-head"><span class="num">07</span><h2>Каталог і картка SKU</h2></div>
+        <p class="lede" style="margin-bottom:22px">Картка товару на B2B-сайті — це специфікація постачальника. Мінімальний набір полів, без яких вона не працює:</p>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Поле</th><th>Навіщо</th><th>Кому критично</th></tr></thead>
+            <tbody>
+              <tr><td><b>Артикул і штрихкод EAN</b></td><td>Заведення позиції в облікову систему мережі</td><td class="num">Мережа</td></tr>
+              <tr><td><b>Фасування й вага нетто</b></td><td>Розрахунок ціни за кілограм і порівняння з конкурентом</td><td class="num">Усі</td></tr>
+              <tr><td><b>Кратність у коробі</b></td><td>Формування замовлення</td><td class="num">Опт</td></tr>
+              <tr><td><b>Коробів на палеті, вага палети</b></td><td>Логістика й вартість доставки</td><td class="num">Опт · мережа</td></tr>
+              <tr><td><b>Склад і ключові параметри</b> (ТФМ, pH, активна речовина)</td><td>Технічне порівняння й тендерна документація</td><td class="num">Тендер · мережа</td></tr>
+              <tr><td><b>Термін придатності</b></td><td>Планування залишків</td><td class="num">Мережа</td></tr>
+              <tr><td><b>Бренд і сегмент</b></td><td>Зіставлення з ціновою матрицею</td><td class="num">Мережа</td></tr>
+              <tr><td><b>Наявність / під замовлення</b></td><td>Швидке рішення без листування</td><td class="num">Опт</td></tr>
+              <tr><td><b>PDF-специфікація й фото в високій якості</b></td><td>Матеріали для внутрішнього погодження й для картки в мережі</td><td class="num">Усі</td></tr>
+              <tr><td><b>«Можемо випустити під вашим брендом»</b></td><td>Перехресний перехід із опту в Private Label</td><td class="num">Private Label</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="body-col" style="margin-top:18px;font-size:.9rem;color:var(--ink-2)">Ціни в публічному доступі не потрібні — потрібен <strong>прайс за запитом в один клік</strong> і чесна вилка «від» у калькуляторі. Плюс розмітка Product зі schema.org на кожній картці й фільтри, що не перезавантажують сторінку та зберігаються в URL — інакше менеджер не зможе надіслати колезі посилання на добірку.</p>
+      </section>
+
+      <!-- 08 -->
+      <section id="design">
+        <div class="sec-head"><span class="num">08</span><h2>Дизайн-система</h2></div>
+        <p class="lede" style="margin-bottom:24px">Напрям — «цех і лабораторія»: чисті поверхні, точна сітка, мінеральні нейтралі й одна тепла акцентна нота. Не пастельна косметика й не важкий індустріальний сталевий сайт.</p>
+        <div class="ds">
+          <div class="ds-cell">
+            <span class="eyebrow">Колір</span>
+            <h3>Мінеральні нейтралі + бурштиновий акцент</h3>
+            <div class="swatches">
+              <div class="sw"><div class="chipc" style="background:#EDF0EA"></div><span class="nm">Полотно</span><span class="hx">#EDF0EA</span></div>
+              <div class="sw"><div class="chipc" style="background:#14180F"></div><span class="nm">Чорнило</span><span class="hx">#14180F</span></div>
+              <div class="sw"><div class="chipc" style="background:#D9A82B"></div><span class="nm">Акцент</span><span class="hx">#D9A82B</span></div>
+              <div class="sw"><div class="chipc" style="background:#16302A"></div><span class="nm">Глибокий</span><span class="hx">#16302A</span></div>
+              <div class="sw"><div class="chipc" style="background:#4C5545"></div><span class="nm">Текст 2</span><span class="hx">#4C5545</span></div>
+              <div class="sw"><div class="chipc" style="background:#CBD3C3"></div><span class="nm">Лінія</span><span class="hx">#CBD3C3</span></div>
+            </div>
+            <p style="font-size:.85rem;color:var(--ink-2)">Сірий із зеленуватим ухилом — від рослинних олій і брускового мила; бурштин — від гліцерину й господарського мила. Акцент працює тільки на дію: кнопка, число, активний стан. Глибокий зелений маркує другу траєкторію — Private Label, тому колір несе навігаційну функцію, а не декоративну.</p>
+          </div>
+          <div class="ds-cell">
+            <span class="eyebrow">Типографіка</span>
+            <h3>Три ролі, повна кирилиця</h3>
+            <div class="type-demo">
+              <div class="row"><span class="s-disp">Фабрика повного циклу</span><span class="spec">Unbounded 500<br>заголовки</span></div>
+              <div class="row"><span class="s-body">Мінімальний тираж — 1 000 кг на позицію</span><span class="spec">Onest 400<br>основний текст</span></div>
+              <div class="row"><span class="s-mono">7 540 т · ТФМ 72 % · 1 000 кг</span><span class="spec">JetBrains Mono<br>числа й специфікації</span></div>
+            </div>
+            <p style="font-size:.85rem;color:var(--ink-2)">Unbounded — українська геометрична гарнітура, дає впізнаваність без ілюстрацій. Onest тримає довгі описові тексти. Моноширинний шрифт з табличними цифрами — для всього, що вирівнюється в стовпчик: тоннаж, фасування, артикули. Три ролі, жодного четвертого шрифту.</p>
+          </div>
+          <div class="ds-cell">
+            <span class="eyebrow">Сітка й компоненти</span>
+            <h3>12 колонок, волосяні лінії, без зайвих тіней</h3>
+            <ul class="qlist">
+              <li>Максимальна ширина 1180 px, поля 28 px, крок сітки 8 px</li>
+              <li>Роздільники — лінії 1 px, не тіні: сайт має читатися як технічний документ</li>
+              <li>Радіуси мінімальні (2–4 px) або нульові; жодних «пухких» карток</li>
+              <li>Кнопки двох рівнів: заливка акцентом (головна дія) і контур (друга дія). Третій рівень — текстове посилання з підкресленням</li>
+              <li>Фото: макро продукту й цеху на рівному тлі, без стокових усмішок і піни</li>
+              <li>Темна тема з тими самими токенами — умова для сучасного сайту, а не опція</li>
+            </ul>
+          </div>
+          <div class="ds-cell">
+            <span class="eyebrow">Рух і доступність</span>
+            <h3>Анімація там, де вона щось означає</h3>
+            <ul class="qlist">
+              <li>Лічильники цифр — один раз при появі, 600 мс, без повторів під час скролу</li>
+              <li>Ховер карток — зсув межі й зміна кольору лінії, без 3D-нахилів</li>
+              <li>Липкий рядок дій з'являється після першого екрана, а не одразу</li>
+              <li><code class="mono">prefers-reduced-motion</code> вимикає весь рух</li>
+              <li>Контраст тексту не нижче 4.5:1 в обох темах; фокус видно завжди</li>
+              <li>Форми — з мітками, а не плейсхолдерами замість міток; помилка пояснює, що виправити</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 09 -->
+      <section id="cro">
+        <div class="sec-head"><span class="num">09</span><h2>Конверсія: шляхи, форми, вимірювання</h2></div>
+        <h3 style="margin-bottom:14px">Драбина конверсій — від холодного до гарячого</h3>
+        <div class="funnel">
+          <div class="step">
+            <span class="st">Мікро</span>
+            <h4>Завантажив каталог або матрицю</h4>
+            <p>PDF-каталог і матриця SKU в XLS. Пошта в обмін на файл — найлегший вхід для того, хто ще порівнює постачальників.</p>
+            <div class="metric">ціль: 4–6 % сесій</div>
+          </div>
+          <div class="step">
+            <span class="st">Мікро</span>
+            <h4>Пройшов калькулятор</h4>
+            <p>Дійшов до результату розрахунку Private Label. Навіть без контакту це сигнал для ретаргетингу.</p>
+            <div class="metric">ціль: 8–10 % сесій розділу</div>
+          </div>
+          <div class="step">
+            <span class="st">Макро</span>
+            <h4>Замовив зразки</h4>
+            <p>Дає адресу й компанію. Найякісніший лід у Private Label: людина витрачає час на отримання посилки.</p>
+            <div class="metric">ціль: 1–2 % сесій</div>
+          </div>
+          <div class="step">
+            <span class="st">Макро</span>
+            <h4>Запросив прайс</h4>
+            <p>Головна дія сайту. Три поля, відповідь до 2 годин, прайс у першому листі.</p>
+            <div class="metric">ціль: 2,5–4 % сесій</div>
+          </div>
+        </div>
+
+        <h3 style="margin:34px 0 14px">Правила, що дають найбільший приріст</h3>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Що робимо</th><th>Механіка</th><th>На що впливає</th></tr></thead>
+            <tbody>
+              <tr><td><b>Дві траєкторії з першого екрана</b></td><td>Опт і Private Label — два рівнозначні входи, а не пункт у меню</td><td>Глибина сесії, релевантність заявок</td></tr>
+              <tr><td><b>Форма з трьох полів</b></td><td>Напрям · контакт (телефон або e-mail одним полем) · компанія. Решта — у розмові</td><td>Заповнюваність форми</td></tr>
+              <tr><td><b>Результат перед контактом</b></td><td>Калькулятор показує вилку ціни, і лише потім просить пошту</td><td>Конверсія калькулятора</td></tr>
+              <tr><td><b>Липкий рядок на мобільному</b></td><td>Дзвінок · Viber · Telegram · Прайс — завжди внизу екрана</td><td>Мобільні конверсії</td></tr>
+              <tr><td><b>Обіцянка часу відповіді</b></td><td>«Відповідаємо до 2 годин у робочий час» біля кожної кнопки</td><td>Клікабельність CTA</td></tr>
+              <tr><td><b>Менеджер з ім'ям і фото</b></td><td>Персона напряму замість загальної пошти info@</td><td>Довіра, кількість дзвінків</td></tr>
+              <tr><td><b>Документи у відкритому доступі</b></td><td>Декларації та сертифікати PDF без запиту</td><td>Тендерні й мережеві ліди</td></tr>
+              <tr><td><b>Сторінка подяки з наступним кроком</b></td><td>Після заявки — каталог, кейси й прямий номер, а не «дякуємо»</td><td>Дохід із того самого ліда</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 style="margin:34px 0 14px">Що вимірюємо</h3>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Показник</th><th>Як рахуємо</th><th>Орієнтир</th></tr></thead>
+            <tbody>
+              <tr><td>Конверсія в заявку</td><td>Усі макроцілі / сесії</td><td class="num">3–5 %</td></tr>
+              <tr><td>Вартість кваліфікованого ліда</td><td>Витрати на канал / ліди, що пройшли кваліфікацію</td><td class="num">за каналом</td></tr>
+              <tr><td>Частка заявок Private Label</td><td>Заявки PL / усі заявки</td><td class="num">від 30 %</td></tr>
+              <tr><td>Дохід сторінки</td><td>Виторг за контрактами / сесії посадкової</td><td class="num">головна метрика</td></tr>
+              <tr><td>Проходження калькулятора</td><td>Крок 4 / крок 1</td><td class="num">від 45 %</td></tr>
+              <tr><td>Швидкість першої відповіді</td><td>Медіана від заявки до дзвінка менеджера</td><td class="num">до 2 год</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="body-col" style="margin-top:16px;font-size:.9rem;color:var(--ink-2)">Технічна база під це: GA4 із подіями на кожен крок калькулятора, завантаження файлів і відправлення форм; наскрізна аналітика до CRM, щоб бачити не ліди, а контракти; записи сесій і теплові карти на двох сторінках — головній і Private&nbsp;Label. Без цього перша ж суперечка «яка кнопка краща» вирішується не даними.</p>
+      </section>
+
+      <!-- 10 -->
+      <section id="road">
+        <div class="sec-head"><span class="num">10</span><h2>Порядок робіт</h2></div>
+        <p class="lede" style="margin-bottom:24px">Не переписуємо сайт цілком за один раз. Спершу — те, що дає заявки вже наступного місяця.</p>
+        <div class="waves">
+          <div class="wave">
+            <div class="wl"><span class="w-n">Хвиля 1</span><span class="w-t">2–3 ТИЖНІ</span></div>
+            <ul>
+              <li>Новий перший екран із двома траєкторіями й смуга доказів</li>
+              <li>Скорочена форма (три поля) на всіх сторінках + липкий рядок на мобільному</li>
+              <li>Каталог PDF і матриця SKU в XLS як лід-магніти</li>
+              <li>Розмітка подій у GA4 і зв'язка з CRM</li>
+              <li>Документи й сертифікати у відкритий доступ</li>
+            </ul>
+          </div>
+          <div class="wave">
+            <div class="wl"><span class="w-n">Хвиля 2</span><span class="w-t">4–6 ТИЖНІВ</span></div>
+            <ul>
+              <li>Розділ Private Label: процес, рецептури, упаковка, кейси</li>
+              <li>Калькулятор тиражу з видачею результату до запиту контакту</li>
+              <li>Картка SKU з повною специфікацією й PDF; фільтри каталогу</li>
+              <li>Таблиця ролей брендів замість ряду логотипів</li>
+              <li>Дизайн-система в коді: токени, компоненти, темна тема</li>
+            </ul>
+          </div>
+          <div class="wave">
+            <div class="wl"><span class="w-n">Хвиля 3</span><span class="w-t">2–3 МІСЯЦІ</span></div>
+            <ul>
+              <li>SEO-посадкові під комерційні кластери й блог-хаб</li>
+              <li>Англійська версія з власним змістом під експорт</li>
+              <li>Розділ «Партнерам»: мережі, дистриб'ютори, експорт</li>
+              <li>Відеотур цехом і кейси запусків Private Label</li>
+              <li>Регулярні A/B-тести: формулювання CTA, довжина форми, порядок секцій</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer class="foot">
+    <span class="f-l">Редизайн stf.com.ua</span>
+    <span class="f-r">Концепція UX / UI / CRO · серпень 2026</span>
+  </footer>
+</div>
