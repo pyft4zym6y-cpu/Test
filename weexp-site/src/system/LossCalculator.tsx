@@ -328,6 +328,14 @@ ${projRows ? `<div class="card"><h2>${escapeHtml(t('Зараз → куди мо
               })}
             </div>
 
+            {/* Склад повного аудиту. На /audit-pack посилалась ЛИШЕ сторінка цін —
+                хоча саме тут, побачивши своє число, людина й питає «а що ви
+                зробите за ці гроші». */}
+            <p className="calc-pack mono">
+              {t('Це оцінка за сімома показниками. Точну карту дає глибокий аудит — ', 'This is an estimate from seven inputs. The precise map comes from the deep audit — ')}
+              <Link to={lp('/audit-pack')}>{t('подивитись його склад', 'see what it contains')} →</Link>
+            </p>
+
             <div className="sysx-bottleneck">
               <span className="sysx-kick">{t('Головний bottleneck', 'Main bottleneck')}</span>
               <b className="sysx-display">{primaryLabel(res.primary)}</b>

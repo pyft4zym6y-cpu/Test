@@ -1,7 +1,8 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { SYSTEMS, localizeSystem, shortOf } from '@/data/xray';
-import { useT, useLang } from '@/i18n';
+import { useT, useLang, useLp } from '@/i18n';
 import './system.css';
+import { Link } from 'react-router-dom';
 
 const ExplorerCanvas = lazy(() => import('@/system/ExplorerCanvas').then((m) => ({ default: m.ExplorerCanvas })));
 
@@ -15,6 +16,7 @@ const MAX_SUB = 5;
 
 export function SystemExplorer() {
   const t = useT();
+  const lp = useLp();
   const lang = useLang();
   const [focused, setFocused] = useState<number | null>(null);
   const focusedRef = useRef<number | null>(null);
@@ -97,6 +99,12 @@ export function SystemExplorer() {
               ))}
             </div>
             <p className="sxp-panel-sell"><b className="mono">{t('Будуємо:', 'We build:')}</b> {sl.sell}</p>
+            {/* Вхід на сторінку системи. Вісім таких сторінок були замкненим
+                кільцем: посилались лише одна на одну, а з решти сайту в кільце
+                не входило нічого — від головної до них не було шляху взагалі. */}
+            <Link to={lp(`/systems/${sys!.slug}`)} className="sysx-cta sxp-panel-cta">
+              {t('Детальніше про систему', 'More about this system')} →
+            </Link>
           </div>
         )}
       </div>

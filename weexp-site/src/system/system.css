@@ -2607,3 +2607,10 @@ body.kb-open .pf-bg { display: none !important; }
 .sysx-proofhow { display: inline-flex; align-items: center; min-height: 44px; font-size: 11px; letter-spacing: .04em;
   color: var(--graphite); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
 .sysx-proofhow:hover { color: var(--red-ink); }
+
+/* Вхід на сторінку системи з панелі дослідника на головній. */
+.sxp-panel-cta { margin-top: 14px; align-self: flex-start; }
+
+/* Перехід до складу глибокого аудиту з результату калькулятора. */
+.calc-pack { margin: 16px 0 0; font-size: 12px; line-height: 1.6; color: var(--graphite); }
+.calc-pack a { color: var(--red-ink); text-underline-offset: 3px; }

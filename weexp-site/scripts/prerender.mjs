@@ -20,7 +20,36 @@ const ORIGIN = 'https://weexp.agency';
 const SUF = ' · WEEXP';
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const ul = (items) => `<ul>${items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>`;
+/*
+ * Те саме, але кожен пункт — посилання на сторінку системи.
+ *
+ * Вісім сторінок /systems/* були замкненим кільцем: кожна посилалась лише на
+ * сусідні дві, а ззовні в кільце не входило НІЧОГО. Від головної до них не
+ * існувало шляху — глибина кліку нескінченна. Це найкомерційніші сторінки
+ * сайту (одна на кожну систему), і ні людина їх не знаходила, ні вага
+ * посилань з головної до них не доходила.
+ */
+const ulLinks = (items, slugs, pref = '') => `<ul>${items.map((i, k) =>
+  `<li><a href="${pref}/systems/${slugs[k]}">${esc(i)}</a></li>`).join('')}</ul>`;
 
+// Дзеркало PAGES із src/lib/nav.ts — статика й застосунок мають називати
+// сторінки однаково. Тест wording.test.ts стереже, щоб переліки не розійшлись.
+const NAV_PAGES = [
+  { to: '/', uk: 'Система', en: 'System' },
+  { to: '/proof', uk: 'Наші перемоги', en: 'Our wins' },
+  { to: '/expansion', uk: 'Експертизи', en: 'Expertise' },
+  { to: '/people', uk: 'Про нас', en: 'About' },
+  { to: '/diagnose', uk: 'Express audit', en: 'Express audit' },
+  { to: '/pricing', uk: 'Початок співпраці', en: 'Get started' },
+  { to: '/contact', uk: 'Контакт', en: 'Contact' },
+  { to: '/audit-pack', uk: 'Склад пакета аудиту', en: 'Audit pack contents' },
+];
+// Шість напрямів експертизи: хаб не посилався на них у статиці, і без JS
+// вони були недосяжні так само, як сторінки систем.
+const EXPANSION_LINKS = `<h2>Напрями експертизи</h2><ul>${
+  ['international', 'automation', 'technology', 'marketing', 'sales-channels', 'data-growth']
+    .map((k) => `<li><a href="/expansion/${k}">${k}</a></li>`).join('')}</ul>`;
+const SYS_SLUGS = ['strategy-management','commercial-performance','demand-customer','experience-conversion','operations-fulfillment','data-technology','organization-operating-model','expansion-markets'];
 const SYSTEMS = [
   'Стратегія та управління — стратегія продажів, якою можна керувати',
   'Комерційна ефективність — більше виручки замало, зробіть комерцію прибутковою',
@@ -113,7 +142,7 @@ const PACK = [
 
 /** Тіло EN-сторінки за її адресою. Порожньо — сторінка обійдеться описом. */
 const EN_BODY = {
-  '/': `<p>${esc(SERVICES_EN)}</p><h2>Eight systems of online sales</h2>${ul(SYSTEMS_EN)}`,
+  '/': `<p>${esc(SERVICES_EN)}</p><h2>Eight systems of online sales</h2>${ulLinks(SYSTEMS_EN, SYS_SLUGS, '/en')}`,
   '/proof': `<p>Not promises — before→after deltas from CRM, ERP and GA4. Every case is anonymous; every number is real.</p>${ul(PROOF_EN)}`,
   '/people': `<p>WEEXP was founded by Pavlo Sydorenko, Founder &amp; Architect of Commerce (8+ years in international e-commerce: US · EU · MENA). Each of the eight systems of online sales has an owner accountable for the result — specialists, not generalists.</p>${ul(ROSTER_EN)}`,
   '/expansion': `<p>Europe and the US are a separate business contour. We launch systematically and across all storefronts of a market at once. Priority markets: PL, DE, CZ, USA.</p><h2>Market storefronts</h2>${ul(CHANNELS_EN)}`,
@@ -126,7 +155,7 @@ const EN_BODY = {
 const ROUTES = [
   { path: '/', og: 'home', title: 'WEEXP — Commerce OS: система замість героїзму',
     desc: 'Commerce OS для D2C та e-commerce брендів $0.5–10M: діагноз у грошах, побудова системи й вихід на ЄС/США — щоб виторг ріс без вас.',
-    content: `<h1>Система замість героїзму</h1><p>Продажі тримаються на людях і ручному режимі, а не на системі. WEEXP — Commerce OS для українських виробників і D2C-брендів $0.5–10M: діагностуємо систему онлайн-продажів, рахуємо розрив у грошах і будуємо систему, щоб бізнес працював без героя.</p><p>${esc(SERVICES)}</p><h2>Вісім систем онлайн-продажів</h2>${ul(SYSTEMS)}` },
+    content: `<h1>Система замість героїзму</h1><p>Продажі тримаються на людях і ручному режимі, а не на системі. WEEXP — Commerce OS для українських виробників і D2C-брендів $0.5–10M: діагностуємо систему онлайн-продажів, рахуємо розрив у грошах і будуємо систему, щоб бізнес працював без героя.</p><p>${esc(SERVICES)}</p><h2>Вісім систем онлайн-продажів</h2>${ulLinks(SYSTEMS, SYS_SLUGS)}` },
   { path: '/proof', og: 'proof', title: `Докази — трансформації в цифрах${SUF}`,
     desc: 'Флагманські кейси e-commerce: дельти до→після з CRM/ERP/GA4 — ×18 обороту, +65% продажів, ≥19 млн ₴ розриву. Не обіцянки, а числа.',
     content: `<h1>Систему видно в цифрах</h1><p>Не обіцянки — дельти до→після з CRM, ERP і GA4. Кожен кейс анонімний, але число реальне.</p>${ul(PROOF)}` },
@@ -135,7 +164,7 @@ const ROUTES = [
     content: `<h1>Систему будують власники, не герої</h1><p>Засновник WEEXP — Павло Сидоренко, Founder & Architect of Commerce (8+ років у міжнародному e-commerce: US · EU · MENA). У кожної з восьми систем онлайн-продажів є відповідальний за результат. Не універсали — власники конкретного контуру.</p>${ul(ROSTER)}` },
   { path: '/expansion', og: 'expansion', title: `Міжнародна експансія — ЄС і США${SUF}`,
     desc: 'Системний вивід брендів на ринки ЄС і США: власний сайт, Amazon, Allegro, eBay та локальні маркетплейси — з локалізацією, логістикою, юридичним контуром і юніт-економікою ринку.',
-    content: `<h1>Вихід у ЄС і США як система, не спроба</h1><p>Європа і Штати — окремий бізнес-контур. Виводимо системно й одразу на всіх вітринах ринку. Пріоритетні ринки: PL, DE, CZ, США.</p><h2>Вітрини ринку</h2>${ul(CHANNELS)}` },
+    content: `<h1>Вихід у ЄС і США як система, не спроба</h1><p>Європа і Штати — окремий бізнес-контур. Виводимо системно й одразу на всіх вітринах ринку. Пріоритетні ринки: PL, DE, CZ, США.</p><h2>Вітрини ринку</h2>${ul(CHANNELS)}${EXPANSION_LINKS}` },
   { path: '/diagnose', og: 'diagnose', title: `Діагностика e-commerce — від числа до плану${SUF}`,
     desc: 'Єдина діагностика онлайн-продажів: за 5 хвилин порахуйте втрати, отримайте карту 8 систем, головний bottleneck і кабінет із планом повернення виторгу.',
     content: `<h1>Діагностика e-commerce: від числа до плану</h1><p>Один інструмент, а не два: спершу рахуємо, скільки витікає щороку; далі — карта восьми систем, головний bottleneck, кабінет із вашими даними та поглиблений AI-розбір. Це кроки однієї діагностики.</p><h2>Кроки діагностики</h2>${ul(['Профіль і симптоми', 'Ваш витік у грошах', 'Карта восьми систем', 'Кабінет Tier-2', 'Поглиблений AI-розбір'])}` },
@@ -195,7 +224,7 @@ for (const [slug, m] of Object.entries(SEO.expansion)) {
     path: `/expansion/${slug}`, og: `exp-${slug}`, title: m.uk[0], desc: m.uk[1],
     // Раніше тіло було одним абзацом — тим самим описом, що вже в <meta>.
     // Додаємо контекст, спільний для всіх напрямів експансії.
-    content: `<h1>${esc(m.uk[0].split(' — ')[0])}</h1><p>${esc(m.uk[1])}</p><h2>Як це вбудовано в систему</h2><p>Напрям не існує окремо: він частина Commerce OS і міряється тими самими грошима, що й решта. Спершу діагностика за даними CRM/ERP/GA4, далі — план хвилями з Definition of Done, далі — робота до економіки, а не до звіту.</p>${ul(SYSTEMS)}`,
+    content: `<h1>${esc(m.uk[0].split(' — ')[0])}</h1><p>${esc(m.uk[1])}</p><h2>Як це вбудовано в систему</h2><p>Напрям не існує окремо: він частина Commerce OS і міряється тими самими грошима, що й решта. Спершу діагностика за даними CRM/ERP/GA4, далі — план хвилями з Definition of Done, далі — робота до економіки, а не до звіту.</p>${ulLinks(SYSTEMS, SYS_SLUGS)}`,
   });
 }
 
@@ -252,8 +281,22 @@ function build(tpl, r) {
     h = h.replace(/(<meta property="og:image" content=")[^"]*(")/, `$1${img}$2`);
     h = h.replace(/(<meta name="twitter:image" content=")[^"]*(")/, `$1${img}$2`);
   }
+  /*
+   * Статична навігація на КОЖНІЙ сторінці.
+   *
+   * Меню й підвал малює React, тому в статиці посилань на сусідні сторінки не
+   * було зовсім: без JS сайт не обходився, а вага посилань нікуди не текла.
+   * Саме через це вісім сторінок /systems/* і виявились сиротами — їх не
+   * тримало ніщо, крім кільця одна на одну.
+   */
+  const pref = r.lang === 'en' ? '/en' : '';
+  const alt = r.lang === 'en' ? (r.path.replace(/^\/en/, '') || '/') : `/en${r.path === '/' ? '' : r.path}`;
+  const nav = `<nav aria-label="${r.lang === 'en' ? 'Site' : 'Сайт'}"><ul>${NAV_PAGES.map(
+    (p) => `<li><a href="${p.to === '/' ? (pref || '/') : pref + p.to}">${esc(r.lang === 'en' ? p.en : p.uk)}</a></li>`,
+  ).join('')}<li><a href="${alt}">${r.lang === 'en' ? 'Українська' : 'English'}</a></li></ul></nav>`;
+
   // Контент усередині #root (клієнт замінює його при render). Прихований від FOUC.
-  h = h.replace('<div id="root"></div>', `<div id="root"><div style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">${r.content}</div></div>`);
+  h = h.replace('<div id="root"></div>', `<div id="root"><div style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">${r.content}${nav}</div></div>`);
   return h;
 }
 

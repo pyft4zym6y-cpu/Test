@@ -204,6 +204,37 @@ describe.skipIf(!built)('карта сайта и правила обхода', 
     expect(missing).toEqual([]);
   });
 
+  it('до каждой страницы есть путь по ссылкам от главной', () => {
+    /*
+     * Восемь страниц /systems/* были замкнутым кольцом: каждая ссылалась
+     * только на две соседние, а извне в кольцо не входило НИЧЕГО. От главной
+     * до них не существовало пути — глубина клика бесконечна. Это самые
+     * коммерческие страницы сайта, по одной на каждую систему: ни человек их
+     * не находил, ни вес ссылок с главной до них не доходил. При этом в карте
+     * сайта они были — то есть проверка «страница в sitemap» их пропускала.
+     *
+     * Считаем по СТАТИЧЕСКОМУ html: это то, что видит краулер без JS.
+     */
+    if (!built) return;
+    const pages = sitemapUrls().filter((u) => !u.endsWith('.html'));
+    const linksOf = (u: string): string[] => {
+      const f = join(DIST, fileFor(u));
+      if (!existsSync(f)) return [];
+      return [...readFileSync(f, 'utf8').matchAll(/href="(\/[^"#?]*)"/g)]
+        .map((m) => m[1].replace(/\/$/, '') || '/');
+    };
+    const seen = new Set(['/']);
+    const queue = ['/'];
+    while (queue.length) {
+      for (const l of linksOf(queue.shift()!)) {
+        const norm = l === '' ? '/' : l;
+        if (pages.includes(norm) && !seen.has(norm)) { seen.add(norm); queue.push(norm); }
+      }
+    }
+    const unreachable = pages.filter((u) => !seen.has(u));
+    expect(unreachable, `от главной не дойти: ${unreachable.join(', ')}`).toEqual([]);
+  });
+
   it('у каждой страницы своя OG-карточка, а не общая заглушка', () => {
     /*
      * Восемь страниц систем и шесть направлений экспансии делили одну общую
