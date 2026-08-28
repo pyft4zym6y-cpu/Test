@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>weexp · Admin (Wix mirror)</title>
+<!--
+  weexp Commerce OS — зеркало админки для Wix (вставляется в элемент «Embed HTML / iFrame»).
+
+  ЧТО ЭТО. Самодостаточная страница: один файл, ноль сборки. Читает те же данные
+  из того же Supabase, что и боевая админка на weexp.agency, теми же аккаунтами.
+  Доступ гейтит RLS на стороне Supabase — ключ ниже публичный по устройству
+  (publishable/anon), он и так лежит в бандле сайта. Серверный ключ (service-role) сюда
+  не попадает никогда: страница живёт в браузере, любой такой ключ был бы виден
+  каждому посетителю.
+
+  ЧЕГО ЗДЕСЬ НЕТ И НЕ МОЖЕТ БЫТЬ (эти функции ходят в /api/* на нашем домене,
+  Wix до них не достучится без отдельного прокси):
+    · управление командой и ролями (/api/team, нужен серверный ключ)
+    · запуск воркера аудита, SLA-отчёты, AI-черновики проектов
+    · создание проекта из заявки, загрузка файлов клиента
+  Всё это остаётся в боевой админке. Здесь — витрина и стадии заявок, чтобы
+  смотреть и двигать воронку с любого устройства.
+
+  Смена стадии заявки пишет в БД по-настоящему: та же таблица, та же RLS-политика.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --cream:#FAF5E9; --white:#FFFFFF; --mist:#F1E9D4; --silver:#E3D9C0;
+  --graphite:#6B675E; --deep:#141210; --red:#F5301C; --red-ink:#D0230E; --yellow:#FFD200;
+  --ok:#177A43; --warn:#9A6A12; --bad:#D0230E;
+  --line:rgba(20,18,16,.16);
+  --bd:2.5px solid var(--deep); --sh:6px 6px 0 var(--deep);
+  --sans:'Golos Text',system-ui,Arial,sans-serif; --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--cream);color:var(--deep);font:400 15px/1.45 var(--sans);-webkit-font-smoothing:antialiased}
+#app{min-height:100%;display:flex;flex-direction:column}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--red-ink)}
+
+/* ── шапка ── */
+.hd{position:sticky;top:0;z-index:20;display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+    padding:10px 14px;background:var(--deep);color:var(--cream);border-bottom:var(--bd)}
+.hd .br{font-weight:900;letter-spacing:-.02em;font-size:17px}
+.hd .br i{font-style:normal;color:var(--yellow)}
+.hd .who{font:400 12px/1 var(--mono);color:#C9C2B4;margin-left:auto}
+.hd button{background:transparent;color:var(--cream);border:2px solid rgba(250,245,233,.5);padding:7px 12px;font-weight:700;font-size:13px;min-height:44px;min-width:44px}
+.hd button:hover{border-color:var(--yellow);color:var(--yellow)}
+
+/* ── вкладки ── */
+.tabs{display:flex;gap:0;overflow-x:auto;background:var(--mist);border-bottom:var(--bd)}
+.tabs button{flex:0 0 auto;background:transparent;border:0;border-right:2px solid var(--deep);
+  padding:12px 16px;font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.04em;min-height:46px}
+.tabs button[aria-selected="true"]{background:var(--yellow)}
+.tabs .n{font:600 12px/1 var(--mono);color:var(--graphite);margin-left:6px}
+.tabs button[aria-selected="true"] .n{color:var(--deep)}
+
+/* ── тело ── */
+.bd{flex:1;padding:14px;overflow:auto}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.bar input[type=search]{flex:1 1 220px;min-width:0;padding:9px 12px;background:var(--white);border:var(--bd);min-height:42px}
+.bar button{background:var(--white);border:var(--bd);padding:9px 12px;font-weight:700;font-size:13px;min-height:42px}
+.bar button:hover{background:var(--yellow)}
+
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.card{background:var(--white);border:var(--bd);box-shadow:var(--sh);padding:12px;text-align:left;width:100%;display:block}
+.card:hover{transform:translate(-2px,-2px);box-shadow:9px 9px 0 var(--deep)}
+.card .t{font-weight:800;font-size:15px;margin:0 0 4px;word-break:break-word}
+.card .s{font:400 12px/1.4 var(--mono);color:var(--graphite);word-break:break-word}
+.card .r{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+
+.kpi{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin-bottom:16px}
+.kpi div{background:var(--white);border:var(--bd);box-shadow:var(--sh);padding:12px}
+.kpi b{display:block;font:800 30px/1 var(--sans);letter-spacing:-.03em}
+.kpi span{font:600 11px/1.3 var(--mono);color:var(--graphite);text-transform:uppercase;letter-spacing:.06em}
+
+.chip{display:inline-block;padding:3px 8px;border:2px solid var(--deep);font:700 11px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.04em;background:var(--white)}
+.chip.ok{background:var(--yellow)}
+.chip.wait{background:var(--mist)}
+.chip.bad{background:var(--red);color:var(--white);border-color:var(--deep)}
+.chip.none{color:var(--graphite)}
+
+h2.sec{font:800 13px/1 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--graphite);margin:20px 0 10px}
+h2.sec:first-child{margin-top:0}
+
+/* ── карточка (панель справа/снизу) ── */
+.ov{position:fixed;inset:0;z-index:40;background:rgba(20,18,16,.45);display:flex;justify-content:flex-end}
+.pn{width:min(560px,100%);background:var(--cream);border-left:var(--bd);overflow:auto;padding:16px;box-shadow:-9px 0 0 rgba(20,18,16,.15)}
+.pn h3{margin:0 0 2px;font-size:19px;font-weight:900;letter-spacing:-.02em;word-break:break-word}
+.pn .close{position:sticky;top:0;float:right;background:var(--deep);color:var(--cream);border:var(--bd);width:40px;height:40px;font-size:18px;font-weight:800;margin-left:8px}
+.blk{background:var(--white);border:var(--bd);box-shadow:var(--sh);padding:12px;margin:12px 0}
+.blk>h4{margin:0 0 8px;font:800 12px/1 var(--mono);text-transform:uppercase;letter-spacing:.07em;color:var(--graphite)}
+dl{display:grid;grid-template-columns:minmax(90px,34%) 1fr;gap:6px 10px;margin:0}
+dt{font:600 12px/1.4 var(--mono);color:var(--graphite)}
+dd{margin:0;font-size:14px;word-break:break-word}
+.stages{display:flex;gap:6px;flex-wrap:wrap}
+.stages button{border:var(--bd);background:var(--white);padding:8px 10px;font-weight:700;font-size:12px;min-height:40px}
+.stages button[aria-pressed="true"]{background:var(--yellow)}
+.stages button:disabled{opacity:.5;cursor:progress}
+
+/* ── вход ── */
+.auth{max-width:400px;margin:8vh auto;background:var(--white);border:var(--bd);box-shadow:var(--sh);padding:20px}
+.auth h1{margin:0 0 4px;font-size:24px;font-weight:900;letter-spacing:-.03em}
+.auth p{margin:0 0 16px;font-size:13px;color:var(--graphite)}
+.auth label{display:block;font:600 12px/1 var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--graphite);margin:12px 0 5px}
+.auth input{width:100%;padding:11px 12px;border:var(--bd);background:var(--cream);min-height:46px}
+.auth button{width:100%;margin-top:16px;padding:13px;background:var(--red-ink);color:var(--white);border:var(--bd);box-shadow:var(--sh);font-weight:800;font-size:15px;min-height:50px}
+.auth button:disabled{opacity:.6}
+
+.msg{border:var(--bd);padding:10px 12px;margin:10px 0;font-size:13px;background:var(--yellow)}
+.msg.bad{background:var(--red);color:var(--white)}
+.msg b{display:block;margin-bottom:3px}
+.empty{color:var(--graphite);font-size:14px;padding:16px 0}
+.note{font-size:12px;color:var(--graphite);line-height:1.5}
+@media (max-width:640px){
+  .bd{padding:10px}
+  .pn{border-left:0;border-top:var(--bd)}
+  /* На телефоне шапка из трёх строк съедала треть окна: у элемента Wix высота
+     фиксированная, каждая лишняя строка — это минус карточка на экране.
+     Кнопки уезжают в одну строку с логотипом, адрес — отдельной строкой ниже. */
+  .hd{padding:8px 10px;gap:8px}
+  .hd .br{font-size:15px}
+  .hd .who{order:3;flex:1 0 100%;margin-left:0}
+  .hd button{padding:7px 10px}
+}
+</style>
+</head>
+<body>
+<div id="app"><div class="empty" style="padding:24px">Завантаження…</div></div>
+
+<script>
+/* Если модуль ниже не поднимется (CDN недоступен, блокировщик, старый браузер),
+   страница осталась бы на «Завантаження…» навсегда — и это читалось бы как
+   «панель сломалась молча». Таймер снимается первой же строкой модуля. */
+window.__weexpBoot = setTimeout(function () {
+  document.getElementById('app').innerHTML =
+    '<div class="msg bad" style="margin:24px"><b>Код панелі не завантажився</b>' +
+    'Браузер не зміг отримати бібліотеку Supabase із cdn.jsdelivr.net — перевірте мережу ' +
+    'та блокувальники і перезавантажте сторінку. Основна адмінка працює тут: ' +
+    '<a href="https://weexp.agency/admin" style="color:#fff" target="_blank" rel="noopener">weexp.agency/admin</a></div>';
+}, 12000);
+</script>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/+esm';
+clearTimeout(window.__weexpBoot);   // код доехал — снимаем аварийное сообщение
+
+/* ─────────────────────────────────────────────────────────────────────────
+   1. КОНФИГ. Совпадает с weexp-site/src/lib/supa.ts (FALLBACK_URL/ANON).
+      Publishable-ключ публичен by design: доступ решает RLS, а не секретность
+      ключа. Если проект Supabase сменится — правится здесь и там.
+   ───────────────────────────────────────────────────────────────────────── */
+const SUPA_URL  = 'https://lpbyigsezimqofygpfof.supabase.co';
+const SUPA_ANON = 'sb_publishable_zlBld1bJe-Tf4-UHW6EdNA_I2jr9XcT';
+
+/* Бутстрап-роли из кода — зеркало TEAM_ROLES в supa.ts. Нужны только чтобы
+   показать роль в шапке; настоящий гейт — RLS: без прав запросы вернут пусто. */
+const TEAM_ROLES = { 'pashasidorenko18@gmail.com':'super', 'hello@weexp.agency':'super' };
+const ROLE_LABEL = { super:'Super Admin', admin:'Admin', manager:'Manager', auditor:'Auditor' };
+
+/* Wix кладёт страницу в песочный iframe. Там localStorage может бросать
+   (Safari «Prevent cross-site tracking», приватный режим). Молча упасть здесь
+   значило бы «вход не работает и непонятно почему» — поэтому свой адаптер
+   с памятью как запасным вариантом: сессия живёт до перезагрузки вкладки. */
+const mem = new Map();
+let storageOk = true;
+try { localStorage.setItem('weexp:probe','1'); localStorage.removeItem('weexp:probe'); } catch { storageOk = false; }
+const storage = {
+  getItem: (k) => { try { return storageOk ? localStorage.getItem(k) : (mem.get(k) ?? null); } catch { return mem.get(k) ?? null; } },
+  setItem: (k,v) => { try { storageOk ? localStorage.setItem(k,v) : mem.set(k,v); } catch { mem.set(k,v); } },
+  removeItem: (k) => { try { storageOk ? localStorage.removeItem(k) : mem.delete(k); } catch { mem.delete(k); } },
+};
+
+const sb = createClient(SUPA_URL, SUPA_ANON, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storage },
+});
+
+/* ─────────────────────────────────────────────────────────────────────────
+   2. СЛОВАРИ. Зеркало weexp-site/src/system/admin/shared.tsx — если там
+      переименуют стадию, здесь надо повторить (расхождение видно глазом,
+      строки короткие и рядом).
+   ───────────────────────────────────────────────────────────────────────── */
+const LEAD_STAGES = [
+  { k:'new',         l:'Нова',            cls:'wait' },
+  { k:'qualified',   l:'Кваліфікована',   cls:'ok'   },
+  { k:'unqualified', l:'Некваліфікована', cls:'bad'  },
+  { k:'progress',    l:'В роботі',        cls:'wait' },
+  { k:'done',        l:'Завершена',       cls:'ok'   },
+  { k:'archive',     l:'Архів',           cls:'none' },
+];
+/* Легаси-статусы старых записей сводятся к текущим — как в stageOf(). */
+const stageOf = (l) => { const s = l.status || 'new';
+  return s === 'proposal' ? 'progress' : s === 'won' ? 'done' : s === 'lost' ? 'unqualified' : s; };
+
+const FUNNEL = [
+  { k:'registered',    l:'Зареєстрований',      cls:'none' },
+  { k:'express',       l:'Експрес пройдено',    cls:'ok'   },
+  { k:'requested',     l:'Запит на глибокий',   cls:'wait' },
+  { k:'awaiting_data', l:'Очікуються дані',     cls:'wait' },
+  { k:'in_work',       l:'Аудит у роботі',      cls:'ok'   },
+  { k:'project',       l:'Проект',              cls:'ok'   },
+];
+const ST = { none:{txt:'Не запрошено',cls:'none'}, requested:{txt:'Очікує',cls:'wait'},
+  data:{txt:'Потрібні дані',cls:'wait'}, granted:{txt:'Надано',cls:'ok'}, rejected:{txt:'Відхилено',cls:'bad'} };
+const COOP = { audit:'Аудит', consulting:'Консалтинг', full:'Повний супровід', other:'Інше' };
+
+/* Поля списка клиентов — зеркало LIST_KEYS в supa.ts. Тянем только их: полный
+   jsonb клиента весит килобайты и списку не нужен. */
+const LIST_KEYS = ['company','funnel','express','stage1Money','stage3','projects','project','updatedAt'];
+const LIST_SELECT = 'user_id,email,' + LIST_KEYS.map((k) => k + ':data->' + k).join(',');
+
+/* ── деньги: те же правила, что в systems.ts (курсов нет, суммы не конвертим) ── */
+const SIGN = { UAH:'₴', USD:'$', EUR:'€', PLN:'zł' };
+const GROUP = { UAH:' ', PLN:' ', USD:',', EUR:',' };
+const money = (n, cur='EUR') => {
+  if (!Number.isFinite(n)) return '—';
+  const c = SIGN[cur] ? cur : 'EUR';
+  const v = String(Math.abs(Math.round(n))).replace(/\B(?=(\d{3})+(?!\d))/g, GROUP[c]);
+  const s = (Math.round(n) < 0 ? '-' : '') + v;
+  return (c === 'UAH' || c === 'PLN') ? s + ' ' + SIGN[c] : SIGN[c] + s;
+};
+
+const rel = (iso) => {
+  if (!iso) return '';
+  const t = new Date(iso).getTime(); if (Number.isNaN(t)) return '';
+  const s = Math.max(0, Math.floor((Date.now() - t) / 1000));
+  if (s < 60) return 'щойно';
+  if (s < 3600) return Math.floor(s/60) + ' хв';
+  if (s < 86400) return Math.floor(s/3600) + ' год';
+  if (s < 7*86400) return Math.floor(s/86400) + ' дн';
+  return new Date(t).toLocaleDateString('uk-UA');
+};
+
+/* Экранируем ВСЁ, что пришло из базы: значения вводят клиенты через формы. */
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) =>
+  ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+
+const projectsOf = (rec) => (rec?.projects?.length ? rec.projects : (rec?.project ? [rec.project] : []));
+const funnelStage = (r) => {
+  const ts = Object.values(r.funnel?.tierStatus || {});
+  if (projectsOf(r).length) return 'project';
+  if (r.hasDeep || ts.includes('granted')) return 'in_work';
+  if (ts.includes('data')) return 'awaiting_data';
+  if (ts.includes('requested')) return 'requested';
+  if (r.hasExpress) return 'express';
+  return 'registered';
+};
+
+/* ─────────────────────────────────────────────────────────────────────────
+   3. СОСТОЯНИЕ
+   ───────────────────────────────────────────────────────────────────────── */
+const S = { user:null, role:null, tab:'leads', leads:[], clients:[], q:'', sel:null, err:'', note:'', busy:false, loaded:false };
+const app = document.getElementById('app');
+const roleOf = (email) => TEAM_ROLES[(email||'').toLowerCase()] || null;
+
+/* ─────────────────────────────────────────────────────────────────────────
+   4. ДАННЫЕ. Ошибка запроса никогда не превращается в пустой список: пустой
+      экран читался бы как «клиентов нет», а не «RLS не пустила».
+   ───────────────────────────────────────────────────────────────────────── */
+async function load() {
+  S.busy = true; S.err = ''; render();
+  const [lead, diag] = await Promise.all([
+    sb.from('leads').select('*').order('created_at', { ascending:false }).limit(500),
+    sb.from('diagnostics').select(LIST_SELECT).order('user_id').limit(200),
+  ]);
+  const bad = [];
+  if (lead.error) bad.push('заявки: ' + lead.error.message);
+  if (diag.error) bad.push('клієнти: ' + diag.error.message);
+  S.err = bad.length
+    ? bad.join(' · ') + ' — найімовірніше акаунт без ролі або немає SELECT-політики RLS.'
+    : '';
+  S.leads = (lead.data || []).map((r) => ({
+    id:String(r.id ?? ''), at:r.created_at, source:r.source, email:r.email, name:r.name, phone:r.phone,
+    role:r.role, store:r.store, turnover:r.turnover, task:r.task, timeline:r.timeline, budget:r.budget,
+    comment:r.comment, diag:r.diag, calc:r.calc, status:r.status || 'new',
+    deal:(r.deal && typeof r.deal === 'object') ? r.deal : undefined,
+  }));
+  S.clients = (diag.data || []).map((r) => ({
+    userId:r.user_id, email:r.email || '', company:r.company?.name, funnel:r.funnel,
+    express:r.express, stage1Money:r.stage1Money, updatedAt:r.updatedAt,
+    projects:r.projects, project:r.project,
+    hasExpress:Boolean(r.stage1Money || r.express),
+    hasDeep:Boolean(r.stage3 && Object.keys(r.stage3).length > 0),
+  })).sort((a,b) => String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')));
+  S.busy = false; S.loaded = true; render();
+}
+
+/* Единственная запись отсюда. .select() обязателен: без него RLS-отказ выглядит
+   как успех — придёт 200 и ноль изменённых строк. */
+async function setStage(id, status) {
+  S.busy = true; render();
+  const { data, error } = await sb.from('leads').update({ status }).eq('id', id).select('id');
+  S.busy = false;
+  if (error) { S.err = 'Не збережено: ' + error.message; render(); return; }
+  if (!data || !data.length) {
+    S.err = 'Не збережено: RLS не дала оновити заявку (потрібна UPDATE-політика для адмінів на таблицю leads).';
+    render(); return;
+  }
+  S.err = '';
+  const l = S.leads.find((x) => x.id === id); if (l) l.status = status;
+  if (S.sel?.kind === 'lead' && S.sel.id === id) S.sel = { kind:'lead', id };
+  S.note = 'Стадію змінено · ' + (LEAD_STAGES.find((s)=>s.k===status)?.l || status);
+  render();
+  setTimeout(() => { if (S.note) { S.note = ''; render(); } }, 3000);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   5. ЭКРАНЫ
+   ───────────────────────────────────────────────────────────────────────── */
+function viewAuth(msg) {
+  return `<form class="auth" data-act="signin">
+    <h1>weexp · admin</h1>
+    <p>Дзеркало адмінки. Ті самі акаунти, що й на weexp.agency.</p>
+    ${msg ? `<div class="msg bad">${esc(msg)}</div>` : ''}
+    <label for="em">E-mail</label>
+    <input id="em" name="email" type="email" autocomplete="username" required>
+    <label for="pw">Пароль</label>
+    <input id="pw" name="password" type="password" autocomplete="current-password" required>
+    <button type="submit" ${S.busy ? 'disabled' : ''}>${S.busy ? 'Вхід…' : 'Увійти'}</button>
+    ${storageOk ? '' : '<p class="note" style="margin-top:12px">Браузер блокує збереження сесії у вбудованому вікні — вхід діятиме до перезавантаження сторінки.</p>'}
+  </form>`;
+}
+
+function head() {
+  const r = S.role ? (ROLE_LABEL[S.role] || S.role) : 'без ролі';
+  return `<header class="hd">
+    <span class="br">weexp<i>·</i>admin</span>
+    <span class="who">${esc(S.user.email)} · ${esc(r)}</span>
+    <button data-act="reload" ${S.busy ? 'disabled' : ''}>${S.busy ? '…' : '↻'}</button>
+    <button data-act="signout">Вийти</button>
+  </header>`;
+}
+
+function tabs() {
+  const t = [
+    ['leads',    'Заявки',   S.leads.length],
+    ['clients',  'Клієнти',  S.clients.length],
+    ['board',    'Дашборд',  null],
+    ['about',    'Про це дзеркало', null],
+  ];
+  return `<nav class="tabs" role="tablist">${t.map(([k,l,n]) =>
+    `<button role="tab" aria-selected="${S.tab===k}" data-act="tab" data-k="${k}">${l}${
+      n===null?'':`<span class="n">${n}</span>`}</button>`).join('')}</nav>`;
+}
+
+function bar(ph) {
+  return `<div class="bar">
+    <input type="search" placeholder="${ph}" value="${esc(S.q)}" data-act="q" aria-label="${ph}">
+    <button data-act="csv">CSV</button>
+  </div>`;
+}
+
+const hit = (o, q) => !q || JSON.stringify(o).toLowerCase().includes(q.toLowerCase());
+
+function viewLeads() {
+  const rows = S.leads.filter((l) => hit(l, S.q));
+  if (!rows.length) return bar('Пошук по заявках') + `<p class="empty">${S.q ? 'Нічого не знайшлось.' : 'Заявок поки немає.'}</p>`;
+  const by = LEAD_STAGES.map((st) => [st, rows.filter((l) => stageOf(l) === st.k)]).filter(([,r]) => r.length);
+  return bar('Пошук по заявках') + by.map(([st, list]) => `
+    <h2 class="sec">${st.l} · ${list.length}</h2>
+    <div class="grid">${list.map((l) => `
+      <button class="card" data-act="lead" data-id="${esc(l.id)}">
+        <p class="t">${esc(l.name || l.email || 'Без імені')}</p>
+        <p class="s">${esc(l.email || '—')}${l.phone ? ' · ' + esc(l.phone) : ''}</p>
+        <p class="s">${esc((l.task || l.comment || '').slice(0,90) || '—')}</p>
+        <span class="r">
+          <span class="chip ${st.cls}">${st.l}</span>
+          ${l.source ? `<span class="chip none">${esc(l.source)}</span>` : ''}
+          ${l.at ? `<span class="chip none">${rel(l.at)}</span>` : ''}
+        </span>
+      </button>`).join('')}</div>`).join('');
+}
+
+function viewClients() {
+  const rows = S.clients.filter((c) => hit(c, S.q));
+  if (!rows.length) return bar('Пошук по клієнтах') + `<p class="empty">${S.q ? 'Нічого не знайшлось.' : 'Клієнтів поки немає.'}</p>`;
+  return bar('Пошук по клієнтах') + `<div class="grid">${rows.map((c) => {
+    const f = FUNNEL.find((x) => x.k === funnelStage(c)) || FUNNEL[0];
+    return `<button class="card" data-act="client" data-id="${esc(c.userId)}">
+      <p class="t">${esc(c.company || c.email || '—')}</p>
+      <p class="s">${esc(c.email)}</p>
+      <span class="r">
+        <span class="chip ${f.cls}">${f.l}</span>
+        ${c.hasExpress ? '<span class="chip wait">Експрес</span>' : ''}
+        ${c.updatedAt ? `<span class="chip none">${rel(c.updatedAt)}</span>` : ''}
+      </span>
+    </button>`; }).join('')}</div>`;
+}
+
+function viewBoard() {
+  const n = (k) => S.leads.filter((l) => stageOf(l) === k).length;
+  const fun = (k) => S.clients.filter((c) => funnelStage(c) === k).length;
+  const kpi = (list) => `<div class="kpi">${list.map(([b,s]) => `<div><b>${b}</b><span>${s}</span></div>`).join('')}</div>`;
+  return `<h2 class="sec">Заявки</h2>${kpi([
+      [S.leads.length,'усього'], [n('new'),'нові'], [n('qualified'),'кваліфіковані'],
+      [n('progress'),'в роботі'], [n('done'),'завершені'],
+    ])}
+    <h2 class="sec">Клієнти</h2>${kpi([
+      [S.clients.length,'усього'],
+      ...FUNNEL.map((f) => [fun(f.k), f.l]),
+    ])}`;
+}
+
+function viewAbout() {
+  return `<div class="blk"><h4>Що вміє це дзеркало</h4>
+    <p class="note">Читає ті самі заявки та клієнтів із тієї самої бази, що й адмінка на weexp.agency,
+    під вашим акаунтом. Права визначає RLS на боці Supabase — не ця сторінка.
+    Єдина дія, що пише в базу: зміна стадії заявки.</p></div>
+  <div class="blk"><h4>Чого тут немає — і чому</h4>
+    <p class="note">Ці розділи ходять у наші серверні функції <code>/api/*</code> на домені weexp.agency.
+    Сторінка на Wix — інший домен без доступу до них, тож вони лишаються в основній адмінці:</p>
+    <ul class="note">
+      <li>команда та ролі (потрібен серверний ключ, у браузер він не потрапляє ніколи);</li>
+      <li>запуск воркера аудиту, SLA-звіти, AI-чернетки проектів;</li>
+      <li>створення проекту із заявки, файли клієнта.</li>
+    </ul>
+    <p class="note">Основна адмінка: <a href="https://weexp.agency/admin" target="_blank" rel="noopener">weexp.agency/admin</a></p></div>
+  <div class="blk"><h4>Якщо списки порожні</h4>
+    <p class="note">Означає одне з двох: акаунту не призначено роль, або в Supabase немає SELECT-політики
+    для адмінів на таблиці <code>leads</code> / <code>diagnostics</code>. Помилка запиту показується
+    вгорі списку текстом — порожній екран без напису означає, що даних справді немає.</p></div>`;
+}
+
+/* ── карточка заявки ── */
+function panelLead(id) {
+  const l = S.leads.find((x) => x.id === id);
+  if (!l) return `<div class="blk">Заявку не знайдено — можливо, її видалили.</div>`;
+  const cur = stageOf(l);
+  const d = l.deal || {};
+  const row = (k,v) => v ? `<dt>${k}</dt><dd>${esc(v)}</dd>` : '';
+  return `<h3>${esc(l.name || l.email || 'Заявка')}</h3>
+    <p class="note">${l.at ? new Date(l.at).toLocaleString('uk-UA') : ''}${l.source ? ' · ' + esc(l.source) : ''}</p>
+    <div class="blk"><h4>Стадія</h4>
+      <div class="stages">${LEAD_STAGES.map((s) => `
+        <button data-act="stage" data-id="${esc(l.id)}" data-k="${s.k}" aria-pressed="${s.k===cur}" ${S.busy?'disabled':''}>${s.l}</button>`).join('')}</div>
+    </div>
+    <div class="blk"><h4>Контакт</h4><dl>
+      ${row('E-mail', l.email)}${row('Телефон', l.phone)}${row('Роль', l.role)}
+      ${row('Магазин', l.store)}${row('Оборот', l.turnover)}
+    </dl></div>
+    <div class="blk"><h4>Запит</h4><dl>
+      ${row('Задача', l.task)}${row('Термін', l.timeline)}${row('Бюджет', l.budget)}${row('Коментар', l.comment)}
+    </dl></div>
+    ${Object.keys(d).length ? `<div class="blk"><h4>Угода</h4><dl>
+      ${row('Тип', COOP[d.coopType] || d.coopType)}${row('Форма', d.coopForm)}
+      ${row('Сума', Number.isFinite(d.amount) ? money(d.amount, d.currency) : d.amount)}
+      ${d.paidFirst ? '<dt>Оплата</dt><dd>перший платіж отримано</dd>' : ''}
+      ${d.projectId ? `<dt>Проект</dt><dd>${esc(d.projectId)}</dd>` : ''}
+    </dl></div>` : ''}
+    ${cur === 'done' && !d.projectId ? `<div class="msg"><b>Наступний крок</b>
+      Заявка завершена, проект ще не створено. Створення проекту доступне лише в основній адмінці:
+      <a href="https://weexp.agency/admin/leads" target="_blank" rel="noopener">відкрити там</a>.</div>` : ''}`;
+}
+
+/* ── карточка клиента ── */
+function panelClient(id) {
+  const c = S.clients.find((x) => x.userId === id);
+  if (!c) return `<div class="blk">Клієнта не знайдено.</div>`;
+  const f = FUNNEL.find((x) => x.k === funnelStage(c)) || FUNNEL[0];
+  const ex = c.express || c.stage1Money?.snapshot || null;
+  const ts = c.funnel?.tierStatus || {};
+  const prj = projectsOf(c);
+  const row = (k,v) => v ? `<dt>${k}</dt><dd>${esc(v)}</dd>` : '';
+  return `<h3>${esc(c.company || c.email || '—')}</h3>
+    <p class="note">${esc(c.email)}${c.updatedAt ? ' · оновлено ' + rel(c.updatedAt) : ''}</p>
+    <div class="blk"><h4>Воронка</h4><span class="chip ${f.cls}">${f.l}</span></div>
+    ${ex ? `<div class="blk"><h4>Експрес-аудит</h4><dl>
+      ${row('Дата', ex.at ? new Date(ex.at).toLocaleDateString('uk-UA') : '')}
+      ${Number.isFinite(ex.total) ? `<dt>Втрати / рік</dt><dd>${esc(money(ex.total, ex.input?.currency || 'EUR'))}</dd>` : ''}
+      ${row('Головна зона', ex.primary)}${row('Друга зона', ex.secondary)}
+      ${Number.isFinite(ex.overallHealth) ? `<dt>Здоровʼя</dt><dd>${Math.round(ex.overallHealth)}%</dd>` : ''}
+    </dl></div>` : ''}
+    ${Object.keys(ts).length ? `<div class="blk"><h4>Доступи до рівнів</h4><dl>${
+      Object.entries(ts).map(([k,v]) => `<dt>${esc(k === 'DEEP' ? 'Глибокий аудит' : k)}</dt>
+        <dd><span class="chip ${(ST[v]||ST.none).cls}">${(ST[v]||ST.none).txt}</span></dd>`).join('')}</dl></div>` : ''}
+    ${prj.length ? `<div class="blk"><h4>Проекти · ${prj.length}</h4><dl>${
+      prj.map((p) => `<dt>${esc(p.title || p.id || '—')}</dt>
+        <dd>${p.published ? 'опубліковано клієнту' : 'чернетка'}${p.startMonth ? ' · старт ' + esc(p.startMonth) : ''}</dd>`).join('')}</dl></div>` : ''}
+    <p class="note">Редагування картки, файли та проекти — в основній адмінці:
+      <a href="https://weexp.agency/admin/users" target="_blank" rel="noopener">weexp.agency/admin</a></p>`;
+}
+
+function render() {
+  if (!S.user) { app.innerHTML = viewAuth(S.err); focusFirst(); return; }
+  const body =
+    S.tab === 'leads'   ? viewLeads()   :
+    S.tab === 'clients' ? viewClients() :
+    S.tab === 'board'   ? viewBoard()   : viewAbout();
+  const msg =
+    (S.err  ? `<div class="msg bad"><b>Помилка</b>${esc(S.err)}</div>` : '') +
+    (S.note ? `<div class="msg">${esc(S.note)}</div>` : '') +
+    (!S.loaded && S.busy ? `<p class="empty">Завантаження…</p>` : '');
+  const panel = S.sel ? `<div class="ov" data-act="closeov"><aside class="pn" role="dialog" aria-modal="true">
+      <button class="close" data-act="close" aria-label="Закрити">✕</button>
+      ${S.sel.kind === 'lead' ? panelLead(S.sel.id) : panelClient(S.sel.id)}
+    </aside></div>` : '';
+  app.innerHTML = head() + tabs() + `<main class="bd">${msg}${body}</main>` + panel;
+}
+
+const focusFirst = () => { const el = app.querySelector('input'); if (el) el.focus(); };
+
+/* ── CSV: выгружаем то, что видно на вкладке, с учётом фильтра ── */
+function csv() {
+  const rows = S.tab === 'clients'
+    ? [['email','company','stage','updated'], ...S.clients.filter((c)=>hit(c,S.q))
+        .map((c) => [c.email, c.company||'', funnelStage(c), c.updatedAt||''])]
+    : [['created','name','email','phone','stage','source','task','budget'], ...S.leads.filter((l)=>hit(l,S.q))
+        .map((l) => [l.at||'', l.name||'', l.email||'', l.phone||'', stageOf(l), l.source||'', l.task||'', l.budget||''])];
+  const text = rows.map((r) => r.map((v) => '"' + String(v ?? '').replace(/"/g,'""') + '"').join(',')).join('\n');
+  const url = URL.createObjectURL(new Blob(['﻿' + text], { type:'text/csv;charset=utf-8' }));
+  const a = document.createElement('a');
+  a.href = url; a.download = 'weexp-' + S.tab + '-' + new Date().toISOString().slice(0,10) + '.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   6. СОБЫТИЯ — делегированием: разметка перерисовывается целиком,
+      подписки на конкретные узлы после каждого render() отваливались бы.
+   ───────────────────────────────────────────────────────────────────────── */
+app.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-act]'); if (!t) return;
+  const act = t.dataset.act;
+  if (act === 'tab')      { S.tab = t.dataset.k; S.q = ''; render(); }
+  if (act === 'lead')     { S.sel = { kind:'lead',   id:t.dataset.id }; render(); }
+  if (act === 'client')   { S.sel = { kind:'client', id:t.dataset.id }; render(); }
+  if (act === 'close')    { S.sel = null; render(); }
+  if (act === 'closeov' && e.target === t) { S.sel = null; render(); }
+  if (act === 'reload')   { load(); }
+  if (act === 'csv')      { csv(); }
+  if (act === 'stage')    { setStage(t.dataset.id, t.dataset.k); }
+  if (act === 'signout')  { sb.auth.signOut().finally(() => { S.user = null; S.sel = null; S.leads = []; S.clients = []; S.loaded = false; render(); }); }
+});
+app.addEventListener('input', (e) => {
+  if (e.target.dataset.act !== 'q') return;
+  S.q = e.target.value;
+  const sel = e.target.selectionStart; render();
+  const el = app.querySelector('[data-act="q"]'); if (el) { el.focus(); el.setSelectionRange(sel, sel); }
+});
+app.addEventListener('submit', async (e) => {
+  if (e.target.dataset.act !== 'signin') return;
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  S.busy = true; S.err = ''; render();
+  const { data, error } = await sb.auth.signInWithPassword({
+    email:String(fd.get('email')).trim(), password:String(fd.get('password')),
+  });
+  S.busy = false;
+  if (error || !data?.user) { S.err = error?.message || 'Не вдалось увійти.'; render(); return; }
+  start(data.user);
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && S.sel) { S.sel = null; render(); } });
+
+/* ── старт ── */
+function start(u) {
+  S.user = { id:u.id, email:u.email || '' };
+  S.role = roleOf(S.user.email) || u.app_metadata?.role || null;
+  S.err = ''; render(); load();
+}
+sb.auth.getSession().then(({ data }) => {
+  if (data.session?.user) start(data.session.user); else render();
+}).catch(() => render());
+
+/* Автообновление раз в 2 минуты, только когда вкладка видима: иначе фоновые
+   вкладки часами дёргают базу без единого зрителя. */
+setInterval(() => { if (S.user && !S.busy && document.visibilityState === 'visible') load(); }, 120000);
+</script>
+</body>
+</html>
