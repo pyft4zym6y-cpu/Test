@@ -217,7 +217,7 @@ export function AccessCatalog({ userId, initial, onSaved }: { userId: string; in
     <div className="adm-acc">
       <div className="adm-acc-sum mono">
         <span>Надано: <b>{granted}/{ACCESS_CATALOG.length}</b></span>
-        <span className="adm-acc-hint">Статус-трекер команди. Інструкції з надання доступів клієнт бачить у своєму кабінеті.</span>
+        <span className="adm-acc-hint">Клієнт бачить цей самий список у кабінеті, у глибокому аудиті: що потрібно, навіщо і як надати. Він надає доступ і позначає це в себе — рядок тут змінює статус сам. Тут же можна проставити стан вручну, якщо доступ передали повз кабінет.</span>
         <SaveBadge state={auto.state} error={auto.error} savedAt={auto.savedAt} onRetry={auto.flush} />
       </div>
       {cats.map((cat) => (

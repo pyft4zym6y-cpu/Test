@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { AutofillPanel } from './AutofillPanel';
 
 import { getProjects, type AdminRow, type LeadRow, type TierStatus, type LeadStatus } from '@/lib/supa';
@@ -7,7 +7,7 @@ import { money as fmt, curOf, AGENCY_CUR, sysLabel, actionText, type SysKey } fr
 import '../system.css';
 import '../cabinet.css';
 import { Panel, PanelBoundary } from './dialog';
-import { Block, ACCESS_SOURCES, FUNNEL, LEAD_STAGES, ST, U_TABS, coopLabel, funnelStage, rel, tierLabel, type UTab } from './shared';
+import { Block, ACCESS_SOURCES, DEEP_SECS, FUNNEL, LEAD_STAGES, ST, U_TABS, coopLabel, funnelStage, isLegacyTier, rel, tierLabel, type DeepSec, type UTab } from './shared';
 import { openClientDossier } from './docs';
 import { downloadClientExport } from './exportClient';
 /* Вміст вкладок вантажимо на вимогу. Картка відкривається на «Огляді», а
@@ -35,6 +35,10 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, 
   onChanged: () => void;
   onClose: () => void; openFile: (p: string) => void; onStatus: (userId: string, tier: string, status: TierStatus) => void; onDelete: (userId: string, email: string) => void; busy: string }) {
   const rec = row.record || {};
+  /* Розділ усередині глибокого аудиту: питання · доступи · файли · результат.
+     Одна послуга, чотири шари даних — замість трьох окремих вкладок «дані»,
+     «робота» і «пакет», між якими те саме доводилось шукати. */
+  const [sec, setSec] = useState<DeepSec>('q');
   const company = rec.company;
   const money = rec.stage1Money;
   const tiers = Object.entries(row.funnel?.tierStatus || {});
@@ -62,7 +66,7 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, 
           {/* Два різні вивантаження, і плутати їх не можна: одне йде клієнту на
               руки, друге — наш знімок перед ризикованою правкою. */}
           <button className="mc-btn" onClick={() => downloadClientExport(row, 'client')}
-            title="JSON з даними клієнта без наших внутрішніх нотаток і оцінок — на запит клієнта (GDPR, ст. 20)">↓ Дані клієнта</button>
+            title="JSON з даними клієнта без наших внутрішніх нотаток і оцінок — на запит клієнта (GDPR, ст. 20)">↓ Експорт для клієнта (GDPR)</button>
           <button className="mc-btn ghost" onClick={() => downloadClientExport(row, 'full')}
             title="Повний знімок запису разом із внутрішнім шаром — резервна копія перед ризикованою правкою. Клієнту не передавати.">↓ Знімок</button>
         </div>
@@ -79,6 +83,14 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, 
               className={`adm-utab${utab === tb.id ? ' on' : ''}`} onClick={() => onUtab(tb.id)}>{tb.l}</button>
           ))}
         </nav>
+        {utab === 'deep' && (
+          <nav className="adm-usubs" role="tablist" aria-label="Розділи глибокого аудиту">
+            {DEEP_SECS.map((x) => (
+              <button key={x.id} role="tab" aria-selected={sec === x.id} title={x.hint}
+                className={`adm-usub${sec === x.id ? ' on' : ''}`} onClick={() => setSec(x.id)}>{x.l}</button>
+            ))}
+          </nav>
+        )}
       </div>
       <div className="adm-upage-body">
         {/* Зовнішня межа — остання лінія: ловить те, що не в іменованій панелі
@@ -100,6 +112,16 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, 
               <AutofillPanel userId={row.userId} code={code} rec={rec} onSaved={onChanged} />
             </PanelBoundary>
           )}
+          {utab === 'comp' && <Block title="Сайт і аналітика">
+            {company?.site || rec.site ? (
+              <ul className="adm-kv">
+                <li><i>Сайт</i><span><a className="adm-mail" href={String(company?.site || rec.site)} target="_blank" rel="noopener">{company?.site || rec.site}</a></span></li>
+                <li><i>Підключення</i><span className="mono">стан GA4 / GSC — у «Глибокий аудит → Доступи»</span></li>
+              </ul>
+            ) : (
+              <p className="mono adm-empty">Сайт не вказаний. Без нього рушій нема куди запускати — попросіть клієнта заповнити профіль компанії в кабінеті.</p>
+            )}
+          </Block>}
           {utab === 'comp' && <Block title="Компанія">{(company?.name || company?.industry) ? (
             <ul className="adm-kv">
               {company.name && <li><i>Назва</i><span>{company.name}</span></li>}
@@ -116,14 +138,21 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, 
               {company.outlets && <li><i>Точки продажу</i><span>{company.outlets}</span></li>}
               {(company.channels?.length ?? 0) > 0 && <li><i>Канали продажів</i><span>{company.channels!.join(', ')}</span></li>}
               {(company.acqChannels?.length ?? 0) > 0 && <li><i>Канали залучення</i><span>{company.acqChannels!.join(', ')}</span></li>}
-              {company.site && <li><i>Сайт</i><span>{company.site}</span></li>}
               {company.domains && <li><i>Домени</i><span>{company.domains}</span></li>}
               {company.platform && <li><i>Платформа</i><span>{company.platform}</span></li>}
               {company.crmErp && <li><i>CRM / ERP</i><span>{company.crmErp}</span></li>}
               {company.contactName && <li><i>Контакт</i><span>{company.contactName} {company.contactPhone || ''}</span></li>}
               {company.notes && <li><i>Коментар</i><span>{company.notes}</span></li>}
             </ul>
-          ) : <p className="mono adm-empty">профіль не заповнено</p>}</Block>}
+          ) : (
+            /* «Профіль не заповнений» без пояснення читалось як поломка звʼязку
+               з кабінетом. Звʼязок є — це той самий запис: щойно клієнт
+               заповнить профіль у себе, дані стануть тут без жодної дії. */
+            <div className="adm-nextstep is-wait">
+              <b className="adm-nextstep-h">Профіль ще не заповнений</b>
+              <p className="adm-nextstep-p">Ці поля клієнт заповнює сам у кабінеті («Дані компанії»); окремої копії в адмінці немає, тож усе зʼявиться тут автоматично. Можна не чекати: блок «Заповнення з анкети» вище переносить сюди відповіді глибокого аудиту.</p>
+            </div>
+          )}</Block>}
 
           {(utab === 'team' || utab === 'comp') && (
             <Block title="Команда клієнта">
@@ -216,27 +245,32 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, 
             return <p className="mono adm-empty">{row.hasExpress ? 'є' : 'не рахували'}</p>;
           })()}</Block>}
 
-          {utab === 'work' && <Block title="Аудит рушієм Commerce OS"><PanelBoundary title="Аудит рушієм"><WorkerAudit userId={row.userId} code={code} rec={rec} reviewer={selfEmail} /></PanelBoundary></Block>}
+          {utab === 'deep' && sec === 'result' && <Block title="Прогін рушієм Commerce OS — внутрішнє"><PanelBoundary title="Аудит рушієм"><WorkerAudit userId={row.userId} code={code} rec={rec} reviewer={selfEmail} /></PanelBoundary></Block>}
 
-          {utab === 'work' && <Block title="Оцінка модулів (C-level) — внутрішнє"><PanelBoundary title="Оцінка модулів"><ModuleScoring userId={row.userId} initial={rec.assessment || {}} code={code} rec={rec} onSaved={onChanged} /></PanelBoundary></Block>}
+          {utab === 'deep' && sec === 'result' && <Block title="Оцінка модулів (C-level) — внутрішнє"><PanelBoundary title="Оцінка модулів"><ModuleScoring userId={row.userId} initial={rec.assessment || {}} code={code} rec={rec} onSaved={onChanged} /></PanelBoundary></Block>}
 
-          {utab === 'data' && <Block title="Каталог доступів клієнта"><PanelBoundary title="Каталог доступів"><AccessCatalog userId={row.userId} initial={rec.accessLog || {}} onSaved={onChanged} /></PanelBoundary></Block>}
+          {utab === 'deep' && sec === 'access' && <Block title="Каталог доступів клієнта"><PanelBoundary title="Каталог доступів"><AccessCatalog userId={row.userId} initial={rec.accessLog || {}} onSaved={onChanged} /></PanelBoundary></Block>}
 
-          {utab === 'docs' && <Block title="Аналітика клієнта (GA4 · GSC · PageSpeed)"><PanelBoundary title="Аналітика клієнта"><GaPreview userId={row.userId} siteUrl={company?.site || rec.site || ''} /></PanelBoundary></Block>}
+          {utab === 'deep' && sec === 'access' && <Block title="Підключення аналітики (GA4 · GSC · PageSpeed)"><PanelBoundary title="Аналітика клієнта"><GaPreview userId={row.userId} siteUrl={company?.site || rec.site || ''} /></PanelBoundary></Block>}
 
           {utab === 'over' && <Block title="Внутрішні нотатки команди"><PanelBoundary title="Нотатки"><NotesPanel userId={row.userId} initial={rec.notes || []} author={selfEmail} /></PanelBoundary></Block>}
 
-          {utab === 'data' && <Block title="Модерація опитувальника"><PanelBoundary title="Модерація опитувальника"><ModerationPanel userId={row.userId} code={code} rec={rec} reviewer={selfEmail} /></PanelBoundary></Block>}
+          {utab === 'deep' && sec === 'q' && <Block title="Модерація опитувальника"><PanelBoundary title="Модерація опитувальника"><ModerationPanel userId={row.userId} code={code} rec={rec} reviewer={selfEmail} /></PanelBoundary></Block>}
 
-          {utab === 'pack' && <Block title="Пакет аудиту — 5 звітів"><PanelBoundary title="Пакет аудиту"><PackChecklist userId={row.userId} email={row.email} rec={rec} /></PanelBoundary></Block>}
+          {utab === 'deep' && sec === 'result' && <Block title="Пакет аудиту — 5 звітів"><PanelBoundary title="Пакет аудиту"><PackChecklist userId={row.userId} email={row.email} rec={rec} /></PanelBoundary></Block>}
 
-          {utab === 'pack' && <Block title="Документ аудиту (редагований)"><PanelBoundary title="Документ аудиту"><AuditDocEditor userId={row.userId} email={row.email} rec={rec} /></PanelBoundary></Block>}
+          {utab === 'deep' && sec === 'result' && <Block title="Документ аудиту (редагований)"><PanelBoundary title="Документ аудиту"><AuditDocEditor userId={row.userId} email={row.email} rec={rec} /></PanelBoundary></Block>}
 
-          {utab === 'docs' && <Block title="Мої файли та передача клієнту"><PanelBoundary title="Файли й передача"><AdminFiles userId={row.userId} initial={rec.adminFiles || []} sharedInitial={rec.sharedDocs || []} author={selfEmail} openFile={openFile} onSaved={onChanged} /></PanelBoundary></Block>}
+          {utab === 'files' && <Block title="Файли"><PanelBoundary title="Файли й передача"><AdminFiles userId={row.userId} initial={rec.adminFiles || []} sharedInitial={rec.sharedDocs || []}
+            clientFiles={rec.clientFiles || []} tierFiles={files.flatMap(([tier, arr]) => arr.map((file) => ({ tier, file })))}
+            author={selfEmail} openFile={openFile} onSaved={onChanged} /></PanelBoundary></Block>}
 
-          {utab === 'data' && <Block title="Запити доступів">{tiers.length ? (
+          {utab === 'deep' && sec === 'access' && <Block title="Запити на глибокий аудит">{tiers.length ? (
             <div className="adm-drawer-tiers">
-              {tiers.map(([tid, s]) => {
+              {/* Спершу чинна послуга, архівні рівні — під нею й підписані
+                  архівом. Показувати «T2» як рівноправний рядок означало б
+                  повертати скасовану модель на екран даними. */}
+              {[...tiers].sort(([a], [b]) => Number(isLegacyTier(a)) - Number(isLegacyTier(b))).map(([tid, s]) => {
                 const b = `${row.userId}:${tid}`;
                 return (
                   <div key={tid} className="adm-dtier">
@@ -256,17 +290,22 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, 
             </div>
           ) : <p className="mono adm-empty">немає запитів</p>}</Block>}
 
-          {utab === 'data' && code && (
+          {utab === 'deep' && sec === 'q' && !code && (
+            <Block title="Глибокий аудит ще не відкрито">
+              <p className="mono adm-empty">Послуга одна: один глибокий аудит, усередині — питання, доступи й файли. Щоб він почався, видайте клієнту доступ у розділі «Доступи» — клієнт отримає код і почне заповнювати анкету.</p>
+            </Block>
+          )}
+          {utab === 'deep' && sec === 'q' && code && (
             <Block title="Анкета клієнта"><AuditFill code={code} editor={canAccess ? selfEmail : undefined} /></Block>
           )}
-          {utab === 'data' && code && (
+          {utab === 'deep' && sec === 'q' && code && (
             <Block title="Уточнення (Крок 2)"><ExtraEditor code={code} /></Block>
           )}
 
           {utab === 'proj' && <Block title="Проект (ведення)"><PanelBoundary title="Проєкти"><ProjectsManager userId={row.userId} initial={getProjects(rec)} code={code} company={company?.name} /></PanelBoundary></Block>}
 
-          {utab === 'docs' && files.length > 0 && (
-            <Block title="Файли">
+          {utab === 'deep' && sec === 'files' && files.length > 0 && (
+            <Block title="Файли, додані клієнтом під аудит">
               <ul className="adm-files">{files.flatMap(([tid, arr]) => arr.map((f, i) => (
                 <li key={tid + i}><button className="mono adm-file" onClick={() => openFile(f.path)}>📎 {tid}: {f.name}</button></li>
               )))}</ul>

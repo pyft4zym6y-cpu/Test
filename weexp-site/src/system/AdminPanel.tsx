@@ -47,7 +47,7 @@ import { uid } from './auditTemplate';
 
 import './system.css';
 import './cabinet.css';
-import { ACCESS_SOURCES, TABS, U_TABS, CAP_SUMMARY, EmptyState, FUNNEL, LEAD_COLUMNS, LEAD_STAGES, ST, Shell, Tile, TrafficBlock, Trend, coopLabel, funnelStage, rel, srcName, stageOf, stageView, tierLabel, type FunnelStage, type LeadView, type SiteTraffic, type Tab, type UTab } from './admin/shared';
+import { ACCESS_SOURCES, TABS, U_TABS, CAP_SUMMARY, EmptyState, FUNNEL, LEAD_COLUMNS, normalizeUTab, LEAD_STAGES, ST, Shell, Tile, TrafficBlock, Trend, coopLabel, funnelStage, rel, srcName, stageOf, stageView, tierLabel, type FunnelStage, type LeadView, type SiteTraffic, type Tab, type UTab } from './admin/shared';
 
 /* Важкі екрани вантажимо на вимогу: адмінка відкривається на «Дашборді», а
    картка клієнта, заявка, конструктор шаблону, проєктний офіс і команда потрібні
@@ -88,7 +88,7 @@ export function AdminPanel() {
   const setOpenUser = (uid: string | null) => nav(uid ? `/admin/${tabRef.current}/c/${uid}` : `/admin/${tabRef.current}`);
   // Вкладка картки — теж в адресі. Раніше маршрут :utab існував, але ніде не
   // читався: посилання на конкретну вкладку відкривало «Огляд».
-  const utab = (U_TABS.some((t) => t.id === params.utab) ? params.utab : 'over') as UTab;
+  const utab = normalizeUTab(params.utab);
   const setUtab = (t: UTab) => { if (openUser) nav(`/admin/${tabRef.current}/c/${openUser}/${t}`, { replace: true }); };
   // Повний запис відкритої картки: у списку лежить лише полегшений зріз.
   const [detailRow, setDetailRow] = useState<AdminRow | null>(null);
@@ -553,7 +553,7 @@ export function AdminPanel() {
                   <button className="adm-sort" onClick={() => toggleSort('email')}>Email{sortMark('email')}</button>
                   <button className="adm-sort" onClick={() => toggleSort('company')}>Компанія{sortMark('company')}</button>
                   <span>Аудити</span>
-                  <button className="adm-sort" onClick={() => toggleSort('tiers')}>T1–T4{sortMark('tiers')}</button>
+                  <button className="adm-sort" onClick={() => toggleSort('tiers')}>Аудит{sortMark('tiers')}</button>
                   <button className="adm-sort" onClick={() => toggleSort('updated')}>Активність{sortMark('updated')}</button>
                   <span></span>
                 </div>

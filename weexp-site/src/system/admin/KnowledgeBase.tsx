@@ -62,7 +62,7 @@ export function KnowledgeBase({ row, code, author }: { row: AdminRow; code?: str
 
     const mkt: Item[] = (rec.marketplaces || []).map((m) => ({ title: m.name, detail: `${m.status || '—'}${m.scope ? ` · ${m.scope}` : ''}`, at: m.at, src: 'клієнт' }));
     const files: Item[] = (rec.clientFiles || []).map((f) => ({ title: f.title || f.type || 'файл', detail: `${f.group === 'report' ? 'звітність' : 'вивантаження'}${f.why ? ` · ${f.why}` : ''}`, at: (f as { at?: string }).at, src: 'клієнт' }));
-    const runs: Item[] = (rec.auditJobs || []).map((j) => ({ title: `прогін ${j.site || ''}`.trim(), detail: `T${j.tier ?? '?'} · ${j.status || '—'}${j.health != null ? ` · health ${j.health}` : ''}${j.summary ? ` · ${j.summary}` : ''}`, at: j.at, src: 'рушій' }));
+    const runs: Item[] = (rec.auditJobs || []).map((j) => ({ title: `прогін ${j.site || ''}`.trim(), detail: `глибина ${j.tier ?? '?'} · ${j.status || '—'}${j.health != null ? ` · health ${j.health}` : ''}${j.summary ? ` · ${j.summary}` : ''}`, at: j.at, src: 'рушій' }));
     const scores: Item[] = Object.entries(rec.assessment || {}).map(([k, v]) => ({ title: k, detail: [v.state, v.gap].filter(Boolean).join(' → ') || '—', src: 'менеджер' }));
     const adminF: Item[] = (rec.adminFiles || []).map((f) => ({ title: f.name, detail: f.kind || 'файл', at: f.at, src: 'менеджер' }));
     const docs: Item[] = (rec.sharedDocs || []).map((d) => ({ title: d.title, detail: d.by ? `передав ${d.by}` : 'передано клієнту', at: d.at, src: 'менеджер' }));
@@ -127,10 +127,21 @@ export function KnowledgeBase({ row, code, author }: { row: AdminRow; code?: str
 
   return (
     <Block title={`База знань · ${total} записів`}>
-      <p className="mono adm-hint">
-        Збирається з першого дня аудиту й живе далі через впровадження. Це не «результати аудиту», а все,
-        що ми знаємо про клієнта, з позначкою, хто це дав.
-      </p>
+      {/* Питання «звідки це береться і хто це заповнює» виникало щоразу,
+          бо відповідь була лише в коментарі до файлу. Тепер вона на екрані. */}
+      <div className="adm-kb-src">
+        <p className="adm-nextstep-p">
+          Це не «результати аудиту», а <b>все відоме про клієнта</b>: збирається з першого дня й живе далі
+          через впровадження та супровід. Руками сюди нічого не вводять — сторінка лише читає те, що вже
+          лежить у картці, і в кожного запису видно джерело.
+        </p>
+        <ul className="adm-kv">
+          <li><i>клієнт</i><span>профіль компанії, відповіді анкети, доступи, файли й маркетплейси — з кабінету</span></li>
+          <li><i>менеджер</i><span>оцінка модулів, нотатки команди, передані документи — з цієї картки</span></li>
+          <li><i>рушій</i><span>прогони Commerce OS: обхід сайту, матриця зрілості</span></li>
+        </ul>
+        <p className="mono adm-hint">Порожній розділ означає рівно одне: цього ще ніхто не дав. «Зріз» унизу зберігає, що ми знали на дату.</p>
+      </div>
       {empty.length > 0 && (
         <p className="mono adm-empty">Порожньо: {empty.join(' · ')}</p>
       )}

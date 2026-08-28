@@ -917,7 +917,15 @@
 .adm-uhead-name { font-family: var(--display); font-weight: 900; font-size: 20px; line-height: 1.1; }
 .adm-uhead-id .adm-email { color: var(--cream); opacity: .8; font-size: 12.5px; font-weight: 600; }
 .adm-uhead-kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: rgba(255,255,255,.14); border-top: 1px solid rgba(255,255,255,.14); }
-.adm-uhead-cell { background: var(--deep); padding: 10px 20px; display: flex; flex-direction: column; gap: 2px; }
+/* Клас несе власне тло, тож мусить нести й колір тексту. Колір брався з
+   батька: у шапці картки (.adm-uhead) той світлий — і все читалось. Але ті
+   самі клітинки використані в тілі картки, у блоці «Наступний крок»: там колір
+   успадковується з тіла — темне чорнило на темному тлі, контраст ≈1:1, блок
+   фізично неможливо прочитати. Правило, яке фарбує тло, має фарбувати й текст. */
+.adm-uhead-cell { background: var(--deep); color: var(--cream); padding: 10px 20px; display: flex; flex-direction: column; gap: 2px; }
+/* Рядок таких клітинок у тілі картки: власного правила не було зовсім. */
+.adm-uhead-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--deep); border: var(--bd); box-shadow: var(--sh); }
+.adm-uhead-row .adm-uhead-cell i { opacity: .7; }
 .adm-uhead-cell i { font-style: normal; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; opacity: .55; }
 .adm-uhead-cell b { font-size: 13px; font-weight: 700; }
 .adm-utabs { display: flex; gap: 0; overflow-x: auto; border-top: 1px solid rgba(255,255,255,.14); }
@@ -1289,3 +1297,14 @@
 .pj-state-pick { display: flex; flex-wrap: wrap; gap: 6px; }
 .pj-switch-st { margin-left: 8px; }
 .pj-origin { display: flex; flex-direction: column; gap: 6px; padding-top: 10px; border-top: 1px solid var(--line); }
+
+/* Файли: два напрямки замість однієї купи — клієнт→агентство і агентство→клієнт. */
+.adm-fdir { display: flex; flex-direction: column; gap: 6px; padding: 12px 0; border-top: 1px solid var(--line); }
+.adm-fdir:first-child { border-top: 0; padding-top: 0; }
+/* Розділи всередині одного глибокого аудиту. */
+.adm-usubs { display: flex; gap: 0; flex-wrap: wrap; border-top: 1px solid var(--line); }
+.adm-usub { background: transparent; border: 0; border-bottom: 3px solid transparent; padding: 9px 14px;
+  font: 700 12px/1 var(--mono, monospace); letter-spacing: .06em; text-transform: uppercase; color: var(--graphite); cursor: pointer; min-height: 44px; }
+.adm-usub:hover { color: var(--deep); }
+.adm-usub.on { color: var(--deep); border-bottom-color: var(--red-ink); }
+.adm-kb-src { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border: var(--bd); background: var(--pure-white); }

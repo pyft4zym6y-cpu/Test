@@ -28,6 +28,9 @@ export function ReadinessPanel({ rec, answers }: { rec: DiagRecord; answers: Rec
       <button type="button" className="adm-ready-head" aria-expanded={open} onClick={() => setOpen(!open)}>
         <span className={`cab-badge mono tst-${level}`}>{r.overall}%</span>
         <b>Готовність до прогону</b>
+        {/* Це прогноз, а не опис зібраних даних: без цього слова відсотки
+            читаються як «у нас уже все є». */}
+        <i className="mono adm-ready-code">прогноз</i>
         <i className="adm-ready-verdict">{r.verdict}</i>
         <span className="mono adm-ready-chev">{open ? '▲' : '▼'}</span>
       </button>
@@ -51,8 +54,11 @@ export function ReadinessPanel({ rec, answers }: { rec: DiagRecord; answers: Rec
             {r.docs.map((d) => (
               <div key={d.code} className="adm-ready-doc">
                 <div className="adm-ready-doc-h">
-                  <b className="mono">{d.code}</b>
+                  {/* Назва першою, код — службова мітка. Раніше в очі кидались
+                      «A12 / A7 / A1», і картка виглядала як набір аудитів,
+                      яких клієнт не замовляв. */}
                   <span>{d.title}</span>
+                  <b className="mono adm-ready-code">{d.code}</b>
                   <b className={`mono adm-ready-pct is-${d.pct >= 75 ? 'ok' : d.pct >= 40 ? 'mid' : 'low'}`}>{d.pct}%</b>
                 </div>
                 <div className="adm-ready-bar" role="presentation"><i style={{ width: `${d.pct}%` }} /></div>

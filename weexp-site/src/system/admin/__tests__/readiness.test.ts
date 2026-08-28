@@ -4,7 +4,7 @@
  * спокійно й дізнається правду через сорок хвилин.
  */
 import { describe, it, expect } from 'vitest';
-import { assessReadiness } from '../readiness';
+import { assessReadiness, hasCrawl } from '../readiness';
 import type { DiagRecord } from '@/lib/supa';
 
 const withAccess = (...ids: string[]): DiagRecord => ({
@@ -120,5 +120,37 @@ describe('assessReadiness — повний комплект', () => {
   it('відсоток ніколи не перевищує 100', () => {
     const r = assessReadiness(withAccess('CB-01', 'CB-02'), 1);
     expect(Math.max(...r.docs.map((d) => d.pct))).toBeLessThanOrEqual(100);
+  });
+});
+
+/**
+ * Панель — прогноз («що вийде з прогону»), тож вага обходу нараховується
+ * авансом, і це правильно. Брехало слово: у списку «є» стояло «обхід сайту»
+ * теперішнім часом — менеджер бачив «A5 90% · є: обхід сайту» у клієнта, для
+ * якого рушій жодного разу не запускали.
+ */
+describe('обхід сайту: прогноз проти факту', () => {
+  const ran: DiagRecord = { auditJobs: [{ id: 'j1', at: '2026-08-01T00:00:00Z', status: 'done' }] };
+
+  it('до прогону сказано, що обхід ще ТІЛЬКИ дасть дані', () => {
+    const a5 = assessReadiness({}, 0).docs.find((d) => d.code === 'A5')!;
+    expect(a5.have).toContain('обхід сайту — дасть прогін');
+    expect(a5.have).not.toContain('обхід сайту');
+  });
+
+  it('після прогону — просто «обхід сайту»', () => {
+    const a5 = assessReadiness(ran, 0).docs.find((d) => d.code === 'A5')!;
+    expect(a5.have).toContain('обхід сайту');
+  });
+
+  it('прогноз від цього не змінюється — шкала лишається тією самою', () => {
+    expect(assessReadiness({}, 0).docs.find((d) => d.code === 'A5')!.pct)
+      .toBe(assessReadiness(ran, 0).docs.find((d) => d.code === 'A5')!.pct);
+  });
+
+  it('незавершений або впалий прогін фактом не рахується', () => {
+    expect(hasCrawl({ auditJobs: [{ id: 'j', at: '', status: 'running' }] })).toBe(false);
+    expect(hasCrawl({ auditJobs: [{ id: 'j', at: '', status: 'failed' }] })).toBe(false);
+    expect(hasCrawl({})).toBe(false);
   });
 });

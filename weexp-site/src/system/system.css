@@ -2533,6 +2533,7 @@ body.kb-open .pf-bg { display: none !important; }
 .adm-ready-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
 .adm-ready-doc { border: 1px solid var(--line); padding: 9px 11px; display: grid; gap: 6px; }
 .adm-ready-doc-h { display: flex; align-items: baseline; gap: 8px; }
+.adm-ready-code { font-size: 10.5px; color: var(--graphite); letter-spacing: .08em; }
 .adm-ready-doc-h span { flex: 1; font-size: 13px; }
 .adm-ready-pct.is-ok { color: #1F6E4E; } .adm-ready-pct.is-mid { color: #C58A00; } .adm-ready-pct.is-low { color: var(--red-ink); }
 .adm-ready-bar { height: 4px; background: var(--silver); }

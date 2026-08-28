@@ -131,7 +131,7 @@ export function Dashboard({ rows, leads, traffic, period, onPeriod, onOpenClient
               <Tile n={metrics.company} l="З профілем компанії" />
               <Tile n={metrics.express} l="Експрес-аудитів" />
               <Tile n={metrics.deep} l="Глибоких аудитів" accent />
-              <Tile n={metrics.tierReq} l="Запитів T1–T4" />
+              <Tile n={metrics.tierReq} l="Запитів на глибокий аудит" />
               <Tile n={metrics.pending} l="Очікують рішення" accent />
               <Tile n={metrics.granted} l="Доступів надано" />
               <Tile n={metrics.leadsTable || metrics.leadsN} l="Заявок" />
@@ -182,7 +182,7 @@ export function Dashboard({ rows, leads, traffic, period, onPeriod, onOpenClient
                   </div>
                 </div>
                 <div className="adm-panel">
-                  <span className="adm-col-h mono">Статуси T1–T4</span>
+                  <span className="adm-col-h mono">Статуси доступу до аудиту</span>
                   <div className="adm-dist">
                     {analytics.statusDist.map((d) => (
                       <div key={d.s} className="adm-dist-row">

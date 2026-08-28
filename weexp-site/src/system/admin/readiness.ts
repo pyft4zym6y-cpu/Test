@@ -74,8 +74,19 @@ const hasFile = (rec: DiagRecord, key: string) =>
   (rec.clientFiles || []).some((f) => `${f.title || ''} ${f.group || ''} ${f.type || ''}`.toLowerCase().includes(key.toLowerCase()))
   || (rec.clientFiles || []).some((f) => (f as { k?: string }).k === key);
 
+/**
+ * Чи був насправді прогін рушієм. Панель — ПРОГНОЗ («що вийде з прогону»), тож
+ * вага обходу в ній нараховується авансом і це правильно. Неправильним було
+ * слово: у списку «є» стояло «обхід сайту» — теперішнім часом, ніби ці дані вже
+ * на руках. Менеджер відкривав картку клієнта, який не заповнив нічого, і бачив
+ * «A5 90% · є: обхід сайту». Відсоток чесний, формулювання — ні.
+ */
+export const hasCrawl = (rec: DiagRecord): boolean =>
+  (rec.auditJobs || []).some((j) => !/(fail|error|queued|running)/i.test(j.status || ''));
+
 export function assessReadiness(rec: DiagRecord, answeredShare = 0): Readiness {
   const docs: DocReadiness[] = [];
+  const crawled = hasCrawl(rec);
 
   for (const [code, { title, need }] of Object.entries(NEEDS)) {
     const base = need.crawl ?? 0;
@@ -87,7 +98,7 @@ export function assessReadiness(rec: DiagRecord, answeredShare = 0): Readiness {
     const slots = (need.access?.length ?? 0) + (need.file?.length ?? 0) + (need.answers?.length ? 1 : 0);
     const per = slots ? (100 - base) / slots : 0;
     let pct = base;
-    if (base > 0) have.push('обхід сайту');
+    if (base > 0) have.push(crawled ? 'обхід сайту' : 'обхід сайту — дасть прогін');
 
     for (const id of need.access ?? []) {
       if (granted(rec, id)) { pct += per; have.push(ACCESS_LABEL[id] || id); }

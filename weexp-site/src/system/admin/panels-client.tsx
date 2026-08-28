@@ -15,6 +15,8 @@ import {
   type DiagRecord,
   type ProjectNote,
   type AdminFile,
+  type ClientFile,
+  type TierFile,
   type PackState
 } from '@/lib/supa';
 
@@ -117,7 +119,15 @@ export function PackChecklist({ userId, email, rec }: { userId: string; email: s
  *  «Поділитися» — ЄДИНИЙ шлях, яким документ потрапляє клієнту в кабінет
  *  (розділ «Документи»): нічого не публікується автоматично. */
 
-export function AdminFiles({ userId, initial, sharedInitial, author, openFile, onSaved }: { userId: string; initial: AdminFile[]; sharedInitial: SharedDoc[]; author: string; openFile: (p: string) => void; onSaved?: () => void }) {
+/**
+ * Файли клієнта — ДВА напрямки, а не одна купа.
+ *
+ * Було: «Мої файли та передача клієнту» — назва, з якої не зрозуміло ані чиї
+ * це файли, ані кому вони призначені. Насправді тут живуть два різні
+ * сценарії: те, що клієнт віддав нам (звітність, вивантаження), і те, що ми
+ * віддаємо клієнту (документи, результати). Їх і розділено.
+ */
+export function AdminFiles({ userId, initial, sharedInitial, clientFiles = [], tierFiles = [], author, openFile, onSaved }: { userId: string; initial: AdminFile[]; sharedInitial: SharedDoc[]; clientFiles?: ClientFile[]; tierFiles?: { tier: string; file: TierFile }[]; author: string; openFile: (p: string) => void; onSaved?: () => void }) {
   const [list, setList] = useState<AdminFile[]>(initial || []);
   const [shared, setShared] = useState<SharedDoc[]>(sharedInitial || []);
   const [kind, setKind] = useState<AdminFile['kind']>('data');
@@ -161,21 +171,51 @@ export function AdminFiles({ userId, initial, sharedInitial, author, openFile, o
     if (!r.ok) { toast('Файл не видалено зі сховища: ' + (r.error || ''), 'err'); return; }
     await persist(list.filter((x) => x.path !== f.path));
   };
+  const fromClient = clientFiles.filter((f) => f.path);
   return (
     <div className="adm-afiles">
+      <div className="adm-fdir">
+        <span className="adm-acc-cat-h mono">Клієнт → агентство</span>
+        <p className="mono adm-hint">Те, що клієнт завантажив сам: звітність і вивантаження під аудит. Ми їх лише читаємо.</p>
+        {fromClient.length === 0 && tierFiles.length === 0 ? (
+          <p className="mono adm-empty">Клієнт ще нічого не завантажив. Список потрібних файлів він бачить у кабінеті, у глибокому аудиті.</p>
+        ) : (
+          <ul className="adm-files">
+            {fromClient.map((f) => (
+              <li key={f.id} className="adm-afile">
+                <button className="mono adm-file" onClick={() => openFile(f.path!)}>📎 {f.title || f.type || 'файл'}</button>
+                <span className="mono adm-afile-m">{f.group === 'report' ? 'звітність' : 'вивантаження'}{f.period ? ` · ${f.period}` : ''} · {rel(f.at)}</span>
+              </li>
+            ))}
+            {tierFiles.map(({ tier, file }, i) => (
+              <li key={tier + i} className="adm-afile">
+                <button className="mono adm-file" onClick={() => openFile(file.path)}>📎 {file.name}</button>
+                <span className="mono adm-afile-m">під аудит · {rel(file.at)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div className="adm-fdir">
+        <span className="adm-acc-cat-h mono">Агентство → клієнт</span>
+        <p className="mono adm-hint">Наші файли: робочі дані команди й документи, які віддаємо клієнту. Клієнт бачить лише ті, якими поділились.</p>
+      </div>
       <div className="adm-afiles-add">
         <select className="ab-sel sm" value={kind} onChange={(e) => setKind(e.target.value as AdminFile['kind'])}>
-          <option value="data">Дані клієнта</option><option value="deliverable">Документ (дельіверабл)</option><option value="other">Інше</option>
+          {/* Назва «Дані клієнта» тут була неправильна вдвічі: селектор стоїть у
+              напрямку «агентство → клієнт» і описує НАШ файл, а не клієнтський. */}
+          <option value="data">Робочі дані команди</option><option value="deliverable">Документ для клієнта</option><option value="other">Інше</option>
         </select>
         <label className={'mc-btn ok' + (busy === 'up' ? ' is-off' : '')}>{busy === 'up' ? 'Завантаження…' : '+ Завантажити файл'}
           <input type="file" multiple style={{ display: 'none' }} disabled={busy === 'up'} onChange={onPick} />
         </label>
       </div>
-      {list.length === 0 ? <p className="mono adm-empty">своїх файлів ще немає</p> : (
+      {list.length === 0 ? <p className="mono adm-empty">Наших файлів ще немає. Завантажені тут документи не видно клієнту, поки не натиснути «Поділитися».</p> : (
         <ul className="adm-files">{list.map((f) => (
           <li key={f.path} className="adm-afile">
             <button className="mono adm-file" onClick={() => openFile(f.path)}>📎 {f.name}</button>
-            <span className="mono adm-afile-m">{f.kind === 'deliverable' ? 'документ' : f.kind === 'data' ? 'дані' : 'інше'} · {rel(f.at)}</span>
+            <span className="mono adm-afile-m">{f.kind === 'deliverable' ? 'документ для клієнта' : f.kind === 'data' ? 'робочі дані' : 'інше'} · {rel(f.at)}</span>
             <button className={'mc-btn ' + (isShared(f.path) ? 'fr-on-ok' : 'ghost')} onClick={() => toggleShare(f)} title="Показати/приховати документ у кабінеті клієнта">
               {isShared(f.path) ? '✓ У клієнта' : '↗ Поділитися'}
             </button>
@@ -411,11 +451,22 @@ export function GaPreview({ userId, siteUrl }: { userId: string; siteUrl?: strin
   const catC = (c?: string) => (c === 'FAST' ? '#1F6E4E' : c === 'AVERAGE' ? '#C58A00' : c ? 'var(--red)' : 'var(--graphite)');
   return (
     <div className="adm-ga">
+      {/* Було незрозуміло, що саме перевіряється й чиєї дії чекають: кнопка
+          «Перевірити підключення» стояла сама по собі, а її результат
+          («не підключено») не казав, що робити далі. */}
+      <p className="mono adm-hint">
+        Шлях один: клієнт проходить OAuth у своєму кабінеті («Аналітика») → тут ви перевіряєте підключення →
+        зʼявляються властивості GA4 і сайти Search Console → можна тягнути дані. Підключаємось не ми: доступ
+        віддає власник акаунта.
+      </p>
       <div className="adm-ga-bar">
         <button className="mc-btn sm" onClick={check} disabled={busy === 'status'}>{busy === 'status' ? 'Перевіряємо…' : '🔍 Перевірити підключення'}</button>
+        {!st && busy !== 'status' && <span className="mono adm-ga-no">стан невідомий — натисніть «Перевірити»</span>}
         {st && (st.connected
           ? <span className="mono adm-ga-ok">✓ підключено · {st.email || '—'}{st.at ? ` · ${new Date(st.at).toLocaleDateString('uk-UA')}` : ''}</span>
-          : <span className="mono adm-ga-no">{st.error === 'not_configured' ? '⚙ конектор не налаштовано на сервері (env)' : '— не підключено (клієнт ще не пройшов OAuth у кабінеті)'}</span>)}
+          : <span className="mono adm-ga-no">{st.error === 'not_configured' ? '⚙ конектор не налаштовано на сервері (env) — це наша задача, не клієнтова'
+              : st.error === 'network' ? '⚠ перевірка не дійшла до сервера — спробуйте ще раз'
+              : '— не підключено: клієнт ще не пройшов OAuth у кабінеті. Попросіть його відкрити «Аналітика» і надати доступ.'}</span>)}
       </div>
       {st?.connected && (
         <div className="adm-ga-bar">
