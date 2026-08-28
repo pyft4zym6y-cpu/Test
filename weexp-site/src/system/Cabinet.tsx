@@ -30,7 +30,7 @@ import { bindPrint, printButton } from '@/lib/printDoc';
  * зберігання (DiagRecord). Гроші/витік беруться з калькулятора (lossModel), а
  * глибокий аудит — вбудований Stage3. Це не окремі інструменти, а кроки системи.
  */
-type SectionId = 'overview' | 'company' | 'audits' | 'deep' | 'project' | 'findings' | 'access' | 'docs' | 'collab' | 'settings';
+type SectionId = 'overview' | 'company' | 'audits' | 'deep' | 'project' | 'findings' | 'access' | 'docs' | 'meet' | 'collab' | 'settings';
 type NavItem = { id: SectionId; label: string; soon?: boolean };
 
 const EMPTY_COMPANY: CompanyProfile = { name: '', site: '', niche: '', revenue: '', channels: [], contactName: '', contactPhone: '', notes: '' };
@@ -67,7 +67,7 @@ export function Cabinet() {
     { group: t('Компанія', 'Company'), items: [{ id: 'company', label: t('Дані компанії', 'Company data') }] },
     { group: t('Огляд', 'Overview'), items: [{ id: 'overview', label: t('Огляд та шлях', 'Overview & path') }, { id: 'audits', label: t('Мої аудити', 'My audits') }] },
     { group: t('Робота', 'Work'), items: [{ id: 'findings', label: t('План', 'Plan'), soon: true }, { id: 'docs', label: t('Документи', 'Documents') }, { id: 'project', label: t('Мій проєкт', 'My project') }] },
-    { group: t('Разом', 'Together'), items: [{ id: 'collab', label: t('Співпраця', 'Work with us') }, { id: 'settings', label: t('Налаштування', 'Settings') }] },
+    { group: t('Разом', 'Together'), items: [{ id: 'meet', label: t('Зустріч', 'A meeting') }, { id: 'collab', label: t('Співпраця', 'Work with us') }, { id: 'settings', label: t('Налаштування', 'Settings') }] },
   ];
   const [user, setUser] = useState<DiagUser | null>(null);
   const [checking, setChecking] = useState(true);
@@ -247,6 +247,7 @@ export function Cabinet() {
             <FilesBlock user={user} rec={rec} onSaved={refreshRec} />
           </div>
         )}
+        {section === 'meet' && <Meeting user={user} rec={rec} express={express} onDone={refreshRec} />}
         {section === 'collab' && <Collab user={user} rec={rec} express={express} onDone={refreshRec} />}
         {section === 'settings' && <Settings user={user} onSignOut={doSignOut} />}
       </main>
@@ -702,6 +703,9 @@ function Audits({ express, rec, user, go, onDelete }: { express: ExpressAudit | 
                   <button className="sysx-cta is-primary" onClick={() => setShowRes((v) => !v)}>{showRes ? t('Згорнути результат', 'Collapse result') : t('Переглянути результат →', 'View result →')}</button>
                   <button className="sysx-cta" onClick={() => exportExpressPdf(express, user.email)}>{t('Завантажити PDF', 'Download PDF')}</button>
                   <Link className="sysx-cta" to={lp('/diagnose')}>{t('Перерахувати', 'Recalculate')}</Link>
+                  {/* Результат був глухим кутом: подивитись, завантажити, перерахувати —
+                      і все. Наступного кроку для зацікавленого клієнта не було взагалі. */}
+                  <button className="sysx-cta is-primary" onClick={() => go('meet')}>{t('Запланувати зустріч →', 'Book a meeting →')}</button>
                   <button className="cab-del" onClick={del} aria-label={t('Видалити аудит', 'Delete audit')} title={t('Видалити', 'Delete')}>
                     <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6M10 11v6M14 11v6"/></svg>
                     {t('Видалити', 'Delete')}
@@ -1089,6 +1093,139 @@ function DeepAudit({ user, rec, express, onDone, onClose, go }: { user: DiagUser
         )}
         {err && <p className="cab-auth-err mono">{err}</p>}
       </div>
+    </section>
+  );
+}
+
+/**
+ * Запит на зустріч — наступний крок після експрес-аудиту.
+ *
+ * Результат був глухим кутом: «Завантажити PDF», «Згорнути», «Перерахувати».
+ * Клієнт, якого цифра зачепила, не мав куди натиснути — і йшов шукати пошту на
+ * сайті. Тут повний сценарій: результат → зацікавився → запит → підтвердження.
+ *
+ * Календаря ми не інтегруємо навмисно: обіцяти вибір слота, за яким ніхто не
+ * стоїть, гірше, ніж чесно спитати зручний час і відповісти самим. Запит
+ * лягає в ту саму CRM, що й заявки з сайту, — і далі йде звичним шляхом
+ * «заявка → проєкт».
+ */
+const MEET_WHEN = [
+  { k: 'morning', uk: 'Ранок (9–12)', en: 'Morning (9–12)' },
+  { k: 'day', uk: 'День (12–16)', en: 'Midday (12–16)' },
+  { k: 'evening', uk: 'Вечір (16–19)', en: 'Evening (16–19)' },
+  { k: 'any', uk: 'Будь-коли — підлаштуюсь', en: 'Any time — I am flexible' },
+];
+const MEET_CHANNEL = [
+  { k: 'video', uk: 'Відеодзвінок', en: 'Video call' },
+  { k: 'phone', uk: 'Телефон', en: 'Phone' },
+  { k: 'office', uk: 'Зустріч наживо', en: 'In person' },
+];
+
+function Meeting({ user, rec, express, onDone }: { user: DiagUser; rec: DiagRecord | null; express: ExpressAudit | null; onDone: () => void }) {
+  const t = useT();
+  const cur = curOf(express?.input?.currency);
+  const [phone, setPhone] = useState(rec?.company?.contactPhone || '');
+  const [when, setWhen] = useState<string[]>([]);
+  const [channel, setChannel] = useState('video');
+  const [comment, setComment] = useState('');
+  const [sent, setSent] = useState(Boolean(rec?.funnel?.meetAt));
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  const toggleWhen = (k: string) => setWhen((v) => (v.includes(k) ? v.filter((x) => x !== k) : [...v, k]));
+  const label = (arr: { k: string; uk: string; en: string }[], k: string) => { const x = arr.find((i) => i.k === k); return x ? t(x.uk, x.en) : k; };
+
+  const send = async () => {
+    setBusy(true); setErr('');
+    const whenTxt = when.length ? when.map((k) => label(MEET_WHEN, k)).join(', ') : t('час не вказано', 'time not specified');
+    const chanTxt = label(MEET_CHANNEL, channel);
+    const calc = express
+      ? `Експрес-витік ${money(express.total, cur)}/рік (діапазон ${money(express.range[0], cur)}–${money(express.range[1], cur)}), Health ${express.overallHealth}/100`
+      : undefined;
+    const res = await sendLead({
+      source: 'cabinet-meeting', email: user.email, phone: phone || undefined,
+      name: rec?.company?.contactName || undefined, store: rec?.company?.site || undefined,
+      task: t('Запит на зустріч після експрес-аудиту', 'Meeting request after the express audit'),
+      timeline: `${chanTxt} · ${whenTxt}`,
+      comment: comment || undefined, calc,
+    });
+    if (res !== 'ok') {
+      // Мовчазний провал тут коштує зустрічі: людина впевнена, що запит пішов.
+      setBusy(false);
+      setErr(res === 'too_many'
+        ? t('Забагато запитів поспіль. Спробуйте за кілька хвилин.', 'Too many requests in a row. Try again in a few minutes.')
+        : t('Запит не надіслався. Спробуйте ще раз або напишіть на hello@weexp.agency.', 'The request did not go through. Try again or email hello@weexp.agency.'));
+      return;
+    }
+    const at = new Date().toISOString();
+    await saveDiag(user, { funnel: { ...(rec?.funnel || {}), meetAt: at, meetWhen: whenTxt, meetChannel: chanTxt } });
+    void notifyAdmin(
+      `Зустріч: запит від ${rec?.company?.name || user.email}`,
+      [
+        `Клієнт: ${rec?.company?.name || '—'}`,
+        `Email: ${user.email}`, phone ? `Телефон: ${phone}` : '',
+        `Формат: ${chanTxt}`, `Зручний час: ${whenTxt}`,
+        calc ? `Експрес-аудит: ${calc}` : '',
+        comment ? `Коментар: ${comment}` : '',
+        '',
+        `Адмінка: ${typeof window !== 'undefined' ? window.location.origin : 'https://weexp.agency'}/admin`,
+      ].filter(Boolean).join('\n'),
+    );
+    setBusy(false); setSent(true); onDone();
+  };
+
+  return (
+    <section className="cab-sec">
+      <SecHead kick={t('Зустріч', 'A meeting')} title={t('Розібрати результат разом', 'Go through the result together')}
+        lead={t('30 хвилин: проходимо цифри вашого експрес-аудиту, називаємо, звідки саме тече, і кажемо, з чого почати. Без презентації агентства.', '30 minutes: we walk through your express audit numbers, name exactly where the money leaks and what to start with. No agency pitch.')} />
+      {sent ? (
+        <div className="cab-card">
+          <span className="sysx-kick">{t('Запит надіслано', 'Request sent')}</span>
+          <b className="cab-next-t">{t('Ми напишемо й запропонуємо час', 'We will write and propose a time')}</b>
+          <p className="cab-next-d">
+            {t('Відповідаємо протягом робочого дня на', 'We reply within one business day at')} {user.email}
+            {rec?.funnel?.meetChannel ? ` · ${rec.funnel.meetChannel}` : ''}
+            {rec?.funnel?.meetWhen ? ` · ${rec.funnel.meetWhen}` : ''}.
+            {' '}{t('Якщо зручніше швидше — напишіть на hello@weexp.agency.', 'If you need it sooner, email hello@weexp.agency.')}
+          </p>
+          <div className="cab-actions"><button className="sysx-cta" onClick={() => setSent(false)}>{t('Змінити запит', 'Change the request')}</button></div>
+        </div>
+      ) : (
+        <div className="cab-collab">
+          {express && (
+            <div className="cab-card">
+              <span className="sysx-kick">{t('Про що говоритимемо', 'What we will discuss')}</span>
+              <b className="cab-next-t">{money(express.total, cur)}<i>{t(' / рік', ' / year')}</i></b>
+              <p className="cab-next-d">{t('Ваш експрес-результат ми беремо на зустріч — розбирати будемо його, а не абстракції.', 'We bring your express result to the meeting — we discuss it, not abstractions.')}</p>
+            </div>
+          )}
+          <label className="sysx-inp"><span className="sysx-inp-l">Email</span><input value={user.email} readOnly /></label>
+          <label className="sysx-inp"><span className="sysx-inp-l">{t('Телефон · необовʼязково', 'Phone · optional')}</span><input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+380…" /></label>
+          <fieldset className="cab-meet-set">
+            <legend className="sysx-inp-l">{t('Формат', 'Format')}</legend>
+            <div className="cab-meet-opts">
+              {MEET_CHANNEL.map((c) => (
+                <button key={c.k} type="button" className={`sysx-cta cab-meet-o${channel === c.k ? ' is-on' : ''}`}
+                  aria-pressed={channel === c.k} onClick={() => setChannel(c.k)}>{t(c.uk, c.en)}</button>
+              ))}
+            </div>
+          </fieldset>
+          <fieldset className="cab-meet-set">
+            <legend className="sysx-inp-l">{t('Коли зручно · можна кілька', 'When suits you · pick several')}</legend>
+            <div className="cab-meet-opts">
+              {MEET_WHEN.map((w) => (
+                <button key={w.k} type="button" className={`sysx-cta cab-meet-o${when.includes(w.k) ? ' is-on' : ''}`}
+                  aria-pressed={when.includes(w.k)} onClick={() => toggleWhen(w.k)}>{t(w.uk, w.en)}</button>
+              ))}
+            </div>
+          </fieldset>
+          <label className="sysx-inp"><span className="sysx-inp-l">{t('Що хочете розібрати насамперед', 'What do you want to cover first')}</span>
+            <textarea rows={3} value={comment} onChange={(e) => setComment(e.target.value)} placeholder={t('Напр.: чому падає конверсія на кошику', 'e.g. why cart conversion is dropping')} /></label>
+          {err && <p className="cab-auth-err mono">{err}</p>}
+          <div className="cab-actions">
+            <button className="sysx-cta is-primary" onClick={send} disabled={busy}>{busy ? t('Надсилаємо…', 'Sending…') : t('Надіслати запит →', 'Send the request →')}</button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

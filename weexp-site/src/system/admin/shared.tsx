@@ -71,6 +71,8 @@ export const SRC_LABEL: Record<string, string> = {
   'contact-form': 'Контакти',
   'cabinet-access': 'Кабінет · запит доступу',
   'cabinet-deep': 'Кабінет · глибокий аудит',
+  'cabinet-collab': 'Кабінет · заявка на співпрацю',
+  'cabinet-meeting': 'Кабінет · запит на зустріч',
   'pricing': 'Початок співпраці',
   'diagnose': 'Експрес-аудит',
 };
