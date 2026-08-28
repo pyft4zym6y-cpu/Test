@@ -3,6 +3,8 @@
  * тому перевірити його вручну майже неможливо: треба спершу щось зруйнувати.
  * Саме тому він і був неробочим — плашка без стилю, ретрай, що падає по колу.
  */
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { PanelBoundary, Panel, DialogHost, askConfirm, askText } from '../dialog';
@@ -155,5 +157,32 @@ describe('застарілий бандл після деплою', () => {
     expect(screen.getByText(/Спробувати ще раз/)).toBeInTheDocument();
     // Текст видно і в плашці, і в технічних деталях — обидва місця доречні.
     expect(screen.getAllByText(/Cannot read properties of undefined/).length).toBeGreaterThan(0);
+  });
+});
+
+describe('шлях «заявка → проект» видно на будь-якій стадії', () => {
+  /*
+   * Блок «Наступний крок» показувався ЛИШЕ на стадії «Завершена». Менеджер,
+   * дивлячись на «Нову» заявку, не бачив ні кнопки, ні натяку, що переведення
+   * в проект узагалі існує — звідси й питання «як перевести клієнта з воронки
+   * в проект». Правило (проект створюємо із завершеної заявки) лишилось; воно
+   * просто перестало бути невидимим.
+   */
+  const src = readFileSync(join(__dirname, '..', 'LeadDetail.tsx'), 'utf8');
+
+  it('блок не сховано за стадією', () => {
+    expect(src, 'блок знову рендериться лише при cur === «done»').not.toMatch(/\{cur === 'done' && \(\s*<Block title="Наступний крок">/);
+    expect(src).toContain('<Block title="Наступний крок">');
+  });
+
+  it('на незавершеній заявці сказано, чого бракує, і є чим це виправити', () => {
+    expect(src).toMatch(/cur !== 'done'/);
+    expect(src).toContain('Позначити завершеною');
+  });
+
+  it('відсутній кабінет пояснюється до кліку, а не тостом після', () => {
+    // Раніше про це дізнавались лише натиснувши кнопку й отримавши тост.
+    expect(src).toMatch(/!client \?/);
+    expect(src).toContain('кабінету з поштою');
   });
 });

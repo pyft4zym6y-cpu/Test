@@ -110,12 +110,35 @@ export function LeadDetail({ lead, allRows, onClose, onStatus, onDeal, onConvert
             </div>
           </Block>
 
-          {cur === 'done' && (
-            <Block title="Наступний крок">
-              {deal.projectId ? (
+          {/*
+            * Блок показувався ЛИШЕ на стадії «Завершена». Менеджер, дивлячись
+            * на «Нову» заявку, не бачив ні кнопки, ні натяку, що переведення в
+            * проект узагалі існує — звідси питання «як перевести клієнта з
+            * воронки в проект». Тепер крок видно завжди: якщо ще рано або
+            * немає кабінету, блок каже, ЧОГО саме бракує, замість того щоб
+            * зникнути. Правило «проект створюємо із завершеної заявки»
+            * лишається — воно просто перестало бути невидимим.
+            */}
+          <Block title="Наступний крок">
+            {deal.projectId ? (
                 <div className="adm-deal-conv">
                   <p className="mono adm-empty">Проект уже створено з цієї заявки.</p>
                   <button className="mc-btn ok" onClick={() => onConvert(lead)}>Відкрити проект клієнта →</button>
+                </div>
+              ) : cur !== 'done' ? (
+                <div className="adm-deal-conv">
+                  <p className="mono adm-empty">
+                    Проект створюється із <b>завершеної</b> заявки. Зараз стадія — «{LEAD_STAGES.find((x) => x.k === cur)?.l || cur}»:
+                    переведіть заявку в «Завершена» (кнопки стадій угорі картки), і тут зʼявиться кнопка.
+                  </p>
+                  <button className="mc-btn ok" onClick={() => lead.id && onStatus(lead.id, 'done')}>Позначити завершеною →</button>
+                </div>
+              ) : !client ? (
+                <div className="adm-deal-conv">
+                  <p className="mono adm-empty">
+                    Проект створюється в кабінеті клієнта, а кабінету з поштою <b>{lead.email || '—'}</b> ще немає.
+                    Запросіть клієнта зареєструватись цією ж поштою — після цього кнопка запрацює.
+                  </p>
                 </div>
               ) : (
                 <div className="adm-deal-conv">
@@ -125,8 +148,7 @@ export function LeadDetail({ lead, allRows, onClose, onStatus, onDeal, onConvert
                   </button>
                 </div>
               )}
-            </Block>
-          )}
+          </Block>
           <Block title="Заявка">
             <ul className="adm-kv">
               {rows.filter(([, v]) => v).map(([k, v]) => <li key={k}><i>{k}</i><span>{v}</span></li>)}
