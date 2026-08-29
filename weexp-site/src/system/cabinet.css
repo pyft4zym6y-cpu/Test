@@ -1377,3 +1377,64 @@
 /* Шапка адмінки темна — знак у ній монохромний, кремовий. */
 .adm-brand { display: inline-flex; align-items: center; gap: 8px; }
 .adm-brand .wx-logo { height: 20px; --logo-ink: var(--cream); }
+
+/* ── Головний екран кабінету: стан проєкту ─────────────────────────────────
+   Було: заголовок капсом, абзац-пояснення і дві картки — 2 інтерактивні
+   елементи на 56% висоти екрана. Тут щільність важливіша за повітря: сюди
+   заходять дізнатись стан, а не читати, як розділ називається. Тому дисплейний
+   кегль лишається тільки на двох речах, які треба зчитати з відстані — стадія
+   проєкту і сума витоку; решта — робочий 13–15px. */
+.cab-dash { gap: 16px; }
+
+/* 1. Де проєкт і що далі. Дві колонки: ліворуч стан, праворуч крок із власником. */
+.dash-state { display: grid; grid-template-columns: 1.15fr 1fr; gap: 16px; align-items: stretch; }
+.dash-state-l, .dash-next { background: var(--pure-white); border: var(--bd); box-shadow: var(--sh);
+  padding: 20px 22px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.dash-stage { font-size: clamp(22px, 2.4vw, 32px); line-height: 1.06; letter-spacing: -.02em; text-wrap: balance; }
+.dash-stage-n { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--graphite); }
+
+/* Власник кроку — головне, чого бракує клієнтським порталам: людина бачить
+   список і не розуміє, чи вона когось тримає. Колір рамки і є відповіддю. */
+.dash-next { justify-content: space-between; }
+.dash-next.is-you { box-shadow: var(--sh-red); }
+.dash-next-who { font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; }
+.dash-next.is-you .dash-next-who { color: var(--red-ink); }
+.dash-next.is-we .dash-next-who { color: var(--graphite); }
+.dash-next-t { font-size: 15.5px; line-height: 1.35; font-weight: 700; }
+.dash-next .sysx-cta { align-self: flex-start; margin-top: 4px; }
+
+/* 2–4. Блоки-панелі. */
+.dash-block { background: var(--pure-white); border: var(--bd); box-shadow: var(--sh);
+  padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.dash-block-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.dash-block-h b { font-size: 14px; letter-spacing: -.01em; }
+.dash-count { font-size: 11.5px; color: var(--graphite); }
+.dash-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+
+/* Смуга готовності: одна на два блоки — і в «чекаємо», і в Health. */
+.dash-bar { height: 6px; background: var(--panel, #F3EFE6); border: 1.5px solid var(--deep); overflow: hidden; }
+.dash-bar > i { display: block; height: 100%; background: var(--red-ink); }
+
+.dash-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.dash-list > li + li { border-top: 1px solid var(--line, rgba(20,18,16,.12)); }
+/* Рядок — кнопка на всю ширину: у списку «що від мене хочуть» клікабельним має
+   бути весь рядок, а не слово в ньому. */
+.dash-item { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; width: 100%;
+  background: none; border: 0; padding: 9px 0; text-align: left; cursor: pointer; color: inherit; font: inherit; }
+.dash-item:hover .dash-item-t { color: var(--red-ink); }
+.dash-item-t { font-size: 13.5px; font-weight: 600; line-height: 1.3; }
+.dash-item-w { font-size: 12px; line-height: 1.3; color: var(--graphite); text-align: right; flex: 0 1 auto; }
+.dash-more { align-self: flex-start; background: none; border: 0; padding: 4px 0; cursor: pointer;
+  font-size: 11.5px; letter-spacing: .06em; color: var(--red-ink); font-weight: 700; }
+.dash-empty { margin: 0; font-size: 13px; line-height: 1.5; color: var(--graphite); }
+
+.dash-money { font-size: clamp(26px, 3vw, 38px); line-height: 1; letter-spacing: -.03em; }
+.dash-money i { font-size: 14px; font-style: normal; color: var(--graphite); margin-left: 6px; }
+.dash-money-s { font-size: 11.5px; color: var(--graphite); }
+.dash-health { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; margin-top: 6px; }
+.dash-health > span, .dash-health > b { font-size: 11.5px; color: var(--graphite); }
+.dash-health > b { color: var(--deep); }
+
+@media (max-width: 900px) {
+  .dash-state, .dash-row { grid-template-columns: 1fr; }
+}

@@ -13,6 +13,7 @@ import { Logo } from './Logo';
 import { ProjectView } from './ProjectView';
 import { loadTemplate, CLIENT_ROLES, type AuditTemplate, type Question } from './auditTemplate';
 import { getExpressAudit, clearExpressAudit, syncExpressToAccount, type ExpressAudit } from './cabinetData';
+import { buildDash } from '@/system/cabinetDashboard';
 import { money, curOf, sysLabel, actionText, type SysKey } from './lossModel';
 import { sendLead } from '@/lib/leads';
 import { isValidCode } from '@/lib/access';
@@ -533,38 +534,152 @@ function useDeepUi(state: DeepState) {
   return M[state];
 }
 
+/**
+ * Головний екран кабінету — стан проєкту, а не вітрина двох кнопок.
+ *
+ * Було: заголовок капсом, абзац-пояснення і дві картки на порожньому полотні —
+ * 2 інтерактивні елементи, 56% висоти екрана. Портал, у який заходять щотижня,
+ * не має витрачати перший екран на те, щоб назвати сам себе: людина прийшла
+ * дізнатись стан, а не прочитати, що це за розділ.
+ *
+ * Порядок блоків відповідає порядку питань, з якими сюди приходять:
+ *   1. Де ми зараз і що далі (з відповіддю, на кому крок).
+ *   2. Чого чекають від МЕНЕ — це єдине, на що клієнт може вплинути зараз.
+ *   3. Що я вже отримав.
+ *   4. Цифри мого бізнесу.
+ * Усе рахує buildDash із запису клієнта; тут лише розкладка.
+ */
 function Overview({ express, rec, go }: { express: ExpressAudit | null; rec: DiagRecord | null; go: (s: SectionId) => void }) {
-  const cur = curOf(express?.input?.currency);
   const t = useT();
   const lp = useLp();
-  const deep = deepStateOf(rec);
-  const ui = useDeepUi(deep);
+  const lang = t('uk', 'en') as 'uk' | 'en';
+  const d = buildDash(rec, express, lang);
+  /*
+   * Валюта — з того самого джерела, що й сума.
+   *
+   * Тут стояло curOf(express?.input?.currency) — тобто число бралось із
+   * buildDash (який уміє впасти на знімок в акаунті), а валюта — з локального
+   * запису. Коли локального не було, гривнева сума показувалась зі знаком євро:
+   * клієнт бачив «€1 840 000» замість «₴1 840 000» — помилка у сорок разів, і
+   * саме в тому числі, заради якого він сюди зайшов.
+   */
+  const cur = curOf(d.numbers?.currency);
+  const L = (pair: [string, string]) => (lang === 'en' ? pair[1] : pair[0]);
+  const date = (iso: string) => new Date(iso).toLocaleDateString(t('uk-UA', 'en-GB'));
+  const pct = d.readiness.total ? Math.round(d.readiness.done / d.readiness.total * 100) : 0;
+  // Показуємо перші шість — решта живе в «Документах», куди веде кнопка.
+  const TOP = 6;
+
   return (
-    <section className="cab-sec">
-      <SecHead kick={t('Огляд', 'Overview')} title={t('Огляд та шлях', 'Overview & path')} lead={t('Два напрями вашої роботи з WEEXP: експрес-аудит у грошах і глибокий розбір систем. Тут завжди видно наступний крок.', 'The two tracks of your work with WEEXP: the express audit in money and the deep systems analysis. Your next step is always visible here.')} />
-      <div className="cab-cards">
-        <div className="cab-card cab-card-hero">
-          <span className="sysx-kick">{t('Ваш експрес-аудит', 'Your express audit')}</span>
-          {express
-            ? <><b className="sysx-display cab-big">{money(express.total, cur)}<i>{t('/ рік', '/ year')}</i></b>
-                <span className="mono cab-sub">{t('діапазон', 'range')} {money(express.range[0], cur)}–{money(express.range[1], cur)} · Health {express.overallHealth}/100 · {new Date(express.at).toLocaleDateString(t('uk-UA', 'en-GB'))}</span>
-                <div className="cab-audit-actions">
-                  <button className="sysx-cta is-primary" onClick={() => go('audits')}>{t('Переглянути результат →', 'View result →')}</button>
-                  <Link className="sysx-cta" to={lp('/diagnose')}>{t('Перерахувати', 'Recalculate')}</Link>
-                </div></>
-            : <><b className="sysx-display cab-big cab-big-empty">— €</b>
-                <span className="mono cab-sub">{t('експрес-аудит ще не пройдено — ~2 хвилини', 'the express audit has not been taken yet — ~2 minutes')}</span>
-                <Link className="sysx-cta is-primary" to={lp('/diagnose')}>{t('Порахувати витік →', 'Calculate the leak →')}</Link></>}
+    <section className="cab-sec cab-dash">
+      {/* 1. Де проєкт і що далі */}
+      <div className="dash-state">
+        <div className="dash-state-l">
+          <span className="sysx-kick">{t('Ваш проєкт', 'Your project')}</span>
+          <b className="sysx-display dash-stage">{L(d.stage.label)}</b>
+          {L(d.stage.note) && <p className="dash-stage-n">{L(d.stage.note)}</p>}
         </div>
-        <div className="cab-card">
-          <div className="cab-deep-head">
-            <span className="sysx-kick">{t('Глибокий аудит', 'Deep audit')}</span>
-            <span className={`cab-badge mono tst-${ui.cls}`}>{ui.badge}</span>
+        <div className={'dash-next is-' + d.next.owner}>
+          <span className="dash-next-who mono">
+            {d.next.owner === 'you' ? t('Крок за вами', 'Your move') : t('Крок за нами', 'Our move')}
+          </span>
+          <b className="dash-next-t">{L(d.next.text)}</b>
+          <button className="sysx-cta is-primary" onClick={() => go(d.next.to as SectionId)}>
+            {d.next.owner === 'you' ? t('Перейти', 'Go') : t('Подробиці', 'Details')} →
+          </button>
+        </div>
+      </div>
+
+      {/* 2. Чого чекаємо від клієнта */}
+      <div className="dash-block">
+        <div className="dash-block-h">
+          <b>{t('Чекаємо від вас', 'Waiting on you')}</b>
+          <span className="mono dash-count">
+            {d.pending.length
+              ? t(`${d.pending.length} із ${d.readiness.total}`, `${d.pending.length} of ${d.readiness.total}`)
+              : t('нічого — дякуємо', 'nothing — thank you')}
+          </span>
+        </div>
+        <div className="dash-bar" role="img"
+             aria-label={t(`Готовність ${pct}%`, `Readiness ${pct}%`)}>
+          <i style={{ width: pct + '%' }} />
+        </div>
+        {d.pending.length ? (
+          <>
+            <ul className="dash-list">
+              {d.pending.slice(0, TOP).map((p) => (
+                <li key={p.id}>
+                  <button className="dash-item" onClick={() => go(p.to as SectionId)}>
+                    <span className="dash-item-t">{p.label}</span>
+                    {p.why && <span className="dash-item-w">{p.why}</span>}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            {d.pending.length > TOP && (
+              <button className="dash-more mono" onClick={() => go('docs')}>
+                {t(`Ще ${d.pending.length - TOP} — усі в «Документах»`, `${d.pending.length - TOP} more — all in Documents`)} →
+              </button>
+            )}
+          </>
+        ) : (
+          <p className="dash-empty">{t('Усі доступи й файли на місці. Робота за нами.', 'All access and files are in. The work is on us.')}</p>
+        )}
+      </div>
+
+      <div className="dash-row">
+        {/* 3. Що вже передано */}
+        <div className="dash-block">
+          <div className="dash-block-h">
+            <b>{t('Ви вже отримали', 'Delivered to you')}</b>
+            {d.delivered.length > 0 && <span className="mono dash-count">{d.delivered.length}</span>}
           </div>
-          <p className="cab-next-d">{ui.note}</p>
-          {deep === 'data' && Object.entries(rec?.funnel?.tierReason || {}).map(([k, r]) => r && <p key={k} className="cab-accban-r">{r}</p>)}
-          {deep === 'granted' && rec?.funnel?.accessCode && <p className="cab-accban-code mono">{t('код доступу', 'access code')}: {rec.funnel.accessCode}</p>}
-          <button className="sysx-cta is-primary" onClick={() => go('deep')}>{ui.cta}</button>
+          {d.delivered.length ? (
+            <ul className="dash-list">
+              {d.delivered.slice(0, 5).map((x) => (
+                <li key={x.id}>
+                  <button className="dash-item" onClick={() => go('docs')}>
+                    <span className="dash-item-t">{x.title}</span>
+                    <span className="dash-item-w mono">{date(x.at)}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="dash-empty">
+              {t('Поки нічого — документи зʼявляться тут, щойно менеджер ними поділиться.',
+                 'Nothing yet — documents will appear here as soon as your manager shares them.')}
+            </p>
+          )}
+        </div>
+
+        {/* 4. Цифри бізнесу */}
+        <div className="dash-block">
+          <div className="dash-block-h">
+            <b>{t('Ваші цифри', 'Your numbers')}</b>
+            {d.numbers && <span className="mono dash-count">{date(d.numbers.at)}</span>}
+          </div>
+          {d.numbers ? (
+            <>
+              <b className="sysx-display dash-money">{money(d.numbers.leak, cur)}<i>{t('/ рік', '/ year')}</i></b>
+              <span className="mono dash-money-s">
+                {t('діапазон', 'range')} {money(d.numbers.range[0], cur)}–{money(d.numbers.range[1], cur)}
+              </span>
+              <div className="dash-health">
+                <span className="mono">Business Health</span>
+                <div className="dash-bar"><i style={{ width: d.numbers.health + '%' }} /></div>
+                <b className="mono">{d.numbers.health}/100</b>
+              </div>
+              <button className="dash-more mono" onClick={() => go('audits')}>
+                {t('Повний результат', 'Full result')} →
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="dash-empty">{t('Скільки виторгу витікає щороку — ~2 хвилини.', 'How much revenue leaks each year — ~2 minutes.')}</p>
+              <Link className="sysx-cta is-primary" to={lp('/diagnose')}>{t('Порахувати витік', 'Calculate the leak')} →</Link>
+            </>
+          )}
         </div>
       </div>
     </section>
