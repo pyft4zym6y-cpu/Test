@@ -160,14 +160,20 @@ export default function App() {
             <Route path="*" element={<SystemNotFound />} />
           </Route>
 
-          {/* Операційна адмінка — окремий маршрут поза оболонкою сайту.
+          {/* Дві поверхні адміністрування, а не одна.
+              /admin — адмінка САЙТУ: заявки, які породжує сама сторінка.
+              /manage — сервіс ведення проєкту: клієнти, аудити, воркер, методики;
+              живе на app.weexp.agency поруч із кабінетом клієнта.
               Розділ і відкритий клієнт живуть в адресі: інакше картку не можна
               переслати колезі, F5 скидав позицію, а «Назад» вивалював із адмінки. */}
-          <Route path="/admin" element={<AdminPanel />} />
-          <Route path="/admin/:tab" element={<AdminPanel />} />
-          <Route path="/admin/:tab/c/:clientId" element={<AdminPanel />} />
-          <Route path="/admin/:tab/c/:clientId/:utab" element={<AdminPanel />} />
-          <Route path="/manage" element={<Navigate to="/admin" replace />} />
+          <Route path="/admin" element={<AdminPanel surface="site" />} />
+          <Route path="/admin/:tab" element={<AdminPanel surface="site" />} />
+          <Route path="/admin/:tab/c/:clientId" element={<AdminPanel surface="site" />} />
+          <Route path="/admin/:tab/c/:clientId/:utab" element={<AdminPanel surface="site" />} />
+          <Route path="/manage" element={<AdminPanel surface="pm" />} />
+          <Route path="/manage/:tab" element={<AdminPanel surface="pm" />} />
+          <Route path="/manage/:tab/c/:clientId" element={<AdminPanel surface="pm" />} />
+          <Route path="/manage/:tab/c/:clientId/:utab" element={<AdminPanel surface="pm" />} />
 
           {/* Клієнтські редиректи (дублюють 301 у root vercel.json — для SPA-навігації).
               Легасі темні маршрути ведуть у світлі аналоги; окремої тёмної айдентики немає. */}

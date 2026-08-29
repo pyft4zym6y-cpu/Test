@@ -48,7 +48,8 @@ import { uid } from './auditTemplate';
 
 import './system.css';
 import './cabinet.css';
-import { ACCESS_SOURCES, TABS, U_TABS, CAP_SUMMARY, COOP_TYPES, EmptyState, FUNNEL, LEAD_COLUMNS, coopLabel, coopOf, normalizeUTab, LEAD_STAGES, ST, Shell, Tile, TrafficBlock, Trend, funnelStage, rel, srcName, stageOf, stageView, tierLabel, type FunnelStage, type LeadView, type SiteTraffic, type Tab, type UTab } from './admin/shared';
+import { ACCESS_SOURCES, TABS, tabsOf, SURFACE_ROOT, type Surface, U_TABS, CAP_SUMMARY, COOP_TYPES, EmptyState, FUNNEL, LEAD_COLUMNS, coopLabel, coopOf, normalizeUTab, LEAD_STAGES, ST, Shell, Tile, TrafficBlock, Trend, funnelStage, rel, srcName, stageOf, stageView, tierLabel, type FunnelStage, type LeadView, type SiteTraffic, type Tab, type UTab } from './admin/shared';
+import { appHref } from '@/lib/origins';
 
 /* Важкі екрани вантажимо на вимогу: адмінка відкривається на «Дашборді», а
    картка клієнта, заявка, конструктор шаблону, проєктний офіс і команда потрібні
@@ -66,7 +67,19 @@ const EventLog = lazy(() => import('./admin/EventLog').then((m) => ({ default: m
 const Dashboard = lazy(() => import('./admin/Dashboard').then((m) => ({ default: m.Dashboard })));
 const AuditBuilder = lazy(() => import('./AuditBuilder').then((m) => ({ default: m.AuditBuilder })));
 
-export function AdminPanel() {
+/**
+ * Панель адміністратора — одна на дві поверхні.
+ *
+ * `site` (на weexp.agency/admin) показує лише заявки: це адмінка САЙТУ, і в ній
+ * має бути те, що сайт породжує. `pm` (на app.weexp.agency/manage) — сервіс
+ * ведення проєкту: клієнти, аудити, воркер, методики.
+ *
+ * Компонент один свідомо: розділяються НАБОРИ ВКЛАДОК, а не логіка роботи з
+ * даними. Дві копії панелі розійшлися б на першій же правці, і половина
+ * виправлень діставалась би лише одній поверхні.
+ */
+export function AdminPanel({ surface = 'pm' }: { surface?: Surface } = {}) {
+  const root = SURFACE_ROOT[surface];
   const theme = useCabTheme();
   /* Стан навігації — в адресі. Вкладка й відкритий клієнт більше не «десь у
      памʼяті компонента»: посилання на картку можна переслати, F5 повертає туди
@@ -77,21 +90,34 @@ export function AdminPanel() {
   const [checking, setChecking] = useState(true);
   const [rows, setRows] = useState<AdminRow[] | null>(null);
   const [leads, setLeads] = useState<LeadRow[] | null>(null);
-  const urlTab = (TABS.some((t) => t.id === params.tab) || TABS.some((t) => (t.sub || []).some((x) => x.id === params.tab))
-    ? (params.tab as Tab) : 'overview');
+  const surfaceTabs = tabsOf(surface);
+  const urlTab = (surfaceTabs.some((t) => t.id === params.tab) || surfaceTabs.some((t) => (t.sub || []).some((x) => x.id === params.tab))
+    ? (params.tab as Tab) : surfaceTabs[0].id);
   const tab = urlTab;
   // replace: прохід по розділах не має класти в історію по запису — інакше
   // після пʼяти вкладок «Назад» треба тиснути пʼять разів, щоб вийти.
-  const setTab = (t: Tab) => nav(`/admin/${t}`, { replace: true });
+  const setTab = (t: Tab) => nav(`${root}/${t}`, { replace: true });
   const [q, setQ] = useState('');
   const openUser = params.clientId || null;
   // tab через ref: обробники, підписані один раз (Esc), інакше бачили б застарілу вкладку.
   const tabRef = useRef<Tab>(tab); tabRef.current = tab;
-  const setOpenUser = (uid: string | null) => nav(uid ? `/admin/${tabRef.current}/c/${uid}` : `/admin/${tabRef.current}`);
+  /*
+   * Картка клієнта живе в сервісі ведення проєкту, а заявки — в адмінці сайту.
+   * З адмінки сайту це перехід на ІНШЕ походження, тож звичайний nav() роутера
+   * туди не потрапить: він побудував би /admin/users/c/… — адресу, якої на
+   * сайті немає, і менеджер отримав би 404 замість картки.
+   *
+   * Дані при цьому одні: обидві поверхні читають ту саму базу, тож перехід —
+   * це саме перехід за адресою, а не передача чогось між сервісами.
+   */
+  const setOpenUser = (uid: string | null) => {
+    if (surface === 'site' && uid) { window.location.assign(appHref(`/manage/users/c/${uid}`)); return; }
+    nav(uid ? `${root}/${tabRef.current}/c/${uid}` : `${root}/${tabRef.current}`);
+  };
   // Вкладка картки — теж в адресі. Раніше маршрут :utab існував, але ніде не
   // читався: посилання на конкретну вкладку відкривало «Огляд».
   const utab = normalizeUTab(params.utab);
-  const setUtab = (t: UTab) => { if (openUser) nav(`/admin/${tabRef.current}/c/${openUser}/${t}`, { replace: true }); };
+  const setUtab = (t: UTab) => { if (openUser) nav(`${root}/${tabRef.current}/c/${openUser}/${t}`, { replace: true }); };
   // Повний запис відкритої картки: у списку лежить лише полегшений зріз.
   const [detailRow, setDetailRow] = useState<AdminRow | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -217,12 +243,12 @@ export function AdminPanel() {
 
   // Роль і дозволи поточного адміна — гейтимо вкладки й дії.
   const role = roleOf(user);
-  const allowedTabs = TABS.filter((tb) => can(user, tb.cap));
+  const allowedTabs = tabsOf(surface).filter((tb) => can(user, tb.cap));
   const allowedIds = allowedTabs.flatMap((tb) => [tb.id, ...(tb.sub || []).filter((sb) => can(user, sb.cap)).map((sb) => sb.id)]);
   const curTab = allowedIds.includes(tab) ? tab : (allowedTabs[0]?.id ?? 'overview');
   // Адреса не має брехати про те, що показано: якщо роль не пускає в розділ,
   // виправляємо URL, а не просто малюємо інше.
-  if (curTab !== tab) nav(`/admin/${curTab}`, { replace: true });
+  if (curTab !== tab) nav(`${root}/${curTab}`, { replace: true });
 
   // Видача доступу НЕ створює проект. Раніше створювала — і клієнт тієї ж миті
   // вилітав з фази «Аудит» у фазу «Впровадження» (статус виводиться з даних, а
@@ -709,7 +735,14 @@ export function AdminPanel() {
                 <button className="sysx-cta" onClick={() => exportLeadsCsv((leads || []).filter((l) => !ACCESS_SOURCES.includes(l.source || '')))}>↓ CSV</button>
               )}
             </div>
-            <p className="adm-hint mono">Заявки від нових/потенційних клієнтів. Запити доступів існуючих клієнтів — у вкладці «Запити доступів».</p>
+            {/* Вкладки «Запити доступів» тут більше немає: запити існуючих
+                клієнтів живуть у сервісі ведення проєкту, а не в адмінці сайту.
+                Підказка вела в порожнечу — заміняємо її на робочий перехід. */}
+            <p className="adm-hint mono">
+              Заявки від нових і потенційних клієнтів — усе, що породжує сайт.
+              Робота з існуючим клієнтом (доступи, аудит, проєкт) —{' '}
+              <a href={appHref('/manage/users')} className="mc-link">у сервісі ведення проєкту →</a>
+            </p>
             {(() => { const comm = (leads || []).filter((l) => !ACCESS_SOURCES.includes(l.source || '')); return (
               leads === null ? <p className="mc-msg mono">Завантаження…</p>
               : comm.length === 0 ? <EmptyState icon="✉" text="Первинних заявок ще немає. Вони зʼявляться тут автоматично з форм сайту (і дублюються на пошту)." />

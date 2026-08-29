@@ -46,15 +46,38 @@ export type SiteTraffic = {
 };
 export type Tab = 'overview' | 'leads' | 'auditreq' | 'express' | 'builder' | 'pm' | 'library' | 'users' | 'worker' | 'settings';
 export type Cap = Parameters<typeof can>[1];
+
+/**
+ * Дві поверхні, а не одна адмінка.
+ *
+ * `site` — адмінка САЙТУ: те, що породжує сам сайт. Це заявки, і по суті лише
+ * вони: форма на сайті створює заявку, з нею працюють до моменту «беремо в
+ * роботу». Живе на weexp.agency разом із сайтом, який її наповнює.
+ *
+ * `pm` — сервіс ведення проєкту: клієнти, аудити, проєкти, воркер, методики.
+ * Живе на app.weexp.agency, і туди ж заходить клієнт у свій кабінет. Це вже не
+ * адмінка сайту, а окремий продукт із власним входом.
+ *
+ * Раніше все це було однією вкладковою панеллю, і «адмінка» означала два різні
+ * інструменти водночас: за заявкою з сайту й за проєктом на пів року ходили в
+ * одне місце. Поверхня — єдине джерело того, що де показувати; маршрути,
+ * редиректи й тести читають її, а не повторюють список руками.
+ */
+export type Surface = 'site' | 'pm';
+
+export type TabDef = { id: Tab; label: string; cap: Cap; surface: Surface; sub?: { id: Tab; label: string; cap: Cap }[] };
+
 // Структура меню. Один життєвий цикл клієнта — один розділ: «Аудит і проєкти».
 // Експрес-аудит (те, що було до заявки), конструктор анкети й довідник ставок —
 // другий рівень під ним, бо всі троє існують заради нього. Окремої вкладки
 // «Аудити» більше немає: вона показувала ту саму воронку іншими словами.
-export const TABS: { id: Tab; label: string; cap: Cap; sub?: { id: Tab; label: string; cap: Cap }[] }[] = [
-  { id: 'overview', label: 'Дашборд', cap: 'view_dashboard' },
-  { id: 'leads', label: 'Заявки', cap: 'view_leads' },
+export const TABS: TabDef[] = [
+  // ── Адмінка сайту ──
+  { id: 'leads', label: 'Заявки', cap: 'view_leads', surface: 'site' },
+  // ── Сервіс ведення проєкту ──
+  { id: 'overview', label: 'Дашборд', cap: 'view_dashboard', surface: 'pm' },
   {
-    id: 'auditreq', label: 'Аудит і проєкти', cap: 'view_audits', sub: [
+    id: 'auditreq', label: 'Аудит і проєкти', cap: 'view_audits', surface: 'pm', sub: [
       { id: 'express', label: 'Експрес-аудити', cap: 'view_audits' },
       { id: 'builder', label: 'Конструктор аудиту', cap: 'edit_template' },
       { id: 'pm', label: 'Команда і ставки', cap: 'manage_pm' },
@@ -64,10 +87,16 @@ export const TABS: { id: Tab; label: string; cap: Cap; sub?: { id: Tab; label: s
       { id: 'library', label: 'Бібліотека', cap: 'view_audits' },
     ],
   },
-  { id: 'users', label: 'Користувачі', cap: 'view_users' },
-  { id: 'worker', label: 'Воркер', cap: 'view_audits' },
-  { id: 'settings', label: 'Налаштування', cap: 'manage_settings' },
+  { id: 'users', label: 'Клієнти', cap: 'view_users', surface: 'pm' },
+  { id: 'worker', label: 'Воркер', cap: 'view_audits', surface: 'pm' },
+  { id: 'settings', label: 'Налаштування', cap: 'manage_settings', surface: 'pm' },
 ];
+
+/** Вкладки однієї поверхні. */
+export const tabsOf = (surface: Surface): TabDef[] => TABS.filter((t) => t.surface === surface);
+
+/** Кореневий шлях поверхні. */
+export const SURFACE_ROOT: Record<Surface, string> = { site: '/admin', pm: '/manage' };
 
 // Джерела заявок, що є запитами доступу (не первинна комунікація).
 export const ACCESS_SOURCES = ['cabinet-access', 'cabinet-deep'];

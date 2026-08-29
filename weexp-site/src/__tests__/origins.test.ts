@@ -13,6 +13,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { APP_ORIGIN, SITE_ORIGIN, APP_PATHS, isAppPath, isAppHost, normalizeAppPath } from '@/lib/origins';
+import { TABS, tabsOf, SURFACE_ROOT } from '@/system/admin/shared';
 
 const ROOT = join(__dirname, '..', '..');
 const read = (p: string) => readFileSync(join(ROOT, p), 'utf8');
@@ -74,27 +75,33 @@ describe('маршрутизація за хостом у vercel.json', () => {
   });
 
   it('підшляхи переносяться разом із хвостом', () => {
-    // Інакше посилання на конкретну картку клієнта вело б у корінь кабінету:
+    // Інакше посилання на конкретну картку клієнта вело б у корінь консолі:
     // адресу можна переслати колезі — це і був сенс тримати розділ в URL.
-    const deep = fromSite.find((x) => x.source === '/admin/:path*');
-    expect(deep, 'немає редиректу для підшляхів адмінки').toBeTruthy();
-    expect(deep!.destination).toBe(`${APP_ORIGIN}/admin/:path*`);
+    const deep = fromSite.find((x) => x.source === '/manage/:path*');
+    expect(deep, 'немає редиректу для підшляхів консолі').toBeTruthy();
+    expect(deep!.destination).toBe(`${APP_ORIGIN}/manage/:path*`);
   });
 
-  it('двомовний кабінет зберігає мову, одномовна адмінка — ні', () => {
+  it('адмінка сайту лишається на сайті', () => {
     /*
-     * Спершу я скидав /en для обох розділів «бо ведення проєкту одномовне».
-     * Це вірно лише для адмінки: маршрута /en/admin справді немає. А кабінет
-     * двомовний, і англомовний клієнт після переїзду опинявся б українською —
-     * тобто розділення адрес мовчки міняло б йому мову.
+     * Спершу я переніс на app.* і /admin — ділив «сайт» проти «не сайт». Межа
+     * проходить інакше: адмінка сайту — це заявки, які породжує сама сторінка,
+     * і вона належить сайту так само, як форма, що їх створює. На app.* її
+     * бути не має, а якщо хтось прийде туди за старим посиланням — повертаємо.
      */
+    expect(fromSite.some((x) => x.source.startsWith('/admin')),
+      '/admin знову тікає з сайту').toBe(false);
+    const back = vercel.redirects.find((r) => r.source === '/admin' && host(r) === 'app.weexp.agency');
+    expect(back, 'з app.* немає повернення на адмінку сайту').toBeTruthy();
+    expect(back!.destination).toBe(`${SITE_ORIGIN}/admin`);
+  });
+
+  it('двомовний кабінет зберігає мову', () => {
+    // Кабінет двомовний, і англомовний клієнт після переїзду не має опинитись
+    // українською: розділення адрес не повинно мовчки міняти мову.
     const cab = fromSite.find((x) => x.source === '/en/cabinet');
     expect(cab, 'немає редиректу /en/cabinet').toBeTruthy();
     expect(cab!.destination).toBe(`${APP_ORIGIN}/en/cabinet`);
-
-    const adm = fromSite.find((x) => x.source === '/en/admin');
-    expect(adm, 'немає редиректу /en/admin').toBeTruthy();
-    expect(adm!.destination).toBe(`${APP_ORIGIN}/admin`);
   });
 
   it('нормалізація шляху повторює те саме правило', () => {
@@ -102,10 +109,10 @@ describe('маршрутизація за хостом у vercel.json', () => {
     // однаково, інакше клієнтський перехід і пряме відкриття дадуть різне.
     expect(normalizeAppPath('/en/cabinet')).toBe('/en/cabinet');
     expect(normalizeAppPath('/en/cabinet/company')).toBe('/en/cabinet/company');
-    expect(normalizeAppPath('/en/admin')).toBe('/admin');
-    expect(normalizeAppPath('/en/admin/leads/c/42')).toBe('/admin/leads/c/42');
-    expect(normalizeAppPath('/cabinet')).toBe('/cabinet');
-    expect(normalizeAppPath('/admin')).toBe('/admin');
+    // Консоль одномовна: маршрута /en/manage немає.
+    expect(normalizeAppPath('/en/manage')).toBe('/manage');
+    expect(normalizeAppPath('/en/manage/users/c/42')).toBe('/manage/users/c/42');
+    expect(normalizeAppPath('/manage')).toBe('/manage');
   });
 
   it('корінь застосунку веде в кабінет, а не на маркетингову головну', () => {
@@ -184,5 +191,52 @@ describe('посилання між розділами', () => {
     expect(SITE_ORIGIN).toBe('https://weexp.agency');
     expect(APP_ORIGIN).toBe('https://app.weexp.agency');
     expect(APP_ORIGIN).not.toBe(SITE_ORIGIN);
+  });
+});
+
+describe('дві поверхні адміністрування', () => {
+  /*
+   * Межа проходить не між «сайтом» і «не сайтом», а між тим, що породжує сам
+   * сайт, і тим, що живе далі. Адмінка сайту — це заявки: форма на сторінці їх
+   * створює, з ними працюють до «беремо в роботу». Усе, що після — клієнти,
+   * аудити, проєкти, воркер, методики — окремий сервіс із власним входом.
+   *
+   * Один список вкладок із полем surface — єдине джерело цієї межі. Якщо межу
+   * почати повторювати руками в маршрутах, редиректах і меню, вона розійдеться
+   * у трьох місцях по-різному, і «адмінка» знову означатиме два інструменти.
+   */
+  it('адмінка сайту — це заявки, і по суті лише вони', () => {
+    expect(tabsOf('site').map((t) => t.id)).toEqual(['leads']);
+  });
+
+  it('усе, що після заявки, живе в сервісі ведення проєкту', () => {
+    const pm = tabsOf('pm').map((t) => t.id);
+    for (const must of ['users', 'auditreq', 'worker']) {
+      expect(pm, `${must} має бути в сервісі, а не в адмінці сайту`).toContain(must);
+    }
+    expect(pm, 'заявки не дублюються в обох поверхнях').not.toContain('leads');
+  });
+
+  it('кожна вкладка належить рівно одній поверхні', () => {
+    const ids = TABS.map((t) => t.id);
+    expect(new Set(ids).size, 'вкладка оголошена двічі').toBe(ids.length);
+    expect(tabsOf('site').length + tabsOf('pm').length).toBe(TABS.length);
+  });
+
+  it('корені поверхонь не перетинаються і збігаються з маршрутами', () => {
+    expect(SURFACE_ROOT.site).toBe('/admin');
+    expect(SURFACE_ROOT.pm).toBe('/manage');
+    const app = read('src/App.tsx');
+    for (const root of Object.values(SURFACE_ROOT)) {
+      expect(app, `немає маршруту ${root}`).toContain(`path="${root}"`);
+      expect(app, `немає маршруту ${root}/:tab`).toContain(`path="${root}/:tab"`);
+    }
+  });
+
+  it('шляхи сервісу і поверхні кажуть одне', () => {
+    // isAppPath вирішує, що перекидати на app.*: якщо він розійдеться з
+    // SURFACE_ROOT, консоль відкриється не на тому домені.
+    expect(isAppPath(SURFACE_ROOT.pm), 'консоль не вважається сервісом').toBe(true);
+    expect(isAppPath(SURFACE_ROOT.site), 'адмінку сайту тягне на app.*').toBe(false);
   });
 });

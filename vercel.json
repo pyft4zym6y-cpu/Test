@@ -60,50 +60,6 @@
       "permanent": true
     },
     {
-      "source": "/admin",
-      "has": [
-        {
-          "type": "host",
-          "value": "weexp.agency"
-        }
-      ],
-      "destination": "https://app.weexp.agency/admin",
-      "permanent": true
-    },
-    {
-      "source": "/admin/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "weexp.agency"
-        }
-      ],
-      "destination": "https://app.weexp.agency/admin/:path*",
-      "permanent": true
-    },
-    {
-      "source": "/en/admin",
-      "has": [
-        {
-          "type": "host",
-          "value": "weexp.agency"
-        }
-      ],
-      "destination": "https://app.weexp.agency/admin",
-      "permanent": true
-    },
-    {
-      "source": "/en/admin/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "weexp.agency"
-        }
-      ],
-      "destination": "https://app.weexp.agency/admin/:path*",
-      "permanent": true
-    },
-    {
       "source": "/manage",
       "has": [
         {
@@ -111,7 +67,40 @@
           "value": "weexp.agency"
         }
       ],
-      "destination": "https://app.weexp.agency/admin",
+      "destination": "https://app.weexp.agency/manage",
+      "permanent": true
+    },
+    {
+      "source": "/manage/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "weexp.agency"
+        }
+      ],
+      "destination": "https://app.weexp.agency/manage/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/admin",
+      "has": [
+        {
+          "type": "host",
+          "value": "app.weexp.agency"
+        }
+      ],
+      "destination": "https://weexp.agency/admin",
+      "permanent": true
+    },
+    {
+      "source": "/admin/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "app.weexp.agency"
+        }
+      ],
+      "destination": "https://weexp.agency/admin/:path*",
       "permanent": true
     },
     {
