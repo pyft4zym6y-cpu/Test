@@ -50,6 +50,7 @@ import './system.css';
 import './cabinet.css';
 import { ACCESS_SOURCES, TABS, tabsOf, SURFACE_ROOT, type Surface, U_TABS, CAP_SUMMARY, COOP_TYPES, EmptyState, FUNNEL, LEAD_COLUMNS, coopLabel, coopOf, normalizeUTab, LEAD_STAGES, ST, Shell, Tile, TrafficBlock, Trend, funnelStage, rel, srcName, stageOf, stageView, tierLabel, type FunnelStage, type LeadView, type SiteTraffic, type Tab, type UTab } from './admin/shared';
 import { appHref } from '@/lib/origins';
+import { AccountsPanel } from '@/system/admin/AccountsPanel';
 
 /* Важкі екрани вантажимо на вимогу: адмінка відкривається на «Дашборді», а
    картка клієнта, заявка, конструктор шаблону, проєктний офіс і команда потрібні
@@ -558,6 +559,7 @@ export function AdminPanel({ surface = 'pm' }: { surface?: Surface } = {}) {
         )}
 
         {/* ── Користувачі ── */}
+        {!detail && curTab === 'accounts' && <PanelBoundary title="Облікові записи"><AccountsPanel /></PanelBoundary>}
         {!detail && curTab === 'users' && (() => {
           const isAdm = (email: string) => MANAGER_EMAILS.map((e) => e.toLowerCase()).includes((email || '').toLowerCase());
           const nAdmins = sorted.filter((r) => isAdm(r.email)).length;

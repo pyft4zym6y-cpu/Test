@@ -1,8 +1,14 @@
 // Доступи КЛІЄНТІВ до сервісу ведення проєкту.
 //
-// Самореєстрації в сервісі немає: акаунт клієнта заводить менеджер із картки.
-// Це не адміністративна забаганка — сервіс містить дані проєктів, і відкрита
-// реєстрація означала б, що будь-хто з інтернету створює там акаунт.
+// Самореєстрації в сервісі немає: акаунт клієнта заводить менеджер вручну —
+// логін і пароль задає він сам і передає клієнту. Сервіс містить дані
+// проєктів, і відкрита реєстрація означала б, що будь-хто з інтернету створює
+// там акаунт.
+//
+// Пошти тут немає ЖОДНОЇ: ні запрошень, ні листів зі зміною пароля. Це знімає
+// залежність від налаштованого SMTP — доступ працює одразу й не ламається,
+// коли лист не дійшов, потрапив у спам або пошта клієнта відхилила відправника.
+// Ціна: пароль треба передати людині самому, безпечним каналом.
 //
 // Чим це НЕ є: керуванням командою. Ролі staff живуть у /api/team і ставляться
 // лише super-адміном. Тут не можна видати роль узагалі — див. гард нижче.
@@ -32,9 +38,6 @@ export default async function handler(req, res) {
 
   const b = req.body ?? {};
   const email = String(b.email || '').trim().toLowerCase();
-  const redirectTo = typeof b.redirectTo === 'string' && /^https:\/\/[a-z0-9.-]+\/[^\s]*$/i.test(b.redirectTo)
-    ? b.redirectTo : undefined;
-
   const admin = (path, opts = {}) => fetch(`${URL}/auth/v1/admin${path}`, {
     ...opts,
     headers: { apikey: SRK, Authorization: `Bearer ${SRK}`, 'content-type': 'application/json', ...(opts.headers || {}) },
@@ -72,29 +75,6 @@ export default async function handler(req, res) {
   try {
     const a = b.action;
 
-    /* ── Запросити клієнта: лист із посиланням, пароль задає він сам ────── */
-    if (a === 'invite') {
-      if (!email) { res.status(200).json({ error: 'Вкажіть email' }); return; }
-      const existing = await findByEmail(email);
-      if (refuseIfStaff(existing)) return;
-      if (existing) {
-        res.status(200).json({ error: 'Такий акаунт уже існує — надішліть посилання на встановлення пароля' });
-        return;
-      }
-      const j = await fetch(`${URL}/auth/v1/invite`, {
-        method: 'POST',
-        headers: { apikey: SRK, Authorization: `Bearer ${SRK}`, 'content-type': 'application/json' },
-        body: JSON.stringify(redirectTo ? { email, redirect_to: redirectTo } : { email }),
-      }).then((r) => r.json()).catch(() => null);
-      if (j?.id) {
-        void journal('client_invite', `запрошено ${email}`);
-        res.status(200).json({ ok: true, user: { id: j.id, email: j.email } });
-      } else {
-        res.status(200).json({ error: (j?.msg || j?.error_description || 'invite_failed') + ' — перевірте SMTP у Supabase' });
-      }
-      return;
-    }
-
     /* ── Створити з паролем: коли пошта клієнта не приймає наші листи ───── */
     if (a === 'create') {
       if (!email) { res.status(200).json({ error: 'Вкажіть email' }); return; }
@@ -122,23 +102,43 @@ export default async function handler(req, res) {
       return;
     }
 
-    /* ── Надіслати посилання на встановлення / зміну пароля ─────────────── */
-    if (a === 'reset') {
+    /* ── Змінити пароль вручну ─────────────────────────────────────────── */
+    if (a === 'set_password') {
       if (!email) { res.status(200).json({ error: 'Вкажіть email' }); return; }
+      if (String(b.password || '').length < 10) { res.status(200).json({ error: 'Пароль — мінімум 10 символів' }); return; }
       const existing = await findByEmail(email);
       if (refuseIfStaff(existing)) return;
-      if (!existing) { res.status(200).json({ error: 'Такого акаунта немає — спершу запросіть клієнта' }); return; }
-      const j = await fetch(`${URL}/auth/v1/recover`, {
-        method: 'POST',
-        headers: { apikey: SRK, Authorization: `Bearer ${SRK}`, 'content-type': 'application/json' },
-        body: JSON.stringify(redirectTo ? { email, redirect_to: redirectTo } : { email }),
-      }).then((r) => (r.ok ? { ok: true } : r.json())).catch(() => null);
-      if (j?.ok) {
-        void journal('client_reset', `надіслано лист зміни пароля ${email}`);
+      if (!existing) { res.status(200).json({ error: 'Такого акаунта немає' }); return; }
+      const j = await admin(`/users/${existing.id}`, {
+        method: 'PUT', body: JSON.stringify({ password: String(b.password) }),
+      }).then((r) => r.json()).catch(() => null);
+      if (j?.id) {
+        // Сам пароль у журнал НЕ пишемо: журнал читає вся команда.
+        void journal('client_password', `змінено пароль ${email}`);
         res.status(200).json({ ok: true });
       } else {
-        res.status(200).json({ error: (j?.msg || j?.error_description || 'reset_failed') + ' — перевірте SMTP у Supabase' });
+        res.status(200).json({ error: j?.msg || j?.error_description || 'update_failed' });
       }
+      return;
+    }
+
+    /* ── Перелік облікових записів клієнтів ─────────────────────────────── */
+    if (a === 'list') {
+      const j = await admin('/users?per_page=200').then((r) => r.json()).catch(() => null);
+      const arr = j?.users || j || [];
+      // Команда сюди не потрапляє: її акаунти живуть у розділі «Команда», і
+      // показувати їх поруч із клієнтськими означало б запрошувати помилку.
+      const users = arr
+        .filter((u) => !STAFF_ROLES.includes(String(u.app_metadata?.role || '')))
+        .map((u) => ({
+          id: u.id, email: u.email,
+          confirmed: !!u.email_confirmed_at,
+          banned: !!u.banned_until && new Date(u.banned_until) > new Date(),
+          lastSignIn: u.last_sign_in_at || null,
+          createdAt: u.created_at || null,
+        }))
+        .sort((x, y) => String(y.createdAt || '').localeCompare(String(x.createdAt || '')));
+      res.status(200).json({ ok: true, users });
       return;
     }
 

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   currentUser, signOut, loadDiag, saveDiag, CONFIGURED, isCloudUser, isManager,
-  signInWithGoogle, signInWithEmail, resetPassword, onAuth, signTierFile, uploadTierFile,
+  signInWithGoogle, signInWithEmail, onAuth, signTierFile, uploadTierFile,
   ensureAudit, findAuditIdByCode, loadAuditAnswers, loadAuditExtra, getProjects, notifyAdmin, authHeaders,
   type DiagUser, type DiagRecord, type CompanyProfile, type TierStatus, type TierEvent, type AuditAnswer, type ExtraQ, type AccessState,
   type MarketplaceAccess, type ClientFile,
@@ -81,7 +81,6 @@ export function Cabinet() {
   // Вхід — лише Google (email/пароль тимчасово прибрано; інші провайдери додамо згодом).
   const [busy, setBusy] = useState(false);
   const [authErr, setAuthErr] = useState('');
-  const [authMsg, setAuthMsg] = useState('');
   const [email, setEmail] = useState('');
   const [pwd, setPwd] = useState('');
 
@@ -134,7 +133,7 @@ export function Cabinet() {
    */
   const doPassword = async (e: FormEvent) => {
     e.preventDefault();
-    setAuthErr(''); setAuthMsg(''); setBusy(true);
+    setAuthErr(''); setBusy(true);
     const r = await signInWithEmail(email.trim(), pwd);
     setBusy(false);
     if (r.confirm) { setAuthErr(t('Підтвердіть email — лист уже надіслано.', 'Confirm your email — the message has been sent.')); return; }
@@ -144,15 +143,6 @@ export function Cabinet() {
     }
     setPwd('');
     setUser(r.user);
-  };
-
-  /** Лист зі зміною пароля — щоб не тримати менеджера за кнопку «скиньте мені». */
-  const doForgot = async () => {
-    setAuthErr(''); setAuthMsg(''); setBusy(true);
-    const r = await resetPassword(email.trim());
-    setBusy(false);
-    if (r.ok) setAuthMsg(t('Лист надіслано — перевірте пошту.', 'Email sent — check your inbox.'));
-    else setAuthErr(r.error || t('Не вдалося надіслати лист.', 'Could not send the email.'));
   };
 
   const doSignOut = async () => { await signOut(); setUser(null); setRec(null); setSection('overview'); };
@@ -225,9 +215,6 @@ export function Cabinet() {
                   <button className="sysx-cta is-primary cab-signin-go" type="submit" disabled={busy}>
                     {busy ? t('Входимо…', 'Signing in…') : t('Увійти', 'Sign in')} →
                   </button>
-                  <button type="button" className="cab-forgot mono" onClick={doForgot} disabled={busy || !email}>
-                    {t('Забули пароль?', 'Forgot your password?')}
-                  </button>
                 </form>
               )}
               {CONFIGURED ? (
@@ -242,8 +229,7 @@ export function Cabinet() {
                 <p className="cab-auth-err mono">{t('Вхід тимчасово недоступний — Supabase не налаштовано.', 'Sign-in is temporarily unavailable — Supabase is not configured.')}</p>
               )}
               {authErr && <p className="cab-auth-err mono">{authErr}</p>}
-              {authMsg && <p className="cab-auth-ok mono">{authMsg}</p>}
-              <p className="sysx-note mono">{t('Немає доступу? Напишіть своєму менеджеру — акаунт відкриває він.', 'No access yet? Contact your manager — they set up the account.')}</p>
+              <p className="sysx-note mono">{t('Немає доступу або забули пароль? Напишіть своєму менеджеру — логін і пароль видає він.', 'No access, or forgot the password? Contact your manager — they issue the login and password.')}</p>
             </div>
           </div>
         </div>

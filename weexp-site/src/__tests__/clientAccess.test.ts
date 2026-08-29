@@ -78,7 +78,7 @@ describe('аккаунты команды недосягаемы', () => {
      * которые что-то меняют. Гард, забытый в одной ветке, — то же самое, что
      * его отсутствие: атакующий просто выберет ту ветку.
      */
-    const actions = ['invite', 'create', 'reset', 'revoke'];
+    const actions = ['create', 'set_password', 'revoke'];
     for (const a of actions) {
       const at = code.indexOf(`a === '${a}'`);
       expect(at, `ветка ${a} не найдена`).toBeGreaterThan(-1);
@@ -91,7 +91,7 @@ describe('аккаунты команды недосягаемы', () => {
 
   it('гард стоит до действия, а не после', () => {
     // Отказ после создания пользователя означает, что пользователь уже создан.
-    for (const a of ['create', 'revoke']) {
+    for (const a of ['create', 'set_password', 'revoke']) {
       const at = code.indexOf(`a === '${a}'`);
       const nextIf = code.indexOf("if (a === '", at + 5);
       const branch = code.slice(at, nextIf > 0 ? nextIf : code.length);
@@ -116,11 +116,29 @@ describe('вызывать может только команда', () => {
     expect(code).toMatch(/req\.method !== 'POST'/);
   });
 
-  it('адрес возврата из письма проверяется', () => {
-    // redirect_to без проверки — открытый редирект: письмо от нашего имени
-    // уводило бы человека на чужой домен.
-    expect(code).toMatch(/redirectTo[\s\S]{0,200}test\(/);
-    expect(code).toMatch(/\^https:/);
+  it('писем сервис не шлёт вообще', () => {
+    /*
+     * Ни приглашений, ни писем со сменой пароля: доступ не должен зависеть от
+     * настроенного SMTP и от того, дошло ли письмо. Заодно исчезает открытый
+     * редирект — redirect_to передавать больше некуда.
+     */
+    expect(code, 'вернулись приглашения письмом').not.toMatch(/auth\/v1\/invite/);
+    expect(code, 'вернулись письма со сменой пароля').not.toMatch(/auth\/v1\/recover/);
+    expect(code, 'вернулся redirect_to из писем').not.toMatch(/redirect_to/);
+  });
+
+  it('значение пароля не попадает в журнал', () => {
+    /*
+     * Журнал читает вся команда: значение пароля там жить не должно. Ищем
+     * именно ПОДСТАНОВКУ значения, а не слово «password»: имя события
+     * client_password содержит его законно, и первая версия проверки падала
+     * на нём — тест ловил собственную формулировку, а не утечку.
+     */
+    const at = code.indexOf("a === 'set_password'");
+    const branch = code.slice(at, code.indexOf("if (a === '", at + 5) || code.length);
+    const call = branch.match(/journal\([^)]*\)/)?.[0] ?? '';
+    expect(call, 'журнал не пишется вовсе').toBeTruthy();
+    expect(call, 'значение пароля уходит в журнал').not.toMatch(/\$\{[^}]*(password|pwd)/i);
   });
 });
 
@@ -146,5 +164,39 @@ describe('что видит клиент в сервисе', () => {
   it('саморегистрации в сервисе нет', () => {
     expect(cabinet, 'вернулась регистрация — сервис перестал быть закрытым')
       .not.toMatch(/registerWithEmail/);
+  });
+});
+
+describe('пароли задаются вручную', () => {
+  const panelSrc = readFileSync(join(ROOT, 'weexp-site', 'src', 'system', 'admin', 'ClientAccessPanel.tsx'), 'utf8');
+  // Без комментариев: первая версия проверки падала на фразе «Пароль із crypto,
+  // а не з Math.random» — то есть ловила объяснение, почему так не делают.
+  const panel = panelSrc.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+
+  it('генератор берёт crypto, а не Math.random', () => {
+    /*
+     * Math.random не криптографический: последовательность предсказуема, и
+     * пароли, выданные подряд, связаны между собой. Для того, что открывает
+     * данные клиента, это не годится.
+     */
+    expect(panel).toContain('crypto.getRandomValues');
+    expect(panel, 'вернулся Math.random в генераторе пароля').not.toMatch(/Math\.random/);
+  });
+
+  it('в алфавите нет символов, которые путают при диктовке', () => {
+    const alphabet = /const A = '([^']+)'/.exec(panel)?.[1] ?? '';
+    expect(alphabet, 'алфавит не найден').toBeTruthy();
+    for (const ch of ['0', 'O', '1', 'l', 'I']) {
+      expect(alphabet, `«${ch}» путают при диктовке`).not.toContain(ch);
+    }
+    expect(alphabet.length, 'слишком бедный алфавит').toBeGreaterThan(40);
+  });
+
+  it('минимальная длина одна и та же в UI и на сервере', () => {
+    // Разойдись они — форма разрешит пароль, который сервер отвергнет, и
+    // менеджер получит непонятную ошибку вместо подсказки.
+    const uiMin = Number(/PWD_MIN = (\d+)/.exec(panel)?.[1]);
+    expect(uiMin, 'PWD_MIN не найден').toBeGreaterThan(0);
+    expect(code, `сервер ждёт не ${uiMin} символов`).toContain(`.length < ${uiMin}`);
   });
 });

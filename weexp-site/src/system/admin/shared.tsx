@@ -44,7 +44,7 @@ export type SiteTraffic = {
   period?: string; sessions?: number; users?: number; pageviews?: number; bounceRate?: number;
   sources?: { name: string; sessions: number }[]; pages?: { path: string; views: number }[]; error?: string;
 };
-export type Tab = 'overview' | 'leads' | 'auditreq' | 'express' | 'builder' | 'pm' | 'library' | 'users' | 'worker' | 'settings';
+export type Tab = 'overview' | 'leads' | 'auditreq' | 'express' | 'builder' | 'pm' | 'library' | 'users' | 'accounts' | 'worker' | 'settings';
 export type Cap = Parameters<typeof can>[1];
 
 /**
@@ -88,6 +88,9 @@ export const TABS: TabDef[] = [
     ],
   },
   { id: 'users', label: 'Клієнти', cap: 'view_users', surface: 'pm' },
+  // Хто взагалі має вхід у сервіс. Той самий доступ відкривається з картки
+  // клієнта, але на питання «а хто заходив хоч раз» картки не відповідають.
+  { id: 'accounts', label: 'Облікові записи', cap: 'manage_access', surface: 'pm' },
   { id: 'worker', label: 'Воркер', cap: 'view_audits', surface: 'pm' },
   { id: 'settings', label: 'Налаштування', cap: 'manage_settings', surface: 'pm' },
 ];

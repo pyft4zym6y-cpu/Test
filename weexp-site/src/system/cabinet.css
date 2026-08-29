@@ -1463,3 +1463,13 @@
 /* Ручний пароль — запасний шлях, тому візуально тихіший за запрошення листом. */
 .adm-cacc-pwd { display: flex; flex-direction: column; gap: 8px; padding: 12px;
   border: 1px dashed var(--line, rgba(20,18,16,.24)); }
+
+/* ── Облікові записи клієнтів ──────────────────────────────────────────── */
+.adm-acc { display: flex; flex-direction: column; gap: 14px; }
+.adm-acc-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.adm-acc-new { display: flex; flex-direction: column; gap: 10px; padding: 14px;
+  border: 1px dashed var(--line, rgba(20,18,16,.24)); }
+.adm-acc-t td, .adm-acc-t th { vertical-align: middle; }
+.adm-acc-t tr.is-off td { opacity: .55; }
+.adm-acc-acts { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
+.adm-cacc-pwd-row { display: flex; gap: 8px; flex-wrap: wrap; }
