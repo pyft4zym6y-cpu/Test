@@ -3,21 +3,21 @@
   "routes": {
     "/": {
       "uk": [
-        "WEEXP — Commerce OS: система замість героїзму",
-        "Commerce OS для D2C та e-commerce брендів $0.5–10M: діагноз у грошах, побудова системи й вихід на ЄС/США — щоб виторг зростав без вас."
+        "WEEXP — система зростання для e-commerce: система замість героїзму",
+        "Система зростання для D2C та e-commerce брендів: діагноз у грошах, побудова системи й вихід на ЄС/США — щоб виторг зростав без вас."
       ],
       "en": [
-        "WEEXP — Commerce OS: a system instead of heroics",
-        "Commerce OS for D2C & e-commerce brands $0.5–10M: a diagnosis in money, building the system and expansion to the EU/US — so revenue grows without you."
+        "WEEXP — a growth system for e-commerce: a system instead of heroics",
+        "A growth system for D2C & e-commerce brands: a diagnosis in money, building the system and expansion to the EU/US — so revenue grows without you."
       ]
     },
     "/systems": {
       "uk": [
-        "Вісім систем Commerce OS — з чого склались продажі · WEEXP",
+        "Вісім систем зростання — з чого склались продажі · WEEXP",
         "Онлайн-продажі як вісім систем: стратегія, комерція, попит, досвід, операції, дані, організація й експансія. Виторг витікає там, де найслабша."
       ],
       "en": [
-        "The eight Commerce OS systems · WEEXP",
+        "The eight growth systems · WEEXP",
         "Online sales as eight systems: strategy, commerce, demand, experience, operations, data, organization and expansion. Revenue leaks at the weakest one."
       ]
     },
@@ -64,11 +64,11 @@
     "/contact": {
       "uk": [
         "Контакт — запит на діагноз · WEEXP",
-        "Залиште контакт — повернемося з планом діагностики у грошах. Для e-commerce виробників і D2C-брендів $0.5–10M."
+        "Залиште контакт — повернемося з планом діагностики у грошах. Для e-commerce виробників і D2C-брендів."
       ],
       "en": [
         "Contact — request a diagnosis · WEEXP",
-        "Leave your contact — we come back with a diagnosis plan in money. For e-commerce makers and D2C brands $0.5–10M."
+        "Leave your contact — we come back with a diagnosis plan in money. For e-commerce makers and D2C brands."
       ]
     },
     "/audit-pack": {

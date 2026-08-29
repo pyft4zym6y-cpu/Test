@@ -28,14 +28,14 @@ await mkdir(OUT, { recursive: true });
 
 // slug → { kick, title, metric }
 const CARDS = [
-  { slug: 'home', kick: 'Commerce OS', title: 'Система замість героїзму', metric: 'Діагноз у грошах · побудова системи · ЄС і США' },
+  { slug: 'home', kick: 'Система зростання', title: 'Система замість героїзму', metric: 'Діагноз у грошах · побудова системи · ЄС і США' },
   { slug: 'proof', kick: 'The Evidence', title: 'Систему видно в цифрах', metric: '×18 обороту · +65% продажів · дельти з CRM/ERP/GA4' },
   { slug: 'people', kick: 'Команда', title: 'Систему будують власники, не герої', metric: 'У кожної з 8 систем — свій відповідальний' },
   { slug: 'expansion', kick: 'Експансія', title: 'Вихід у ЄС і США як система', metric: 'Власний сайт · Amazon · Allegro · локальні маркетплейси' },
   { slug: 'diagnose', kick: 'Express Audit', title: 'Порахуйте, скільки виторгу витікає', metric: 'Безкоштовно · ~2 хв · головний bottleneck + PDF' },
   { slug: 'pricing', kick: 'Формати і ціни', title: 'Три формати — за рівнем відповідальності', metric: 'Аудит · консалтинг · управління під ключ' },
-  { slug: 'systems', kick: 'Commerce OS', title: 'Вісім систем, з яких складаються продажі', metric: 'Виторг витікає там, де найслабша частина' },
-  { slug: 'contact', kick: 'Контакт', title: 'Зростання — це система. Почнімо з діагнозу.', metric: 'Для e-commerce виробників і D2C-брендів $0.5–10M' },
+  { slug: 'systems', kick: 'Система зростання', title: 'Вісім систем, з яких складаються продажі', metric: 'Виторг витікає там, де найслабша частина' },
+  { slug: 'contact', kick: 'Контакт', title: 'Зростання — це система. Почнімо з діагнозу.', metric: 'Для e-commerce виробників і D2C-брендів' },
 ];
 
 /*
@@ -96,7 +96,7 @@ body{background:#FAF5E9;font-family:"Segoe UI",Helvetica,Arial,sans-serif;color:
     <div class="title">${esc(c.title)}</div>
     <div class="metric">${esc(c.metric)}</div>
   </div>
-  <div class="foot"><span class="chip">Commerce OS</span><span class="chip">D2C · e-commerce $0.5–10M</span><span class="chip">🇺🇦 Made in Ukraine</span></div>
+  <div class="foot"><span class="chip">Система зростання</span><span class="chip">D2C · e-commerce</span><span class="chip">🇺🇦 Made in Ukraine</span></div>
 </div></body></html>`;
 
 const EXE = process.env.CHROMIUM_PATH || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';

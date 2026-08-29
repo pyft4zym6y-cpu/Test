@@ -160,16 +160,16 @@ const EN_BODY = {
   '/people': `<p>WEEXP was founded by Pavlo Sydorenko, Founder &amp; Architect of Commerce (8+ years in international e-commerce: US · EU · MENA). Each of the eight systems of online sales has an owner accountable for the result — specialists, not generalists.</p>${ul(ROSTER_EN)}`,
   '/expansion': `<p>Europe and the US are a separate business contour. We launch systematically and across all storefronts of a market at once. Priority markets: PL, DE, CZ, USA.</p><h2>Market storefronts</h2>${ul(CHANNELS_EN)}${expansionLinks('en')}`,
   '/diagnose': `<p>One instrument, not two: first we count how much leaks every year; then the map of eight systems, the main bottleneck, a cabinet with your data and an in-depth AI review. These are steps of one diagnosis.</p><h2>Steps of the diagnosis</h2>${ul(DIAG_STEPS_EN)}`,
-  '/contact': `<p>Leave a contact — we come back with the first cut of the gap, in money. For e-commerce manufacturers and D2C brands at $0.5–10M. This is not work yet; this is a diagnosis.</p>`,
+  '/contact': `<p>Leave a contact — we come back with the first cut of the gap, in money. For e-commerce manufacturers and D2C brands. This is not work yet; this is a diagnosis.</p>`,
   '/audit-pack': `<p>Before the start you see the full list of documents you will receive: intake (Discovery), the audit core, the evidence base, the plan and the handover.</p>`,
   '/pricing': `<p>The difference is not in «service packages» but in who carries final responsibility for the result.</p>${ul(FORMATS_EN)}<p>Every engagement starts with a diagnosis.</p>`,
 };
 
 const ROUTES = [
-  { path: '/', og: 'home', title: 'WEEXP — Commerce OS: система замість героїзму',
-    desc: 'Commerce OS для D2C та e-commerce брендів $0.5–10M: діагноз у грошах, побудова системи й вихід на ЄС/США — щоб виторг ріс без вас.',
-    content: `<h1>Система замість героїзму</h1><p>Продажі тримаються на людях і ручному режимі, а не на системі. WEEXP — Commerce OS для українських виробників і D2C-брендів $0.5–10M: діагностуємо систему онлайн-продажів, рахуємо розрив у грошах і будуємо систему, щоб бізнес працював без героя.</p><p>${esc(SERVICES)}</p><h2>Вісім систем онлайн-продажів</h2>${ulLinks(SYSTEMS, SYS_SLUGS)}` },
-  { path: '/systems', og: 'systems', title: `Вісім систем Commerce OS${SUF}`,
+  { path: '/', og: 'home', title: 'WEEXP — система зростання для e-commerce: система замість героїзму',
+    desc: 'Система зростання для D2C та e-commerce брендів: діагноз у грошах, побудова системи й вихід на ЄС/США — щоб виторг ріс без вас.',
+    content: `<h1>Система замість героїзму</h1><p>Продажі тримаються на людях і ручному режимі, а не на системі. WEEXP будує систему зростання для українських виробників і D2C-брендів: діагностуємо систему онлайн-продажів, рахуємо розрив у грошах і будуємо систему, щоб бізнес працював без героя.</p><p>${esc(SERVICES)}</p><h2>Вісім систем онлайн-продажів</h2>${ulLinks(SYSTEMS, SYS_SLUGS)}` },
+  { path: '/systems', og: 'systems', title: `Вісім систем зростання${SUF}`,
     desc: 'Онлайн-продажі як вісім систем: стратегія, комерція, попит, досвід, операції, дані, організація й експансія. Виторг витікає там, де найслабша.',
     content: `<h1>Система сильна настільки, наскільки сильна найслабша частина</h1><p>Онлайн-продажі — не набір каналів, а вісім систем, які працюють разом. Виторг витікає там, де найслабша. Нижче — кожна: що вона вирішує і як ми її будуємо.</p>${ulLinks(SYSTEMS, SYS_SLUGS)}` },
   { path: '/proof', og: 'proof', title: `Докази — трансформації в цифрах${SUF}`,
@@ -185,8 +185,8 @@ const ROUTES = [
     desc: 'Єдина діагностика онлайн-продажів: за 5 хвилин порахуйте втрати, отримайте карту 8 систем, головний bottleneck і кабінет із планом повернення виторгу.',
     content: `<h1>Діагностика e-commerce: від числа до плану</h1><p>Один інструмент, а не два: спершу рахуємо, скільки витікає щороку; далі — карта восьми систем, головний bottleneck, кабінет із вашими даними та поглиблений AI-розбір. Це кроки однієї діагностики.</p><h2>Кроки діагностики</h2>${ul(['Профіль і симптоми', 'Ваш витік у грошах', 'Карта восьми систем', 'Кабінет Tier-2', 'Поглиблений AI-розбір'])}` },
   { path: '/contact', og: 'contact', title: `Контакт — запит на діагноз${SUF}`,
-    desc: 'Залиште контакт — повернемося з планом діагностики у грошах. Для e-commerce виробників і D2C-брендів $0.5–10M.',
-    content: `<h1>Зростання — це система. Почнімо з діагнозу.</h1><p>Залиште контакт — повернемося з першим зрізом розриву у грошах. Для e-commerce виробників і D2C-брендів $0.5–10M. Це ще не робота, це діагноз.</p><h2>Що буде далі</h2>${ul(NEXT_STEPS)}<p>Працюємо з українськими виробниками та D2C-брендами: власний сайт, маркетплейси, вихід на ЄС і США. Пишіть на hello@weexp.agency або лишайте контакт у формі.</p>` },
+    desc: 'Залиште контакт — повернемося з планом діагностики у грошах. Для e-commerce виробників і D2C-брендів.',
+    content: `<h1>Зростання — це система. Почнімо з діагнозу.</h1><p>Залиште контакт — повернемося з першим зрізом розриву у грошах. Для e-commerce виробників і D2C-брендів. Це ще не робота, це діагноз.</p><h2>Що буде далі</h2>${ul(NEXT_STEPS)}<p>Працюємо з українськими виробниками та D2C-брендами: власний сайт, маркетплейси, вихід на ЄС і США. Пишіть на hello@weexp.agency або лишайте контакт у формі.</p>` },
   { path: '/audit-pack', og: 'pricing', title: `Склад пакета аудиту — 19 артефактів${SUF}`,
     desc: 'Повний перелік документів глибокого аудиту WEEXP: від брифу й карти доступів до роадмапи хвилями і протоколу передачі.',
     content: `<h1>Пакет аудиту — 19 артефактів</h1><p>До старту ви бачите повний перелік документів, які отримаєте: вхід (Discovery), ядро аудиту, доказова база, план і закриття. Аудит закінчується не презентацією, а переданою системою.</p><h2>Що входить</h2>${ul(PACK)}<p>Кожен артефакт має власника з боку WEEXP і Definition of Done — інакше він не вважається зданим.</p>` },
@@ -217,11 +217,11 @@ for (const [slug, title, en] of SERVICE_META) {
     // Своя OG-картка на кожну систему: до цього вісім сторінок ділили загальну
     // /og.png і в стрічці виглядали одним і тим самим посиланням.
     og: `sys-${slug}`,
-    // Суфікс «— послуга WEEXP · Commerce OS» — 29 символів, і найдовша назва
+    // Довгий суфікс з'їдав ліміт заголовка, і найдовша назва
     // системи виводила заголовок на 62 при межі ~60: у видачі він обрізався.
     // Слово «послуга» ще й не шукають — лишається бренд. Та сама формула, що
     // в ServicePage.tsx: статика й клієнт мають казати одне.
-    title: `${title} · Commerce OS · WEEXP`,
+    title: `${title} · система зростання · WEEXP`,
     desc: `${title}: проблема → наслідки → діагностика → рішення → процес → результат → докази. ${promise}`.slice(0, 300),
     content: `<h1>${esc(title)}</h1><p>${esc(en)}. ${esc(promise)}</p><h2>Як працюємо</h2><p>Діагностуємо систему за даними (CRM/ERP/GA4), будуємо її під ключ і доводимо до економіки — щоб бізнес працював без героя. Проблема → наслідки → діагностика → рішення → процес → результат → докази → умови.</p>`,
   });
@@ -240,7 +240,7 @@ for (const [slug, m] of Object.entries(SEO.expansion)) {
     path: `/expansion/${slug}`, og: `exp-${slug}`, title: m.uk[0], desc: m.uk[1],
     // Раніше тіло було одним абзацом — тим самим описом, що вже в <meta>.
     // Додаємо контекст, спільний для всіх напрямів експансії.
-    content: `<h1>${esc(m.uk[0].split(' — ')[0])}</h1><p>${esc(m.uk[1])}</p><h2>Як це вбудовано в систему</h2><p>Напрям не існує окремо: він частина Commerce OS і міряється тими самими грошима, що й решта. Спершу діагностика за даними CRM/ERP/GA4, далі — план хвилями з Definition of Done, далі — робота до економіки, а не до звіту.</p>${ulLinks(SYSTEMS, SYS_SLUGS)}`,
+    content: `<h1>${esc(m.uk[0].split(' — ')[0])}</h1><p>${esc(m.uk[1])}</p><h2>Як це вбудовано в систему</h2><p>Напрям не існує окремо: він частина системи зростання і міряється тими самими грошима, що й решта. Спершу діагностика за даними CRM/ERP/GA4, далі — план хвилями з Definition of Done, далі — робота до економіки, а не до звіту.</p>${ulLinks(SYSTEMS, SYS_SLUGS)}`,
   });
 }
 
@@ -255,9 +255,9 @@ for (const r of ROUTES) {
     path: key === '/' ? '/en' : `/en${key}`, og: r.og, lang: 'en',
     title: m.en[0], desc: m.en[1],
     // Підсторінки експансії йдуть спільним хвостом — так само, як українські:
-    // напрям не існує окремо, він частина Commerce OS.
+    // напрям не існує окремо, він частина системи зростання.
     content: head + (EN_BODY[key] ?? (key.startsWith('/expansion/')
-      ? `<h2>How it fits the system</h2><p>A direction does not exist on its own: it is part of Commerce OS and is measured in the same money as the rest. First a diagnosis on CRM/ERP/GA4 data, then a plan in waves with a Definition of Done, then work carried through to the economics — not to a report.</p>${ul(SYSTEMS_EN)}`
+      ? `<h2>How it fits the system</h2><p>A direction does not exist on its own: it is part of the growth system and is measured in the same money as the rest. First a diagnosis on CRM/ERP/GA4 data, then a plan in waves with a Definition of Done, then work carried through to the economics — not to a report.</p>${ul(SYSTEMS_EN)}`
       : '')),
   });
 }

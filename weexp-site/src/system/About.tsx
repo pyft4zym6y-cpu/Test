@@ -148,7 +148,7 @@ export function About() {
                 <span><b>8+</b> {t('років у e-commerce', 'years in e-commerce')}</span>
                 <span><b>US · EU · MENA</b></span>
                 <span>{t('бренди', 'brands')} <b>Forbes TOP-250</b></span>
-                <span>P&amp;L <b>$0.5–10M</b></span>
+                <span>{t('бренди й виробники', 'brands & makers')} <b>D2C</b></span>
               </div>
             </div>
           </div>
