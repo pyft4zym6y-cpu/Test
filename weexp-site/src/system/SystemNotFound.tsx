@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { usePageSeo } from '@/lib/seo';
 import { track } from '@/lib/analytics';
+import { appHref } from '@/lib/origins';
 import { useT, useLp } from '@/i18n';
 import './system.css';
 
@@ -34,7 +35,7 @@ export function SystemNotFound() {
           <Link to={lp('/expansion')}>{t('Експансія', 'Expansion')}</Link>
           <Link to={lp('/people')}>{t('Про нас', 'About')}</Link>
           <Link to={lp('/pricing')}>{t('Формати і ціни', 'Pricing')}</Link>
-          <Link to={lp('/cabinet')}>{t('Кабінет', 'Cabinet')}</Link>
+          <a href={appHref('/cabinet')}>{t('Кабінет', 'Cabinet')}</a>
         </nav>
       </div>
     </section>

@@ -5,6 +5,116 @@
   "outputDirectory": "weexp-site/dist",
   "redirects": [
     {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "app.weexp.agency"
+        }
+      ],
+      "destination": "/cabinet",
+      "permanent": false
+    },
+    {
+      "source": "/cabinet",
+      "has": [
+        {
+          "type": "host",
+          "value": "weexp.agency"
+        }
+      ],
+      "destination": "https://app.weexp.agency/cabinet",
+      "permanent": true
+    },
+    {
+      "source": "/cabinet/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "weexp.agency"
+        }
+      ],
+      "destination": "https://app.weexp.agency/cabinet/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/en/cabinet",
+      "has": [
+        {
+          "type": "host",
+          "value": "weexp.agency"
+        }
+      ],
+      "destination": "https://app.weexp.agency/en/cabinet",
+      "permanent": true
+    },
+    {
+      "source": "/en/cabinet/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "weexp.agency"
+        }
+      ],
+      "destination": "https://app.weexp.agency/en/cabinet/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/admin",
+      "has": [
+        {
+          "type": "host",
+          "value": "weexp.agency"
+        }
+      ],
+      "destination": "https://app.weexp.agency/admin",
+      "permanent": true
+    },
+    {
+      "source": "/admin/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "weexp.agency"
+        }
+      ],
+      "destination": "https://app.weexp.agency/admin/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/en/admin",
+      "has": [
+        {
+          "type": "host",
+          "value": "weexp.agency"
+        }
+      ],
+      "destination": "https://app.weexp.agency/admin",
+      "permanent": true
+    },
+    {
+      "source": "/en/admin/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "weexp.agency"
+        }
+      ],
+      "destination": "https://app.weexp.agency/admin/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/manage",
+      "has": [
+        {
+          "type": "host",
+          "value": "weexp.agency"
+        }
+      ],
+      "destination": "https://app.weexp.agency/admin",
+      "permanent": true
+    },
+    {
       "source": "/what-we-build/eu-expansion",
       "destination": "/expansion",
       "permanent": true
@@ -207,6 +317,16 @@
   ],
   "rewrites": [
     {
+      "source": "/robots.txt",
+      "has": [
+        {
+          "type": "host",
+          "value": "app.weexp.agency"
+        }
+      ],
+      "destination": "/robots-app.txt"
+    },
+    {
       "source": "/api/ai-score",
       "destination": "/api/ai-draft"
     },
@@ -238,6 +358,21 @@
     }
   ],
   "headers": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "app.weexp.agency"
+        }
+      ],
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
     {
       "source": "/assets/(.*)",
       "headers": [

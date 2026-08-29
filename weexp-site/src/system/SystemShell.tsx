@@ -6,6 +6,7 @@ import { SiteFooter } from '@/system/SiteFooter';
 import { CookieConsent } from '@/system/CookieConsent';
 import { RouteBreadcrumbs } from '@/system/Breadcrumbs';
 import { useT, useLp, useLang, stripLang } from '@/i18n';
+import { appHref, siteHref, isAppPath } from '@/lib/origins';
 import './system.css';
 import { PAGES } from '@/lib/nav';
 
@@ -80,6 +81,21 @@ export function SystemShell() {
   }, []);
   const isActive = (to: string) => (to === '/' ? base === '/' : base.startsWith(to));
 
+  /*
+   * Оболонка одна на обидва походження, але показує різне.
+   *
+   * Кабінет клієнта живе всередині цієї ж оболонки, і після розведення адрес
+   * над проєктом клієнта висіла б повна маркетингова навігація — «Системи»,
+   * «Наші перемоги», «Ціни», кнопка Express audit. Тобто адреси розвели б, а
+   * сайт усередині ведення проєкту лишився б: людина зайшла подивитись свій
+   * проєкт, а їй продають. Тому на робочих екранах шапка згортається до
+   * потрібного: знак (веде на сайт), мова і вихід у кабінет.
+   *
+   * Вирішує ШЛЯХ, а не хост: у розробці піддомену немає, і якби прапорець
+   * залежав від хоста, локально кабінет завжди виглядав би не так, як у бою.
+   */
+  const workspace = isAppPath(pathname);
+
   const LangToggle = ({ className = '' }: { className?: string }) => (
     <div className={'sysh-lang mono ' + className} role="group" aria-label="Мова / Language">
       <Link to={base} className={'sysh-lang-o' + (lang === 'uk' ? ' is-on' : '')} aria-current={lang === 'uk'} hrefLang="uk">UA</Link>
@@ -94,23 +110,33 @@ export function SystemShell() {
       <ReadingProgress />
       <span ref={sentinel} className="sysh-sentinel" aria-hidden="true" />
       <header ref={nav} className="sysh-nav">
-        <Link to={lp('/')} className="sysh-brand" aria-label="WEEXP"><Logo title="WEEXP" /></Link>
-        <nav className="sysh-links">
-          {LINKS.map((l) => (
-            <NavLink key={l.to} to={lp(l.to)} end={l.to === '/'} className={({ isActive }) => 'sysh-link mono' + (isActive ? ' is-on' : '')}>{t(l.uk, l.en)}</NavLink>
-          ))}
-        </nav>
+        {workspace
+          ? <a href={siteHref('/')} className="sysh-brand" aria-label="WEEXP"><Logo title="WEEXP" /></a>
+          : <Link to={lp('/')} className="sysh-brand" aria-label="WEEXP"><Logo title="WEEXP" /></Link>}
+        {!workspace && (
+          <nav className="sysh-links">
+            {LINKS.map((l) => (
+              <NavLink key={l.to} to={lp(l.to)} end={l.to === '/'} className={({ isActive }) => 'sysh-link mono' + (isActive ? ' is-on' : '')}>{t(l.uk, l.en)}</NavLink>
+            ))}
+          </nav>
+        )}
         <div className="sysh-right">
           <LangToggle />
-          <Link to={lp('/cabinet')} className={'sysh-account' + (isActive('/cabinet') ? ' is-on' : '')} aria-label={t('Особистий кабінет', 'Client cabinet')} title={t('Кабінет', 'Cabinet')}><Icon d={I.user} /></Link>
-          <Link to={lp('/diagnose')} className="sysh-cta mono">Express audit →</Link>
+          {/* Кабінет живе на іншому походженні (app.weexp.agency), тож це
+              звичайне посилання, а не <Link> роутера: react-router уміє ходити
+              лише в межах свого застосунку і на чужий хост не перейде. */}
+          <a href={appHref('/cabinet')} className="sysh-account" aria-label={t('Особистий кабінет', 'Client cabinet')} title={t('Кабінет', 'Cabinet')}><Icon d={I.user} /></a>
+          {!workspace && <Link to={lp('/diagnose')} className="sysh-cta mono">Express audit →</Link>}
         </div>
-        <button className="sysh-burger" aria-label={t('Меню', 'Menu')} aria-expanded={open} onClick={() => setOpen((v) => !v)}>
-          <Icon d={I.menu} />
-        </button>
+        {!workspace && (
+          <button className="sysh-burger" aria-label={t('Меню', 'Menu')} aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+            <Icon d={I.menu} />
+          </button>
+        )}
       </header>
 
       {/* Повне меню (мобільне) */}
+      {!workspace && (
       <div className={`sysh-sheet${open ? ' is-open' : ''}`} role="dialog" aria-label={t('Меню', 'Menu')} aria-hidden={!open}>
         <div className="sysh-sheet-in">
           <div className="sysh-sheet-head">
@@ -126,8 +152,10 @@ export function SystemShell() {
           <Link to={lp('/diagnose')} className="sysx-cta is-primary sysh-sheet-cta">{t('Express audit', 'Express audit')} →</Link>
         </div>
       </div>
+      )}
 
-      {/* Нижня панель (мобільна) */}
+      {/* Нижня панель (мобільна) — теж лише на сайті */}
+      {!workspace && (
       <nav className="sysh-tabs" aria-label={t('Швидка навігація', 'Quick navigation')}>
         {TABS.map((tb) => (
           <Link key={tb.to} to={lp(tb.to)} className={`sysh-tab${isActive(tb.to) ? ' is-on' : ''}`}>
@@ -138,10 +166,13 @@ export function SystemShell() {
           <Icon d={I.menu} /><span>{t('Меню', 'Menu')}</span>
         </button>
       </nav>
+      )}
 
-      <RouteBreadcrumbs />
+      {!workspace && <RouteBreadcrumbs />}
       <div id="main-content" tabIndex={-1}><Outlet /></div>
-      <SiteFooter />
+      {/* Підвал сайту — це карта сайту, контакти й юридичні сторінки: у
+          робочому кабінеті він нічого не дає, лише повертає до продажу. */}
+      {!workspace && <SiteFooter />}
       <CookieConsent />
       <BackToTop />
     </div>

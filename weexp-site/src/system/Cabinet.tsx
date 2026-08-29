@@ -199,8 +199,11 @@ export function Cabinet() {
           ))}
         </nav>
         <div className="cab-side-foot">
+          {/* Без lp(): маршрута /en/admin не існує — адмінка одномовна за
+              конвенцією, і мовний префікс вів менеджера з англійського
+              кабінету просто у 404. */}
           {isManager(user) && (
-            <Link to={lp('/admin')} className="cab-admin-link mono" title={t('Перейти в адмін-панель WEEXP', 'Open the WEEXP admin panel')}>
+            <Link to="/admin" className="cab-admin-link mono" title={t('Перейти в адмін-панель WEEXP', 'Open the WEEXP admin panel')}>
               {t('⚙ Адмін-панель', '⚙ Admin panel')} →
             </Link>
           )}

@@ -14,6 +14,7 @@ import {
 } from '@/lib/supa';
 
 import { toast } from '@/lib/toast';
+import { siteHref } from '@/lib/origins';
 
 import { type Block } from '../auditTemplate';
 
@@ -410,7 +411,9 @@ export const ALL_ROLES: Role[] = ['super', 'admin', 'manager', 'auditor'];
 export type SaveState = 'idle' | 'dirty' | 'saving' | 'saved' | 'error';
 
 export function Shell({ children }: { children: React.ReactNode }) {
-  return <div className="sysx adm"><div className="adm-in"><Link to="/" className="mc-back mono">← weexp.agency</Link>{children}</div></div>;
+  // Сайт — інше походження (weexp.agency), тому <a>, а не <Link>: роутер
+  // адмінки не вміє виходити за межі свого хоста.
+  return <div className="sysx adm"><div className="adm-in"><a href={siteHref('/')} className="mc-back mono">← weexp.agency</a>{children}</div></div>;
 }
 
 export function Block({ title, children }: { title: string; children: React.ReactNode }) {

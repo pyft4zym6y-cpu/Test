@@ -305,6 +305,21 @@ describe('серверные правила (vercel.json)', () => {
   const cfg = JSON.parse(readFileSync(join(ROOT, 'vercel.json'), 'utf8'));
 
   /*
+   * После разведения сайта и ведения проекта по двум origin у правил появилось
+   * второе измерение — хост (`has`). Тесты ниже раньше считали конфиг плоским
+   * и после разделения сообщали о проблемах, которых нет: правило для app.*
+   * подменяло собой глобальное при поиске по source, а два редиректа на РАЗНЫХ
+   * хостах выглядели цепочкой. Помечать это как «ложное срабатывание» и
+   * ослаблять проверки нельзя — они стерегут реальные вещи; правильный ответ
+   * в том, чтобы каждая смотрела на свой хост.
+   */
+  const hostOf = (r: { has?: { type: string; value: string }[] }): string | undefined =>
+    r.has?.find((h) => h.type === 'host')?.value;
+  /** Правила без условия по хосту — то есть общие для всех доменов. */
+  const global = <T extends { has?: { type: string; value: string }[] }>(rules: T[]) =>
+    rules.filter((r) => !hostOf(r));
+
+  /*
    * 22 устаревших адреса перенаправлялись клиентским <Navigate>: сервер отдавал
    * 200 с пустой оболочкой, а переход происходил уже после запуска JS. Для
    * поисковика это не переезд, а дубль — вес со старого адреса не передаётся.
@@ -316,18 +331,25 @@ describe('серверные правила (vercel.json)', () => {
     // файлов (/privacy → /privacy.html) намеренно временные: страницы ещё
     // могут стать React-маршрутами, а закэшированный браузером 301 не отозвать.
     const LEGAL = /^\/(en\/)?(privacy|cookies|cookie-policy|terms|oferta|security\.txt)$/;
-    const temp = red.filter((r: { source: string; permanent: boolean }) => !r.permanent && !LEGAL.test(r.source));
+    // Корень app.* → /cabinet временный намеренно: это удобство входа внутри
+    // одного домена, а не переезд адреса, и 301 тут закэшировался бы навсегда.
+    const temp = red.filter((r: { source: string; permanent: boolean; has?: { type: string; value: string }[] }) =>
+      !r.permanent && !LEGAL.test(r.source) && hostOf(r) !== 'app.weexp.agency');
     expect(temp, 'переезд контента отдаётся как временный 302').toEqual([]);
     for (const must of ['/cases', '/about', '/how-it-works', '/loss', '/intelligence'])
       expect(red.map((r: { source: string }) => r.source), `нет редиректа ${must}`).toContain(must);
   });
 
   it('заголовки безопасности выставлены', () => {
-    const h = (cfg.headers ?? []).find((x: { source: string }) => x.source === '/(.*)');
-    const keys = (h?.headers ?? []).map((x: { key: string }) => x.key);
+    // Именно глобальное правило: на app.* есть своё '/(.*)' с одним лишь
+    // X-Robots-Tag, и поиск по source находил бы его, а не набор безопасности.
+    type Hdr = { source: string; has?: { type: string; value: string }[]; headers: { key: string; value: string }[] };
+    const h = global<Hdr>(cfg.headers ?? []).find((x) => x.source === '/(.*)');
+    expect(h, 'нет глобального правила заголовков').toBeTruthy();
+    const keys = (h?.headers ?? []).map((x) => x.key);
     for (const k of ['X-Content-Type-Options', 'X-Frame-Options', 'Referrer-Policy', 'Strict-Transport-Security'])
       expect(keys, `нет заголовка ${k}`).toContain(k);
-    const hsts = h.headers.find((x: { key: string }) => x.key === 'Strict-Transport-Security').value;
+    const hsts = h!.headers.find((x) => x.key === 'Strict-Transport-Security')!.value;
     expect(hsts, 'HSTS короче года').toMatch(/max-age=(\d{8,})/);
   });
 
@@ -361,11 +383,28 @@ describe('серверные правила (vercel.json)', () => {
   });
 
   it('редиректы не строят цепочку из двух прыжков', () => {
-    const red: { source: string; destination: string }[] = cfg.redirects ?? [];
-    const bySource = new Map(red.map((r) => [r.source, r.destination]));
+    /*
+     * Цепочка — это два прыжка, которые браузер делает ПОДРЯД, то есть на
+     * одном хосте. После разделения / → /cabinet (на app.*) и /cabinet →
+     * app.weexp.agency/cabinet (на сайте) выглядели цепочкой, хотя выполняются
+     * на разных доменах и никогда не встречаются в одном запросе. Сравниваем
+     * внутри хоста, а межхостовые переезды разворачиваем в путь.
+     */
+    type Red = { source: string; destination: string; has?: { type: string; value: string }[] };
+    const red: Red[] = cfg.redirects ?? [];
+    const byHost = new Map<string, Map<string, string>>();
     for (const r of red) {
-      const next = bySource.get(r.destination.split('#')[0].replace(/\/$/, '') || '/');
-      expect(next, `${r.source} → ${r.destination} → ${next}: лишний прыжок, вес теряется`).toBeUndefined();
+      const h = hostOf(r) ?? '';
+      if (!byHost.has(h)) byHost.set(h, new Map());
+      byHost.get(h)!.set(r.source, r.destination);
+    }
+    for (const r of red) {
+      const dest = r.destination.split('#')[0];
+      // Переезд на другой origin: следующий прыжок, если он есть, будет уже
+      // по правилам ТОГО хоста — здесь его искать бессмысленно.
+      if (/^https?:\/\//.test(dest)) continue;
+      const next = byHost.get(hostOf(r) ?? '')!.get(dest.replace(/\/$/, '') || '/');
+      expect(next, `${r.source} → ${dest} → ${next}: лишний прыжок, вес теряется`).toBeUndefined();
     }
   });
 });

@@ -6,6 +6,7 @@ import { Toaster } from '@/lib/toast';
 import '@/lib/primitives.css';
 import { langOf } from '@/i18n';
 import { reloadOnceForChunk } from '@/lib/chunkReload';
+import { HostGuard } from '@/lib/HostGuard';
 
 /**
  * Переклад без контексту: мова визначається прямо з URL.
@@ -139,6 +140,10 @@ export default function App() {
   return (
     <BrowserRouter>
       <RouteSeo />
+      {/* Сайт і ведення проєкту живуть на різних походженнях: сторож приводить
+          адресу до правильного, зокрема при клієнтській навігації, якої
+          серверні редиректи не бачать. */}
+      <HostGuard />
       <Engagement />
       <ScrollToTop />
       <ScrollToHash />
