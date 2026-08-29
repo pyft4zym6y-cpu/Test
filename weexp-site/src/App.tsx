@@ -111,6 +111,8 @@ const Cabinet = lazy(() => import('@/system/Cabinet').then((m) => ({ default: m.
 const AdminPanel = lazy(() => import('@/system/AdminPanel').then((m) => ({ default: m.AdminPanel })));
 const ServicePage = lazy(() => import('@/system/ServicePage').then((m) => ({ default: m.ServicePage })));
 const Pricing = lazy(() => import('@/system/Pricing').then((m) => ({ default: m.Pricing })));
+const BlogHub = lazy(() => import('@/system/BlogHub').then((m) => ({ default: m.BlogHub })));
+const BlogPost = lazy(() => import('@/system/BlogPost').then((m) => ({ default: m.BlogPost })));
 const AuditPackPage = lazy(() => import('@/system/AuditPackPage').then((m) => ({ default: m.AuditPackPage })));
 
 // /challenges/:slug (легасі) → відповідна світла сторінка системи /systems/:slug
@@ -131,6 +133,11 @@ const PAGES: { path: string; el: JSX.Element }[] = [
   { path: '/diagnose', el: <LossCalculator /> },
   { path: '/pricing', el: <Pricing /> },
   { path: '/audit-pack', el: <AuditPackPage /> },
+  // Блог поки лише українською: сторінки монтуються і під /en, але BlogTeaser
+  // там не показується, а сам блог веде на українські тексти. Це свідомо —
+  // англомовний читач на українському лонгриді гірший за його відсутність.
+  { path: '/blog', el: <BlogHub /> },
+  { path: '/blog/:slug', el: <BlogPost /> },
   { path: '/systems', el: <SystemsHub /> },
   { path: '/systems/:slug', el: <ServicePage /> },
   { path: '/contact', el: <ContactFilm /> },

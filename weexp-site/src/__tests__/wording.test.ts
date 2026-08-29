@@ -17,7 +17,9 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { PAGES, EXTRA_PAGES, nameOf } from '../lib/nav';
+import { PAGES, EXTRA_PAGES, SUB_PAGES, nameOf } from '../lib/nav';
+import { SYSTEMS, shortOf } from '../data/xray';
+import { EXPERTISES, L } from '../system/expertises';
 import { TOTAL_DOMAINS } from '../data/xray';
 import { AUDIT_BLOCKS } from '../data/auditPack';
 import { HEADLINE_PROOF } from '../data/cases';
@@ -51,6 +53,46 @@ describe('назви сторінок — один перелік', () => {
       const src = readFileSync(join(SYS, f), 'utf8');
       expect(src, `${f} не бере назви з lib/nav`).toMatch(/from '@\/lib\/nav'/);
     }
+  });
+
+  it('короткі назви підсторінок не розійшлись із джерелом', () => {
+    /*
+     * SUB_PAGES дублює назви з xray.ts і expertises.ts — навмисно, щоб не
+     * тягнути на сторінку статті два важкі чанки заради двох слів. Дубль
+     * тримається на цьому тесті: без нього перейменована система лишиться зі
+     * старою назвою в кнопках блогу, і ніхто цього не помітить.
+     */
+    const bad: string[] = [];
+    for (const sys of SYSTEMS) {
+      for (const lang of ['uk', 'en'] as const) {
+        const want = shortOf(sys.key, lang);
+        const got = nameOf(`/systems/${sys.slug}`, lang);
+        if (got !== want) bad.push(`/systems/${sys.slug} (${lang}): «${got}» ≠ «${want}»`);
+      }
+    }
+    for (const e of EXPERTISES) {
+      // Експертизи мають довгі заголовки, тож звіряємо не з повним title, а з
+      // тим, що назва підсторінки взагалі існує й непорожня.
+      for (const lang of ['uk', 'en'] as const) {
+        if (!nameOf(`/expansion/${e.slug}`, lang)) bad.push(`/expansion/${e.slug} (${lang}): назви немає`);
+      }
+      // …і що вона не суперечить заголовку: або збігається, або є його частиною.
+      const full = L(e.title, 'uk');
+      const short = nameOf(`/expansion/${e.slug}`, 'uk');
+      if (short && !full.toLowerCase().includes(short.toLowerCase().split('/')[0]))
+        bad.push(`/expansion/${e.slug}: «${short}» не звучить у заголовку «${full}»`);
+    }
+    expect(bad).toEqual([]);
+  });
+
+  it('кожна підсторінка систем і експертиз має коротку назву', () => {
+    // Нова система або експертиза без назви тут дасть у блозі кнопку зі слугом.
+    const have = new Set(SUB_PAGES.map((p) => p.to));
+    const missing = [
+      ...SYSTEMS.map((s) => `/systems/${s.slug}`),
+      ...EXPERTISES.map((e) => `/expansion/${e.slug}`),
+    ].filter((to) => !have.has(to));
+    expect(missing).toEqual([]);
   });
 
   it('у кожної сторінки меню є назва обома мовами', () => {

@@ -1,0 +1,966 @@
+[
+  {
+    "slug": "ux-doslidzhennya-v-magazyni",
+    "title": "UX-дослідження в магазині: як зрозуміти, чому люди не купують",
+    "description": "Які UX-дослідження потрібні інтернет-магазину: коридорні тести, записи сесій, аналіз звернень, інтервʼю з покупцями та як перетворити знахідки на зміни.",
+    "keywords": [
+      "UX-дослідження",
+      "юзабіліті-тестування",
+      "записи сесій",
+      "інтервʼю з клієнтами",
+      "дослідження користувачів"
+    ],
+    "category": "experience",
+    "pages": [
+      "/expansion/ux-ui",
+      "/expansion/branding",
+      "/systems/experience-conversion",
+      "/expansion/web-development"
+    ],
+    "published": "2026-09-16",
+    "readMin": 7
+  },
+  {
+    "slug": "brend-v-ecommerce",
+    "title": "Бренд в e-commerce: навіщо він, коли вирішує ціна",
+    "description": "Навіщо магазину бренд і як його будувати: що таке бренд практично, як він знижує вартість залучення, елементи айдентики, тон комунікації та вимір ефекту.",
+    "keywords": [
+      "бренд в e-commerce",
+      "брендинг магазину",
+      "айдентика",
+      "впізнаваність",
+      "тон комунікації",
+      "позиціонування бренду"
+    ],
+    "category": "expansion",
+    "pages": [
+      "/expansion/branding",
+      "/expansion/ux-ui",
+      "/expansion/marketing",
+      "/expansion"
+    ],
+    "published": "2026-09-15",
+    "readMin": 7
+  },
+  {
+    "slug": "z-chogo-pochaty-transformaciyu",
+    "title": "З чого почати зміни в магазині: перші 90 днів",
+    "description": "План перших 90 днів змін в інтернет-магазині: що зробити в перший місяць, як обрати пріоритети, як не зупинитись і як виміряти результат наприкінці кварталу.",
+    "keywords": [
+      "з чого почати",
+      "план на 90 днів",
+      "зміни в магазині",
+      "трансформація бізнесу",
+      "перші кроки"
+    ],
+    "category": "method",
+    "pages": [
+      "/",
+      "/contact",
+      "/diagnose",
+      "/proof"
+    ],
+    "published": "2026-09-14",
+    "readMin": 7
+  },
+  {
+    "slug": "kejsy-yak-chytaty",
+    "title": "Як читати кейси e-commerce: що за цифрами зростання",
+    "description": "Як перевіряти кейси інтернет-магазинів: базовий рівень, період порівняння, супутні зміни, оборот проти прибутку й питання, які ставлять авторам кейсу.",
+    "keywords": [
+      "кейси e-commerce",
+      "як читати кейс",
+      "оцінка результатів",
+      "зростання продажів",
+      "перевірка результатів"
+    ],
+    "category": "method",
+    "pages": [
+      "/proof",
+      "/",
+      "/people",
+      "/pricing",
+      "/contact"
+    ],
+    "published": "2026-09-13",
+    "readMin": 7
+  },
+  {
+    "slug": "yak-obraty-pidryadnyka",
+    "title": "Як обрати підрядника для e-commerce і не витратити квартал даремно",
+    "description": "Як обирати агенцію чи підрядника для інтернет-магазину: питання на першій зустрічі, перевірка кейсів, формат договору, показники результату й ознаки ризику.",
+    "keywords": [
+      "вибір підрядника",
+      "агенція для магазину",
+      "як обрати агенцію",
+      "договір з підрядником",
+      "оцінка кейсів"
+    ],
+    "category": "method",
+    "pages": [
+      "/pricing",
+      "/contact",
+      "/people",
+      "/proof"
+    ],
+    "published": "2026-09-12",
+    "readMin": 7
+  },
+  {
+    "slug": "shcho-take-ekspres-audyt",
+    "title": "Експрес-аудит за пів години: як швидко оцінити стан магазину",
+    "description": "Як швидко оцінити стан інтернет-магазину: сім чисел, які треба зняти, орієнтири для порівняння, читання результату й що робити з кожним типом провалу.",
+    "keywords": [
+      "експрес-аудит",
+      "швидка діагностика магазину",
+      "оцінка стану бізнесу",
+      "ключові показники",
+      "самоперевірка e-commerce"
+    ],
+    "category": "method",
+    "pages": [
+      "/diagnose",
+      "/audit-pack",
+      "/",
+      "/contact"
+    ],
+    "published": "2026-09-11",
+    "readMin": 7
+  },
+  {
+    "slug": "yak-provesty-audyt-ecommerce",
+    "title": "Як провести аудит інтернет-магазину: що перевіряти й у якому порядку",
+    "description": "Як провести аудит e-commerce: підготовка даних, порядок перевірок по восьми зонах, оцінка втрат у грошах, пріоритизація та перетворення звіту на план дій.",
+    "keywords": [
+      "аудит інтернет-магазину",
+      "аудит e-commerce",
+      "перевірка магазину",
+      "діагностика бізнесу",
+      "план дій після аудиту"
+    ],
+    "category": "method",
+    "pages": [
+      "/audit-pack",
+      "/diagnose",
+      "/pricing",
+      "/",
+      "/contact"
+    ],
+    "published": "2026-09-10",
+    "readMin": 8
+  },
+  {
+    "slug": "strategiya-ta-upravlinnya-ecommerce",
+    "title": "Стратегія в e-commerce: як обрати напрямок і не міняти його щомісяця",
+    "description": "Як побудувати стратегію інтернет-магазину: позиціонування, вибір сегмента, цілі з числами, правила відмови, квартальні пріоритети й перегляд стратегії.",
+    "keywords": [
+      "стратегія e-commerce",
+      "позиціонування магазину",
+      "квартальні цілі",
+      "пріоритети бізнесу",
+      "управління магазином"
+    ],
+    "category": "systems",
+    "pages": [
+      "/systems/strategy-management",
+      "/systems",
+      "/people",
+      "/"
+    ],
+    "published": "2026-09-09",
+    "readMin": 7
+  },
+  {
+    "slug": "de-rvetsya-systema-prodazhiv",
+    "title": "Де рветься система продажів: сім найчастіших витоків",
+    "description": "Сім місць, де інтернет-магазин найчастіше втрачає гроші: невикуп, порожні атрибути, дублі клієнтів, повільний сайт, промо без розрахунку, дефіцит і хаос у даних.",
+    "keywords": [
+      "витоки в продажах",
+      "втрати інтернет-магазину",
+      "діагностика магазину",
+      "де втрачаються гроші",
+      "аудит e-commerce"
+    ],
+    "category": "systems",
+    "pages": [
+      "/systems",
+      "/",
+      "/diagnose",
+      "/audit-pack",
+      "/proof"
+    ],
+    "published": "2026-09-08",
+    "readMin": 7
+  },
+  {
+    "slug": "visim-system-onlajn-prodazhiv",
+    "title": "Вісім систем онлайн-продажів: із чого складається робочий e-commerce",
+    "description": "З яких систем складається онлайн-продаж: стратегія, економіка, попит, конверсія, операції, дані, організація та експансія. Як вони звʼязані й де рветься.",
+    "keywords": [
+      "система продажів",
+      "структура e-commerce",
+      "онлайн-продажі",
+      "бізнес-система",
+      "аудит систем"
+    ],
+    "category": "systems",
+    "pages": [
+      "/systems",
+      "/",
+      "/systems/strategy-management",
+      "/diagnose",
+      "/proof"
+    ],
+    "published": "2026-09-07",
+    "readMin": 8
+  },
+  {
+    "slug": "cinoutvorennya-na-novomu-rynku",
+    "title": "Ціноутворення на новому ринку: як не продавати в мінус за кордоном",
+    "description": "Як формувати ціни при виході на новий ринок: повна структура витрат, аналіз конкурентів, цінові очікування, валютний ризик і перевірка перед запуском.",
+    "keywords": [
+      "ціноутворення на новому ринку",
+      "ціни на експорт",
+      "цінова стратегія",
+      "валютний ризик",
+      "аналіз конкурентів"
+    ],
+    "category": "expansion",
+    "pages": [
+      "/systems/expansion-markets",
+      "/expansion/international",
+      "/systems/commercial-performance",
+      "/expansion"
+    ],
+    "published": "2026-09-06",
+    "readMin": 7
+  },
+  {
+    "slug": "logistyka-ta-podatky-eu",
+    "title": "Логістика й податки при продажах у ЄС: як влаштувати доставку та повернення",
+    "description": "Як влаштувати логістику при продажах у ЄС: моделі доставки, фулфілмент, зворотна логістика, ПДВ і мита, документи, строки й розрахунок вартості каналу.",
+    "keywords": [
+      "логістика в ЄС",
+      "фулфілмент",
+      "зворотна логістика",
+      "ПДВ при продажу в ЄС",
+      "мита",
+      "доставка в Європу"
+    ],
+    "category": "expansion",
+    "pages": [
+      "/systems/expansion-markets",
+      "/expansion/international",
+      "/systems/operations-fulfillment",
+      "/expansion"
+    ],
+    "published": "2026-09-05",
+    "readMin": 7
+  },
+  {
+    "slug": "lokalizaciya-sajtu",
+    "title": "Локалізація сайту: що змінити, крім мови",
+    "description": "Що входить у локалізацію інтернет-магазину: мова, формати, ціни й податки, юридичні сторінки, платежі, підтримка, технічна частина й типові помилки.",
+    "keywords": [
+      "локалізація сайту",
+      "багатомовний сайт",
+      "hreflang",
+      "адаптація для нового ринку",
+      "переклад магазину"
+    ],
+    "category": "expansion",
+    "pages": [
+      "/systems/expansion-markets",
+      "/expansion/international",
+      "/expansion/ux-ui",
+      "/expansion/web-development",
+      "/expansion/branding"
+    ],
+    "published": "2026-09-04",
+    "readMin": 7
+  },
+  {
+    "slug": "marketplace-yak-kanal",
+    "title": "Маркетплейси як канал: коли вони вигідні, а коли з'їдають маржу",
+    "description": "Як працювати з маркетплейсами: розрахунок економіки з комісіями, вибір асортименту для майданчика, рейтинг продавця, контент, і баланс із власним сайтом.",
+    "keywords": [
+      "маркетплейси",
+      "продажі на маркетплейсі",
+      "комісія маркетплейсу",
+      "рейтинг продавця",
+      "Rozetka",
+      "Amazon"
+    ],
+    "category": "expansion",
+    "pages": [
+      "/systems/expansion-markets",
+      "/expansion/sales-channels",
+      "/expansion/international",
+      "/expansion"
+    ],
+    "published": "2026-09-03",
+    "readMin": 7
+  },
+  {
+    "slug": "vyhid-na-rynok-es",
+    "title": "Вихід на ринок ЄС: із чого починати українському e-commerce",
+    "description": "Як вийти на ринок ЄС інтернет-магазину: вибір країни, юридична модель, ПДВ і мита, логістика, платежі, локалізація та реалістичний бюджет запуску.",
+    "keywords": [
+      "вихід на ринок ЄС",
+      "продажі в Європу",
+      "експорт e-commerce",
+      "OSS ПДВ",
+      "європейський ринок",
+      "міжнародна експансія"
+    ],
+    "category": "expansion",
+    "pages": [
+      "/systems/expansion-markets",
+      "/expansion/international",
+      "/expansion",
+      "/expansion/sales-channels"
+    ],
+    "published": "2026-09-02",
+    "readMin": 8
+  },
+  {
+    "slug": "operacijni-rytmy-zustrichi",
+    "title": "Операційний ритм: як зустрічі перестають бути витратою часу",
+    "description": "Як побудувати операційний ритм інтернет-магазину: тижневі, місячні й квартальні зустрічі, порядок денний, робота з відхиленнями й фіксація рішень.",
+    "keywords": [
+      "операційний ритм",
+      "планерки",
+      "управління за показниками",
+      "квартальні цілі",
+      "робота з відхиленнями"
+    ],
+    "category": "org",
+    "pages": [
+      "/systems/organization-operating-model",
+      "/systems/strategy-management",
+      "/systems/data-technology",
+      "/people"
+    ],
+    "published": "2026-09-01",
+    "readMin": 7
+  },
+  {
+    "slug": "najm-ta-ocinka-komandy",
+    "title": "Найм і оцінка команди в e-commerce: кого брати й за чим стежити",
+    "description": "Як наймати й оцінювати людей в e-commerce: у якому порядку закривати ролі, тестові завдання, критерії оцінки, свій штат чи підрядник і зарплатна модель.",
+    "keywords": [
+      "найм в e-commerce",
+      "оцінка команди",
+      "тестове завдання",
+      "підрядник чи штат",
+      "мотивація команди",
+      "KPI співробітників"
+    ],
+    "category": "org",
+    "pages": [
+      "/systems/organization-operating-model",
+      "/people",
+      "/systems/strategy-management",
+      "/pricing"
+    ],
+    "published": "2026-08-31",
+    "readMin": 7
+  },
+  {
+    "slug": "roli-ta-reglamenty-v-ecommerce",
+    "title": "Ролі й регламенти в e-commerce: хто за що відповідає",
+    "description": "Як розподілити ролі в команді інтернет-магазину: зони відповідальності, межі повноважень, стики між функціями, регламенти та перевірка розподілу на практиці.",
+    "keywords": [
+      "ролі в команді",
+      "зони відповідальності",
+      "регламенти",
+      "організаційна структура",
+      "розподіл обовʼязків",
+      "операційна модель"
+    ],
+    "category": "org",
+    "pages": [
+      "/systems/organization-operating-model",
+      "/systems/strategy-management",
+      "/people",
+      "/expansion/automation"
+    ],
+    "published": "2026-08-30",
+    "readMin": 7
+  },
+  {
+    "slug": "biznes-bez-vlasnyka",
+    "title": "Бізнес, який працює без власника: як вийти з операційки",
+    "description": "Як побудувати бізнес, що працює без власника: діагностика залежності, передача рішень, регламенти, показники замість контролю й етапи виходу з операційки.",
+    "keywords": [
+      "вихід з операційки",
+      "бізнес без власника",
+      "делегування",
+      "операційна модель",
+      "незалежність від власника"
+    ],
+    "category": "org",
+    "pages": [
+      "/systems/organization-operating-model",
+      "/systems/strategy-management",
+      "/people",
+      "/systems"
+    ],
+    "published": "2026-08-29",
+    "readMin": 8
+  },
+  {
+    "slug": "yakist-danyh-ta-zvitnist",
+    "title": "Якість даних: чому звітам не вірять і як це виправити",
+    "description": "Як налагодити якість даних в інтернет-магазині: типові дефекти довідників, дублі клієнтів, правила заповнення, перевірки цілісності та регламент звірки.",
+    "keywords": [
+      "якість даних",
+      "довідник товарів",
+      "дублі клієнтів",
+      "звірка даних",
+      "управлінська звітність",
+      "чистота бази"
+    ],
+    "category": "data",
+    "pages": [
+      "/systems/data-technology",
+      "/expansion/data-growth",
+      "/systems/strategy-management",
+      "/diagnose"
+    ],
+    "published": "2026-08-28",
+    "readMin": 7
+  },
+  {
+    "slug": "integraciyi-crm-erp",
+    "title": "Інтеграції CRM, обліку й сайту: як звʼязати системи й не зламати бізнес",
+    "description": "Як планувати інтеграції інтернет-магазину: карта систем, джерело істини, напрямок обміну, обробка помилок, порядок впровадження й контроль цілісності даних.",
+    "keywords": [
+      "інтеграція CRM",
+      "інтеграція з обліком",
+      "обмін даними",
+      "API інтеграція",
+      "джерело істини",
+      "синхронізація даних"
+    ],
+    "category": "data",
+    "pages": [
+      "/systems/data-technology",
+      "/expansion/technology",
+      "/expansion/automation",
+      "/expansion/web-development"
+    ],
+    "published": "2026-08-27",
+    "readMin": 7
+  },
+  {
+    "slug": "yedyni-cyfry-dashboard",
+    "title": "Одні цифри на весь бізнес: як зібрати дашборд, за яким приймають рішення",
+    "description": "Як зібрати управлінський дашборд інтернет-магазину: набір показників, джерела даних, періодичність, правила читання й типові помилки звітності.",
+    "keywords": [
+      "дашборд",
+      "управлінська звітність",
+      "ключові показники",
+      "KPI інтернет-магазину",
+      "єдині цифри",
+      "звіт для власника"
+    ],
+    "category": "data",
+    "pages": [
+      "/systems/data-technology",
+      "/expansion/data-growth",
+      "/systems/strategy-management",
+      "/audit-pack"
+    ],
+    "published": "2026-08-26",
+    "readMin": 7
+  },
+  {
+    "slug": "analityka-ga4-dlya-magazynu",
+    "title": "Аналітика магазину: що налаштувати, щоб цифрам можна було вірити",
+    "description": "Як налаштувати аналітику інтернет-магазину: електронна торгівля, події воронки, звірка з CRM, типові помилки збору даних і перелік звітів для рішень.",
+    "keywords": [
+      "аналітика інтернет-магазину",
+      "GA4",
+      "електронна торгівля",
+      "налаштування аналітики",
+      "звірка даних",
+      "воронка продажів"
+    ],
+    "category": "data",
+    "pages": [
+      "/systems/data-technology",
+      "/expansion/data-growth",
+      "/expansion/marketing",
+      "/diagnose"
+    ],
+    "published": "2026-08-25",
+    "readMin": 7
+  },
+  {
+    "slug": "obrobka-zamovlen-avtomatyzaciya",
+    "title": "Обробка замовлень: як автоматизувати те, що з'їдає час команди",
+    "description": "Як автоматизувати обробку замовлень в інтернет-магазині: карта процесу, статуси, накладні, сповіщення, робота з кількома каналами й контроль якості.",
+    "keywords": [
+      "автоматизація обробки замовлень",
+      "обробка замовлень",
+      "статуси замовлення",
+      "інтеграція з перевізником",
+      "операційні процеси"
+    ],
+    "category": "operations",
+    "pages": [
+      "/systems/operations-fulfillment",
+      "/expansion/automation",
+      "/expansion/technology",
+      "/systems/organization-operating-model",
+      "/expansion/sales-channels"
+    ],
+    "published": "2026-08-24",
+    "readMin": 7
+  },
+  {
+    "slug": "povernennya-tovariv",
+    "title": "Повернення товарів: як зменшити їхню кількість і вартість",
+    "description": "Як працювати з поверненнями в інтернет-магазині: причини повернень, зворотна логістика, правильні умови, аналітика причин і зниження частки повернень.",
+    "keywords": [
+      "повернення товарів",
+      "зворотна логістика",
+      "умови повернення",
+      "причини повернень",
+      "обмін товару"
+    ],
+    "category": "operations",
+    "pages": [
+      "/systems/operations-fulfillment",
+      "/systems/commercial-performance",
+      "/systems/experience-conversion",
+      "/audit-pack"
+    ],
+    "published": "2026-08-23",
+    "readMin": 7
+  },
+  {
+    "slug": "dostavka-ta-nevykup",
+    "title": "Доставка й невикуп: як зменшити втрати на післяплаті",
+    "description": "Як знизити відсоток невикупу й вартість доставки в інтернет-магазині: причини невикупу, підтвердження замовлень, стимули до передоплати, робота з перевізниками.",
+    "keywords": [
+      "невикуп",
+      "післяплата",
+      "доставка інтернет-магазину",
+      "вартість доставки",
+      "підтвердження замовлення",
+      "логістика e-commerce"
+    ],
+    "category": "operations",
+    "pages": [
+      "/systems/operations-fulfillment",
+      "/systems/commercial-performance",
+      "/expansion/automation",
+      "/diagnose"
+    ],
+    "published": "2026-08-22",
+    "readMin": 7
+  },
+  {
+    "slug": "sklad-i-zalyshky",
+    "title": "Склад і залишки: як не заморожувати гроші й не втрачати замовлення",
+    "description": "Як керувати залишками інтернет-магазину: точка замовлення, страховий запас, ABC-XYZ, оборотність, синхронізація наявності й боротьба з неліквідом.",
+    "keywords": [
+      "управління залишками",
+      "складський облік",
+      "оборотність запасів",
+      "точка замовлення",
+      "ABC-аналіз",
+      "неліквід"
+    ],
+    "category": "operations",
+    "pages": [
+      "/systems/operations-fulfillment",
+      "/systems/data-technology",
+      "/expansion/automation",
+      "/expansion/technology"
+    ],
+    "published": "2026-08-21",
+    "readMin": 7
+  },
+  {
+    "slug": "atrybuciya-kanaliv",
+    "title": "Атрибуція каналів: як зрозуміти, що насправді приводить продажі",
+    "description": "Як розібратись в атрибуції каналів: моделі атрибуції, чому кабінети завищують результат, перевірка вимкненням, MER і практичний порядок оцінки реклами.",
+    "keywords": [
+      "атрибуція",
+      "моделі атрибуції",
+      "асистовані конверсії",
+      "MER",
+      "оцінка каналів",
+      "мультиканальні послідовності"
+    ],
+    "category": "data",
+    "pages": [
+      "/systems/demand-customer",
+      "/systems/data-technology",
+      "/expansion/data-growth",
+      "/expansion/marketing"
+    ],
+    "published": "2026-08-20",
+    "readMin": 7
+  },
+  {
+    "slug": "kontent-marketyng-dlya-ecommerce",
+    "title": "Контент-маркетинг для e-commerce: як писати те, що приводить покупців",
+    "description": "Як побудувати контент-маркетинг інтернет-магазину: вибір тем за намірами покупця, формати, перелінковка з каталогом, розподіл і чесна оцінка результату.",
+    "keywords": [
+      "контент-маркетинг",
+      "блог інтернет-магазину",
+      "контент-план",
+      "інформаційні запити",
+      "теми для блогу магазину"
+    ],
+    "category": "traffic",
+    "pages": [
+      "/systems/demand-customer",
+      "/expansion/marketing",
+      "/expansion/branding",
+      "/expansion"
+    ],
+    "published": "2026-08-19",
+    "readMin": 7
+  },
+  {
+    "slug": "email-ta-crm-marketyng",
+    "title": "Email і CRM-маркетинг: як заробляти на базі, яка у вас уже є",
+    "description": "Як побудувати CRM-маркетинг в e-commerce: сегментація бази, тригерні ланцюжки, регулярні розсилки, месенджери й оцінка внеску каналу в прибуток.",
+    "keywords": [
+      "email-маркетинг",
+      "CRM-маркетинг",
+      "тригерні розсилки",
+      "сегментація бази",
+      "реактивація клієнтів",
+      "розсилки для магазину"
+    ],
+    "category": "traffic",
+    "pages": [
+      "/systems/demand-customer",
+      "/expansion/marketing",
+      "/expansion/automation",
+      "/systems/commercial-performance"
+    ],
+    "published": "2026-08-18",
+    "readMin": 7
+  },
+  {
+    "slug": "kontekstna-reklama-google-ads",
+    "title": "Контекстна реклама для магазину: як не платити за чужі кліки",
+    "description": "Як налаштувати контекстну рекламу інтернет-магазину: структура кампаній, товарний фід, мінус-слова, ставки, бюджет і оцінка реального результату.",
+    "keywords": [
+      "контекстна реклама",
+      "Google Ads для магазину",
+      "товарні оголошення",
+      "Performance Max",
+      "мінус-слова",
+      "рекламний фід"
+    ],
+    "category": "traffic",
+    "pages": [
+      "/systems/demand-customer",
+      "/expansion/marketing",
+      "/systems/commercial-performance",
+      "/diagnose"
+    ],
+    "published": "2026-08-17",
+    "readMin": 7
+  },
+  {
+    "slug": "seo-dlya-internet-magazynu",
+    "title": "SEO для інтернет-магазину: що справді впливає на трафік із пошуку",
+    "description": "SEO інтернет-магазину без міфів: структура сайту, категорії, картки, технічна база, контент і посилання. Порядок робіт і як міряти результат.",
+    "keywords": [
+      "SEO для інтернет-магазину",
+      "просування магазину",
+      "органічний трафік",
+      "оптимізація категорій",
+      "структура сайту",
+      "семантичне ядро"
+    ],
+    "category": "traffic",
+    "pages": [
+      "/systems/demand-customer",
+      "/expansion/marketing",
+      "/expansion/web-development",
+      "/expansion/technology"
+    ],
+    "published": "2026-08-16",
+    "readMin": 8
+  },
+  {
+    "slug": "poshuk-i-filtry-v-katalozi",
+    "title": "Пошук і фільтри в каталозі: як допомогти знайти те, що купують",
+    "description": "Як налаштувати пошук і фільтри в інтернет-магазині: структура категорій, атрибути товарів, обробка помилок, порожня видача, сортування й аналітика пошуку.",
+    "keywords": [
+      "пошук по сайту",
+      "фільтри в каталозі",
+      "фасетний пошук",
+      "структура каталогу",
+      "атрибути товарів",
+      "навігація магазину"
+    ],
+    "category": "experience",
+    "pages": [
+      "/systems/experience-conversion",
+      "/expansion/ux-ui",
+      "/expansion/web-development",
+      "/systems/data-technology"
+    ],
+    "published": "2026-08-15",
+    "readMin": 7
+  },
+  {
+    "slug": "mobilna-versiya-magazynu",
+    "title": "Мобільна версія магазину: чому вона продає гірше і як це виправити",
+    "description": "Чому мобільна конверсія нижча за десктопну і що з цим робити: зони великого пальця, розміри елементів, каталог, картка, чекаут і вимір на телефоні.",
+    "keywords": [
+      "мобільна версія",
+      "мобільна конверсія",
+      "адаптивний дизайн",
+      "mobile first",
+      "юзабіліті на телефоні"
+    ],
+    "category": "experience",
+    "pages": [
+      "/systems/experience-conversion",
+      "/expansion/ux-ui",
+      "/expansion/web-development",
+      "/expansion/technology"
+    ],
+    "published": "2026-08-14",
+    "readMin": 7
+  },
+  {
+    "slug": "shvydkist-sajtu-core-web-vitals",
+    "title": "Швидкість сайту та Core Web Vitals: скільки коштує кожна зайва секунда",
+    "description": "Як прискорити інтернет-магазин: Core Web Vitals простими словами, головні причини повільного завантаження, порядок оптимізації та вимір результату.",
+    "keywords": [
+      "швидкість сайту",
+      "Core Web Vitals",
+      "LCP",
+      "INP",
+      "CLS",
+      "оптимізація завантаження",
+      "PageSpeed"
+    ],
+    "category": "experience",
+    "pages": [
+      "/systems/experience-conversion",
+      "/expansion/web-development",
+      "/expansion/technology",
+      "/expansion/ux-ui"
+    ],
+    "published": "2026-08-13",
+    "readMin": 7
+  },
+  {
+    "slug": "checkout-bez-vtrat",
+    "title": "Оформлення замовлення: як прибрати втрати в чекауті",
+    "description": "Як зменшити відмови при оформленні замовлення: покроковий розбір чекауту, поля, способи оплати, доставка, помилки валідації та покинуті кошики.",
+    "keywords": [
+      "чекаут",
+      "оформлення замовлення",
+      "покинутий кошик",
+      "форма замовлення",
+      "способи оплати",
+      "конверсія чекауту"
+    ],
+    "category": "experience",
+    "pages": [
+      "/systems/experience-conversion",
+      "/expansion/ux-ui",
+      "/expansion/web-development",
+      "/systems/commercial-performance"
+    ],
+    "published": "2026-08-12",
+    "readMin": 7
+  },
+  {
+    "slug": "kartka-tovaru-shcho-prodaye",
+    "title": "Картка товару, яка продає: структура, фото, опис і докази",
+    "description": "Як зробити картку товару, що продає: порядок блоків, вимоги до фото, структура опису, відгуки й характеристики. Чекліст і типові помилки картки.",
+    "keywords": [
+      "картка товару",
+      "сторінка товару",
+      "опис товару",
+      "фото товару",
+      "відгуки",
+      "конверсія картки товару"
+    ],
+    "category": "experience",
+    "pages": [
+      "/systems/experience-conversion",
+      "/expansion/ux-ui",
+      "/expansion/web-development",
+      "/expansion/branding",
+      "/expansion/sales-channels"
+    ],
+    "published": "2026-08-11",
+    "readMin": 7
+  },
+  {
+    "slug": "konversiya-internet-magazynu",
+    "title": "Конверсія інтернет-магазину: де вона втрачається і що з цим робити",
+    "description": "Як підвищити конверсію інтернет-магазину: воронка по кроках, типові втрати на каталозі, картці й чекауті, пріоритизація гіпотез і коректний вимір.",
+    "keywords": [
+      "конверсія інтернет-магазину",
+      "як підвищити конверсію",
+      "воронка продажів",
+      "CRO",
+      "оптимізація конверсії"
+    ],
+    "category": "experience",
+    "pages": [
+      "/systems/experience-conversion",
+      "/expansion/ux-ui",
+      "/expansion/web-development",
+      "/diagnose"
+    ],
+    "published": "2026-08-10",
+    "readMin": 7
+  },
+  {
+    "slug": "znyzhky-ta-promo-bez-zbytkiv",
+    "title": "Знижки й акції: як робити промо, яке не з'їдає прибуток",
+    "description": "Як планувати знижки й акції в інтернет-магазині: розрахунок беззбитковості промо, механіки без втрати маржі, календар акцій і оцінка результату.",
+    "keywords": [
+      "знижки",
+      "акції в інтернет-магазині",
+      "промо",
+      "беззбитковість знижки",
+      "чорна пʼятниця",
+      "промокоди"
+    ],
+    "category": "commerce",
+    "pages": [
+      "/systems/commercial-performance",
+      "/expansion/sales-channels",
+      "/expansion/marketing",
+      "/pricing"
+    ],
+    "published": "2026-08-09",
+    "readMin": 7
+  },
+  {
+    "slug": "cac-ta-okupnist-reklamy",
+    "title": "CAC і окупність реклами: як зрозуміти, чи заробляє ваш маркетинг",
+    "description": "Як рахувати вартість залучення клієнта й окупність реклами: CAC, ROAS, MER, гранична вартість покупця. Приклади розрахунків і помилки атрибуції.",
+    "keywords": [
+      "CAC",
+      "вартість залучення клієнта",
+      "окупність реклами",
+      "ROAS",
+      "MER",
+      "гранична вартість покупця",
+      "рекламний бюджет"
+    ],
+    "category": "commerce",
+    "pages": [
+      "/systems/commercial-performance",
+      "/systems/demand-customer",
+      "/expansion/marketing",
+      "/diagnose"
+    ],
+    "published": "2026-08-08",
+    "readMin": 7
+  },
+  {
+    "slug": "povtorni-prodazhi-ta-ltv",
+    "title": "Повторні продажі та LTV: як утримання клієнта змінює економіку магазину",
+    "description": "Як рахувати LTV і піднімати частку повторних покупок: когорти, RFM, реактивація, програма лояльності. Приклади на числах і типові помилки утримання.",
+    "keywords": [
+      "повторні продажі",
+      "LTV клієнта",
+      "утримання клієнтів",
+      "RFM-аналіз",
+      "когортний аналіз",
+      "програма лояльності",
+      "retention"
+    ],
+    "category": "commerce",
+    "pages": [
+      "/systems/commercial-performance",
+      "/systems/demand-customer",
+      "/expansion/marketing",
+      "/expansion/data-growth"
+    ],
+    "published": "2026-08-07",
+    "readMin": 7
+  },
+  {
+    "slug": "marzhynalnist-ta-cinoutvorennya",
+    "title": "Маржинальність і ціноутворення: як ставити ціну, щоб залишався прибуток",
+    "description": "Як рахувати маржинальність і формувати ціни в інтернет-магазині: повна собівартість, цінові рівні, реакція на конкурентів і матриця асортименту.",
+    "keywords": [
+      "маржинальність",
+      "ціноутворення в інтернет-магазині",
+      "повна собівартість",
+      "націнка",
+      "цінова стратегія",
+      "ABC-аналіз асортименту"
+    ],
+    "category": "commerce",
+    "pages": [
+      "/systems/commercial-performance",
+      "/systems",
+      "/audit-pack",
+      "/expansion/data-growth"
+    ],
+    "published": "2026-08-06",
+    "readMin": 7
+  },
+  {
+    "slug": "serednij-chek-yak-pidvyshchyty",
+    "title": "Середній чек: як підняти його, не втративши конверсію",
+    "description": "Як підвищити середній чек інтернет-магазину: апсел, крос-сел, поріг безкоштовної доставки, набори й бандли. Формули, приклади й типові помилки.",
+    "keywords": [
+      "середній чек",
+      "як підвищити середній чек",
+      "AOV",
+      "апсел",
+      "крос-сел",
+      "поріг безкоштовної доставки",
+      "бандли товарів"
+    ],
+    "category": "commerce",
+    "pages": [
+      "/systems/commercial-performance",
+      "/systems/experience-conversion",
+      "/expansion/ux-ui",
+      "/diagnose"
+    ],
+    "published": "2026-08-05",
+    "readMin": 7
+  },
+  {
+    "slug": "unit-ekonomika-ecommerce",
+    "title": "Юніт-економіка інтернет-магазину: як рахувати, щоб бачити прибуток, а не оборот",
+    "description": "Як порахувати юніт-економіку інтернет-магазину: CAC, AOV, маржа, повторні покупки й contribution. Формули, приклад на числах і чекліст помилок.",
+    "keywords": [
+      "юніт-економіка",
+      "юніт-економіка інтернет-магазину",
+      "CAC",
+      "LTV",
+      "contribution margin",
+      "середній чек",
+      "маржинальність e-commerce",
+      "як рахувати прибуток інтернет-магазину"
+    ],
+    "category": "commerce",
+    "pages": [
+      "/systems/commercial-performance",
+      "/diagnose",
+      "/pricing",
+      "/audit-pack",
+      "/systems"
+    ],
+    "published": "2026-08-04",
+    "readMin": 6
+  }
+]

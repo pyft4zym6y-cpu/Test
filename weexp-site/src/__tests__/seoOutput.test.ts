@@ -255,9 +255,18 @@ describe.skipIf(!built)('карта сайта и правила обхода', 
         const [, href, text] = m;
         // Только вложенные адреса: /en/systems — это пункт меню, и «Systems»
         // там законная английская НАЗВА страницы, а не пересказ слага.
+        /*
+         * Правило спершу стерегло лише збіг тексту з ОСТАННІМ сегментом — і
+         * пропустило випадок, у якому підписом стала вся адреса: посилання
+         * «/systems/commercial-performance» слугу не дорівнює, а читачеві
+         * каже рівно стільки ж. Адреса в тексті посилання — та сама вада, у
+         * якому б вигляді вона не була.
+         */
+        const t = text.trim().toLowerCase();
+        if (t.startsWith('/')) { bad.push(`${u}: «${text}» (адреса замість назви)`); continue; }
         const segs = href.replace(/^\/en(?=\/|$)/, '').split('/').filter(Boolean);
         if (segs.length < 2) continue;
-        if (text.trim().toLowerCase() === segs[segs.length - 1]) bad.push(`${u}: «${text}»`);
+        if (t === segs[segs.length - 1]) bad.push(`${u}: «${text}»`);
       }
     }
     expect(bad, `текст ссылки = слаг: ${bad.slice(0, 6).join('; ')}`).toEqual([]);

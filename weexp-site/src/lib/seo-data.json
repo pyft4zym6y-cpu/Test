@@ -90,6 +90,16 @@
         "Get started — formats & pricing · WEEXP",
         "Three ways to work with WEEXP — audit, consulting & advisory, managed delivery. Open prices; the difference is who owns the result."
       ]
+    },
+    "/blog": {
+      "uk": [
+        "Блог WEEXP — практика e-commerce без загальних слів",
+        "Статті про економіку продажів, конверсію, операції, дані й вихід на нові ринки. Кожна відповідає на конкретне питання власника."
+      ],
+      "en": [
+        "WEEXP blog — e-commerce practice · WEEXP",
+        "Articles on sales economics, conversion, operations, data and expansion. Currently published in Ukrainian."
+      ]
     }
   },
   "expansion": {

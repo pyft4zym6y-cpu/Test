@@ -56,7 +56,42 @@ export const EXTRA_PAGES: PageName[] = [
   { to: '/audit-pack', uk: 'Склад пакета аудиту', en: 'Audit pack contents' },
 ];
 
-const ALL = [...PAGES, ...EXTRA_PAGES];
+/**
+ * Короткі назви підсторінок систем і експертиз.
+ *
+ * Потрібні там, де на сторінку треба ПОСЛАТИСЬ підписом кнопки — зокрема в
+ * блозі. Повні заголовки («Комерційна ефективність», «Міжнародна експансія»)
+ * у кнопку на телефоні не вміщаються, а слуг у підписі не каже читачеві
+ * нічого: перша версія блоку виводила «Commercial performance» — англійською,
+ * на українській сторінці, бо назва виводилась із адреси.
+ *
+ * Джерело назв — xray.ts (SHORT) і expertises.ts (title). Тут вони продубльовані
+ * навмисно: обидва модулі важкі (17 і 34 КБ окремими чанками), і тягнути їх на
+ * сторінку статті заради двох слів немає сенсу. Щоб дубль не розійшовся з
+ * джерелом, його звіряє тест wording.test.ts — це і є ціна цього рішення.
+ */
+export const SUB_PAGES: PageName[] = [
+  { to: '/systems/strategy-management', uk: 'Стратегія', en: 'Strategy' },
+  { to: '/systems/commercial-performance', uk: 'Комерція', en: 'Commerce' },
+  { to: '/systems/demand-customer', uk: 'Клієнт', en: 'Customer' },
+  { to: '/systems/experience-conversion', uk: 'Досвід', en: 'Experience' },
+  { to: '/systems/operations-fulfillment', uk: 'Операції', en: 'Operations' },
+  { to: '/systems/data-technology', uk: 'Дані', en: 'Data' },
+  { to: '/systems/organization-operating-model', uk: 'Організація', en: 'Organization' },
+  { to: '/systems/expansion-markets', uk: 'Експансія', en: 'Expansion' },
+  { to: '/expansion/international', uk: 'Міжнародна експансія', en: 'International expansion' },
+  { to: '/expansion/automation', uk: 'Бізнес-процеси', en: 'Business processes' },
+  { to: '/expansion/branding', uk: 'Брендинг', en: 'Branding' },
+  { to: '/expansion/ux-ui', uk: 'UX/UI дизайн', en: 'UX/UI design' },
+  { to: '/expansion/web-development', uk: 'Веб-розробка', en: 'Web development' },
+  { to: '/expansion/technology', uk: 'E-commerce Technology', en: 'E-commerce Technology' },
+  { to: '/expansion/marketing', uk: 'Маркетинг', en: 'Marketing' },
+  { to: '/expansion/sales-channels', uk: 'Канали продажів', en: 'Sales channels' },
+  { to: '/expansion/data-growth', uk: 'Data & Growth', en: 'Data & Growth' },
+  { to: '/blog', uk: 'Блог', en: 'Blog' },
+];
+
+const ALL = [...PAGES, ...EXTRA_PAGES, ...SUB_PAGES];
 
 /** Назва сторінки за адресою. Порожній рядок, якщо адреси немає в переліку. */
 export const nameOf = (to: string, lang: 'uk' | 'en'): string => {

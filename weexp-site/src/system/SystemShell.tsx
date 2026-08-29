@@ -3,6 +3,7 @@ import { useKeyboardClass } from '@/lib/keyboardClass';
 import { NavLink, Link, Outlet, useLocation } from 'react-router-dom';
 import { Logo } from '@/system/Logo';
 import { SiteFooter } from '@/system/SiteFooter';
+import { BlogTeaser } from '@/system/BlogTeaser';
 import { CookieConsent } from '@/system/CookieConsent';
 import { RouteBreadcrumbs } from '@/system/Breadcrumbs';
 import { useT, useLp, useLang, stripLang } from '@/i18n';
@@ -170,6 +171,12 @@ export function SystemShell() {
 
       {!workspace && <RouteBreadcrumbs />}
       <div id="main-content" tabIndex={-1}><Outlet /></div>
+      {/* Статті по темі сторінки — одним блоком над підвалом.
+          В оболонці, а не в кожній сторінці окремо: сторінок 26, і додавати
+          блок руками в кожну означало б, що на трьох його забудуть, а на
+          двох він опиниться в різних місцях. Компонент сам мовчить, якщо для
+          цієї адреси статей немає або мова англійська. */}
+      {!workspace && <BlogTeaser />}
       {/* Підвал сайту — це карта сайту, контакти й юридичні сторінки: у
           робочому кабінеті він нічого не дає, лише повертає до продажу. */}
       {!workspace && <SiteFooter />}

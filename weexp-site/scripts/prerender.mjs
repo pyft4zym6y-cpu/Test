@@ -7,7 +7,7 @@
  * краулери й AI без JS бачать зміст і мета, а не порожній div. Vercel віддає
  * статичні файли раніше за SPA-rewrite, тож ці сторінки реально доходять.
  */
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, readdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -244,10 +244,84 @@ for (const [slug, m] of Object.entries(SEO.expansion)) {
   });
 }
 
+/*
+ * Блог: хаб і кожна стаття як статичні сторінки.
+ *
+ * Читаємо ті самі JSON, з яких зібраний застосунок, — джерело одне. Тіло
+ * статті у статику йде скорочено: пряма відповідь, лід і заголовки H2. Цього
+ * достатньо, щоб краулер і AI-видача без JS бачили, ПРО ЩО стаття й яка в неї
+ * структура; повний текст віддає застосунок. Копіювати лонгрид у другий
+ * формат означало б завести другу версію правди.
+ */
+/*
+ * Назви підсторінок для тексту посилань — із lib/nav.ts, а не третім списком.
+ *
+ * Перша версія підписувала посилання в статиці самим шляхом:
+ * «/systems/commercial-performance». Це не текст посилання, а адреса; ні
+ * людині, ні краулеру вона нічого не каже — рівно та сама вада, через яку
+ * колись шість напрямів експансії були підписані слугами.
+ */
+const NAV_SRC = await readFile(join(ROOT, 'src', 'lib', 'nav.ts'), 'utf8');
+const NAMES = new Map(
+  [...NAV_SRC.matchAll(/\{ to: '([^']+)', uk: '([^']+)', en: '([^']+)' \}/g)].map((m) => [m[1], m[2]]),
+);
+const nameOfPath = (p) => NAMES.get(p) || p;
+
+const BLOG_DIR = join(ROOT, 'src', 'content', 'blog');
+const blogFiles = (await readdir(BLOG_DIR).catch(() => [])).filter((f) => f.endsWith('.json'));
+const BLOG = [];
+for (const f of blogFiles) {
+  BLOG.push(JSON.parse(await readFile(join(BLOG_DIR, f), 'utf8')));
+}
+BLOG.sort((a, b) => (a.published < b.published ? 1 : -1));
+
+if (BLOG.length) {
+  ROUTES.push({
+    path: '/blog', og: 'home',
+    title: SEO.routes['/blog'].uk[0], desc: SEO.routes['/blog'].uk[1],
+    content: `<h1>Блог WEEXP</h1><p>${esc(SEO.routes['/blog'].uk[1])}</p><h2>Статті</h2><ul>${
+      BLOG.map((a) => `<li><a href="/blog/${a.slug}">${esc(a.title)}</a> — ${esc(a.description)}</li>`).join('')}</ul>`,
+  });
+  for (const a of BLOG) {
+    ROUTES.push({
+      path: `/blog/${a.slug}`, og: 'home',
+      title: (a.seoTitle || a.title).slice(0, 60),
+      desc: a.description,
+      content: `<h1>${esc(a.title)}</h1><p>${esc(a.answer)}</p><p>${esc(a.lead)}</p>`
+        + a.sections.map((x) => `<h2>${esc(x.h)}</h2>`).join('')
+        + `<h2>Часті питання</h2><ul>${a.faq.map((f) => `<li><b>${esc(f.q)}</b> ${esc(f.a)}</li>`).join('')}</ul>`
+        + `<p>Читати далі: ${a.pages.map((p) => `<a href="${p}">${esc(nameOfPath(p))}</a>`).join(' · ')}</p>`,
+    });
+  }
+}
+
+/**
+ * Блок «Статті по темі» у статиці — той самий, що малює BlogTeaser у застосунку.
+ *
+ * Без нього краулер без JS не мав ЖОДНОГО шляху від головної до блогу: меню
+ * блогу не містить, а хаб ні звідки не лінкувався. Сорок статей були в карті
+ * сайту й недосяжні по посиланнях — рівно та сама хвороба, що колись була у
+ * восьми сторінок /systems/*. Порядок відбору повторює articlesFor():
+ * спершу ті, для яких ця сторінка стоїть ПЕРШОЮ в pages.
+ */
+function blogBlock(path) {
+  const mine = BLOG.filter((a) => a.pages.includes(path));
+  if (!mine.length) return '';
+  const primary = mine.filter((a) => a.pages[0] === path);
+  const rest = mine.filter((a) => a.pages[0] !== path);
+  const items = [...primary, ...rest].slice(0, 5);
+  return `<section aria-label="Статті по темі"><h2>Статті по темі</h2><ul>${
+    items.map((a) => `<li><a href="/blog/${a.slug}">${esc(a.title)}</a></li>`).join('')
+  }</ul><p><a href="/blog">Усі статті</a></p></section>`;
+}
+
 // EN-двійники. Тіло — з затвердженої EN-мети, а не переклад UK-тексту на око.
+// Блог поки лише українською, тому EN-двійників у нього немає: сторінка
+// англійською з українськими лонгридами обіцяє те, чого немає.
 const EN = [];
 for (const r of ROUTES) {
   const key = r.path;
+  if (key === '/blog' || key.startsWith('/blog/')) continue;
   const m = SEO.routes[key] || (key.startsWith('/expansion/') ? SEO.expansion[key.slice('/expansion/'.length)] : null);
   if (!m) continue;
   const head = `<h1>${esc(m.en[0].split(' — ')[0].replace(' · WEEXP', ''))}</h1><p>${esc(m.en[1])}</p>`;
@@ -312,7 +386,10 @@ function build(tpl, r) {
   ).join('')}<li><a href="${alt}">${r.lang === 'en' ? 'Українська' : 'English'}</a></li></ul></nav>`;
 
   // Контент усередині #root (клієнт замінює його при render). Прихований від FOUC.
-  h = h.replace('<div id="root"></div>', `<div id="root"><div style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">${r.content}${nav}</div></div>`);
+  // Блок статей — лише на українських сторінках поза самим блогом: рівно там,
+  // де його малює BlogTeaser у застосунку.
+  const blog = r.lang === 'en' || r.path === '/blog' || r.path.startsWith('/blog/') ? '' : blogBlock(r.path);
+  h = h.replace('<div id="root"></div>', `<div id="root"><div style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">${r.content}${blog}${nav}</div></div>`);
   return h;
 }
 
