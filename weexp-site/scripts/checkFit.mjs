@@ -10,13 +10,26 @@
  * Тому міряємо не скрол сторінки, а кожен помітний текстовий вузол проти
  * ВНУТРІШНЬОЇ ширини його контейнера. Це ловить і обрізання, і виліт.
  *
+ * Вертикальний режим (--vertical) перевіряє інше: чи не лягає вміст першого
+ * екрана на бігучий рядок партнерів і чи не йде за нижній край. Це окрема
+ * хвороба: сцена — нескрольована, висотою рівно 100dvh, а хром браузера на
+ * телефоні забирає в неї третину. Горизонтальна перевірка її не бачить.
+ *
  * jsdom для цього не годиться — у нього немає розкладки; тому це скрипт, а не
  * vitest-тест. Запуск проти будь-якої збірки:
  *   node scripts/checkFit.mjs [http://127.0.0.1:8127]
+ *   node scripts/checkFit.mjs [url] --vertical
  */
 import { chromium } from 'playwright';
 
-const BASE = process.argv[2] || 'http://127.0.0.1:8127';
+const ARGS = process.argv.slice(2);
+const VERTICAL = ARGS.includes('--vertical');
+const BASE = ARGS.find((a) => a.startsWith('http')) || 'http://127.0.0.1:8127';
+
+/* Телефонні вікна МІНУС хром браузера — саме та висота, яку реально бачить
+   людина, а не діагональ пристрою з реклами. */
+const PHONES = [[430, 720], [430, 660], [428, 746], [414, 715], [412, 732],
+                [393, 660], [390, 700], [375, 553], [360, 640], [320, 600]];
 const WIDTHS = [320, 360, 390, 430, 540, 768, 1024, 1280, 1600];
 /* Сторінки, де живуть найдовші заголовки й найщільніші сітки. */
 const PATHS = ['/', '/en', '/systems', '/proof', '/pricing', '/expansion', '/people', '/audit-pack'];
@@ -26,6 +39,43 @@ const SLACK = 1.5;
 const browser = await chromium.launch({
   executablePath: process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
 });
+
+if (VERTICAL) {
+  const bad = [];
+  for (const [width, height] of PHONES) {
+    const page = await browser.newPage({ viewport: { width, height } });
+    await page.goto(BASE + '/', { waitUntil: 'networkidle' });
+    await page.waitForTimeout(600);
+    const rows = await page.evaluate(() => {
+      const scene = document.querySelector('.sysx-void');
+      if (!scene) return [{ cls: '(сцену .sysx-void не знайдено)', overMarq: 1, overView: 1 }];
+      const marq = document.querySelector('.sysx-marquee');
+      const mTop = marq ? marq.getBoundingClientRect().top : Infinity;
+      return [...scene.children].map((el) => {
+        const cs = getComputedStyle(el);
+        const b = el.getBoundingClientRect();
+        if (cs.display === 'none' || +cs.opacity === 0 || b.height < 2) return null;
+        return {
+          cls: (el.className || '').toString().slice(0, 30),
+          overMarq: Math.round(b.bottom - mTop),
+          overView: Math.round(b.bottom - window.innerHeight),
+        };
+      }).filter(Boolean).filter((r) => r.overMarq > 0 || r.overView > 0);
+    });
+    for (const r of rows) bad.push({ width, height, ...r });
+    await page.close();
+  }
+  await browser.close();
+  if (!bad.length) {
+    console.log(`fit --vertical: чисто — ${PHONES.length} телефонних вікон`);
+    process.exit(0);
+  }
+  console.log(`fit --vertical: ${bad.length} наложень на першому екрані\n`);
+  for (const b of bad) {
+    console.log(`  ${b.width}×${b.height}  ${b.cls.padEnd(30)} на рядок партнерів +${b.overMarq}px, за екран +${b.overView}px`);
+  }
+  process.exit(1);
+}
 
 const problems = [];
 for (const path of PATHS) {
