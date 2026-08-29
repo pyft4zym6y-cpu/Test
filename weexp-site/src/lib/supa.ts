@@ -560,6 +560,38 @@ export async function teamApi(action: string, payload: Record<string, unknown> =
 }
 export type TeamMember = { id: string; email: string; role: Role | null; banned: boolean; lastSignIn: string | null; createdAt: string | null; confirmed: boolean };
 
+/** Стан доступу клієнта до сервісу ведення проєкту. */
+export type ClientAccess = {
+  exists: boolean; staff?: boolean; confirmed?: boolean; banned?: boolean; lastSignIn?: string | null;
+};
+
+/**
+ * Доступ КЛІЄНТА до сервісу (/api/client-access) — з токеном менеджера.
+ *
+ * Окремо від teamApi свідомо: там керування ролями команди й лише super, тут
+ * щоденна операція менеджера, яка ролей не видає взагалі. Один ендпоінт «про
+ * користувачів» рано чи пізно став би шляхом підвищення привілеїв.
+ *
+ * redirectTo — куди клієнт потрапить із листа. Передаємо явно, бо лист
+ * відкриють у момент, коли ми не знаємо, з якого домену його надсилали.
+ */
+export async function clientAccessApi(
+  action: 'invite' | 'create' | 'reset' | 'revoke' | 'restore' | 'status',
+  payload: { email: string; password?: string; redirectTo?: string } ,
+): Promise<{ ok?: boolean; error?: string } & Partial<ClientAccess>> {
+  try {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    if (!token) return { error: 'Немає сесії — увійдіть заново.' };
+    const r = await fetch('/api/client-access', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ action, ...payload }),
+    });
+    return await r.json();
+  } catch (e) { return { error: String(e) }; }
+}
+
 /**
  * Реєстрація/вхід. Ніколи не блокує потік: якщо Supabase не дав сесію (напр.
  * увімкнено Confirm email) — падаємо на локальне збереження, щоб клієнт міг
@@ -639,6 +671,24 @@ export async function signInWithEmail(email: string, password: string, captchaTo
   const user = { id: 'local:' + email.toLowerCase(), email };
   try { localStorage.setItem(LS_SESSION, JSON.stringify(user)); } catch { /* ignore */ }
   return { user, local: true };
+}
+
+/**
+ * Лист зі зміною пароля — для того, хто вже має акаунт.
+ *
+ * Повертає ok навіть тоді, коли такої пошти немає: інакше форма входу стала б
+ * способом перевіряти, хто в нас клієнт, а хто ні. Помилку показуємо лише коли
+ * не спрацював сам відправник.
+ */
+export async function resetPassword(email: string): Promise<{ ok: boolean; error?: string }> {
+  if (!CONFIGURED) return { ok: false, error: 'Вхід тимчасово недоступний.' };
+  try {
+    const redirectTo = typeof window !== 'undefined' ? `${window.location.origin}/cabinet` : undefined;
+    const { error } = await supabase.auth.resetPasswordForEmail(email, redirectTo ? { redirectTo } : undefined);
+    // «Користувача не знайдено» назовні не віддаємо — див. коментар вище.
+    if (error && !/not\s*found|no user/i.test(error.message)) return { ok: false, error: error.message };
+    return { ok: true };
+  } catch (e) { return { ok: false, error: String(e) }; }
 }
 
 /** Повторно надіслати лист підтвердження реєстрації. */

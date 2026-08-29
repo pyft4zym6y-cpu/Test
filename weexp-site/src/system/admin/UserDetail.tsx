@@ -11,6 +11,7 @@ import { Block, ACCESS_SOURCES, DEEP_SECS, FUNNEL, LEAD_STAGES, ST, U_TABS, coop
 import { clientTimeline, timelineKindLabel } from './timeline';
 import { openClientDossier } from './docs';
 import { downloadClientExport } from './exportClient';
+import { ClientAccessPanel } from '@/system/admin/ClientAccessPanel';
 /* Вміст вкладок вантажимо на вимогу. Картка відкривається на «Огляді», а
    машинерія аудиту (рушій, оцінка модулів, редактор документа, проєкти) —
    найважче, що тут є; тягнути її заради перегляду профілю немає сенсу. */
@@ -103,6 +104,16 @@ export function UserDetail({ row, leads, canDelete, canAccess, selfEmail, utab, 
         <PanelBoundary title="Картка клієнта"><Suspense fallback={<p className="mc-msg mono">Завантаження…</p>}>
           {utab === 'over' && <PanelBoundary title="Огляд клієнта"><ClientBrief row={row} code={code} /></PanelBoundary>}
           {utab === 'kb' && <PanelBoundary title="База знань"><KnowledgeBase row={row} code={code} author={selfEmail} /></PanelBoundary>}
+          {/* Доступ у сервіс — поруч із оглядом клієнта: це перше, що потрібно
+              зробити, коли з заявки виріс клієнт, і останнє, коли робота
+              скінчилась. Самореєстрації в сервісі немає. */}
+          {utab === 'over' && (
+            <PanelBoundary title="Доступ клієнта до сервісу">
+              <Block title="Доступ до сервісу ведення проєкту">
+                <ClientAccessPanel email={row.email} />
+              </Block>
+            </PanelBoundary>
+          )}
           {utab === 'over' && code && (
             <Block title="Код доступу">
               <button className="adm-code adm-code-lg" onClick={() => navigator.clipboard?.writeText(code)} title="Скопіювати">🔑 {code}</button>

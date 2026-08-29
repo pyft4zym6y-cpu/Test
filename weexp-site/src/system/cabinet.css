@@ -1438,3 +1438,28 @@
 @media (max-width: 900px) {
   .dash-state, .dash-row { grid-template-columns: 1fr; }
 }
+
+/* ── Вхід у сервіс: пароль основним способом ───────────────────────────── */
+.cab-signin { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+.cab-signin-go { align-self: stretch; text-align: center; }
+.cab-forgot { align-self: flex-start; background: none; border: 0; padding: 2px 0; cursor: pointer;
+  font-size: 11.5px; letter-spacing: .04em; color: var(--graphite); text-decoration: underline; }
+.cab-forgot:hover:not(:disabled) { color: var(--red-ink); }
+.cab-forgot:disabled { opacity: .45; cursor: default; }
+/* Розділювач «або»: Google лишається, але вже другим способом. */
+.cab-or { display: flex; align-items: center; gap: 10px; margin: 14px 0 10px;
+  font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--graphite); }
+.cab-or::before, .cab-or::after { content: ''; flex: 1; height: 1px; background: var(--line, rgba(20,18,16,.16)); }
+.cab-auth-ok { color: #1a7f37; }
+
+/* ── Доступ клієнта до сервісу (картка клієнта → Огляд) ─────────────────── */
+.adm-cacc { display: flex; flex-direction: column; gap: 12px; }
+.adm-cacc-state { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.adm-cacc-state > span { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; opacity: .7; }
+.adm-cacc-ok { color: #2e7d32; }
+.adm-cacc-no { color: var(--red-ink, #D0230E); }
+.adm-cacc-last { font-size: 11px; opacity: .6; }
+.adm-cacc-acts { display: flex; gap: 8px; flex-wrap: wrap; }
+/* Ручний пароль — запасний шлях, тому візуально тихіший за запрошення листом. */
+.adm-cacc-pwd { display: flex; flex-direction: column; gap: 8px; padding: 12px;
+  border: 1px dashed var(--line, rgba(20,18,16,.24)); }

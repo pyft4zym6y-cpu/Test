@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   currentUser, signOut, loadDiag, saveDiag, CONFIGURED, isCloudUser, isManager,
-  signInWithGoogle, onAuth, signTierFile, uploadTierFile,
+  signInWithGoogle, signInWithEmail, resetPassword, onAuth, signTierFile, uploadTierFile,
   ensureAudit, findAuditIdByCode, loadAuditAnswers, loadAuditExtra, getProjects, notifyAdmin, authHeaders,
   type DiagUser, type DiagRecord, type CompanyProfile, type TierStatus, type TierEvent, type AuditAnswer, type ExtraQ, type AccessState,
   type MarketplaceAccess, type ClientFile,
@@ -81,6 +81,9 @@ export function Cabinet() {
   // Вхід — лише Google (email/пароль тимчасово прибрано; інші провайдери додамо згодом).
   const [busy, setBusy] = useState(false);
   const [authErr, setAuthErr] = useState('');
+  const [authMsg, setAuthMsg] = useState('');
+  const [email, setEmail] = useState('');
+  const [pwd, setPwd] = useState('');
 
   useEffect(() => { setExpress(getExpressAudit()); }, []);
   // Повернення з Google OAuth (конектор GA4): /cabinet?section=docs&ga=connected|error
@@ -121,6 +124,37 @@ export function Cabinet() {
     if (r.error) setAuthErr(r.error === 'not_configured' ? t('Google-вхід зʼявиться після налаштування.', 'Google sign-in will appear once configured.') : r.error);
     // успіх → редірект на Google, повернення обробить onAuth
   };
+  /**
+   * Вхід за паролем — основний спосіб у сервісі ведення проєкту.
+   *
+   * signInWithEmail уміє впасти в локальний режим, коли Supabase недоступний.
+   * Для кабінету це рятувало сесію на сайті, але тут — навпаки: людина
+   * побачила б «увійшли» і порожній проєкт замість свого. Тому локальний
+   * результат тут показуємо як помилку, а не пускаємо всередину.
+   */
+  const doPassword = async (e: FormEvent) => {
+    e.preventDefault();
+    setAuthErr(''); setAuthMsg(''); setBusy(true);
+    const r = await signInWithEmail(email.trim(), pwd);
+    setBusy(false);
+    if (r.confirm) { setAuthErr(t('Підтвердіть email — лист уже надіслано.', 'Confirm your email — the message has been sent.')); return; }
+    if (r.local || !r.user) {
+      setAuthErr(r.error || t('Не вдалося увійти. Перевірте email і пароль.', 'Could not sign in. Check your email and password.'));
+      return;
+    }
+    setPwd('');
+    setUser(r.user);
+  };
+
+  /** Лист зі зміною пароля — щоб не тримати менеджера за кнопку «скиньте мені». */
+  const doForgot = async () => {
+    setAuthErr(''); setAuthMsg(''); setBusy(true);
+    const r = await resetPassword(email.trim());
+    setBusy(false);
+    if (r.ok) setAuthMsg(t('Лист надіслано — перевірте пошту.', 'Email sent — check your inbox.'));
+    else setAuthErr(r.error || t('Не вдалося надіслати лист.', 'Could not send the email.'));
+  };
+
   const doSignOut = async () => { await signOut(); setUser(null); setRec(null); setSection('overview'); };
   const refreshRec = () => { if (user) loadDiag(user).then(setRec); };
   // Видалення експрес-аудиту має бути повним: локальний знімок + похідні поля у
@@ -145,36 +179,71 @@ export function Cabinet() {
             <Link to={lp('/')} className="cab-gate-back mono">← {t('на сайт', 'to site')}</Link>
             <span className="cab-gate-badge">{t('Особистий кабінет WEEXP', 'WEEXP client cabinet')}</span>
             <h1 className="sysx-display cab-gate-h">{t('Вхід у ваш', 'Sign in to your')}<br /><span className="hl">{t('кабінет', 'cabinet')}</span></h1>
-            <p className="sysx-lead">{t('Один вхід — усі дані в одному місці. Повторний вхід тим самим email відкриває збережений розбір.', 'One sign-in — all your data in one place. Signing back in with the same email opens your saved analysis.')}</p>
+            {/* Сервіс закритий: акаунт відкриває менеджер. Ліва колонка мала
+                казати те саме, що права, — інакше вона обіцяє самостійний вхід,
+                якого немає, і людина шукає кнопку «зареєструватись». */}
+            <p className="sysx-lead">{t('Тут ви бачите стан свого проєкту: що зроблено, що далі і чого ми чекаємо від вас. Доступ відкриває ваш менеджер.', 'Here you see the state of your project: what is done, what is next and what we are waiting on from you. Your manager opens the access.')}</p>
             {express && (
               <div className="cab-gate-saved">
                 <span className="cab-gate-saved-ic" aria-hidden="true">✓</span>
                 <div>
                   <b>{t('Ваш експрес-аудит збережено', 'Your express audit is saved')}: {money(express.total, curOf(express.input?.currency))}<i>{t('/рік', '/yr')}</i></b>
-                  <span className="mono">{t('Увійдіть через Google — і він закріпиться за акаунтом. Проходити аудит заново не треба.', 'Sign in with Google — and it will be linked to your account. No need to redo the audit.')}</span>
+                  <span className="mono">{t('Увійдіть — і він закріпиться за акаунтом. Проходити аудит заново не треба.', 'Sign in — and it will be linked to your account. No need to redo the audit.')}</span>
                 </div>
               </div>
             )}
             <ul className="cab-gate-gets">
-              <li>{t('Експрес-витік із калькулятора — збережений', 'Express leak from the calculator — saved')}</li>
-              <li>{t('Профіль компанії та безпечні доступи', 'Company profile and secure access')}</li>
-              <li>{t('Глибокий аудит за кодом і план під DoD', 'Deep audit by code and a plan under DoD')}</li>
+              <li>{t('Стан проєкту й наступний крок — з відповідальним', 'Project state and the next step — with an owner')}</li>
+              <li>{t('Що ми вже передали: звіти, документи, плани', 'What we have delivered: reports, documents, plans')}</li>
+              <li>{t('Чого чекаємо від вас — доступи й дані в одному списку', 'What we need from you — access and data in one list')}</li>
             </ul>
           </div>
           <div className="cab-gate-right">
             <div className="cab-form">
               <span className="sysx-kick">{t('Вхід у кабінет', 'Sign in to cabinet')}</span>
-              <p className="cab-form-lead">{t('Швидкий і безпечний вхід через Google. Ваш експрес-аудит підтягнеться до акаунту автоматично.', 'Quick and secure sign-in with Google. Your express audit is linked to the account automatically.')}</p>
+              <p className="cab-form-lead">{t('Введіть email і пароль, які видав ваш менеджер.', 'Enter the email and password your manager gave you.')}</p>
+              {/*
+                * Пароль — основний вхід, Google лишається другою кнопкою.
+                *
+                * Реєстрації тут немає свідомо: у сервісі ведення проєкту лежать
+                * дані проєктів, і відкрита реєстрація означала б, що будь-хто з
+                * інтернету заводить у ньому акаунт. Клієнта заводить менеджер —
+                * лист приходить із посиланням, де людина ставить свій пароль.
+                */}
+              {CONFIGURED && (
+                <form className="cab-signin" onSubmit={doPassword}>
+                  <label className="sysx-inp">
+                    <span className="sysx-inp-l">Email</span>
+                    <input type="email" name="email" autoComplete="username" required
+                           value={email} onChange={(e) => setEmail(e.target.value)} />
+                  </label>
+                  <label className="sysx-inp">
+                    <span className="sysx-inp-l">{t('Пароль', 'Password')}</span>
+                    <input type="password" name="password" autoComplete="current-password" required
+                           value={pwd} onChange={(e) => setPwd(e.target.value)} />
+                  </label>
+                  <button className="sysx-cta is-primary cab-signin-go" type="submit" disabled={busy}>
+                    {busy ? t('Входимо…', 'Signing in…') : t('Увійти', 'Sign in')} →
+                  </button>
+                  <button type="button" className="cab-forgot mono" onClick={doForgot} disabled={busy || !email}>
+                    {t('Забули пароль?', 'Forgot your password?')}
+                  </button>
+                </form>
+              )}
               {CONFIGURED ? (
+                <>
+                <span className="cab-or mono">{t('або', 'or')}</span>
                 <button className="cab-google cab-google-lg" onClick={doGoogle} disabled={busy}>
                   <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.71-1.57 2.68-3.89 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.9 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
                   {busy ? t('Відкриваємо Google…', 'Opening Google…') : t('Продовжити з Google', 'Continue with Google')}
                 </button>
+                </>
               ) : (
                 <p className="cab-auth-err mono">{t('Вхід тимчасово недоступний — Supabase не налаштовано.', 'Sign-in is temporarily unavailable — Supabase is not configured.')}</p>
               )}
               {authErr && <p className="cab-auth-err mono">{authErr}</p>}
-              <p className="sysx-note mono">{t('Незабаром додамо інші способи входу. Захищений вхід, дані синхронізуються між пристроями.', 'More sign-in options coming soon. Secure sign-in, data syncs across your devices.')}</p>
+              {authMsg && <p className="cab-auth-ok mono">{authMsg}</p>}
+              <p className="sysx-note mono">{t('Немає доступу? Напишіть своєму менеджеру — акаунт відкриває він.', 'No access yet? Contact your manager — they set up the account.')}</p>
             </div>
           </div>
         </div>
