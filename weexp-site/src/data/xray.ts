@@ -177,6 +177,23 @@ export const SYSTEMS: System[] = [
 ];
 
 /**
+ * Ваги автономності — наскільки кожна система впливає на здатність бізнесу
+ * працювати без власника. Організація й операції важать більше за експансію:
+ * бізнес без ролей і процесів тримається на людині, скільки б ринків не мав.
+ *
+ * Один набір на весь застосунок. Ці самі вісім чисел лежали ще й у
+ * system/lossModel.ts — окремою копією, під іншою назвою підсумку («Business
+ * Health» проти «Independence Score»), хоча формула та сама. Дві копії однієї
+ * правди розходяться мовчки: правку ваг зробили б в одному файлі, а другий
+ * рахував би далі по-старому — і сайт показував би два різні бали за ті самі
+ * відповіді.
+ */
+export const AUTONOMY_W: Record<SystemKey, number> = {
+  strategy: 1, commercial: 1, customer: 1.1, experience: 0.9,
+  operations: 1.3, data: 1.2, org: 1.5, expansion: 0.8,
+};
+
+/**
  * Розмір таксономії — рахується з даних, а не пишеться в текст.
  *
  * Кількість систем і доменів згадується на сторінці цін. Раніше вона стояла
@@ -415,10 +432,8 @@ export function scoreXray(answers: Answers, questions: Question[] = QUESTIONS): 
   });
   const health = Math.round(systemScores.reduce((a, s) => a + s.score, 0) / systemScores.length);
 
-  // Independence зважує автономність (операції/дані/організація/клієнт) сильніше.
-  const W: Record<SystemKey, number> = { strategy: 1, commercial: 1, customer: 1.1, experience: 0.9, operations: 1.3, data: 1.2, org: 1.5, expansion: 0.8 };
-  const wsum = Object.values(W).reduce((a, b) => a + b, 0);
-  const independence = Math.round(systemScores.reduce((a, s) => a + s.score * W[s.key], 0) / wsum);
+  const wsum = Object.values(AUTONOMY_W).reduce((a, b) => a + b, 0);
+  const independence = Math.round(systemScores.reduce((a, s) => a + s.score * AUTONOMY_W[s.key], 0) / wsum);
 
   const sorted = [...systemScores].sort((a, b) => a.score - b.score);
   return { health, independence, level: levelFor(independence), systemScores, bottleneck: sorted[0], gaps: sorted.slice(0, 3) };

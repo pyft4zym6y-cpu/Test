@@ -1,0 +1,106 @@
+/**
+ * Перевірка, що текст не вилазить за свій контейнер на реальних ширинах.
+ *
+ * Знайдено цим скриптом: заголовок першого екрана «Продажі, які не тримаються
+ * на вас» на телефоні обрізався по правому краю. Найпідступніше — що це НЕ
+ * давало горизонтального скролу: сцена має overflow: hidden, тож
+ * document.scrollWidth дорівнював clientWidth, і звичайна перевірка «сторінка
+ * не скролиться вбік» показувала, що все гаразд. Слово просто зникало.
+ *
+ * Тому міряємо не скрол сторінки, а кожен помітний текстовий вузол проти
+ * ВНУТРІШНЬОЇ ширини його контейнера. Це ловить і обрізання, і виліт.
+ *
+ * jsdom для цього не годиться — у нього немає розкладки; тому це скрипт, а не
+ * vitest-тест. Запуск проти будь-якої збірки:
+ *   node scripts/checkFit.mjs [http://127.0.0.1:8127]
+ */
+import { chromium } from 'playwright';
+
+const BASE = process.argv[2] || 'http://127.0.0.1:8127';
+const WIDTHS = [320, 360, 390, 430, 540, 768, 1024, 1280, 1600];
+/* Сторінки, де живуть найдовші заголовки й найщільніші сітки. */
+const PATHS = ['/', '/en', '/systems', '/proof', '/pricing', '/expansion', '/people', '/audit-pack'];
+/** Допуск на субпіксельне округлення шрифтових метрик. */
+const SLACK = 1.5;
+
+const browser = await chromium.launch({
+  executablePath: process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
+});
+
+const problems = [];
+for (const path of PATHS) {
+  for (const width of WIDTHS) {
+    const page = await browser.newPage({ viewport: { width, height: 900 } });
+    await page.goto(BASE + path, { waitUntil: 'networkidle' });
+    await page.waitForTimeout(400);
+    const found = await page.evaluate((slack) => {
+      const out = [];
+      for (const el of document.querySelectorAll('h1, h2, h3, p, li, a, span, b')) {
+        if (!el.textContent?.trim()) continue;
+        const cs = getComputedStyle(el);
+        if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) continue;
+        // Елемент може бути невидимим через предка (скрол-сцени лежать на 0).
+        let hidden = false;
+        for (let a = el.parentElement; a; a = a.parentElement) {
+          const p = getComputedStyle(a);
+          if (p.display === 'none' || p.visibility === 'hidden' || +p.opacity === 0) { hidden = true; break; }
+        }
+        if (hidden) continue;
+        const box = el.getBoundingClientRect();
+        if (box.width < 2 || box.height < 2) continue;
+
+        /*
+         * Абсолютні й фіксовані елементи навмисно стоять поза потоком і
+         * можуть виходити за padding-box предка: значок «+» у кутку картки,
+         * номер розділу на полі. Перша версія цієї перевірки їх не пропускала
+         * і видала 400+ «знахідок», з яких справжніх було кілька — інструмент,
+         * що кричить на все, нічим не кращий за той, що мовчить.
+         */
+        if (cs.position === 'absolute' || cs.position === 'fixed') continue;
+        // Відʼємні поля — теж свідомий вихід за межі (виносні заголовки).
+        if (['marginLeft', 'marginRight'].some((m) => parseFloat(cs[m] || '0') < 0)) continue;
+
+        const parent = el.parentElement;
+        if (!parent) continue;
+        const pcs = getComputedStyle(parent);
+        // Контейнер, який сам скролиться по горизонталі, ширший за свій бокс — це нормально.
+        if (pcs.overflowX === 'auto' || pcs.overflowX === 'scroll') continue;
+        const pbox = parent.getBoundingClientRect();
+        const inner = {
+          left: pbox.left + parseFloat(pcs.paddingLeft || '0'),
+          right: pbox.right - parseFloat(pcs.paddingRight || '0'),
+        };
+        const over = Math.max(box.right - inner.right, inner.left - box.left);
+        if (over > slack) {
+          out.push({
+            over: Math.round(over),
+            tag: el.tagName.toLowerCase(),
+            cls: (el.className || '').toString().slice(0, 48),
+            text: el.textContent.trim().slice(0, 52),
+          });
+        }
+      }
+      return out;
+    }, SLACK);
+
+    // Один і той самий вузол ловиться і як <h1>, і як <span> усередині: беремо найгірше.
+    const seen = new Map();
+    for (const f of found) {
+      const key = f.tag + '|' + f.cls + '|' + f.text;
+      if (!seen.has(key) || seen.get(key).over < f.over) seen.set(key, f);
+    }
+    for (const f of seen.values()) problems.push({ path, width, ...f });
+    await page.close();
+  }
+}
+await browser.close();
+
+if (!problems.length) {
+  console.log(`fit: чисто — ${PATHS.length} сторінок × ${WIDTHS.length} ширин`);
+  process.exit(0);
+}
+console.log(`fit: ${problems.length} виходів за контейнер\n`);
+for (const p of problems.sort((a, b) => b.over - a.over)) {
+  console.log(`  ${String(p.width).padStart(4)}px ${p.path.padEnd(12)} +${String(p.over).padStart(3)}px  ${p.tag}.${p.cls}  «${p.text}»`);
+}
+process.exit(1);

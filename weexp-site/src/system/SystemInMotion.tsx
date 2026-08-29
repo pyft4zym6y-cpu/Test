@@ -9,6 +9,7 @@ import { HEADLINE_PROOF } from '@/data/cases';
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
 const SystemExplorer = lazy(() => import('@/system/SystemExplorer').then((m) => ({ default: m.SystemExplorer })));
+const Architecture = lazy(() => import('@/system/Architecture').then((m) => ({ default: m.Architecture })));
 // Сканована повна карта системи: 8 систем + вкладені домени (акордеон).
 // Меседжинг за роллю ЛПР (§8): одна система — різні виграші.
 const AudienceByRole = lazy(() => import('@/system/AudienceByRole').then((m) => ({ default: m.AudienceByRole })));
@@ -20,7 +21,7 @@ const HomeFaq = lazy(() => import('@/system/HomeFaq').then((m) => ({ default: m.
  * WEEXP — THE SYSTEM IN MOTION (home-film, /system). Повна драматургія головної на
  * одному WebGL-об'єкті (Commerce System), керована скролом (scroll = камера):
  *   SYMPTOM → камера входить → 8 систем збираються (лейбли) → коренева причина
- *   (слабка ланка червоним) → CONNECT (частини як одне) → ACTIVATION (гроші течуть)
+ *   (слабка ланка червоним) → CONNECT (частини як одне) → ACTIVATION (зростання перестає бути ручним)
  *   → INDEPENDENCE (CTA). Світле cinematic-полотно. Живий (темний) сайт не чіпаємо.
  */
 // Канонічні 8 систем — ті самі, що в діагностиці/радарі (lossModel.SYS), щоб сайт
@@ -113,8 +114,8 @@ export function SystemInMotion() {
         {/* SYMPTOM / VOID */}
         <div ref={sVoid} className="sysx-scene sysx-void">
           <div className="sysx-kick">{t('Система зростання для e-commerce і D2C-брендів', 'A growth system for e-commerce & D2C brands')}</div>
-          <h1 className="sysx-display sysx-h1">{t('Система', 'A system')}<br />{t('замість ', 'instead of ')}<span className="sysx-em">{t('героїзму', 'heroics')}</span></h1>
-          <p className="sysx-lead">{t('Продажі тримаються на людях і ручному режимі, а не на системі. Збираємо вісім систем в одну керовану — щоб виторг зростав, а бізнес не залежав від вас.', 'Sales rest on people and manual effort, not on a system. We assemble eight systems into one managed system — so revenue grows and the business no longer depends on you.')}</p>
+          <h1 className="sysx-display sysx-h1">{t('Продажі, які', 'Sales that')}<br /><span className="sysx-em">{t('не тримаються на вас', 'don’t rest on you')}</span></h1>
+          <p className="sysx-lead">{t('Діагностуємо вісім систем онлайн-продажів за даними CRM/ERP/GA4, рахуємо витік у грошах і збираємо їх в одну керовану. Система замість героїзму.', 'We diagnose the eight systems of online sales on CRM/ERP/GA4 data, put a number on the leak and assemble them into one managed system. A system instead of heroics.')}</p>
           <div className="sysx-cta-row sysx-void-cta">
             <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>
             <Link to={lp('/contact')} className="sysx-cta">{t('Залишити заявку', 'Leave a request')} →</Link>
@@ -154,7 +155,7 @@ export function SystemInMotion() {
 
         {/* ACTIVATION */}
         <div ref={sActivate} className="sysx-scene sysx-activate" style={{ opacity: 0 }}>
-          <h2 className="sysx-display sysx-h2">{t('Коли система працює —', 'When the system works —')}<br />{t('гроші течуть ', 'money flows ')}<span className="sysx-em">{t('самі', 'on its own')}</span>.</h2>
+          <h2 className="sysx-display sysx-h2">{t('Коли система працює —', 'When the system works —')}<br />{t('зростання ', 'growth stops ')}<span className="sysx-em">{t('перестає бути ручним', 'being manual')}</span>.</h2>
           <p className="sysx-lead">{t('Менша вартість клієнта, органіка, повторні продажі. Вітрина стає активом, а не статтею витрат.', 'Lower customer cost, organic traffic, repeat sales. The storefront becomes an asset, not a cost line.')}</p>
         </div>
 
@@ -162,7 +163,7 @@ export function SystemInMotion() {
         <div ref={sCta} className="sysx-scene sysx-ctaScene" style={{ opacity: 0 }}>
           <div className="sysx-kick">Independence Score</div>
           <h2 className="sysx-display sysx-h2">{t('Наскільки незалежний', 'How independent')}<br />{t('ваш ', 'is your ')}<span className="sysx-em">e-commerce</span>?</h2>
-          <p className="sysx-lead">{t('Ми вирішуємо одну дорогу проблему: продажі, що тримаються на ручному режимі й людях, а не на системі. Збираємо вісім систем в одну керовану — щоб виторг зростав, а бізнес не залежав від вас.', 'We solve one expensive problem: sales that rest on manual effort and people rather than a system. We assemble eight systems into one managed system — so revenue grows and the business no longer depends on you.')}</p>
+          <p className="sysx-lead">{t('Independence Score — наш стандарт зрілості: наскільки бізнес здатний рости без вас. Безкоштовний експрес-аудит дає першу оцінку за дві хвилини — Business Health 0–100 і систему, яка тягне вниз.', 'The Independence Score is our maturity standard: how far the business can grow without you. The free express audit gives the first estimate in two minutes — Business Health 0–100 and the system dragging it down.')}</p>
           <div className="sysx-proofbar">
             <span><b>17</b> {t('трансформацій', 'transformations')}</span>
             <i aria-hidden="true" />
@@ -185,6 +186,10 @@ export function SystemInMotion() {
         SystemsFilm прибрано з головної: дублював цей самий розбір 8 систем нижче
         (заголовок «Де ваш бізнес втрачає гроші»). Лишаємо один — інтерактивний вище. */}
     <div id="systems"><Suspense fallback={null}><SystemExplorer /></Suspense></div>
+    {/* Чотири рівні пропозиції: людина щойно побачила, ЩО ми будуємо — далі
+        хто будує, як заходимо і чим міряємо. Три сторінки, до яких з головної
+        не було шляху, тепер стоять в одному ланцюгу. */}
+    <Suspense fallback={null}><Architecture /></Suspense>
     {/* Меседжинг за роллю ЛПР: одна система — різні виграші */}
     <Suspense fallback={null}><AudienceByRole /></Suspense>
     {/* Механіка довіри: метод, прозорий процес, платформи */}

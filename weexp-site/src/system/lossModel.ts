@@ -6,6 +6,7 @@
  */
 
 import { SYS, SYS_LABEL_EN, sysLabel, ACTION, ACTION_EN, money, curOf, type SysKey, type Lang, type Cur } from './systems';
+import { AUTONOMY_W } from '@/data/xray';
 // Реекспорт: решта продукту історично тягне ці імена з lossModel.
 export { SYS, SYS_LABEL_EN, sysLabel, localizeSys, actionText, money, curOf, signOf, CURRENCIES, DEFAULT_CUR, groupByCur } from './systems';
 export type { Cur } from './systems';
@@ -171,9 +172,10 @@ export function computeLoss(inp: LossInput): LossResult {
     if (has(sym, key)) s -= 22;
     return { key, label, score: Math.round(clamp(s, 5, 98)) };
   });
-  const W: Record<SysKey, number> = { strategy: 1, commercial: 1, customer: 1.1, experience: .9, operations: 1.3, data: 1.2, org: 1.5, expansion: .8 };
-  const wsum = Object.values(W).reduce((a, b) => a + b, 0);
-  const overallHealth = Math.round(health.reduce((a, h) => a + h.score * W[h.key], 0) / wsum);
+  /* Ваги — з data/xray (AUTONOMY_W). Тут стояла їхня друга копія: ті самі
+     вісім чисел і та сама формула, лише підсумок звався інакше. */
+  const wsum = Object.values(AUTONOMY_W).reduce((a, b) => a + b, 0);
+  const overallHealth = Math.round(health.reduce((a, h) => a + h.score * AUTONOMY_W[h.key], 0) / wsum);
 
   // Bottleneck — за втратами (система з найбільшим витоком) + слабкі за Health.
   const byLeak = [...raw];

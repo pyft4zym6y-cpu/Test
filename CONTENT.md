@@ -125,8 +125,8 @@
 | Роль | Текст |
 | --- | --- |
 | div | Система зростання для e-commerce і D2C-брендів |
-| H1 | Системазамість героїзму |
-| Абзац | Продажі тримаються на людях і ручному режимі, а не на системі. Збираємо вісім систем в одну керовану — щоб виторг зростав, а бізнес не залежав від вас. |
+| H1 | Продажі, якіне тримаються на вас |
+| Абзац | Діагностуємо вісім систем онлайн-продажів за даними CRM/ERP/GA4, рахуємо витік у грошах і збираємо їх в одну керовану. Система замість героїзму. |
 | Посилання | Порахувати витік → → `/diagnose` |
 | Посилання | Залишити заявку → → `/contact` |
 | Пункт | ×18 обороту за рік |
@@ -141,11 +141,11 @@
 | Абзац | Система сильна настільки, наскільки сильна її найслабша частина. Саме там витікає виторг. |
 | H2 | Частини маютьпрацювати як одне. |
 | Абзац | Не вісім інструментів окремо — одна зв'язана система, де кожна дія підсилює наступну. |
-| H2 | Коли система працює —гроші течуть самі. |
+| H2 | Коли система працює —зростання перестає бути ручним. |
 | Абзац | Менша вартість клієнта, органіка, повторні продажі. Вітрина стає активом, а не статтею витрат. |
 | div | Independence Score |
 | H2 | Наскільки незалежнийваш e-commerce? |
-| Абзац | Ми вирішуємо одну дорогу проблему: продажі, що тримаються на ручному режимі й людях, а не на системі. Збираємо вісім систем в одну керовану — щоб виторг зростав, а бізнес не залежав від вас. |
+| Абзац | Independence Score — наш стандарт зрілості: наскільки бізнес здатний рости без вас. Безкоштовний експрес-аудит дає першу оцінку за дві хвилини — Business Health 0–100 і систему, яка тягне вниз. |
 | Акцент | 17 |
 | Акцент | D2C |
 | Посилання | Наші перемоги → → `/proof` |
@@ -199,6 +199,27 @@
 | Кнопка | 06 Дані |
 | Кнопка | 07 Організація |
 | Кнопка | 08 Експансія |
+
+### Як це влаштовано
+
+`arch › arch-head`
+
+| Роль | Текст |
+| --- | --- |
+| Текст | Як це влаштовано |
+| H2 | Ми продаємо не послуги —одну керовану систему |
+| Абзац | Чотири рівні, які тримаються разом: що будуємо, хто будує, як заходимо і чим міряємо результат. Кожен рівень — окрема сторінка з деталями. |
+
+### Як це влаштовано
+
+`arch`
+
+| Роль | Текст |
+| --- | --- |
+| Пункт | 8систем онлайн-продажівЩо ми будуємоСтратегія, комерція, попит, досвід, операції, дані, організація, експансія. Виторг витікає там, де найслабша.Детальніше → |
+| Пункт | 9напрямів експертизиХто і чим будуєКожна система збирається руками профільної команди — від брендингу й UX до розробки, маркетингу й каналів продажів.Детальніше → |
+| Пункт | 3формати співпраціЯк ми заходимоАудит, консалтинг або управління під ключ — за рівнем нашої відповідальності за результат, а не за обсягом годин.Детальніше → |
+| Пункт | 0–100Independence ScoreЧим міряємо результатНаш стандарт зрілості: наскільки бізнес здатний рости без вас. Безкоштовний експрес-аудит дає першу оцінку — Business Health 0–100 і головне вузьке місце.Детальніше → |
 
 ### Кому це · за роллю
 
@@ -3284,8 +3305,8 @@
 | Роль | Текст |
 | --- | --- |
 | div | A growth system for e-commerce & D2C brands |
-| H1 | A systeminstead of heroics |
-| Абзац | Sales rest on people and manual effort, not on a system. We assemble eight systems into one managed system — so revenue grows and the business no longer depends on you. |
+| H1 | Sales thatdon’t rest on you |
+| Абзац | We diagnose the eight systems of online sales on CRM/ERP/GA4 data, put a number on the leak and assemble them into one managed system. A system instead of heroics. |
 | Посилання | Calculate the leak → → `/en/diagnose` |
 | Посилання | Leave a request → → `/en/contact` |
 | Пункт | ×18 turnover in a year |
@@ -3300,11 +3321,11 @@
 | Абзац | A system is only as strong as its weakest part. That is exactly where revenue leaks. |
 | H2 | The parts mustwork as one. |
 | Абзац | Not eight separate tools — one connected system where each action reinforces the next. |
-| H2 | When the system works —money flows on its own. |
+| H2 | When the system works —growth stops being manual. |
 | Абзац | Lower customer cost, organic traffic, repeat sales. The storefront becomes an asset, not a cost line. |
 | div | Independence Score |
 | H2 | How independentis your e-commerce? |
-| Абзац | We solve one expensive problem: sales that rest on manual effort and people rather than a system. We assemble eight systems into one managed system — so revenue grows and the business no longer depends on you. |
+| Абзац | The Independence Score is our maturity standard: how far the business can grow without you. The free express audit gives the first estimate in two minutes — Business Health 0–100 and the system dragging it down. |
 | Акцент | 17 |
 | Акцент | D2C |
 | Посилання | Our wins → → `/en/proof` |
@@ -3358,6 +3379,27 @@
 | Кнопка | 06 Data |
 | Кнопка | 07 Organization |
 | Кнопка | 08 Expansion |
+
+### How it is built
+
+`arch › arch-head`
+
+| Роль | Текст |
+| --- | --- |
+| Текст | How it is built |
+| H2 | We do not sell services —one managed system |
+| Абзац | Four levels that hold together: what we build, who builds it, how we come in and how we measure the result. Each level has its own page with the detail. |
+
+### How it is built
+
+`arch`
+
+| Роль | Текст |
+| --- | --- |
+| Пункт | 8systems of online salesWhat we buildStrategy, commerce, demand, experience, operations, data, organization, expansion. Revenue leaks where the weakest one is.Learn more → |
+| Пункт | 9areas of expertiseWho builds it, and with whatEach system is built by a specialist team — from branding and UX to development, marketing and sales channels.Learn more → |
+| Пункт | 3engagement formatsHow we come inAudit, consulting or turnkey management — by how much of the result we own, not by hours booked.Learn more → |
+| Пункт | 0–100Independence ScoreHow we measure the resultOur maturity standard: how far the business can grow without you. The free express audit gives the first estimate — Business Health 0–100 and the main bottleneck.Learn more → |
 
 ### Who it’s for · by role
 

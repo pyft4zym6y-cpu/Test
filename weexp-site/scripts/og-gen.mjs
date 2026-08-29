@@ -28,7 +28,7 @@ await mkdir(OUT, { recursive: true });
 
 // slug → { kick, title, metric }
 const CARDS = [
-  { slug: 'home', kick: 'Система зростання', title: 'Система замість героїзму', metric: 'Діагноз у грошах · побудова системи · ЄС і США' },
+  { slug: 'home', kick: 'Система зростання', title: 'Продажі, які не тримаються на вас', metric: 'Діагноз у грошах · побудова системи · ЄС і США' },
   { slug: 'proof', kick: 'The Evidence', title: 'Систему видно в цифрах', metric: '×18 обороту · +65% продажів · дельти з CRM/ERP/GA4' },
   { slug: 'people', kick: 'Команда', title: 'Систему будують власники, не герої', metric: 'У кожної з 8 систем — свій відповідальний' },
   { slug: 'expansion', kick: 'Експансія', title: 'Вихід у ЄС і США як система', metric: 'Власний сайт · Amazon · Allegro · локальні маркетплейси' },
