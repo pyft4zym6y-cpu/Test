@@ -5,7 +5,10 @@
  *  Кожен кейс належить до 1–3 із 8 систем онлайн-продажів (див. xray).
  *
  *  Двомовність: кожен кейс має необовʼязкове поле `en` — англійські версії текстових
- *  полів (числа/hero/slug/systemKeys лишаються без змін). У компонентах рендеримо через
+ *  полів (slug/systemKeys лишаються без змін). `hero` теж перекладний: «число не
+ *  перекладається» вірно лише для чистого числа, а «18 хв» чи «≥19 млн ₴» — це
+ *  число З ОДИНИЦЕЮ, і на англійській сторінці воно лишалось українським.
+ *  У компонентах рендеримо через
  *  localizeCase(c, lang), який накладає c.en поверх c у EN-режимі (з фолбеком на укр.).
  */
 import type { SystemKey } from '@/data/xray';
@@ -40,9 +43,9 @@ export type CaseStudy = {
   en?: CaseEn;
 };
 
-/** Англійський оверлей: дзеркалить текстові поля кейсу. Числа/hero/slug/systemKeys не входять. */
+/** Англійський оверлей: дзеркалить текстові поля кейсу. slug/systemKeys не входять. */
 export type CaseEn = Partial<Pick<CaseStudy,
-  | 'cat' | 'name' | 'heroLabel' | 'window' | 'lead' | 'before' | 'diagnosis'
+  | 'cat' | 'name' | 'hero' | 'heroLabel' | 'window' | 'lead' | 'before' | 'diagnosis'
   | 'money' | 'system' | 'metrics' | 'after' | 'independence' | 'learning'
   | 'verified' | 'testimonial'>>;
 
@@ -194,6 +197,7 @@ export const CASES: CaseStudy[] = [
     en: {
       cat: 'Fashion · Program of Record',
       name: 'Fashion manufacturer',
+      hero: '≥19M ₴',
       heroLabel: 'of turnover missed per year',
       window: '12-month program',
       lead: 'Diagnostics found ≥19M ₴/year of gap. A system built with a 4–8 month payback.',
@@ -209,7 +213,7 @@ export const CASES: CaseStudy[] = [
         'SEO from position 14 into the top-5; Europe entry 0% → 12–18%.',
       ],
       metrics: [
-        { label: 'Turnover', before: '23.2 млн ₴', after: '×2–2.5', note: 'target' },
+        { label: 'Turnover', before: '23.2M ₴', after: '×2–2.5', note: 'target' },
         { label: 'Conversion', before: '3.9%', after: '4.3–4.5%' },
         { label: 'Order payment', before: '63.4%', after: '≥75%' },
         { label: 'Redemption', before: '82%', after: '≥88%' },
@@ -321,7 +325,7 @@ export const CASES: CaseStudy[] = [
         'Dashboards and alerts instead of manual reports.',
       ],
       metrics: [
-        { label: 'Report assembly', before: '6 днів', after: '4 години', note: '×36' },
+        { label: 'Report assembly', before: '6 days', after: '4 hours', note: '×36' },
         { label: 'GA4 accuracy', before: '78%', after: '99%' },
         { label: 'Contribution margin', before: '−3%', after: '+11%' },
         { label: 'Decision speed', before: 'baseline', after: '×3.4' },
@@ -542,7 +546,7 @@ export const CASES: CaseStudy[] = [
         'RACI across e-commerce, retail and logistics — one owner of the journey.',
       ],
       metrics: [
-        { label: 'Delivery SLA', before: '72 год', after: '24 год', note: '×3' },
+        { label: 'Delivery SLA', before: '72 h', after: '24 h', note: '×3' },
         { label: 'Non-redemption', before: '22%', after: '7%' },
         { label: 'Stock accuracy', before: '81%', after: '99%' },
         { label: 'Click&collect', before: '0%', after: '34%' },
@@ -582,6 +586,7 @@ export const CASES: CaseStudy[] = [
     en: {
       cat: 'Grocery · Q-commerce',
       name: 'Groceries · rapid delivery',
+      hero: '18 min',
       heroLabel: 'average delivery time',
       window: '6 months',
       lead: 'Rapid grocery delivery was choking: every spike in demand broke the warehouse.',
@@ -597,7 +602,7 @@ export const CASES: CaseStudy[] = [
         'End-to-end SLA analytics on every order.',
       ],
       metrics: [
-        { label: 'Delivery time', before: '47 хв', after: '18 хв' },
+        { label: 'Delivery time', before: '47 min', after: '18 min' },
         { label: 'Out-of-stock', before: '14%', after: '3%' },
         { label: 'Orders per courier/hour', before: 'baseline', after: '+52%' },
         { label: 'Repeats in 30 days', before: '28%', after: '54%' },
@@ -802,6 +807,7 @@ export const CASES: CaseStudy[] = [
     en: {
       cat: 'B2B Industrial · Industrial supply',
       name: 'B2B supplier',
+      hero: '≥14M ₴',
       heroLabel: 'of turnover missed per year',
       window: 'diagnostics + roadmap',
       lead: 'B2B sales rested on a few managers — with no processes, roles or data.',
@@ -928,7 +934,7 @@ export const CASES: CaseStudy[] = [
       ],
       metrics: [
         { label: 'EU share', before: '0%', after: '32%' },
-        { label: 'Delivery SLA', before: 'fluctuated', after: '14 днів' },
+        { label: 'Delivery SLA', before: 'fluctuated', after: '14 days' },
         { label: 'Turnover', before: 'baseline', after: '+58%' },
         { label: 'Markets', before: 'UA', after: 'UA·PL·DE·CZ' },
       ],
@@ -941,7 +947,7 @@ export const CASES: CaseStudy[] = [
     slug: 'marketplace-fashion',
     cat: 'Fashion · Мультибрендовий маркетплейс',
     name: 'Fashion-маркетплейс',
-    hero: '×2 год', heroLabel: 'онбординг продавця замість тижнів', window: '9 місяців',
+    hero: '2 год', heroLabel: 'онбординг продавця замість тижнів', window: '9 місяців',
     lead: 'Маркетплейс тримався на ручному онбордингу продавців і героїчних зусиллях команди.',
     systems: ['org', 'experience'], stage: 'Independence',
     before: 'Онбординг продавця 2–3 тижні вручну, немає SOP, усе «терміново».',
@@ -967,6 +973,7 @@ export const CASES: CaseStudy[] = [
     en: {
       cat: 'Fashion · Multi-brand marketplace',
       name: 'Fashion marketplace',
+      hero: '2 h',
       heroLabel: 'seller onboarding instead of weeks',
       window: '9 months',
       lead: 'The marketplace ran on manual seller onboarding and the team’s heroic effort.',
@@ -982,7 +989,7 @@ export const CASES: CaseStudy[] = [
         'A unified seller page and catalog with quality control.',
       ],
       metrics: [
-        { label: 'Seller onboarding', before: '2–3 тижні', after: '2 години' },
+        { label: 'Seller onboarding', before: '2–3 weeks', after: '2 hours' },
         { label: 'Active sellers', before: 'baseline', after: '+140%' },
         { label: 'Errors in listings', before: '18%', after: '3%' },
         { label: 'GMV', before: 'baseline', after: '+63%' },

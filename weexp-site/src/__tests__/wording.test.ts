@@ -18,6 +18,8 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { PAGES, EXTRA_PAGES, nameOf } from '../lib/nav';
+import { TOTAL_DOMAINS } from '../data/xray';
+import { AUDIT_BLOCKS } from '../data/auditPack';
 import { HEADLINE_PROOF } from '../data/cases';
 
 const SYS = join(__dirname, '..', 'system');
@@ -122,7 +124,9 @@ describe('числа збігаються зі своїм джерелом', () 
     const pack = read('data/auditPack.ts');
     const n = (/(\d+) спеціалізованих аудитів/.exec(pack) || [])[1];
     expect(n, 'у auditPack.ts не знайдено кількості аудитів').toBeTruthy();
-    expect(read('system/Pricing.tsx'), `Pricing обіцяє не ${n} аудитів`).toContain(`${n} аудитів`);
+    expect(read('system/Pricing.tsx'), 'Pricing знову набирає число аудитів руками')
+      .toContain('${AUDIT_BLOCKS.length} аудитів');
+    expect(String(AUDIT_BLOCKS.length), 'каталог аудитів розійшовся з описом у auditPack').toBe(n);
     expect(read('lib/seo-data.json'), `опис /audit-pack обіцяє не ${n} аудитів`).toContain(`${n} аудитів`);
   });
 
@@ -134,12 +138,18 @@ describe('числа збігаються зі своїм джерелом', () 
      * порахувати; тест тримає їх звʼязаними з моделлю.
      */
     const xray = read('data/xray.ts');
-    const head = xray.slice(0, xray.indexOf('export const systemBySlug'));
+    const head = xray.slice(0, xray.indexOf('export const TOTAL_SYSTEMS'));
     const domains = [...head.matchAll(/^\s*domains: \[([^\]]*)\]/gm)]
       .reduce((sum, m) => sum + m[1].split(',').length, 0);
     expect(domains, 'не вдалося порахувати домени').toBeGreaterThan(0);
-    expect(read('system/Pricing.tsx'), `Pricing обіцяє не ${domains} доменів`)
-      .toContain(`${domains} доменів діагностики`);
+    expect(TOTAL_DOMAINS, 'TOTAL_DOMAINS рахує не те, що лежить у SYSTEMS').toBe(domains);
+    /*
+     * Сторінка більше не набирає число руками — вона підставляє TOTAL_DOMAINS.
+     * Тому тут перевіряємо звʼязок, а не літерал: інакше сторож вимагав би
+     * повернути на сторінку саме те, від чого ми її звільнили.
+     */
+    expect(read('system/Pricing.tsx'), 'Pricing знову набирає число доменів руками')
+      .toContain('${TOTAL_DOMAINS} доменів діагностики');
     expect(read('system/Pricing.tsx'), 'повернулось число без джерела')
       .not.toContain('150+');
   });

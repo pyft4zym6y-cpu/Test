@@ -4,6 +4,8 @@ import { useT, useLp } from '@/i18n';
 import { useJsonLd } from '@/lib/seo';
 import './system.css';
 import { HEADLINE_PROOF } from '@/data/cases';
+import { TOTAL_DOMAINS } from '@/data/xray';
+import { AUDIT_BLOCKS } from '@/data/auditPack';
 
 /**
  * Формати співпраці — три моделі за рівнем НАШОЇ відповідальності за результат:
@@ -11,6 +13,16 @@ import { HEADLINE_PROOF } from '@/data/cases';
  *   02 Консалтинг  — ми архітектор і контроль, руки — команда клієнта;
  *   03 Управління  — проєкт ведемо ми, фінальна відповідальність наша.
  * Портовано зі старої версії у світлу систему .sysx (монохром + синій акцент).
+ *
+ * Числа складу аудиту беруть із даних, а не з рядка. Самі числа були
+ * правильні — 13 аудитів у AUDIT_BLOCKS, 35 доменів у SYSTEMS, 18 доменів
+ * зрілості в MATURITY_DOMAIN_MODULE, — але набрані руками: наступна зміна
+ * моделі мовчки лишила б на сторінці цін стару обіцянку. Тепер джерело одне.
+ *
+ * 18 доменів зрілості лишились літералом свідомо: їхнє джерело —
+ * MATURITY_DOMAIN_MODULE у lib/supa, а supa піднімає клієнт Supabase просто на
+ * імпорті. Тягнути його в публічну сторінку цін заради одного числа дорожче,
+ * ніж перевірити це число тестом (taxonomy.test.ts).
  */
 type Model = {
   n: string; name: string; tag: string; period: string; price: string; priceNote: string;
@@ -36,7 +48,8 @@ export function Pricing() {
       forWhom: t('У вас сильна внутрішня команда. Потрібні не руки, а карта: де саме витікають гроші й що робити першим.', 'You have a strong in-house team. You need a map, not hands: exactly where the money leaks and what to fix first.'),
       includes: [
         t('Discovery-портал: опитувальники, передача доступів, бриф ЛПР', 'Discovery portal: questionnaires, access handover, decision-maker brief'),
-        t('E-commerce 360°: 13 аудитів · 35 доменів діагностики', 'E-commerce 360°: 13 audits · 35 diagnostic domains'),
+        t(`E-commerce 360°: ${AUDIT_BLOCKS.length} аудитів · ${TOTAL_DOMAINS} доменів діагностики`,
+          `E-commerce 360°: ${AUDIT_BLOCKS.length} audits · ${TOTAL_DOMAINS} diagnostic domains`),
         t('Health Score і зрілість по 18 доменах', 'Health Score and maturity across 18 domains'),
         t('Розрив у грошах: 8 важелів, baseline, прогноз на 12 місяців', 'The gap in money: 8 levers, baseline, 12-month forecast'),
         t('Повний пакет: 5 звітів + посторінкові томи «зараз → як треба» + Гант-план Excel (зміст відкритий)', 'The full pack: 5 reports + page-by-page now/should-be volumes + an Excel Gantt (contents open)'),

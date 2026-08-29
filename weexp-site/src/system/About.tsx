@@ -136,11 +136,11 @@ export function About() {
 
           <div className="about-founder">
             {FOUNDER.photo && (
-              <div className="about-founder-ph"><img src={FOUNDER.photo} alt={`${FOUNDER.name ?? 'Founder'} — ${t('засновник WEEXP', 'founder of WEEXP')}`} width="900" height="1125" loading="lazy" /></div>
+              <div className="about-founder-ph"><img src={FOUNDER.photo} alt={`${fnd.name ?? 'Founder'} — ${t('засновник WEEXP', 'founder of WEEXP')}`} width="900" height="1125" loading="lazy" /></div>
             )}
             <div className="about-founder-l">
               <span className="about-eyebrow mono">{t('Засновник і архітектор Commerce', 'Founder & Architect of Commerce')}</span>
-              {FOUNDER.name && <h3 className="sysx-display about-name">{FOUNDER.name}</h3>}
+              {fnd.name && <h3 className="sysx-display about-name">{fnd.name}</h3>}
               <span className="about-role">{fnd.role}</span>
               <p className="about-focus">{t('Понад 8 років будує міжнародний e-commerce на ринках США, ЄС і MENA — від виробників до брендів рівня Forbes TOP-250. Працює з бізнесом не як консультант «за окремою ділянкою», а як архітектор системи: бачить онлайн-продажі цілісно — від стратегії й позиціонування до процесів, технологій, маркетингу, команди й фінансового результату.', 'Over 8 years building international e-commerce across the US, EU and MENA — from manufacturers to Forbes TOP-250 brands. Works with a business not as a consultant «for a single area», but as a system architect: sees online sales as a whole — from strategy and positioning to processes, technology, marketing, team and financial result.')}</p>
               <p className="about-focus">{t('Відповідає за результат бізнесу, а не за окремий фрагмент роботи: рішення ухвалюються на рівні системних змін — з P&L-відповідальністю, керованим циклом і вимірюваним ефектом. Саме власник найбільше виграє від системи: коли продажі перестають триматися на ручному режимі, звільняється головний ресурс — увага й час засновника.', 'Accountable for the business result, not a single fragment of work: decisions are made at the level of systemic change — with P&L ownership, a managed cycle and measurable effect. It’s the owner who benefits most from a system: once sales stop resting on manual mode, the main resource is freed — the founder’s attention and time.')}</p>

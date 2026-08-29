@@ -3,11 +3,11 @@
   "routes": {
     "/": {
       "uk": [
-        "WEEXP — система зростання для e-commerce: система замість героїзму",
+        "WEEXP — система зростання для e-commerce замість героїзму",
         "Система зростання для D2C та e-commerce брендів: діагноз у грошах, побудова системи й вихід на ЄС/США — щоб виторг зростав без вас."
       ],
       "en": [
-        "WEEXP — a growth system for e-commerce: a system instead of heroics",
+        "WEEXP — a growth system for e-commerce, not heroics",
         "A growth system for D2C & e-commerce brands: a diagnosis in money, building the system and expansion to the EU/US — so revenue grows without you."
       ]
     },
@@ -44,11 +44,11 @@
     "/expansion": {
       "uk": [
         "Експертизи WEEXP — напрями роботи · WEEXP",
-        "Шість напрямів WEEXP: міжнародна експансія, бізнес-процеси, технології, маркетинг, канали продажів і data & growth. У кожного — своя команда й результат."
+        "Девʼять напрямів WEEXP: експансія, бізнес-процеси, брендинг, UX/UI, веб-розробка, технології, маркетинг, канали продажів, data & growth. У кожного своя команда."
       ],
       "en": [
         "WEEXP expertise — practices · WEEXP",
-        "Six WEEXP directions: international expansion, business processes, technology, marketing, sales channels and data & growth. Each has its own team and result."
+        "Nine WEEXP practices: expansion, business processes, branding, UX/UI, web development, technology, marketing, sales channels and data & growth. Each has its own team."
       ]
     },
     "/diagnose": {
@@ -111,6 +111,36 @@
       "en": [
         "Business processes — practice · WEEXP",
         "So the business runs without heroics. We automate the processes that leak time and money: CRM and sales pipeline, ERP / warehouse / delivery, live reporting."
+      ]
+    },
+    "branding": {
+      "uk": [
+        "Брендинг — експертиза · WEEXP",
+        "Щоб вибирали вас, а не дешевше. Будуємо бренд як комерційний інструмент: позиціонування, айдентика, візуальна система, tone of voice і бренд-бук."
+      ],
+      "en": [
+        "Branding — practice · WEEXP",
+        "So they choose you, not the cheaper one. We build the brand as a commercial instrument: positioning, identity, visual system, tone of voice and a brand book."
+      ]
+    },
+    "ux-ui": {
+      "uk": [
+        "UX/UI дизайн — експертиза · WEEXP",
+        "Кожен зайвий крок коштує замовлення. Проєктуємо шлях клієнта й перетворюємо його на конверсію: дослідження, сценарії, інтерфейс, дизайн-система, CRO."
+      ],
+      "en": [
+        "UX/UI design — practice · WEEXP",
+        "Every extra step costs an order. We design the customer journey and turn it into conversion: research, flows, interface, design system and CRO."
+      ]
+    },
+    "web-development": {
+      "uk": [
+        "Веб-розробка — експертиза · WEEXP",
+        "Сайт має заробляти, а не вимагати уваги. Будуємо магазин, який витримує зростання: платформа під вашу модель, інтеграції, кастомна логіка, швидкість."
+      ],
+      "en": [
+        "Web development — practice · WEEXP",
+        "A site should earn, not demand attention. We build a store that survives growth: a platform matched to your model, integrations, custom logic and speed."
       ]
     },
     "technology": {

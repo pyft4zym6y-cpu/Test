@@ -1,7 +1,7 @@
 {
   "name": "WEEXP",
   "short_name": "WEEXP",
-  "description": "Операційний партнер з e-commerce для виробників і D2C-брендів $0.5–10M.",
+  "description": "Операційний партнер з e-commerce для виробників і D2C-брендів.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0A1218",

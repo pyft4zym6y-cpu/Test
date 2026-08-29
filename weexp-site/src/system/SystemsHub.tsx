@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useT, useLp, useLang } from '@/i18n';
-import { SYSTEMS } from '@/data/xray';
+import { SYSTEMS, localizeSystem } from '@/data/xray';
 import './system.css';
 
 /**
@@ -13,6 +13,12 @@ import './system.css';
  *
  * Тексти беруться з тієї самої моделі (data/xray.ts), що живить діагностику й
  * звіти: перелік на сайті й перелік у продукті не можуть розійтись.
+ *
+ * Мова йде через localizeSystem, а не через ручний вибір поля. Тут стояло
+ * `lang === 'en' ? s.en : s.title` — заголовок перекладався, а цитата й
+ * обіцянка бралися з UA-полів, хоч англійський оверлей SYS_EN уже існував і
+ * застосовувався на /systems/:slug. Механізм був написаний і не підключений:
+ * англійський хаб показував англійський заголовок з українською цитатою під ним.
  */
 export function SystemsHub() {
   const t = useT();
@@ -36,11 +42,11 @@ export function SystemsHub() {
         </header>
 
         <ol className="syshub-grid">
-          {SYSTEMS.map((s) => (
+          {SYSTEMS.map((raw) => localizeSystem(raw, lang)).map((s) => (
             <li key={s.key}>
               <Link to={lp(`/systems/${s.slug}`)} className="syshub-card">
                 <span className="syshub-n mono">{s.num}</span>
-                <h2 className="sysx-display syshub-card-h">{lang === 'en' ? s.en : s.title}</h2>
+                <h2 className="sysx-display syshub-card-h">{s.title}</h2>
                 <p className="syshub-feel">«{s.feel}»</p>
                 <p className="syshub-idea">{s.bigIdea}</p>
                 <span className="syshub-doms mono">{s.domains.length} {t('доменів діагностики', 'diagnostic domains')}</span>

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CASES, localizeCase, caseTeam } from '@/data/cases';
-import { SHORT } from '@/data/xray';
+import { shortOf } from '@/data/xray';
 import { band, seg, setLayer as set, useScrollScene } from '@/lib/scene';
 import { useT, useLp, useLang } from '@/i18n';
 import { ShareButton } from '@/system/ShareButton';
@@ -30,6 +30,10 @@ export function CasesFilm() {
   const acts = useRef<(HTMLDivElement | null)[]>([]);
   const ghost = useRef<HTMLSpanElement>(null);
   const [active, setActive] = useState(0);
+  // Фонове число-привид пишеться з rAF-циклу, поза рендером: мову беремо
+  // з ref, інакше замикання зафіксує ту, що була на першому кадрі.
+  const langRef = useRef(lang);
+  langRef.current = lang;
 
   useScrollScene(sec, (p, reduce) => {
     set(intro.current, reduce ? 1 : seg(p, -1, 0, 0.06, 0.115), `translateY(${((1 - band(p, 0, 0.06)) * -3).toFixed(1)}vh)`);
@@ -47,7 +51,7 @@ export function CasesFilm() {
       const hold = !reduce && p > a + 0.03 && p < a + W - 0.03;
       el.classList.toggle('is-live', hold);
     }
-    if (ghost.current && idx >= 0) ghost.current.textContent = REEL[idx].hero;
+    if (ghost.current && idx >= 0) ghost.current.textContent = localizeCase(REEL[idx], langRef.current).hero;
     if (idx >= 0 && idx !== active) setActive(idx);
   });
 
@@ -56,7 +60,7 @@ export function CasesFilm() {
     <section ref={sec} className="sysx sysx-film sysx-proof" aria-label={t('WEEXP — докази: трансформації в цифрах', 'WEEXP — proof: transformations in numbers')}>
       <div className="sysx-stage">
         <span className="sysx-field" aria-hidden="true" />
-        <span ref={ghost} className="cf-ghost sysx-display" aria-hidden="true">{REEL[0].hero}</span>
+        <span ref={ghost} className="cf-ghost sysx-display" aria-hidden="true">{localizeCase(REEL[0], lang).hero}</span>
 
         {/* рейка кейсів */}
         <div className="sysf-rail" aria-hidden="true">
@@ -80,11 +84,11 @@ export function CasesFilm() {
           <div key={c.slug} ref={(el) => { acts.current[i] = el; }} className="cf-act" style={{ opacity: 0 }}>
             <div className="cf-hero">
               <span className="cf-cat mono">{lc.cat}</span>
-              <span className="cf-num sysx-display">{c.hero}</span>
+              <span className="cf-num sysx-display">{lc.hero}</span>
               <span className="cf-heroLabel">{lc.heroLabel}</span>
               <span className="cf-window mono">{lc.window}</span>
               <p className="cf-money">{lc.money}</p>
-              <div className="cf-chips">{lc.systems.map((k) => <span key={k} className="cf-chip mono">{SHORT[k]}</span>)}</div>
+              <div className="cf-chips">{lc.systems.map((k) => <span key={k} className="cf-chip mono">{shortOf(k, lang)}</span>)}</div>
             </div>
             <div className="cf-deltas">
               <span className="cf-deltas-h mono">{t('До → після', 'Before → After')}</span>

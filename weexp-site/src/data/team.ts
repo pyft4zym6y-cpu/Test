@@ -19,12 +19,15 @@ export type Role = {
   expertiseEn?: string[]; // EN
   exp: string;         // досвід / факт-результат
   expEn?: string;      // EN
+  /** Транслітероване імʼя для EN-сторінки (кирилиця в англійському тексті — не імʼя, а збій). */
+  nameEn?: string;
 };
 
 export const TEAM: Role[] = [
   {
     role: 'Founder & Architect of Commerce',
     name: 'Павло Сидоренко',
+    nameEn: 'Pavlo Sydorenko',
     photo: '/team/pavlo-sydorenko.jpg',
     owns: ['strategy', 'org'],
     zone: 'Стратегія та операційна модель',
@@ -265,6 +268,9 @@ export function localizeRole(r: Role, lang: 'uk' | 'en'): Role {
   if (lang !== 'en') return r;
   return {
     ...r,
+    // Імʼя теж проходить оверлей: воно було єдиним полем ролі без EN-версії,
+    // і на /en/people стояло кирилицею посеред англійського тексту.
+    name: r.nameEn ?? r.name,
     role: r.roleEn ?? r.role,
     zone: r.zoneEn ?? r.zone,
     focus: r.focusEn ?? r.focus,

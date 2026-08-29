@@ -64,7 +64,7 @@ export function AuditPackPage() {
               <article key={v.id} className="apack-card apack-vol">
                 <b className="apack-t">{t(v.uk, v.en)}</b>
                 <p className="apack-bd">{t(v.descUk, v.descEn)}</p>
-                <span className="apack-bn mono">{v.vol}</span>
+                <span className="apack-bn mono">{lang === 'en' ? v.volEn : v.vol}</span>
               </article>
             ))}
             {scope === 'store' && (

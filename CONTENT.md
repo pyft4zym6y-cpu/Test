@@ -94,11 +94,11 @@
 
 ---
 
-# Сторінки · українська (25)
+# Сторінки · українська (28)
 
 ## `/`
 
-**Title:** WEEXP — система зростання для e-commerce: система замість героїзму  
+**Title:** WEEXP — система зростання для e-commerce замість героїзму  
 **Description:** Система зростання для D2C та e-commerce брендів: діагноз у грошах, побудова системи й вихід на ЄС/США — щоб виторг зростав без вас.  
 
 | Посилання | Перейти до вмісту → `#main-content` |
@@ -775,7 +775,7 @@
 ## `/expansion`
 
 **Title:** Експертизи WEEXP — напрями роботи · WEEXP  
-**Description:** Шість напрямів WEEXP: міжнародна експансія, бізнес-процеси, технології, маркетинг, канали продажів і data & growth. У кожного — своя команда й результат.  
+**Description:** Девʼять напрямів WEEXP: експансія, бізнес-процеси, брендинг, UX/UI, веб-розробка, технології, маркетинг, канали продажів, data & growth. У кожного своя команда.  
 
 | Посилання | Перейти до вмісту → `#main-content` |
 
@@ -917,6 +917,104 @@
 | --- | --- |
 | Посилання | ← Міжнародна експансія → `/expansion/international` |
 | Посилання | Брендинг → → `/expansion/branding` |
+
+### без блоку
+
+`body`
+
+| Роль | Текст |
+| --- | --- |
+| Текст | 🍪 |
+| Абзац | Ми використовуємо cookie, щоб сайт працював коректно й ставав кращим. Політика cookie. |
+| Кнопка | Лише необхідні |
+| Кнопка | Прийняти всі |
+## `/expansion/branding`
+
+**Title:** Брендинг — експертиза WEEXP  
+**Description:** Будуємо бренд як комерційний інструмент: позиціонування, яке пояснює, чому дорожче; візуальну систему, яку впізнають; і мову, якою бренд говорить однаково в рекламі, на сайті й у підтримці.  
+
+| Посилання | Перейти до вмісту → `#main-content` |
+
+### Позиціонування й айдентика
+
+`sysx`
+
+| Роль | Текст |
+| --- | --- |
+| Посилання | ← Експансія → `/expansion` |
+
+### Позиціонування й айдентика
+
+`sysx › xp2-head`
+
+| Роль | Текст |
+| --- | --- |
+| Текст | Позиціонування й айдентика |
+| H1 | Брендинг |
+| Текст | Щоб вибирали вас, а не дешевше. |
+| Абзац | Будуємо бренд як комерційний інструмент: позиціонування, яке пояснює, чому дорожче; візуальну систему, яку впізнають; і мову, якою бренд говорить однаково в рекламі, на сайті й у підтримці. |
+| Посилання | Залишити заявку → → `/contact` |
+| Посилання | Порахувати витік → → `/diagnose` |
+
+### Позиціонування й айдентика
+
+`sysx`
+
+| Роль | Текст |
+| --- | --- |
+| Текст | Що входить |
+| Акцент | Позиціонування |
+| Текст | Для кого, проти кого і чому дорожче — у одному реченні. |
+| Акцент | Бренд-стратегія |
+| Текст | Обіцянка, докази, архітектура брендів і продуктів. |
+| Акцент | Brand Identity |
+| Текст | Логотип, знак, константи — впізнаваність без пояснень. |
+| Акцент | Візуальна система |
+| Текст | Типографіка, колір, сітка, фото, шаблони під усі носії. |
+| Акцент | Tone of voice |
+| Текст | Як бренд говорить у рекламі, на сайті й у підтримці. |
+| Акцент | Бренд-бук |
+| Текст | Правила, за якими бренд не розсиплеться без нас. |
+| Текст | Що ви отримаєте |
+| Пункт | Платформа бренду: позиціонування й обіцянка |
+| Пункт | Айдентика й візуальна система |
+| Пункт | Tone of voice з прикладами |
+| Пункт | Бренд-бук і шаблони носіїв |
+| Текст | Результат |
+| Абзац | Бренд, за який готові платити більше, і команда, яка вміє його тримати без нас. |
+| Текст | Як працюємо |
+| Курсив | 01 |
+| Акцент | Дослідження |
+| Текст | Категорія, конкуренти, мова клієнта. |
+| Курсив | 02 |
+| Текст | Чим ви відрізняєтесь і чим це доводите. |
+| Курсив | 03 |
+| Акцент | Айдентика |
+| Текст | Знак, система, носії. |
+| Курсив | 04 |
+| Акцент | Впровадження |
+| Текст | Сайт, реклама, упаковка, комунікація. |
+| Курсив | 05 |
+| Акцент | Стандарт |
+| Текст | Бренд-бук і навчання команди. |
+| Текст | Партнерська модель |
+| H2 | Не просто порада — готова експертиза |
+| Пункт | Співпрацюємо з лідерами ринку у відповідних напрямах |
+| Пункт | Залучаємо перевірених спеціалістів під конкретну задачу |
+| Пункт | Розділяємо відповідальність за результат із командою виконавця |
+| Пункт | Рекомендуємо перевірених підрядників та експертів |
+| Пункт | Беремо на себе пошук і підбір професійних виконавців |
+| Пункт | Знімаємо з власника потребу самому шукати, перевіряти й координувати підрядників |
+| Абзац | Ми не просто даємо рекомендацію — ми формуємо правильну експертизу під задачу й допомагаємо власнику закрити її через перевірених професіоналів. |
+
+### xp2-nav
+
+`sysx › xp2-nav`
+
+| Роль | Текст |
+| --- | --- |
+| Посилання | ← Бізнес-процеси → `/expansion/automation` |
+| Посилання | UX/UI дизайн → → `/expansion/ux-ui` |
 
 ### без блоку
 
@@ -1410,6 +1508,204 @@
 | --- | --- |
 | Посилання | ← Веб-розробка → `/expansion/web-development` |
 | Посилання | Маркетинг → → `/expansion/marketing` |
+
+### без блоку
+
+`body`
+
+| Роль | Текст |
+| --- | --- |
+| Текст | 🍪 |
+| Абзац | Ми використовуємо cookie, щоб сайт працював коректно й ставав кращим. Політика cookie. |
+| Кнопка | Лише необхідні |
+| Кнопка | Прийняти всі |
+## `/expansion/ux-ui`
+
+**Title:** UX/UI дизайн — експертиза WEEXP  
+**Description:** Проєктуємо шлях клієнта від першого дотику до повторної покупки й перетворюємо його на конверсію: дослідження, сценарії, інтерфейс, тестування гіпотез на реальних грошах, а не на смаку.  
+
+| Посилання | Перейти до вмісту → `#main-content` |
+
+### Досвід і конверсія
+
+`sysx`
+
+| Роль | Текст |
+| --- | --- |
+| Посилання | ← Експансія → `/expansion` |
+
+### Досвід і конверсія
+
+`sysx › xp2-head`
+
+| Роль | Текст |
+| --- | --- |
+| Текст | Досвід і конверсія |
+| H1 | UX/UI дизайн |
+| Текст | Кожен зайвий крок коштує замовлення. |
+| Абзац | Проєктуємо шлях клієнта від першого дотику до повторної покупки й перетворюємо його на конверсію: дослідження, сценарії, інтерфейс, тестування гіпотез на реальних грошах, а не на смаку. |
+| Посилання | Залишити заявку → → `/contact` |
+| Посилання | Порахувати витік → → `/diagnose` |
+
+### Досвід і конверсія
+
+`sysx`
+
+| Роль | Текст |
+| --- | --- |
+| Текст | Що входить |
+| Акцент | UX-дослідження |
+| Текст | Де саме люди зупиняються й чому — за даними й сесіями. |
+| Акцент | Customer journey |
+| Текст | Шлях від першого дотику до повторної покупки. |
+| Акцент | UI та дизайн-система |
+| Текст | Інтерфейс і компоненти, які масштабуються без хаосу. |
+| Акцент | CRO |
+| Текст | Гіпотези, тести, зміни, які видно у виторгу. |
+| Акцент | Каталог і картка |
+| Текст | Пошук, фільтри, картка товару, кошик, checkout. |
+| Акцент | Мобільний досвід |
+| Текст | Більшість трафіку — з телефона; дизайн починається з нього. |
+| Текст | Що ви отримаєте |
+| Пункт | Карта шляху клієнта з вузькими місцями |
+| Пункт | Прототипи ключових екранів |
+| Пункт | UI-кіт і дизайн-система |
+| Пункт | Беклог CRO-гіпотез з оцінкою впливу |
+| Текст | Результат |
+| Абзац | Вищий відсоток замовлень із того самого трафіку — і документована система, за якою це можна повторювати. |
+| Текст | Як працюємо |
+| Курсив | 01 |
+| Акцент | Аналіз |
+| Текст | Дані, записи сесій, воронка по кроках. |
+| Курсив | 02 |
+| Акцент | Сценарії |
+| Текст | Як має бути, щоб кроків стало менше. |
+| Курсив | 03 |
+| Акцент | Дизайн |
+| Текст | Прототип, UI, дизайн-система. |
+| Курсив | 04 |
+| Акцент | Тести |
+| Текст | Перевіряємо на трафіку, а не на думках. |
+| Курсив | 05 |
+| Акцент | Впровадження |
+| Текст | Передача в розробку й контроль результату. |
+| Текст | Партнерська модель |
+| H2 | Не просто порада — готова експертиза |
+| Пункт | Співпрацюємо з лідерами ринку у відповідних напрямах |
+| Пункт | Залучаємо перевірених спеціалістів під конкретну задачу |
+| Пункт | Розділяємо відповідальність за результат із командою виконавця |
+| Пункт | Рекомендуємо перевірених підрядників та експертів |
+| Пункт | Беремо на себе пошук і підбір професійних виконавців |
+| Пункт | Знімаємо з власника потребу самому шукати, перевіряти й координувати підрядників |
+| Абзац | Ми не просто даємо рекомендацію — ми формуємо правильну експертизу під задачу й допомагаємо власнику закрити її через перевірених професіоналів. |
+
+### xp2-nav
+
+`sysx › xp2-nav`
+
+| Роль | Текст |
+| --- | --- |
+| Посилання | ← Брендинг → `/expansion/branding` |
+| Посилання | Веб-розробка → → `/expansion/web-development` |
+
+### без блоку
+
+`body`
+
+| Роль | Текст |
+| --- | --- |
+| Текст | 🍪 |
+| Абзац | Ми використовуємо cookie, щоб сайт працював коректно й ставав кращим. Політика cookie. |
+| Кнопка | Лише необхідні |
+| Кнопка | Прийняти всі |
+## `/expansion/web-development`
+
+**Title:** Веб-розробка — експертиза WEEXP  
+**Description:** Будуємо й розвиваємо магазин так, щоб він витримував зростання: платформа під вашу модель, інтеграції з обліком і логістикою, кастомна логіка там, де коробка не вміє, і швидкість, яку видно в конверсії.  
+
+| Посилання | Перейти до вмісту → `#main-content` |
+
+### E-commerce розробка
+
+`sysx`
+
+| Роль | Текст |
+| --- | --- |
+| Посилання | ← Експансія → `/expansion` |
+
+### E-commerce розробка
+
+`sysx › xp2-head`
+
+| Роль | Текст |
+| --- | --- |
+| Текст | E-commerce розробка |
+| H1 | Веб-розробка |
+| Текст | Сайт має заробляти, а не вимагати уваги. |
+| Абзац | Будуємо й розвиваємо магазин так, щоб він витримував зростання: платформа під вашу модель, інтеграції з обліком і логістикою, кастомна логіка там, де коробка не вміє, і швидкість, яку видно в конверсії. |
+| Посилання | Залишити заявку → → `/contact` |
+| Посилання | Порахувати витік → → `/diagnose` |
+
+### E-commerce розробка
+
+`sysx`
+
+| Роль | Текст |
+| --- | --- |
+| Текст | Що входить |
+| Акцент | E-commerce розробка |
+| Текст | Магазин під вашу модель продажів, а не навпаки. |
+| Акцент | CMS і платформи |
+| Текст | Shopify, Magento, WooCommerce, кастом — вибір за задачею. |
+| Акцент | Інтеграції |
+| Текст | ERP, CRM, склад, доставка, платежі, маркетплейси. |
+| Акцент | Custom development |
+| Текст | Логіка, якої немає в коробці: тарифи, конфігуратори, B2B. |
+| Акцент | Швидкість і стабільність |
+| Текст | Core Web Vitals, навантаження в пік, моніторинг. |
+| Акцент | Підтримка й розвиток |
+| Текст | Релізи без страху: тести, стенди, відкат. |
+| Текст | Що ви отримаєте |
+| Пункт | Технічна архітектура рішення |
+| Пункт | Робочий магазин з інтеграціями |
+| Пункт | Регламент релізів і моніторинг |
+| Пункт | Документація для вашої команди |
+| Текст | Результат |
+| Абзац | Магазин, який витримує зростання, і команда, яка може змінювати його швидко й без страху. |
+| Текст | Як працюємо |
+| Курсив | 01 |
+| Акцент | Технічний аудит |
+| Текст | Що гальмує й що ламається. |
+| Курсив | 02 |
+| Акцент | Архітектура |
+| Текст | Платформа, інтеграції, межі кастому. |
+| Курсив | 03 |
+| Акцент | Розробка |
+| Текст | Ітераціями, з демо й тестами. |
+| Курсив | 04 |
+| Акцент | Запуск |
+| Текст | Міграція, перевірка, план відкату. |
+| Курсив | 05 |
+| Акцент | Розвиток |
+| Текст | Релізи без ризику для продажів. |
+| Текст | Партнерська модель |
+| H2 | Не просто порада — готова експертиза |
+| Пункт | Співпрацюємо з лідерами ринку у відповідних напрямах |
+| Пункт | Залучаємо перевірених спеціалістів під конкретну задачу |
+| Пункт | Розділяємо відповідальність за результат із командою виконавця |
+| Пункт | Рекомендуємо перевірених підрядників та експертів |
+| Пункт | Беремо на себе пошук і підбір професійних виконавців |
+| Пункт | Знімаємо з власника потребу самому шукати, перевіряти й координувати підрядників |
+| Абзац | Ми не просто даємо рекомендацію — ми формуємо правильну експертизу під задачу й допомагаємо власнику закрити її через перевірених професіоналів. |
+
+### xp2-nav
+
+`sysx › xp2-nav`
+
+| Роль | Текст |
+| --- | --- |
+| Посилання | ← UX/UI дизайн → `/expansion/ux-ui` |
+| Посилання | E-commerce Technology → → `/expansion/technology` |
 
 ### без блоку
 
@@ -2957,11 +3253,11 @@
 
 ---
 
-# Сторінки · англійська (15)
+# Сторінки · англійська (18)
 
 ## `/en`
 
-**Title:** WEEXP — a growth system for e-commerce: a system instead of heroics  
+**Title:** WEEXP — a growth system for e-commerce, not heroics  
 **Description:** A growth system for D2C & e-commerce brands: a diagnosis in money, building the system and expansion to the EU/US — so revenue grows without you.  
 
 | Посилання | Skip to content → `#main-content` |
@@ -3385,19 +3681,19 @@
 | --- | --- |
 | Акцент | Volume A · Page-by-page UX/UI |
 | Абзац | Every page of the commercial path block-by-block, scored 0–5, + mock-ups of all 49 blocks "now → should be" with deltas; missing blocks drawn from scratch. |
-| Текст | 40 стор. |
+| Текст | 40 pp. |
 | Акцент | Volume B · Page-by-page content |
 | Абзац | 5 criteria × all pages + 6 target sample texts "now → should be" a copywriter works from. |
-| Текст | 8 стор. |
+| Текст | 8 pp. |
 | Акцент | Volume C · SEO & site tree |
 | Абзац | Indexation map (real pages vs junk), clustered semantics, on-page by template + 6 SEO templates "now → should be", internal linking, GEO protocol. |
-| Текст | 9 стор. |
+| Текст | 9 pp. |
 | Акцент | Volume E · Customer journey |
 | Абзац | 15 stages Awareness → Advocacy as "now → should be" pairs with /10 readiness and owners + 2 hands-on journey tests repeated at checkpoints. |
-| Текст | 14 стор. |
+| Текст | 14 pp. |
 | Акцент | Gantt plan (Excel) |
 | Абзац | A fully working tool, not an illustration: tasks with owners (R/A), predecessors, a weekly grid and DoD + "Legend", "Contractors", "Resources" sheets. |
-| Текст | 4 листи |
+| Текст | 4 sheets |
 | Акцент | Volume D · Starter templates |
 | Абзац | PM job description, discount policy with a worked example, review script — included in the department audit. |
 | Кнопка | → in the department audit $4,900 |
@@ -3625,7 +3921,7 @@
 ## `/en/expansion`
 
 **Title:** WEEXP expertise — practices · WEEXP  
-**Description:** Six WEEXP directions: international expansion, business processes, technology, marketing, sales channels and data & growth. Each has its own team and result.  
+**Description:** Nine WEEXP practices: expansion, business processes, branding, UX/UI, web development, technology, marketing, sales channels and data & growth. Each has its own team.  
 
 | Посилання | Skip to content → `#main-content` |
 
@@ -3767,6 +4063,104 @@
 | --- | --- |
 | Посилання | ← International expansion → `/en/expansion/international` |
 | Посилання | Branding → → `/en/expansion/branding` |
+
+### без блоку
+
+`body`
+
+| Роль | Текст |
+| --- | --- |
+| Текст | 🍪 |
+| Абзац | We use cookies to keep the site working and make it better. Cookie policy. |
+| Кнопка | Necessary only |
+| Кнопка | Accept all |
+## `/en/expansion/branding`
+
+**Title:** Branding — WEEXP expertise  
+**Description:** We build the brand as a commercial instrument: positioning that explains why you cost more, a visual system people recognize, and a voice the brand speaks consistently in ads, on site and in support.  
+
+| Посилання | Skip to content → `#main-content` |
+
+### Positioning & identity
+
+`sysx`
+
+| Роль | Текст |
+| --- | --- |
+| Посилання | ← Expansion → `/en/expansion` |
+
+### Positioning & identity
+
+`sysx › xp2-head`
+
+| Роль | Текст |
+| --- | --- |
+| Текст | Positioning & identity |
+| H1 | Branding |
+| Текст | So they choose you, not the cheaper one. |
+| Абзац | We build the brand as a commercial instrument: positioning that explains why you cost more, a visual system people recognize, and a voice the brand speaks consistently in ads, on site and in support. |
+| Посилання | Leave a request → → `/en/contact` |
+| Посилання | Calculate the leak → → `/en/diagnose` |
+
+### Positioning & identity
+
+`sysx`
+
+| Роль | Текст |
+| --- | --- |
+| Текст | What’s included |
+| Акцент | Positioning |
+| Текст | For whom, against whom and why you cost more — in one sentence. |
+| Акцент | Brand strategy |
+| Текст | Promise, proof, architecture of brands and products. |
+| Акцент | Brand identity |
+| Текст | Logo, mark, constants — recognition without explanation. |
+| Акцент | Visual system |
+| Текст | Type, color, grid, imagery, templates for every surface. |
+| Акцент | Tone of voice |
+| Текст | How the brand speaks in ads, on site and in support. |
+| Акцент | Brand book |
+| Текст | Rules that keep the brand intact without us. |
+| Текст | What you get |
+| Пункт | Brand platform: positioning and promise |
+| Пункт | Identity and visual system |
+| Пункт | Tone of voice with examples |
+| Пункт | Brand book and asset templates |
+| Текст | Outcome |
+| Абзац | A brand people pay more for, and a team able to hold it without us. |
+| Текст | How we work |
+| Курсив | 01 |
+| Акцент | Research |
+| Текст | Category, competitors, the customer’s language. |
+| Курсив | 02 |
+| Текст | What sets you apart and what proves it. |
+| Курсив | 03 |
+| Акцент | Identity |
+| Текст | Mark, system, assets. |
+| Курсив | 04 |
+| Акцент | Rollout |
+| Текст | Site, ads, packaging, communication. |
+| Курсив | 05 |
+| Акцент | Standard |
+| Текст | Brand book and team enablement. |
+| Текст | Partner model |
+| H2 | Not just advice — ready expertise |
+| Пункт | We partner with market leaders in the relevant fields |
+| Пункт | We bring in vetted specialists for the specific task |
+| Пункт | We share accountability for the result with the delivery team |
+| Пункт | We recommend vetted contractors and experts |
+| Пункт | We take on finding and selecting professional executors |
+| Пункт | We free the owner from finding, vetting and coordinating contractors themselves |
+| Абзац | We don't just give a recommendation — we assemble the right expertise for the task and help the owner close it through vetted professionals. |
+
+### xp2-nav
+
+`sysx › xp2-nav`
+
+| Роль | Текст |
+| --- | --- |
+| Посилання | ← Business processes → `/en/expansion/automation` |
+| Посилання | UX/UI design → → `/en/expansion/ux-ui` |
 
 ### без блоку
 
@@ -4272,6 +4666,204 @@
 | Абзац | We use cookies to keep the site working and make it better. Cookie policy. |
 | Кнопка | Necessary only |
 | Кнопка | Accept all |
+## `/en/expansion/ux-ui`
+
+**Title:** UX/UI design — WEEXP expertise  
+**Description:** We design the customer journey from first touch to repeat purchase and turn it into conversion: research, flows, interface, hypotheses tested on real money rather than taste.  
+
+| Посилання | Skip to content → `#main-content` |
+
+### Experience & conversion
+
+`sysx`
+
+| Роль | Текст |
+| --- | --- |
+| Посилання | ← Expansion → `/en/expansion` |
+
+### Experience & conversion
+
+`sysx › xp2-head`
+
+| Роль | Текст |
+| --- | --- |
+| Текст | Experience & conversion |
+| H1 | UX/UI design |
+| Текст | Every extra step costs an order. |
+| Абзац | We design the customer journey from first touch to repeat purchase and turn it into conversion: research, flows, interface, hypotheses tested on real money rather than taste. |
+| Посилання | Leave a request → → `/en/contact` |
+| Посилання | Calculate the leak → → `/en/diagnose` |
+
+### Experience & conversion
+
+`sysx`
+
+| Роль | Текст |
+| --- | --- |
+| Текст | What’s included |
+| Акцент | UX research |
+| Текст | Where exactly people stop and why — from data and sessions. |
+| Акцент | Customer journey |
+| Текст | The path from first touch to repeat purchase. |
+| Акцент | UI & design system |
+| Текст | Interface and components that scale without chaos. |
+| Акцент | CRO |
+| Текст | Hypotheses, tests, changes visible in revenue. |
+| Акцент | Catalog & product page |
+| Текст | Search, filters, product page, cart, checkout. |
+| Акцент | Mobile experience |
+| Текст | Most traffic is mobile; design starts there. |
+| Текст | What you get |
+| Пункт | Customer journey map with bottlenecks |
+| Пункт | Prototypes of the key screens |
+| Пункт | UI kit and design system |
+| Пункт | CRO hypothesis backlog with impact estimates |
+| Текст | Outcome |
+| Абзац | A higher share of orders from the same traffic — and a documented system to repeat it. |
+| Текст | How we work |
+| Курсив | 01 |
+| Акцент | Analysis |
+| Текст | Data, session recordings, step-by-step funnel. |
+| Курсив | 02 |
+| Акцент | Flows |
+| Текст | How it should work with fewer steps. |
+| Курсив | 03 |
+| Акцент | Design |
+| Текст | Prototype, UI, design system. |
+| Курсив | 04 |
+| Акцент | Tests |
+| Текст | Validated on traffic, not opinions. |
+| Курсив | 05 |
+| Акцент | Rollout |
+| Текст | Handover to development and result control. |
+| Текст | Partner model |
+| H2 | Not just advice — ready expertise |
+| Пункт | We partner with market leaders in the relevant fields |
+| Пункт | We bring in vetted specialists for the specific task |
+| Пункт | We share accountability for the result with the delivery team |
+| Пункт | We recommend vetted contractors and experts |
+| Пункт | We take on finding and selecting professional executors |
+| Пункт | We free the owner from finding, vetting and coordinating contractors themselves |
+| Абзац | We don't just give a recommendation — we assemble the right expertise for the task and help the owner close it through vetted professionals. |
+
+### xp2-nav
+
+`sysx › xp2-nav`
+
+| Роль | Текст |
+| --- | --- |
+| Посилання | ← Branding → `/en/expansion/branding` |
+| Посилання | Web development → → `/en/expansion/web-development` |
+
+### без блоку
+
+`body`
+
+| Роль | Текст |
+| --- | --- |
+| Текст | 🍪 |
+| Абзац | We use cookies to keep the site working and make it better. Cookie policy. |
+| Кнопка | Necessary only |
+| Кнопка | Accept all |
+## `/en/expansion/web-development`
+
+**Title:** Web development — WEEXP expertise  
+**Description:** We build and evolve the store so it survives growth: a platform matched to your model, integrations with accounting and logistics, custom logic where off-the-shelf fails, and speed you can see in conversion.  
+
+| Посилання | Skip to content → `#main-content` |
+
+### E-commerce development
+
+`sysx`
+
+| Роль | Текст |
+| --- | --- |
+| Посилання | ← Expansion → `/en/expansion` |
+
+### E-commerce development
+
+`sysx › xp2-head`
+
+| Роль | Текст |
+| --- | --- |
+| Текст | E-commerce development |
+| H1 | Web development |
+| Текст | A site should earn, not demand attention. |
+| Абзац | We build and evolve the store so it survives growth: a platform matched to your model, integrations with accounting and logistics, custom logic where off-the-shelf fails, and speed you can see in conversion. |
+| Посилання | Leave a request → → `/en/contact` |
+| Посилання | Calculate the leak → → `/en/diagnose` |
+
+### E-commerce development
+
+`sysx`
+
+| Роль | Текст |
+| --- | --- |
+| Текст | What’s included |
+| Акцент | E-commerce development |
+| Текст | A store built around your sales model, not the reverse. |
+| Акцент | CMS & platforms |
+| Текст | Shopify, Magento, WooCommerce, custom — chosen by the task. |
+| Акцент | Integrations |
+| Текст | ERP, CRM, warehouse, delivery, payments, marketplaces. |
+| Акцент | Custom development |
+| Текст | Logic no box provides: pricing, configurators, B2B. |
+| Акцент | Speed & reliability |
+| Текст | Core Web Vitals, peak load, monitoring. |
+| Акцент | Support & evolution |
+| Текст | Releases without fear: tests, staging, rollback. |
+| Текст | What you get |
+| Пункт | Technical architecture of the solution |
+| Пункт | A working store with integrations |
+| Пункт | Release playbook and monitoring |
+| Пункт | Documentation for your team |
+| Текст | Outcome |
+| Абзац | A store that survives growth, and a team able to change it fast and without fear. |
+| Текст | How we work |
+| Курсив | 01 |
+| Акцент | Technical audit |
+| Текст | What slows down and what breaks. |
+| Курсив | 02 |
+| Акцент | Architecture |
+| Текст | Platform, integrations, limits of custom code. |
+| Курсив | 03 |
+| Акцент | Development |
+| Текст | In iterations, with demos and tests. |
+| Курсив | 04 |
+| Акцент | Launch |
+| Текст | Migration, verification, rollback plan. |
+| Курсив | 05 |
+| Акцент | Evolution |
+| Текст | Releases without risk to sales. |
+| Текст | Partner model |
+| H2 | Not just advice — ready expertise |
+| Пункт | We partner with market leaders in the relevant fields |
+| Пункт | We bring in vetted specialists for the specific task |
+| Пункт | We share accountability for the result with the delivery team |
+| Пункт | We recommend vetted contractors and experts |
+| Пункт | We take on finding and selecting professional executors |
+| Пункт | We free the owner from finding, vetting and coordinating contractors themselves |
+| Абзац | We don't just give a recommendation — we assemble the right expertise for the task and help the owner close it through vetted professionals. |
+
+### xp2-nav
+
+`sysx › xp2-nav`
+
+| Роль | Текст |
+| --- | --- |
+| Посилання | ← UX/UI design → `/en/expansion/ux-ui` |
+| Посилання | E-commerce Technology → → `/en/expansion/technology` |
+
+### без блоку
+
+`body`
+
+| Роль | Текст |
+| --- | --- |
+| Текст | 🍪 |
+| Абзац | We use cookies to keep the site working and make it better. Cookie policy. |
+| Кнопка | Necessary only |
+| Кнопка | Accept all |
 ## `/en/people`
 
 **Title:** About — mission, values & team · WEEXP  
@@ -4358,7 +4950,7 @@
 | H2 | Every system has its own owner |
 | Абзац | We are not “generalists for everything”. Your project is run by a team structured around the eight systems: every circuit has someone accountable for the result. |
 | Текст | Founder & Architect of Commerce |
-| H3 | Павло Сидоренко |
+| H3 | Pavlo Sydorenko |
 | Абзац | Over 8 years building international e-commerce across the US, EU and MENA — from manufacturers to Forbes TOP-250 brands. Works with a business not as a consultant «for a single area», but as a system architect: sees online sales as a whole — from strategy and positioning to processes, technology, marketing, team and financial result. |
 | Абзац | Accountable for the business result, not a single fragment of work: decisions are made at the level of systemic change — with P&L ownership, a managed cycle and measurable effect. It’s the owner who benefits most from a system: once sales stop resting on manual mode, the main resource is freed — the founder’s attention and time. |
 | Акцент | 8+ |
@@ -4650,9 +5242,9 @@
 | Текст | turnover over 18 months |
 | Текст | 18 months · ROI 3.8× |
 | Абзац | Up to €288K of margin a year left unrealized for lack of a system. |
-| Текст | Стратегія |
-| Текст | Комерція |
-| Текст | Клієнт |
+| Текст | Strategy |
+| Текст | Commerce |
+| Текст | Customer |
 | Текст | Before → After |
 | Текст | Turnover/year |
 | Курсив | €48K |
@@ -4681,8 +5273,8 @@
 | Текст | to turnover in 9 months |
 | Текст | 2023–2025 · 6 markets |
 | Абзац | Every new market slipped because of operational bottlenecks. |
-| Текст | Операції |
-| Текст | Дані |
+| Текст | Operations |
+| Текст | Data |
 | Текст | Sales |
 | Курсив | baseline |
 | Акцент | +65% |
@@ -4704,10 +5296,10 @@
 | Текст | speed of management decisions |
 | Текст | 10 months |
 | Абзац | Up to €210K/year of margin lost to chaotic promos with no read on contribution impact. |
-| Текст | Організація |
+| Текст | Organization |
 | Текст | Report assembly |
-| Курсив | 6 днів |
-| Акцент | 4 години |
+| Курсив | 6 days |
+| Акцент | 4 hours |
 | Текст | ×36 |
 | Текст | GA4 accuracy |
 | Курсив | 78% |
@@ -4721,13 +5313,13 @@
 | Абзац | Lesson: Without a single source of truth, decision speed falls faster than turnover grows. |
 | Текст | Org Design & Team |
 | Текст | Fashion · Program of Record |
-| Текст | ≥19 млн ₴ |
+| Текст | ≥19M ₴ |
 | Текст | of turnover missed per year |
 | Текст | 12-month program |
 | Абзац | ≥19M ₴/year of missed turnover — framed into a $56–79K budget (results measured in the client’s currency, budgets fixed in dollars) with a 4–8 month payback. |
-| Текст | Досвід |
+| Текст | Experience |
 | Текст | Turnover |
-| Курсив | 23.2 млн ₴ |
+| Курсив | 23.2M ₴ |
 | Акцент | ×2–2.5 |
 | Текст | target |
 | Курсив | 3.9% |
@@ -4779,8 +5371,8 @@
 | Текст | 11 months |
 | Абзац | Non-redemption 22% and cancellations cost ~₴9.1M/year of turnover. |
 | Текст | Delivery SLA |
-| Курсив | 72 год |
-| Акцент | 24 год |
+| Курсив | 72 h |
+| Акцент | 24 h |
 | Текст | Non-redemption |
 | Курсив | 22% |
 | Акцент | 7% |
@@ -4888,14 +5480,14 @@
 
 | Роль | Текст |
 | --- | --- |
-| Пункт | 01Strategy & Management«Ми ростемо, але я не розумію, куди і навіщо.»Стратегія продажів, якою можна керувати5 diagnostic domainsLearn more → |
-| Пункт | 02Commercial Performance«Ми продаємо, але не керуємо економікою продажів.»Більше виручки — замало. Зробіть комерцію прибутковою.4 diagnostic domainsLearn more → |
-| Пункт | 03Demand & Customer«Ми дорого залучаємо людей і погано робимо їх постійними клієнтами.»Перетворюйте трафік на клієнтів, а клієнтів — на цінність.4 diagnostic domainsLearn more → |
-| Пункт | 04Experience & Conversion«Люди заходять, але не купують.»Зробіть кожен крок клієнта робочим.4 diagnostic domainsLearn more → |
-| Пункт | 05Operations & Fulfillment«Маркетинг приводить замовлення, а склад і доставка все ламають.»Продавати марно, якщо не можеш доставити.5 diagnostic domainsLearn more → |
-| Пункт | 06Data, Technology & Integration«У кожного свої цифри, і жодній не можна довіряти.»Один бізнес. Одне джерело правди.4 diagnostic domainsLearn more → |
-| Пункт | 07Organization & Operating Model«Усе тримається на мені та на кількох людях.»Побудуйте бізнес, якому не потрібні герої.5 diagnostic domainsLearn more → |
-| Пункт | 08Expansion & Markets«Наш ринок майже вичерпано, а нові — це страшно й незрозуміло.»Новий ринок — це не «ще один канал», а окремий бізнес-контур.4 diagnostic domainsLearn more → |
+| Пункт | 01Strategy & Management«We keep growing, but I do not understand where to or why.»A sales strategy you can actually manage.5 diagnostic domainsLearn more → |
+| Пункт | 02Commercial Performance«We sell, but we do not manage the economics of our sales.»More revenue is not enough. Make commerce profitable.4 diagnostic domainsLearn more → |
+| Пункт | 03Demand & Customer«We acquire people expensively and turn them into loyal customers poorly.»Turn traffic into customers, and customers into value.4 diagnostic domainsLearn more → |
+| Пункт | 04Experience & Conversion«People come in, but they do not buy.»Make every step of the customer journey work.4 diagnostic domainsLearn more → |
+| Пункт | 05Operations & Fulfillment«Marketing brings orders, and the warehouse and delivery break everything.»Selling is pointless if you cannot deliver.5 diagnostic domainsLearn more → |
+| Пункт | 06Data, Technology & Integration«Everyone has their own numbers, and none of them can be trusted.»One business. One source of truth.4 diagnostic domainsLearn more → |
+| Пункт | 07Organization & Operating Model«Everything rests on me and a few people.»Build a business that does not need heroes.5 diagnostic domainsLearn more → |
+| Пункт | 08Expansion & Markets«Our market is nearly exhausted, and new ones feel scary and unclear.»A new market is not “one more channel” — it is a separate business circuit.4 diagnostic domainsLearn more → |
 | Текст | Which of the eight is your weak link? |
 | Текст | in 2 minutes |
 | Посилання | Calculate the leak → → `/en/diagnose` |
