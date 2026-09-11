@@ -6,12 +6,21 @@
 решту, вішаючи дерево закладок «розділ → сторінка»: документ на сотню
 аркушів без закладок гортати неможливо.
 """
-import json, sys, io, datetime, os
+import json, sys, io, datetime, os, re
 from PIL import Image
 from pypdf import PdfWriter, PdfReader
 
-src, out, mode = sys.argv[1], sys.argv[2], sys.argv[3]
-contents_pdf = sys.argv[4] if len(sys.argv) > 4 else None
+# --only=REGEX і --range=A:B дозволяють зібрати частину вигрузки окремим
+# файлом. Знадобилось не для краси: повний документ на 91 сторінку важить
+# ~60 МБ, а канал доставки приймає 30 — і стискати до ліміту довелось би
+# так, що текст на знімках стає нечитабельним.
+args = [a for a in sys.argv[1:] if not a.startswith('--')]
+opts = dict(a[2:].split('=', 1) for a in sys.argv[1:] if a.startswith('--'))
+src, out, mode = args[0], args[1], args[2]
+contents_pdf = args[3] if len(args) > 3 else None
+ONLY = re.compile(opts['only']) if 'only' in opts else None
+RANGE = tuple(int(x) for x in opts['range'].split(':')) if 'range' in opts else None
+TITLE = opts.get('title', 'weexp.agency — усі сторінки сайту')
 
 meta = json.load(open(f"{src}/meta.json", encoding="utf-8"))
 ok = [m for m in meta if not m.get("error")]
@@ -28,6 +37,11 @@ ORDER = ["Основні сторінки", "Вісім систем", "Експ
          "English version", "Юридичні сторінки"]
 
 seq = sorted(ok, key=lambda m: (ORDER.index(section(m["url"])), ok.index(m)))
+if ONLY:
+    seq = [m for m in seq if ONLY.search(m["url"])]
+if RANGE:
+    seq = seq[RANGE[0]:RANGE[1]]
+assert seq, "після фільтра не лишилось жодної сторінки"
 for m in seq:
     t = (m.get("title") or m["url"]).split(" · WEEXP")[0].strip()
     m["label"] = (t[:67] + "…") if len(t) > 70 else t
@@ -45,6 +59,7 @@ if mode == "index":
         if items:
             sections.append({"name": name, "items": items})
     json.dump({"sections": sections, "total": len(seq), "sheets": total,
+               "title": TITLE,
                "date": datetime.date.today().strftime("%d.%m.%Y")},
               open(out, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
     print(f"індекс: {len(seq)} сторінок → {total} аркушів")
@@ -75,7 +90,7 @@ for m in seq:
         parents[sec] = w.add_outline_item(sec, first)
     w.add_outline_item(f'{m["url"]}  —  {m["label"]}', first, parent=parents[sec])
 
-w.add_metadata({"/Title": "weexp.agency — усі сторінки сайту",
+w.add_metadata({"/Title": TITLE,
                 "/Subject": f"Вигрузка {len(seq)} сторінок сайту",
                 "/Creator": "WEEXP"})
 with open(out, "wb") as f:

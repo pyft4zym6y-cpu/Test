@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { track } from '@/lib/analytics';
 import SEO_DATA from '@/lib/seo-data.json';
+import { bySlug } from '@/data/blog';
 
 /**
  * Per-route SEO без зовнішніх залежностей. Оновлює <title>, description,
@@ -101,6 +102,21 @@ const UK_ONLY: Record<string, [string, string]> = {
 
 const NOINDEX = new Set(['/classic']);
 
+/**
+ * Мета сторінки статті — з індексу блогу, а не з таблиці маршрутів.
+ *
+ * Статей 44, і вписувати кожну в seo-data.json означало б тримати ту саму
+ * правду у двох місцях. Доти маршрут /blog/:slug не збігався з жодним ключем
+ * таблиці, і RouteSeo не робив НІЧОГО: у статиці заголовок був правильний, а
+ * після переходу всередині застосунку в укладці лишався заголовок тієї
+ * сторінки, з якої прийшли. Тобто всі 44 статті ділили один заголовок.
+ */
+function blogMeta(base: string): [string, string] | null {
+  if (!base.startsWith('/blog/')) return null;
+  const a = bySlug(base.slice('/blog/'.length));
+  return a ? [(a.seoTitle || a.title) + SUFFIX, a.description] : null;
+}
+
 /** Central route SEO: двомовний. Для /en/* бере EN-версію + hreflang (в applySeo). */
 export function RouteSeo() {
   const { pathname } = useLocation();
@@ -110,7 +126,9 @@ export function RouteSeo() {
     const m2 = META[base];
     const expSlug = base.startsWith('/expansion/') ? base.slice('/expansion/'.length) : '';
     const mExp = expSlug ? EXPANSION[expSlug] : undefined;
-    if (m2) applySeo(m2[lang][0], m2[lang][1], pathname, NOINDEX.has(base));
+    const mBlog = blogMeta(base);
+    if (mBlog) applySeo(mBlog[0], mBlog[1], pathname, false);
+    else if (m2) applySeo(m2[lang][0], m2[lang][1], pathname, NOINDEX.has(base));
     else if (mExp) applySeo(mExp[lang][0], mExp[lang][1], pathname, false);
     else if (UK_ONLY[base]) applySeo(UK_ONLY[base][0], UK_ONLY[base][1], pathname, NOINDEX.has(base));
     track('page_view', { path: pathname });

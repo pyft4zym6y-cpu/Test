@@ -73,7 +73,7 @@ export type BlogArticle = {
 
 /** Легкий запис для списків і тизерів — без тіла статті. */
 export type BlogTeaserItem = Pick<BlogArticle,
-  'slug' | 'title' | 'description' | 'keywords' | 'category' | 'pages' | 'published' | 'readMin'>;
+  'slug' | 'title' | 'seoTitle' | 'description' | 'keywords' | 'category' | 'pages' | 'published' | 'readMin'>;
 
 export const CATEGORY_LABEL: Record<BlogCategory, string> = {
   systems: 'Система продажів',

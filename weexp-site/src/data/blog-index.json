@@ -18,7 +18,8 @@
       "/expansion/web-development"
     ],
     "published": "2026-09-16",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "UX-дослідження для інтернет-магазину"
   },
   {
     "slug": "brend-v-ecommerce",
@@ -40,7 +41,8 @@
       "/expansion"
     ],
     "published": "2026-09-15",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Бренд в e-commerce: навіщо і як будувати"
   },
   {
     "slug": "z-chogo-pochaty-transformaciyu",
@@ -61,7 +63,8 @@
       "/proof"
     ],
     "published": "2026-09-14",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "З чого почати зміни в інтернет-магазині"
   },
   {
     "slug": "kejsy-yak-chytaty",
@@ -83,7 +86,8 @@
       "/contact"
     ],
     "published": "2026-09-13",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Як читати кейси e-commerce правильно"
   },
   {
     "slug": "yak-obraty-pidryadnyka",
@@ -104,7 +108,8 @@
       "/proof"
     ],
     "published": "2026-09-12",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Як обрати підрядника для інтернет-магазину"
   },
   {
     "slug": "shcho-take-ekspres-audyt",
@@ -125,7 +130,8 @@
       "/contact"
     ],
     "published": "2026-09-11",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Експрес-аудит інтернет-магазину за 30 хвилин"
   },
   {
     "slug": "yak-provesty-audyt-ecommerce",
@@ -147,7 +153,8 @@
       "/contact"
     ],
     "published": "2026-09-10",
-    "readMin": 8
+    "readMin": 8,
+    "seoTitle": "Аудит інтернет-магазину: що перевіряти"
   },
   {
     "slug": "strategiya-ta-upravlinnya-ecommerce",
@@ -168,7 +175,8 @@
       "/"
     ],
     "published": "2026-09-09",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Стратегія в e-commerce: як обрати напрямок"
   },
   {
     "slug": "de-rvetsya-systema-prodazhiv",
@@ -190,7 +198,8 @@
       "/proof"
     ],
     "published": "2026-09-08",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Де рветься система продажів: сім витоків"
   },
   {
     "slug": "visim-system-onlajn-prodazhiv",
@@ -212,7 +221,8 @@
       "/proof"
     ],
     "published": "2026-09-07",
-    "readMin": 8
+    "readMin": 8,
+    "seoTitle": "Вісім систем онлайн-продажів: структура"
   },
   {
     "slug": "cinoutvorennya-na-novomu-rynku",
@@ -233,7 +243,8 @@
       "/expansion"
     ],
     "published": "2026-09-06",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Ціноутворення на новому ринку для експорту"
   },
   {
     "slug": "logistyka-ta-podatky-eu",
@@ -255,7 +266,8 @@
       "/expansion"
     ],
     "published": "2026-09-05",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Логістика й податки при продажах у ЄС"
   },
   {
     "slug": "lokalizaciya-sajtu",
@@ -277,7 +289,8 @@
       "/expansion/branding"
     ],
     "published": "2026-09-04",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Локалізація сайту магазину для нового ринку"
   },
   {
     "slug": "marketplace-yak-kanal",
@@ -299,7 +312,8 @@
       "/expansion"
     ],
     "published": "2026-09-03",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Маркетплейси для магазину: коли вигідно"
   },
   {
     "slug": "vyhid-na-rynok-es",
@@ -321,7 +335,8 @@
       "/expansion/sales-channels"
     ],
     "published": "2026-09-02",
-    "readMin": 8
+    "readMin": 8,
+    "seoTitle": "Вихід на ринок ЄС для інтернет-магазину"
   },
   {
     "slug": "operacijni-rytmy-zustrichi",
@@ -342,7 +357,8 @@
       "/people"
     ],
     "published": "2026-09-01",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Операційний ритм і зустрічі в e-commerce"
   },
   {
     "slug": "najm-ta-ocinka-komandy",
@@ -364,7 +380,8 @@
       "/pricing"
     ],
     "published": "2026-08-31",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Найм і оцінка команди інтернет-магазину"
   },
   {
     "slug": "roli-ta-reglamenty-v-ecommerce",
@@ -386,7 +403,8 @@
       "/expansion/automation"
     ],
     "published": "2026-08-30",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Ролі й регламенти в команді інтернет-магазину"
   },
   {
     "slug": "biznes-bez-vlasnyka",
@@ -407,7 +425,8 @@
       "/systems"
     ],
     "published": "2026-08-29",
-    "readMin": 8
+    "readMin": 8,
+    "seoTitle": "Як вийти з операційки: бізнес без власника"
   },
   {
     "slug": "yakist-danyh-ta-zvitnist",
@@ -429,7 +448,8 @@
       "/diagnose"
     ],
     "published": "2026-08-28",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Якість даних і звітність в e-commerce"
   },
   {
     "slug": "integraciyi-crm-erp",
@@ -451,7 +471,8 @@
       "/expansion/web-development"
     ],
     "published": "2026-08-27",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Інтеграції CRM і обліку для інтернет-магазину"
   },
   {
     "slug": "yedyni-cyfry-dashboard",
@@ -473,7 +494,8 @@
       "/audit-pack"
     ],
     "published": "2026-08-26",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Дашборд для e-commerce: одні цифри на бізнес"
   },
   {
     "slug": "analityka-ga4-dlya-magazynu",
@@ -495,7 +517,8 @@
       "/diagnose"
     ],
     "published": "2026-08-25",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Аналітика інтернет-магазину: налаштування"
   },
   {
     "slug": "obrobka-zamovlen-avtomatyzaciya",
@@ -517,7 +540,8 @@
       "/expansion/sales-channels"
     ],
     "published": "2026-08-24",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Автоматизація обробки замовлень у магазині"
   },
   {
     "slug": "povernennya-tovariv",
@@ -538,7 +562,8 @@
       "/audit-pack"
     ],
     "published": "2026-08-23",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Повернення товарів: як зменшити втрати"
   },
   {
     "slug": "dostavka-ta-nevykup",
@@ -560,7 +585,8 @@
       "/diagnose"
     ],
     "published": "2026-08-22",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Доставка й невикуп: як зменшити втрати"
   },
   {
     "slug": "sklad-i-zalyshky",
@@ -582,7 +608,8 @@
       "/expansion/technology"
     ],
     "published": "2026-08-21",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Склад і залишки в e-commerce: як керувати"
   },
   {
     "slug": "atrybuciya-kanaliv",
@@ -604,7 +631,8 @@
       "/expansion/marketing"
     ],
     "published": "2026-08-20",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Атрибуція каналів у e-commerce: як рахувати"
   },
   {
     "slug": "kontent-marketyng-dlya-ecommerce",
@@ -625,7 +653,8 @@
       "/expansion"
     ],
     "published": "2026-08-19",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Контент-маркетинг для e-commerce: план"
   },
   {
     "slug": "email-ta-crm-marketyng",
@@ -647,7 +676,8 @@
       "/systems/commercial-performance"
     ],
     "published": "2026-08-18",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Email і CRM-маркетинг для інтернет-магазину"
   },
   {
     "slug": "kontekstna-reklama-google-ads",
@@ -669,7 +699,8 @@
       "/diagnose"
     ],
     "published": "2026-08-17",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Контекстна реклама Google Ads для магазину"
   },
   {
     "slug": "seo-dlya-internet-magazynu",
@@ -691,7 +722,8 @@
       "/expansion/technology"
     ],
     "published": "2026-08-16",
-    "readMin": 8
+    "readMin": 8,
+    "seoTitle": "SEO для інтернет-магазину: практичний план"
   },
   {
     "slug": "poshuk-i-filtry-v-katalozi",
@@ -713,7 +745,8 @@
       "/systems/data-technology"
     ],
     "published": "2026-08-15",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Пошук і фільтри в каталозі магазину"
   },
   {
     "slug": "mobilna-versiya-magazynu",
@@ -734,7 +767,8 @@
       "/expansion/technology"
     ],
     "published": "2026-08-14",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Мобільна версія інтернет-магазину: як виправити"
   },
   {
     "slug": "shvydkist-sajtu-core-web-vitals",
@@ -757,7 +791,8 @@
       "/expansion/ux-ui"
     ],
     "published": "2026-08-13",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Швидкість сайту й Core Web Vitals для магазину"
   },
   {
     "slug": "checkout-bez-vtrat",
@@ -779,7 +814,8 @@
       "/systems/commercial-performance"
     ],
     "published": "2026-08-12",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Чекаут: як прибрати втрати при оформленні"
   },
   {
     "slug": "kartka-tovaru-shcho-prodaye",
@@ -802,7 +838,8 @@
       "/expansion/sales-channels"
     ],
     "published": "2026-08-11",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Картка товару: структура, яка продає"
   },
   {
     "slug": "konversiya-internet-magazynu",
@@ -823,7 +860,8 @@
       "/diagnose"
     ],
     "published": "2026-08-10",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Конверсія інтернет-магазину: як підвищити"
   },
   {
     "slug": "znyzhky-ta-promo-bez-zbytkiv",
@@ -845,7 +883,8 @@
       "/pricing"
     ],
     "published": "2026-08-09",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Знижки й акції в магазині без збитків"
   },
   {
     "slug": "cac-ta-okupnist-reklamy",
@@ -868,7 +907,8 @@
       "/diagnose"
     ],
     "published": "2026-08-08",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "CAC і окупність реклами в e-commerce"
   },
   {
     "slug": "povtorni-prodazhi-ta-ltv",
@@ -891,7 +931,8 @@
       "/expansion/data-growth"
     ],
     "published": "2026-08-07",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Повторні продажі та LTV інтернет-магазину"
   },
   {
     "slug": "marzhynalnist-ta-cinoutvorennya",
@@ -913,7 +954,8 @@
       "/expansion/data-growth"
     ],
     "published": "2026-08-06",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Маржинальність і ціноутворення в e-commerce"
   },
   {
     "slug": "serednij-chek-yak-pidvyshchyty",
@@ -936,7 +978,8 @@
       "/diagnose"
     ],
     "published": "2026-08-05",
-    "readMin": 7
+    "readMin": 7,
+    "seoTitle": "Середній чек: як підвищити AOV в магазині"
   },
   {
     "slug": "unit-ekonomika-ecommerce",
@@ -961,6 +1004,7 @@
       "/systems"
     ],
     "published": "2026-08-04",
-    "readMin": 6
+    "readMin": 6,
+    "seoTitle": "Юніт-економіка e-commerce: як рахувати прибуток"
   }
 ]

@@ -22,7 +22,9 @@ const DIR = join(ROOT, 'src', 'content', 'blog');
 const OUT = join(ROOT, 'src', 'data', 'blog-index.json');
 
 /** Поля, які потрібні спискам. Тіло статті сюди не входить — у цьому весь сенс. */
-const LIGHT = ['slug', 'title', 'description', 'keywords', 'category', 'pages', 'published', 'readMin'];
+const LIGHT = ['slug', 'title', 'description', 'keywords', 'category', 'pages', 'published', 'readMin', 'seoTitle'];
+/** Необовʼязкові поля: їх відсутність — не помилка. */
+const OPTIONAL = new Set(['seoTitle']);
 
 const files = (await readdir(DIR).catch(() => [])).filter((f) => f.endsWith('.json')).sort();
 const index = [];
@@ -38,7 +40,7 @@ for (const f of files) {
   const want = f.replace(/\.json$/, '');
   if (a.slug !== want) problems.push(`${f}: slug «${a.slug}» не збігається з іменем файлу`);
 
-  for (const k of LIGHT) if (a[k] === undefined) problems.push(`${f}: немає поля ${k}`);
+  for (const k of LIGHT) if (a[k] === undefined && !OPTIONAL.has(k)) problems.push(`${f}: немає поля ${k}`);
   index.push(Object.fromEntries(LIGHT.map((k) => [k, a[k]])));
 }
 

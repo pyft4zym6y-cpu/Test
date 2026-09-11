@@ -44,12 +44,12 @@ const html = `<!doctype html><meta charset="utf-8"><style>
   li b{font:700 13px/1 monospace;min-width:34px;text-align:right}
 </style>
 <div class="kick">WEEXP · вигрузка сайту</div>
-<h1>weexp.agency<br>усі сторінки</h1>
-<p class="lead">Кожна сторінка сайту надрукована як вона виглядає у браузері на ширині 1440&nbsp;px —
+<h1>${esc(idx.title || 'weexp.agency — усі сторінки').replace(' — ', '<br>').replace(/&amp;/g, '&')}</h1>
+<p class="lead">Кожна сторінка надрукована як вона виглядає у браузері на ширині 1440&nbsp;px —
 одна сторінка сайту на один аркуш PDF, без розрізів посередині. Номери праворуч — номери аркушів
 у цьому файлі. Навігація також доступна закладками PDF.</p>
 <div class="meta">
-  <div>Сторінок сайту<b>${idx.total}</b></div>
+  <div>Сторінок<b>${idx.total}</b></div>
   <div>Аркушів у файлі<b>${idx.sheets}</b></div>
   <div>Зібрано<b>${idx.date}</b></div>
   <div>Ширина макета<b>1440 px</b></div>
