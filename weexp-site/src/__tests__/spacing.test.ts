@@ -13,6 +13,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const css = readFileSync(join(__dirname, '..', 'system', 'system.css'), 'utf8');
+const blogCss = readFileSync(join(__dirname, '..', 'system', 'blog.css'), 'utf8');
 const shell = readFileSync(join(__dirname, '..', 'system', 'SystemShell.tsx'), 'utf8');
 
 /** Тело правила по селектору (первое вхождение). */
@@ -45,6 +46,23 @@ describe('высота шапки — одно число', () => {
     // Именно .sysx-scene, а не .sysx-stage: сцена абсолютна, padding родителя
     // её не двигает — такое правило изображало бы работу, которой не делает.
     expect(rule('.sysx-scene')).toMatch(/padding:\s*calc\(var\(--sysh-h\)/);
+  });
+
+  it('верхний контейнер каждой страницы блога резервирует высоту шапки', () => {
+    /*
+     * Проверки выше смотрят только в system.css — и блог прошёл мимо них
+     * целиком: у статьи под шапкой ПОЛНОСТЬЮ скрывались хлебные крошки.
+     * Они были в разметке, видимые, с нормальным цветом и размером — их
+     * просто не было видно, и ни один тест этого не замечал.
+     */
+    const top = (sel: string): string => {
+      const at = blogCss.indexOf(sel + ' {');
+      expect(at, `правило ${sel} не найдено в blog.css`).toBeGreaterThanOrEqual(0);
+      return blogCss.slice(at, blogCss.indexOf('}', at));
+    };
+    for (const sel of ['.blogp-in', '.blogh-head']) {
+      expect(top(sel), `${sel} не считает высоту шапки`).toMatch(/padding:\s*calc\(var\(--sysh-h/);
+    }
   });
 
   it('ни одно правило не отсчитывает шапку своим числом', () => {

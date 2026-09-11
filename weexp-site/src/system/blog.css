@@ -10,8 +10,15 @@
 
 /* ── Хаб ─────────────────────────────────────────────────────────────────── */
 .blogh { position: relative; }
-.blogh-in { max-width: var(--page-w); margin: 0 auto; padding: 0 clamp(18px, 4vw, 40px) 90px; position: relative; z-index: 1; }
-.blogh-head { padding: clamp(24px, 5vw, 56px) 0 clamp(18px, 2.6vw, 28px); max-width: var(--measure); }
+/* Верхній відступ компенсує липку шапку.
+   Без var(--sysh-h) перший рядок сторінки опиняється ПІД шапкою: на статті
+   під нею цілком ховались хлібні крихти — вони були в розмітці, мали колір і
+   розмір, і їх просто не було видно. Решта сторінок сайту рахує цей відступ
+   так само. */
+.blogh-in { max-width: var(--page-w); margin: 0 auto;
+  padding: 0 clamp(18px, 4vw, 40px) 90px; position: relative; z-index: 1; }
+.blogh-head { padding: calc(var(--sysh-h, 76px) + clamp(20px, 3vw, 40px)) 0 clamp(18px, 2.6vw, 28px);
+  max-width: var(--measure); }
 .blogh-h1 { font-size: clamp(33px, 5.2vw, 58px); line-height: 1.02; letter-spacing: -.02em; margin: 12px 0 18px; text-transform: uppercase; }
 .blogh-count { font-size: 11.5px; color: var(--graphite); margin: 14px 0 0; }
 
@@ -40,7 +47,8 @@
 
 /* ── Стаття ──────────────────────────────────────────────────────────────── */
 .blogp { position: relative; }
-.blogp-in { max-width: 78ch; margin: 0 auto; padding: clamp(20px, 4vw, 44px) clamp(18px, 4vw, 40px) 90px; }
+.blogp-in { max-width: 78ch; margin: 0 auto;
+  padding: calc(var(--sysh-h, 76px) + clamp(16px, 2.4vw, 28px)) clamp(18px, 4vw, 40px) 90px; }
 .blogp-crumbs { font-size: 11px; letter-spacing: .06em; color: var(--graphite); margin-bottom: 18px; }
 .blogp-crumbs a { color: inherit; }
 .blogp-crumbs a:hover { color: var(--red-ink); }
