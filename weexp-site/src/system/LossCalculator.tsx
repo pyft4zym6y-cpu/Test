@@ -10,6 +10,7 @@ import { useLiteVisuals } from '@/lib/liteVisuals';
 import './system.css';
 import { escapeHtml } from '@/lib/escapeHtml';
 import { INK } from './docInk';
+import { Symptoms } from '@/system/Symptoms';
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
 
@@ -209,6 +210,7 @@ ${projRows ? `<div class="card"><h2>${escapeHtml(t('Зараз → куди мо
   };
 
   return (
+    <>
     <section className="sysx sysx-calc">
       <div className="sysx-field" aria-hidden="true" />
       <div className={'sysx-calc-bg' + (lite ? ' is-lite' : '')} aria-hidden="true">{!lite && <Suspense fallback={null}><CommerceSystem3D fixedProgress={0.72} alerts={alerts} /></Suspense>}</div>
@@ -443,5 +445,9 @@ ${projRows ? `<div class="card"><h2>${escapeHtml(t('Зараз → куди мо
         )}
       </div>
     </section>
+    {/* Сценарії — після калькулятора: людина або впізнала себе в числах, або
+        ні, і в другому випадку їй потрібен вхід словами, а не цифрами. */}
+    <Symptoms compact cta="contact" />
+    </>
   );
 }

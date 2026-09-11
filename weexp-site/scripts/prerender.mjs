@@ -33,10 +33,11 @@ const ulLinks = (items, slugs, pref = '') => `<ul>${items.map((i, k) =>
   `<li><a href="${pref}/systems/${slugs[k]}">${esc(i)}</a></li>`).join('')}</ul>`;
 
 // Дзеркало PAGES із src/lib/nav.ts — статика й застосунок мають називати
-// сторінки однаково. Тест wording.test.ts стереже, щоб переліки не розійшлись.
+// сторінки однаково. Перелік звіряє wording.test.ts: доти коментар обіцяв
+// цього сторожа, а його не існувало — і меню тут могло розійтися з меню в
+// застосунку без жодного сигналу.
 const NAV_PAGES = [
   { to: '/', uk: 'Головна', en: 'Home' },
-  { to: '/systems', uk: 'Системи', en: 'Systems' },
   { to: '/proof', uk: 'Наші перемоги', en: 'Our wins' },
   { to: '/expansion', uk: 'Експертизи', en: 'Expertise' },
   { to: '/people', uk: 'Про нас', en: 'About' },
@@ -154,7 +155,7 @@ const PACK = [
 
 /** Тіло EN-сторінки за її адресою. Порожньо — сторінка обійдеться описом. */
 const EN_BODY = {
-  '/': `<p>${esc(SERVICES_EN)}</p><h2>Eight systems of online sales</h2>${ulLinks(SYSTEMS_EN, SYS_SLUGS, '/en')}`,
+  '/': `<p>${esc(SERVICES_EN)}</p><h2>Eight systems of online sales</h2>${ulLinks(SYSTEMS_EN, SYS_SLUGS, '/en')}<p><a href="/en/systems">The eight systems as one map</a></p>`,
   '/systems': `<p>Online sales are not a set of channels but eight systems working together. Revenue leaks where the weakest one is. Below — each of them: what it solves and how we build it.</p>${ulLinks(SYSTEMS_EN, SYS_SLUGS, '/en')}`,
   '/proof': `<p>Not promises — before→after deltas from CRM, ERP and GA4. Every case is anonymous; every number is real.</p>${ul(PROOF_EN)}`,
   '/people': `<p>WEEXP was founded by Pavlo Sydorenko, Founder &amp; Architect of Commerce (8+ years in international e-commerce: US · EU · MENA). Each of the eight systems of online sales has an owner accountable for the result — specialists, not generalists.</p>${ul(ROSTER_EN)}`,
@@ -168,7 +169,7 @@ const EN_BODY = {
 const ROUTES = [
   { path: '/', og: 'home', title: 'WEEXP — система зростання для e-commerce замість героїзму',
     desc: 'Система зростання для D2C та e-commerce брендів: діагноз у грошах, побудова системи й вихід на ЄС/США — щоб виторг ріс без вас.',
-    content: `<h1>Продажі, які не тримаються на вас</h1><p>WEEXP будує систему зростання для українських виробників і D2C-брендів: діагностуємо вісім систем онлайн-продажів за даними CRM/ERP/GA4, рахуємо витік у грошах і збираємо їх в одну керовану. Система замість героїзму.</p><p>${esc(SERVICES)}</p><h2>Вісім систем онлайн-продажів</h2>${ulLinks(SYSTEMS, SYS_SLUGS)}` },
+    content: `<h1>Продажі, які не тримаються на вас</h1><p>WEEXP будує систему зростання для українських виробників і D2C-брендів: діагностуємо вісім систем онлайн-продажів за даними CRM/ERP/GA4, рахуємо витік у грошах і збираємо їх в одну керовану. Система замість героїзму.</p><p>${esc(SERVICES)}</p><h2>Вісім систем онлайн-продажів</h2>${ulLinks(SYSTEMS, SYS_SLUGS)}<p><a href="/systems">Вісім систем однією картою</a></p>` },
   { path: '/systems', og: 'systems', title: `Вісім систем зростання${SUF}`,
     desc: 'Онлайн-продажі як вісім систем: стратегія, комерція, попит, досвід, операції, дані, організація й експансія. Виторг витікає там, де найслабша.',
     content: `<h1>Система сильна настільки, наскільки сильна найслабша частина</h1><p>Онлайн-продажі — не набір каналів, а вісім систем, які працюють разом. Виторг витікає там, де найслабша. Нижче — кожна: що вона вирішує і як ми її будуємо.</p>${ulLinks(SYSTEMS, SYS_SLUGS)}` },

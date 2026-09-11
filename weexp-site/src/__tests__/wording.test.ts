@@ -95,6 +95,26 @@ describe('назви сторінок — один перелік', () => {
     expect(missing).toEqual([]);
   });
 
+  it('меню в статиці збігається з меню в застосунку', () => {
+    /*
+     * prerender.mjs тримає власне дзеркало PAGES, бо це окремий скрипт без
+     * доступу до TS. Коментар поруч із дзеркалом стверджував, що перелік
+     * стереже саме цей тест, — а тесту не існувало. Тобто меню в статиці
+     * могло розійтися з меню в застосунку без жодного сигналу; рівно так
+     * колись і розійшлись назви сторінок у трьох різних списках.
+     *
+     * Статика додає до меню /audit-pack: у підвалі він є, а в шапці — ні.
+     */
+    const pre = readFileSync(join(SYS, '..', '..', 'scripts', 'prerender.mjs'), 'utf8');
+    const at = pre.indexOf('const NAV_PAGES = [');
+    expect(at, 'дзеркала NAV_PAGES більше немає — тест треба переписати').toBeGreaterThan(0);
+    const mirror = [...pre.slice(at, pre.indexOf('];', at)).matchAll(
+      /\{ to: '([^']+)', uk: '([^']+)', en: '([^']+)' \}/g)].map((m) => [m[1], m[2], m[3]]);
+    const want = [...PAGES, { to: '/audit-pack', uk: nameOf('/audit-pack', 'uk'), en: nameOf('/audit-pack', 'en') }]
+      .map((p) => [p.to, p.uk, p.en]);
+    expect(mirror).toEqual(want);
+  });
+
   it('у кожної сторінки меню є назва обома мовами', () => {
     for (const p of [...PAGES, ...EXTRA_PAGES]) {
       expect(nameOf(p.to, 'uk'), `немає укр. назви для ${p.to}`).toBeTruthy();

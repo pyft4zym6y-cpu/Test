@@ -8,6 +8,7 @@ import { PartnerMarquee } from '@/system/PartnerMarquee';
 import { HEADLINE_PROOF } from '@/data/cases';
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
+const Symptoms = lazy(() => import('@/system/Symptoms').then((m) => ({ default: m.Symptoms })));
 const SystemExplorer = lazy(() => import('@/system/SystemExplorer').then((m) => ({ default: m.SystemExplorer })));
 const Architecture = lazy(() => import('@/system/Architecture').then((m) => ({ default: m.Architecture })));
 // Сканована повна карта системи: 8 систем + вкладені домени (акордеон).
@@ -182,6 +183,11 @@ export function SystemInMotion() {
         <PartnerMarquee />
       </div>
     </section>
+    {/* Вхід з боку клієнта — одразу після героя. Доти другим екраном ішов
+        розбір восьми систем, тобто наша таксономія: людина мусила впізнати
+        себе в назві «Комерційна ефективність». Тепер спершу симптом, і вже
+        він веде в систему. */}
+    <Suspense fallback={null}><Symptoms /></Suspense>
     {/* Логічне продовження того ж полотна — інтерактивний розбір систем (8 систем).
         SystemsFilm прибрано з головної: дублював цей самий розбір 8 систем нижче
         (заголовок «Де ваш бізнес втрачає гроші»). Лишаємо один — інтерактивний вище. */}

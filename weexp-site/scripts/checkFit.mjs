@@ -20,7 +20,11 @@
  *   node scripts/checkFit.mjs [http://127.0.0.1:8127]
  *   node scripts/checkFit.mjs [url] --vertical
  */
-import { chromium } from 'playwright';
+import { createRequire } from 'node:module';
+
+// playwright резолвимо від робочої теки: скрипт живе тут, а браузер стоїть у
+// worker/. Скрипти запускаються з worker — див. exportPdf.mjs.
+const { chromium } = createRequire(process.cwd() + '/').call(null, 'playwright');
 
 const ARGS = process.argv.slice(2);
 const VERTICAL = ARGS.includes('--vertical');

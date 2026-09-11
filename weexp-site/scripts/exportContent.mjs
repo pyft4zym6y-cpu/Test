@@ -9,7 +9,11 @@
  *
  * Запуск: node scripts/exportContent.mjs [http://127.0.0.1:8123] [out.md]
  */
-import { chromium } from 'playwright';
+import { createRequire } from 'node:module';
+
+// playwright резолвимо від робочої теки: скрипт живе тут, а браузер стоїть у
+// worker/. Скрипти запускаються з worker — див. exportPdf.mjs.
+const { chromium } = createRequire(process.cwd() + '/').call(null, 'playwright');
 import { writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
