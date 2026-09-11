@@ -6,7 +6,10 @@
  * одного, усі посилання зсунуться на одиницю. Одна сторінка робить зсув
  * відомим наперед.
  */
-import { chromium } from 'playwright';
+import { createRequire } from 'node:module';
+
+// playwright резолвимо від робочої теки — див. пояснення в exportPdf.mjs.
+const { chromium } = createRequire(process.cwd() + '/').call(null, 'playwright');
 import { readFile, writeFile } from 'node:fs/promises';
 
 const [, , indexPath, out] = process.argv;

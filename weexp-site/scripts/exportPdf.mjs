@@ -1,10 +1,9 @@
 /**
  * Вигрузка сайту в PDF: знімок кожної сторінки на всю висоту.
  *
- * Порядок запуску (потрібен playwright — він живе в worker/):
- *   npm run build
- *   npx vite preview --port 4192 &
- *   node scripts/exportPdf.mjs http://127.0.0.1:4192 <тека знімків>
+ * Запускати з теки worker — там лежить playwright:
+ *   (у weexp-site) npm run build && npx vite preview --port 4192 &
+ *   (у worker)     node ../weexp-site/scripts/exportPdf.mjs http://127.0.0.1:4192 <тека>
  *   python3 scripts/exportPdfBuild.py <тека> index.json index
  *   node scripts/exportPdfContents.mjs index.json contents.pdf
  *   python3 scripts/exportPdfBuild.py <тека> out.pdf final contents.pdf
@@ -16,7 +15,14 @@
  * знімає рівно те, що бачить відвідувач, — тож фіделіті переважило
  * виділюваний текст. Текстова версія всіх сторінок є окремо, у CONTENT.md.
  */
-import { chromium } from 'playwright';
+import { createRequire } from 'node:module';
+
+/*
+ * playwright резолвимо від робочої теки, а не від теки скрипта: сам скрипт
+ * живе разом з рештою скриптів сайту, а браузер стоїть у worker/. Звичайний
+ * import шукав би модуль поруч зі скриптом і не знаходив.
+ */
+const { chromium } = createRequire(process.cwd() + '/').call(null, 'playwright');
 import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
