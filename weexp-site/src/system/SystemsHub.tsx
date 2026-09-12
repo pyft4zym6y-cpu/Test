@@ -30,7 +30,11 @@ export function SystemsHub() {
       <span className="sysx-field" aria-hidden="true" />
       <div className="syshub-in">
         <header className="syshub-head">
-          <span className="sysx-kick">{t('Система зростання · вісім частин', 'The growth system · eight parts')}</span>
+          {/* Восьми систем більше немає в меню: це не те, що купують, а зона
+              робіт — де саме ми шукаємо причину. Надзаголовок тепер каже це
+              прямо, інакше сторінка читається як третій перелік товарів поруч
+              із форматами й експертизами. */}
+          <span className="sysx-kick">{t('Зона робіт · вісім систем онлайн-продажів', 'Scope of work · the eight systems of online sales')}</span>
           <h1 className="sysx-display syshub-h1">
             {t('Система сильна настільки, ', 'A system is only as strong ')}
             <span className="sysx-em">{t('наскільки сильна найслабша частина', 'as its weakest part')}</span>
@@ -66,7 +70,7 @@ export function SystemsHub() {
           </div>
           <div className="sysx-cta-row">
             <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>
-            <Link to={lp('/proof')} className="sysx-cta">{t('Наші перемоги', 'Our wins')} →</Link>
+            <Link to={lp('/proof')} className="sysx-cta">{t('Кейси', 'Cases')} →</Link>
           </div>
         </div>
       </div>

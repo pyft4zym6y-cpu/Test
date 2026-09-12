@@ -1,9 +1,24 @@
+import { lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { useT, useLp, useLang } from '@/i18n';
 import { TEAM, localizeRole } from '@/data/team';
 import { L } from '@/system/expertises';
 import { useJsonLd, ORIGIN } from '@/lib/seo';
 import './system.css';
+
+/*
+ * Три блоки переїхали сюди з головної.
+ *
+ * Architecture — чотири рівні пропозиції, AudienceByRole — виграші за роллю
+ * ЛПР, Credibility — механіка довіри. Усе це матеріал ПРО НАС: як ми
+ * влаштовані, з ким говоримо і чому нам можна вірити. На головній вони стояли
+ * між доказом і послугою й відсували їх на третій-четвертий екран, а людина,
+ * яка прийшла вперше, читала опис нашої внутрішньої будови раніше, ніж
+ * дізнавалась, що ми продаємо.
+ */
+const Architecture = lazy(() => import('@/system/Architecture').then((m) => ({ default: m.Architecture })));
+const AudienceByRole = lazy(() => import('@/system/AudienceByRole').then((m) => ({ default: m.AudienceByRole })));
+const Credibility = lazy(() => import('@/system/Credibility').then((m) => ({ default: m.Credibility })));
 
 /**
  * «Про нас» (/people). Місія, візія, цінності + статусний блок власника +
@@ -51,6 +66,7 @@ export function About() {
   ];
 
   return (
+    <>
     <section className="sysx about">
       <div className="sysx-field" aria-hidden="true" />
       <div className="about-in">
@@ -172,10 +188,16 @@ export function About() {
           </div>
           <div className="sysx-cta-row">
             <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>
-            <Link to={lp('/proof')} className="sysx-cta">{t('Наші перемоги', 'Our wins')} →</Link>
+            <Link to={lp('/proof')} className="sysx-cta">{t('Кейси', 'Cases')} →</Link>
           </div>
         </div>
       </div>
     </section>
+    <Suspense fallback={null}>
+      <Architecture />
+      <AudienceByRole />
+      <Credibility />
+    </Suspense>
+    </>
   );
 }

@@ -88,7 +88,7 @@ describe('блок стоїть там, де вирішує', () => {
      * помітити це можна буде лише очима.
      */
     const home = read('system/SystemInMotion.tsx');
-    const symp = home.indexOf('<Symptoms />');
+    const symp = home.indexOf('<Symptoms ');
     const expl = home.indexOf('<SystemExplorer />');
     expect(symp, 'блоку сценаріїв немає на головній').toBeGreaterThan(0);
     expect(expl, 'розбору систем немає на головній').toBeGreaterThan(0);

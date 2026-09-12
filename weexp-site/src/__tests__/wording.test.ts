@@ -115,6 +115,22 @@ describe('назви сторінок — один перелік', () => {
     expect(mirror).toEqual(want);
   });
 
+  it('жодна названа сторінка не лишилась без входу', () => {
+    /*
+     * Меню скоротилось до семи пунктів, і чотири сторінки з нього вийшли:
+     * головна, Express audit, системи й склад пакета аудиту. Вони не зникли —
+     * їх тримає підвал. Якщо перелік у підвалі відстане від lib/nav, сторінка
+     * просто стане недосяжною: рівно так вісім сторінок /systems/* колись уже
+     * ставали сиротами, і помітити це можна було тільки очима.
+     */
+    const foot = readFileSync(join(SYS, 'SiteFooter.tsx'), 'utf8');
+    const at = foot.indexOf('const FOOT_EXTRA = [');
+    expect(at, 'переліку FOOT_EXTRA більше немає — тест треба переписати').toBeGreaterThan(0);
+    const listed = [...foot.slice(at, foot.indexOf('];', at)).matchAll(/'([^']+)'/g)].map((m) => m[1]);
+    const orphans = EXTRA_PAGES.map((p) => p.to).filter((to) => !listed.includes(to));
+    expect(orphans, `сторінки без входу ні з меню, ні з підвалу: ${orphans.join(', ')}`).toEqual([]);
+  });
+
   it('у кожної сторінки меню є назва обома мовами', () => {
     for (const p of [...PAGES, ...EXTRA_PAGES]) {
       expect(nameOf(p.to, 'uk'), `немає укр. назви для ${p.to}`).toBeTruthy();
@@ -186,8 +202,16 @@ describe('числа збігаються зі своїм джерелом', () 
     const pack = read('data/auditPack.ts');
     const n = (/(\d+) спеціалізованих аудитів/.exec(pack) || [])[1];
     expect(n, 'у auditPack.ts не знайдено кількості аудитів').toBeTruthy();
-    expect(read('system/Pricing.tsx'), 'Pricing знову набирає число аудитів руками')
-      .toContain('${AUDIT_BLOCKS.length} аудитів');
+    /*
+     * Формати лежать у data/services.ts, який НЕ імпортує auditPack: інакше
+     * блок послуг на головній тягнув би 64 КБ таксономії заради двох чисел.
+     * Тому в тексті стоїть підстановка {audits}, а число підставляє та
+     * сторінка, яка auditPack і так вантажить. Звʼязок тримають обидва боки.
+     */
+    expect(read('data/services.ts'), 'формати знову набирають число аудитів руками')
+      .toContain('{audits} аудитів');
+    expect(read('data/services.ts'), 'у тексті формату зʼявилось число аудитів літералом')
+      .not.toMatch(/\d+ аудитів/);
     expect(String(AUDIT_BLOCKS.length), 'каталог аудитів розійшовся з описом у auditPack').toBe(n);
     expect(read('lib/seo-data.json'), `опис /audit-pack обіцяє не ${n} аудитів`).toContain(`${n} аудитів`);
   });
@@ -210,9 +234,11 @@ describe('числа збігаються зі своїм джерелом', () 
      * Тому тут перевіряємо звʼязок, а не літерал: інакше сторож вимагав би
      * повернути на сторінку саме те, від чого ми її звільнили.
      */
-    expect(read('system/Pricing.tsx'), 'Pricing знову набирає число доменів руками')
-      .toContain('${TOTAL_DOMAINS} доменів діагностики');
-    expect(read('system/Pricing.tsx'), 'повернулось число без джерела')
+    expect(read('data/services.ts'), 'формати знову набирають число доменів руками')
+      .toContain('{domains} доменів діагностики');
+    expect(read('data/services.ts'), 'у тексті формату зʼявилось число доменів літералом')
+      .not.toMatch(/\d+ доменів діагностики/);
+    expect(read('data/services.ts'), 'повернулось число без джерела')
       .not.toContain('150+');
   });
 

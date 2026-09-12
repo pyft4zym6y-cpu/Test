@@ -4,8 +4,19 @@ import { EXPERTISES, L } from '@/system/expertises';
 import './system.css';
 
 /**
- * Хаб «Експансія» — перелік фокусних експертиз WEEXP. Кожна веде на свою
- * підсторінку /expansion/:slug. Бруталіст-картки, скрол-reveal.
+ * Хаб «Експертизи» — девʼять напрямів роботи. Кожен веде на свою підсторінку
+ * /expansion/:slug.
+ *
+ * Сторінка мала ТРИ назви: пункт меню казав «Експертизи», заголовок сторінки —
+ * «Екосистема партнерів», а title у видачі — «Експертизи WEEXP — напрями
+ * роботи». Людина тиснула одне, потрапляла на друге, а в закладці бачила третє.
+ * Тепер заголовок збігається з меню, а розповідь про перевірену мережу
+ * партнерів лишилась — але нижче, як пояснення, а не як назва сторінки.
+ *
+ * Експертиза — НЕ те, що купують: купують формат співпраці (/services).
+ * Експертиза — зона робіт усередині будь-якого з них, і тепер сторінка це
+ * каже прямо, а не лишає людині здогадуватись, чим «Брендинг» відрізняється
+ * від «Аудиту» в сусідньому пункті меню.
  */
 export function ExpansionHub() {
   const t = useT();
@@ -16,10 +27,15 @@ export function ExpansionHub() {
       <div className="sysx-field" aria-hidden="true" />
       <div className="xhub-in">
         <header className="xhub-head">
-          <span className="sysx-kick">{t('Екосистема партнерів WEEXP', 'WEEXP partner ecosystem')}</span>
-          <h1 className="sysx-display xhub-h1">{t('Екосистема ', 'Partner ')}<span className="hl">{t('партнерів', 'ecosystem')}</span></h1>
-          <p className="sysx-lead">{t('Вам не потрібно самостійно шукати, перевіряти й порівнювати десятки виконавців. Ми вже сформували перевірену мережу лідерів ринку в ключових напрямах — і під конкретну задачу підбираємо найсильніших, синхронізуючи їхню роботу з вашими цілями в єдиній системі. Ви отримуєте доступ до перевіреної експертизи, а не ще одну рекомендацію підрядника.', 'You don\'t need to search for, vet and compare dozens of contractors yourself. We\'ve already built a trusted network of market leaders across the key areas — and for each task we pick the strongest, syncing their work to your goals within one system. You get access to proven expertise, not just another contractor referral.')}</p>
-          <p className="xhub-arch">{t('Зверху екосистеми — WEEXP: ', 'On top of the ecosystem — WEEXP: ')}<b>E-commerce Architecture &amp; Management</b>. {t('Ми визначаємо, що, навіщо, у якій послідовності та з яким партнером робити, — а перевірена мережа закриває конкретні компетенції.', 'We define what, why, in what order and with which partner to do it — while the vetted network closes the specific competencies.')}</p>
+          <span className="sysx-kick">{t('Девʼять напрямів · зона робіт', 'Nine areas · scope of work')}</span>
+          <h1 className="sysx-display xhub-h1">{t('Наші ', 'Our ')}<span className="hl">{t('експертизи', 'expertise')}</span></h1>
+          <p className="sysx-lead">{t('Девʼять напрямів, якими ми закриваємо задачі. Це не окремі продукти: експертизи входять у будь-який із трьох форматів співпраці — змінюється тільки те, хто тримає кермо.', 'Nine areas through which we close the work. These are not separate products: the expertise goes into any of the three cooperation formats — only who holds the wheel changes.')}</p>
+          <p className="xhub-arch">
+            <Link to={lp('/services')} className="xhub-arch-link mono">{t('Формати роботи', 'Ways to work')} →</Link>
+          </p>
+          {/* Перевірена мережа — пояснення, а не назва сторінки: доти цей абзац
+              стояв заголовком і людина не розуміла, куди потрапила. */}
+          <p className="xhub-arch">{t('Вам не треба самостійно шукати, перевіряти й порівнювати десятки виконавців: ми вже сформували мережу лідерів ринку в кожному напрямі й під конкретну задачу підбираємо найсильніших. Зверху екосистеми — WEEXP: ', 'You do not need to search for, vet and compare dozens of contractors yourself: we have already built a network of market leaders in each area and pick the strongest for the task at hand. On top of the ecosystem — WEEXP: ')}<b>E-commerce Architecture &amp; Management</b>. {t('Ми визначаємо, що, навіщо і в якій послідовності робити, — мережа закриває конкретні компетенції.', 'We define what, why and in what order to do it — the network closes the specific competencies.')}</p>
         </header>
 
         <div className="xhub-grid">

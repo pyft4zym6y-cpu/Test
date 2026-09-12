@@ -34,7 +34,8 @@ describe('размер таксономии считается из данных
     // Комментарии вырезаем: сторож про то, что ВИДИТ клиент. Без этого он
     // ловил объяснение в шапке файла — ровно ту прозу, которая рассказывает,
     // откуда эти числа берутся.
-    const pricing = read('src/system/Pricing.tsx')
+    // Числа живут там же, где текст формата: data/services.ts.
+    const pricing = read('src/data/services.ts') + read('src/system/ServiceFormat.tsx')
       .replace(/\/\*[\s\S]*?\*\//g, '')
       .replace(/^\s*\/\/.*$/gm, '');
     expect(pricing).not.toMatch(/\d+ доменів діагностики/);
@@ -48,7 +49,7 @@ describe('размер таксономии считается из данных
     // lib/supa, а supa поднимает клиент Supabase прямо на импорте, и тащить
     // его в публичную страницу цен ради одного числа дороже, чем проверить.
     const n = Object.keys(MATURITY_DOMAIN_MODULE).length;
-    expect(read('src/system/Pricing.tsx'), `модель знает ${n} доменов зрелости`)
+    expect(read('src/data/services.ts'), `модель знает ${n} доменов зрелости`)
       .toContain(`зрілість по ${n} доменах`);
   });
 

@@ -37,12 +37,12 @@ const ulLinks = (items, slugs, pref = '') => `<ul>${items.map((i, k) =>
 // цього сторожа, а його не існувало — і меню тут могло розійтися з меню в
 // застосунку без жодного сигналу.
 const NAV_PAGES = [
-  { to: '/', uk: 'Головна', en: 'Home' },
-  { to: '/proof', uk: 'Наші перемоги', en: 'Our wins' },
+  { to: '/services', uk: 'Послуги', en: 'Services' },
+  { to: '/proof', uk: 'Кейси', en: 'Cases' },
   { to: '/expansion', uk: 'Експертизи', en: 'Expertise' },
-  { to: '/people', uk: 'Про нас', en: 'About' },
-  { to: '/diagnose', uk: 'Express audit', en: 'Express audit' },
   { to: '/pricing', uk: 'Ціни', en: 'Pricing' },
+  { to: '/people', uk: 'Про нас', en: 'About' },
+  { to: '/blog', uk: 'Блог', en: 'Blog' },
   { to: '/contact', uk: 'Контакт', en: 'Contact' },
   { to: '/audit-pack', uk: 'Склад пакета аудиту', en: 'Audit pack contents' },
 ];
@@ -133,6 +133,20 @@ const ROSTER_EN = [
 const CHANNELS_EN = ['Own store', 'Amazon', 'Allegro', 'eBay', 'Kaufland and local marketplaces', 'Etsy'];
 const DIAG_STEPS = ['Профіль і симптоми', 'Ваш витік у грошах', 'Карта восьми систем', 'Кабінет Tier-2', 'Поглиблений AI-розбір'];
 const DIAG_STEPS_EN = ['Profile and symptoms', 'Your leak, in money', 'Map of the eight systems', 'Tier-2 client cabinet', 'In-depth AI review'];
+const FORMAT_LINKS = [
+  ['/services/audit', '01 Аудит — 4–6 тижнів: магазин $2,900 або весь відділ e-commerce $4,900', '01 Audit — 4–6 weeks: the store $2,900 or the whole e-commerce department $4,900'],
+  ['/services/consulting', '02 Консалтинг і супровід — $50/год, мін. $1,500/міс: ми архітектор і контроль, руки — ваша команда', '02 Consulting & advisory — $50/hr, min. $1,500/mo: we are the architect and the control, your team executes'],
+  ['/services/managed', '03 Управління під ключ — від $4,900/міс, 6–12 міс: проєкт ведемо ми, відповідальність наша', '03 Managed delivery — from $4,900/mo, 6–12 mo: we run the project and carry the responsibility'],
+];
+/*
+ * Перелік форматів із посиланнями на їхні сторінки. Доти статика показувала ті
+ * самі три рядки простим <li> — тобто три сторінки, на яких тепер тримається
+ * структура сайту, були з головної недосяжні без JS. Рівно так само колись
+ * виявились сиротами вісім сторінок систем.
+ */
+const formatLinks = (lang) => `<ul>${FORMAT_LINKS.map(([to, uk, en]) =>
+  `<li><a href="${lang === 'en' ? '/en' : ''}${to}">${esc(lang === 'en' ? en : uk)}</a></li>`).join('')}</ul>`;
+
 const FORMATS_EN = [
   '01 Audit — 4–6 weeks: store audit $2,900 or full e-commerce department audit $4,900',
   '02 Consulting & support — $50/hour, min. $1,500/month: we are the architect and the control, your team executes',
@@ -155,7 +169,7 @@ const PACK = [
 
 /** Тіло EN-сторінки за її адресою. Порожньо — сторінка обійдеться описом. */
 const EN_BODY = {
-  '/': `<p>${esc(SERVICES_EN)}</p><h2>Eight systems of online sales</h2>${ulLinks(SYSTEMS_EN, SYS_SLUGS, '/en')}<p><a href="/en/systems">The eight systems as one map</a></p>`,
+  '/': `<p>We find exactly where the money leaks in online sales, put a number on it from your CRM/ERP/GA4 — and rebuild.</p><h2>Three ways to work</h2>${formatLinks('en')}<p>${esc(SERVICES_EN)}</p><h2>Eight systems of online sales</h2>${ulLinks(SYSTEMS_EN, SYS_SLUGS, '/en')}<p><a href="/en/systems">The eight systems as one map</a></p>`,
   '/systems': `<p>Online sales are not a set of channels but eight systems working together. Revenue leaks where the weakest one is. Below — each of them: what it solves and how we build it.</p>${ulLinks(SYSTEMS_EN, SYS_SLUGS, '/en')}`,
   '/proof': `<p>Not promises — before→after deltas from CRM, ERP and GA4. Every case is anonymous; every number is real.</p>${ul(PROOF_EN)}`,
   '/people': `<p>WEEXP was founded by Pavlo Sydorenko, Founder &amp; Architect of Commerce (8+ years in international e-commerce: US · EU · MENA). Each of the eight systems of online sales has an owner accountable for the result — specialists, not generalists.</p>${ul(ROSTER_EN)}`,
@@ -164,12 +178,13 @@ const EN_BODY = {
   '/contact': `<p>Leave a contact — we come back with the first cut of the gap, in money. For e-commerce manufacturers and D2C brands. This is not work yet; this is a diagnosis.</p>`,
   '/audit-pack': `<p>Before the start you see the full list of documents you will receive: intake (Discovery), the audit core, the evidence base, the plan and the handover.</p>`,
   '/pricing': `<p>The difference is not in «service packages» but in who carries final responsibility for the result.</p>${ul(FORMATS_EN)}<p>Every engagement starts with a diagnosis.</p>`,
+  '/services': `<p>We rebuild online sales: we find where the money leaks and close it — with our hands or yours. The formats differ not by «service package» but by who is accountable for the result.</p><h2>Three ways to work</h2>${formatLinks('en')}<p>Step 1 — the audit: without the diagnosis we neither advise nor take over delivery.</p>`,
 };
 
 const ROUTES = [
-  { path: '/', og: 'home', title: 'WEEXP — система зростання для e-commerce замість героїзму',
-    desc: 'Система зростання для D2C та e-commerce брендів: діагноз у грошах, побудова системи й вихід на ЄС/США — щоб виторг ріс без вас.',
-    content: `<h1>Продажі, які не тримаються на вас</h1><p>WEEXP будує систему зростання для українських виробників і D2C-брендів: діагностуємо вісім систем онлайн-продажів за даними CRM/ERP/GA4, рахуємо витік у грошах і збираємо їх в одну керовану. Система замість героїзму.</p><p>${esc(SERVICES)}</p><h2>Вісім систем онлайн-продажів</h2>${ulLinks(SYSTEMS, SYS_SLUGS)}<p><a href="/systems">Вісім систем однією картою</a></p>` },
+  { path: '/', og: 'home', title: 'WEEXP — перебудовуємо онлайн-продажі: аудит, консалтинг, управління',
+    desc: 'Знаходимо, де витікають гроші в онлайн-продажах, рахуємо це за CRM/ERP/GA4 і перебудовуємо. Три формати: аудит від $2,900, консалтинг від $1,500/міс, управління під ключ від $4,900/міс.',
+    content: `<h1>Перебудовуємо онлайн-продажі</h1><p>Знаходимо, де саме витікають гроші, рахуємо це в гривнях за вашими CRM/ERP/GA4 — і перебудовуємо: від каталогу до аналітики. Для українських виробників і D2C-брендів.</p><h2>Три формати роботи</h2>${formatLinks('uk')}<p>${esc(SERVICES)}</p><h2>Вісім систем онлайн-продажів</h2>${ulLinks(SYSTEMS, SYS_SLUGS)}<p><a href="/systems">Вісім систем однією картою</a></p>` },
   { path: '/systems', og: 'systems', title: `Вісім систем зростання${SUF}`,
     desc: 'Онлайн-продажі як вісім систем: стратегія, комерція, попит, досвід, операції, дані, організація й експансія. Виторг витікає там, де найслабша.',
     content: `<h1>Система сильна настільки, наскільки сильна найслабша частина</h1><p>Онлайн-продажі — не набір каналів, а вісім систем, які працюють разом. Виторг витікає там, де найслабша. Нижче — кожна: що вона вирішує і як ми її будуємо.</p>${ulLinks(SYSTEMS, SYS_SLUGS)}` },
@@ -191,10 +206,52 @@ const ROUTES = [
   { path: '/audit-pack', og: 'pricing', title: `Склад пакета аудиту — 19 артефактів${SUF}`,
     desc: 'Повний перелік документів глибокого аудиту WEEXP: від брифу й карти доступів до роадмапи хвилями і протоколу передачі.',
     content: `<h1>Пакет аудиту — 19 артефактів</h1><p>До старту ви бачите повний перелік документів, які отримаєте: вхід (Discovery), ядро аудиту, доказова база, план і закриття. Аудит закінчується не презентацією, а переданою системою.</p><h2>Що входить</h2>${ul(PACK)}<p>Кожен артефакт має власника з боку WEEXP і Definition of Done — інакше він не вважається зданим.</p>` },
+  { path: '/services', og: 'pricing', title: `Послуги — три формати роботи${SUF}`,
+    desc: 'Що робить WEEXP: аудит онлайн-продажів, консалтинг і супровід, управління трансформацією під ключ. Формати відрізняються тим, хто відповідає за результат.',
+    content: `<h1>Що ми робимо</h1><p>Перебудовуємо онлайн-продажі: знаходимо, де витікають гроші, і закриваємо це руками — своїми або вашими. Формати відрізняються не «пакетом послуг», а тим, хто відповідає за результат.</p><h2>Три формати роботи</h2>${formatLinks('uk')}<p>Крок 1 — аудит: без діагностики ми не консультуємо і не беремо управління.</p>` },
   { path: '/pricing', og: 'pricing', title: `Формати та ціни${SUF}`,
     desc: 'Три формати співпраці WEEXP — аудит, консалтинг і супровід, управління під ключ. Відкриті ціни; різниця — у тому, хто відповідає за результат.',
     content: `<h1>Три формати — за рівнем нашої відповідальності</h1><p>Різниця не в «пакетах послуг», а в тому, хто несе фінальну відповідальність за результат.</p>${ul(['01 Аудит — 4–6 тижнів: аудит інтернет-магазину $2,900 або аудит відділу e-commerce в цілому $4,900', '02 Консалтинг і супровід — $50/год, мін. $1,500/міс: ми архітектор і контроль, руки клієнта', '03 Управління під ключ — від $4,900/міс, 6–12 міс: проєкт ведемо ми, відповідальність наша'])}<p>Будь-яка співпраця починається з діагностики.</p>` },
 ];
+
+/*
+ * Три сторінки форматів співпраці — статикою.
+ *
+ * Тексти дублюють services.ts навмисно: prerender — окремий .mjs без доступу
+ * до TS, і тягнути сюди складання TypeScript заради трьох абзаців дорожче, ніж
+ * звірити дубль тестом. Саме так тут уже живе дзеркало меню (NAV_PAGES), і
+ * звіряє його wording.test.ts. Ціни й строки звіряє services.test.ts — вони і
+ * є те, що розійшлося б найдорожче.
+ */
+const FORMAT_PAGES = [
+  ['audit', 'Аудит онлайн-продажів', '$2,900 / $4,900 · 4–6 тижнів',
+   'Карта: де саме витікають гроші, скільки це коштує на рік і що робити першим. Магазин $2,900 або весь відділ e-commerce $4,900, 4–6 тижнів.',
+   'Карта: де саме витікають гроші, скільки це коштує на рік і що робити першим. Обираєте глибину: сам магазин ($2,900) чи весь відділ e-commerce ($4,900).',
+   'Кому підходить: у вас сильна внутрішня команда, потрібні не руки, а карта. Впровадження та результат — ваша команда. 100% вартості аудиту зараховується в перший місяць управління під ключ, якщо старт упродовж 30 днів.'],
+  ['consulting', 'Консалтинг і супровід e-commerce', '$50/год · мінімум 30 год/міс',
+   'Зовнішній архітектор для вашої команди: що робити, в якому порядку і чи зроблено якісно. $50/год, мінімум 30 год/міс ($1,500/міс).',
+   'Зовнішній архітектор для вашої команди: що робити, в якому порядку і чи зроблено якісно. Рахунок не буває менше $1,500 на місяць.',
+   'Кому підходить: у вас є виконавці та проджект-менеджер. Якість рішень і контроль — ми; виконання руками та результат — ваша команда. Старт — після аудиту, початковий термін 3 місяці.'],
+  ['managed', 'Управління e-commerce під ключ', 'від $4,900/міс · 6–12 місяців',
+   'Проєкт ведемо ми — план, люди, бюджет і фінальна відповідальність за результат. Від $4,900/міс, 6–12 місяців.',
+   'Проєкт ведемо ми — план, люди, бюджет і фінальна відповідальність за результат.',
+   'Кому підходить: нема кому вести це зсередини, потрібен результат, а не поради. Пілот — перші 3 місяці з фіксованими KPI першої хвилі, далі 6–12 місяців. Старт — тільки після аудиту.'],
+];
+for (const [slug, title, price, desc, promise, who] of FORMAT_PAGES) {
+  ROUTES.push({
+    path: `/services/${slug}`, og: 'pricing',
+    title: `${title}${SUF}`,
+    /*
+     * Опис написаний окремо від тексту сторінки, а не склеєний із нього.
+     * Перша версія збирала його як `${promise} ${price}.` — виходило 188
+     * символів: у видачі обрізалось посеред слова, та ще й з малої літери
+     * після крапки. Обидва рази це впіймав seoOutput.test.ts, який дивиться
+     * у зібраний dist, а не в наміри в коді.
+     */
+    desc,
+    content: `<h1>${esc(title)}</h1><p>${esc(promise)}</p><p><b>${esc(price)}</b></p><p>${esc(who)}</p><p><a href="/services">Усі три формати роботи</a> · <a href="/pricing">умови поруч</a></p>`,
+  });
+}
 
 // Глибокі сторінки послуг (одна на систему) — для індексації комерційної структури.
 const SERVICE_META = [
@@ -353,24 +410,40 @@ const altsFor = (path) => {
 // лише Organization + WebSite, щоб не ловити structured-data-невідповідність.
 const MINIMAL_LD = `<script type="application/ld+json">\n{"@context":"https://schema.org","@graph":[{"@type":"ProfessionalService","@id":"${ORIGIN}/#org","name":"WEEXP","url":"${ORIGIN}/","logo":"${ORIGIN}/apple-touch-icon.png","image":"${ORIGIN}/og.png","areaServed":["UA","EU","US"],"email":"hello@weexp.agency","sameAs":["https://www.linkedin.com/company/weexp"]},{"@type":"WebSite","@id":"${ORIGIN}/#site","url":"${ORIGIN}/","name":"WEEXP","inLanguage":"uk","publisher":{"@id":"${ORIGIN}/#org"}}]}\n</script>`;
 
+/**
+ * Підставити значення між двома захопленими групами.
+ *
+ * Чому не рядок-заміна. Було `h.replace(/(...)(")/, `$1${esc(r.desc)}$2`)`, і в
+ * рядку заміни `$1`/`$2` — посилання на групи. Щойно в тексті зʼявилась ціна
+ * «$2,900», `$2` усередині неї теж стало посиланням: підставилась закривальна
+ * лапка, атрибут обірвався на «Магазин », а решта опису поїхала в розмітку.
+ *
+ * Помилка була латентною роками: у жодному title чи description доти не було
+ * знака долара. Впіймав її seoOutput.test.ts — тим, що дивиться у зібраний
+ * dist, а не в наміри в коді.
+ *
+ * Функція-заміна знімає будь-яке тлумачення `$` у значенні.
+ */
+const between = (h, re, value) => h.replace(re, (_, a, b) => a + value + b);
+
 function build(tpl, r) {
   let h = tpl;
-  h = h.replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(r.title)}</title>`);
+  h = h.replace(/<title>[\s\S]*?<\/title>/, () => `<title>${esc(r.title)}</title>`);
   if (r.path !== '/') h = h.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/, MINIMAL_LD);
-  h = h.replace(/(<meta name="description" content=")[^"]*(")/, `$1${esc(r.desc)}$2`);
-  h = h.replace(/(<link rel="canonical" href=")[^"]*(")/, `$1${canon(r.path)}$2`);
+  h = between(h, /(<meta name="description" content=")[^"]*(")/, esc(r.desc));
+  h = between(h, /(<link rel="canonical" href=")[^"]*(")/, canon(r.path));
   if (r.lang === 'en') h = h.replace(/<html([^>]*)lang="[^"]*"/, '<html$1lang="en"');
   h = h.replace('</head>', `${altsFor(r.path)}</head>`);
-  h = h.replace(/(<meta property="og:url" content=")[^"]*(")/, `$1${canon(r.path)}$2`);
-  h = h.replace(/(<meta property="og:title" content=")[^"]*(")/, `$1${esc(r.title)}$2`);
-  h = h.replace(/(<meta property="og:description" content=")[^"]*(")/, `$1${esc(r.desc)}$2`);
-  h = h.replace(/(<meta name="twitter:title" content=")[^"]*(")/, `$1${esc(r.title)}$2`);
-  h = h.replace(/(<meta name="twitter:description" content=")[^"]*(")/, `$1${esc(r.desc)}$2`);
+  h = between(h, /(<meta property="og:url" content=")[^"]*(")/, canon(r.path));
+  h = between(h, /(<meta property="og:title" content=")[^"]*(")/, esc(r.title));
+  h = between(h, /(<meta property="og:description" content=")[^"]*(")/, esc(r.desc));
+  h = between(h, /(<meta name="twitter:title" content=")[^"]*(")/, esc(r.title));
+  h = between(h, /(<meta name="twitter:description" content=")[^"]*(")/, esc(r.desc));
   // Пер-маршрутна OG-картинка (за наявності): краулери бачать її у статиці.
   if (r.og) {
     const img = `${ORIGIN}/og/${r.og}.png`;
-    h = h.replace(/(<meta property="og:image" content=")[^"]*(")/, `$1${img}$2`);
-    h = h.replace(/(<meta name="twitter:image" content=")[^"]*(")/, `$1${img}$2`);
+    h = between(h, /(<meta property="og:image" content=")[^"]*(")/, img);
+    h = between(h, /(<meta name="twitter:image" content=")[^"]*(")/, img);
   }
   /*
    * Статична навігація на КОЖНІЙ сторінці.
@@ -390,7 +463,8 @@ function build(tpl, r) {
   // Блок статей — лише на українських сторінках поза самим блогом: рівно там,
   // де його малює BlogTeaser у застосунку.
   const blog = r.lang === 'en' || r.path === '/blog' || r.path.startsWith('/blog/') ? '' : blogBlock(r.path);
-  h = h.replace('<div id="root"></div>', `<div id="root"><div style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">${r.content}${blog}${nav}</div></div>`);
+  // Теж функція-заміна: у тілі сторінки трапляються і ціни, і «$&».
+  h = h.replace('<div id="root"></div>', () => `<div id="root"><div style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">${r.content}${blog}${nav}</div></div>`);
   return h;
 }
 

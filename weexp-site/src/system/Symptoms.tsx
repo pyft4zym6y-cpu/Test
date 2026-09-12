@@ -48,20 +48,27 @@ export function Symptoms({ compact = false, cta = 'diagnose' }: {
           {items.map((s) => (
             <li key={s.systemPath} className="symp-card">
               <p className="symp-say">«{s.say}»</p>
-              <p className="symp-mean">{s.mean}</p>
+              {/* У компактному вигляді лишається сама репліка й місце причини.
+                  Пояснення та перелік експертиз — на /diagnose: на головній цей
+                  блок має читатись як перелік того, з чим до нас приходять, а
+                  не як вісім абзаців, кожен із власним розбором. Експертизи на
+                  головній і так мають власний блок вище. */}
+              {!compact && <p className="symp-mean">{s.mean}</p>}
               <div className="symp-links">
                 <Link to={lp(s.systemPath)} className="symp-where mono">
                   {t('Причина', 'Cause')}: {s.systemTitle} →
                 </Link>
-                <span className="symp-fix mono">
-                  {t('Лагодимо', 'We fix it with')}:{' '}
-                  {s.fix.map((f, i) => (
-                    <span key={f.path}>
-                      {i > 0 && ' · '}
-                      <Link to={lp(f.path)}>{f.title}</Link>
-                    </span>
-                  ))}
-                </span>
+                {!compact && (
+                  <span className="symp-fix mono">
+                    {t('Лагодимо', 'We fix it with')}:{' '}
+                    {s.fix.map((f, i) => (
+                      <span key={f.path}>
+                        {i > 0 && ' · '}
+                        <Link to={lp(f.path)}>{f.title}</Link>
+                      </span>
+                    ))}
+                  </span>
+                )}
               </div>
             </li>
           ))}

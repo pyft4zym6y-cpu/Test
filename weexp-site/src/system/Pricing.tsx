@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
-import { useT, useLp } from '@/i18n';
+import { useT, useLp, useLang } from '@/i18n';
 import { useJsonLd } from '@/lib/seo';
 import './system.css';
 import { HEADLINE_PROOF } from '@/data/cases';
 import { TOTAL_DOMAINS } from '@/data/xray';
 import { AUDIT_BLOCKS } from '@/data/auditPack';
+import { SERVICES, servicePath, fillCounts } from '@/data/services';
+import { PROCESS } from '@/data/process';
 
 /**
  * Формати співпраці — три моделі за рівнем НАШОЇ відповідальності за результат:
@@ -24,8 +26,17 @@ import { AUDIT_BLOCKS } from '@/data/auditPack';
  * імпорті. Тягнути його в публічну сторінку цін заради одного числа дорожче,
  * ніж перевірити це число тестом (taxonomy.test.ts).
  */
+/**
+ * Картка формату для розмітки: та сама модель із data/services.ts, з якої вже
+ * знято мову й підставлено числа складу аудиту.
+ *
+ * Доти перелік форматів жив просто тут, у рендері. Поки вони показувались на
+ * одній сторінці, це було нормально; тепер формати — головна вісь сайту (пункт
+ * меню, блок на головній, три власні сторінки), і чотири копії того самого
+ * тексту розійшлися б мовчки.
+ */
 type Model = {
-  n: string; name: string; tag: string; period: string; price: string; priceNote: string;
+  slug: string; n: string; name: string; tag: string; period: string; price: string; priceNote: string;
   scopes?: { name: string; price: string }[];
   featured?: boolean; forWhom: string; includes: string[]; format: string; terms: string; resp: string;
 };
@@ -33,64 +44,21 @@ type Model = {
 export function Pricing() {
   const t = useT();
   const lp = useLp();
+  const lang = useLang();
+  const i = lang === 'en' ? 1 : 0;
   // SEO (title/description/lang/hreflang) для /pricing і /en/pricing — централізовано в RouteSeo.
   const [open, setOpen] = useState<number | null>(0);
 
-  const MODELS: Model[] = [
-    {
-      n: '01', name: t('Аудит', 'Audit'), tag: t('Diagnostic · разовий проєкт', 'Diagnostic · one-off project'), period: t('4–6 тижнів', '4–6 weeks'),
-      price: '$2,900 / $4,900',
-      scopes: [
-        { name: t('Аудит інтернет-магазину', 'Online-store audit'), price: '$2,900' },
-        { name: t('Аудит відділу e-commerce в цілому', 'E-commerce department audit'), price: '$4,900' },
-      ],
-      priceNote: t('Обираєте глибину: сам магазин чи весь відділ e-commerce. Сума фіксується до старту.', 'Choose the depth: the store itself or the whole e-commerce department. The amount is fixed before we start.'),
-      forWhom: t('У вас сильна внутрішня команда. Потрібні не руки, а карта: де саме витікають гроші й що робити першим.', 'You have a strong in-house team. You need a map, not hands: exactly where the money leaks and what to fix first.'),
-      includes: [
-        t('Discovery-портал: опитувальники, передача доступів, бриф ЛПР', 'Discovery portal: questionnaires, access handover, decision-maker brief'),
-        t(`E-commerce 360°: ${AUDIT_BLOCKS.length} аудитів · ${TOTAL_DOMAINS} доменів діагностики`,
-          `E-commerce 360°: ${AUDIT_BLOCKS.length} audits · ${TOTAL_DOMAINS} diagnostic domains`),
-        t('Health Score і зрілість по 18 доменах', 'Health Score and maturity across 18 domains'),
-        t('Розрив у грошах: 8 важелів, baseline, прогноз на 12 місяців', 'The gap in money: 8 levers, baseline, 12-month forecast'),
-        t('Повний пакет: 5 звітів + посторінкові томи «зараз → як треба» + Гант-план Excel (зміст відкритий)', 'The full pack: 5 reports + page-by-page now/should-be volumes + an Excel Gantt (contents open)'),
-        t('Роадмапа хвилями: пріоритети, бюджет, строки, команда', 'Roadmap in waves: priorities, budget, timelines, team'),
-      ],
-      format: t('Передача документів + 4 години консультацій із розбором + контрольний дзвінок через 30 днів: перевіряємо, що впровадження пішло.', 'Document handover + 4 hours of consulting with a walkthrough + a check-in call after 30 days: we confirm implementation is underway.'),
-      terms: t('100% вартості аудиту зараховується в перший місяць формату 03 (50% — у формат 02), якщо старт упродовж 30 днів. Аудит фактично стає безкоштовним входом.', '100% of the audit fee is credited to the first month of format 03 (50% to format 02) if you start within 30 days. The audit effectively becomes a free entry.'),
-      resp: t('Впровадження та результат — ваша команда.', 'Implementation and the result — your team.'),
-    },
-    {
-      n: '02', name: t('Консалтинг і супровід', 'Consulting & advisory'), tag: t('Advisory · зовнішній експерт', 'Advisory · external expert'), period: t('помісячно · від 1 міс', 'monthly · from 1 mo'),
-      price: t('$50 / год', '$50 / hr'), priceNote: t('мінімум 30 год/міс — рахунок не буває менше $1,500/міс; понад мінімум — за фактом годин.', 'minimum 30 hrs/mo — the invoice is never below $1,500/mo; above the minimum — by actual hours.'),
-      featured: true,
-      forWhom: t('У вас є виконавці та проджект-менеджер. Потрібен архітектор: що робити, в якому порядку і чи якісно зроблено.', "You have doers and a project manager. You need an architect: what to do, in what order, and whether it's done well."),
-      includes: [
-        t('Щотижневі спринт-сесії: пріоритети, розбори, рішення', 'Weekly sprint sessions: priorities, reviews, decisions'),
-        t('Роадмапа та беклог трансформації під нашим контролем', 'Transformation roadmap and backlog under our control'),
-        t('Ревʼю виконаного проти DoD і наших еталонів', 'Review of delivered work against DoD and our benchmarks'),
-        t('Доступ до плейбуків, стандартів і чеклістів', 'Access to playbooks, standards, and checklists'),
-        t('Прозорий звіт по годинах щомісяця', 'A transparent monthly hours report'),
-      ],
-      format: t('Обовʼязкова умова: на вашому боці є виділений проджект або відповідальний, який керує виконанням. Без нього рекомендації зависають — тоді чесніше одразу формат 03.', 'A mandatory condition: on your side there is a dedicated project lead or owner who drives execution. Without one, recommendations stall — then format 03 is the honest choice from the start.'),
-      terms: t('Старт — після аудиту (формат 01): він дає карту, за якою ведемо. Початковий термін — 3 місяці, далі помісячно з відмовою за 30 днів. Передоплата на місяць; до 20% невикористаних годин переносяться. Щоквартальне ревʼю цінності.', 'Start — after the audit (format 01): it provides the map we steer by. Initial term — 3 months, then monthly with 30-day notice. Prepaid monthly; up to 20% of unused hours roll over. Quarterly value review.'),
-      resp: t('Якість рішень і контроль — ми. Виконання руками та результат — ваша команда.', 'Quality of decisions and control — us. Hands-on execution and the result — your team.'),
-    },
-    {
-      n: '03', name: t('Управління під ключ', 'Managed delivery'), tag: t('Managed · трансформація', 'Managed · transformation'), period: t('6–12 місяців', '6–12 months'),
-      price: t('від $4,900 / міс', 'from $4,900 / mo'), priceNote: t('залежить від масштабу проєкту; фіксується після аудиту.', 'depends on project scale; fixed after the audit.'),
-      forWhom: t('Нема кому вести це зсередини. Потрібен результат, а не поради — і один відповідальний за нього.', "There's no one to lead this from inside. You need a result, not advice — and one person accountable for it."),
-      includes: [
-        t('Керуємо всім проєктом: план, люди, бюджет, ризики', 'We run the whole project: plan, people, budget, risks'),
-        t('Команда: ми + наші партнери з OKR і DoD; ваші люди — залучаються, де це посилює', 'Team: us + our partners with OKRs and DoD; your people join where it strengthens delivery'),
-        t('KPI та RACI на кожну хвилю, транші під результат', 'KPIs and RACI for each wave, tranches tied to results'),
-        t('Швидкі перемоги першої хвилі фінансують наступні', 'First-wave quick wins fund the ones that follow'),
-        t('Щомісячна звітність власнику: цифри проти плану', 'Monthly reporting to the owner: numbers against plan'),
-      ],
-      format: t('Старт — тільки після аудиту (формат 01): без діагностики керувати проєктом означає вести його навмання.', 'Start — only after the audit (format 01): without diagnostics, running the project means running it blind.'),
-      terms: t('Пілот — перші 3 місяці з фіксованими KPI першої хвилі; далі 6–12 міс. Продовження — рішення за цифрами. Опційно — бонус за результат (% від приросту, у договорі).', 'Pilot — the first 3 months with fixed first-wave KPIs; then 6–12 mo. Renewal — a decision by the numbers. Optionally — a performance bonus (% of the uplift, in the contract).'),
-      resp: t('Фінальна відповідальність за результат — на нас.', 'Final responsibility for the result — on us.'),
-    },
-  ];
+  // Числа складу аудиту беруть із даних, а не з рядка: набрані руками, вони
+  // мовчки застаріли б при наступній зміні моделі.
+  const counts = { audits: AUDIT_BLOCKS.length, domains: TOTAL_DOMAINS };
+  const MODELS: Model[] = SERVICES.map((m) => ({
+    slug: m.slug, n: m.n, featured: m.featured,
+    name: m.name[i], tag: m.tag[i], period: m.period[i], price: m.price[i], priceNote: m.priceNote[i],
+    scopes: m.scopes?.map((x) => ({ name: x.name[i], price: x.price })),
+    forWhom: m.forWhom[i], includes: m.includes.map((x) => fillCounts(x[i], counts)),
+    format: m.format[i], terms: m.terms[i], resp: m.resp[i],
+  }));
 
   const COMPARE: { k: string; v: [string, string, string] }[] = [
     { k: t('Відповідальний за результат', 'Responsible for the result'), v: [t('Ваша команда', 'Your team'), t('Ви · ми — за якість рішень', 'You · us — for decision quality'), t('Ми', 'Us')] },
@@ -146,7 +114,12 @@ export function Pricing() {
             права половина екрана лишалась порожньою. */}
         <header className="pric-head">
           <span className="sysx-kick pric-head-full">{t('Формати співпраці · хто відповідає за результат', 'Cooperation formats · who is responsible for the result')}</span>
-          <h1 className="sysx-display pric-h1 pric-head-full">{t('Три формати — за рівнем ', 'Three formats — by the level of ')}{t('нашої ', 'our ')}<span className="sysx-em">{t('відповідальності', 'responsibility')}</span></h1>
+          {/* Сторінку відкривають, щоб побачити суми. Заголовок «Три формати —
+              за рівнем нашої відповідальності» відповідав на інше питання, а
+              людина, що натиснула «Ціни», спершу читала тезу про нас.
+              Теза лишилась — підрядком. */}
+          <h1 className="sysx-display pric-h1 pric-head-full">{t('Ціни', 'Pricing')}</h1>
+          <p className="sysx-sub pric-head-full">{t('Три формати — за рівнем нашої відповідальності за результат', 'Three formats — by the level of our responsibility for the result')}</p>
           <div className="pric-head-l">
           <p className="sysx-lead">{t('Різниця не в «пакетах послуг», а в тому, хто несе фінальну відповідальність за результат: ваша команда з нашою картою, ваша команда під нашим контролем — чи ми повністю.', 'The difference isn\'t in "service packages" but in who bears final responsibility for the result: your team with our map, your team under our control — or us entirely.')}</p>
           {/*
@@ -221,6 +194,9 @@ export function Pricing() {
                   <Link to={lp('/audit-pack') + '?scope=dept'} className="pric-pack-link mono">{t('Аудит відділу $4,900 — що всередині →', 'Department audit $4,900 — what is inside →')}</Link>
                 </div>
               )}
+              {/* Сторінка формату — те саме, що й у меню «Послуги»: тут людина
+                  порівнює, там читає про один. */}
+              <Link to={lp(servicePath({ slug: m.slug as never }))} className="pric-pack-link mono">{t('Про формат', 'About this format')} {m.n} →</Link>
               <Link to={`${lp('/contact')}?format=${Number(m.n)}`} className={'sysx-cta pric-cta' + (m.featured ? ' is-primary' : '')}>{t('Обговорити формат', 'Discuss format')} {m.n} →</Link>
             </article>
           ))}
@@ -265,14 +241,7 @@ export function Pricing() {
           <span className="sysx-kick">{t('Як влаштована співпраця', 'How the engagement works')}</span>
           <h2 className="sysx-display pric-flow-h">{t('Від контакту до передачі — ', 'From first contact to handover — ')}<span className="sysx-em">{t('прозоро', 'transparently')}</span></h2>
           <div className="pric-flow-steps">
-            {[
-              { n: '01', t: [t('Діагноз', 'Diagnosis'), t('Експрес-аудит → глибокий аудит: розрив у грошах за CRM/ERP/GA4 і головні вузькі місця.', 'Express audit → deep audit: the revenue gap from CRM/ERP/GA4 and the main bottlenecks.')] },
-              { n: '02', t: [t('Договір', 'Contract'), t('Офіційно від ФОП (Україна): предмет, строки, обсяг і KPI — письмово, до старту.', 'Officially as a sole proprietor (Ukraine): scope, timelines and KPIs — in writing, before kickoff.')] },
-              { n: '03', t: [t('Команда й доступи', 'Team & access'), t('Фіксуємо склад: Head of E-commerce + профільні ролі. Доступи відкриваєте контрольовано.', 'We fix the team: Head of E-commerce + specialist roles. You grant access in a controlled way.')] },
-              { n: '04', t: [t('Робота хвилями', 'Delivery in waves'), t('Дорожня карта під Definition of Done; транші під результат, а не «за години».', 'A roadmap under a Definition of Done; tranches tied to results, not "by the hour".')] },
-              { n: '05', t: [t('Приймання', 'Acceptance'), t('Кожен етап приймається за DoD і вимірюваним ефектом — ви бачите, за що платите.', 'Each stage is accepted against the DoD and a measurable effect — you see what you pay for.')] },
-              { n: '06', t: [t('Передача', 'Handover'), t('Система лишається у вас: процеси, доступи й знання — щоб працювало без нас.', 'The system stays with you: processes, access and knowledge — so it runs without us.')] },
-            ].map((s) => (
+            {PROCESS.map((x) => ({ n: x.n, t: [x.title[i], x.text[i]] })).map((s) => (
               <div key={s.n} className="pric-flow-step">
                 <i className="pric-flow-n mono">{s.n}</i>
                 <b className="pric-flow-t">{s.t[0]}</b>

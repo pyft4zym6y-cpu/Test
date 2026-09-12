@@ -9,7 +9,7 @@ import { RouteBreadcrumbs } from '@/system/Breadcrumbs';
 import { useT, useLp, useLang, stripLang } from '@/i18n';
 import { appHref, siteHref, isAppPath } from '@/lib/origins';
 import './system.css';
-import { PAGES } from '@/lib/nav';
+import { PAGES, EXTRA_PAGES } from '@/lib/nav';
 
 /**
  * Оболонка cinematic-напряму: тонка світла шапка (десктоп) + app-подібна
@@ -25,16 +25,30 @@ const I = {
   calc: 'M6 3h12a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM8 7h8M8 11h2M12 11h2M8 15h2M12 15h2',
   chat: 'M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-4 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z',
   user: 'M20 21v-1.8a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4V21M12 11.2a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
+  services: 'M4 6h16M4 12h16M4 18h10M18.5 16.5 20 18l3-3',
   menu: 'M4 7h16M4 12h16M4 17h16',
 };
 const Icon = ({ d }: { d: string }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>
 );
 
-// Нижня панель — підмножина меню. Назви звідти ж, щоб не розійшлися:
-// раніше вони жили окремим списком і збігалися лише доти, доки хтось не правив один.
-const TAB_ICON: Record<string, string> = { '/': I.home, '/people': I.people, '/diagnose': I.calc, '/contact': I.chat };
-const TABS = PAGES.filter((p) => p.to in TAB_ICON).map((p) => ({ ...p, icon: TAB_ICON[p.to] }));
+/*
+ * Нижня панель — чотири найчастіші дії на телефоні. Назви беремо з lib/nav,
+ * щоб не розійшлися: раніше вони жили окремим списком і збігалися лише доти,
+ * доки хтось не правив один.
+ *
+ * Список більше не фільтрує PAGES: «Головна» й «Express audit» пішли з меню
+ * (логотип і кнопка в шапці), а в нижній панелі вони потрібні саме тому, що на
+ * телефоні ні логотип, ні кнопка не читаються як навігація. Тому шукаємо серед
+ * усіх названих сторінок — і падаємо, якщо адреси немає в жодному переліку.
+ */
+const TAB_ICON: Record<string, string> = { '/': I.home, '/services': I.services, '/diagnose': I.calc, '/contact': I.chat };
+const NAMED = [...PAGES, ...EXTRA_PAGES];
+const TABS = Object.keys(TAB_ICON).map((to) => {
+  const p = NAMED.find((x) => x.to === to);
+  if (!p) throw new Error('нижня панель посилається на сторінку без назви: ' + to);
+  return { ...p, icon: TAB_ICON[to] };
+});
 
 export function SystemShell() {
   // Клавіатура на телефоні: нижня панель має ховатись, поки людина заповнює поле.

@@ -26,7 +26,9 @@ export function Expertise() {
     <section className="sysx xp2">
       <div className="sysx-field" aria-hidden="true" />
       <div className="xp2-in">
-        <Link to={lp('/expansion')} className="xp2-back mono">← {t('Експансія', 'Expansion')}</Link>
+        {/* Підпис збігається з пунктом меню: доти кнопка «назад» називала сторінку
+            «Експансія» — тобто іменем однієї з девʼяти експертиз, які на ній лежать. */}
+        <Link to={lp('/expansion')} className="xp2-back mono">← {t('Експертизи', 'Expertise')}</Link>
 
         <header className="xp2-head">
           <span className="sysx-kick">{L(e.tag, lang)}</span>

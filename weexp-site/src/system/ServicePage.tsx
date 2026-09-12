@@ -130,7 +130,7 @@ export function ServicePage() {
             /* Fallback, щоб секція не зникала на системах без прив'язаних кейсів (консистентність шаблону). */
             <>
               <p className="svc-promise">{t('Ця система підсилює результат інших — сумарні дельти по всіх трансформаціях зібрані на сторінці доказів.', 'This system amplifies the others — the combined deltas across all transformations are gathered on the proof page.')}</p>
-              <Link to={lp('/proof')} className="sysx-cta">{t('Наші перемоги →', 'Our wins →')}</Link>
+              <Link to={lp('/proof')} className="sysx-cta">{t('Кейси →', 'Cases →')}</Link>
             </>
           )}
         </div>

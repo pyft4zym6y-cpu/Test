@@ -65,7 +65,23 @@ body {
 .eyebrow::after { content:""; height:1px; flex:1; background:var(--hair); }
 
 .wrap { width:min(100%,1320px); margin:0 auto; padding:0 clamp(20px,5vw,68px); }
-h1,h2 { font-family:var(--display); font-weight:800; letter-spacing:-.035em; line-height:.98; text-wrap:balance; color:var(--paper); }
+/*
+ * Колір заголовків НЕ задається глобально.
+ *
+ * Тут стояло color: var(--paper), тобто білий, — спадок темної версії сайту,
+ * від якої лишились тільки мертві класи (.page-h1, .ct-h, .xray-title — жоден
+ * уже не рендериться). Світлий сайт .sysx малює на кремовому тлі, тож правило
+ * робило БІЛИМ кожен <h1>/<h2>, у якого власний клас не задав колір явно.
+ *
+ * Більшість заголовків це не зачіпало випадково: вони носять .sysx-display,
+ * який колір задає. А ті, що не носять, були білими на білому й не читались
+ * зовсім: «Дорожня карта», «Команда», «Фінансовий календар» і «Помісячна
+ * тарифікація» у кабінеті клієнта (.pj-h2 кольору не має досі).
+ *
+ * inherit означає «колір секції» — саме те, що потрібно: на кремовому тлі
+ * чорнило, на темній картці — кремовий, і жодного класу-заглушки.
+ */
+h1,h2 { font-family:var(--display); font-weight:800; letter-spacing:-.035em; line-height:.98; text-wrap:balance; color:inherit; }
 
 :focus-visible { outline:2px solid var(--mark); outline-offset:3px; }
 

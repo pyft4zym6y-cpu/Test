@@ -3,12 +3,12 @@
   "routes": {
     "/": {
       "uk": [
-        "WEEXP — система зростання для e-commerce замість героїзму",
-        "Система зростання для D2C та e-commerce брендів: діагноз у грошах, побудова системи й вихід на ЄС/США — щоб виторг зростав без вас."
+        "Аудит і перебудова онлайн-продажів · WEEXP",
+        "Знаходимо, де витікають гроші в онлайн-продажах, рахуємо це за CRM/ERP/GA4 і перебудовуємо. Три формати: аудит, консалтинг, управління під ключ."
       ],
       "en": [
-        "WEEXP — a growth system for e-commerce, not heroics",
-        "A growth system for D2C & e-commerce brands: a diagnosis in money, building the system and expansion to the EU/US — so revenue grows without you."
+        "Online sales audit & rebuild · WEEXP",
+        "We find where the money leaks in online sales, size it from CRM/ERP/GA4 and rebuild. Three formats: audit, consulting, managed delivery."
       ]
     },
     "/systems": {
@@ -23,11 +23,11 @@
     },
     "/proof": {
       "uk": [
-        "Наші перемоги — трансформації в цифрах · WEEXP",
+        "Кейси — трансформації в цифрах · WEEXP",
         "Флагманські кейси e-commerce: дельти до→після з CRM/ERP/GA4 — ×18 обороту, +65% продажів, ≥19 млн ₴ розриву. Не обіцянки, а числа."
       ],
       "en": [
-        "Our wins — transformations in numbers · WEEXP",
+        "Cases — transformations in numbers · WEEXP",
         "Flagship e-commerce cases: before→after deltas verified with CRM/ERP/GA4 — ×18 revenue, +65% sales. Not promises — numbers."
       ]
     },
@@ -81,13 +81,23 @@
         "The full contents of the WEEXP deep audit: 5 reports — presentation, 13 audits, financial report with the P&L bridge, roadmap, proposal and handover."
       ]
     },
+    "/services": {
+      "uk": [
+        "Послуги — три формати роботи · WEEXP",
+        "Що робить WEEXP: аудит онлайн-продажів, консалтинг і супровід, управління трансформацією під ключ. Різниця форматів — у тому, хто відповідає за результат."
+      ],
+      "en": [
+        "Services — three ways to work · WEEXP",
+        "What WEEXP does: an online-sales audit, consulting and advisory, managed transformation. The formats differ by who is accountable for the result."
+      ]
+    },
     "/pricing": {
       "uk": [
-        "Початок співпраці — формати та ціни · WEEXP",
+        "Ціни — три формати співпраці · WEEXP",
         "Три формати співпраці WEEXP — аудит, консалтинг і супровід, управління під ключ. Відкриті ціни; різниця — у тому, хто відповідає за результат."
       ],
       "en": [
-        "Get started — formats & pricing · WEEXP",
+        "Pricing — three cooperation formats · WEEXP",
         "Three ways to work with WEEXP — audit, consulting & advisory, managed delivery. Open prices; the difference is who owns the result."
       ]
     },

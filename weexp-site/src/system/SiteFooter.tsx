@@ -5,9 +5,22 @@ import './system.css';
 import { PAGES, EXTRA_PAGES } from '@/lib/nav';
 
 /** Мікропідвал сайту — на всіх сторінках (під контентом у SystemShell). Двомовний. */
-// Коментар тут обіцяв «тримаємо в синхроні з головним меню» — тобто руками.
-// Тепер синхронізувати нічого: перелік один, у lib/nav.
-const NAV = [...PAGES, ...EXTRA_PAGES.filter((p) => p.to === '/cabinet')];
+/*
+ * Коментар тут обіцяв «тримаємо в синхроні з головним меню» — тобто руками.
+ * Тепер синхронізувати нічого: перелік один, у lib/nav.
+ *
+ * Підвал ширший за меню навмисно. У меню сім пунктів — рівно ті, що потрібні
+ * при першому знайомстві; «Головна», «Express audit», «Системи» й «Склад
+ * пакета аудиту» з нього пішли, але сторінки лишились робочими й мають бути
+ * досяжні. Підвал — те місце, де їм і належить бути: туди дивиться той, хто
+ * вже шукає щось конкретне.
+ */
+const FOOT_EXTRA = ['/', '/diagnose', '/systems', '/audit-pack', '/cabinet'];
+const NAV = [
+  ...FOOT_EXTRA.slice(0, 1).flatMap((to) => EXTRA_PAGES.filter((p) => p.to === to)),
+  ...PAGES,
+  ...FOOT_EXTRA.slice(1).flatMap((to) => EXTRA_PAGES.filter((p) => p.to === to)),
+];
 const MAIL = 'hello@weexp.agency';
 // DMCA Protection Badge — ID з dmca.com (статичний бейдж, без зовнішнього helper-скрипта → CSP не чіпаємо).
 const DMCA_ID = '715d145d-fa76-4b19-a69c-9143c8af7f20';

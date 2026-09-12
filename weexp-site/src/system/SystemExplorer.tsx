@@ -72,8 +72,11 @@ export function SystemExplorer() {
         {/* Заголовок / підказка — лишається видимим і коли обрано систему (майстер-деталь):
             зліва заголовок + активні кнопки, справа деталі обраної системи. */}
         <div className={'sxp-intro' + (focused !== null ? ' is-focused' : '')}>
-          <span className="sysx-kick">{t('Досліди систему · інтерактив', 'Explore the system · interactive')}</span>
-          <h2 className="sysx-display sxp-h">{t('Клікни будь-яку', 'Click any')}<br />{t('із ', 'of the ')}<span className="sysx-em">{t('восьми систем', 'eight systems')}</span>.</h2>
+          {/* Блок називає, ЩО він показує, а не що з ним робити. «Клікни
+              будь-яку із восьми систем» — інструкція до інтерфейсу; людина, яка
+              шукає зону робіт, із неї не розуміла, куди потрапила. */}
+          <span className="sysx-kick">{t('Зона робіт · інтерактив', 'Scope of work · interactive')}</span>
+          <h2 className="sysx-display sxp-h">{t('Вісім систем', 'Eight systems')}<br />{t('ваших ', 'of your ')}<span className="sysx-em">{t('онлайн-продажів', 'online sales')}</span></h2>
           <p className="sxp-lead">{t('Категорія наблизиться, а від неї розійдуться процеси всередині. Ось як влаштована система, якою ми керуємо.', 'The category moves closer, and the processes inside fan out from it. This is how the system we run is built.')}</p>
           <span className="sxp-hint mono">{t('↑ наведіть і клікніть вузол', '↑ hover and click a node')}</span>
           {/* Доступна з клавіатури альтернатива клікам по canvas (WCAG 2.1.1) */}

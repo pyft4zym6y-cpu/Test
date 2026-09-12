@@ -17,8 +17,21 @@
  *
  * jsdom для цього не годиться — у нього немає розкладки; тому це скрипт, а не
  * vitest-тест. Запуск проти будь-якої збірки:
+ * Режим --contrast шукає третю хворобу: текст, якого не видно взагалі. У
+ * index.css роками стояло глобальне h1,h2 { color: var(--paper) } — спадок
+ * темної версії сайту. Кожен заголовок, чий власний клас не задавав колір
+ * явно, ставав БІЛИМ на кремовому тлі. Так зникли назви форматів на новій
+ * сторінці послуг і чотири заголовки в кабінеті клієнта — «Дорожня карта»,
+ * «Команда», «Фінансовий календар», «Помісячна тарифікація». Ні розкладка, ні
+ * тести цього не бачили: елемент є, розмір правильний, текст на місці.
+ *
+ * Поріг навмисно низький (2.0 при нормі WCAG 4.5): шукаємо не «слабкий
+ * контраст», а «не видно». Інструмент, що кричить на кожен сірий підпис,
+ * нічим не кращий за той, що мовчить.
+ *
  *   node scripts/checkFit.mjs [http://127.0.0.1:8127]
  *   node scripts/checkFit.mjs [url] --vertical
+ *   node scripts/checkFit.mjs [url] --contrast
  */
 import { createRequire } from 'node:module';
 
@@ -28,6 +41,7 @@ const { chromium } = createRequire(process.cwd() + '/').call(null, 'playwright')
 
 const ARGS = process.argv.slice(2);
 const VERTICAL = ARGS.includes('--vertical');
+const CONTRAST = ARGS.includes('--contrast');
 const BASE = ARGS.find((a) => a.startsWith('http')) || 'http://127.0.0.1:8127';
 
 /* Телефонні вікна МІНУС хром браузера — саме та висота, яку реально бачить
@@ -37,6 +51,9 @@ const PHONES = [[430, 720], [430, 660], [428, 746], [414, 715], [412, 732],
 const WIDTHS = [320, 360, 390, 430, 540, 768, 1024, 1280, 1600];
 /* Сторінки, де живуть найдовші заголовки й найщільніші сітки. */
 const PATHS = ['/', '/en', '/systems', '/proof', '/pricing', '/expansion', '/people', '/audit-pack',
+  // Послуги: хаб і одна сторінка формату. У картці формату найдовші рядки —
+  // ціна з періодом в один ряд і перелік «що входить».
+  '/services', '/services/audit',
   // Блог: хаб і одна стаття. У статті найширший вміст сайту — таблиці, — і
   // саме вони найпростіше виносять сторінку за екран телефона.
   '/blog', '/blog/unit-ekonomika-ecommerce'];
@@ -46,6 +63,90 @@ const SLACK = 1.5;
 const browser = await chromium.launch({
   executablePath: process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
 });
+
+if (CONTRAST) {
+  /*
+   * Текст, якого не видно: колір тексту майже збігається з тлом під ним.
+   *
+   * Тло шукаємо вгору по предках до першого непрозорого — саме так його
+   * бачить око. Прозорість самого кольору враховуємо: rgba(20,18,16,.1) на
+   * кремовому — це світло-сірий, а не чорний.
+   */
+  const bad = [];
+  for (const path of PATHS) {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+    await page.goto(BASE + path, { waitUntil: 'networkidle' });
+    await page.waitForTimeout(400);
+    // Догортуємо до низу: блоки з reveal лишаються прозорими, поки їх не побачили.
+    await page.evaluate(async () => {
+      for (let y = 0; y < document.body.scrollHeight; y += 700) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 40)); }
+      window.scrollTo(0, 0);
+    });
+    await page.waitForTimeout(300);
+    const rows = await page.evaluate(() => {
+      const rgb = (v) => {
+        const m = /rgba?\(([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)(?:[,\s/]+([\d.]+))?/.exec(v || '');
+        return m ? { r: +m[1], g: +m[2], b: +m[3], a: m[4] === undefined ? 1 : +m[4] } : null;
+      };
+      const over = (fg, bg) => ({ r: fg.r * fg.a + bg.r * (1 - fg.a), g: fg.g * fg.a + bg.g * (1 - fg.a), b: fg.b * fg.a + bg.b * (1 - fg.a), a: 1 });
+      const lum = (c) => { const f = (x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; };
+        return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b); };
+      const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+
+      const out = [];
+      for (const el of document.querySelectorAll('h1, h2, h3, h4, p, li, a, span, b, strong, td, th, button, label')) {
+        // Тільки ВЛАСНИЙ текст: інакше кожен контейнер повторює текст дітей.
+        const own = [...el.childNodes].filter((n) => n.nodeType === 3 && n.textContent.trim()).map((n) => n.textContent.trim()).join(' ');
+        if (!own) continue;
+        const cs = getComputedStyle(el);
+        if (cs.visibility === 'hidden' || cs.display === 'none') continue;
+        const box = el.getBoundingClientRect();
+        if (box.width < 4 || box.height < 4) continue;
+        // Невидимі предки (скрол-сцени на opacity 0, приховані блоки).
+        let opac = 1, hid = false;
+        for (let a = el; a; a = a.parentElement) { const p = getComputedStyle(a);
+          if (p.display === 'none' || p.visibility === 'hidden') { hid = true; break; }
+          opac *= +p.opacity; }
+        if (hid || opac < 0.5) continue;
+        // Прихований службовий вміст пререндера (clip: rect(0 0 0 0)).
+        if (el.closest('[style*="clip:rect(0 0 0 0)"], [style*="clip: rect(0 0 0 0)"]')) continue;
+        /*
+         * aria-hidden — декорація, яку скрінрідер не читає й людина не має
+         * читати: величезні «примарні» числа на тлі /proof намальовані
+         * обведенням при прозорій заливці, і за кольором заливки вони мають
+         * контраст 1:1. Це не «текст, якого не видно», а фон.
+         */
+        if (el.closest('[aria-hidden="true"]')) continue;
+
+        let bg = null;
+        for (let a = el; a; a = a.parentElement) {
+          const c = rgb(getComputedStyle(a).backgroundColor);
+          if (c && c.a > 0.85) { bg = c; break; }
+        }
+        if (!bg) bg = { r: 255, g: 255, b: 255, a: 1 };
+        const fg = rgb(cs.color);
+        if (!fg) continue;
+        const r = ratio(over(fg, bg), bg);
+        if (r < 2) out.push({ ratio: +r.toFixed(2), tag: el.tagName.toLowerCase(),
+          cls: (el.className || '').toString().slice(0, 40), text: own.slice(0, 46),
+          fg: cs.color, bg: `rgb(${bg.r},${bg.g},${bg.b})` });
+      }
+      return out;
+    });
+    for (const r of rows) bad.push({ path, ...r });
+    await page.close();
+  }
+  await browser.close();
+  if (!bad.length) {
+    console.log(`fit --contrast: чисто — ${PATHS.length} сторінок`);
+    process.exit(0);
+  }
+  console.log(`fit --contrast: ${bad.length} місць, де текст не видно\n`);
+  for (const b of bad.sort((x, y) => x.ratio - y.ratio)) {
+    console.log(`  ${b.path.padEnd(14)} ${String(b.ratio).padStart(5)}:1  ${b.tag}.${b.cls}  ${b.fg} на ${b.bg}  «${b.text}»`);
+  }
+  process.exit(1);
+}
 
 if (VERTICAL) {
   const bad = [];

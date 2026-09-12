@@ -111,6 +111,8 @@ const Cabinet = lazy(() => import('@/system/Cabinet').then((m) => ({ default: m.
 const AdminPanel = lazy(() => import('@/system/AdminPanel').then((m) => ({ default: m.AdminPanel })));
 const ServicePage = lazy(() => import('@/system/ServicePage').then((m) => ({ default: m.ServicePage })));
 const Pricing = lazy(() => import('@/system/Pricing').then((m) => ({ default: m.Pricing })));
+const Services = lazy(() => import('@/system/Services').then((m) => ({ default: m.Services })));
+const ServiceFormat = lazy(() => import('@/system/ServiceFormat').then((m) => ({ default: m.ServiceFormat })));
 const BlogHub = lazy(() => import('@/system/BlogHub').then((m) => ({ default: m.BlogHub })));
 const BlogPost = lazy(() => import('@/system/BlogPost').then((m) => ({ default: m.BlogPost })));
 const AuditPackPage = lazy(() => import('@/system/AuditPackPage').then((m) => ({ default: m.AuditPackPage })));
@@ -131,6 +133,8 @@ const PAGES: { path: string; el: JSX.Element }[] = [
   { path: '/expansion', el: <ExpansionHub /> },
   { path: '/expansion/:slug', el: <Expertise /> },
   { path: '/diagnose', el: <LossCalculator /> },
+  { path: '/services', el: <Services /> },
+  { path: '/services/:slug', el: <ServiceFormat /> },
   { path: '/pricing', el: <Pricing /> },
   { path: '/audit-pack', el: <AuditPackPage /> },
   // Блог поки лише українською: сторінки монтуються і під /en, але BlogTeaser

@@ -1,0 +1,121 @@
+/* ══ Блоки головної ═════════════════════════════════════════════════════════
+   Спільна оболонка для всіх блоків після героя: одна ширина, один вертикальний
+   ритм, одна межа між блоками. Доти кожен блок головної мав власні відступи —
+   від 40 до 120px, — і сторінка читалась як склейка з різних сайтів.
+
+   Велика вицвіла цифра — головний приплив із референсу: число видно з кутика
+   ока раніше, ніж прочитано підпис. Тому воно НЕ декорація й НЕ ::before:
+   у кейсах його читає скрінрідер разом із підписом, а в переліку кроків —
+   aria-hidden, бо там нумерація вже є в <ol>. */
+
+.hb { border-top: 2.5px solid var(--deep); }
+.hb-in { max-width: var(--page-w); margin: 0 auto; padding: clamp(48px, 6vw, 96px) clamp(18px, 4vw, 40px); }
+.hb-h { font-size: clamp(30px, 4.6vw, 56px); line-height: 1.02; letter-spacing: -.02em;
+  text-transform: uppercase; margin: 10px 0 18px; max-width: 22ch; text-wrap: balance; }
+.hb-lead { max-width: var(--measure); }
+
+/* ── Рядок експертизи ─────────────────────────────────────────────────────── */
+.hb-claim { background: var(--cream-2); }
+.hb-claim-h { font-size: clamp(21px, 2.9vw, 34px); line-height: 1.18; letter-spacing: -.015em;
+  font-weight: 700; color: var(--red-ink); margin: 0 0 18px; max-width: 26ch; text-wrap: balance; }
+.hb-claim-link { display: inline-block; font-size: 12px; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--deep); text-decoration: underline; text-underline-offset: 4px; }
+.hb-claim-link:hover { color: var(--red-ink); }
+
+/* ── Кейси ────────────────────────────────────────────────────────────────── */
+.hb-case-list { list-style: none; margin: 0 0 clamp(26px, 3vw, 40px); padding: 0;
+  display: flex; flex-direction: column; gap: clamp(18px, 2.4vw, 30px); }
+.hb-case { border-top: 1px solid rgba(20, 18, 16, .18); padding-top: clamp(18px, 2.2vw, 28px);
+  display: grid; gap: clamp(14px, 2vw, 28px); grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 860px) { .hb-case { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); } }
+
+.hb-case-cat { display: block; font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--red-ink); }
+.hb-case-name { display: block; font-size: clamp(19px, 2vw, 24px); line-height: 1.12; margin: 6px 0 8px; }
+.hb-case-lead { margin: 0 0 10px; font-size: 14.5px; line-height: 1.5; color: var(--graphite); max-width: 46ch; }
+.hb-case-win { font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--deep); }
+
+.hb-nums { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: clamp(14px, 2vw, 30px); }
+.hb-num { min-width: 0; }
+/* Число рахуємо від ширини екрана, а не фіксуємо: на 320px 96px уже не
+   вміщається у дві колонки, і підпис підʼїжджає під сусідній. */
+/* Прозорість 0.45, а не 0.26. Референс малює величезні числа дуже блідими —
+   але там вони наполовину декорація. У нас число і Є доказ: «×18», «≥19 млн ₴»
+   — головне, за чим людина сюди дивиться. На 0.26 контраст виходив 1.77:1,
+   нижче навіть за поріг 3:1 для великого тексту; зловив це checkFit --contrast.
+   На 0.45 — 3.1:1: усе ще помітно бліде поруч із чорним підписом, але читається. */
+.hb-num b { display: block; font-family: var(--display); font-weight: 900; font-size: clamp(40px, 7vw, 78px);
+  line-height: .88; letter-spacing: -.04em; color: rgba(20, 18, 16, .45); }
+.hb-num span { display: block; margin-top: 6px; font-size: 13px; line-height: 1.35; color: var(--deep); max-width: 20ch; }
+.hb-num.is-small b { font-size: clamp(26px, 4vw, 44px); }
+.hb-num.is-small span { font-size: 12px; color: var(--graphite); }
+
+/* ── Три формати ──────────────────────────────────────────────────────────── */
+.hb-serv { background: var(--cream-2); }
+.hb-serv-grid { list-style: none; margin: clamp(22px, 3vw, 36px) 0 0; padding: 0; display: grid;
+  gap: clamp(12px, 1.6vw, 20px); grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); }
+.hb-serv-card { background: var(--pure-white); border: 2.5px solid var(--deep); box-shadow: 5px 5px 0 var(--deep);
+  padding: clamp(18px, 2vw, 26px); display: flex; flex-direction: column; gap: 10px; }
+.hb-serv-card.is-featured { background: var(--deep); color: var(--cream); }
+.hb-serv-card.is-featured .hb-serv-n,
+.hb-serv-card.is-featured .hb-serv-promise { color: rgba(250, 245, 233, .78); }
+/* На темній картці червоний текст не проходить по контрасту — саме те правило,
+   що вже описане в system.css: на темних поверхнях --red-ink не для тексту. */
+.hb-serv-card.is-featured .hb-serv-link { color: var(--cream); }
+
+.hb-serv-n { font-size: 12px; letter-spacing: .1em; color: var(--red-ink); }
+.hb-serv-name { font-size: clamp(20px, 2.1vw, 26px); line-height: 1.1; margin: 0; text-transform: uppercase; letter-spacing: -.01em; }
+.hb-serv-promise { margin: 0; font-size: 14.5px; line-height: 1.45; color: var(--graphite); }
+.hb-serv-price { margin-top: auto; padding-top: 12px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.hb-serv-price b { font-size: clamp(20px, 2.2vw, 26px); letter-spacing: -.02em; }
+.hb-serv-price span { font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; opacity: .72; }
+.hb-serv-link { font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--red-ink);
+  text-decoration: underline; text-underline-offset: 3px; }
+
+/* ── Експертизи плоским переліком ─────────────────────────────────────────── */
+.hb-exp-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px 26px;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); }
+.hb-exp-item { display: flex; align-items: baseline; gap: 10px; padding: 9px 0;
+  border-bottom: 1px solid rgba(20, 18, 16, .14);
+  font-size: clamp(15px, 1.6vw, 18px); color: var(--deep); text-decoration: none; }
+.hb-exp-item i { flex: none; width: 7px; height: 7px; background: var(--red-ink); }
+.hb-exp-item:hover { color: var(--red-ink); }
+
+/* ── Етапи ────────────────────────────────────────────────────────────────── */
+.hb-how { background: var(--cream-2); }
+.hb-steps { list-style: none; margin: clamp(22px, 3vw, 36px) 0 0; padding: 0;
+  display: flex; flex-direction: column; gap: clamp(16px, 2.4vw, 34px); }
+.hb-step { display: grid; grid-template-columns: minmax(64px, 14vw) minmax(0, 1fr); gap: clamp(12px, 2vw, 28px); align-items: start; }
+.hb-step-n { font-style: normal; font-family: var(--display); font-weight: 900; font-size: clamp(52px, 10vw, 118px);
+  line-height: .78; letter-spacing: -.05em; color: rgba(20, 18, 16, .18); }
+.hb-step-t b { display: block; font-size: clamp(17px, 1.9vw, 22px); line-height: 1.14; margin-bottom: 6px; }
+.hb-step-t p { margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--graphite); max-width: var(--measure); }
+
+/* ── Життя після передачі ─────────────────────────────────────────────────── */
+.hb-after-txt p { margin: 0 0 12px; font-size: clamp(15px, 1.6vw, 18px); line-height: 1.55; max-width: var(--measure); }
+.hb-after-txt p:last-child { margin-bottom: 0; }
+
+/* ── Команда ──────────────────────────────────────────────────────────────── */
+.hb-team { background: var(--cream-2); }
+.hb-team-list { list-style: none; margin: 0 0 22px; padding: 0; display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr)); }
+.hb-team-item { border-left: 2.5px solid var(--deep); padding: 2px 0 2px 12px; }
+.hb-team-item b { display: block; font-size: 15px; line-height: 1.2; }
+.hb-team-item span { display: block; margin-top: 2px; font-size: 12.5px; line-height: 1.35; color: var(--graphite); }
+
+/* ── Темний блок-завершення ───────────────────────────────────────────────── */
+.hb-close { background: var(--deep); color: var(--cream); border-bottom: 2.5px solid var(--deep); }
+.hb-close-h { font-size: clamp(30px, 5.2vw, 64px); line-height: 1.0; letter-spacing: -.025em;
+  text-transform: uppercase; margin: 0 0 16px; color: var(--cream); }
+.hb-close-l { margin: 0 0 26px; font-size: clamp(15px, 1.7vw, 19px); line-height: 1.5;
+  color: rgba(250, 245, 233, .8); max-width: var(--measure); }
+.hb-close .hb-close-cta { background: var(--cream); color: var(--deep); border-color: var(--cream);
+  box-shadow: 5px 5px 0 rgba(250, 245, 233, .3); }
+.hb-close-alt { display: inline-block; margin-left: 18px; font-size: 12px; letter-spacing: .05em;
+  text-transform: uppercase; color: rgba(250, 245, 233, .8); text-decoration: underline; text-underline-offset: 4px; }
+.hb-close-alt:hover { color: var(--cream); }
+
+@media (max-width: 560px) {
+  /* Тінь у 5px з'їдає праву межу екрана, коли картка займає всю ширину. */
+  .hb-serv-card { box-shadow: 3px 3px 0 var(--deep); }
+  .hb-close-alt { display: block; margin: 14px 0 0; }
+}

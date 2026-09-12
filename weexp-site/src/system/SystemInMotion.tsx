@@ -10,20 +10,44 @@ import { HEADLINE_PROOF } from '@/data/cases';
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
 const Symptoms = lazy(() => import('@/system/Symptoms').then((m) => ({ default: m.Symptoms })));
 const SystemExplorer = lazy(() => import('@/system/SystemExplorer').then((m) => ({ default: m.SystemExplorer })));
-const Architecture = lazy(() => import('@/system/Architecture').then((m) => ({ default: m.Architecture })));
-// Сканована повна карта системи: 8 систем + вкладені домени (акордеон).
-// Меседжинг за роллю ЛПР (§8): одна система — різні виграші.
-const AudienceByRole = lazy(() => import('@/system/AudienceByRole').then((m) => ({ default: m.AudienceByRole })));
-// Механіка довіри (§6): метод, прозорий процес, платформи, реальні сигнали.
-const Credibility = lazy(() => import('@/system/Credibility').then((m) => ({ default: m.Credibility })));
+/*
+ * Вісім блоків головної після героя лежать в одному модулі й вантажаться одним
+ * чанком: вони йдуть підряд, і сім окремих lazy-імпортів дали б сім запитів на
+ * одну прокрутку.
+ *
+ * Architecture, AudienceByRole і Credibility з головної пішли — не видалені, а
+ * перенесені на /people: це матеріал про НАС (чотири рівні пропозиції, виграші
+ * за роллю ЛПР, механіка довіри), і на головній він стояв між доказом і
+ * послугою, відсуваючи їх униз.
+ */
+const hb = () => import('@/system/HomeBlocks');
+const HomeProofLine = lazy(() => hb().then((m) => ({ default: m.HomeProofLine })));
+const HomeCases = lazy(() => hb().then((m) => ({ default: m.HomeCases })));
+const HomeServices = lazy(() => hb().then((m) => ({ default: m.HomeServices })));
+const HomeExpertise = lazy(() => hb().then((m) => ({ default: m.HomeExpertise })));
+const HowWeWork = lazy(() => hb().then((m) => ({ default: m.HowWeWork })));
+const AfterHandover = lazy(() => hb().then((m) => ({ default: m.AfterHandover })));
+const TeamStrip = lazy(() => hb().then((m) => ({ default: m.TeamStrip })));
+const ClosingCta = lazy(() => hb().then((m) => ({ default: m.ClosingCta })));
 const HomeFaq = lazy(() => import('@/system/HomeFaq').then((m) => ({ default: m.HomeFaq })));
 
 /**
- * WEEXP — THE SYSTEM IN MOTION (home-film, /system). Повна драматургія головної на
- * одному WebGL-об'єкті (Commerce System), керована скролом (scroll = камера):
- *   SYMPTOM → камера входить → 8 систем збираються (лейбли) → коренева причина
- *   (слабка ланка червоним) → CONNECT (частини як одне) → ACTIVATION (зростання перестає бути ручним)
- *   → INDEPENDENCE (CTA). Світле cinematic-полотно. Живий (темний) сайт не чіпаємо.
+ * Головна сторінка.
+ *
+ * ФІЛЬМ СКОРОЧЕНО З ШЕСТИ СЦЕН ДО ДВОХ. Було: герой → «e-commerce — це система
+ * з восьми частин» → «одна слабка ланка коштує грошей» → «частини мають
+ * працювати як одне» → «зростання перестає бути ручним» → фінальний екран із
+ * трьома кнопками. Пʼять екранів метафори й 680vh прокрутки до першого доказу,
+ * до першої ціни і до першої згадки про те, що саме людина може купити.
+ *
+ * Лишились дві сцени: герой і «одна слабка ланка коштує грошей» — єдина з
+ * чотирьох середніх, яка щось СТВЕРДЖУЄ, а не переказує метафору. Решта пішла
+ * не в архів, а вниз по сторінці, де ті самі речі сказані конкретно: вісім
+ * частин показує розбір систем, звʼязність — блок сценаріїв, «ручне зростання»
+ * — кейси з числами.
+ *
+ * 3D-обʼєкт лишився: він тримає перший екран і те, що людина запамʼятовує з
+ * бренду. Хід прокрутки — 240vh замість 680vh.
  */
 // Канонічні 8 систем — ті самі, що в діагностиці/радарі (lossModel.SYS), щоб сайт
 // був узгоджений: головна, калькулятор і звіти говорять про одні й ті ж системи.
@@ -49,25 +73,18 @@ export function SystemInMotion() {
   const labelEls = useRef<(HTMLDivElement | null)[]>([]);
   const sObj = useRef<HTMLDivElement>(null);          // обгортка 3D-об'єкта — гейтимо прозорість скролом
   const sVoid = useRef<HTMLDivElement>(null);
-  const sForm = useRef<HTMLDivElement>(null);
-  const sRoot = useRef<HTMLDivElement>(null);
-  const sConnect = useRef<HTMLDivElement>(null);
-  const sActivate = useRef<HTMLDivElement>(null);
-  const sCta = useRef<HTMLDivElement>(null);
+  const sRoot = useRef<HTMLDivElement>(null);   // друга й остання сцена
 
   useScrollScene(sec, (p, reduce) => {
     progress.current = p;
-    alerts.current = !reduce && p >= 0.30 && p <= 0.52 ? [BOTTLENECK] : [];
+    // Слабка ланка світиться червоним рівно поки видно сцену про неї.
+    alerts.current = !reduce && p >= 0.50 && p <= 0.92 ? [BOTTLENECK] : [];
     // 3D-об'єкт — ТІЛЬКИ підложка: схований на першому екрані (постер-герой чистий,
-    // і на мобайлі), далі проявляється як тонка «блакитрук»-текстура з низькою
-    // непрозорістю, щоб НЕ конкурувати з текстом і вписуватись у бруталіст-стиль.
-    if (sObj.current) sObj.current.style.opacity = (reduce ? 0 : band(p, 0.13, 0.2) * 0.3).toFixed(3);
-    set(sVoid.current, reduce ? 1 : seg(p, -1, 0, 0.07, 0.13), `translateY(${((1 - band(p, 0, 0.07)) * -3).toFixed(1)}vh)`);
-    set(sForm.current, reduce ? 1 : seg(p, 0.13, 0.18, 0.26, 0.32));
-    set(sRoot.current, reduce ? 1 : seg(p, 0.34, 0.39, 0.46, 0.52));
-    set(sConnect.current, reduce ? 1 : seg(p, 0.54, 0.59, 0.64, 0.70));
-    set(sActivate.current, reduce ? 1 : seg(p, 0.72, 0.77, 0.83, 0.88));
-    set(sCta.current, reduce ? 1 : seg(p, 0.90, 0.95, 1.1, 1.2));
+    // і на мобайлі), далі проявляється як тонка текстура з низькою непрозорістю,
+    // щоб НЕ конкурувати з текстом і вписуватись у бруталіст-стиль.
+    if (sObj.current) sObj.current.style.opacity = (reduce ? 0 : band(p, 0.30, 0.42) * 0.3).toFixed(3);
+    set(sVoid.current, reduce ? 1 : seg(p, -1, 0, 0.30, 0.42), `translateY(${((1 - band(p, 0, 0.22)) * -3).toFixed(1)}vh)`);
+    set(sRoot.current, reduce ? 1 : seg(p, 0.44, 0.55, 0.94, 1.12));
   });
 
   // rAF: вішаємо 7 лейблів систем на спроєктовані позиції вузлів. Видимі під час
@@ -112,15 +129,20 @@ export function SystemInMotion() {
           ))}
         </div>
 
-        {/* SYMPTOM / VOID */}
+        {/* ГЕРОЙ. Категорія → що саме робимо → чим це вимірюється → одна дія.
+            Доти тут стояли ДВІ кнопки поруч, «порахувати витік» і «залишити
+            заявку», — тобто людині пропонували обрати спосіб звернення ще до
+            того, як вона зрозуміла послугу. Кнопка лишилась одна; «залишити
+            заявку» нікуди не зникла — вона постійно стоїть у шапці. */}
         <div ref={sVoid} className="sysx-scene sysx-void">
-          <div className="sysx-kick">{t('Система зростання для e-commerce і D2C-брендів', 'A growth system for e-commerce & D2C brands')}</div>
-          <h1 className="sysx-display sysx-h1">{t('Продажі, які', 'Sales that')}<br /><span className="sysx-em">{t('не тримаються на вас', 'don’t rest on you')}</span></h1>
-          <p className="sysx-lead">{t('Діагностуємо вісім систем онлайн-продажів за даними CRM/ERP/GA4, рахуємо витік у грошах і збираємо їх в одну керовану. Система замість героїзму.', 'We diagnose the eight systems of online sales on CRM/ERP/GA4 data, put a number on the leak and assemble them into one managed system. A system instead of heroics.')}</p>
+          <div className="sysx-kick">{t('Операційний партнер для e-commerce і D2C-брендів', 'An operating partner for e-commerce & D2C brands')}</div>
+          <h1 className="sysx-display sysx-h1">{t('Перебудовуємо', 'We rebuild')}<br /><span className="sysx-em">{t('онлайн-продажі', 'online sales')}</span></h1>
+          <p className="sysx-sub">{t('Аудит · конверсія · повторні продажі · керовані процеси', 'Audit · conversion · repeat sales · managed processes')}</p>
+          <p className="sysx-lead">{t('Знаходимо, де саме витікають гроші, рахуємо це в гривнях за вашими CRM/ERP/GA4 — і перебудовуємо: від каталогу до аналітики.', 'We find exactly where the money leaks, put a number on it from your CRM/ERP/GA4 — and rebuild: from the catalog to the analytics.')}</p>
           <div className="sysx-cta-row sysx-void-cta">
             <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>
-            <Link to={lp('/contact')} className="sysx-cta">{t('Залишити заявку', 'Leave a request')} →</Link>
           </div>
+          <span className="sysx-reassure mono">{t('Безкоштовно · ~2 хв · без реєстрації та картки', 'Free · ~2 min · no sign-up, no card')}</span>
           {/* Три числа з реальних кейсів — перший екран не мав жодного доказу. */}
           <ul className="sysx-proofstrip mono">
             {HEADLINE_PROOF.map((h) => (
@@ -132,76 +154,50 @@ export function SystemInMotion() {
           <Link to={lp('/proof') + '#method'} className="sysx-proofhow mono">
             {t('Як ми рахуємо і перевіряємо ці цифри', 'How we calculate and verify these numbers')} →
           </Link>
-          <span className="sysx-reassure mono">{t('Безкоштовно · ~2 хв · без реєстрації та картки', 'Free · ~2 min · no sign-up, no card')}</span>
           <span className="sysx-scrollhint mono">{t('↓ або погортайте, як це працює', '↓ or scroll to see how it works')}</span>
         </div>
 
-        {/* FORM — 8 систем збираються */}
-        <div ref={sForm} className="sysx-scene sysx-form" style={{ opacity: 0 }}>
-          <h2 className="sysx-display sysx-h2">{t('E-commerce — це ', 'E-commerce is a ')}<span className="sysx-em">{t('система', 'system')}</span><br />{t('із восьми частин.', 'of eight parts.')}</h2>
-          <p className="sysx-lead">{t('Стратегія, комерція, попит і клієнт, досвід, операції, дані, організація й експансія — вони працюють лише разом.', 'Strategy, commerce, demand & customer, experience, operations, data, organization and expansion — they only work together.')}</p>
-        </div>
-
-        {/* ROOT CAUSE — слабка ланка */}
+        {/* ROOT CAUSE — єдина сцена, що лишилась від середини фільму:
+            вона щось стверджує, а не переказує метафору. */}
         <div ref={sRoot} className="sysx-scene sysx-root" style={{ opacity: 0 }}>
           <h2 className="sysx-display sysx-h2">{t('Одна слабка ланка', 'One weak link')}<br /><span className="sysx-em sysx-em-alert">{t('коштує грошей', 'costs money')}</span>.</h2>
-          <p className="sysx-lead">{t('Система сильна настільки, наскільки сильна її найслабша частина. Саме там витікає виторг.', 'A system is only as strong as its weakest part. That is exactly where revenue leaks.')}</p>
-        </div>
-
-        {/* CONNECT */}
-        <div ref={sConnect} className="sysx-scene sysx-connect" style={{ opacity: 0 }}>
-          <h2 className="sysx-display sysx-h2">{t('Частини мають', 'The parts must')}<br />{t('працювати як ', 'work as ')}<span className="sysx-em">{t('одне', 'one')}</span>.</h2>
-          <p className="sysx-lead">{t("Не вісім інструментів окремо — одна зв'язана система, де кожна дія підсилює наступну.", 'Not eight separate tools — one connected system where each action reinforces the next.')}</p>
-        </div>
-
-        {/* ACTIVATION */}
-        <div ref={sActivate} className="sysx-scene sysx-activate" style={{ opacity: 0 }}>
-          <h2 className="sysx-display sysx-h2">{t('Коли система працює —', 'When the system works —')}<br />{t('зростання ', 'growth stops ')}<span className="sysx-em">{t('перестає бути ручним', 'being manual')}</span>.</h2>
-          <p className="sysx-lead">{t('Менша вартість клієнта, органіка, повторні продажі. Вітрина стає активом, а не статтею витрат.', 'Lower customer cost, organic traffic, repeat sales. The storefront becomes an asset, not a cost line.')}</p>
-        </div>
-
-        {/* CTA — INDEPENDENCE */}
-        <div ref={sCta} className="sysx-scene sysx-ctaScene" style={{ opacity: 0 }}>
-          <div className="sysx-kick">Independence Score</div>
-          <h2 className="sysx-display sysx-h2">{t('Наскільки незалежний', 'How independent')}<br />{t('ваш ', 'is your ')}<span className="sysx-em">e-commerce</span>?</h2>
-          <p className="sysx-lead">{t('Independence Score — наш стандарт зрілості: наскільки бізнес здатний рости без вас. Безкоштовний експрес-аудит дає першу оцінку за дві хвилини — Business Health 0–100 і систему, яка тягне вниз.', 'The Independence Score is our maturity standard: how far the business can grow without you. The free express audit gives the first estimate in two minutes — Business Health 0–100 and the system dragging it down.')}</p>
-          <div className="sysx-proofbar">
-            <span><b>17</b> {t('трансформацій', 'transformations')}</span>
-            <i aria-hidden="true" />
-            <span><b>8</b> {t('систем під дахом', 'systems under one roof')}</span>
-            <i aria-hidden="true" />
-            <span>{t('e-commerce і ', 'e-commerce & ')}<b>D2C</b></span>
-          </div>
-          <div className="sysx-cta-row">
-            <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>
-            <Link to={lp('/proof')} className="sysx-cta">{t('Наші перемоги', 'Our wins')} →</Link>
-            <Link to={lp('/contact')} className="sysx-cta">{t('Залишити заявку', 'Leave a request')} →</Link>
-          </div>
+          <p className="sysx-lead">{t('Система сильна настільки, наскільки сильна її найслабша частина. Саме там витікає виторг — і саме це ми шукаємо першим.', 'A system is only as strong as its weakest part. That is exactly where revenue leaks — and that is what we look for first.')}</p>
         </div>
 
         {/* Технологічний стек — напівпрозорий рядок по низу сцени (частина блоку) */}
         <PartnerMarquee />
       </div>
     </section>
-    {/* Вхід з боку клієнта — одразу після героя. Доти другим екраном ішов
-        розбір восьми систем, тобто наша таксономія: людина мусила впізнати
-        себе в назві «Комерційна ефективність». Тепер спершу симптом, і вже
-        він веде в систему. */}
-    <Suspense fallback={null}><Symptoms /></Suspense>
-    {/* Логічне продовження того ж полотна — інтерактивний розбір систем (8 систем).
-        SystemsFilm прибрано з головної: дублював цей самий розбір 8 систем нижче
-        (заголовок «Де ваш бізнес втрачає гроші»). Лишаємо один — інтерактивний вище. */}
+    {/*
+      * ПОРЯДОК БЛОКІВ І Є ЗМІСТОМ ПЕРЕБУДОВИ.
+      *
+      * Доказ → послуга → чим лагодимо → з чим приходять → де це живе → як
+      * працюємо → що буде після → хто це робить → заперечення → одна дія.
+      *
+      * Було навпаки: методологія (вісім систем, чотири рівні пропозиції,
+      * меседжинг за роллю, механіка довіри), а кейсів і цін на головній не
+      * було взагалі — до них вів один рядок дрібним шрифтом.
+      */}
+    <Suspense fallback={null}>
+      <HomeProofLine />
+      <HomeCases />
+      <HomeServices />
+      <HomeExpertise />
+    </Suspense>
+    {/* Вхід з боку клієнта: репліка власника, а не назва системи. Стоїть перед
+        розбором восьми систем — інакше першим, що людина читає про причину, знову
+        стає наша таксономія. */}
+    <Suspense fallback={null}><Symptoms compact /></Suspense>
+    {/* Зона робіт: вісім систем онлайн-продажів, інтерактивний розбір. */}
     <div id="systems"><Suspense fallback={null}><SystemExplorer /></Suspense></div>
-    {/* Чотири рівні пропозиції: людина щойно побачила, ЩО ми будуємо — далі
-        хто будує, як заходимо і чим міряємо. Три сторінки, до яких з головної
-        не було шляху, тепер стоять в одному ланцюгу. */}
-    <Suspense fallback={null}><Architecture /></Suspense>
-    {/* Меседжинг за роллю ЛПР: одна система — різні виграші */}
-    <Suspense fallback={null}><AudienceByRole /></Suspense>
-    {/* Механіка довіри: метод, прозорий процес, платформи */}
-    <Suspense fallback={null}><Credibility /></Suspense>
+    <Suspense fallback={null}>
+      <HowWeWork />
+      <AfterHandover />
+      <TeamStrip />
+    </Suspense>
     {/* FAQ — закриває заперечення + FAQPage-розмітка */}
     <Suspense fallback={null}><HomeFaq /></Suspense>
+    <Suspense fallback={null}><ClosingCta /></Suspense>
     </>
   );
 }

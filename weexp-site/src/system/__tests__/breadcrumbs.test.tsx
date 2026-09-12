@@ -20,13 +20,13 @@ describe('хлібні крихти', () => {
   it('рисуются на обычном маршруте', () => {
     at('/proof');
     expect(screen.getByLabelText('Хлібні крихти')).toBeTruthy();
-    expect(screen.getByText('Наші перемоги')).toBeTruthy();
+    expect(screen.getByText('Кейси')).toBeTruthy();
   });
 
   it('рисуются и когда URL пришёл с конечным слешем', () => {
     at('/proof/');
     expect(screen.getByLabelText('Хлібні крихти')).toBeTruthy();
-    expect(screen.getByText('Наші перемоги')).toBeTruthy();
+    expect(screen.getByText('Кейси')).toBeTruthy();
   });
 
   it('то же в английской версии', () => {
