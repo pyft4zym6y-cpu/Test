@@ -15,7 +15,10 @@
     "/",
     "/contact",
     "/diagnose",
-    "/proof"
+    "/proof",
+    "/services/managed",
+    "/services",
+    "/services/consulting"
   ],
   "published": "2026-09-14",
   "readMin": 7,

@@ -77,7 +77,7 @@ export function CasesFilm() {
               мала спершу зрозуміти, що потрапила туди, куди йшла. Саме
               твердження лишилось — рядком нижче. */}
           <h1 className="sysx-display sysx-h1">{t('Кейси', 'Cases')}</h1>
-          <p className="sysx-sub">{t('Систему видно в цифрах: дельти до → після з CRM, ERP і GA4', 'You see the system in the numbers: before → after deltas from CRM, ERP and GA4')}</p>
+          <p className="sysx-sub">{t('Систему видно в цифрах', 'You see the system in the numbers')}</p>
           <p className="sysx-lead">{t('Не обіцянки — дельти до→після з CRM, ERP і GA4. Кожен кейс анонімний, але число реальне. Гортайте — сім флагманських кейсів.', 'Not promises — before→after deltas from CRM, ERP and GA4. Every case is anonymized, but the number is real. Scroll — seven flagship cases.')}</p>
           <span className="sysx-scrollhint mono">{t('↓ до→після', '↓ before→after')}</span>
         </div>

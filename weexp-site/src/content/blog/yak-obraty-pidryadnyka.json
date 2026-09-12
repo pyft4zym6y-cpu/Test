@@ -15,7 +15,9 @@
     "/pricing",
     "/contact",
     "/people",
-    "/proof"
+    "/proof",
+    "/services",
+    "/services/consulting"
   ],
   "published": "2026-09-12",
   "readMin": 7,

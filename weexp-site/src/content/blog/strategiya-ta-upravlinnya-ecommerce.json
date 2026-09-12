@@ -15,7 +15,9 @@
     "/systems/strategy-management",
     "/systems",
     "/people",
-    "/"
+    "/",
+    "/services/consulting",
+    "/services/managed"
   ],
   "published": "2026-09-09",
   "readMin": 7,

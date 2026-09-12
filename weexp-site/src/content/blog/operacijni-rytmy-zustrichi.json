@@ -15,7 +15,9 @@
     "/systems/organization-operating-model",
     "/systems/strategy-management",
     "/systems/data-technology",
-    "/people"
+    "/people",
+    "/services/consulting",
+    "/services/managed"
   ],
   "published": "2026-09-01",
   "readMin": 7,

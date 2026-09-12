@@ -60,7 +60,10 @@
       "/",
       "/contact",
       "/diagnose",
-      "/proof"
+      "/proof",
+      "/services/managed",
+      "/services",
+      "/services/consulting"
     ],
     "published": "2026-09-14",
     "readMin": 7,
@@ -83,7 +86,8 @@
       "/",
       "/people",
       "/pricing",
-      "/contact"
+      "/contact",
+      "/services"
     ],
     "published": "2026-09-13",
     "readMin": 7,
@@ -105,7 +109,9 @@
       "/pricing",
       "/contact",
       "/people",
-      "/proof"
+      "/proof",
+      "/services",
+      "/services/consulting"
     ],
     "published": "2026-09-12",
     "readMin": 7,
@@ -127,7 +133,9 @@
       "/diagnose",
       "/audit-pack",
       "/",
-      "/contact"
+      "/contact",
+      "/services",
+      "/services/audit"
     ],
     "published": "2026-09-11",
     "readMin": 7,
@@ -150,7 +158,9 @@
       "/diagnose",
       "/pricing",
       "/",
-      "/contact"
+      "/contact",
+      "/services",
+      "/services/audit"
     ],
     "published": "2026-09-10",
     "readMin": 8,
@@ -172,7 +182,9 @@
       "/systems/strategy-management",
       "/systems",
       "/people",
-      "/"
+      "/",
+      "/services/consulting",
+      "/services/managed"
     ],
     "published": "2026-09-09",
     "readMin": 7,
@@ -195,7 +207,9 @@
       "/",
       "/diagnose",
       "/audit-pack",
-      "/proof"
+      "/proof",
+      "/services",
+      "/services/audit"
     ],
     "published": "2026-09-08",
     "readMin": 7,
@@ -218,7 +232,8 @@
       "/",
       "/systems/strategy-management",
       "/diagnose",
-      "/proof"
+      "/proof",
+      "/services/audit"
     ],
     "published": "2026-09-07",
     "readMin": 8,
@@ -354,7 +369,9 @@
       "/systems/organization-operating-model",
       "/systems/strategy-management",
       "/systems/data-technology",
-      "/people"
+      "/people",
+      "/services/consulting",
+      "/services/managed"
     ],
     "published": "2026-09-01",
     "readMin": 7,
@@ -377,7 +394,9 @@
       "/systems/organization-operating-model",
       "/people",
       "/systems/strategy-management",
-      "/pricing"
+      "/pricing",
+      "/services/consulting",
+      "/services/managed"
     ],
     "published": "2026-08-31",
     "readMin": 7,
@@ -400,7 +419,9 @@
       "/systems/organization-operating-model",
       "/systems/strategy-management",
       "/people",
-      "/expansion/automation"
+      "/expansion/automation",
+      "/services/consulting",
+      "/services/managed"
     ],
     "published": "2026-08-30",
     "readMin": 7,
@@ -422,7 +443,8 @@
       "/systems/organization-operating-model",
       "/systems/strategy-management",
       "/people",
-      "/systems"
+      "/systems",
+      "/services/managed"
     ],
     "published": "2026-08-29",
     "readMin": 8,
@@ -445,7 +467,8 @@
       "/systems/data-technology",
       "/expansion/data-growth",
       "/systems/strategy-management",
-      "/diagnose"
+      "/diagnose",
+      "/services/audit"
     ],
     "published": "2026-08-28",
     "readMin": 7,
@@ -1001,7 +1024,8 @@
       "/diagnose",
       "/pricing",
       "/audit-pack",
-      "/systems"
+      "/systems",
+      "/services/audit"
     ],
     "published": "2026-08-04",
     "readMin": 6,

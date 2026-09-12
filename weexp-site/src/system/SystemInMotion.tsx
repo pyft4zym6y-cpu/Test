@@ -78,13 +78,19 @@ export function SystemInMotion() {
   useScrollScene(sec, (p, reduce) => {
     progress.current = p;
     // Слабка ланка світиться червоним рівно поки видно сцену про неї.
-    alerts.current = !reduce && p >= 0.50 && p <= 0.92 ? [BOTTLENECK] : [];
+    alerts.current = !reduce && p >= 0.60 ? [BOTTLENECK] : [];
     // 3D-об'єкт — ТІЛЬКИ підложка: схований на першому екрані (постер-герой чистий,
     // і на мобайлі), далі проявляється як тонка текстура з низькою непрозорістю,
     // щоб НЕ конкурувати з текстом і вписуватись у бруталіст-стиль.
-    if (sObj.current) sObj.current.style.opacity = (reduce ? 0 : band(p, 0.30, 0.42) * 0.3).toFixed(3);
-    set(sVoid.current, reduce ? 1 : seg(p, -1, 0, 0.30, 0.42), `translateY(${((1 - band(p, 0, 0.22)) * -3).toFixed(1)}vh)`);
-    set(sRoot.current, reduce ? 1 : seg(p, 0.44, 0.55, 0.94, 1.12));
+    if (sObj.current) sObj.current.style.opacity = (reduce ? 0 : band(p, 0.42, 0.55) * 0.3).toFixed(3);
+    set(sVoid.current, reduce ? 1 : seg(p, -1, 0, 0.42, 0.54), `translateY(${((1 - band(p, 0, 0.30)) * -3).toFixed(1)}vh)`);
+    /*
+     * Верхня межа згасання — рівно 1.0, а не 1.12. Прогрес сцени обрізаний
+     * одиницею: при 1.12 друга сцена доїжджала до низу фільму на 0.67
+     * непрозорості й ішла з екрана напівпрозорою. Перевірено проганянням
+     * прокрутки: на 0 / 0.25 / 0.5 / 0.75 / 0.95 ходу.
+     */
+    set(sRoot.current, reduce ? 1 : seg(p, 0.56, 0.68, 0.90, 1.0));
   });
 
   // rAF: вішаємо 7 лейблів систем на спроєктовані позиції вузлів. Видимі під час

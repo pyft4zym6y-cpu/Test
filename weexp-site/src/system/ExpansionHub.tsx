@@ -30,8 +30,8 @@ export function ExpansionHub() {
           <span className="sysx-kick">{t('Девʼять напрямів · зона робіт', 'Nine areas · scope of work')}</span>
           <h1 className="sysx-display xhub-h1">{t('Наші ', 'Our ')}<span className="hl">{t('експертизи', 'expertise')}</span></h1>
           <p className="sysx-lead">{t('Девʼять напрямів, якими ми закриваємо задачі. Це не окремі продукти: експертизи входять у будь-який із трьох форматів співпраці — змінюється тільки те, хто тримає кермо.', 'Nine areas through which we close the work. These are not separate products: the expertise goes into any of the three cooperation formats — only who holds the wheel changes.')}</p>
-          <p className="xhub-arch">
-            <Link to={lp('/services')} className="xhub-arch-link mono">{t('Формати роботи', 'Ways to work')} →</Link>
+          <p className="xhub-more-row">
+            <Link to={lp('/services')}>{t('Формати роботи', 'Ways to work')} →</Link>
           </p>
           {/* Перевірена мережа — пояснення, а не назва сторінки: доти цей абзац
               стояв заголовком і людина не розуміла, куди потрапила. */}

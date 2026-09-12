@@ -28,8 +28,16 @@ const PAGES = (() => {
   const sys = [...xray.matchAll(/num: '\d+', slug: '([a-z-]+)'/g)].map((m) => `/systems/${m[1]}`);
   const exp = [...readFileSync(join(ROOT, 'src', 'system', 'expertises.ts'), 'utf8')
     .matchAll(/slug: '([a-z-]+)'/g)].map((m) => `/expansion/${m[1]}`);
+  /*
+   * Сторінки форматів співпраці виводяться з data/services.ts, а не
+   * набираються тут руками: доданий формат мав би отримати блок статей разом
+   * із власною сторінкою, а мовчазний пропуск — це рівно та хвороба, від якої
+   * цей тест і поставлений.
+   */
+  const svc = [...readFileSync(join(ROOT, 'src', 'data', 'services.ts'), 'utf8')
+    .matchAll(/slug: '([a-z-]+)',\n\s*n: '/g)].map((m) => `/services/${m[1]}`);
   return ['/', '/systems', '/expansion', '/proof', '/people', '/pricing',
-          '/diagnose', '/contact', '/audit-pack', ...sys, ...exp];
+          '/diagnose', '/contact', '/audit-pack', '/services', ...svc, ...sys, ...exp];
 })();
 
 const MIN_TOTAL = 40;

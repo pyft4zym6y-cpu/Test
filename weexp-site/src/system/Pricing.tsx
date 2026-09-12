@@ -113,7 +113,7 @@ export function Pricing() {
             все стояло однією колонкою — заголовок ламався на чотири рядки, а
             права половина екрана лишалась порожньою. */}
         <header className="pric-head">
-          <span className="sysx-kick pric-head-full">{t('Формати співпраці · хто відповідає за результат', 'Cooperation formats · who is responsible for the result')}</span>
+          <span className="sysx-kick pric-head-full">{t('Відкриті ціни · без прихованих умов', 'Open prices · no hidden terms')}</span>
           {/* Сторінку відкривають, щоб побачити суми. Заголовок «Три формати —
               за рівнем нашої відповідальності» відповідав на інше питання, а
               людина, що натиснула «Ціни», спершу читала тезу про нас.

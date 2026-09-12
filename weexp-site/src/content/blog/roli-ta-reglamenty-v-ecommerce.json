@@ -16,7 +16,9 @@
     "/systems/organization-operating-model",
     "/systems/strategy-management",
     "/people",
-    "/expansion/automation"
+    "/expansion/automation",
+    "/services/consulting",
+    "/services/managed"
   ],
   "published": "2026-08-30",
   "readMin": 7,

@@ -71,9 +71,3 @@
 .srvf-pack-link { font-size: 12px; letter-spacing: .04em; text-transform: uppercase;
   color: var(--deep); text-decoration: underline; text-underline-offset: 3px; }
 .srvf-pack-link:hover { color: var(--red-ink); }
-
-/* Посилання «формати роботи» з хаба експертиз: експертиза — зона робіт, а
-   купують формат. Без цього переходу два пункти меню поруч виглядають як два
-   конкурентні переліки того самого. */
-.xhub-arch-link { color: var(--red-ink); text-decoration: underline; text-underline-offset: 3px;
-  font-size: 12px; letter-spacing: .05em; text-transform: uppercase; }

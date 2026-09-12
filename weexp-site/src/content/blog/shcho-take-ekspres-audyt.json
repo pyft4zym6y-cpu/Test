@@ -15,7 +15,9 @@
     "/diagnose",
     "/audit-pack",
     "/",
-    "/contact"
+    "/contact",
+    "/services",
+    "/services/audit"
   ],
   "published": "2026-09-11",
   "readMin": 7,

@@ -16,7 +16,8 @@
     "/systems/data-technology",
     "/expansion/data-growth",
     "/systems/strategy-management",
-    "/diagnose"
+    "/diagnose",
+    "/services/audit"
   ],
   "published": "2026-08-28",
   "readMin": 7,

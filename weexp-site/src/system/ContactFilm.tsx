@@ -103,8 +103,8 @@ export function ContactFilm() {
               так само називається й сторінка. Було гасло «Зростання — це
               система»: людина тиснула одне, а потрапляла на інше. */}
           <h1 className="sysx-display sysx-calc-h1">{t('Залишити ', 'Leave a ')}<span className="sysx-em">{t('заявку', 'request')}</span></h1>
-          <p className="sysx-sub">{t('Повернемося з першим зрізом розриву у грошах — за вашими даними', 'We come back with the first cut of the gap in money — from your data')}</p>
-          <p className="sysx-lead">{t('Залиште контакт — повернемося з першим зрізом розриву у грошах. Для e-commerce виробників і D2C-брендів. Це ще не робота, це діагноз.', 'Leave your contact — we’ll come back with a first read on the gap in money. For e-commerce manufacturers and D2C brands. This isn’t the work yet — it’s a diagnosis.')}</p>
+          <p className="sysx-sub">{t('Це ще не робота — це діагноз', 'This is not work yet — this is a diagnosis')}</p>
+          <p className="sysx-lead">{t('Залиште контакт — повернемося з першим зрізом розриву у грошах. Для e-commerce виробників і D2C-брендів.', 'Leave your contact — we’ll come back with a first read on the gap in money. For e-commerce manufacturers and D2C brands.')}</p>
         </header>
 
         {status === 'ok' ? (

@@ -19,7 +19,8 @@
     "/diagnose",
     "/pricing",
     "/audit-pack",
-    "/systems"
+    "/systems",
+    "/services/audit"
   ],
   "published": "2026-08-04",
   "readMin": 6,
