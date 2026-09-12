@@ -71,7 +71,8 @@ export function CasesFilm() {
 
         {/* INTRO */}
         <div ref={intro} className="sysx-scene sysx-void">
-          <div className="sysx-kick">{t('WEEXP — The Evidence · 17 трансформацій', 'WEEXP — The Evidence · 17 transformations')}</div>
+          {/* Число — з переліку кейсів, а не з рядка. */}
+          <div className="sysx-kick">{t(`WEEXP — The Evidence · ${CASES.length} трансформацій`, `WEEXP — The Evidence · ${CASES.length} transformations`)}</div>
           {/* Заголовок збігається з пунктом меню й крихтою. «Систему видно в
               цифрах» було твердженням про нас; людина, яка натиснула «Кейси»,
               мала спершу зрозуміти, що потрапила туди, куди йшла. Саме

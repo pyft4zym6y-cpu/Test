@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { useT, useLp, useLang } from '@/i18n';
 import { TEAM, localizeRole } from '@/data/team';
+import { CASES } from '@/data/cases';
 import { L } from '@/system/expertises';
 import { useJsonLd, ORIGIN } from '@/lib/seo';
 import './system.css';
@@ -21,12 +22,25 @@ const AudienceByRole = lazy(() => import('@/system/AudienceByRole').then((m) => 
 const Credibility = lazy(() => import('@/system/Credibility').then((m) => ({ default: m.Credibility })));
 
 /**
- * «Про нас» (/people). Місія, візія, цінності + статусний блок власника +
- * глибина експертизи агентства (9 напрямів, а не 18 вузьких посад). UA/EN.
+ * «Про нас» (/people). Місія, візія, цінності, статусний блок власника і
+ * глибина партнерської мережі. UA/EN.
+ *
+ * Коментар тут двічі обіцяв «9 напрямів» — і в шапці файлу, і над самим
+ * масивом, — тоді як у масиві їх одинадцять і сторінка показувала 11. Код
+ * казав одне, коментар інше: рівно та хвороба, через яку сайт уже одного разу
+ * довелось перебирати.
  */
 const FOUNDER = TEAM[0];
 
-// 9 укрупнених напрямів експертизи (кожен — напрям + пул спеціалістів під задачу).
+/*
+ * Компетенції партнерської мережі — кожна з власним пулом спеціалістів.
+ *
+ * Раніше вони називались «напрямами експертизи» — тим самим словом, яким
+ * називаються девʼять ЕКСПЕРТИЗ на /expansion. Виходило, що сайт в одному
+ * місці каже «девʼять напрямів», а в іншому «11 напрямів»: два різні переліки
+ * під однією назвою, і людина мала сама здогадатись, що це не суперечність.
+ * Тут — компетенції, там — експертизи.
+ */
 const AREAS: { t: [string, string]; d: [string, string] }[] = [
   { t: ['Head of E-commerce', 'Head of E-commerce'], d: ['Власник результату: зводить усі системи до зростання й P&L.', 'Owner of the result: aligns all systems toward growth and P&L.'] },
   { t: ['E-commerce Strategy', 'E-commerce Strategy'], d: ['Стратегія, позиціонування, модель росту й пріоритети.', 'Strategy, positioning, growth model and priorities.'] },
@@ -91,8 +105,11 @@ export function About() {
             <span className="sysx-kick">{t('Коротко', 'In short')}</span>
             <ul className="about-facts">
               <li><b>8</b><span>{t('систем комерції в одній керованій', 'commerce systems in one managed whole')}</span></li>
-              <li><b>11</b><span>{t('напрямів експертизи з власним пулом спеціалістів', 'practices, each with its own pool of specialists')}</span></li>
-              <li><b>17</b><span>{t('трансформацій, доведених до вимірюваного результату', 'transformations taken to a measurable result')}</span></li>
+              {/* Числа рахуються з переліків. Набрані руками, вони збігались із
+                  джерелом лише доти, доки джерело не змінять: наступний кейс
+                  тихо лишив би на сторінці «17». */}
+              <li><b>{AREAS.length}</b><span>{t('компетенцій із власним пулом спеціалістів', 'competencies, each with its own pool of specialists')}</span></li>
+              <li><b>{CASES.length}</b><span>{t('трансформацій, доведених до вимірюваного результату', 'transformations taken to a measurable result')}</span></li>
               <li><b>US · EU · MENA</b><span>{t('ринки, на яких працює команда', 'markets the team works in')}</span></li>
             </ul>
             <p className="about-facts-note mono">{t('Кожне число нижче на сторінці розкрито: хто відповідає, за що і з яким результатом.', 'Every number is unpacked further down: who is accountable, for what, and with what result.')}</p>
@@ -169,7 +186,7 @@ export function About() {
             </div>
           </div>
 
-          <span className="about-roster-lab mono">{t('Глибина експертизи агентства — 11 напрямів, кожен із власним пулом спеціалістів під вашу задачу:', 'The agency’s depth of expertise — 11 practices, each with its own pool of specialists for your task:')}</span>
+          <span className="about-roster-lab mono">{t(`Глибина партнерської мережі — ${AREAS.length} компетенцій, кожна з власним пулом спеціалістів під вашу задачу:`, `Depth of the partner network — ${AREAS.length} competencies, each with its own pool of specialists for your task:`)}</span>
           <div className="about-roster about-roster-3">
             {AREAS.map((a, i) => (
               <div key={a.t[0]} className="about-role-c about-area-c">
