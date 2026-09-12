@@ -195,7 +195,7 @@ export function buildDash(
    * читається як черга: спершу те, що блокує нас, потім те, що робимо ми.
    */
   const next: NextStep = !ex
-    ? { owner: 'you', to: 'audits', text: ['Пройти експрес-аудит — ~2 хвилини', 'Take the express audit — ~2 minutes'] }
+    ? { owner: 'you', to: 'audits', text: ['Пройти експрес-розрахунок — безкоштовно', 'Run the express estimate — free'] }
     : pending.length
       ? { owner: 'you', to: pending[0].to,
           text: [`Закрити ${pending.length} пункт${plural(pending.length, '', 'и', 'ів')} готовності — без них розбір стоїть`,

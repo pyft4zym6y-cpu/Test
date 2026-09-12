@@ -4,6 +4,7 @@ import { applySeo, useJsonLd } from '@/lib/seo';
 import { SERVICES, serviceBySlug, servicePath, fillCounts } from '@/data/services';
 import { PROCESS } from '@/data/process';
 import { AUDIT_BLOCKS } from '@/data/auditPack';
+import { AuditScope } from '@/system/AuditScope';
 import { TOTAL_DOMAINS } from '@/data/xray';
 import './system.css';
 import './home.css';
@@ -106,6 +107,10 @@ export function ServiceFormat() {
             <p className="srvf-txt"><b>{s.resp[i]}</b></p>
           </div>
         </div>
+
+        {/* Перелік видів аудиту — спільний компонент: той самий, що на
+            /diagnose. Написати його двічі означало б завести другу правду. */}
+        {s.slug === 'audit' && <AuditScope />}
 
         {s.slug === 'audit' && (
           <div className="srvf-pack">

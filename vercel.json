@@ -169,11 +169,6 @@
       "permanent": true
     },
     {
-      "source": "/services",
-      "destination": "/systems",
-      "permanent": true
-    },
-    {
       "source": "/system",
       "destination": "/",
       "permanent": true
@@ -200,16 +195,6 @@
     },
     {
       "source": "/cases",
-      "destination": "/proof",
-      "permanent": true
-    },
-    {
-      "source": "/blog/:path*",
-      "destination": "/proof",
-      "permanent": true
-    },
-    {
-      "source": "/blog",
       "destination": "/proof",
       "permanent": true
     },
@@ -261,11 +246,6 @@
     {
       "source": "/en/expansion/web",
       "destination": "/en/expansion/technology",
-      "permanent": true
-    },
-    {
-      "source": "/manage",
-      "destination": "/admin",
       "permanent": true
     },
     {

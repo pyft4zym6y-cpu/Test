@@ -125,7 +125,7 @@ export function CasesFilm() {
         <div ref={outro} className="sysx-scene sysx-ctaScene">
           <div className="sysx-kick">{t('Ваша трансформація', 'Your transformation')}</div>
           <h2 className="sysx-display sysx-h2">{t('Наступне число', 'The next number')}<br />{t('у стрічці — ', 'in the reel is ')}<span className="sysx-em">{t('ваше', 'yours')}</span>.</h2>
-          <p className="sysx-lead">{t('Почніть із діагнозу: за 2 хвилини побачите, яка система дасть найбільшу дельту саме вам.', 'Start with the diagnosis: in 2 minutes you\'ll see which system delivers the biggest delta for you.')}</p>
+          <p className="sysx-lead">{t('Почніть із діагнозу: безкоштовний розрахунок покаже, яка система дасть найбільшу дельту саме вам.', 'Start with the diagnosis: a free estimate shows which system delivers the biggest delta for you.')}</p>
           <div className="sysx-cta-row">
             <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Знайти свою дельту →', 'Find your delta →')}</Link>
             <Link to={lp('/contact')} className="sysx-cta">{t('Залишити заявку', 'Leave a request')} <span aria-hidden="true">→</span></Link>

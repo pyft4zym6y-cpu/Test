@@ -731,7 +731,7 @@ function Overview({ express, rec, go }: { express: ExpressAudit | null; rec: Dia
             </>
           ) : (
             <>
-              <p className="dash-empty">{t('Скільки виторгу витікає щороку — ~2 хвилини.', 'How much revenue leaks each year — ~2 minutes.')}</p>
+              <p className="dash-empty">{t('Скільки виторгу витікає щороку — безкоштовний розрахунок.', 'How much revenue leaks each year — a free estimate.')}</p>
               <Link className="sysx-cta is-primary" to={lp('/diagnose')}>{t('Порахувати витік', 'Calculate the leak')} →</Link>
             </>
           )}
@@ -887,7 +887,7 @@ function Audits({ express, rec, user, go, onDelete }: { express: ExpressAudit | 
                   </button>
                 </div>
                 {showRes && <ExpressResultView express={express} />}</>
-            : <><p className="cab-sub">{t('Швидка оцінка втрат за 7 показниками — ~2 хвилини.', 'A quick loss estimate across 7 metrics — ~2 minutes.')}</p><Link className="sysx-cta is-primary" to={lp('/diagnose')}>{t('Пройти експрес-аудит →', 'Take the express audit →')}</Link></>}
+            : <><p className="cab-sub">{t('Швидка оцінка втрат за 7 показниками — орієнтир перед глибоким аудитом.', 'A quick loss estimate across 7 metrics — a pointer before the deep audit.')}</p><Link className="sysx-cta is-primary" to={lp('/diagnose')}>{t('Пройти експрес-аудит →', 'Take the express audit →')}</Link></>}
         </div>
         <div className="cab-audit">
           <div className="cab-audit-top"><b>{t('Глибокий аудит', 'Deep audit')}</b><span className={`cab-badge mono tst-${ui.cls}`}>{ui.badge}</span></div>

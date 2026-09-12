@@ -71,3 +71,25 @@
 .srvf-pack-link { font-size: 12px; letter-spacing: .04em; text-transform: uppercase;
   color: var(--deep); text-decoration: underline; text-underline-offset: 3px; }
 .srvf-pack-link:hover { color: var(--red-ink); }
+
+/* ── Склад аудиту: види мовою клієнта ─────────────────────────────────────── */
+.srvf-kinds { margin-top: clamp(30px, 4vw, 52px); border-top: 2.5px solid var(--deep); padding-top: clamp(22px, 3vw, 36px); }
+.srvf-kinds-l { margin-bottom: clamp(18px, 2.4vw, 28px); max-width: var(--measure); }
+.srvf-kind-list { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(12px, 1.6vw, 20px);
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); }
+.srvf-kind { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start;
+  border-top: 1px solid rgba(20, 18, 16, .16); padding-top: 12px; }
+.srvf-kind-n { font-style: normal; font-size: 12px; letter-spacing: .08em; color: var(--red-ink); padding-top: 3px; }
+.srvf-kind b { display: block; font-size: 15.5px; line-height: 1.2; margin-bottom: 5px; }
+.srvf-kind p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--graphite); }
+
+/* Блок складу аудиту на /diagnose: власна оболонка, бо там він стоїть окремою
+   секцією, а не всередині сторінки формату. */
+.srvf-scope { border-top: 2.5px solid var(--deep); background: var(--cream-2); }
+.srvf-scope-in { max-width: var(--page-w); margin: 0 auto; padding: clamp(40px, 5vw, 76px) clamp(18px, 4vw, 40px); }
+.srvf-scope.is-compact .srvf-kind { border-top: none; padding-top: 0; }
+.srvf-scope.is-compact .srvf-kind-list { gap: 10px clamp(12px, 1.6vw, 24px); }
+.srvf-scope-foot { margin-top: clamp(22px, 3vw, 34px); display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
+/* Усередині сторінки формату оболонка не потрібна — секція вже в .srv-in. */
+.srv .srvf-scope { border-top: 2.5px solid var(--deep); background: transparent; }
+.srv-in .srvf-scope-in { padding-left: 0; padding-right: 0; }

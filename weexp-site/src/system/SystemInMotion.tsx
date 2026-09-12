@@ -148,7 +148,7 @@ export function SystemInMotion() {
           <div className="sysx-cta-row sysx-void-cta">
             <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>
           </div>
-          <span className="sysx-reassure mono">{t('Безкоштовно · ~2 хв · без реєстрації та картки', 'Free · ~2 min · no sign-up, no card')}</span>
+          <span className="sysx-reassure mono">{t('Безкоштовно · без реєстрації та картки', 'Free · no sign-up, no card')}</span>
           {/* Три числа з реальних кейсів — перший екран не мав жодного доказу. */}
           <ul className="sysx-proofstrip mono">
             {HEADLINE_PROOF.map((h) => (

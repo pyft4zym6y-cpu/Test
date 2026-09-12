@@ -12,6 +12,9 @@ import { escapeHtml } from '@/lib/escapeHtml';
 import { INK } from './docInk';
 import { Symptoms } from '@/system/Symptoms';
 
+// Склад глибокого аудиту — окремим чанком: на самій сторінці він нижче форми.
+const AuditScope = lazy(() => import('@/system/AuditScope').then((m) => ({ default: m.AuditScope })));
+
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
 
 /**
@@ -445,6 +448,15 @@ ${projRows ? `<div class="card"><h2>${escapeHtml(t('Зараз → куди мо
         )}
       </div>
     </section>
+    {/*
+      * Що таке справжній аудит — одразу після калькулятора.
+      *
+      * Сторінка обіцяла «діагностику за пʼять хвилин» і на цьому закінчувалась:
+      * людина йшла з враженням, що аудит WEEXP — це форма з семи полів. Сам
+      * аудит — глибокий розбір усієї структури e-commerce на 4–6 тижнів, і
+      * саме його купують. Тепер це видно тут, а не лише на сторінці формату.
+      */}
+    <Suspense fallback={null}><AuditScope compact /></Suspense>
     {/* Сценарії — після калькулятора: людина або впізнала себе в числах, або
         ні, і в другому випадку їй потрібен вхід словами, а не цифрами. */}
     <Symptoms cta="contact" />

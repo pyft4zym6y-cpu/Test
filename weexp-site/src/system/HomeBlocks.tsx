@@ -253,8 +253,8 @@ export function ClosingCta() {
         </h2>
         <p className="hb-close-l">
           {t(
-            'Експрес-аудит рахує ваш витік у грошах за дві хвилини. Безкоштовно, без реєстрації та картки.',
-            'The express audit puts a number on your leak in two minutes. Free, no sign-up and no card.',
+            'Безкоштовний експрес-розрахунок дає перше число — скільки виторгу витікає щороку — і головне вузьке місце. Далі, якщо потрібно, глибокий аудит.',
+            'A free express estimate gives the first number — how much revenue leaks each year — and the main bottleneck. Then, if needed, the deep audit.',
           )}
         </p>
         <Link to={lp('/diagnose')} className="sysx-cta is-primary hb-close-cta">

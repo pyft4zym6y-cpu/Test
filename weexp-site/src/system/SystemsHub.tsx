@@ -65,7 +65,7 @@ export function SystemsHub() {
             <span className="sysx-kick">{t('Яка з восьми ваша слабка ланка?', 'Which of the eight is your weak link?')}</span>
             <b className="sysx-display syshub-cta-h">
               {t('Express Audit рахує це ', 'The Express Audit answers that ')}
-              <span className="hl-y">{t('за 2 хвилини', 'in 2 minutes')}</span>
+              <span className="hl-y">{t('безкоштовно', 'for free')}</span>
             </b>
           </div>
           <div className="sysx-cta-row">

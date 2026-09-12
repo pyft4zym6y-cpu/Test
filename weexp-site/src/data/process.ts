@@ -21,16 +21,16 @@ export const PROCESS: Step[] = [
     n: '01',
     title: ['Діагноз', 'Diagnosis'],
     text: [
-      'Експрес-аудит за дві хвилини, далі глибокий: розрив у грошах за CRM/ERP/GA4 і головні вузькі місця.',
-      'A two-minute express audit, then the deep one: the revenue gap from CRM/ERP/GA4 and the main bottlenecks.',
+      'Глибокий аудит усієї структури e-commerce: від комерційної моделі й аналітики до операцій і технологій. 4–6 тижнів, розрив у грошах за CRM/ERP/GA4.',
+      'A deep audit of the whole e-commerce structure: from the commercial model and analytics to operations and technology. 4–6 weeks, the revenue gap from CRM/ERP/GA4.',
     ],
   },
   {
     n: '02',
     title: ['Договір', 'Contract'],
     text: [
-      'Офіційно від ФОП (Україна): предмет, строки, обсяг і KPI — письмово, до старту робіт.',
-      'Officially as a sole proprietor (Ukraine): scope, timelines and KPIs — in writing, before any work starts.',
+      'Договір із європейською компанією, зареєстрованою в ЄС: предмет, строки, обсяг і KPI — письмово, до старту робіт.',
+      'A contract with a European company registered in the EU: scope, timelines and KPIs — in writing, before any work starts.',
     ],
   },
   {
