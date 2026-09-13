@@ -159,7 +159,7 @@
 @media (max-width: 600px) {
   .sysx :is(.sysx-h2, .cred-h, .symp-h, .sysx-calc-h1, .hb-h, .hb-close-h,
             .proof-trust-h, .blogh-h1, .home-faq-h, .about-team-h, .srv-h1, .srv-h2,
-            .about-h1, .xhub-h1, .xp2-h1, .ctf-h1) {
+            .about-h1, .xhub-h1, .xp2-h1, .ctf-h1, .blogp-h1, .blogh-h2) {
     font-size: clamp(21px, 6.2vw, 29px);
   }
   .sysx .sysx-h1 { font-size: clamp(25px, 7.4vw, 34px); }
@@ -248,7 +248,7 @@
  * після ручного переносу ламалась ще раз і лишала «ТРАФІКУ» саме. Кегль
  * підібраний під НАЙДОВШИЙ рядок заголовка, а не під красу на макеті.
  */
-.sysx-h1 { font-size: clamp(34px, 5.6vw, 84px); }
+.sysx-h1 { font-size: clamp(34px, 5.6vw, 68px); }
 .sysx-h2 { font-size: clamp(29px, 4.8vw, 76px); color: var(--deep); }
 .sysx-em { color: var(--data); font-style: normal; }
 .sysx-hero .sysx-em { color: var(--charcoal); }
@@ -550,7 +550,14 @@ html { scroll-padding-top: calc(var(--sysh-h) + 12px); }
 /* ── Механіка довіри (метод · процес · платформи · реальні сигнали) ── */
 .cred { background: var(--deep); color: #cdd2d9; padding: clamp(56px, 8vw, 110px) 0; }
 .cred-in { max-width: 1080px; margin: 0 auto; padding: 0 clamp(18px, 5vw, 40px); }
-.cred-head { max-width: 56ch; margin-bottom: clamp(26px, 4vw, 44px); }
+/*
+ * Міра 56ch — для АБЗАЦУ. Разом із ним вона тиснула й заголовок: `ch`
+ * рахується від кегля елемента, тобто від 15px тексту, а заголовок у тій самій
+ * коробці набраний 58-м. Виходило ~450px на заголовок у 1080-піксельній
+ * колонці: пʼять рядків замість двох, останнє слово саме. Міру лишаємо тексту.
+ */
+.cred-head { margin-bottom: clamp(26px, 4vw, 44px); }
+.cred-lead, .cred-head > p { max-width: 56ch; }
 .cred-head .sysx-kick { color: var(--data-soft); }
 .cred-h { font-size: clamp(29px, 4.8vw, 58px); color: #fff; margin: 12px 0 14px; }
 .cred-h .sysx-em { color: var(--data); }
@@ -786,7 +793,9 @@ html { scroll-padding-top: calc(var(--sysh-h) + 12px); }
 .sysx-calc-bg.is-lite { background: radial-gradient(120% 90% at 70% 20%, color-mix(in srgb, var(--pure-white) 26%, transparent), transparent 60%), radial-gradient(90% 80% at 20% 90%, color-mix(in srgb, var(--data) 6%, transparent), transparent 55%); }
 .sysx-calc-panel { position: relative; z-index: 2; padding: calc(var(--sysh-h) + clamp(16px, 4vh, 42px)) clamp(24px, 5vw, 68px) clamp(28px, 6vh, 72px); display: grid; align-content: start; gap: clamp(18px, 3vh, 30px); }
 .sysx-calc-head { display: grid; gap: 12px; }
-.sysx-calc-h1 { font-size: clamp(36px, 4vw, 62px); }
+/* Заголовок стоїть у ЛІВІЙ колонці (1.05fr із двох), а кегль брав від повної
+   ширини вікна: на 1280px «ЧИСЛА» лишалось саме в третьому рядку. */
+.sysx-calc-h1 { font-size: clamp(30px, 3vw, 46px); }
 .sysx-steps { display: flex; gap: 8px; align-items: center; font-size: 11px; letter-spacing: .14em; color: var(--graphite); flex-wrap: wrap; }
 .sysx-steps .on { color: var(--deep); }
 .sysx-steps i { color: var(--silver); font-style: normal; }

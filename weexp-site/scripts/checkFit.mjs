@@ -347,53 +347,69 @@ if (VERTICAL) {
    * НАКЛАДАННЯ ФІКСОВАНОГО ХРОМУ НА ТЕКСТ.
    *
    * Режим міряв інше: скільки останній рядок сцени `.sysx-void` заїжджає на
-   * рядок логотипів. І сцена, і абсолютний рядок пішли разом зі скрол-фільмом,
-   * тож перевірка перетворилась на «елемента не знайдено» — сторож, який падає
-   * не тому, що знайшов дефект, а тому, що дивиться на сторінку, якої немає.
+   * абсолютний рядок логотипів. І сцена, і той рядок пішли разом зі
+   * скрол-фільмом, тож перевірка перетворилась на «елемента не знайдено» —
+   * сторож падав не тому, що знайшов дефект, а тому, що дивився на сторінку,
+   * якої немає.
    *
-   * Клас помилок лишився, але тепер його джерело інше й одне: шапка (fixed
-   * зверху) і нижня панель вкладок (fixed знизу, ~58px + safe-area). Вони
-   * лежать ПОВЕРХ документа, тож будь-який текст під ними просто не видно —
-   * найчастіше це останній блок сторінки й перший рядок під шапкою.
+   * Клас помилок лишився, але джерело тепер одне: шапка (fixed зверху) і
+   * нижня панель вкладок (fixed знизу). Вони лежать ПОВЕРХ документа.
    *
-   * Тому міряємо на телефонних вікнах у двох положеннях: на самому верху й у
-   * самому низу сторінки.
+   * Питання ставимо вузько — і це важливо. Перша версія питала «чи перетинає
+   * хоч щось фіксований шар» і видала 819 «накладань»: під нижньою панеллю на
+   * довгій сторінці завжди щось є, це й означає бути фіксованою панеллю.
+   * Дефект — лише коли ховається те, що ТРЕБА бачити:
+   *   — на самому верху сторінки перший рядок контенту під шапкою;
+   *   — у самому низу останній рядок під панеллю вкладок.
+   * Банер згоди на cookie спершу закриваємо: він навмисно лежить поверх усього
+   * й зникає з першим кліком.
    */
   const bad = [];
   for (const [width, height] of PHONES) {
     const page = await browser.newPage({ viewport: { width, height } });
     for (const path of ['/', '/proof', '/services', '/diagnose']) {
       await page.goto(BASE + path, { waitUntil: 'networkidle' });
-      await page.waitForTimeout(400);
+      await page.waitForTimeout(350);
+      // приймаємо cookie, щоб міряти сторінку, а не банер над нею
+      await page.evaluate(() => {
+        const b = [...document.querySelectorAll('.ckc button, .ckc a')]
+          .find((x) => /прийня|accept/i.test(x.textContent || ''));
+        b?.click();
+      });
+      await page.waitForTimeout(200);
       for (const where of ['top', 'bottom']) {
         await page.evaluate((w) => window.scrollTo(0, w === 'top' ? 0 : document.body.scrollHeight), where);
-        await page.waitForTimeout(250);
-        const rows = await page.evaluate(() => {
-          const chrome = [...document.querySelectorAll('.sysh-nav, .sysh-tabs, .ckc')]
-            .filter((el) => getComputedStyle(el).position === 'fixed')
-            .map((el) => ({ cls: el.className.toString().split(' ')[0], r: el.getBoundingClientRect() }));
-          if (!chrome.length) return [];
-          const out = [];
-          for (const el of document.querySelectorAll('h1, h2, h3, p, li, a, button, span')) {
-            const txt = (el.textContent || '').trim();
-            if (!txt) continue;
-            const cs = getComputedStyle(el);
-            if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) continue;
-            if (cs.position === 'fixed' || el.closest('.sysh-nav, .sysh-tabs, .ckc')) continue;
-            const b = el.getBoundingClientRect();
-            if (b.height < 2 || b.bottom < 0 || b.top > innerHeight) continue;
-            // Рахуємо лише ЛИСТЯ: у батька бокс містить дітей і дає ті самі
-            // накладання вдруге й втретє.
-            if ([...el.children].some((c) => (c.textContent || '').trim())) continue;
-            for (const c of chrome) {
-              const dy = Math.min(b.bottom, c.r.bottom) - Math.max(b.top, c.r.top);
-              const dx = Math.min(b.right, c.r.right) - Math.max(b.left, c.r.left);
-              if (dy > 1 && dx > 1)
-                out.push({ over: Math.round(dy), by: c.cls, text: txt.slice(0, 34) });
-            }
-          }
-          return out;
-        });
+        await page.waitForTimeout(300);
+        const rows = await page.evaluate((where) => {
+          const fixed = (sel) => {
+            const el = document.querySelector(sel);
+            return el && getComputedStyle(el).position === 'fixed' ? el.getBoundingClientRect() : null;
+          };
+          const bar = where === 'top' ? fixed('.sysh-nav') : fixed('.sysh-tabs');
+          if (!bar || bar.height < 2) return [];
+          // Листя з текстом, видимі в кадрі й поза самим хромом.
+          const leaves = [...document.querySelectorAll('h1, h2, h3, p, li, a, button, span')]
+            .filter((el) => {
+              const t = (el.textContent || '').trim();
+              if (!t) return false;
+              if (el.closest('.sysh-nav, .sysh-tabs, .ckc, .sysh-sheet')) return false;
+              if ([...el.children].some((c) => (c.textContent || '').trim())) return false;
+              const cs = getComputedStyle(el);
+              if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0 || cs.position === 'fixed') return false;
+              const b = el.getBoundingClientRect();
+              return b.height > 1 && b.bottom > 0 && b.top < innerHeight;
+            });
+          if (!leaves.length) return [];
+          // Крайній елемент документа з того боку, з якого стоїть хром.
+          const pick = where === 'top'
+            ? leaves.reduce((a, b) => (b.getBoundingClientRect().top < a.getBoundingClientRect().top ? b : a))
+            : leaves.reduce((a, b) => (b.getBoundingClientRect().bottom > a.getBoundingClientRect().bottom ? b : a));
+          const r = pick.getBoundingClientRect();
+          const over = Math.round(Math.min(r.bottom, bar.bottom) - Math.max(r.top, bar.top));
+          return over > 1
+            ? [{ over, by: where === 'top' ? 'шапка' : 'вкладки', text: (pick.textContent || '').trim().slice(0, 34) }]
+            : [];
+        }, where);
         for (const r of rows) bad.push({ width, height, path, where, ...r });
       }
     }
@@ -404,9 +420,9 @@ if (VERTICAL) {
     console.log(`fit --vertical: чисто — ${PHONES.length} телефонних вікон × 4 сторінки × верх і низ`);
     process.exit(0);
   }
-  console.log(`fit --vertical: ${bad.length} накладань фіксованого хрому на текст\n`);
-  for (const b of bad.sort((x, y) => y.over - x.over).slice(0, 40)) {
-    console.log(`  ${b.width}×${b.height} ${b.path.padEnd(11)} ${b.where.padEnd(7)} ${b.by.padEnd(11)} +${b.over}px  «${b.text}»`);
+  console.log(`fit --vertical: ${bad.length} накладань фіксованого хрому на крайній текст\n`);
+  for (const b of bad.sort((x, y) => y.over - x.over)) {
+    console.log(`  ${b.width}×${b.height} ${b.path.padEnd(11)} ${b.where.padEnd(7)} ${b.by.padEnd(8)} +${b.over}px  «${b.text}»`);
   }
   process.exit(1);
 }
