@@ -4,19 +4,20 @@ import { EXPERTISES, L } from '@/system/expertises';
 import './system.css';
 
 /**
- * Хаб «Експертизи» — девʼять напрямів роботи. Кожен веде на свою підсторінку
- * /expansion/:slug.
+ * Індекс експертиз — девʼять напрямів, кожен веде на свою сторінку.
  *
- * Сторінка мала ТРИ назви: пункт меню казав «Експертизи», заголовок сторінки —
- * «Екосистема партнерів», а title у видачі — «Експертизи WEEXP — напрями
- * роботи». Людина тиснула одне, потрапляла на друге, а в закладці бачила третє.
- * Тепер заголовок збігається з меню, а розповідь про перевірену мережу
- * партнерів лишилась — але нижче, як пояснення, а не як назва сторінки.
+ * БУВ ХАБОМ НА 873 СЛОВА Й 8.3 ЕКРАНА: девʼять карток, у кожній тег, заголовок,
+ * рукописний підзаголовок, задача власника й абзац опису — плюс абзац про
+ * мережу партнерів на сім рядків. Тобто перед тим, як натиснути потрібний
+ * напрям, людина читала переказ усіх девʼяти.
+ *
+ * Індекс — це список. Розгорнутий опис живе на сторінці напряму, куди людина
+ * і йде за ним; там він доречний, бо вона вже обрала, про що читати.
  *
  * Експертиза — НЕ те, що купують: купують формат співпраці (/services).
- * Експертиза — зона робіт усередині будь-якого з них, і тепер сторінка це
- * каже прямо, а не лишає людині здогадуватись, чим «Брендинг» відрізняється
- * від «Аудиту» в сусідньому пункті меню.
+ * Тому сторінки немає в головному меню: вона конкурувала з «Послугами» й
+ * відводила вбік того, хто шукав, що саме замовити. Вхід на неї — з послуг,
+ * із підвалу і з пошуку.
  */
 export function ExpansionHub() {
   const t = useT();
@@ -27,42 +28,30 @@ export function ExpansionHub() {
       <div className="sysx-field" aria-hidden="true" />
       <div className="xhub-in">
         <header className="xhub-head">
-          <span className="sysx-kick">{t('Девʼять напрямів · зона робіт', 'Nine areas · scope of work')}</span>
+          <span className="sysx-kick">{t('Зона робіт', 'Scope of work')}</span>
           <h1 className="sysx-display xhub-h1">{t('Наші ', 'Our ')}<span className="hl">{t('експертизи', 'expertise')}</span></h1>
-          <p className="sysx-lead">{t('Девʼять напрямів, якими ми закриваємо задачі. Це не окремі продукти: експертизи входять у будь-який із трьох форматів — змінюється лише те, хто тримає кермо.', 'Nine areas through which we close the work. Not separate products: the expertise goes into any of the three formats — only who holds the wheel changes.')}</p>
-          <p className="xhub-more-row">
-            <Link to={lp('/services')}>{t('Послуги', 'Services')} →</Link>
-          </p>
-          {/* Перевірена мережа — пояснення, а не назва сторінки: доти цей абзац
-              стояв заголовком і людина не розуміла, куди потрапила. */}
-          <p className="xhub-arch">{t('Вам не треба самостійно шукати, перевіряти й порівнювати десятки виконавців: ми вже сформували мережу лідерів ринку в кожному напрямі й під конкретну задачу підбираємо найсильніших. Зверху екосистеми — WEEXP: ', 'You do not need to search for, vet and compare dozens of contractors yourself: we have already built a network of market leaders in each area and pick the strongest for the task at hand. On top of the ecosystem — WEEXP: ')}<b>E-commerce Architecture &amp; Management</b>. {t('Ми визначаємо, що, навіщо і в якій послідовності робити, — мережа закриває конкретні компетенції.', 'We define what, why and in what order to do it — the network closes the specific competencies.')}</p>
+          <p className="sysx-lead">{t('Девʼять напрямів, якими ми закриваємо задачі. Це не окремі продукти: вони входять у будь-який із трьох форматів — змінюється лише те, хто тримає кермо.', 'Nine areas through which we close the work. Not separate products: they go into any of the three formats — only who holds the wheel changes.')}</p>
         </header>
 
-        <div className="xhub-grid">
+        <ul className="xhub-list">
           {EXPERTISES.map((e, i) => (
-            <Link key={e.slug} to={lp(`/expansion/${e.slug}`)} className="xhub-card">
-              <span className="xhub-n mono">{String(i + 1).padStart(2, '0')}</span>
-              <span className="xhub-tag">{L(e.tag, lang)}</span>
-              <h2 className="sysx-display xhub-card-h">{L(e.title, lang)}</h2>
-              <span className="script xhub-script">{L(e.tagline, lang)}</span>
-              {/* Спершу задача власника, потім наш опис. Без цього рядка блок
-                  читається як перелік послуг, з якого клієнт має сам здогадатись,
-                  навіщо це йому. */}
-              <p className="xhub-job">{L(e.job, lang)}</p>
-              <p className="xhub-card-p">{L(e.intro, lang)}</p>
-              <span className="xhub-more">{t('Детальніше', 'Learn more')} →</span>
-            </Link>
+            <li key={e.slug}>
+              <Link to={lp(`/expansion/${e.slug}`)} className="xhub-row">
+                <span className="xhub-n mono">{String(i + 1).padStart(2, '0')}</span>
+                <b className="xhub-row-h">{L(e.title, lang)}</b>
+                <span className="xhub-row-j">{L(e.job, lang)}</span>
+              </Link>
+            </li>
           ))}
-        </div>
+        </ul>
 
         <div className="xhub-cta">
           <div>
             <span className="sysx-kick">{t('З чого почати?', 'Where to start?')}</span>
-            <b className="sysx-display xhub-cta-h">{t('Почніть з ', 'Start with ')}<span className="hl-y">Express Audit</span></b>
+            <b className="sysx-display xhub-cta-h">{t('Почніть з ', 'Start with ')}<span className="hl-y">{t('аудиту', 'the audit')}</span></b>
           </div>
           <div className="sysx-cta-row">
             <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>
-            <Link to={lp('/contact')} className="sysx-cta">{t('Залишити заявку', 'Leave a request')} →</Link>
           </div>
         </div>
       </div>

@@ -2,9 +2,7 @@ import { Link } from 'react-router-dom';
 import { useT, useLp, useLang } from '@/i18n';
 import { CASES, localizeCase } from '@/data/cases';
 import { SERVICES, servicePath } from '@/data/services';
-import { PROCESS, AFTER } from '@/data/process';
 import { EXPERTISES, L } from '@/system/expertises';
-import { TEAM } from '@/data/team';
 import './home.css';
 
 /**
@@ -167,78 +165,19 @@ export function HomeExpertise() {
   );
 }
 
-/* ── Як ми це робимо: шість кроків великими цифрами ───────────────────────
-   Процес існував лише на сторінці цін, у її середині. Питання «а як ви
-   працюєте» людина ставить ДО ціни. */
-export function HowWeWork() {
-  const t = useT();
-  const lang = useLang();
-  const i = lang === 'en' ? 1 : 0;
-  return (
-    <section className="sysx hb hb-how" aria-labelledby="hb-how-h">
-      <div className="hb-in">
-        <span className="sysx-kick">{t('Прозоро, без сюрпризів', 'Transparent, no surprises')}</span>
-        <h2 id="hb-how-h" className="sysx-display hb-h">{t('Як ми це робимо', 'How we do it')}</h2>
-        <ol className="hb-steps">
-          {PROCESS.map((s) => (
-            <li key={s.n} className="hb-step">
-              <i className="hb-step-n" aria-hidden="true">{s.n}</i>
-              <div className="hb-step-t">
-                <b>{s.title[i]}</b>
-                <p>{s.text[i]}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
-      </div>
-    </section>
-  );
-}
-
-/* ── Життя після передачі ─────────────────────────────────────────────────
-   Відповідь на питання, яке власник ставить останнім: «а що буде, коли ви
-   підете». Доти вона існувала лише в умовах формату 02 на сторінці цін. */
-export function AfterHandover() {
-  const lang = useLang();
-  const i = lang === 'en' ? 1 : 0;
-  return (
-    <section className="sysx hb hb-after" aria-labelledby="hb-after-h">
-      <div className="hb-in">
-        <h2 id="hb-after-h" className="sysx-display hb-h">{AFTER.title[i]}</h2>
-        <div className="hb-after-txt">
-          {AFTER.text.map((p) => <p key={p[0]}>{p[i]}</p>)}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ── Хто це робить ────────────────────────────────────────────────────────
-   Розмір і склад команди — теж аргумент, і на головній його не було зовсім. */
-export function TeamStrip() {
-  const t = useT();
-  const lp = useLp();
-  const lang = useLang();
-  return (
-    <section className="sysx hb hb-team" aria-labelledby="hb-team-h">
-      <div className="hb-in">
-        <span className="sysx-kick">{t('Хто це робить', 'Who does it')}</span>
-        <h2 id="hb-team-h" className="sysx-display hb-h">
-          {t('Команда', 'The team')} — <span className="sysx-em">{TEAM.length}</span> {t('ролей, у кожної своя зона', 'roles, each with its own zone')}
-        </h2>
-        <ul className="hb-team-list">
-          {TEAM.map((r) => (
-            <li key={r.role} className="hb-team-item">
-              <b>{lang === 'en' ? (r.roleEn || r.role) : r.role}</b>
-              <span>{lang === 'en' ? (r.zoneEn || r.zone) : r.zone}</span>
-            </li>
-          ))}
-        </ul>
-        <Link to={lp('/people')} className="hb-claim-link mono">{t('Про нас', 'About')} →</Link>
-      </div>
-    </section>
-  );
-}
+/* ── Процес, «життя після» і команда з головної пішли ─────────────────────
+ *
+ * Не видалені — переставлені туди, де на них є питання:
+ *   — шість кроків процесу читає той, хто вже обирає формат, тож вони живуть
+ *     на сторінці формату (ServiceFormat, дані з @/data/process);
+ *   — «життя після передачі» стало питанням у FAQ: це заперечення, яке ставлять
+ *     один раз і останнім, а не розділ на третину екрана;
+ *   — склад команди — на /people, куди веде і меню, і підвал.
+ *
+ * На головній вони разом займали 2.8 екрана й 314 слів, стоячи між доказом і
+ * дією. Замір: 13 блоків, 12.2 екрана, 1204 слова — і остання секція сторінки
+ * вела не до заявки, а в блог.
+ */
 
 /* ── Темний блок-завершення ───────────────────────────────────────────────
  * Одна дія в кінці сторінки. Доти фінальна сцена фільму пропонувала три кнопки

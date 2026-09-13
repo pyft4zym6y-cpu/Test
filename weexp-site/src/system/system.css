@@ -980,6 +980,24 @@ html { scroll-padding-top: calc(var(--sysh-h) + 12px); }
   font-size: clamp(13.5px, 1.35vw, 16px); line-height: 1.55; color: var(--charcoal); font-weight: 500; }
 .xhub-arch b { font-family: var(--display); font-weight: 900; color: var(--deep); letter-spacing: -.01em; }
 
+/* Індекс експертиз — список, а не дев'ять карток-переказів.
+   Було: 2 колонки карток із тегом, підзаголовком і абзацом опису в кожній —
+   873 слова й 8.3 екрана до того, як людина натисне потрібний напрям. */
+.xhub-list { list-style: none; margin: clamp(28px,4vw,44px) 0 0; padding: 0;
+  display: grid; border-top: var(--bd); }
+.xhub-row { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: baseline;
+  column-gap: clamp(12px, 2vw, 22px); row-gap: 2px; padding: clamp(14px, 2vw, 20px) 0;
+  border-bottom: var(--bd); text-decoration: none; color: inherit;
+  transition: background var(--dur-fast), padding-left var(--dur-fast); }
+.xhub-row:hover { background: var(--cream-2); padding-left: 10px; }
+.xhub-row-h { font-family: var(--display); font-weight: 900; font-size: clamp(17px, 2.1vw, 24px);
+  letter-spacing: -.02em; color: var(--deep); }
+.xhub-row-j { grid-column: 2; font-size: clamp(13px, 1.3vw, 15px); line-height: 1.45; color: var(--graphite); }
+@media (max-width: 520px) {
+  .xhub-row { grid-template-columns: 1fr; }
+  .xhub-row-j { grid-column: 1; }
+}
+
 .xhub-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: clamp(18px,2.2vw,26px); margin-top: clamp(34px,5vw,56px); }
 @media (max-width: 760px) { .xhub-grid { grid-template-columns: 1fr; } }
 .xhub-card { position: relative; display: flex; flex-direction: column; gap: 10px; text-decoration: none;

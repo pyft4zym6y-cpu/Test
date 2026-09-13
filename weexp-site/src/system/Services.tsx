@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useT, useLp, useLang } from '@/i18n';
 import { useJsonLd } from '@/lib/seo';
 import { useState } from 'react';
+import { EXPERTISES, L } from '@/system/expertises';
 import { SERVICES, servicePath, COMPARE } from '@/data/services';
 import './system.css';
 import './home.css';
@@ -152,6 +153,26 @@ export function Services() {
             ))}
           </div>
         </div>
+
+        {/*
+          * Зона робіт — рядком, а не розділом меню.
+          *
+          * «Експертизи» стояли другим пунктом головного меню й конкурували з
+          * «Послугами» за ту саму увагу: людина, яка шукала, ЩО замовити, йшла
+          * дивитись девʼять напрямів РОБІТ. Тут вони на своєму місці — після
+          * форматів, як відповідь на «а що саме ви робите всередині».
+          */}
+        <section className="srv-exp" aria-labelledby="srv-exp-h">
+          <span className="sysx-kick">{t('Зона робіт', 'Scope of work')}</span>
+          <h2 id="srv-exp-h" className="sysx-display srv-h2">{t('Що робимо всередині формату', 'What we do inside a format')}</h2>
+          <ul className="srv-exp-list">
+            {EXPERTISES.map((e) => (
+              <li key={e.slug}>
+                <Link to={lp(`/expansion/${e.slug}`)} className="srv-exp-i">{L(e.title, lang)}</Link>
+              </li>
+            ))}
+          </ul>
+        </section>
 
         <div className="srv-foot">
           <p className="srv-foot-t">

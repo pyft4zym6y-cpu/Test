@@ -16,10 +16,6 @@ const hb = () => import('@/system/HomeBlocks');
 const HomeProofLine = lazy(() => hb().then((m) => ({ default: m.HomeProofLine })));
 const HomeCases = lazy(() => hb().then((m) => ({ default: m.HomeCases })));
 const HomeServices = lazy(() => hb().then((m) => ({ default: m.HomeServices })));
-const HomeExpertise = lazy(() => hb().then((m) => ({ default: m.HomeExpertise })));
-const HowWeWork = lazy(() => hb().then((m) => ({ default: m.HowWeWork })));
-const AfterHandover = lazy(() => hb().then((m) => ({ default: m.AfterHandover })));
-const TeamStrip = lazy(() => hb().then((m) => ({ default: m.TeamStrip })));
 const ClosingCta = lazy(() => hb().then((m) => ({ default: m.ClosingCta })));
 const HomeFaq = lazy(() => import('@/system/HomeFaq').then((m) => ({ default: m.HomeFaq })));
 
@@ -75,24 +71,30 @@ export function SystemInMotion() {
       <PartnerMarquee />
     </section>
     {/*
-      * ПОРЯДОК БЛОКІВ І Є ЗМІСТОМ ПЕРЕБУДОВИ.
+      * ПОРЯДОК БЛОКІВ І Є ЗМІСТОМ.
       *
-      * Доказ → послуга → чим лагодимо → з чим приходять → де це живе → як
-      * працюємо → що буде після → хто це робить → заперечення → одна дія.
+      * Доказ → що купують і за скільки → з чим приходять → заперечення → дія.
+      *
+      * БУЛО ТРИНАДЦЯТЬ БЛОКІВ І 12.2 ЕКРАНА. Пʼять із них розповідали про НАС
+      * і наш процес — перелік девʼяти експертиз, «як ми це робимо», «життя
+      * після передачі», «команда: 19 ролей», блок статей, — разом 4.7 екрана
+      * й близько 500 слів із 1204. Людина, яка прийшла порахувати свій витік,
+      * проходила повз них до останнього екрана, де на неї чекала не дія, а
+      * пʼять посилань у блог.
+      *
+      * Нічого з цього не викинуто в нікуди: процес живе на сторінці формату,
+      * де його читає той, хто вже обирає; команда — на /people; «що буде,
+      * коли ви підете» стало питанням у FAQ, бо це заперечення, а не розділ;
+      * експертизи — блоком на /services. Кожна річ лишилась там, де на неї є
+      * питання, і пішла звідти, де вона лише додає екранів.
       */}
     <Suspense fallback={null}>
       <HomeProofLine />
       <HomeCases />
       <HomeServices />
-      <HomeExpertise />
     </Suspense>
     {/* Вхід з боку клієнта: репліка власника, а не назва системи. */}
     <Suspense fallback={null}><Symptoms compact /></Suspense>
-    <Suspense fallback={null}>
-      <HowWeWork />
-      <AfterHandover />
-      <TeamStrip />
-    </Suspense>
     {/* FAQ — закриває заперечення + FAQPage-розмітка */}
     <Suspense fallback={null}><HomeFaq /></Suspense>
     <Suspense fallback={null}><ClosingCta /></Suspense>

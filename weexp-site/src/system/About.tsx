@@ -29,27 +29,16 @@ const Credibility = lazy(() => import('@/system/Credibility').then((m) => ({ def
 const FOUNDER = TEAM[0];
 
 /*
- * Компетенції партнерської мережі — кожна з власним пулом спеціалістів.
+ * Тут лежав перелік з одинадцяти компетенцій партнерської мережі — і саме він
+ * показує, як наростає обсяг. Спершу його довелось відрізняти від девʼяти
+ * ЕКСПЕРТИЗ, бо обидва звались «напрямами» і сайт казав то «девʼять», то
+ * «одинадцять». Потім виявилось, що на цій самій сторінці вище вже стоять
+ * девʼятнадцять ролей команди з зонами відповідальності — тобто відповідь на
+ * те саме питання, тільки конкретніша, з іменами.
  *
- * Раніше вони називались «напрямами експертизи» — тим самим словом, яким
- * називаються девʼять ЕКСПЕРТИЗ на /expansion. Виходило, що сайт в одному
- * місці каже «девʼять напрямів», а в іншому «11 напрямів»: два різні переліки
- * під однією назвою, і людина мала сама здогадатись, що це не суперечність.
- * Тут — компетенції, там — експертизи.
+ * Два списки «хто що робить» під одним заголовком — це не глибина, а 1.4
+ * зайвих екрана. Лишились ролі; глибина мережі сказана числом у фактах.
  */
-const AREAS: { t: [string, string]; d: [string, string] }[] = [
-  { t: ['Head of E-commerce', 'Head of E-commerce'], d: ['Власник результату: зводить усі системи до зростання й P&L.', 'Owner of the result: aligns all systems toward growth and P&L.'] },
-  { t: ['E-commerce Strategy', 'E-commerce Strategy'], d: ['Стратегія, позиціонування, модель росту й пріоритети.', 'Strategy, positioning, growth model and priorities.'] },
-  { t: ['Business & Process Architect', 'Business & Process Architect'], d: ['Операційна модель, процеси, CRM/ERP, ролі та регламенти.', 'Operating model, processes, CRM/ERP, roles and playbooks.'] },
-  { t: ['Marketing & Performance', 'Marketing & Performance'], d: ['Платний трафік, попит і креатив під юніт-економіку.', 'Paid traffic, demand and creative for unit economics.'] },
-  { t: ['Retention & CRM', 'Retention & CRM'], d: ['Утримання, повторні продажі, LTV, lifecycle-сценарії.', 'Retention, repeat sales, LTV, lifecycle scenarios.'] },
-  { t: ['SEO / GEO / AEO', 'SEO / GEO / AEO'], d: ['Органіка й видимість у пошуку та AI-відповідях.', 'Organic and visibility in search and AI answers.'] },
-  { t: ['UX / CRO Lead', 'UX / CRO Lead'], d: ['Досвід і конверсія: каталог, картка, checkout, mobile.', 'Experience and conversion: catalog, product, checkout, mobile.'] },
-  { t: ['Web & Technology', 'Web & Technology'], d: ['Платформа, інтеграції, швидкість, розробка й підтримка.', 'Platform, integrations, speed, development and support.'] },
-  { t: ['Analytics & BI', 'Analytics & BI'], d: ['Наскрізна аналітика, дані й звітність для рішень.', 'End-to-end analytics, data and reporting for decisions.'] },
-  { t: ['ERP & Automation', 'ERP & Automation'], d: ['Автоматизація бізнес-процесів: ERP, CRM, інтеграції та операційна автоматизація.', 'Business-process automation: ERP, CRM, integrations and operational automation.'] },
-  { t: ['Marketplace Sales', 'Marketplace Sales'], d: ['Побудова та розвиток продажів на маркетплейсах: стратегія, управління каналом, масштабування.', 'Building and growing marketplace sales: strategy, channel management, scaling.'] },
-];
 
 export function About() {
   const t = useT();
@@ -65,15 +54,6 @@ export function About() {
     ...(FOUNDER.photo ? { image: ORIGIN + FOUNDER.photo } : {}),
     url: ORIGIN + (lang === 'en' ? '/en/people' : '/people'),
   });
-
-  const VALUES: { t: string; d: string }[] = [
-    { t: t('Система, а не героїзм', 'A system, not heroics'), d: t('Результат тримається на процесах і стандартах, а не на конкретних людях і нічних змінах.', 'Results rest on processes and standards, not on specific people and night shifts.') },
-    { t: t('Числа замість відчуттів', 'Numbers over gut feel'), d: t('Кожне рішення — за даними, кожна гіпотеза перевіряється. Ми рахуємо гроші, а не години.', 'Every decision is data-driven, every hypothesis is tested. We count money, not hours.') },
-    { t: t('Власник у кожної системи', 'An owner for every system'), d: t('Зона відповідальності завжди має імʼя. Немає «спільної» відповідальності, яка нічия.', 'Every zone of responsibility has a name. No “shared” accountability that belongs to no one.') },
-    { t: t('Незалежність клієнта', 'The client’s independence'), d: t('Успіх — коли система працює й зростає без нас. Це і є Independence Score.', 'Success is when the system runs and grows without us. That is the Independence Score.') },
-    { t: t('Чесність у грошах', 'Honesty about money'), d: t('Говоримо про маржу й ризики прямо. Не «продати будь-що», а зробити бізнес прибутковим.', 'We talk about margin and risk openly. Not “sell at any cost”, but make the business profitable.') },
-    { t: t('Передача, а не залежність', 'Handover, not dependency'), d: t('Лишаємо стандарт, документацію й навчену команду — а не тримаємо клієнта «на гачку».', 'We leave a standard, documentation and a trained team — we don’t keep the client “on the hook”.') },
-  ];
 
   return (
     <>
@@ -104,7 +84,7 @@ export function About() {
               {/* Числа рахуються з переліків. Набрані руками, вони збігались із
                   джерелом лише доти, доки джерело не змінять: наступний кейс
                   тихо лишив би на сторінці «17». */}
-              <li><b>{AREAS.length}</b><span>{t('компетенцій із власним пулом спеціалістів', 'competencies, each with its own pool of specialists')}</span></li>
+              <li><b>{TEAM.length}</b><span>{t('ролей, у кожної свій відповідальний', 'roles, each with someone accountable')}</span></li>
               <li><b>{CASES.length}</b><span>{t('трансформацій, доведених до вимірюваного результату', 'transformations taken to a measurable result')}</span></li>
               <li><b>US · EU · MENA</b><span>{t('ринки, на яких працює команда', 'markets the team works in')}</span></li>
             </ul>
@@ -116,8 +96,12 @@ export function About() {
         <div className="about-sec about-who">
           <span className="sysx-kick">{t('Хто ми', 'Who we are')}</span>
           <div className="about-who-grid">
-            <p className="about-who-p">{t('WEEXP — це команда й методологія, що будують онлайн-продажі як керовану систему. Ми працюємо з e-commerce і D2C-брендами — від виробників до відомих брендів на ринках України, ЄС і США.', 'WEEXP is a team and a methodology that build online sales as a managed system. We work with e-commerce and D2C brands — from manufacturers to well-known brands across Ukraine, the EU and the US.')}</p>
-            <p className="about-who-p">{t('Ми не «агентство окремих послуг». Ми діагностуємо бізнес у грошах, знаходимо, де саме витікає виторг, і збираємо вісім систем комерції в одну — стратегію, комерцію, попит, досвід, операції, дані, організацію й експансію. Там, де потрібна вузька експертиза, залучаємо перевірених партнерів і лідерів ринку — але відповідальність за результат тримаємо системно.', 'We are not an “agency of separate services”. We diagnose the business in money, find exactly where revenue leaks, and assemble eight commerce systems into one — strategy, commerce, demand, experience, operations, data, organization and expansion. Where narrow expertise is needed, we bring in vetted partners and market leaders — but we hold accountability for the result systemically.')}</p>
+            {/* Було два абзаци на 110 слів: перший називав, хто ми, другий
+                перераховував вісім систем і пояснював, що ми «не агентство
+                окремих послуг». Перелік систем стоїть нижче іменами
+                відповідальних, а «ми не агентство» читається як заперечення
+                того, чого ніхто не казав. */}
+            <p className="about-who-p">{t('WEEXP будує онлайн-продажі e-commerce і D2C-брендів як керовану систему — на ринках України, ЄС і США. Діагностуємо в грошах, знаходимо, де витікає виторг, і відповідаємо за результат, а не за окрему ділянку робіт.', 'WEEXP builds online sales for e-commerce and D2C brands as a managed system — across Ukraine, the EU and the US. We diagnose in money, find where revenue leaks, and are accountable for the result rather than for a single slice of work.')}</p>
           </div>
           <div className="about-diff">
             {[
@@ -131,31 +115,17 @@ export function About() {
           </div>
         </div>
 
-        {/* Місія / Візія */}
-        <div className="about-mv">
-          <div className="about-mv-c">
-            <span className="sysx-kick">{t('Місія', 'Mission')}</span>
-            <p className="sysx-display about-mv-t">{t('Перетворити e-commerce з героїзму на систему — щоб бізнес зростав і не залежав від засновника.', 'Turn e-commerce from heroics into a system — so the business grows and no longer depends on its founder.')}</p>
-          </div>
-          <div className="about-mv-c about-mv-red">
-            <span className="sysx-kick">{t('Візія', 'Vision')}</span>
-            <p className="sysx-display about-mv-t">{t('Щоб кожен бренд міг будувати онлайн-продажі за стандартом лідерів — системно, за цифрами, без вигорання команди.', 'For every brand to build online sales to a market-leader standard — systematically, by the numbers, without burning the team out.')}</p>
-          </div>
-        </div>
-
-        {/* Цінності */}
-        <div className="about-sec">
-          <span className="sysx-kick">{t('Цінності', 'Values')}</span>
-          <div className="about-values">
-            {VALUES.map((v, i) => (
-              <div key={v.t} className="about-val">
-                <i className="about-val-n mono">{String(i + 1).padStart(2, '0')}</i>
-                <b>{v.t}</b>
-                <span>{v.d}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+        {/*
+          * МІСІЯ, ВІЗІЯ Й ШІСТЬ ЦІННОСТЕЙ ЗВІДСИ ПІШЛИ.
+          *
+          * Разом це чотири блоки й близько 230 слів: «перетворити e-commerce з
+          * героїзму на систему», «числа замість відчуттів», «чесність у
+          * грошах». Усе це правда — і все це про нас, написане так, що жоден
+          * конкурент не написав би протилежного. Сторінка «Про нас» на сайті,
+          * який продає, відповідає на інше питання: чи можна довірити цим
+          * людям свої гроші. На нього відповідають імена, числа, відповідальні
+          * за зони й механіка довіри нижче — а не декларації.
+          */}
 
         {/* Команда і власник */}
         <div className="about-sec">
@@ -171,8 +141,12 @@ export function About() {
               <span className="about-eyebrow mono">{t('Засновник і архітектор Commerce', 'Founder & Architect of Commerce')}</span>
               {fnd.name && <h3 className="sysx-display about-name">{fnd.name}</h3>}
               <span className="about-role">{fnd.role}</span>
-              <p className="about-focus">{t('Понад 8 років будує міжнародний e-commerce на ринках США, ЄС і MENA — від виробників до брендів рівня Forbes TOP-250. Працює з бізнесом не як консультант «за окремою ділянкою», а як архітектор системи: бачить онлайн-продажі цілісно — від стратегії й позиціонування до процесів, технологій, маркетингу, команди й фінансового результату.', 'Over 8 years building international e-commerce across the US, EU and MENA — from manufacturers to Forbes TOP-250 brands. Works with a business not as a consultant «for a single area», but as a system architect: sees online sales as a whole — from strategy and positioning to processes, technology, marketing, team and financial result.')}</p>
-              <p className="about-focus">{t('Відповідає за результат бізнесу, а не за окремий фрагмент роботи: рішення ухвалюються на рівні системних змін — з P&L-відповідальністю, керованим циклом і вимірюваним ефектом. Саме власник найбільше виграє від системи: коли продажі перестають триматися на ручному режимі, звільняється головний ресурс — увага й час засновника.', 'Accountable for the business result, not a single fragment of work: decisions are made at the level of systemic change — with P&L ownership, a managed cycle and measurable effect. It’s the owner who benefits most from a system: once sales stop resting on manual mode, the main resource is freed — the founder’s attention and time.')}</p>
+              {/* Було два абзаци на 140 слів. Другий переказував перший іншими
+                  словами: «архітектор системи, а не консультант за ділянкою» →
+                  «відповідає за результат, а не за фрагмент роботи». Лишився
+                  один — із тим, що перевіряється: роки, ринки, рівень брендів,
+                  за що саме відповідає. */}
+              <p className="about-focus">{t('Понад 8 років будує міжнародний e-commerce на ринках США, ЄС і MENA — від виробників до брендів рівня Forbes TOP-250. Відповідає за фінансовий результат бізнесу, а не за окрему ділянку робіт: рішення ухвалюються на рівні системних змін, із P&L-відповідальністю й вимірюваним ефектом.', 'Over 8 years building international e-commerce across the US, EU and MENA — from manufacturers to Forbes TOP-250 brands. Accountable for the financial result of the business, not for a single slice of work: decisions are made at the level of systemic change, with P&L ownership and a measurable effect.')}</p>
               <div className="about-creds">
                 <span><b>8+</b> {t('років у e-commerce', 'years in e-commerce')}</span>
                 <span><b>US · EU · MENA</b></span>
@@ -182,16 +156,15 @@ export function About() {
             </div>
           </div>
 
-          <span className="about-roster-lab mono">{t(`Глибина партнерської мережі — ${AREAS.length} компетенцій, кожна з власним пулом спеціалістів під вашу задачу:`, `Depth of the partner network — ${AREAS.length} competencies, each with its own pool of specialists for your task:`)}</span>
-          <div className="about-roster about-roster-3">
-            {AREAS.map((a, i) => (
-              <div key={a.t[0]} className="about-role-c about-area-c">
-                <i className="about-area-n mono">{String(i + 1).padStart(2, '0')}</i>
-                <b>{L(a.t, lang)}</b>
-                <span className="about-role-zone">{L(a.d, lang)}</span>
-              </div>
-            ))}
-          </div>
+          {/*
+            * ПЕРЕЛІК ІЗ ОДИНАДЦЯТИ КОМПЕТЕНЦІЙ ПАРТНЕРСЬКОЇ МЕРЕЖІ ЗВІДСИ ПІШОВ.
+            *
+            * На одній сторінці стояли ДВА списки «хто що робить»: девʼятнадцять
+            * ролей команди — і одразу під ними одинадцять компетенцій мережі з
+            * описами. Обидва відповідали на те саме питання, другий дублював
+            * перший іншими словами й коштував 1.4 екрана. Глибина мережі
+            * лишилась числом у фактах угорі, де її й читають.
+            */}
         </div>
 
         <div className="about-cta">

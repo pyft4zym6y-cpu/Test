@@ -33,6 +33,38 @@ const sitemapUrls = () =>
 const fileFor = (u: string) => (u === '/' ? 'index.html' : u.endsWith('.html') ? u.slice(1) : `${u.slice(1)}/index.html`);
 
 describe.skipIf(!built)('собранный dist', () => {
+  it('навигация в статике — та же, что на сайте', () => {
+    /*
+     * scripts/prerender.mjs держит СВОЙ список ссылок: краулеру без JS нужно
+     * отдать то, что в браузере рисуют шапка и подвал. Это дубль nav.ts, и он
+     * уже отставал: «Экспертизы» ушли из главного меню, а в статике остались
+     * вторым пунктом. Комментарий рядом при этом утверждал, что совпадение
+     * сверяет тест, — такого теста не было.
+     *
+     * Сверяем состав, а не порядок: в статике после меню идут адреса, которых
+     * в меню нет, но вход на них обязан быть (расчёт, экспертизы) — ровно как
+     * в подвале.
+     */
+    const pre = readFileSync(join(__dirname, '..', '..', 'scripts', 'prerender.mjs'), 'utf8');
+    const block = pre.slice(pre.indexOf('const NAV_PAGES'), pre.indexOf('];', pre.indexOf('const NAV_PAGES')));
+    const mirror = [...block.matchAll(/to: '([^']+)'/g)].map((m) => m[1]);
+
+    const nav = readFileSync(join(__dirname, '..', 'lib', 'nav.ts'), 'utf8');
+    const pagesBlock = nav.slice(nav.indexOf('export const PAGES'), nav.indexOf('];', nav.indexOf('export const PAGES')));
+    const menu = [...pagesBlock.matchAll(/to: '([^']+)'/g)].map((m) => m[1]);
+
+    expect(menu.length, 'меню не разобрано').toBeGreaterThan(3);
+    const missing = menu.filter((u) => !mirror.includes(u));
+    expect(missing, `в статике нет пунктов меню: ${missing.join(', ')}`).toEqual([]);
+
+    // Обратная сторона: в статике не должно быть ссылок на страницы, которых
+    // на сайте уже нет.
+    const foot = readFileSync(join(__dirname, '..', 'system', 'SiteFooter.tsx'), 'utf8');
+    const extra = [...foot.matchAll(/'(\/[a-z-]*)'/g)].map((m) => m[1]);
+    const stray = mirror.filter((u) => !menu.includes(u) && !extra.includes(u));
+    expect(stray, `в статике ссылки, которых нет ни в меню, ни в подвале: ${stray.join(', ')}`).toEqual([]);
+  });
+
   it('H1 в пререндере — тот же, что на странице', () => {
     /*
      * Один текст в двух местах расходится молча. Робот видит НЕ React-рендер,

@@ -1,7 +1,8 @@
-import { Link, Navigate, useLocation, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { useT, useLp, useLang } from '@/i18n';
 import { applySeo } from '@/lib/seo';
 import { EXPERTISES, L, expertiseBySlug } from '@/system/expertises';
+import { SystemNotFound } from '@/system/SystemNotFound';
 import './system.css';
 
 /**
@@ -15,7 +16,12 @@ export function Expertise() {
   const lp = useLp();
   const lang = useLang();
   const e = expertiseBySlug(slug);
-  if (!e) return <Navigate to={lp('/expansion')} replace />;
+  /*
+   * Невідомий слуг віддавав ХАБ із кодом 200 — мʼяка 404. Для людини це
+   * «сторінка ніби відкрилась, але не та», для Google — ще одна копія хаба на
+   * кожній помилковій адресі. Тепер це чесна 404 у тій самій оболонці.
+   */
+  if (!e) return <SystemNotFound />;
 
   const idx = EXPERTISES.findIndex((x) => x.slug === e.slug);
   const prev = EXPERTISES[(idx - 1 + EXPERTISES.length) % EXPERTISES.length];

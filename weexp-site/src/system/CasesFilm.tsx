@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { CASES, localizeCase, caseTeam } from '@/data/cases';
+import { CASES, localizeCase } from '@/data/cases';
 import { shortOf } from '@/data/xray';
 import { useT, useLp, useLang } from '@/i18n';
 import { ShareButton } from '@/system/ShareButton';
@@ -60,18 +60,25 @@ export function CasesFilm() {
             </div>
             <div className="cf-deltas">
               <span className="cf-deltas-h mono">{t('До → після', 'Before → After')}</span>
-              {lc.metrics.slice(0, 5).map((m) => (
+              {/*
+                * ТРИ ДЕЛЬТИ, А НЕ ПʼЯТЬ. Сторінка відповідає на одне питання —
+                * «у вас справді виходить?». Три числа відповідають на нього так
+                * само, як пʼять; решта — глибина для того, хто вже вирішив.
+                */}
+              {lc.metrics.slice(0, 3).map((m) => (
                 <div key={m.label} className="cf-row">
                   <span className="cf-row-l">{m.label}</span>
                   <span className="cf-row-v"><i className="cf-before">{m.before}</i><em className="cf-arrow mono" aria-hidden="true">→</em><b className="cf-after">{m.after}</b>{m.note && <span className="cf-note mono">{m.note}</span>}</span>
                 </div>
               ))}
-              <p className="cf-learn"><b className="mono">{t('Урок:', 'Lesson:')}</b> {lc.learning}</p>
-              <div className="cf-verified mono"><span aria-hidden="true">✓</span> {lc.verified || t('Кожна дельта звірена з CRM / ERP / GA4 клієнта', 'Every delta verified against the client\'s CRM / ERP / GA4')}</div>
-              <div className="cf-team">
-                <span className="cf-team-h mono">{t('Над кейсом працювали', 'Who worked on this case')}</span>
-                <div className="cf-team-roles">{caseTeam(lc, lang).map((r) => <span key={r} className="cf-team-role mono">{r}</span>)}</div>
-              </div>
+              {/*
+                * Відгук лишається: це єдине, що на сторінці говорить не нашим
+                * голосом. Урок, рядок звірки й склад команди пішли — урок був
+                * висновком ДЛЯ НАС, звірка повторювалась сім разів тим самим
+                * реченням (тепер вона сказана один раз нижче, у блоці про
+                * метод), а перелік ролей на кожному кейсі — це знову розповідь
+                * про нас там, де мали бути числа клієнта.
+                */}
               {lc.testimonial && (
                 <blockquote className="cf-quote">
                   <p>«{lc.testimonial.quote}»</p>

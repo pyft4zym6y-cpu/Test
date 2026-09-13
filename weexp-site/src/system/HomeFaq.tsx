@@ -19,6 +19,14 @@ export function HomeFaq() {
       a: t('Перші вимірювані зміни — за 30–60 днів. Швидкі перемоги йдуть у першій хвилі, глибші зміни — далі за дорожньою картою під Definition of Done.', 'The first measurable changes — within 30–60 days. Quick wins come in the first wave; deeper changes follow the roadmap under a Definition of Done.') },
     { q: t('Ви робите руками чи консультуєте?', 'Do you execute or consult?'),
       a: t('Залежить від формату. Аудит і консалтинг — руки вашої команди, ми архітектор і контроль. Управління — ваші люди + керована мережа партнерів під OKR і DoD.', 'It depends on the format. Audit and consulting — your team executes, we are the architect and control. Managed delivery — your people + a managed partner network under OKRs and DoD.') },
+    /*
+     * Питання про життя після передачі було окремим блоком на головній —
+     * 0.4 екрана заголовка й трьох абзаців. Але це заперечення, а не розділ:
+     * його ставлять останнім і рівно один раз. У згорнутому FAQ воно коштує
+     * шість видимих слів замість третини екрана.
+     */
+    { q: t('А що буде, коли ви підете?', 'What happens when you leave?'),
+      a: t('Система лишається вашою: процеси описані, доступи ваші, команда навчена. Далі з нами можна працювати як із партнером — це дешевше, ніж тримати ці ролі в штаті. Обсяг різний: комусь щотижневі сесії, комусь ревʼю раз на квартал.', 'The system stays yours: processes documented, access yours, team trained. You can keep working with us as a partner — cheaper than carrying these roles in-house. The volume differs: some need weekly sessions, others a quarterly review.') },
     { q: t('Чи безпечні мої дані?', 'Is my data safe?'),
       a: t('Доступ до глибокого аудиту — лише за кодом від менеджера, зʼєднання захищене SSL, дані обробляються за принципами GDPR. Ви контролюєте, що і кому відкриваєте.', 'Access to the deep audit is by a manager-issued code only, the connection is SSL-secured, and data is handled under GDPR principles. You control what you share and with whom.') },
   ];
