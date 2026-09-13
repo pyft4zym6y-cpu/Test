@@ -27,27 +27,52 @@
   display: flex; flex-direction: column; gap: clamp(18px, 2.4vw, 30px); }
 .hb-case { border-top: 1px solid rgba(20, 18, 16, .18); padding-top: clamp(18px, 2.2vw, 28px);
   display: grid; gap: clamp(14px, 2vw, 28px); grid-template-columns: minmax(0, 1fr); align-items: start; }
-@media (min-width: 860px) { .hb-case { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); } }
+/* Двоколонкова картка вмикається з 1100px, а не з 860px.
+   На 900px права половина ділилась натроє по 137px, і найдовше число
+   «≥19 млн ₴» (177px при кеглі 36) з комірки вилазило. Перевірено виміром на
+   дванадцяти ширинах, а не на око. */
+@media (min-width: 1100px) { .hb-case { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); } }
 
 .hb-case-cat { display: block; font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--red-ink); }
 .hb-case-name { display: block; font-size: clamp(19px, 2vw, 24px); line-height: 1.12; margin: 6px 0 8px; }
 .hb-case-lead { margin: 0 0 10px; font-size: 14.5px; line-height: 1.5; color: var(--graphite); max-width: 46ch; }
 .hb-case-win { font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--deep); }
 
-.hb-nums { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: clamp(14px, 2vw, 30px); }
+/*
+ * Числа кейсу: один кегль на всі й рівна сітка.
+ *
+ * Було flex-wrap і ДВА розміри — головне число вдвічі більше за метрики. На
+ * телефоні це давало рвані ряди: «≥19 млн ₴» займало весь рядок, «×2–2,5»
+ * тулилось поруч дрібнішим, а «4,3–4,5%» падало саме в наступний. Три числа
+ * одного кейсу читались як три різні за вагою факти, хоча вони рівноцінні:
+ * усі три — результат.
+ *
+ * Сітка тепер детермінована: один стовпець на телефоні, три від 700px. Три
+ * числа — три комірки, порожніх не лишається ні за якої ширини.
+ *
+ * Верхня межа кегля підібрана під НАЙВУЖЧУ комірку: на 1440px картка кейсу
+ * двоколонкова, права половина ділиться натроє, і в кожній ~214px — найдовше
+ * число «≥19 млн ₴» на 36px займає там близько 178px.
+ */
+.hb-nums { list-style: none; margin: 0; padding: 0; display: grid;
+  gap: clamp(14px, 1.8vw, 22px) clamp(16px, 2vw, 26px);
+  grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 700px) { .hb-nums { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .hb-num { min-width: 0; }
-/* Число рахуємо від ширини екрана, а не фіксуємо: на 320px 96px уже не
-   вміщається у дві колонки, і підпис підʼїжджає під сусідній. */
+
 /* Прозорість 0.45, а не 0.26. Референс малює величезні числа дуже блідими —
    але там вони наполовину декорація. У нас число і Є доказ: «×18», «≥19 млн ₴»
    — головне, за чим людина сюди дивиться. На 0.26 контраст виходив 1.77:1,
    нижче навіть за поріг 3:1 для великого тексту; зловив це checkFit --contrast.
-   На 0.45 — 3.1:1: усе ще помітно бліде поруч із чорним підписом, але читається. */
-.hb-num b { display: block; font-family: var(--display); font-weight: 900; font-size: clamp(40px, 7vw, 78px);
-  line-height: .88; letter-spacing: -.04em; color: rgba(20, 18, 16, .45); }
-.hb-num span { display: block; margin-top: 6px; font-size: 13px; line-height: 1.35; color: var(--deep); max-width: 20ch; }
-.hb-num.is-small b { font-size: clamp(26px, 4vw, 44px); }
-.hb-num.is-small span { font-size: 12px; color: var(--graphite); }
+
+   nowrap обовʼязковий: «≥19 млн ₴» — одне число, і розрив його на два рядки
+   читається як два різні. Якщо воно перестане вміщатись, це побачить
+   checkFit у горизонтальному режимі, а не людина на телефоні. */
+.hb-num b { display: block; font-family: var(--display); font-weight: 900;
+  font-size: clamp(24px, 5vw, 34px); line-height: 1; letter-spacing: -.03em;
+  white-space: nowrap; color: rgba(20, 18, 16, .45); }
+.hb-num span { display: block; margin-top: 6px; font-size: 13px; line-height: 1.35;
+  color: var(--deep); max-width: 22ch; }
 
 /* ── Три формати ──────────────────────────────────────────────────────────── */
 .hb-serv { background: var(--cream-2); }

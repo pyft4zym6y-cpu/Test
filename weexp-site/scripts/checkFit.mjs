@@ -89,6 +89,8 @@ if (WRAP) {
     '.sysx-cta', '.sysh-cta', '.sysh-link', '.sysh-sheet-link', '.sysh-tab span',
     '.hb-serv-link', '.srv-foot-link', '.srvf-pack-link', '.symp-where', '.symp-all',
     '.sysx-kick', '.hb-claim-link', '.blogt-all', '.srv-table thead th', '.srvf-kind-n',
+    // Числа кейсів: одне число — один рядок, і воно має вміщатись у свою комірку.
+    '.hb-num b',
   ].join(', ');
   const bad = [];
   for (const width of WIDTHS) {
@@ -131,6 +133,17 @@ if (WRAP) {
             text += n.textContent.trim() + ' ';
           }
           if (lines > 1) out.push({ lines, cls: (el.className || '').toString().slice(0, 36), text: text.trim().slice(0, 44) });
+          /*
+           * Друга хвороба того самого місця: підпис із white-space: nowrap
+           * не переноситься — він ВИЛАЗИТЬ. Рядок один, тож перевірка вище
+           * його не побачить, а горизонтальна теж ні: у блокового елемента
+           * бокс дорівнює комірці, і за межі виходить лише текст усередині.
+           * Саме так «≥19 млн ₴» на 900px виїжджало з колонки на 40px.
+           */
+          if (cs.whiteSpace.startsWith('nowrap') && el.scrollWidth > el.clientWidth + 1)
+            out.push({ lines: 1, over: el.scrollWidth - el.clientWidth,
+              cls: (el.className || '').toString().slice(0, 36),
+              text: (el.textContent || '').trim().slice(0, 44) });
         }
         return out;
       }, SEL);
@@ -143,9 +156,10 @@ if (WRAP) {
     console.log(`fit --wrap: чисто — ${PATHS.length} сторінок × ${WIDTHS.length} ширин`);
     process.exit(0);
   }
-  console.log(`fit --wrap: ${bad.length} підписів у два і більше рядки\n`);
-  for (const b of bad.sort((x, y) => y.lines - x.lines)) {
-    console.log(`  ${String(b.width).padStart(4)}px ${b.path.padEnd(14)} ${b.lines} рядки  ${b.cls}  «${b.text}»`);
+  console.log(`fit --wrap: ${bad.length} підписів, що не вміщаються в один рядок\n`);
+  for (const b of bad.sort((x, y) => (y.lines + (y.over ? 1 : 0)) - (x.lines + (x.over ? 1 : 0)))) {
+    const what = b.over ? `вилазить на ${b.over}px` : `${b.lines} рядки`;
+    console.log(`  ${String(b.width).padStart(4)}px ${b.path.padEnd(14)} ${what.padEnd(18)} ${b.cls}  «${b.text}»`);
   }
   process.exit(1);
 }

@@ -75,8 +75,10 @@ export function HomeCases() {
                   <b>{c.hero}</b>
                   <span>{c.heroLabel}</span>
                 </li>
+                {/* Метрики того самого рангу, що й головне число: усі три —
+                    результат. Доти вони були вдвічі дрібніші. */}
                 {c.metrics.slice(0, 2).map((m) => (
-                  <li key={m.label} className="hb-num is-small">
+                  <li key={m.label} className="hb-num">
                     <b>{m.after}</b>
                     <span>{m.label} — {t('було', 'was')} {m.before}</span>
                   </li>
