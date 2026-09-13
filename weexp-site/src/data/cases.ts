@@ -171,7 +171,7 @@ export const CASES: CaseStudy[] = [
     cat: 'Fashion · Program of Record',
     name: 'Fashion-виробник',
     hero: '≥19 млн ₴', heroLabel: 'недоотриманого обороту щороку', window: 'програма 12 місяців',
-    lead: 'Діагностика знайшла ≥19 млн ₴/рік розриву. Система окупилась за 4–8 місяців.',
+    lead: 'Діагностика знайшла ≥19 млн ₴/рік розриву. Система окупилась за 4–8 місяців.',
     systems: ['commercial', 'operations', 'experience'], stage: 'Diagnose',
     before: 'Оборот 23,2 млн ₴, але 18% замовлень не доходили до викупу. Європа — 0%.',
     diagnosis: [
