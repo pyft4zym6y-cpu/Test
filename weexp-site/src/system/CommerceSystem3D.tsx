@@ -13,15 +13,18 @@ import * as THREE from 'three';
 const NODE_TINT = [0xffffff, 0x141210, 0xffffff, 0x141210, 0xffffff, 0x141210, 0xffffff, 0x141210];
 
 /**
- * progress — скрол-керований прогрес (для фільму головної). fixedProgress —
- * зафіксований стан (для калькулятора: об'єкт вже зібраний і «дихає»). alerts —
- * індекси систем, що світяться червоним (bottleneck / GAP-подія).
+ * fixedProgress — зафіксований стан збірки об'єкта: він уже зібраний і «дихає».
+ * alerts — індекси систем, що світяться червоним (bottleneck / GAP-подія).
+ *
+ * Було ще два входи, обидва — від скрол-фільму головної: `progress` (реф, який
+ * щокадру писала прокрутка) і `labels` (реф, у який компонент складав
+ * спроєктовані 2D-позиції восьми вузлів, щоб на них повісити HTML-мітки).
+ * Фільму немає, і жоден із них уже нікуди не вів: обидва місця виклику
+ * передають лише фіксований стан. Лишати їх означало тримати в компоненті
+ * механізм, який ніхто не вмикає, — і опис сторінки, якої не існує.
  */
-export function CommerceSystem3D({ progress, fixedProgress, alerts, labels }: {
-  progress?: MutableRefObject<number>; fixedProgress?: number; alerts?: MutableRefObject<number[]>;
-  // labels — щокадру заповнюється спроєктованими 2D-позиціями 7 вузлів (для HTML-лейблів
-  // систем у фільмі): {x,y} у % вьюпорта об'єкта, vis 0..1 (видимість/збірка).
-  labels?: MutableRefObject<{ x: number; y: number; vis: number }[]>;
+export function CommerceSystem3D({ fixedProgress, alerts }: {
+  fixedProgress?: number; alerts?: MutableRefObject<number[]>;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -122,11 +125,10 @@ export function CommerceSystem3D({ progress, fixedProgress, alerts, labels }: {
 
     let raf = 0, t0 = 0, aCur = 0;
     const tmp = new THREE.Vector3();
-    const tmpL = new THREE.Vector3();
     const ALERT = new THREE.Color(0xf5301c), BLUE = new THREE.Color(0xf5301c);
     const render = (t: number) => {
       if (!t0) t0 = t; const time = (t - t0) / 1000;
-      const p = reduce ? 1 : (fixedProgress ?? progress?.current ?? 0);
+      const p = reduce ? 1 : (fixedProgress ?? 0);
       const al = alerts?.current ?? [];
 
       // FORM: вузли злітаються (0.10→0.45). CONNECT: лінії (0.34→0.62). ACTIVATION: імпульси (0.56→0.86).
@@ -169,16 +171,6 @@ export function CommerceSystem3D({ progress, fixedProgress, alerts, labels }: {
       camera.position.y += (-cmy * 0.8 - camera.position.y) * 0.05;
       camera.lookAt(0, 0, 0);
 
-      // Спроєктовані 2D-позиції вузлів → для HTML-лейблів систем у фільмі.
-      if (labels?.current) {
-        group.updateWorldMatrix(true, true);
-        for (let i = 0; i < N; i++) {
-          nodeMeshes[i].getWorldPosition(tmpL).project(camera);
-          const onScreen = tmpL.z < 1;
-          labels.current[i] = { x: (tmpL.x * 0.5 + 0.5) * 100, y: (-tmpL.y * 0.5 + 0.5) * 100, vis: onScreen ? aCur : 0 };
-        }
-      }
-
       renderer.render(scene, camera);
       raf = running() ? requestAnimationFrame(render) : 0;
     };
@@ -207,7 +199,7 @@ export function CommerceSystem3D({ progress, fixedProgress, alerts, labels }: {
       });
       nodeGeo.dispose(); pulseGeo.dispose(); envTex.dispose(); pmrem.dispose(); renderer.dispose();
     };
-  }, [progress, fixedProgress]);
+  }, [fixedProgress]);
 
   return <canvas ref={ref} className="sysx-object3d" aria-hidden="true" />;
 }

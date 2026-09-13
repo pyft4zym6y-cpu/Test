@@ -1,11 +1,17 @@
 # WEEXP — сайт
 
-Інтерактивний скролл-сайт WEEXP (операційний партнер з e-commerce).
-Один безперервний дайджест на наскрізному Independence Score.
+Сайт WEEXP (операційний партнер з e-commerce): звичайні сторінки зі звичайним
+скролом. Скрол-фільмів — липких сцен, крізь які «їде камера», — більше немає:
+прокрутка рухає сторінку, а не прозорість шарів.
 
 ## Стек
-Vite · React 18 · TypeScript · three.js (WebGL System Map) · GSAP + ScrollTrigger ·
-Lenis · Framer Motion · split-type · @fontsource (Unbounded / IBM Plex).
+Vite · React 18 · TypeScript · @fontsource/golos-text (одна гарнітура на весь
+сайт) · three.js — лише як декоративний фон /diagnose і /contact, і лише на
+десктопі (див. `src/lib/liteVisuals.ts`).
+
+Тут значились ще GSAP + ScrollTrigger, Lenis, Framer Motion і split-type — стек
+скрол-фільмів. Жоден із них не імпортувався з коду вже після переходу на власний
+рушій сцен, а після прибирання самих фільмів зник і привід їх повертати.
 
 ## Розробка
 ```bash

@@ -142,6 +142,28 @@
  * підібрати під нього кегль.
  */
 @media (max-width: 760px) { .br-wide { display: none; } }
+
+/*
+ * Дисплейна шкала для телефона.
+ *
+ * Кожен заголовок мав власну нижню межу clamp — 29…36px, — і на 320px вони всі
+ * впирались у неї. Колонка тексту там 280px, тобто в рядок влазить одне-два
+ * слова: заголовок ішов на чотири-п'ять рядків, а останнім лишалось одне.
+ * Ні balance, ні pretty цього не лікують — заміром перевірено: при 34px усі
+ * три стратегії дають ту саму розкладку. Вони обирають, ЯК розкласти рядки, а
+ * тут не вистачає місця на самі слова.
+ *
+ * Тому на вузькому екрані кегль задає одна шкала, а не тринадцять окремих
+ * мінімумів. Ієрархія лишається: герой помітно більший за решту.
+ */
+@media (max-width: 600px) {
+  .sysx :is(.sysx-h2, .cred-h, .symp-h, .sysx-calc-h1, .hb-h, .hb-close-h,
+            .proof-trust-h, .blogh-h1, .home-faq-h, .about-team-h, .srv-h1, .srv-h2,
+            .about-h1, .xhub-h1, .xp2-h1, .ctf-h1) {
+    font-size: clamp(21px, 6.2vw, 29px);
+  }
+  .sysx .sysx-h1 { font-size: clamp(25px, 7.4vw, 34px); }
+}
 .sysx :is(p, li, dd, blockquote, .sysx-lead, .sysx-sub, figcaption) { text-wrap: pretty; }
 
 /* — Типографіка: display grotesk як cinematic voice — */
