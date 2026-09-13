@@ -10,7 +10,7 @@
  * отсутствию.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 const cfg = JSON.parse(readFileSync(join(__dirname, '..', '..', '..', 'vercel.json'), 'utf8'));
@@ -62,45 +62,67 @@ describe('CSP', () => {
 
 describe('интерактивное остаётся интерактивным', () => {
   /*
-   * Сцены скролл-фильма гасят события (pointer-events: none), чтобы мышь
-   * доставала WebGL-объект позади. Возвращало их правило ТОЛЬКО для <a> —
-   * поэтому кнопка «Поділитися» на /proof была мертва: две соседние ссылки
-   * работали, она нет. Визуально не отличить: нажимаешь, ничего не происходит.
+   * Сцены скролл-фильма гасили события (pointer-events: none) у ЦЕЛОГО блока
+   * с текстом и кнопками, чтобы мышь доставала WebGL-объект позади. Возврат
+   * был написан только для <a> — поэтому кнопка «Поділитися» на /proof была
+   * мертва: две соседние ссылки работали, она нет. Визуально не отличить:
+   * нажимаешь, и ничего не происходит.
+   *
+   * Сцен больше нет — страница обычная, и гасить события у контента незачем.
+   * Но приём остался доступным, и сторож теперь стережёт само ПРАВИЛО, а не
+   * ту пару селекторов: слой, который гасит события, обязан быть декоративным
+   * (aria-hidden), состоянием «выключено» — или возвращать события управляющим
+   * элементам. Иначе он однажды снова накроет собой живую кнопку.
    */
-  const css = readFileSync(join(__dirname, '..', 'system', 'system.css'), 'utf8');
+  /*
+   * Комментарии вырезаем ДО разбора. Первая версия сторожа их не вырезала —
+   * и упала на комментарии, который объяснял, почему `pointer-events: none`
+   * отсюда убрали: инструмент читал прозу вместо кода.
+   */
+  const css = readFileSync(join(__dirname, '..', 'system', 'system.css'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '');
+  const tsx = readdirSync(join(__dirname, '..', 'system'))
+    .filter((f) => f.endsWith('.tsx'))
+    .map((f) => readFileSync(join(__dirname, '..', 'system', f), 'utf8'))
+    .join('\n');
 
-  it('возврат событий написан не только для ссылок', () => {
-    const restore = css.match(/[^}]*pointer-events: *auto[^}]*/g) || [];
-    const scene = restore.find((r) => r.includes('sysx-scene'));
-    expect(scene, 'в .sysx-scene нет правила, возвращающего pointer-events').toBeTruthy();
-    for (const tag of ['button', 'input', 'select', 'textarea']) {
-      expect(scene, `сцена не возвращает события для <${tag}>`).toContain(tag);
-    }
-  });
+  /** Селекторы «выключенного состояния» — там мёртвость и есть смысл. */
+  const isDisabledState = (sel: string) => /\[disabled\]|:disabled|\.is-off|\.is-disabled/.test(sel);
 
-  it('гашение событий всегда парно с возвратом', () => {
-    // Каждый класс, который гасит события у ЦЕЛОГО блока с содержимым,
-    // должен иметь парное правило возврата для управляющих элементов.
-    /*
-     * Разбираем по блокам, а не одной сквозной регуляркой: правило возврата
-     * написано списком селекторов через запятую, и глобальный поиск съедал
-     * первый вместе со вторым — .cf-act во втором селекторе не находился.
-     */
-    const killers: string[] = [];
+  it('ни один слой не гасит события над живой кнопкой', () => {
+    const killers: { cls: string; sel: string }[] = [];
     const restored = new Set<string>();
     for (const block of css.split('}')) {
       const i = block.lastIndexOf('{');
       if (i < 0) continue;
-      const selector = block.slice(0, i);
+      const sel = block.slice(0, i);
       const body = block.slice(i + 1);
-      const classes = [...selector.matchAll(/\.([a-z0-9-]+)/g)].map((m) => m[1]);
-      if (/pointer-events: *none/.test(body)) killers.push(...classes);
+      const classes = [...sel.matchAll(/\.([a-z0-9-]+)/g)].map((m) => m[1]);
+      if (/pointer-events: *none/.test(body) && !isDisabledState(sel))
+        for (const c of classes) killers.push({ cls: c, sel: sel.trim() });
       if (/pointer-events: *auto/.test(body)) for (const c of classes) restored.add(c);
     }
-    // .cf-act и .sysx-scene держат контент с кнопками — их проверяем строго.
-    for (const k of ['cf-act', 'sysx-scene']) {
-      if (!killers.includes(k)) continue;
-      expect(restored.has(k), `.${k} гасит события и ничего не возвращает`).toBe(true);
+    expect(killers.length, 'правил с pointer-events: none не нашлось вовсе — сторож ничего не проверяет')
+      .toBeGreaterThan(0);
+
+    /*
+     * Возврат событий бывает написан не на самом слое, а на его содержимом:
+     * `.ckc` (полоса согласия на cookie) гасит события на всю ширину экрана,
+     * а `.ckc-card` внутри возвращает их карточке с кнопками. Это и есть
+     * правильный приём — слой ничего не перекрывает, живёт только карточка.
+     * Первая версия сторожа искала класс в класс и такую пару не видела.
+     */
+    const paired = (cls: string) => restored.has(cls) || [...restored].some((r) => r.startsWith(cls + '-'));
+
+    for (const { cls } of killers) {
+      if (paired(cls)) continue;                             // события возвращают явно
+      // Иначе слой обязан быть декоративным: каждый его экземпляр в разметке
+      // помечен aria-hidden на том же теге.
+      const uses = [...tsx.matchAll(new RegExp(`<[a-zA-Z][^>]*className=[^>]*\\b${cls}\\b[^>]*>`, 'g'))].map((m) => m[0]);
+      for (const tag of uses) {
+        expect(tag.includes('aria-hidden'), `.${cls} гасит события, но это не декоративный слой: ${tag.slice(0, 90)}`)
+          .toBe(true);
+      }
     }
   });
 });

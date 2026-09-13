@@ -1,94 +1,56 @@
-import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CASES, localizeCase, caseTeam } from '@/data/cases';
 import { shortOf } from '@/data/xray';
-import { band, seg, setLayer as set, useScrollScene } from '@/lib/scene';
 import { useT, useLp, useLang } from '@/i18n';
 import { ShareButton } from '@/system/ShareButton';
 import { ProofTrust } from '@/system/ProofTrust';
 import './system.css';
 
 /**
- * WEEXP — THE EVIDENCE (proof-film, /proof). Третя частина арки: /system вводить
- * ідею системи, /systems показує сім місць витоку, а тут — доказ, що система
- * збирається в гроші. Кінематографічна стрічка трансформацій: одне число-герой
- * на екран, поруч дельти до→після (з CRM/ERP/GA4) і рядок грошей. Світле полотно,
- * без 3D — героєм є саме число. Курований набір флагманських кейсів.
+ * /proof — докази в цифрах.
+ *
+ * БУВ СКРОЛ-ФІЛЬМ НА 820vh: сім кейсів лежали один поверх одного на absolute
+ * усередині липкої сцени, а прокрутка міняла їхню прозорість. Вісім висот
+ * вікна ходу на сім карток; жодну не можна було побачити поруч із сусідньою,
+ * порівняти дві чи просто перемотати до потрібної; посилання всередині жили
+ * лише завдяки окремому правилу, бо сцена гасила pointer-events; на телефоні
+ * фільм і так вимикався — там сторінка була звичайною, і саме вона працювала.
+ *
+ * Тепер сторінка одна для всіх: сім кейсів підряд, звичайний скрол. Кожен
+ * кейс — число-герой, дельти до→після з CRM/ERP/GA4, урок і команда.
  */
 const REEL = ['premium-textile', 'consumer-dtc', 'cosmetics-holding', 'fashion-apparel', 'electronics-marketplace', 'supplements-health', 'pharmacy-omnichannel']
   .map((s) => CASES.find((c) => c.slug === s)!).filter(Boolean);
-const N = REEL.length;
-const A0 = 0.09, A1 = 0.90, W = (A1 - A0) / N;
 
 export function CasesFilm() {
   const t = useT();
   const lp = useLp();
   const lang = useLang();
-  const sec = useRef<HTMLElement>(null);
-  const intro = useRef<HTMLDivElement>(null);
-  const outro = useRef<HTMLDivElement>(null);
-  const acts = useRef<(HTMLDivElement | null)[]>([]);
-  const ghost = useRef<HTMLSpanElement>(null);
-  const [active, setActive] = useState(0);
-  // Фонове число-привид пишеться з rAF-циклу, поза рендером: мову беремо
-  // з ref, інакше замикання зафіксує ту, що була на першому кадрі.
-  const langRef = useRef(lang);
-  langRef.current = lang;
-
-  useScrollScene(sec, (p, reduce) => {
-    set(intro.current, reduce ? 1 : seg(p, -1, 0, 0.06, 0.115), `translateY(${((1 - band(p, 0, 0.06)) * -3).toFixed(1)}vh)`);
-    set(outro.current, reduce ? 1 : seg(p, A1, 0.945, 1.1, 1.2));
-
-    const inBand = !reduce && p > A0 - 0.02 && p < A1 + 0.02;
-    const idx = inBand ? Math.min(N - 1, Math.max(0, Math.floor((p - A0) / W))) : -1;
-    for (let i = 0; i < N; i++) {
-      const a = A0 + i * W;
-      const o = reduce ? 1 : seg(p, a, a + 0.024, a + W - 0.024, a + W);
-      const el = acts.current[i]; if (!el) continue;
-      el.style.opacity = String(o);
-      el.style.transform = `translateY(${((1 - seg(p, a, a + 0.032, a + W - 0.032, a + W)) * 2.4).toFixed(1)}vh)`;
-      // «оживання» дельт: у центрі акту (hold) — .is-live запускає стаджер рядків
-      const hold = !reduce && p > a + 0.03 && p < a + W - 0.03;
-      el.classList.toggle('is-live', hold);
-    }
-    if (ghost.current && idx >= 0) ghost.current.textContent = localizeCase(REEL[idx], langRef.current).hero;
-    if (idx >= 0 && idx !== active) setActive(idx);
-  });
 
   return (
     <>
-    <section ref={sec} className="sysx sysx-film sysx-proof" aria-label={t('WEEXP — докази: трансформації в цифрах', 'WEEXP — proof: transformations in numbers')}>
-      <div className="sysx-stage">
-        <span className="sysx-field" aria-hidden="true" />
-        <span ref={ghost} className="cf-ghost sysx-display" aria-hidden="true">{localizeCase(REEL[0], lang).hero}</span>
-
-        {/* рейка кейсів */}
-        <div className="sysf-rail" aria-hidden="true">
-          {REEL.map((c, i) => (
-            <span key={c.slug} className={'sysf-tick' + (i === active ? ' is-on cf-on' : '')}><b>{String(i + 1).padStart(2, '0')}</b></span>
-          ))}
-        </div>
-
-        {/* INTRO */}
-        <div ref={intro} className="sysx-scene sysx-void">
+    <section className="sysx sysx-proof" aria-label={t('WEEXP — докази: трансформації в цифрах', 'WEEXP — proof: transformations in numbers')}>
+      <div className="sysx-field" aria-hidden="true" />
+      <div className="cf-in">
+        <header className="cf-head">
           {/* Число — з переліку кейсів, а не з рядка. */}
           <div className="sysx-kick">{t(`${CASES.length} трансформацій`, `${CASES.length} transformations`)}</div>
-          {/* Заголовок збігається з пунктом меню й крихтою. «Систему видно в
-              цифрах» було твердженням про нас; людина, яка натиснула «Кейси»,
-              мала спершу зрозуміти, що потрапила туди, куди йшла. Саме
-              твердження лишилось — рядком нижче. */}
+          {/* Заголовок збігається з пунктом меню й крихтою. */}
           <h1 className="sysx-display sysx-h1">{t('Кейси', 'Cases')}</h1>
           <p className="sysx-sub">{t('Систему видно в цифрах', 'You see the system in the numbers')}</p>
-          <p className="sysx-lead">{t('Не обіцянки — дельти до→після з CRM, ERP і GA4. Кожен кейс анонімний, але число реальне. Гортайте — сім флагманських кейсів.', 'Not promises — before→after deltas from CRM, ERP and GA4. Every case is anonymized, but the number is real. Scroll — seven flagship cases.')}</p>
-          <span className="sysx-scrollhint mono">{t('↓ до→після', '↓ before→after')}</span>
-        </div>
+          <p className="sysx-lead">{t('Не обіцянки — дельти до→після з CRM, ERP і GA4. Кожен кейс анонімний, але число реальне.', 'Not promises — before→after deltas from CRM, ERP and GA4. Every case is anonymized, but the number is real.')}</p>
+          <div className="sysx-cta-row cf-head-cta">
+            <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>
+          </div>
+        </header>
 
-        {/* КЕЙС-АКТИ */}
+        <ol className="cf-list">
         {REEL.map((c, i) => {
           const lc = localizeCase(c, lang);
           return (
-          <div key={c.slug} ref={(el) => { acts.current[i] = el; }} className="cf-act" style={{ opacity: 0 }}>
+          <li key={c.slug} className="cf-case">
             <div className="cf-hero">
+              <span className="cf-n mono" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
               <span className="cf-cat mono">{lc.cat}</span>
               <span className="cf-num sysx-display">{lc.hero}</span>
               <span className="cf-heroLabel">{lc.heroLabel}</span>
@@ -98,8 +60,8 @@ export function CasesFilm() {
             </div>
             <div className="cf-deltas">
               <span className="cf-deltas-h mono">{t('До → після', 'Before → After')}</span>
-              {lc.metrics.slice(0, 5).map((m, k) => (
-                <div key={m.label} className="cf-row" style={{ '--k': k } as React.CSSProperties}>
+              {lc.metrics.slice(0, 5).map((m) => (
+                <div key={m.label} className="cf-row">
                   <span className="cf-row-l">{m.label}</span>
                   <span className="cf-row-v"><i className="cf-before">{m.before}</i><em className="cf-arrow mono" aria-hidden="true">→</em><b className="cf-after">{m.after}</b>{m.note && <span className="cf-note mono">{m.note}</span>}</span>
                 </div>
@@ -117,12 +79,13 @@ export function CasesFilm() {
                 </blockquote>
               )}
             </div>
-          </div>
+          </li>
           );
         })}
+        </ol>
 
-        {/* OUTRO CTA */}
-        <div ref={outro} className="sysx-scene sysx-ctaScene">
+        {/* Одна дія в кінці сторінки — щоб кейси не були глухим кутом. */}
+        <div className="cf-outro">
           <div className="sysx-kick">{t('Ваша трансформація', 'Your transformation')}</div>
           <h2 className="sysx-display sysx-h2">{t('Наступне число', 'The next number')}<br />{t('у стрічці — ', 'in the reel is ')}<span className="sysx-em">{t('ваше', 'yours')}</span>.</h2>
           <p className="sysx-lead">{t('Почніть із діагнозу: безкоштовний розрахунок покаже, яка система дасть найбільшу дельту саме вам.', 'Start with the diagnosis: a free estimate shows which system delivers the biggest delta for you.')}</p>

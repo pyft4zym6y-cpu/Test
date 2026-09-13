@@ -1,23 +1,24 @@
-/* Real brand faces (Unbounded display + IBM Plex) via @fontsource — no CDN. */
-@import '@fontsource/unbounded/600.css';
-@import '@fontsource/unbounded/700.css';
-@import '@fontsource/unbounded/800.css';
-@import '@fontsource/ibm-plex-sans/400.css';
-@import '@fontsource/ibm-plex-sans/500.css';
-@import '@fontsource/ibm-plex-sans/600.css';
-@import '@fontsource/ibm-plex-mono/400.css';
-@import '@fontsource/ibm-plex-mono/500.css';
-@import '@fontsource/ibm-plex-serif/400-italic.css';
-/* Premium-grade дисплейний шрифт (variable) — характерніший за Unbounded */
-@import '@fontsource-variable/bricolage-grotesque';
-/* Neo-brutalist redesign (стиль school.weexp.agency): важкий Golos Text + рукописний Caveat */
+/*
+ * ОДНА ГАРНІТУРА НА ВЕСЬ САЙТ — Golos Text, ваги 400…900, через @fontsource
+ * (без CDN).
+ *
+ * Було сім сімей: Unbounded і Bricolage Grotesque на заголовки, IBM Plex Sans
+ * на текст, IBM Plex Mono на технічні підписи, IBM Plex Serif на курсив,
+ * Caveat на рукописний акцент, Golos Text на решту. Сім гарнітур — це сім
+ * різних «голосів» на одній сторінці й до півтора десятка файлів шрифтів у
+ * завантаженні першого екрана.
+ *
+ * Різницю між рівнями тепер тримають вага, кегль, розрядка й регістр — тобто
+ * те, що всередині однієї сімʼї працює послідовно. Golos Text обрано не за
+ * смаком: у нього повна кирилиця (сайт україномовний) і ваги аж до 900, тобто
+ * ним однаково набирається і дисплейний заголовок, і дрібний підпис.
+ */
 @import '@fontsource/golos-text/400.css';
 @import '@fontsource/golos-text/500.css';
 @import '@fontsource/golos-text/600.css';
 @import '@fontsource/golos-text/700.css';
 @import '@fontsource/golos-text/800.css';
 @import '@fontsource/golos-text/900.css';
-@import '@fontsource/caveat/700.css';
 
 :root {
   --ink-950:#070d12;
@@ -28,10 +29,13 @@
   --vel:#E7EAE7; --paper:#fff;
   --hair:rgba(199,210,214,.18);
 
-  --display:'Bricolage Grotesque Variable','Unbounded',system-ui,sans-serif;
-  --sans:'IBM Plex Sans',system-ui,Arial,sans-serif;
-  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
-  --serif:'IBM Plex Serif',Georgia,serif;
+  /* Чотири змінні лишились, бо на них спирається вся верстка, але сімʼя за
+     ними одна: --mono тепер означає «технічний підпис» (табличні цифри +
+     розрядка), а не другу гарнітуру. */
+  --display:'Golos Text',system-ui,sans-serif;
+  --sans:'Golos Text',system-ui,Arial,sans-serif;
+  --mono:'Golos Text',system-ui,Arial,sans-serif;
+  --serif:'Golos Text',system-ui,Arial,sans-serif;
 
   /* global scroll progress 0..1, written by ScoreProvider */
   --p:0;

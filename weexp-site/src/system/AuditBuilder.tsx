@@ -44,11 +44,11 @@ function exportTemplatePdf(tpl: AuditTemplate) {
       ${b.questions.map((qq, qi) => qHtml(qq, qi + 1)).join('')}
     </section>`).join('');
   const html = `<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>Опитувальник глибокого аудиту — WEEXP</title><style>
-@page{margin:14mm}body{font-family:"IBM Plex Sans","Segoe UI",system-ui,Arial,sans-serif;color:#141210;margin:0;font-size:12px;line-height:1.5}
+@page{margin:14mm}body{font-family:"Golos Text","Segoe UI",system-ui,Arial,sans-serif;color:#141210;margin:0;font-size:12px;line-height:1.5}
 .bar{height:8px;background:#F5301C}.wrap{padding:24px 30px;max-width:800px;margin:0 auto}
 .top{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #141210;padding-bottom:12px;margin-bottom:6px}
 ${DOC_LOGO_CSS}
-.meta{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#6B675E;text-align:right}
+.meta{font-family:"Golos Text","Segoe UI",system-ui,sans-serif;font-size:11px;color:#6B675E;text-align:right}
 h1{font-size:24px;letter-spacing:-.01em;margin:14px 0 4px}
 .lead{color:#3d3a35;max-width:64ch;margin:0 0 14px}
 .kpis{display:flex;gap:10px;margin:0 0 18px}

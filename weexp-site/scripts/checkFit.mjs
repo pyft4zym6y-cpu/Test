@@ -41,6 +41,14 @@
  * тексту, — на всіх дев'яти ширинах.
  *
  *   node scripts/checkFit.mjs [url] --wrap
+ *
+ * Режим --orphan ловить п'яту: речення, з якого на новий рядок з'їхало одне-два
+ * слова. Це не «перенос узагалі» — абзац на три рівні рядки читається добре, —
+ * а саме висяче слово: рядок із одного слова під повним рядком читається як
+ * обрив, а в картці ще й тягне за собою зайву висоту. Міряємо, скільки СЛІВ
+ * стоїть в останньому візуальному рядку заголовка, ліда й підпису картки.
+ *
+ *   node scripts/checkFit.mjs [url] --orphan
  */
 import { createRequire } from 'node:module';
 
@@ -52,6 +60,7 @@ const ARGS = process.argv.slice(2);
 const VERTICAL = ARGS.includes('--vertical');
 const CONTRAST = ARGS.includes('--contrast');
 const WRAP = ARGS.includes('--wrap');
+const ORPHAN = ARGS.includes('--orphan');
 const BASE = ARGS.find((a) => a.startsWith('http')) || 'http://127.0.0.1:8127';
 
 /* Телефонні вікна МІНУС хром браузера — саме та висота, яку реально бачить
@@ -75,6 +84,91 @@ const SLACK = 1.5;
 const browser = await chromium.launch({
   executablePath: process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
 });
+
+if (ORPHAN) {
+  /*
+   * Жодних висячих 1–2 слів.
+   *
+   * Перевіряємо ролі, де речення має читатись цілим: заголовки, ліди,
+   * підзаголовки, обіцянки карток. Тіло статті блогу сюди НЕ входить — там
+   * довга проза, і вимагати від неї рівних рядків означало б переписувати
+   * сорок лонгридів під ширину екрана.
+   *
+   * Рахуємо не рядки, а слова в ОСТАННЬОМУ рядку: рівний абзац у три рядки —
+   * норма, а той самий абзац, де останнє слово з'їхало саме, — дефект.
+   */
+  const SEL = [
+    '.sysx h1', '.sysx h2', '.sysx h3',
+    '.sysx-lead', '.sysx-sub', '.hb-claim-h', '.hb-case-lead', '.hb-serv-promise',
+    '.cf-heroLabel', '.cf-money', '.srv-lead', '.srvf-promise', '.symp-q',
+  ].join(', ');
+  const bad = [];
+  for (const width of WIDTHS) {
+    const page = await browser.newPage({ viewport: { width, height: 900 } });
+    for (const path of PATHS) {
+      await page.goto(BASE + path, { waitUntil: 'networkidle' });
+      await page.evaluate(async () => {
+        for (let y = 0; y < document.body.scrollHeight; y += 700) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 30)); }
+        window.scrollTo(0, 0);
+      });
+      await page.waitForTimeout(250);
+      const rows = await page.evaluate((sel) => {
+        const out = [];
+        for (const el of document.querySelectorAll(sel)) {
+          if (el.closest('.blogp-body, .blogp-toc, footer')) continue;
+          const cs = getComputedStyle(el);
+          if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) continue;
+          let hidden = false;
+          for (let a = el.parentElement; a; a = a.parentElement) {
+            const p = getComputedStyle(a);
+            if (p.display === 'none' || p.visibility === 'hidden' || +p.opacity === 0) { hidden = true; break; }
+          }
+          if (hidden) continue;
+
+          /*
+           * Кожне слово міряємо окремим Range і групуємо за верхом його
+           * прямокутника: так виходить розкладка «слово → візуальний рядок»,
+           * якої не дає ні висота вузла, ні число прямокутників тексту.
+           */
+          const walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+          const lines = new Map();
+          const r = document.createRange();
+          let total = 0;
+          for (let n = walk.nextNode(); n; n = walk.nextNode()) {
+            const t = n.textContent;
+            for (const m of t.matchAll(/\S+/g)) {
+              r.setStart(n, m.index); r.setEnd(n, m.index + m[0].length);
+              const box = r.getBoundingClientRect();
+              if (!box.width) continue;
+              const key = Math.round(box.top);
+              lines.set(key, (lines.get(key) || 0) + 1);
+              total++;
+            }
+          }
+          if (lines.size < 2 || total < 4) continue;   // один рядок або зовсім короткий підпис
+          const last = [...lines.entries()].sort((a, b) => a[0] - b[0]).at(-1)[1];
+          if (last <= 2)
+            out.push({ last, rows: lines.size,
+              cls: (el.className || '').toString().slice(0, 30),
+              text: (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 52) });
+        }
+        return out;
+      }, SEL);
+      for (const x of rows) bad.push({ path, width, ...x });
+    }
+    await page.close();
+  }
+  await browser.close();
+  if (!bad.length) {
+    console.log(`fit --orphan: чисто — ${PATHS.length} сторінок × ${WIDTHS.length} ширин`);
+    process.exit(0);
+  }
+  console.log(`fit --orphan: ${bad.length} речень із висячим словом\n`);
+  for (const b of bad.sort((x, y) => x.last - y.last)) {
+    console.log(`  ${String(b.width).padStart(4)}px ${b.path.padEnd(14)} ${b.last} сл. у ${b.rows}-му рядку  ${b.cls.padEnd(22)} «${b.text}»`);
+  }
+  process.exit(1);
+}
 
 if (WRAP) {
   /*

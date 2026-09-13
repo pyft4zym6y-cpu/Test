@@ -771,12 +771,12 @@ function exportExpressPdf(express: ExpressAudit, email?: string) {
     ['CAC', num(inp.cac) ? money(inp.cac as number, cur) : ''],
   ];
   const html = `<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>Експрес-аудит — результат — WEEXP</title><style>
-@page{margin:14mm}body{font-family:"IBM Plex Sans","Segoe UI",system-ui,Arial,sans-serif;color:#141210;margin:0;font-size:12.5px;line-height:1.5}
+@page{margin:14mm}body{font-family:"Golos Text","Segoe UI",system-ui,Arial,sans-serif;color:#141210;margin:0;font-size:12.5px;line-height:1.5}
 .bar{height:8px;background:#F5301C}.wrap{padding:24px 30px;max-width:780px}
 .top{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #141210;padding-bottom:12px;margin-bottom:16px}
-${DOC_LOGO_CSS}.meta{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#6B675E;text-align:right}
+${DOC_LOGO_CSS}.meta{font-family:"Golos Text","Segoe UI",system-ui,sans-serif;font-size:11px;color:#6B675E;text-align:right}
 .money{font-size:32px;font-weight:800;margin:8px 0 0}.money i{font-size:13px;color:#6B675E;font-weight:500;font-style:normal}
-.sub{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#6B675E;margin:2px 0 14px}
+.sub{font-family:"Golos Text","Segoe UI",system-ui,sans-serif;font-size:11px;color:#6B675E;margin:2px 0 14px}
 h2{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#6B675E;margin:20px 0 8px;border-bottom:1px solid #E3D9C0;padding-bottom:4px}
 table{border-collapse:collapse;width:100%}td{border-bottom:1px solid #F0EADB;padding:5px 8px;vertical-align:middle}td.k{width:230px;color:#3d3a35;font-weight:600}
 ol{margin:6px 0 0;padding-left:0;list-style:none}ol li{padding:6px 0;border-bottom:1px solid #F0EADB}

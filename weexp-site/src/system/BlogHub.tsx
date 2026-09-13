@@ -3,6 +3,7 @@ import { useLp, useT, useLang } from '@/i18n';
 import { ORIGIN, useJsonLd } from '@/lib/seo';
 import { ARTICLES, articlesOf, filledCategories } from '@/data/blog';
 import { CATEGORY_LABEL, CATEGORY_NOTE, type BlogCategory } from '@/data/blogTypes';
+import { ClosingCta } from '@/system/ClosingCta';
 import './blog.css';
 
 /**
@@ -54,6 +55,7 @@ export function BlogHub() {
   };
 
   return (
+    <>
     <section className="sysx blogh">
       <span className="sysx-field" aria-hidden="true" />
       <div className="blogh-in">
@@ -109,5 +111,9 @@ export function BlogHub() {
         ))}
       </div>
     </section>
+    {/* Хаб блогу був глухим кутом: сорок чотири статті — і жодного наступного
+        кроку. А це головний вхід із пошуку. */}
+    <ClosingCta />
+    </>
   );
 }

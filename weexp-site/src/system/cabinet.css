@@ -149,7 +149,7 @@
 .adm-doc-sec-h { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
 .adm-doc-heading { flex: 1 1 auto; font-weight: 700; }
 .adm-doc-sec-act { display: inline-flex; gap: 2px; }
-.adm-doc-body { width: 100%; resize: vertical; font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12.5px; line-height: 1.5; }
+.adm-doc-body { width: 100%; resize: vertical; font-family: var(--mono, 'Golos Text', system-ui, sans-serif); font-size: 12.5px; line-height: 1.5; }
 .adm-doc-add { margin-top: 2px; }
 .adm-doc-vers { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 8px; }
 .adm-doc-ver { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; padding: 5px 0; border-bottom: 1px dashed var(--line); }

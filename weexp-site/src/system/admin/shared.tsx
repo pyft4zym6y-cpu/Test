@@ -408,10 +408,10 @@ export async function captureDoc(run: () => void | Promise<void>): Promise<{ htm
 export function openPrintDoc(title: string, email: string, bodyHtml: string) {
   const now = new Date().toLocaleString('uk-UA');
   const html = `<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>${title}</title><style>
-@page{margin:16mm}body{font-family:"IBM Plex Sans","Segoe UI",system-ui,Arial,sans-serif;color:#141210;margin:0;font-size:13px;line-height:1.55}
+@page{margin:16mm}body{font-family:"Golos Text","Segoe UI",system-ui,Arial,sans-serif;color:#141210;margin:0;font-size:13px;line-height:1.55}
 .bar{height:8px;background:#F5301C}.wrap{padding:26px 30px;max-width:860px}
 .top{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #141210;padding-bottom:12px;margin-bottom:18px}
-${DOC_LOGO_CSS}.meta{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#6B675E;text-align:right}
+${DOC_LOGO_CSS}.meta{font-family:"Golos Text","Segoe UI",system-ui,sans-serif;font-size:11px;color:#6B675E;text-align:right}
 h1{font-size:20px;margin:2px 0 14px}h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:${INK.red};margin:20px 0 8px;border-bottom:1px solid #E3D9C0;padding-bottom:4px}
 table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #EEE7D6;padding:6px 8px;vertical-align:top;text-align:left;font-size:12.5px}
 th{color:#6B675E;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
