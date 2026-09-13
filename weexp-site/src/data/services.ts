@@ -67,7 +67,7 @@ export const SERVICES: ServiceModel[] = [
       'Choose the depth: the store itself or the whole e-commerce department. The amount is fixed before we start.',
     ],
     promise: [
-      'Карта: де саме витікають гроші, скільки це коштує на рік і що робити першим.',
+      'Карта: де саме витікають гроші, скільки це коштує за рік, що робити першим.',
       'A map: exactly where the money leaks, what it costs per year and what to fix first.',
     ],
     forWhom: [
@@ -105,7 +105,7 @@ export const SERVICES: ServiceModel[] = [
     ],
     featured: true,
     promise: [
-      'Зовнішній архітектор для вашої команди: що робити, в якому порядку і чи зроблено якісно.',
+      'Зовнішній архітектор вашій команді: що робити, в якому порядку, чи зроблено якісно.',
       'An external architect for your team: what to do, in what order, and whether it is done well.',
     ],
     forWhom: [

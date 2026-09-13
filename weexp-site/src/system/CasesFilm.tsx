@@ -38,7 +38,7 @@ export function CasesFilm() {
           {/* Заголовок збігається з пунктом меню й крихтою. */}
           <h1 className="sysx-display sysx-h1">{t('Кейси', 'Cases')}</h1>
           <p className="sysx-sub">{t('Систему видно в цифрах', 'You see the system in the numbers')}</p>
-          <p className="sysx-lead">{t('Не обіцянки — дельти до→після з CRM, ERP і GA4. Кожен кейс анонімний, але число реальне.', 'Not promises — before→after deltas from CRM, ERP and GA4. Every case is anonymized, but the number is real.')}</p>
+          <p className="sysx-lead">{t('Не обіцянки, а дельти до→після з CRM, ERP і GA4: кейс анонімний, число реальне.', 'Not promises but before→after deltas from CRM, ERP and GA4: the case is anonymized, the number is real.')}</p>
           <div className="sysx-cta-row cf-head-cta">
             <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>
           </div>
@@ -88,7 +88,7 @@ export function CasesFilm() {
         <div className="cf-outro">
           <div className="sysx-kick">{t('Ваша трансформація', 'Your transformation')}</div>
           <h2 className="sysx-display sysx-h2">{t('Наступне число', 'The next number')}{' '}<br className="br-wide" />{t('у стрічці — ', 'in the reel is ')}<span className="sysx-em">{t('ваше', 'yours')}</span>.</h2>
-          <p className="sysx-lead">{t('Почніть із діагнозу: безкоштовний розрахунок покаже, яка система дасть найбільшу дельту саме вам.', 'Start with the diagnosis: a free estimate shows which system delivers the biggest delta for you.')}</p>
+          <p className="sysx-lead">{t('Почніть із діагнозу: безкоштовний розрахунок покаже, яка система дасть вам найбільшу дельту.', 'Start with the diagnosis: a free estimate shows which system delivers the biggest delta for you.')}</p>
           <div className="sysx-cta-row">
             <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>
             <Link to={lp('/contact')} className="sysx-cta">{t('Залишити заявку', 'Leave a request')} <span aria-hidden="true">→</span></Link>

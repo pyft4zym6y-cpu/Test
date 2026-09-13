@@ -55,7 +55,7 @@ export const CASES: CaseStudy[] = [
     cat: 'Home & Decor · UA → EU',
     name: 'Преміум-текстиль',
     hero: '×18', heroLabel: 'оборот за 18 місяців', window: '18 місяців · ROI 3.8×',
-    lead: 'Флагманський кейс: із локального магазину — у бренд з обігом €900K і конверсією топ-1% сегмента.',
+    lead: 'Із локального магазину — у бренд з обігом €900K і конверсією топ-1% сегмента.',
     systems: ['strategy', 'commercial', 'customer'], stage: 'Independence',
     before: 'Локальний магазин: оборот €48K/рік, конверсія 0,8%, увесь трафік викуповувався рекламою.',
     diagnosis: [
@@ -84,7 +84,7 @@ export const CASES: CaseStudy[] = [
       name: 'Premium textiles',
       heroLabel: 'turnover over 18 months',
       window: '18 months · ROI 3.8×',
-      lead: 'Flagship case: from a local shop to a brand with €900K turnover and top-1% conversion for its segment.',
+      lead: 'From a local shop to a brand with €900K turnover and top-1% conversion in its segment.',
       before: 'A local shop: €48K/year turnover, 0.8% conversion, all traffic bought through ads.',
       diagnosis: [
         'Repeat purchases 12%, organic 5%, email delivered nothing.',
@@ -170,7 +170,7 @@ export const CASES: CaseStudy[] = [
     slug: 'fashion-apparel',
     cat: 'Fashion · Program of Record',
     name: 'Fashion-виробник',
-    hero: '≥19 млн ₴', heroLabel: 'недоотриманого обороту на рік', window: 'програма 12 місяців',
+    hero: '≥19 млн ₴', heroLabel: 'недоотриманого обороту щороку', window: 'програма 12 місяців',
     lead: 'Діагностика знайшла ≥19 млн ₴/рік розриву. Система окупилась за 4–8 місяців.',
     systems: ['commercial', 'operations', 'experience'], stage: 'Diagnose',
     before: 'Оборот 23,2 млн ₴, але 18% замовлень не доходили до викупу. Європа — 0%.',
@@ -178,7 +178,7 @@ export const CASES: CaseStudy[] = [
       'Оплата заявок 63,4%, викуп 82% — гроші губились у логістиці й комунікації.',
       'SEO на позиції 14; готовий під експорт продукт без виходу в ЄС.',
     ],
-    money: '≥19 млн ₴/рік недоотриманого обороту — оформлено в бюджет $56–79K (результат міряємо у валюті клієнта, бюджет фіксуємо в доларах) з окупністю 4–8 міс.',
+    money: '≥19 млн ₴/рік недоотриманого обороту — бюджет $56–79K з окупністю 4–8 міс. Результат міряємо у валюті клієнта, бюджет фіксуємо в доларах.',
     system: [
       'Дорожня карта під DoD: конверсія 3,9% → 4,3–4,5%.',
       'Оплата заявок 63,4% → ≥75%, викуп 82% → ≥88%.',
@@ -229,7 +229,7 @@ export const CASES: CaseStudy[] = [
     cat: 'FMCG · Дистрибуція',
     name: 'FMCG-дистриб’ютор',
     hero: '17K', heroLabel: 'SKU під контролем системи', window: 'національний масштаб',
-    lead: 'Дистрибуція beauty-брендів: 17 000 SKU зведені в керований контур CRM + ERP.',
+    lead: 'Дистрибуція beauty-брендів: 17 000 SKU в одному керованому контурі CRM і ERP.',
     systems: ['operations', 'data', 'org'], stage: 'Build',
     before: '17 000 SKU у таблицях; CRM і склад працювали окремо.',
     diagnosis: [
@@ -256,7 +256,7 @@ export const CASES: CaseStudy[] = [
       name: 'FMCG distributor',
       heroLabel: 'SKUs under system control',
       window: 'national scale',
-      lead: 'Distribution of beauty brands: 17,000 SKUs brought into a managed CRM + ERP loop.',
+      lead: 'Distribution of beauty brands: 17,000 SKUs inside one managed CRM and ERP loop.',
       before: '17,000 SKUs in spreadsheets; CRM and warehouse ran separately.',
       diagnosis: [
         'Losses at process seams on every order.',
@@ -781,7 +781,7 @@ export const CASES: CaseStudy[] = [
     slug: 'b2b-industrial',
     cat: 'B2B Industrial · Промислове постачання',
     name: 'B2B-постачальник',
-    hero: '≥14 млн ₴', heroLabel: 'недоотриманого обороту на рік', window: 'діагностика + roadmap',
+    hero: '≥14 млн ₴', heroLabel: 'недоотриманого обороту щороку', window: 'діагностика + roadmap',
     lead: 'B2B-продажі трималися на кількох менеджерах — без процесів, ролей і даних.',
     systems: ['strategy', 'org', 'data'], stage: 'Diagnose',
     before: 'Усе на 3 ключових менеджерах, немає CRM-дисципліни й наскрізних даних.',

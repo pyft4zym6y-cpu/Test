@@ -29,7 +29,7 @@ export function ExpansionHub() {
         <header className="xhub-head">
           <span className="sysx-kick">{t('Девʼять напрямів · зона робіт', 'Nine areas · scope of work')}</span>
           <h1 className="sysx-display xhub-h1">{t('Наші ', 'Our ')}<span className="hl">{t('експертизи', 'expertise')}</span></h1>
-          <p className="sysx-lead">{t('Девʼять напрямів, якими ми закриваємо задачі. Це не окремі продукти: експертизи входять у будь-який із трьох форматів співпраці — змінюється тільки те, хто тримає кермо.', 'Nine areas through which we close the work. These are not separate products: the expertise goes into any of the three cooperation formats — only who holds the wheel changes.')}</p>
+          <p className="sysx-lead">{t('Девʼять напрямів, якими ми закриваємо задачі. Це не окремі продукти: експертизи входять у будь-який із трьох форматів — змінюється лише те, хто тримає кермо.', 'Nine areas through which we close the work. Not separate products: the expertise goes into any of the three formats — only who holds the wheel changes.')}</p>
           <p className="xhub-more-row">
             <Link to={lp('/services')}>{t('Послуги', 'Services')} →</Link>
           </p>
