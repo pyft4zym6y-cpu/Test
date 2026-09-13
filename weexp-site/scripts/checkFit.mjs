@@ -141,14 +141,25 @@ if (ORPHAN) {
               const box = r.getBoundingClientRect();
               if (!box.width) continue;
               const key = Math.round(box.top);
-              lines.set(key, (lines.get(key) || 0) + 1);
+              const cur = lines.get(key) || { n: 0, l: Infinity, r: -Infinity };
+              lines.set(key, { n: cur.n + 1, l: Math.min(cur.l, box.left), r: Math.max(cur.r, box.right) });
               total++;
             }
           }
           if (lines.size < 2 || total < 4) continue;   // один рядок або зовсім короткий підпис
-          const last = [...lines.entries()].sort((a, b) => a[0] - b[0]).at(-1)[1];
-          if (last <= 2)
-            out.push({ last, rows: lines.size,
+          const rows = [...lines.entries()].sort((a, b) => a[0] - b[0]).map((e) => e[1]);
+          const lastRow = rows.at(-1);
+          /*
+           * Крім числа слів міряємо ШИРИНУ останнього рядка відносно найдовшого.
+           * Два коротких слова («на рік») в кінці абзацу — це нормальний рядок,
+           * а два довгих, що зайняли чверть міри, — той самий обрив, який видно
+           * оком. Число слів відповідає на питання буквально, частка — по суті;
+           * друкуємо обидва, щоб не підміняти правило зручнішою метрикою.
+           */
+          const widest = Math.max(...rows.map((x) => x.r - x.l));
+          const fill = widest > 0 ? (lastRow.r - lastRow.l) / widest : 1;
+          if (lastRow.n <= 2)
+            out.push({ last: lastRow.n, rows: lines.size, fill: Math.round(fill * 100),
               cls: (el.className || '').toString().slice(0, 30),
               text: (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 52) });
         }
@@ -163,9 +174,12 @@ if (ORPHAN) {
     console.log(`fit --orphan: чисто — ${PATHS.length} сторінок × ${WIDTHS.length} ширин`);
     process.exit(0);
   }
-  console.log(`fit --orphan: ${bad.length} речень із висячим словом\n`);
-  for (const b of bad.sort((x, y) => x.last - y.last)) {
-    console.log(`  ${String(b.width).padStart(4)}px ${b.path.padEnd(14)} ${b.last} сл. у ${b.rows}-му рядку  ${b.cls.padEnd(22)} «${b.text}»`);
+  const short = bad.filter((b) => b.fill < 30);
+  console.log(`fit --orphan: ${bad.length} речень із висячим словом`);
+  console.log(`  з них одне слово в рядку: ${bad.filter((b) => b.last === 1).length}`);
+  console.log(`  з них останній рядок коротший за 30% міри: ${short.length}\n`);
+  for (const b of bad.sort((x, y) => (x.last - y.last) || (x.fill - y.fill))) {
+    console.log(`  ${String(b.width).padStart(4)}px ${b.path.padEnd(14)} ${b.last} сл., ${String(b.fill).padStart(3)}% міри, ${b.rows} ряд.  ${b.cls.padEnd(22)} «${b.text}»`);
   }
   process.exit(1);
 }
