@@ -62,7 +62,7 @@ export function BlogHub() {
         <header className="blogh-head">
           <span className="sysx-kick">{t('Блог WEEXP', 'WEEXP blog')}</span>
           <h1 className="sysx-display blogh-h1">
-            {t('Практика e-commerce —', 'E-commerce practice —')}<br />
+            {t('Практика e-commerce —', 'E-commerce practice —')}{' '}<br className="br-wide" />
             <span className="sysx-em">{t('без загальних слів', 'without the platitudes')}</span>
           </h1>
           <p className="sysx-lead">

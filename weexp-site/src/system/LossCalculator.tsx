@@ -222,7 +222,7 @@ ${projRows ? `<div class="card"><h2>${escapeHtml(t('Зараз → куди мо
         {step !== 3 && (
           <header className="sysx-calc-head">
             <div className="sysx-kick">{t('Крок', 'Step')} {step} · {t('~5 хвилин', '~5 minutes')}</div>
-            <h1 className="sysx-display sysx-calc-h1">{t('Діагностика:', 'Diagnostics:')}<br />{t('почнімо з ', "let's start with ")}<span className="sysx-em">{t('числа', 'a number')}</span></h1>
+            <h1 className="sysx-display sysx-calc-h1">{t('Діагностика:', 'Diagnostics:')}{' '}<br className="br-wide" />{t('почнімо з ', "let's start with ")}<span className="sysx-em">{t('числа', 'a number')}</span></h1>
             <p className="sysx-lead">{t('Безкоштовний експрес-аудит за 3 кроки: скільки виторгу витікає щороку, де саме й що робити першим. На виході — число, брендований PDF і можливість замовити повний аудит.', 'A free 3-step express audit: how much revenue leaks each year, where exactly and what to do first. You get a number, a branded PDF and the option to order a full audit.')}</p>
             <div className="sysx-steps mono"><span className={step === 1 ? 'on' : ''}>{t('01 Профіль', '01 Profile')}</span><i>→</i><span className={step === 2 ? 'on' : ''}>{t('02 Симптоми', '02 Symptoms')}</span><i>→</i><span className={String(step) === '3' ? 'on' : ''}>{t('03 Витік', '03 Leak')}</span></div>
           </header>

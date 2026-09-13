@@ -31,7 +31,7 @@ export function Symptoms({ compact = false, cta = 'diagnose' }: {
         <header className="symp-head">
           <span className="sysx-kick">{t('З чого починається розмова', 'Where the conversation starts')}</span>
           <h2 id="symp-h" className="sysx-display symp-h">
-            {t('Що зараз відбувається', 'What is happening')}<br />
+            {t('Що зараз відбувається', 'What is happening')}{' '}<br className="br-wide" />
             <span className="sysx-em">{t('з вашим e-commerce', 'to your e-commerce')}</span>?
           </h2>
           {!compact && (

@@ -87,7 +87,7 @@ export function CasesFilm() {
         {/* Одна дія в кінці сторінки — щоб кейси не були глухим кутом. */}
         <div className="cf-outro">
           <div className="sysx-kick">{t('Ваша трансформація', 'Your transformation')}</div>
-          <h2 className="sysx-display sysx-h2">{t('Наступне число', 'The next number')}<br />{t('у стрічці — ', 'in the reel is ')}<span className="sysx-em">{t('ваше', 'yours')}</span>.</h2>
+          <h2 className="sysx-display sysx-h2">{t('Наступне число', 'The next number')}{' '}<br className="br-wide" />{t('у стрічці — ', 'in the reel is ')}<span className="sysx-em">{t('ваше', 'yours')}</span>.</h2>
           <p className="sysx-lead">{t('Почніть із діагнозу: безкоштовний розрахунок покаже, яка система дасть найбільшу дельту саме вам.', 'Start with the diagnosis: a free estimate shows which system delivers the biggest delta for you.')}</p>
           <div className="sysx-cta-row">
             <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>

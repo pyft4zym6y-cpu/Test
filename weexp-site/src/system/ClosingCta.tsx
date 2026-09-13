@@ -17,7 +17,7 @@ export function ClosingCta() {
     <section className="sysx hb hb-close" aria-labelledby="hb-close-h">
       <div className="hb-in">
         <h2 id="hb-close-h" className="sysx-display hb-close-h">
-          {t('Почнімо з діагнозу,', 'Let us start with a diagnosis,')}<br />
+          {t('Почнімо з діагнозу,', 'Let us start with a diagnosis,')}{' '}<br className="br-wide" />
           {t('а не з пропозиції', 'not with a proposal')}
         </h2>
         <p className="hb-close-l">

@@ -168,7 +168,7 @@ export function Cabinet() {
           <div className="cab-gate-left">
             <Link to={lp('/')} className="cab-gate-back mono">← {t('на сайт', 'to site')}</Link>
             <span className="cab-gate-badge">{t('Особистий кабінет WEEXP', 'WEEXP client cabinet')}</span>
-            <h1 className="sysx-display cab-gate-h">{t('Вхід у ваш', 'Sign in to your')}<br /><span className="hl">{t('кабінет', 'cabinet')}</span></h1>
+            <h1 className="sysx-display cab-gate-h">{t('Вхід у ваш', 'Sign in to your')}{' '}<br className="br-wide" /><span className="hl">{t('кабінет', 'cabinet')}</span></h1>
             {/* Сервіс закритий: акаунт відкриває менеджер. Ліва колонка мала
                 казати те саме, що права, — інакше вона обіцяє самостійний вхід,
                 якого немає, і людина шукає кнопку «зареєструватись». */}

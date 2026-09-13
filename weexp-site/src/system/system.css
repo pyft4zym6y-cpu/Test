@@ -131,6 +131,17 @@
  * вузькому екрані все одно займе кілька рядків, але останній буде повним.
  */
 .sysx :is(h1, h2, h3, h4, .sysx-display) { text-wrap: balance; }
+/*
+ * Ручний перенос у заголовку — рішення для ШИРОКОГО екрана: «Почнімо з
+ * діагнозу, / а не з пропозиції» ділиться там, де ділиться думка. На 320px він
+ * перетворюється на пастку: кожна половина ламається ще раз, і під повним
+ * рядком лишається одне слово. Гірше — він відбирає роботу в balance, який на
+ * цій ширині розклав би заголовок рівно сам.
+ *
+ * Тому на вузькому екрані ручний перенос прибираємо, а не намагаємось
+ * підібрати під нього кегль.
+ */
+@media (max-width: 760px) { .br-wide { display: none; } }
 .sysx :is(p, li, dd, blockquote, .sysx-lead, .sysx-sub, figcaption) { text-wrap: pretty; }
 
 /* — Типографіка: display grotesk як cinematic voice — */
@@ -193,12 +204,29 @@
  * екрані видно і докази, і рядок стеку; на низькому нічого не треба ховати
  * через @media, бо ніщо не бореться за 100vh.
  */
+/*
+ * `grid-template-columns: minmax(0, 1fr)` — не для краси.
+ *
+ * Без нього колонка сітки з `justify-items: center` бере ширину за
+ * max-content вмісту, і `width: 100%` усередині означає «ширина цієї
+ * колонки», а не «ширина екрана»: на 390px герой розкладався на 1100px і
+ * виїжджав за обидва краї. Побачити це горизонтальною перевіркою було не
+ * можна — `html { overflow-x: clip }` обрізає виїзд, тож scrollWidth
+ * лишається рівним екрану й сторож мовчить. Замір: .sysx-hero-in 1100px у
+ * вікні 390px.
+ */
 .sysx-hero {
-  display: grid; justify-items: center; text-align: center;
+  display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center;
   padding: calc(var(--sysh-h) + clamp(26px, 6vh, 64px)) clamp(20px, 6vw, 90px) clamp(24px, 4vh, 48px);
 }
-.sysx-hero-in { display: grid; justify-items: center; gap: clamp(12px, 1.6vw, 20px); width: 100%; max-width: 1100px; }
-.sysx-h1 { font-size: clamp(37px, 6.7vw, 100px); }
+.sysx-hero-in { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center;
+  gap: clamp(12px, 1.6vw, 20px); width: 100%; max-width: 1100px; }
+/*
+ * 100px на 1440px не вміщали «З ТОГО САМОГО ТРАФІКУ» в один рядок: половина
+ * після ручного переносу ламалась ще раз і лишала «ТРАФІКУ» саме. Кегль
+ * підібраний під НАЙДОВШИЙ рядок заголовка, а не під красу на макеті.
+ */
+.sysx-h1 { font-size: clamp(34px, 5.6vw, 84px); }
 .sysx-h2 { font-size: clamp(29px, 4.8vw, 76px); color: var(--deep); }
 .sysx-em { color: var(--data); font-style: normal; }
 .sysx-hero .sysx-em { color: var(--charcoal); }

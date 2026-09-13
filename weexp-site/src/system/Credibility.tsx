@@ -49,7 +49,7 @@ export function Credibility() {
       <div className="cred-in">
         <div className="cred-head">
           <span className="sysx-kick">{t('Чому нам можна довіряти', 'Why you can trust us')}</span>
-          <h2 className="sysx-display cred-h">{t('Не «10 років досвіду» —', 'Not “10 years of experience” —')}<br /><span className="sysx-em">{t('метод і прозорий процес', 'method and a transparent process')}</span></h2>
+          <h2 className="sysx-display cred-h">{t('Не «10 років досвіду» —', 'Not “10 years of experience” —')}{' '}<br className="br-wide" /><span className="sysx-em">{t('метод і прозорий процес', 'method and a transparent process')}</span></h2>
           <p className="cred-lead">{t('Довіра будується не на гаслах, а на тому, як ми думаємо, за чим ухвалюємо рішення і що лишається у вас після роботи.', 'Trust is built not on slogans, but on how we think, what we base decisions on and what stays with you after the work.')}</p>
         </div>
 
