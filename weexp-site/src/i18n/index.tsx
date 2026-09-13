@@ -44,7 +44,7 @@ const NBSP = '\u00A0';
  */
 const GLUE = new RegExp(
   '(^|[\\s(«"„])((?:у|в|з|і|й|а|о|та|до|на|за|із|зі|по|чи|бо|не|ні|що|як' +
-  '|a|an|of|to|in|on|at|is|by|or|we|it))\\s+(?=\\S)', 'gi');
+  '|a|an|of|to|in|on|at|is|by|or))\\s+(?=\\S)', 'gi');
 export function typo(s: string): string {
   return s
     // 1 — прийменник/сполучник не лишається в кінці рядка
