@@ -30,7 +30,7 @@
  * нічим не кращий за той, що мовчить.
  *
  *   node scripts/checkFit.mjs [http://127.0.0.1:8127]
- *   node scripts/checkFit.mjs [url] --vertical
+ *   node scripts/checkFit.mjs [url] --vertical   (фіксований хром поверх тексту)
  *   node scripts/checkFit.mjs [url] --contrast
  *
  * Режим --wrap ловить четверту хворобу: підпис, який ліг на два рядки.
@@ -343,38 +343,70 @@ if (CONTRAST) {
 }
 
 if (VERTICAL) {
+  /*
+   * НАКЛАДАННЯ ФІКСОВАНОГО ХРОМУ НА ТЕКСТ.
+   *
+   * Режим міряв інше: скільки останній рядок сцени `.sysx-void` заїжджає на
+   * рядок логотипів. І сцена, і абсолютний рядок пішли разом зі скрол-фільмом,
+   * тож перевірка перетворилась на «елемента не знайдено» — сторож, який падає
+   * не тому, що знайшов дефект, а тому, що дивиться на сторінку, якої немає.
+   *
+   * Клас помилок лишився, але тепер його джерело інше й одне: шапка (fixed
+   * зверху) і нижня панель вкладок (fixed знизу, ~58px + safe-area). Вони
+   * лежать ПОВЕРХ документа, тож будь-який текст під ними просто не видно —
+   * найчастіше це останній блок сторінки й перший рядок під шапкою.
+   *
+   * Тому міряємо на телефонних вікнах у двох положеннях: на самому верху й у
+   * самому низу сторінки.
+   */
   const bad = [];
   for (const [width, height] of PHONES) {
     const page = await browser.newPage({ viewport: { width, height } });
-    await page.goto(BASE + '/', { waitUntil: 'networkidle' });
-    await page.waitForTimeout(600);
-    const rows = await page.evaluate(() => {
-      const scene = document.querySelector('.sysx-void');
-      if (!scene) return [{ cls: '(сцену .sysx-void не знайдено)', overMarq: 1, overView: 1 }];
-      const marq = document.querySelector('.sysx-marquee');
-      const mTop = marq ? marq.getBoundingClientRect().top : Infinity;
-      return [...scene.children].map((el) => {
-        const cs = getComputedStyle(el);
-        const b = el.getBoundingClientRect();
-        if (cs.display === 'none' || +cs.opacity === 0 || b.height < 2) return null;
-        return {
-          cls: (el.className || '').toString().slice(0, 30),
-          overMarq: Math.round(b.bottom - mTop),
-          overView: Math.round(b.bottom - window.innerHeight),
-        };
-      }).filter(Boolean).filter((r) => r.overMarq > 0 || r.overView > 0);
-    });
-    for (const r of rows) bad.push({ width, height, ...r });
+    for (const path of ['/', '/proof', '/services', '/diagnose']) {
+      await page.goto(BASE + path, { waitUntil: 'networkidle' });
+      await page.waitForTimeout(400);
+      for (const where of ['top', 'bottom']) {
+        await page.evaluate((w) => window.scrollTo(0, w === 'top' ? 0 : document.body.scrollHeight), where);
+        await page.waitForTimeout(250);
+        const rows = await page.evaluate(() => {
+          const chrome = [...document.querySelectorAll('.sysh-nav, .sysh-tabs, .ckc')]
+            .filter((el) => getComputedStyle(el).position === 'fixed')
+            .map((el) => ({ cls: el.className.toString().split(' ')[0], r: el.getBoundingClientRect() }));
+          if (!chrome.length) return [];
+          const out = [];
+          for (const el of document.querySelectorAll('h1, h2, h3, p, li, a, button, span')) {
+            const txt = (el.textContent || '').trim();
+            if (!txt) continue;
+            const cs = getComputedStyle(el);
+            if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) continue;
+            if (cs.position === 'fixed' || el.closest('.sysh-nav, .sysh-tabs, .ckc')) continue;
+            const b = el.getBoundingClientRect();
+            if (b.height < 2 || b.bottom < 0 || b.top > innerHeight) continue;
+            // Рахуємо лише ЛИСТЯ: у батька бокс містить дітей і дає ті самі
+            // накладання вдруге й втретє.
+            if ([...el.children].some((c) => (c.textContent || '').trim())) continue;
+            for (const c of chrome) {
+              const dy = Math.min(b.bottom, c.r.bottom) - Math.max(b.top, c.r.top);
+              const dx = Math.min(b.right, c.r.right) - Math.max(b.left, c.r.left);
+              if (dy > 1 && dx > 1)
+                out.push({ over: Math.round(dy), by: c.cls, text: txt.slice(0, 34) });
+            }
+          }
+          return out;
+        });
+        for (const r of rows) bad.push({ width, height, path, where, ...r });
+      }
+    }
     await page.close();
   }
   await browser.close();
   if (!bad.length) {
-    console.log(`fit --vertical: чисто — ${PHONES.length} телефонних вікон`);
+    console.log(`fit --vertical: чисто — ${PHONES.length} телефонних вікон × 4 сторінки × верх і низ`);
     process.exit(0);
   }
-  console.log(`fit --vertical: ${bad.length} наложень на першому екрані\n`);
-  for (const b of bad) {
-    console.log(`  ${b.width}×${b.height}  ${b.cls.padEnd(30)} на рядок партнерів +${b.overMarq}px, за екран +${b.overView}px`);
+  console.log(`fit --vertical: ${bad.length} накладань фіксованого хрому на текст\n`);
+  for (const b of bad.sort((x, y) => y.over - x.over).slice(0, 40)) {
+    console.log(`  ${b.width}×${b.height} ${b.path.padEnd(11)} ${b.where.padEnd(7)} ${b.by.padEnd(11)} +${b.over}px  «${b.text}»`);
   }
   process.exit(1);
 }

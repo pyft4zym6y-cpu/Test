@@ -33,6 +33,24 @@ const sitemapUrls = () =>
 const fileFor = (u: string) => (u === '/' ? 'index.html' : u.endsWith('.html') ? u.slice(1) : `${u.slice(1)}/index.html`);
 
 describe.skipIf(!built)('собранный dist', () => {
+  it('H1 в пререндере — тот же, что на странице', () => {
+    /*
+     * Один текст в двух местах расходится молча. Робот видит НЕ React-рендер,
+     * а статику из scripts/prerender.mjs — и когда герой переписали с «что
+     * делаем мы» на «что получает клиент», в выдаче ещё долго стоял бы старый
+     * заголовок. Ловим расхождение здесь, а не в Search Console через месяц.
+     */
+    const home = readFileSync(join(__dirname, '..', 'system', 'SystemInMotion.tsx'), 'utf8');
+    const jsx = /<h1 className="sysx-display sysx-h1">([\s\S]*?)<\/h1>/.exec(home)?.[1] ?? '';
+    const words = [...jsx.matchAll(/t\('([^']+)'/g)].map((m) => m[1].trim()).join(' ');
+    expect(words, 'H1 на странице не найден').toBeTruthy();
+
+    const pre = /<h1>([^<]*)<\/h1>/.exec(html('index.html'))?.[1] ?? '';
+    expect(pre, 'H1 в пререндере не найден').toBeTruthy();
+    const norm = (x: string) => x.toLowerCase().replace(/\s+/g, ' ').trim();
+    expect(norm(pre), `пререндер отдаёт «${pre}», страница показывает «${words}»`).toBe(norm(words));
+  });
+
   it('sitemap не пуст и покрывает обе языковые версии', () => {
     const u = sitemapUrls();
     expect(u.length).toBeGreaterThan(30);

@@ -171,7 +171,7 @@ const PACK = [
 
 /** Тіло EN-сторінки за її адресою. Порожньо — сторінка обійдеться описом. */
 const EN_BODY = {
-  '/': `<p>We find exactly where the money leaks in online sales, put a number on it from your CRM/ERP/GA4 — and rebuild.</p><h2>Three ways to work</h2>${formatLinks('en')}<p>${esc(SERVICES_EN)}</p><h2>What the audit covers</h2>${ul(SYSTEMS_EN)}<p><a href="/en/services/audit">What the audit checks</a></p>`,
+  '/': `<p>We show in numbers how much your store loses every month — from your CRM, ERP and GA4. Then we rebuild what delivers the biggest delta.</p><h2>Three ways to work</h2>${formatLinks('en')}<p>${esc(SERVICES_EN)}</p><h2>What the audit covers</h2>${ul(SYSTEMS_EN)}<p><a href="/en/services/audit">What the audit checks</a></p>`,
   '/proof': `<p>Not promises — before→after deltas from CRM, ERP and GA4. Every case is anonymous; every number is real.</p>${ul(PROOF_EN)}`,
   '/people': `<p>WEEXP was founded by Pavlo Sydorenko, Founder &amp; Architect of Commerce (8+ years in international e-commerce: US · EU · MENA). Each of the eight systems of online sales has an owner accountable for the result — specialists, not generalists.</p>${ul(ROSTER_EN)}`,
   '/expansion': `<p>Europe and the US are a separate business contour. We launch systematically and across all storefronts of a market at once. Priority markets: PL, DE, CZ, USA.</p><h2>Market storefronts</h2>${ul(CHANNELS_EN)}${expansionLinks('en')}`,
@@ -209,9 +209,16 @@ const AUDIT_KIND_NAMES = [
 ];
 
 const ROUTES = [
-  { path: '/', og: 'home', title: 'WEEXP — перебудовуємо онлайн-продажі: аудит, консалтинг, управління',
-    desc: 'Знаходимо, де витікають гроші в онлайн-продажах, рахуємо це за CRM/ERP/GA4 і перебудовуємо. Три формати: аудит від $2,900, консалтинг від $1,500/міс, управління під ключ від $4,900/міс.',
-    content: `<h1>Перебудовуємо онлайн-продажі</h1><p>Знаходимо, де саме витікають гроші, рахуємо це в гривнях за вашими CRM/ERP/GA4 — і перебудовуємо: від каталогу до аналітики. Для українських виробників і D2C-брендів.</p><h2>Три формати роботи</h2>${formatLinks('uk')}<p>${esc(SERVICES)}</p><h2>Що охоплює аудит</h2>${ul(SYSTEMS)}<p><a href="/services/audit">Що саме перевіряє аудит</a></p>` },
+  /*
+   * H1 і лід тут ДУБЛЮЮТЬ перший екран головної (src/system/SystemInMotion.tsx):
+   * пошуковий робот бачить цю сторінку, а не React-рендер. Два місця з одним
+   * текстом розʼїжджаються мовчки — саме це й сталось, коли герой переписали
+   * на потребу клієнта, а тут лишилось «Перебудовуємо онлайн-продажі».
+   * Сторож seoOutput звіряє їх; змінюєте один — міняйте обидва.
+   */
+  { path: '/', og: 'home', title: 'WEEXP — більше продажів з того самого трафіку: аудит, консалтинг, управління',
+    desc: 'Показуємо в гривнях, скільки магазин втрачає щомісяця — за вашими CRM, ERP і GA4 — і перебудовуємо те, що дає найбільшу дельту. Три формати: аудит від $2,900, консалтинг від $1,500/міс, управління під ключ від $4,900/міс.',
+    content: `<h1>Більше продажів з того самого трафіку</h1><p>Показуємо в гривнях, скільки магазин втрачає щомісяця — за вашими CRM, ERP і GA4. Далі перебудовуємо те, що дає найбільшу дельту. Для e-commerce і D2C-брендів.</p><h2>Три формати роботи</h2>${formatLinks('uk')}<p>${esc(SERVICES)}</p><h2>Що охоплює аудит</h2>${ul(SYSTEMS)}<p><a href="/services/audit">Що саме перевіряє аудит</a></p>` },
   { path: '/proof', og: 'proof', title: `Докази — трансформації в цифрах${SUF}`,
     desc: 'Флагманські кейси e-commerce: дельти до→після з CRM/ERP/GA4 — ×18 обороту, +65% продажів, ≥19 млн ₴ розриву. Не обіцянки, а числа.',
     content: `<h1>Систему видно в цифрах</h1><p>Не обіцянки — дельти до→після з CRM, ERP і GA4. Кожен кейс анонімний, але число реальне.</p>${ul(PROOF)}` },
