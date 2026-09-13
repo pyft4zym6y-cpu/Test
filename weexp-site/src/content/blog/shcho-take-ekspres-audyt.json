@@ -13,11 +13,10 @@
   "category": "method",
   "pages": [
     "/diagnose",
-    "/audit-pack",
+    "/services/audit",
     "/",
     "/contact",
-    "/services",
-    "/services/audit"
+    "/services"
   ],
   "published": "2026-09-11",
   "readMin": 7,

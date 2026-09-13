@@ -877,7 +877,7 @@ function Audits({ express, rec, user, go, onDelete }: { express: ExpressAudit | 
                 <div className="cab-audit-actions">
                   <button className="sysx-cta is-primary" onClick={() => setShowRes((v) => !v)}>{showRes ? t('Згорнути результат', 'Collapse result') : t('Переглянути результат →', 'View result →')}</button>
                   <button className="sysx-cta" onClick={() => exportExpressPdf(express, user.email)}>{t('Завантажити PDF', 'Download PDF')}</button>
-                  <Link className="sysx-cta" to={lp('/diagnose')}>{t('Перерахувати', 'Recalculate')}</Link>
+                  <Link className="sysx-cta" to={lp('/diagnose')}>{t('Порахувати витік', 'Calculate the leak')}</Link>
                   {/* Результат був глухим кутом: подивитись, завантажити, перерахувати —
                       і все. Наступного кроку для зацікавленого клієнта не було взагалі. */}
                   <button className="sysx-cta is-primary" onClick={() => go('meet')}>{t('Запланувати зустріч →', 'Book a meeting →')}</button>
@@ -887,7 +887,7 @@ function Audits({ express, rec, user, go, onDelete }: { express: ExpressAudit | 
                   </button>
                 </div>
                 {showRes && <ExpressResultView express={express} />}</>
-            : <><p className="cab-sub">{t('Швидка оцінка втрат за 7 показниками — орієнтир перед глибоким аудитом.', 'A quick loss estimate across 7 metrics — a pointer before the deep audit.')}</p><Link className="sysx-cta is-primary" to={lp('/diagnose')}>{t('Пройти експрес-аудит →', 'Take the express audit →')}</Link></>}
+            : <><p className="cab-sub">{t('Швидка оцінка втрат за 7 показниками — орієнтир перед глибоким аудитом.', 'A quick loss estimate across 7 metrics — a pointer before the deep audit.')}</p><Link className="sysx-cta is-primary" to={lp('/diagnose')}>{t('Порахувати витік', 'Calculate the leak')} →</Link></>}
         </div>
         <div className="cab-audit">
           <div className="cab-audit-top"><b>{t('Глибокий аудит', 'Deep audit')}</b><span className={`cab-badge mono tst-${ui.cls}`}>{ui.badge}</span></div>

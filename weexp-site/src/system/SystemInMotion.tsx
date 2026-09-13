@@ -9,7 +9,6 @@ import { HEADLINE_PROOF } from '@/data/cases';
 
 const CommerceSystem3D = lazy(() => import('@/system/CommerceSystem3D').then((m) => ({ default: m.CommerceSystem3D })));
 const Symptoms = lazy(() => import('@/system/Symptoms').then((m) => ({ default: m.Symptoms })));
-const SystemExplorer = lazy(() => import('@/system/SystemExplorer').then((m) => ({ default: m.SystemExplorer })));
 /*
  * Вісім блоків головної після героя лежать в одному модулі й вантажаться одним
  * чанком: вони йдуть підряд, і сім окремих lazy-імпортів дали б сім запитів на
@@ -141,7 +140,7 @@ export function SystemInMotion() {
             того, як вона зрозуміла послугу. Кнопка лишилась одна; «залишити
             заявку» нікуди не зникла — вона постійно стоїть у шапці. */}
         <div ref={sVoid} className="sysx-scene sysx-void">
-          <div className="sysx-kick">{t('Операційний партнер для e-commerce і D2C-брендів', 'An operating partner for e-commerce & D2C brands')}</div>
+          <div className="sysx-kick">{t('E-commerce і D2C-бренди', 'E-commerce & D2C brands')}</div>
           <h1 className="sysx-display sysx-h1">{t('Перебудовуємо', 'We rebuild')}<br /><span className="sysx-em">{t('онлайн-продажі', 'online sales')}</span></h1>
           <p className="sysx-sub">{t('Аудит · конверсія · повторні продажі · керовані процеси', 'Audit · conversion · repeat sales · managed processes')}</p>
           <p className="sysx-lead">{t('Знаходимо, де саме витікають гроші, рахуємо це в гривнях за вашими CRM/ERP/GA4 — і перебудовуємо: від каталогу до аналітики.', 'We find exactly where the money leaks, put a number on it from your CRM/ERP/GA4 — and rebuild: from the catalog to the analytics.')}</p>
@@ -190,12 +189,11 @@ export function SystemInMotion() {
       <HomeServices />
       <HomeExpertise />
     </Suspense>
-    {/* Вхід з боку клієнта: репліка власника, а не назва системи. Стоїть перед
-        розбором восьми систем — інакше першим, що людина читає про причину, знову
-        стає наша таксономія. */}
+    {/* Вхід з боку клієнта: репліка власника, а не назва системи. Розбір
+        восьми систем, який стояв нижче, пішов разом зі своїми сторінками — це
+        була наша методологія, а не те, що купують. Симптом веде прямо в аудит,
+        де його й знаходять. */}
     <Suspense fallback={null}><Symptoms compact /></Suspense>
-    {/* Зона робіт: вісім систем онлайн-продажів, інтерактивний розбір. */}
-    <div id="systems"><Suspense fallback={null}><SystemExplorer /></Suspense></div>
     <Suspense fallback={null}>
       <HowWeWork />
       <AfterHandover />

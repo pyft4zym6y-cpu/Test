@@ -18,8 +18,8 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { PAGES, EXTRA_PAGES, SUB_PAGES, nameOf } from '../lib/nav';
-import { SYSTEMS, shortOf } from '../data/xray';
-import { EXPERTISES, L } from '../system/expertises';
+import { SERVICES } from '../data/services';
+import { EXPERTISES } from '../system/expertises';
 import { TOTAL_DOMAINS } from '../data/xray';
 import { AUDIT_BLOCKS } from '../data/auditPack';
 import { HEADLINE_PROOF } from '../data/cases';
@@ -28,24 +28,52 @@ const SYS = join(__dirname, '..', 'system');
 const files = readdirSync(SYS).filter((f) => f.endsWith('.tsx'));
 const sources = files.map((f) => ({ f, src: readFileSync(join(SYS, f), 'utf8') }));
 
-/** Підписи CTA за адресою призначення: <Link to={lp('/x')} className="…cta…">…</Link> */
-function ctaLabels(): Map<string, Set<string>> {
-  const out = new Map<string, Set<string>>();
-  const re = /<Link[^>]*?to=\{(?:`\$\{)?lp\('(\/[a-z-]*)'\)[^>]*?className="[^"]*cta[^"]*"[^>]*>([\s\S]*?)<\/Link>/g;
-  for (const { src } of sources) {
+/**
+ * Кожне внутрішнє посилання: куди веде, як підписане і чи це кнопка.
+ *
+ * Доти збирач дивився тільки на className із «cta» — і не бачив, що підвал
+ * блогу кличе «Усі статті», сторінка 404 — «Докази» й «Експансія», а хаб
+ * експертиз — «Формати роботи». Половина сайту називала розділи по-своєму,
+ * і жоден тест цього не показував.
+ */
+type LinkUse = { to: string; label: string; button: boolean };
+
+function siteLinks(): LinkUse[] {
+  const out: LinkUse[] = [];
+  /*
+   * Якір після адреси лишаємо в цілі: посилання на /proof#method веде в
+   * РОЗДІЛ сторінки, а не на сторінку. Такий підпис пояснює, що там усередині
+   * («як ми рахуємо ці цифри»), і назвою розділу бути не зобовʼязаний.
+   */
+  const re = /<Link([^>]*?)to=\{(?:`\$\{)?lp\('(\/[a-z/-]*)'\)([^}]*?)\}([^>]*?)>([\s\S]*?)<\/Link>/g;
+  /*
+   * Кабінет клієнта й адмінка — закриті поверхні на app.weexp.agency, а не
+   * розділи публічного сайту: у них свій шапковий рядок («кабінет») і свій
+   * вихід («на сайт»). Правило про назви розділів стосується сайту.
+   */
+  const CLOSED = /^(Cabinet|AdminPanel|ProjectView|admin\/)/;
+  for (const { f, src } of sources) {
+    if (CLOSED.test(f)) continue;
     for (const m of src.matchAll(re)) {
-      const to = m[1];
+      const attrs = m[1] + m[4];
+      const anchor = /['`]#/.test(m[3]) ? '#' : '';
+      const to = m[2] + anchor;
       // з t('укр', 'eng') беремо українську; інакше — сирий текст
-      const tm = /\{t\('([^']+)'/.exec(m[2]);
-      const label = (tm ? tm[1] : m[2].replace(/<[^>]*>/g, '')).trim()
-        .replace(/[\s→↗]+$/u, '').replace(/\s+/g, ' ');
-      if (!label) continue;
-      if (!out.has(to)) out.set(to, new Set());
-      out.get(to)!.add(label);
+      const tm = /\{t\('([^']+)'/.exec(m[5]);
+      const label = (tm ? tm[1] : m[5].replace(/<[^>]*>/g, '')).trim()
+        .replace(/[\s→↗←]+$/u, '').replace(/^[←\s]+/u, '').replace(/\s+/g, ' ');
+      if (!label || label.startsWith('{')) continue;
+      /*
+       * Кнопкою вважаємо будь-який клас, що закінчується на -cta: у шапці це
+       * sysh-cta, в тілі сторінок sysx-cta. Перша версія знала лише про
+       * другий — і кнопка в шапці читалась як текстове посилання.
+       */
+      out.push({ to, label, button: /className="[^"]*[a-z]+-cta\b/.test(attrs) });
     }
   }
   return out;
 }
+
 
 describe('назви сторінок — один перелік', () => {
   it('меню, підвал і крихти не тримають власних списків назв', () => {
@@ -57,62 +85,38 @@ describe('назви сторінок — один перелік', () => {
 
   it('короткі назви підсторінок не розійшлись із джерелом', () => {
     /*
-     * SUB_PAGES дублює назви з xray.ts і expertises.ts — навмисно, щоб не
-     * тягнути на сторінку статті два важкі чанки заради двох слів. Дубль
-     * тримається на цьому тесті: без нього перейменована система лишиться зі
-     * старою назвою в кнопках блогу, і ніхто цього не помітить.
+     * SUB_PAGES дублює назви експертиз навмисно: expertises.ts важкий (34 КБ),
+     * і тягнути його на сторінку статті заради двох слів немає сенсу. Ціна
+     * цього рішення — цей тест.
+     *
+     * Вісім систем звідси пішли разом зі своїми сторінками: вони описували
+     * нашу внутрішню методологію й дублювали і девʼять експертиз, і
+     * шістнадцять видів аудиту.
      */
     const bad: string[] = [];
-    for (const sys of SYSTEMS) {
-      for (const lang of ['uk', 'en'] as const) {
-        const want = shortOf(sys.key, lang);
-        const got = nameOf(`/systems/${sys.slug}`, lang);
-        if (got !== want) bad.push(`/systems/${sys.slug} (${lang}): «${got}» ≠ «${want}»`);
+    for (const p of SUB_PAGES) {
+      if (p.to.startsWith('/expansion/')) {
+        const e = EXPERTISES.find((x) => `/expansion/${x.slug}` === p.to);
+        if (!e) { bad.push(`${p.to}: експертизи з таким слагом немає`); continue; }
+        if (e.title[0] !== p.uk) bad.push(`${p.to}: «${p.uk}» ≠ «${e.title[0]}»`);
+        if (e.title[1] !== p.en) bad.push(`${p.to}: «${p.en}» ≠ «${e.title[1]}»`);
+      }
+      if (p.to.startsWith('/services/')) {
+        const m = SERVICES.find((x) => `/services/${x.slug}` === p.to);
+        if (!m) { bad.push(`${p.to}: формату з таким слагом немає`); continue; }
+        if (m.name[0] !== p.uk) bad.push(`${p.to}: «${p.uk}» ≠ «${m.name[0]}»`);
       }
     }
-    for (const e of EXPERTISES) {
-      // Експертизи мають довгі заголовки, тож звіряємо не з повним title, а з
-      // тим, що назва підсторінки взагалі існує й непорожня.
-      for (const lang of ['uk', 'en'] as const) {
-        if (!nameOf(`/expansion/${e.slug}`, lang)) bad.push(`/expansion/${e.slug} (${lang}): назви немає`);
-      }
-      // …і що вона не суперечить заголовку: або збігається, або є його частиною.
-      const full = L(e.title, 'uk');
-      const short = nameOf(`/expansion/${e.slug}`, 'uk');
-      if (short && !full.toLowerCase().includes(short.toLowerCase().split('/')[0]))
-        bad.push(`/expansion/${e.slug}: «${short}» не звучить у заголовку «${full}»`);
-    }
-    expect(bad).toEqual([]);
+    expect(bad, `назви розійшлись:\n${bad.join('\n')}`).toEqual([]);
   });
 
-  it('кожна підсторінка систем і експертиз має коротку назву', () => {
-    // Нова система або експертиза без назви тут дасть у блозі кнопку зі слугом.
-    const have = new Set(SUB_PAGES.map((p) => p.to));
+  it('кожна експертиза й кожен формат мають назву в переліку', () => {
+    const named = new Set(SUB_PAGES.map((p) => p.to));
     const missing = [
-      ...SYSTEMS.map((s) => `/systems/${s.slug}`),
       ...EXPERTISES.map((e) => `/expansion/${e.slug}`),
-    ].filter((to) => !have.has(to));
-    expect(missing).toEqual([]);
-  });
-
-  it('меню в статиці збігається з меню в застосунку', () => {
-    /*
-     * prerender.mjs тримає власне дзеркало PAGES, бо це окремий скрипт без
-     * доступу до TS. Коментар поруч із дзеркалом стверджував, що перелік
-     * стереже саме цей тест, — а тесту не існувало. Тобто меню в статиці
-     * могло розійтися з меню в застосунку без жодного сигналу; рівно так
-     * колись і розійшлись назви сторінок у трьох різних списках.
-     *
-     * Статика додає до меню /audit-pack: у підвалі він є, а в шапці — ні.
-     */
-    const pre = readFileSync(join(SYS, '..', '..', 'scripts', 'prerender.mjs'), 'utf8');
-    const at = pre.indexOf('const NAV_PAGES = [');
-    expect(at, 'дзеркала NAV_PAGES більше немає — тест треба переписати').toBeGreaterThan(0);
-    const mirror = [...pre.slice(at, pre.indexOf('];', at)).matchAll(
-      /\{ to: '([^']+)', uk: '([^']+)', en: '([^']+)' \}/g)].map((m) => [m[1], m[2], m[3]]);
-    const want = [...PAGES, { to: '/audit-pack', uk: nameOf('/audit-pack', 'uk'), en: nameOf('/audit-pack', 'en') }]
-      .map((p) => [p.to, p.uk, p.en]);
-    expect(mirror).toEqual(want);
+      ...SERVICES.map((m) => `/services/${m.slug}`),
+    ].filter((to) => !named.has(to));
+    expect(missing, `підсторінки без назви: ${missing.join(', ')}`).toEqual([]);
   });
 
   it('жодна названа сторінка не лишилась без входу', () => {
@@ -127,7 +131,13 @@ describe('назви сторінок — один перелік', () => {
     const at = foot.indexOf('const FOOT_EXTRA = [');
     expect(at, 'переліку FOOT_EXTRA більше немає — тест треба переписати').toBeGreaterThan(0);
     const listed = [...foot.slice(at, foot.indexOf('];', at)).matchAll(/'([^']+)'/g)].map((m) => m[1]);
-    const orphans = EXTRA_PAGES.map((p) => p.to).filter((to) => !listed.includes(to));
+    /*
+     * «Кабінет» — виняток: він живе на app.weexp.agency, і посилання на нього
+     * в підвалі сайту вело відвідувача з сайту геть. Назва потрібна крихтам,
+     * входу з публічного сайту він не має й не повинен мати.
+     */
+    const orphans = EXTRA_PAGES.map((p) => p.to)
+      .filter((to) => to !== '/cabinet' && !listed.includes(to));
     expect(orphans, `сторінки без входу ні з меню, ні з підвалу: ${orphans.join(', ')}`).toEqual([]);
   });
 
@@ -163,148 +173,46 @@ describe('назви сторінок — один перелік', () => {
 });
 
 describe('одна дія — одна назва', () => {
-  const labels = ctaLabels();
+  const links = siteLinks();
 
-  it('CTA взагалі знайдені — інакше тест нічого не стереже', () => {
-    expect(labels.get('/diagnose')?.size ?? 0).toBeGreaterThan(0);
-    expect(labels.get('/contact')?.size ?? 0).toBeGreaterThan(0);
+  it('посилання взагалі знайдені — інакше тест нічого не стереже', () => {
+    expect(links.length, 'у розмітці не знайдено жодного внутрішнього посилання').toBeGreaterThan(20);
+    expect(links.some((l) => l.button), 'жодної кнопки не розпізнано').toBe(true);
+    expect(links.some((l) => !l.button), 'жодного звичайного посилання не розпізнано').toBe(true);
   });
 
-  it('/diagnose — не більше пʼяти підписів', () => {
+  it('звичайне посилання називає розділ так само, як меню', () => {
     /*
-     * Дозволено рівно пʼять: назва продукту («Express audit» — меню, шапка,
-     * шторка), канонічна вигода («Порахувати витік» — усі герої) і три
-     * контекстні, де сам розділ і є вигодою: дельта на /proof, виграш за
-     * роллю, конкретна система на сторінці послуги.
+     * Правило, яке тримає весь сайт узгодженим. Посилання-ТЕКСТ на сторінку,
+     * у якої є назва в lib/nav, зобовʼязане цю назву й носити: інакше людина
+     * не впізнає, що вже там була. Кнопки — виняток: вони називають ДІЮ
+     * («Порахувати витік»), і для них правило нижче.
      */
-    const s = labels.get('/diagnose')!;
-    expect([...s].sort(), `підписів ${s.size}: ${[...s].join(' · ')}`).toHaveLength(5);
+    const bad = links
+      .filter((l) => !l.button)
+      .filter((l) => { const c = nameOf(l.to, 'uk'); return c && l.label !== c; })
+      .map((l) => `${l.to}: «${l.label}» замість «${nameOf(l.to, 'uk')}»`);
+    expect([...new Set(bad)], `розділи, названі не так, як у меню:\n${[...new Set(bad)].join('\n')}`).toEqual([]);
   });
 
-  it('/contact — одна назва', () => {
-    // Було шість. Другою лишалась «Запросити референс» — обіцянка
-    // референс-дзвінка, яку прибрано з продукту разом із блоком на /proof.
-    const s = labels.get('/contact')!;
-    expect([...s].sort(), `підписів ${s.size}: ${[...s].join(' · ')}`).toHaveLength(1);
-  });
-
-  it('/proof називається так само, як пункт меню', () => {
-    const s = labels.get('/proof');
-    for (const l of s ?? []) expect(l, `посилання «${l}» ≠ пункт меню`).toBe(nameOf('/proof', 'uk'));
-  });
-});
-
-describe('числа збігаються зі своїм джерелом', () => {
-  const read = (p: string) => readFileSync(join(__dirname, '..', p), 'utf8');
-
-  it('кількість кейсів і компетенцій рахується з переліків', () => {
-    /*
-     * «17 трансформацій» на /proof і в блоці «коротко» на /people, «11
-     * напрямів» там само — усе це були літерали. Вони збігалися з даними лише
-     * доти, доки дані не змінять: наступний доданий кейс тихо лишив би на двох
-     * сторінках «17», і помітити це можна було б тільки очима.
-     *
-     * Перевіряємо звʼязок, а не число: сторож не має вимагати повернути на
-     * сторінку рівно те, від чого ми її звільнили.
-     */
-    const about = read('system/About.tsx');
-    const cases = read('system/CasesFilm.tsx');
-    expect(about, '/people знову набирає кількість компетенцій руками').toContain('{AREAS.length}');
-    expect(about, '/people знову набирає кількість кейсів руками').toContain('{CASES.length}');
-    expect(cases, '/proof знову набирає кількість трансформацій руками').toContain('${CASES.length}');
-    for (const [file, src] of [['About.tsx', about], ['CasesFilm.tsx', cases]] as const) {
-      const txt = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
-      expect(txt, `${file}: число трансформацій повернулось літералом`).not.toMatch(/\d+ трансформац/);
-      expect(txt, `${file}: число компетенцій повернулось літералом`).not.toMatch(/\d+ (?:напрямів|компетенцій)/);
+  it('у кнопки на одну адресу — одна назва дії', () => {
+    // Дві різні дії на одну сторінку читаються як дві різні сторінки.
+    const byTo = new Map<string, Set<string>>();
+    for (const l of links.filter((x) => x.button)) {
+      if (!byTo.has(l.to)) byTo.set(l.to, new Set());
+      byTo.get(l.to)!.add(l.label);
     }
+    const bad = [...byTo].filter(([, set]) => set.size > 1)
+      .map(([to, set]) => `${to}: ${[...set].join(' · ')}`);
+    expect(bad, `адреси з кількома назвами дії:\n${bad.join('\n')}`).toEqual([]);
   });
 
-  it('«напрями» на сайті означають одне', () => {
-    /*
-     * /expansion казав «девʼять напрямів», /people — «11 напрямів». Два різні
-     * переліки під однією назвою: девʼять експертиз зі своїми сторінками і
-     * одинадцять компетенцій партнерської мережі. Формально не помилка, на
-     * читання — суперечність.
-     */
-    const about = read('system/About.tsx').replace(/\/\*[\s\S]*?\*\//g, '');
-    expect(about, 'на /people знову зʼявились «напрями» — це слово зайняте експертизами')
-      .not.toMatch(/напрям(ів|и|ами)? експертиз/);
-  });
-
-  it('кількість аудитів у пакеті — та сама скрізь', () => {
-    // auditPack.ts — джерело; сторінка цін і опис /audit-pack обіцяли 12.
-    const pack = read('data/auditPack.ts');
-    const n = (/(\d+) спеціалізованих аудитів/.exec(pack) || [])[1];
-    expect(n, 'у auditPack.ts не знайдено кількості аудитів').toBeTruthy();
-    /*
-     * Формати лежать у data/services.ts, який НЕ імпортує auditPack: інакше
-     * блок послуг на головній тягнув би 64 КБ таксономії заради двох чисел.
-     * Тому в тексті стоїть підстановка {audits}, а число підставляє та
-     * сторінка, яка auditPack і так вантажить. Звʼязок тримають обидва боки.
-     */
-    expect(read('data/services.ts'), 'формати знову набирають число аудитів руками')
-      .toContain('{audits} аудитів');
-    expect(read('data/services.ts'), 'у тексті формату зʼявилось число аудитів літералом')
-      .not.toMatch(/\d+ аудитів/);
-    expect(String(AUDIT_BLOCKS.length), 'каталог аудитів розійшовся з описом у auditPack').toBe(n);
-    expect(read('lib/seo-data.json'), `опис /audit-pack обіцяє не ${n} аудитів`).toContain(`${n} аудитів`);
-  });
-
-  it('кількість доменів на сторінці цін = кількості в моделі', () => {
-    /*
-     * Сторінка цін продавала «150+ спеціалізованих перевірок» — числа, якого
-     * немає ніде в коді. Решта чисел на сайті перевіряються, і одне
-     * неперевірюване роняє довіру до всіх. Замінено на домени, які можна
-     * порахувати; тест тримає їх звʼязаними з моделлю.
-     */
-    const xray = read('data/xray.ts');
-    const head = xray.slice(0, xray.indexOf('export const TOTAL_SYSTEMS'));
-    const domains = [...head.matchAll(/^\s*domains: \[([^\]]*)\]/gm)]
-      .reduce((sum, m) => sum + m[1].split(',').length, 0);
-    expect(domains, 'не вдалося порахувати домени').toBeGreaterThan(0);
-    expect(TOTAL_DOMAINS, 'TOTAL_DOMAINS рахує не те, що лежить у SYSTEMS').toBe(domains);
-    /*
-     * Сторінка більше не набирає число руками — вона підставляє TOTAL_DOMAINS.
-     * Тому тут перевіряємо звʼязок, а не літерал: інакше сторож вимагав би
-     * повернути на сторінку саме те, від чого ми її звільнили.
-     */
-    expect(read('data/services.ts'), 'формати знову набирають число доменів руками')
-      .toContain('{domains} доменів діагностики');
-    expect(read('data/services.ts'), 'у тексті формату зʼявилось число доменів літералом')
-      .not.toMatch(/\d+ доменів діагностики/);
-    expect(read('data/services.ts'), 'повернулось число без джерела')
-      .not.toContain('150+');
-  });
-
-  it('числа першого екрана справді є в кейсах, на які посилаються', () => {
-    /*
-     * Перший екран головної не містив жодного числа результату — єдине, що там
-     * стояло, це «$0.5–10M», розмір аудиторії. Тепер там три числа з кейсів.
-     * Тест тримає їх звʼязаними з джерелом: якщо метрику в кейсі змінили або
-     * прибрали, головна не має тихо продовжувати обіцяти старе.
-     */
-    const src = read('data/cases.ts');
-    expect(HEADLINE_PROOF.length, 'смуга доказів порожня').toBeGreaterThan(0);
-    for (const h of HEADLINE_PROOF) {
-      const i = src.indexOf(`slug: '${h.slug}'`);
-      expect(i, `кейса ${h.slug} не існує`).toBeGreaterThan(-1);
-      // Дивимось лише всередині цього кейса — до початку наступного.
-      const next = src.indexOf("slug: '", i + 10);
-      const block = src.slice(i, next === -1 ? undefined : next);
-      const re = new RegExp(`label: '${h.metric}'[^}]*?'${h.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'`);
-      expect(re.test(block), `${h.slug}: метрика «${h.metric}» більше не дає ${h.value}`).toBe(true);
-    }
-  });
-
-  it('кількість систем у шапках файлів = кількості в моделі', () => {
-    const xray = read('data/xray.ts');
-    const keys = [...xray.matchAll(/^\s*\{\s*key: '[a-z-]+', num:/gm)].length;
-    expect(keys, 'не вдалося порахувати системи в SYSTEMS').toBeGreaterThan(0);
-    for (const f of ['data/xray.ts', 'data/cases.ts', 'system/SystemInMotion.tsx']) {
-      // Не рахуємо число всередині діапазону («1–3 із 8 систем»): це не окрема заявка.
-      const stale = read(f).match(/(?<![\d–-])\b([0-9]+) систем/gu) || [];
-      for (const s of stale)
-        expect(s, `${f}: «${s}» — у моделі ${keys}`).toBe(`${keys} систем`);
-    }
+  it('посилань на видалені сторінки не лишилось', () => {
+    // /systems, /audit-pack і /pricing більше не існують: посилання на них
+    // вели б відвідувача в 301 замість сторінки.
+    const gone = ['/systems', '/audit-pack', '/pricing'];
+    const bad = [...new Set(links.map((l) => l.to))]
+      .filter((to) => gone.some((g) => to === g || to.startsWith(g + '/')));
+    expect(bad, `посилання на видалені сторінки: ${bad.join(', ')}`).toEqual([]);
   });
 });

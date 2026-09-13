@@ -32,6 +32,15 @@
  *   node scripts/checkFit.mjs [http://127.0.0.1:8127]
  *   node scripts/checkFit.mjs [url] --vertical
  *   node scripts/checkFit.mjs [url] --contrast
+ *
+ * Режим --wrap ловить четверту хворобу: підпис, який ліг на два рядки.
+ * Заголовок переносити можна й треба, а КНОПКА, пункт меню, вкладка чи чип —
+ * ні: «Порахувати витік» у два рядки читається як два різні написи, ламає
+ * висоту ряду й лишає під собою порожнє місце. Міряємо число рядків у самому
+ * вузлі — кількістю прямокутників, які повертає getClientRects() для його
+ * тексту, — на всіх дев'яти ширинах.
+ *
+ *   node scripts/checkFit.mjs [url] --wrap
  */
 import { createRequire } from 'node:module';
 
@@ -42,6 +51,7 @@ const { chromium } = createRequire(process.cwd() + '/').call(null, 'playwright')
 const ARGS = process.argv.slice(2);
 const VERTICAL = ARGS.includes('--vertical');
 const CONTRAST = ARGS.includes('--contrast');
+const WRAP = ARGS.includes('--wrap');
 const BASE = ARGS.find((a) => a.startsWith('http')) || 'http://127.0.0.1:8127';
 
 /* Телефонні вікна МІНУС хром браузера — саме та висота, яку реально бачить
@@ -50,7 +60,7 @@ const PHONES = [[430, 720], [430, 660], [428, 746], [414, 715], [412, 732],
                 [393, 660], [390, 700], [375, 553], [360, 640], [320, 600]];
 const WIDTHS = [320, 360, 390, 430, 540, 768, 1024, 1280, 1600];
 /* Сторінки, де живуть найдовші заголовки й найщільніші сітки. */
-const PATHS = ['/', '/en', '/systems', '/proof', '/pricing', '/expansion', '/people', '/audit-pack',
+const PATHS = ['/', '/en', '/proof', '/expansion', '/people', 
   // Послуги: хаб і одна сторінка формату. У картці формату найдовші рядки —
   // ціна з періодом в один ряд і перелік «що входить».
   '/services', '/services/audit',
@@ -65,6 +75,80 @@ const SLACK = 1.5;
 const browser = await chromium.launch({
   executablePath: process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
 });
+
+if (WRAP) {
+  /*
+   * Один підпис — один рядок.
+   *
+   * Перевіряємо тільки ті ролі, де перенос — помилка: кнопки (.sysx-cta,
+   * .sysh-cta), пункти меню й шторки, вкладки нижньої панелі, чипи й бейджі,
+   * підписи-мітки. Заголовки, ліди й абзаци сюди не входять: там перенос
+   * нормальний, і сторож, який кричав би й на них, нічого не вартий.
+   */
+  const SEL = [
+    '.sysx-cta', '.sysh-cta', '.sysh-link', '.sysh-sheet-link', '.sysh-tab span',
+    '.hb-serv-link', '.srv-foot-link', '.srvf-pack-link', '.symp-where', '.symp-all',
+    '.sysx-kick', '.hb-claim-link', '.blogt-all', '.srv-table thead th', '.srvf-kind-n',
+  ].join(', ');
+  const bad = [];
+  for (const width of WIDTHS) {
+    const page = await browser.newPage({ viewport: { width, height: 900 } });
+    await page.goto(BASE + (ARGS.find((a) => a.startsWith('/')) || '/'), { waitUntil: 'networkidle' });
+    await page.waitForTimeout(300);
+    for (const path of PATHS) {
+      await page.goto(BASE + path, { waitUntil: 'networkidle' });
+      await page.evaluate(async () => {
+        for (let y = 0; y < document.body.scrollHeight; y += 700) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 30)); }
+        window.scrollTo(0, 0);
+      });
+      await page.waitForTimeout(250);
+      const rows = await page.evaluate((sel) => {
+        const out = [];
+        for (const el of document.querySelectorAll(sel)) {
+          const cs = getComputedStyle(el);
+          if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) continue;
+          let hidden = false;
+          for (let a = el.parentElement; a; a = a.parentElement) {
+            const p = getComputedStyle(a);
+            if (p.display === 'none' || p.visibility === 'hidden' || +p.opacity === 0) { hidden = true; break; }
+          }
+          if (hidden) continue;
+          const box = el.getBoundingClientRect();
+          if (box.height < 2) continue;
+          /*
+           * Рахуємо рядки самого ТЕКСТУ, а не висоту вузла: у кнопки є
+           * padding, і ділити висоту на line-height — гадати. Range над
+           * текстовими вузлами дає рівно стільки прямокутників, скільки
+           * візуальних рядків зайняв напис.
+           */
+          const r = document.createRange();
+          let lines = 0, text = '';
+          for (const n of el.childNodes) {
+            if (n.nodeType !== 3 || !n.textContent.trim()) continue;
+            r.selectNodeContents(n);
+            const tops = new Set([...r.getClientRects()].filter((x) => x.width > 1).map((x) => Math.round(x.top)));
+            lines = Math.max(lines, tops.size);
+            text += n.textContent.trim() + ' ';
+          }
+          if (lines > 1) out.push({ lines, cls: (el.className || '').toString().slice(0, 36), text: text.trim().slice(0, 44) });
+        }
+        return out;
+      }, SEL);
+      for (const r of rows) bad.push({ path, width, ...r });
+    }
+    await page.close();
+  }
+  await browser.close();
+  if (!bad.length) {
+    console.log(`fit --wrap: чисто — ${PATHS.length} сторінок × ${WIDTHS.length} ширин`);
+    process.exit(0);
+  }
+  console.log(`fit --wrap: ${bad.length} підписів у два і більше рядки\n`);
+  for (const b of bad.sort((x, y) => y.lines - x.lines)) {
+    console.log(`  ${String(b.width).padStart(4)}px ${b.path.padEnd(14)} ${b.lines} рядки  ${b.cls}  «${b.text}»`);
+  }
+  process.exit(1);
+}
 
 if (CONTRAST) {
   /*

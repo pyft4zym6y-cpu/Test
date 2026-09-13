@@ -12,13 +12,11 @@
   ],
   "category": "systems",
   "pages": [
-    "/systems",
+    "/services/audit",
     "/",
     "/diagnose",
-    "/audit-pack",
     "/proof",
-    "/services",
-    "/services/audit"
+    "/services"
   ],
   "published": "2026-09-08",
   "readMin": 7,

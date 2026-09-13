@@ -11,16 +11,6 @@
         "We find where the money leaks in online sales, size it from CRM/ERP/GA4 and rebuild. Three formats: audit, consulting, managed delivery."
       ]
     },
-    "/systems": {
-      "uk": [
-        "Вісім систем зростання — з чого склались продажі · WEEXP",
-        "Онлайн-продажі як вісім систем: стратегія, комерція, попит, досвід, операції, дані, організація й експансія. Виторг витікає там, де найслабша."
-      ],
-      "en": [
-        "The eight growth systems · WEEXP",
-        "Online sales as eight systems: strategy, commerce, demand, experience, operations, data, organization and expansion. Revenue leaks at the weakest one."
-      ]
-    },
     "/proof": {
       "uk": [
         "Кейси — трансформації в цифрах · WEEXP",
@@ -71,34 +61,14 @@
         "Leave your contact — we come back with a diagnosis plan in money. For e-commerce makers and D2C brands."
       ]
     },
-    "/audit-pack": {
-      "uk": [
-        "Склад пакета аудиту — 5 звітів · WEEXP",
-        "Повний зміст глибокого аудиту WEEXP: 5 звітів — презентація, 13 аудитів, фінансовий звіт із мостом P&L, роадмапа впровадження, пропозиція та передача."
-      ],
-      "en": [
-        "Audit pack contents — 5 reports · WEEXP",
-        "The full contents of the WEEXP deep audit: 5 reports — presentation, 13 audits, financial report with the P&L bridge, roadmap, proposal and handover."
-      ]
-    },
     "/services": {
       "uk": [
-        "Послуги — три формати роботи · WEEXP",
-        "Що робить WEEXP: аудит онлайн-продажів, консалтинг і супровід, управління трансформацією під ключ. Різниця форматів — у тому, хто відповідає за результат."
+        "Послуги — аудит, консалтинг, управління · WEEXP",
+        "Три формати роботи з WEEXP: глибокий аудит онлайн-продажів від $2,900, консалтинг від $1,500/міс, управління під ключ від $4,900/міс. Ціни й умови відкриті."
       ],
       "en": [
-        "Services — three ways to work · WEEXP",
-        "What WEEXP does: an online-sales audit, consulting and advisory, managed transformation. The formats differ by who is accountable for the result."
-      ]
-    },
-    "/pricing": {
-      "uk": [
-        "Ціни — три формати співпраці · WEEXP",
-        "Три формати співпраці WEEXP — аудит, консалтинг і супровід, управління під ключ. Відкриті ціни; різниця — у тому, хто відповідає за результат."
-      ],
-      "en": [
-        "Pricing — three cooperation formats · WEEXP",
-        "Three ways to work with WEEXP — audit, consulting & advisory, managed delivery. Open prices; the difference is who owns the result."
+        "Services — audit, consulting, managed delivery · WEEXP",
+        "Three ways to work with WEEXP: a deep online-sales audit from $2,900, consulting from $1,500/mo, managed delivery from $4,900/mo. Prices and terms are open."
       ]
     },
     "/blog": {

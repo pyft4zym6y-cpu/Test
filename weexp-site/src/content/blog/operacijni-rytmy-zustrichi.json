@@ -12,9 +12,7 @@
   ],
   "category": "org",
   "pages": [
-    "/systems/organization-operating-model",
-    "/systems/strategy-management",
-    "/systems/data-technology",
+    "/services/audit",
     "/people",
     "/services/consulting",
     "/services/managed"

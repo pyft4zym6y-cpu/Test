@@ -221,7 +221,7 @@ ${projRows ? `<div class="card"><h2>${escapeHtml(t('Зараз → куди мо
       <div className="sysx-calc-panel" ref={panelRef}>
         {step !== 3 && (
           <header className="sysx-calc-head">
-            <div className="sysx-kick">{t('Діагностика e-commerce · крок', 'E-commerce diagnostics · step')} {step} · {t('~5 хвилин', '~5 minutes')}</div>
+            <div className="sysx-kick">{t('Крок', 'Step')} {step} · {t('~5 хвилин', '~5 minutes')}</div>
             <h1 className="sysx-display sysx-calc-h1">{t('Діагностика:', 'Diagnostics:')}<br />{t('почнімо з ', "let's start with ")}<span className="sysx-em">{t('числа', 'a number')}</span></h1>
             <p className="sysx-lead">{t('Безкоштовний експрес-аудит за 3 кроки: скільки виторгу витікає щороку, де саме й що робити першим. На виході — число, брендований PDF і можливість замовити повний аудит.', 'A free 3-step express audit: how much revenue leaks each year, where exactly and what to do first. You get a number, a branded PDF and the option to order a full audit.')}</p>
             <div className="sysx-steps mono"><span className={step === 1 ? 'on' : ''}>{t('01 Профіль', '01 Profile')}</span><i>→</i><span className={step === 2 ? 'on' : ''}>{t('02 Симптоми', '02 Symptoms')}</span><i>→</i><span className={String(step) === '3' ? 'on' : ''}>{t('03 Витік', '03 Leak')}</span></div>
@@ -338,7 +338,7 @@ ${projRows ? `<div class="card"><h2>${escapeHtml(t('Зараз → куди мо
                 зробите за ці гроші». */}
             <p className="calc-pack mono">
               {t('Це оцінка за сімома показниками. Точну карту дає глибокий аудит — ', 'This is an estimate from seven inputs. The precise map comes from the deep audit — ')}
-              <Link to={lp('/audit-pack')}>{t('подивитись його склад', 'see what it contains')} →</Link>
+              <Link to={lp('/services/audit')}>{t('Аудит', 'Audit')} →</Link>
             </p>
 
             <div className="sysx-bottleneck">
@@ -438,7 +438,7 @@ ${projRows ? `<div class="card"><h2>${escapeHtml(t('Зараз → куди мо
               <div className="sysx-calc-actions">
                 <button className="sysx-cta is-primary" onClick={openOrder}>{t('Замовити аудит', 'Order the audit')} →</button>
                 <button className="sysx-cta" onClick={downloadBrandedPdf}>{t('Завантажити PDF', 'Download PDF')} ↓</button>
-                <a className="sysx-cta" href={lp('/pricing')} target="_blank" rel="noopener noreferrer">{t('Формати і ціни', 'Formats & pricing')} ↗</a>
+                <a className="sysx-cta" href={lp('/services')} target="_blank" rel="noopener noreferrer">{t('Послуги', 'Services')} ↗</a>
                 <Link className="sysx-cta" to={lp('/cabinet?from=express')}>{t('Зберегти в кабінет', 'Save to cabinet')} →</Link>
                 <button className="sysx-cta" onClick={restart}>{t('Перерахувати', 'Recalculate')}</button>
               </div>

@@ -56,8 +56,8 @@ export function AuditScope({ compact = false }: {
             <Link to={lp('/services/audit')} className="sysx-cta is-primary">
               {t('Детальніше про формат', 'More on this format')} 01 →
             </Link>
-            <Link to={lp('/audit-pack')} className="srvf-pack-link mono">
-              {t('Що ви отримаєте на виході', 'What you get at the end')} →
+            <Link to={lp('/contact')} className="sysx-cta">
+              {t('Залишити заявку', 'Leave a request')} →
             </Link>
           </div>
         )}

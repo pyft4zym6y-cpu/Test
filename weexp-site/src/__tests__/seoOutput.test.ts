@@ -92,7 +92,7 @@ describe.skipIf(!built)('собранный dist', () => {
   });
 
   it('украинская и английская версии ссылаются друг на друга через hreflang', () => {
-    for (const pair of [['index.html', 'en/index.html'], ['pricing/index.html', 'en/pricing/index.html']]) {
+    for (const pair of [['index.html', 'en/index.html'], ['services/index.html', 'en/services/index.html']]) {
       for (const f of pair) expect(html(f), f).toMatch(/hreflang="(uk|en|x-default)"/);
     }
   });

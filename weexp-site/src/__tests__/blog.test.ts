@@ -24,20 +24,20 @@ const INDEX = JSON.parse(readFileSync(join(ROOT, 'src', 'data', 'blog-index.json
 
 /** Сторінки сайту, на яких має бути блок статей. */
 const PAGES = (() => {
-  const xray = readFileSync(join(ROOT, 'src', 'data', 'xray.ts'), 'utf8');
-  const sys = [...xray.matchAll(/num: '\d+', slug: '([a-z-]+)'/g)].map((m) => `/systems/${m[1]}`);
+  /*
+   * Сторінки, на яких має бути блок статей. Виводяться з тих самих джерел, що
+   * й сайт: девʼять експертиз із expertises.ts, три формати з services.ts.
+   *
+   * Вісім сторінок систем, склад пакета аудиту й окрема сторінка цін звідси
+   * пішли разом зі сторінками: перші описували нашу внутрішню методологію,
+   * другий був чек-листом артефактів, третя повторювала сторінку послуг.
+   */
   const exp = [...readFileSync(join(ROOT, 'src', 'system', 'expertises.ts'), 'utf8')
     .matchAll(/slug: '([a-z-]+)'/g)].map((m) => `/expansion/${m[1]}`);
-  /*
-   * Сторінки форматів співпраці виводяться з data/services.ts, а не
-   * набираються тут руками: доданий формат мав би отримати блок статей разом
-   * із власною сторінкою, а мовчазний пропуск — це рівно та хвороба, від якої
-   * цей тест і поставлений.
-   */
   const svc = [...readFileSync(join(ROOT, 'src', 'data', 'services.ts'), 'utf8')
     .matchAll(/slug: '([a-z-]+)',\n\s*n: '/g)].map((m) => `/services/${m[1]}`);
-  return ['/', '/systems', '/expansion', '/proof', '/people', '/pricing',
-          '/diagnose', '/contact', '/audit-pack', '/services', ...svc, ...sys, ...exp];
+  return ['/', '/expansion', '/proof', '/people', '/diagnose', '/contact',
+          '/services', ...svc, ...exp];
 })();
 
 const MIN_TOTAL = 40;

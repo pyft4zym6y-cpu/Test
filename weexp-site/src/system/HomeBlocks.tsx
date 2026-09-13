@@ -175,7 +175,7 @@ export function HowWeWork() {
   return (
     <section className="sysx hb hb-how" aria-labelledby="hb-how-h">
       <div className="hb-in">
-        <span className="sysx-kick">{t('Прозоро, без сюрпризів у рахунку', 'Transparent, no surprises in the invoice')}</span>
+        <span className="sysx-kick">{t('Прозоро, без сюрпризів', 'Transparent, no surprises')}</span>
         <h2 id="hb-how-h" className="sysx-display hb-h">{t('Як ми це робимо', 'How we do it')}</h2>
         <ol className="hb-steps">
           {PROCESS.map((s) => (
@@ -257,10 +257,13 @@ export function ClosingCta() {
             'A free express estimate gives the first number — how much revenue leaks each year — and the main bottleneck. Then, if needed, the deep audit.',
           )}
         </p>
+        {/* Одна дія. Доти поруч стояло друге посилання — «Залишити заявку», —
+            тобто людині в кінці сторінки пропонували вибрати спосіб звернення
+            замість того, щоб звернутись. Заявка нікуди не зникла: вона в шапці
+            на кожній сторінці й окремим розділом у меню. */}
         <Link to={lp('/diagnose')} className="sysx-cta is-primary hb-close-cta">
           {t('Порахувати витік', 'Calculate the leak')} →
         </Link>
-        <Link to={lp('/contact')} className="hb-close-alt mono">{t('Залишити заявку', 'Leave a request')} →</Link>
       </div>
     </section>
   );

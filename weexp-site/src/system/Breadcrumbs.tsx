@@ -1,10 +1,9 @@
 import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { SYSTEMS } from '@/data/xray';
 import { ORIGIN } from '@/lib/seo';
 import { langOf, lpFor, stripLang, type Lang } from '@/i18n';
 import './system.css';
-import { PAGES, EXTRA_PAGES } from '@/lib/nav';
+import { PAGES, EXTRA_PAGES, SUB_PAGES, nameOf } from '@/lib/nav';
 
 /**
  * Хлібні крихти: видима навігація «де я» + JSON-LD BreadcrumbList для пошуку.
@@ -50,10 +49,19 @@ function crumbsFor(pathname: string): Crumb[] {
   // і без розмітки BreadcrumbList для пошуку.
   const base = stripLang(pathname).replace(/(.)\/+$/, '$1');
   const home: Crumb = { label: pick(HOME), to: lp('/') };
-  const svc = base.match(/^\/systems\/(.+)$/);
-  if (svc) {
-    const sys = SYSTEMS.find((s) => s.slug === svc[1]);
-    return [home, { label: pick(L2['/systems']), to: lp('/systems') }, { label: sys?.title ?? 'System' }];
+  /*
+   * Підсторінка розділу: крихта показує батька, а потім саму сторінку.
+   *
+   * Доти так уміли лише сторінки систем (яких більше немає), а формати
+   * співпраці й експертизи лишались без крихт узагалі: людина на
+   * /services/audit не бачила, що вона всередині «Послуг». Тепер правило
+   * одне для всіх розділів і виводиться з адреси, а не з переліку винятків.
+   */
+  const sub = base.match(/^(\/[a-z-]+)\/(.+)$/);
+  if (sub && SUB_PAGES.some((p) => p.to === base)) {
+    const parent = L2[sub[1]];
+    const own = nameOf(base, lang);
+    if (parent && own) return [home, { label: pick(parent), to: lp(sub[1]) }, { label: own }];
   }
   if (/^\/cases\/.+$/.test(base)) return [home, { label: pick(L2['/proof']), to: lp('/proof') }, { label: pick(CASE) }];
   const l = L2[base];

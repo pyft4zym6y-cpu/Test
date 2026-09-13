@@ -18,7 +18,7 @@
  * тієї самої системи, включно з англійським оверлеєм. Заводити третій перелік
  * формулювань означало б повторити ту саму помилку ще раз — тепер уже втричі.
  */
-import { SYSTEMS, localizeSystem, type SystemKey } from '@/data/xray';
+import { SYSTEMS, localizeSystem, shortOf, type SystemKey } from '@/data/xray';
 import { nameOf } from '@/lib/nav';
 
 /** Двомовна пара — та сама домовленість, що в expertises.ts. */
@@ -107,8 +107,12 @@ export type SymptomView = {
   /** Симптом словами власника — поле `feel` системи. */
   say: string;
   mean: string;
-  /** Куди ведемо за причиною. */
-  systemPath: string;
+  /**
+   * Де лежить причина. ТЕКСТ, а не посилання: вісім сторінок систем більше не
+   * існують. Вони описували нашу внутрішню методологію, були сиротами в дереві
+   * й дублювали і девʼять експертиз, і шістнадцять видів аудиту. Назва системи
+   * лишається — вона пояснює, що саме зламалось; купують не її, а аудит.
+   */
   systemTitle: string;
   /** Чим лагодимо: підпис + адреса сторінки експертизи. */
   fix: { path: string; title: string }[];
@@ -119,12 +123,15 @@ export function symptomsFor(lang: 'uk' | 'en'): SymptomView[] {
   return SYMPTOMS.map((s) => {
     const sys = SYSTEMS.find((x) => x.key === s.system)!;
     const loc = localizeSystem(sys, lang);
-    const systemPath = `/systems/${sys.slug}`;
     return {
       say: loc.feel,
       mean: s.mean[lang === 'en' ? 1 : 0],
-      systemPath,
-      systemTitle: nameOf(systemPath, lang) || loc.title,
+      /*
+       * Коротка назва, а не повна. «Організація та операційна модель» у рядку
+       * «Причина: …» лягала на два рядки вже на 360px — і картка ставала
+       * вищою за сусідні. Коротка каже те саме: «Організація».
+       */
+      systemTitle: shortOf(sys.key, lang),
       fix: s.fix.map((slug) => {
         const path = `/expansion/${slug}`;
         return { path, title: nameOf(path, lang) };

@@ -14,7 +14,7 @@
     "pages": [
       "/expansion/ux-ui",
       "/expansion/branding",
-      "/systems/experience-conversion",
+      "/services/audit",
       "/expansion/web-development"
     ],
     "published": "2026-09-16",
@@ -85,9 +85,8 @@
       "/proof",
       "/",
       "/people",
-      "/pricing",
-      "/contact",
-      "/services"
+      "/services",
+      "/contact"
     ],
     "published": "2026-09-13",
     "readMin": 7,
@@ -106,11 +105,10 @@
     ],
     "category": "method",
     "pages": [
-      "/pricing",
+      "/services",
       "/contact",
       "/people",
       "/proof",
-      "/services",
       "/services/consulting"
     ],
     "published": "2026-09-12",
@@ -131,11 +129,10 @@
     "category": "method",
     "pages": [
       "/diagnose",
-      "/audit-pack",
+      "/services/audit",
       "/",
       "/contact",
-      "/services",
-      "/services/audit"
+      "/services"
     ],
     "published": "2026-09-11",
     "readMin": 7,
@@ -154,13 +151,11 @@
     ],
     "category": "method",
     "pages": [
-      "/audit-pack",
+      "/services/audit",
       "/diagnose",
-      "/pricing",
-      "/",
-      "/contact",
       "/services",
-      "/services/audit"
+      "/",
+      "/contact"
     ],
     "published": "2026-09-10",
     "readMin": 8,
@@ -179,8 +174,7 @@
     ],
     "category": "systems",
     "pages": [
-      "/systems/strategy-management",
-      "/systems",
+      "/services/audit",
       "/people",
       "/",
       "/services/consulting",
@@ -203,13 +197,11 @@
     ],
     "category": "systems",
     "pages": [
-      "/systems",
+      "/services/audit",
       "/",
       "/diagnose",
-      "/audit-pack",
       "/proof",
-      "/services",
-      "/services/audit"
+      "/services"
     ],
     "published": "2026-09-08",
     "readMin": 7,
@@ -228,12 +220,10 @@
     ],
     "category": "systems",
     "pages": [
-      "/systems",
+      "/services/audit",
       "/",
-      "/systems/strategy-management",
       "/diagnose",
-      "/proof",
-      "/services/audit"
+      "/proof"
     ],
     "published": "2026-09-07",
     "readMin": 8,
@@ -252,9 +242,8 @@
     ],
     "category": "expansion",
     "pages": [
-      "/systems/expansion-markets",
+      "/services/audit",
       "/expansion/international",
-      "/systems/commercial-performance",
       "/expansion"
     ],
     "published": "2026-09-06",
@@ -275,9 +264,8 @@
     ],
     "category": "expansion",
     "pages": [
-      "/systems/expansion-markets",
+      "/services/audit",
       "/expansion/international",
-      "/systems/operations-fulfillment",
       "/expansion"
     ],
     "published": "2026-09-05",
@@ -297,7 +285,7 @@
     ],
     "category": "expansion",
     "pages": [
-      "/systems/expansion-markets",
+      "/services/audit",
       "/expansion/international",
       "/expansion/ux-ui",
       "/expansion/web-development",
@@ -321,7 +309,7 @@
     ],
     "category": "expansion",
     "pages": [
-      "/systems/expansion-markets",
+      "/services/audit",
       "/expansion/sales-channels",
       "/expansion/international",
       "/expansion"
@@ -344,7 +332,7 @@
     ],
     "category": "expansion",
     "pages": [
-      "/systems/expansion-markets",
+      "/services/audit",
       "/expansion/international",
       "/expansion",
       "/expansion/sales-channels"
@@ -366,9 +354,7 @@
     ],
     "category": "org",
     "pages": [
-      "/systems/organization-operating-model",
-      "/systems/strategy-management",
-      "/systems/data-technology",
+      "/services/audit",
       "/people",
       "/services/consulting",
       "/services/managed"
@@ -391,10 +377,9 @@
     ],
     "category": "org",
     "pages": [
-      "/systems/organization-operating-model",
+      "/services/audit",
       "/people",
-      "/systems/strategy-management",
-      "/pricing",
+      "/services",
       "/services/consulting",
       "/services/managed"
     ],
@@ -416,8 +401,7 @@
     ],
     "category": "org",
     "pages": [
-      "/systems/organization-operating-model",
-      "/systems/strategy-management",
+      "/services/audit",
       "/people",
       "/expansion/automation",
       "/services/consulting",
@@ -440,10 +424,8 @@
     ],
     "category": "org",
     "pages": [
-      "/systems/organization-operating-model",
-      "/systems/strategy-management",
+      "/services/audit",
       "/people",
-      "/systems",
       "/services/managed"
     ],
     "published": "2026-08-29",
@@ -464,11 +446,9 @@
     ],
     "category": "data",
     "pages": [
-      "/systems/data-technology",
+      "/services/audit",
       "/expansion/data-growth",
-      "/systems/strategy-management",
-      "/diagnose",
-      "/services/audit"
+      "/diagnose"
     ],
     "published": "2026-08-28",
     "readMin": 7,
@@ -488,7 +468,7 @@
     ],
     "category": "data",
     "pages": [
-      "/systems/data-technology",
+      "/services/audit",
       "/expansion/technology",
       "/expansion/automation",
       "/expansion/web-development"
@@ -511,10 +491,8 @@
     ],
     "category": "data",
     "pages": [
-      "/systems/data-technology",
-      "/expansion/data-growth",
-      "/systems/strategy-management",
-      "/audit-pack"
+      "/services/audit",
+      "/expansion/data-growth"
     ],
     "published": "2026-08-26",
     "readMin": 7,
@@ -534,7 +512,7 @@
     ],
     "category": "data",
     "pages": [
-      "/systems/data-technology",
+      "/services/audit",
       "/expansion/data-growth",
       "/expansion/marketing",
       "/diagnose"
@@ -556,10 +534,9 @@
     ],
     "category": "operations",
     "pages": [
-      "/systems/operations-fulfillment",
+      "/services/audit",
       "/expansion/automation",
       "/expansion/technology",
-      "/systems/organization-operating-model",
       "/expansion/sales-channels"
     ],
     "published": "2026-08-24",
@@ -579,10 +556,8 @@
     ],
     "category": "operations",
     "pages": [
-      "/systems/operations-fulfillment",
-      "/systems/commercial-performance",
-      "/systems/experience-conversion",
-      "/audit-pack"
+      "/services/audit",
+      "/expansion/automation"
     ],
     "published": "2026-08-23",
     "readMin": 7,
@@ -602,8 +577,7 @@
     ],
     "category": "operations",
     "pages": [
-      "/systems/operations-fulfillment",
-      "/systems/commercial-performance",
+      "/services/audit",
       "/expansion/automation",
       "/diagnose"
     ],
@@ -625,8 +599,7 @@
     ],
     "category": "operations",
     "pages": [
-      "/systems/operations-fulfillment",
-      "/systems/data-technology",
+      "/services/audit",
       "/expansion/automation",
       "/expansion/technology"
     ],
@@ -648,8 +621,7 @@
     ],
     "category": "data",
     "pages": [
-      "/systems/demand-customer",
-      "/systems/data-technology",
+      "/services/audit",
       "/expansion/data-growth",
       "/expansion/marketing"
     ],
@@ -670,7 +642,7 @@
     ],
     "category": "traffic",
     "pages": [
-      "/systems/demand-customer",
+      "/services/audit",
       "/expansion/marketing",
       "/expansion/branding",
       "/expansion"
@@ -693,10 +665,9 @@
     ],
     "category": "traffic",
     "pages": [
-      "/systems/demand-customer",
+      "/services/audit",
       "/expansion/marketing",
-      "/expansion/automation",
-      "/systems/commercial-performance"
+      "/expansion/automation"
     ],
     "published": "2026-08-18",
     "readMin": 7,
@@ -716,9 +687,8 @@
     ],
     "category": "traffic",
     "pages": [
-      "/systems/demand-customer",
+      "/services/audit",
       "/expansion/marketing",
-      "/systems/commercial-performance",
       "/diagnose"
     ],
     "published": "2026-08-17",
@@ -739,7 +709,7 @@
     ],
     "category": "traffic",
     "pages": [
-      "/systems/demand-customer",
+      "/services/audit",
       "/expansion/marketing",
       "/expansion/web-development",
       "/expansion/technology"
@@ -762,10 +732,9 @@
     ],
     "category": "experience",
     "pages": [
-      "/systems/experience-conversion",
+      "/services/audit",
       "/expansion/ux-ui",
-      "/expansion/web-development",
-      "/systems/data-technology"
+      "/expansion/web-development"
     ],
     "published": "2026-08-15",
     "readMin": 7,
@@ -784,7 +753,7 @@
     ],
     "category": "experience",
     "pages": [
-      "/systems/experience-conversion",
+      "/services/audit",
       "/expansion/ux-ui",
       "/expansion/web-development",
       "/expansion/technology"
@@ -808,7 +777,7 @@
     ],
     "category": "experience",
     "pages": [
-      "/systems/experience-conversion",
+      "/services/audit",
       "/expansion/web-development",
       "/expansion/technology",
       "/expansion/ux-ui"
@@ -831,10 +800,9 @@
     ],
     "category": "experience",
     "pages": [
-      "/systems/experience-conversion",
+      "/services/audit",
       "/expansion/ux-ui",
-      "/expansion/web-development",
-      "/systems/commercial-performance"
+      "/expansion/web-development"
     ],
     "published": "2026-08-12",
     "readMin": 7,
@@ -854,7 +822,7 @@
     ],
     "category": "experience",
     "pages": [
-      "/systems/experience-conversion",
+      "/services/audit",
       "/expansion/ux-ui",
       "/expansion/web-development",
       "/expansion/branding",
@@ -877,7 +845,7 @@
     ],
     "category": "experience",
     "pages": [
-      "/systems/experience-conversion",
+      "/services/audit",
       "/expansion/ux-ui",
       "/expansion/web-development",
       "/diagnose"
@@ -900,10 +868,10 @@
     ],
     "category": "commerce",
     "pages": [
-      "/systems/commercial-performance",
+      "/services/audit",
       "/expansion/sales-channels",
       "/expansion/marketing",
-      "/pricing"
+      "/services"
     ],
     "published": "2026-08-09",
     "readMin": 7,
@@ -924,8 +892,7 @@
     ],
     "category": "commerce",
     "pages": [
-      "/systems/commercial-performance",
-      "/systems/demand-customer",
+      "/services/audit",
       "/expansion/marketing",
       "/diagnose"
     ],
@@ -948,8 +915,7 @@
     ],
     "category": "commerce",
     "pages": [
-      "/systems/commercial-performance",
-      "/systems/demand-customer",
+      "/services/audit",
       "/expansion/marketing",
       "/expansion/data-growth"
     ],
@@ -971,9 +937,7 @@
     ],
     "category": "commerce",
     "pages": [
-      "/systems/commercial-performance",
-      "/systems",
-      "/audit-pack",
+      "/services/audit",
       "/expansion/data-growth"
     ],
     "published": "2026-08-06",
@@ -995,8 +959,7 @@
     ],
     "category": "commerce",
     "pages": [
-      "/systems/commercial-performance",
-      "/systems/experience-conversion",
+      "/services/audit",
       "/expansion/ux-ui",
       "/diagnose"
     ],
@@ -1020,12 +983,9 @@
     ],
     "category": "commerce",
     "pages": [
-      "/systems/commercial-performance",
+      "/services/audit",
       "/diagnose",
-      "/pricing",
-      "/audit-pack",
-      "/systems",
-      "/services/audit"
+      "/services"
     ],
     "published": "2026-08-04",
     "readMin": 6,

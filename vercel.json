@@ -110,22 +110,22 @@
     },
     {
       "source": "/what-we-build/:path*",
-      "destination": "/systems",
+      "destination": "/services/audit",
       "permanent": true
     },
     {
       "source": "/what-we-build",
-      "destination": "/systems",
+      "destination": "/services/audit",
       "permanent": true
     },
     {
       "source": "/challenges/:slug",
-      "destination": "/systems/:slug",
+      "destination": "/services/audit",
       "permanent": true
     },
     {
       "source": "/challenges",
-      "destination": "/systems",
+      "destination": "/services/audit",
       "permanent": true
     },
     {
@@ -145,27 +145,27 @@
     },
     {
       "source": "/how-it-works",
-      "destination": "/systems",
+      "destination": "/services/audit",
       "permanent": true
     },
     {
       "source": "/approach",
-      "destination": "/systems",
+      "destination": "/services/audit",
       "permanent": true
     },
     {
       "source": "/process",
-      "destination": "/systems",
+      "destination": "/services/audit",
       "permanent": true
     },
     {
       "source": "/product",
-      "destination": "/systems",
+      "destination": "/services/audit",
       "permanent": true
     },
     {
       "source": "/os",
-      "destination": "/systems",
+      "destination": "/services/audit",
       "permanent": true
     },
     {
@@ -282,6 +282,46 @@
       "source": "/security.txt",
       "destination": "/.well-known/security.txt",
       "permanent": false
+    },
+    {
+      "source": "/systems",
+      "destination": "/services/audit",
+      "permanent": true
+    },
+    {
+      "source": "/systems/:path*",
+      "destination": "/services/audit",
+      "permanent": true
+    },
+    {
+      "source": "/en/systems",
+      "destination": "/en/services/audit",
+      "permanent": true
+    },
+    {
+      "source": "/en/systems/:path*",
+      "destination": "/en/services/audit",
+      "permanent": true
+    },
+    {
+      "source": "/audit-pack",
+      "destination": "/services/audit",
+      "permanent": true
+    },
+    {
+      "source": "/en/audit-pack",
+      "destination": "/en/services/audit",
+      "permanent": true
+    },
+    {
+      "source": "/pricing",
+      "destination": "/services",
+      "permanent": true
+    },
+    {
+      "source": "/en/pricing",
+      "destination": "/en/services",
+      "permanent": true
     }
   ],
   "rewrites": [

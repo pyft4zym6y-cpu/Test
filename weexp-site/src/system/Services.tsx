@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useT, useLp, useLang } from '@/i18n';
 import { useJsonLd } from '@/lib/seo';
-import { SERVICES, servicePath } from '@/data/services';
-import { PROCESS } from '@/data/process';
+import { useState } from 'react';
+import { SERVICES, servicePath, COMPARE } from '@/data/services';
 import './system.css';
 import './home.css';
 import './services.css';
@@ -25,6 +25,25 @@ export function Services() {
   const lp = useLp();
   const lang = useLang();
   const i = lang === 'en' ? 1 : 0;
+  const [open, setOpen] = useState<number | null>(0);
+
+  const FAQ = [
+    { q: t('З чого починається робота?', 'How does it start?'),
+      a: t('З аудиту. Без діагностики ми не консультуємо і не беремо управління: вести проєкт без карти означає вести його навмання.',
+           'With the audit. Without diagnostics we neither advise nor take over delivery: running a project without a map means running it blind.') },
+    { q: t('Коли буде перший результат?', 'When is the first result?'),
+      a: t('Перший вимірюваний — за 30–60 днів після старту робіт. Швидкі перемоги планують у першу хвилю навмисно: вони фінансують наступні.',
+           'The first measurable one — within 30–60 days of kickoff. Quick wins are planned into the first wave on purpose: they fund the ones that follow.') },
+    { q: t('Чим захищений мій бюджет?', 'How is my budget protected?'),
+      a: t('Кожен етап має Definition of Done — вимірюваний критерій приймання. Наступний транш стартує лише після прийнятого попереднього.',
+           'Each stage has a Definition of Done — a measurable acceptance criterion. The next tranche starts only after the previous one is accepted.') },
+    { q: t('У нас своя CMS і своя специфіка', 'We have our own CMS and specifics'),
+      a: t('Підхід платформо-незалежний. Міграцію пропонуємо лише тоді, коли нинішня система справді впирається в стелю, — і показуємо це цифрами.',
+           'The approach is platform-independent. We propose migration only when the current system genuinely hits its ceiling — and we show it in numbers.') },
+    { q: t('Чому дешевше за ринок?', 'Why cheaper than the market?'),
+      a: t('Ринок США бере за таку експертизу $75–250/год. Ми працюємо напряму, без офісних накладних агенції: ви платите за експертизу, а не за бренд.',
+           'The US market charges $75–250/hr for this expertise. We work directly, without an agency\u2019s office overhead: you pay for expertise, not for a brand.') },
+  ];
 
   useJsonLd('services-list', {
     '@context': 'https://schema.org',
@@ -41,7 +60,7 @@ export function Services() {
       <div className="sysx-field" aria-hidden="true" />
       <div className="srv-in">
         <header className="srv-head">
-          <span className="sysx-kick">{t('Три формати · за рівнем нашої відповідальності', 'Three formats · by the level of our responsibility')}</span>
+          <span className="sysx-kick">{t('Три формати роботи', 'Three ways to work')}</span>
           <h1 className="sysx-display srv-h1">{t('Що ми ', 'What we ')}<span className="sysx-em">{t('робимо', 'do')}</span></h1>
           <p className="sysx-lead srv-lead">
             {t(
@@ -77,27 +96,67 @@ export function Services() {
           ))}
         </ul>
 
-        <div className="srv-steps">
-          <span className="sysx-kick">{t('Однаково для всіх трьох', 'The same for all three')}</span>
-          <h2 className="sysx-display srv-h2">{t('Як ми це робимо', 'How we do it')}</h2>
-          <ol className="hb-steps">
-            {PROCESS.map((s) => (
-              <li key={s.n} className="hb-step">
-                <i className="hb-step-n" aria-hidden="true">{s.n}</i>
-                <div className="hb-step-t">
-                  <b>{s.title[i]}</b>
-                  <p>{s.text[i]}</p>
-                </div>
-              </li>
+        {/*
+          * Порівняння форматів поруч. Переїхало зі сторінки цін, яка описувала
+          * ті самі три формати: два пункти меню на одну сутність. На телефоні
+          * таблиця стає стопкою карток — рядок із чотирьох колонок там не
+          * читається ні за яких кеглів.
+          */}
+        <div className="srv-compare">
+          <span className="sysx-kick">{t('Порівняння', 'Side by side')}</span>
+          <h2 className="sysx-display srv-h2">{t('Чим вони відрізняються', 'How they differ')}</h2>
+          <div className="srv-table-wrap">
+            <table className="srv-table">
+              <thead>
+                <tr>
+                  <th />
+                  {SERVICES.map((m) => <th key={m.slug}>{m.n} · {m.name[i]}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARE.map((row) => (
+                  <tr key={row.k[0]}>
+                    <td className="srv-table-k mono">{row.k[i]}</td>
+                    {row.v.map((cell, ci) => <td key={ci}>{cell[i]}</td>)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="srv-stack">
+            {SERVICES.map((m, mi) => (
+              <div key={m.slug} className="srv-stack-card">
+                <b className="srv-stack-h">{m.n} · {m.name[i]}</b>
+                {COMPARE.map((row) => (
+                  <p key={row.k[0]}><span className="mono">{row.k[i]}</span>{row.v[mi][i]}</p>
+                ))}
+              </div>
             ))}
-          </ol>
+          </div>
+        </div>
+
+        {/* Заперечення знімаємо тут, а не на окремій сторінці: людина ставить
+            ці питання рівно в момент вибору формату. */}
+        <div className="srv-faq">
+          <span className="sysx-kick">{t('Питання перед стартом', 'Questions before you start')}</span>
+          <h2 className="sysx-display srv-h2">{t('Коротко про головне', 'The short answers')}</h2>
+          <div className="srv-faq-list">
+            {FAQ.map((f, k) => (
+              <div key={f.q} className={'srv-faq-item' + (open === k ? ' is-open' : '')}>
+                <button type="button" className="srv-faq-q" aria-expanded={open === k}
+                  onClick={() => setOpen(open === k ? null : k)}>
+                  <span>{f.q}</span><i aria-hidden="true">{open === k ? '−' : '+'}</i>
+                </button>
+                {open === k && <p className="srv-faq-a">{f.a}</p>}
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="srv-foot">
           <p className="srv-foot-t">
-            {t('Порівняти формати поруч — умови, мінімальний термін і хто що робить:', 'Compare the formats side by side — terms, minimum commitment and who does what:')}
-            {' '}
-            <Link to={lp('/pricing')} className="srv-foot-link mono">{t('Ціни', 'Pricing')} →</Link>
+            {t('Не знаєте, який формат ваш? Почніть із безкоштовного розрахунку — він покаже масштаб витоку.',
+               'Not sure which format is yours? Start with the free estimate — it shows the scale of the leak.')}
           </p>
           <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>
         </div>

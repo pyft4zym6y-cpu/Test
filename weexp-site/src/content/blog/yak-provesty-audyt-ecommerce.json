@@ -12,13 +12,11 @@
   ],
   "category": "method",
   "pages": [
-    "/audit-pack",
+    "/services/audit",
     "/diagnose",
-    "/pricing",
-    "/",
-    "/contact",
     "/services",
-    "/services/audit"
+    "/",
+    "/contact"
   ],
   "published": "2026-09-10",
   "readMin": 8,

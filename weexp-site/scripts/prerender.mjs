@@ -29,8 +29,13 @@ const ul = (items) => `<ul>${items.map((i) => `<li>${esc(i)}</li>`).join('')}</u
  * сайту (одна на кожну систему), і ні людина їх не знаходила, ні вага
  * посилань з головної до них не доходила.
  */
-const ulLinks = (items, slugs, pref = '') => `<ul>${items.map((i, k) =>
-  `<li><a href="${pref}/systems/${slugs[k]}">${esc(i)}</a></li>`).join('')}</ul>`;
+/*
+ * Раніше тут був ulLinks — перелік восьми систем із посиланнями на їхні
+ * сторінки. Сторінок більше немає: вони описували нашу внутрішню методологію,
+ * були сиротами в дереві й дублювали і девʼять експертиз, і шістнадцять видів
+ * аудиту. Кожна стара адреса веде постійним перенаправленням на /services/audit.
+ * Сам перелік лишається текстом — він пояснює обсяг роботи, а не продає себе.
+ */
 
 // Дзеркало PAGES із src/lib/nav.ts — статика й застосунок мають називати
 // сторінки однаково. Перелік звіряє wording.test.ts: доти коментар обіцяв
@@ -38,13 +43,11 @@ const ulLinks = (items, slugs, pref = '') => `<ul>${items.map((i, k) =>
 // застосунку без жодного сигналу.
 const NAV_PAGES = [
   { to: '/services', uk: 'Послуги', en: 'Services' },
-  { to: '/proof', uk: 'Кейси', en: 'Cases' },
   { to: '/expansion', uk: 'Експертизи', en: 'Expertise' },
-  { to: '/pricing', uk: 'Ціни', en: 'Pricing' },
+  { to: '/proof', uk: 'Кейси', en: 'Cases' },
   { to: '/people', uk: 'Про нас', en: 'About' },
   { to: '/blog', uk: 'Блог', en: 'Blog' },
-  { to: '/contact', uk: 'Контакт', en: 'Contact' },
-  { to: '/audit-pack', uk: 'Склад пакета аудиту', en: 'Audit pack contents' },
+  { to: '/contact', uk: 'Контакти', en: 'Contacts' },
 ];
 /*
  * Напрями експертизи: хаб не посилався на них у статиці, і без JS
@@ -62,7 +65,6 @@ const expansionLinks = (lang) => {
   return `<h2>${head}</h2><ul>${Object.entries(SEO.expansion)
     .map(([k, m]) => `<li><a href="${pref}/expansion/${k}">${esc(expName(m, lang))}</a></li>`).join('')}</ul>`;
 };
-const SYS_SLUGS = ['strategy-management','commercial-performance','demand-customer','experience-conversion','operations-fulfillment','data-technology','organization-operating-model','expansion-markets'];
 const SYSTEMS = [
   'Стратегія та управління — стратегія продажів, якою можна керувати',
   'Комерційна ефективність — більше виручки замало, зробіть комерцію прибутковою',
@@ -135,7 +137,7 @@ const DIAG_STEPS = ['Профіль і симптоми', 'Ваш витік у 
 const DIAG_STEPS_EN = ['Profile and symptoms', 'Your leak, in money', 'Map of the eight systems', 'Tier-2 client cabinet', 'In-depth AI review'];
 const FORMAT_LINKS = [
   ['/services/audit', '01 Аудит — 4–6 тижнів: магазин $2,900 або весь відділ e-commerce $4,900', '01 Audit — 4–6 weeks: the store $2,900 or the whole e-commerce department $4,900'],
-  ['/services/consulting', '02 Консалтинг і супровід — $50/год, мін. $1,500/міс: ми архітектор і контроль, руки — ваша команда', '02 Consulting & advisory — $50/hr, min. $1,500/mo: we are the architect and the control, your team executes'],
+  ['/services/consulting', '02 Консалтинг — $50/год, мін. $1,500/міс: ми архітектор і контроль, руки — ваша команда', '02 Consulting — $50/hr, min. $1,500/mo: we are the architect and the control, your team executes'],
   ['/services/managed', '03 Управління під ключ — від $4,900/міс, 6–12 міс: проєкт ведемо ми, відповідальність наша', '03 Managed delivery — from $4,900/mo, 6–12 mo: we run the project and carry the responsibility'],
 ];
 /*
@@ -169,15 +171,12 @@ const PACK = [
 
 /** Тіло EN-сторінки за її адресою. Порожньо — сторінка обійдеться описом. */
 const EN_BODY = {
-  '/': `<p>We find exactly where the money leaks in online sales, put a number on it from your CRM/ERP/GA4 — and rebuild.</p><h2>Three ways to work</h2>${formatLinks('en')}<p>${esc(SERVICES_EN)}</p><h2>Eight systems of online sales</h2>${ulLinks(SYSTEMS_EN, SYS_SLUGS, '/en')}<p><a href="/en/systems">The eight systems as one map</a></p>`,
-  '/systems': `<p>Online sales are not a set of channels but eight systems working together. Revenue leaks where the weakest one is. Below — each of them: what it solves and how we build it.</p>${ulLinks(SYSTEMS_EN, SYS_SLUGS, '/en')}`,
+  '/': `<p>We find exactly where the money leaks in online sales, put a number on it from your CRM/ERP/GA4 — and rebuild.</p><h2>Three ways to work</h2>${formatLinks('en')}<p>${esc(SERVICES_EN)}</p><h2>What the audit covers</h2>${ul(SYSTEMS_EN)}<p><a href="/en/services/audit">What the audit checks</a></p>`,
   '/proof': `<p>Not promises — before→after deltas from CRM, ERP and GA4. Every case is anonymous; every number is real.</p>${ul(PROOF_EN)}`,
   '/people': `<p>WEEXP was founded by Pavlo Sydorenko, Founder &amp; Architect of Commerce (8+ years in international e-commerce: US · EU · MENA). Each of the eight systems of online sales has an owner accountable for the result — specialists, not generalists.</p>${ul(ROSTER_EN)}`,
   '/expansion': `<p>Europe and the US are a separate business contour. We launch systematically and across all storefronts of a market at once. Priority markets: PL, DE, CZ, USA.</p><h2>Market storefronts</h2>${ul(CHANNELS_EN)}${expansionLinks('en')}`,
   '/diagnose': `<p>One instrument, not two: first we count how much leaks every year; then the map of eight systems, the main bottleneck, a cabinet with your data and an in-depth AI review. These are steps of one diagnosis.</p><h2>Steps of the diagnosis</h2>${ul(DIAG_STEPS_EN)}`,
   '/contact': `<p>Leave a contact — we come back with the first cut of the gap, in money. For e-commerce manufacturers and D2C brands. This is not work yet; this is a diagnosis.</p>`,
-  '/audit-pack': `<p>Before the start you see the full list of documents you will receive: intake (Discovery), the audit core, the evidence base, the plan and the handover.</p>`,
-  '/pricing': `<p>The difference is not in «service packages» but in who carries final responsibility for the result.</p>${ul(FORMATS_EN)}<p>Every engagement starts with a diagnosis.</p>`,
   '/services': `<p>We rebuild online sales: we find where the money leaks and close it — with our hands or yours. The formats differ not by «service package» but by who is accountable for the result.</p><h2>Three ways to work</h2>${formatLinks('en')}<p>Step 1 — the audit: without the diagnosis we neither advise nor take over delivery.</p>`,
 };
 
@@ -212,10 +211,7 @@ const AUDIT_KIND_NAMES = [
 const ROUTES = [
   { path: '/', og: 'home', title: 'WEEXP — перебудовуємо онлайн-продажі: аудит, консалтинг, управління',
     desc: 'Знаходимо, де витікають гроші в онлайн-продажах, рахуємо це за CRM/ERP/GA4 і перебудовуємо. Три формати: аудит від $2,900, консалтинг від $1,500/міс, управління під ключ від $4,900/міс.',
-    content: `<h1>Перебудовуємо онлайн-продажі</h1><p>Знаходимо, де саме витікають гроші, рахуємо це в гривнях за вашими CRM/ERP/GA4 — і перебудовуємо: від каталогу до аналітики. Для українських виробників і D2C-брендів.</p><h2>Три формати роботи</h2>${formatLinks('uk')}<p>${esc(SERVICES)}</p><h2>Вісім систем онлайн-продажів</h2>${ulLinks(SYSTEMS, SYS_SLUGS)}<p><a href="/systems">Вісім систем однією картою</a></p>` },
-  { path: '/systems', og: 'systems', title: `Вісім систем зростання${SUF}`,
-    desc: 'Онлайн-продажі як вісім систем: стратегія, комерція, попит, досвід, операції, дані, організація й експансія. Виторг витікає там, де найслабша.',
-    content: `<h1>Система сильна настільки, наскільки сильна найслабша частина</h1><p>Онлайн-продажі — не набір каналів, а вісім систем, які працюють разом. Виторг витікає там, де найслабша. Нижче — кожна: що вона вирішує і як ми її будуємо.</p>${ulLinks(SYSTEMS, SYS_SLUGS)}` },
+    content: `<h1>Перебудовуємо онлайн-продажі</h1><p>Знаходимо, де саме витікають гроші, рахуємо це в гривнях за вашими CRM/ERP/GA4 — і перебудовуємо: від каталогу до аналітики. Для українських виробників і D2C-брендів.</p><h2>Три формати роботи</h2>${formatLinks('uk')}<p>${esc(SERVICES)}</p><h2>Що охоплює аудит</h2>${ul(SYSTEMS)}<p><a href="/services/audit">Що саме перевіряє аудит</a></p>` },
   { path: '/proof', og: 'proof', title: `Докази — трансформації в цифрах${SUF}`,
     desc: 'Флагманські кейси e-commerce: дельти до→після з CRM/ERP/GA4 — ×18 обороту, +65% продажів, ≥19 млн ₴ розриву. Не обіцянки, а числа.',
     content: `<h1>Систему видно в цифрах</h1><p>Не обіцянки — дельти до→після з CRM, ERP і GA4. Кожен кейс анонімний, але число реальне.</p>${ul(PROOF)}` },
@@ -231,15 +227,9 @@ const ROUTES = [
   { path: '/contact', og: 'contact', title: `Контакт — запит на діагноз${SUF}`,
     desc: 'Залиште контакт — повернемося з планом діагностики у грошах. Для e-commerce виробників і D2C-брендів.',
     content: `<h1>Зростання — це система. Почнімо з діагнозу.</h1><p>Залиште контакт — повернемося з першим зрізом розриву у грошах. Для e-commerce виробників і D2C-брендів. Це ще не робота, це діагноз.</p><h2>Що буде далі</h2>${ul(NEXT_STEPS)}<p>Працюємо з українськими виробниками та D2C-брендами: власний сайт, маркетплейси, вихід на ЄС і США. Пишіть на hello@weexp.agency або лишайте контакт у формі.</p>` },
-  { path: '/audit-pack', og: 'pricing', title: `Склад пакета аудиту — 19 артефактів${SUF}`,
-    desc: 'Повний перелік документів глибокого аудиту WEEXP: від брифу й карти доступів до роадмапи хвилями і протоколу передачі.',
-    content: `<h1>Пакет аудиту — 19 артефактів</h1><p>До старту ви бачите повний перелік документів, які отримаєте: вхід (Discovery), ядро аудиту, доказова база, план і закриття. Аудит закінчується не презентацією, а переданою системою.</p><h2>Що входить</h2>${ul(PACK)}<p>Кожен артефакт має власника з боку WEEXP і Definition of Done — інакше він не вважається зданим.</p>` },
   { path: '/services', og: 'pricing', title: `Послуги — три формати роботи${SUF}`,
     desc: 'Що робить WEEXP: аудит онлайн-продажів, консалтинг і супровід, управління трансформацією під ключ. Формати відрізняються тим, хто відповідає за результат.',
     content: `<h1>Що ми робимо</h1><p>Перебудовуємо онлайн-продажі: знаходимо, де витікають гроші, і закриваємо це руками — своїми або вашими. Формати відрізняються не «пакетом послуг», а тим, хто відповідає за результат.</p><h2>Три формати роботи</h2>${formatLinks('uk')}<p>Крок 1 — аудит: без діагностики ми не консультуємо і не беремо управління.</p>` },
-  { path: '/pricing', og: 'pricing', title: `Формати та ціни${SUF}`,
-    desc: 'Три формати співпраці WEEXP — аудит, консалтинг і супровід, управління під ключ. Відкриті ціни; різниця — у тому, хто відповідає за результат.',
-    content: `<h1>Три формати — за рівнем нашої відповідальності</h1><p>Різниця не в «пакетах послуг», а в тому, хто несе фінальну відповідальність за результат.</p>${ul(['01 Аудит — 4–6 тижнів: аудит інтернет-магазину $2,900 або аудит відділу e-commerce в цілому $4,900', '02 Консалтинг і супровід — $50/год, мін. $1,500/міс: ми архітектор і контроль, руки клієнта', '03 Управління під ключ — від $4,900/міс, 6–12 міс: проєкт ведемо ми, відповідальність наша'])}<p>Будь-яка співпраця починається з діагностики.</p>` },
 ];
 
 /*
@@ -257,7 +247,7 @@ const FORMAT_PAGES = [
    'Карта: де саме витікають гроші, скільки це коштує на рік і що робити першим. Магазин $2,900 або весь відділ e-commerce $4,900, 4–6 тижнів.',
    'Карта: де саме витікають гроші, скільки це коштує на рік і що робити першим. Обираєте глибину: сам магазин ($2,900) чи весь відділ e-commerce ($4,900).',
    'Кому підходить: у вас сильна внутрішня команда, потрібні не руки, а карта. Впровадження та результат — ваша команда. 100% вартості аудиту зараховується в перший місяць управління під ключ, якщо старт упродовж 30 днів.'],
-  ['consulting', 'Консалтинг і супровід e-commerce', '$50/год · мінімум 30 год/міс',
+  ['consulting', 'Консалтинг e-commerce', '$50/год · мінімум 30 год/міс',
    'Зовнішній архітектор для вашої команди: що робити, в якому порядку і чи зроблено якісно. $50/год, мінімум 30 год/міс ($1,500/міс).',
    'Зовнішній архітектор для вашої команди: що робити, в якому порядку і чи зроблено якісно. Рахунок не буває менше $1,500 на місяць.',
    'Кому підходить: у вас є виконавці та проджект-менеджер. Якість рішень і контроль — ми; виконання руками та результат — ваша команда. Старт — після аудиту, початковий термін 3 місяці.'],
@@ -286,38 +276,6 @@ for (const [slug, title, price, desc, promise, who] of FORMAT_PAGES) {
   });
 }
 
-// Глибокі сторінки послуг (одна на систему) — для індексації комерційної структури.
-const SERVICE_META = [
-  ['strategy-management', 'Стратегія та управління', 'Strategy & Management'],
-  ['commercial-performance', 'Комерційна ефективність', 'Commercial Performance'],
-  ['demand-customer', 'Попит і клієнт', 'Demand & Customer'],
-  ['experience-conversion', 'Досвід і конверсія', 'Experience & Conversion'],
-  ['operations-fulfillment', 'Операції та fulfillment', 'Operations & Fulfillment'],
-  ['data-technology', 'Дані, технології, інтеграції', 'Data, Technology & Integration'],
-  ['organization-operating-model', 'Організація та операційна модель', 'Organization & Operating Model'],
-  ['expansion-markets', 'Експансія та ринки', 'Expansion & Markets'],
-];
-for (const [slug, title, en] of SERVICE_META) {
-  // Обіцянка береться з другої половини рядка SYSTEMS і йде в опис ПІСЛЯ крапки,
-  // а там вона з малої літери: у видачі виходило «…докази. один бізнес, одне
-  // джерело правди» — речення, що починається з малої. Ставимо велику і крапку.
-  const rawPromise = (SYSTEMS.find((s) => s.startsWith(title)) || '').split(' — ')[1] || '';
-  const promise = rawPromise ? rawPromise[0].toUpperCase() + rawPromise.slice(1).replace(/\.?$/, '.') : '';
-  ROUTES.push({
-    path: `/systems/${slug}`,
-    // Своя OG-картка на кожну систему: до цього вісім сторінок ділили загальну
-    // /og.png і в стрічці виглядали одним і тим самим посиланням.
-    og: `sys-${slug}`,
-    // Довгий суфікс з'їдав ліміт заголовка, і найдовша назва
-    // системи виводила заголовок на 62 при межі ~60: у видачі він обрізався.
-    // Слово «послуга» ще й не шукають — лишається бренд. Та сама формула, що
-    // в ServicePage.tsx: статика й клієнт мають казати одне.
-    title: `${title} · система зростання · WEEXP`,
-    desc: `${title}: проблема → наслідки → діагностика → рішення → процес → результат → докази. ${promise}`.slice(0, 300),
-    content: `<h1>${esc(title)}</h1><p>${esc(en)}. ${esc(promise)}</p><h2>Як працюємо</h2><p>Діагностуємо систему за даними (CRM/ERP/GA4), будуємо її під ключ і доводимо до економіки — щоб бізнес працював без героя. Проблема → наслідки → діагностика → рішення → процес → результат → докази → умови.</p>`,
-  });
-}
-
 // Мета беремо з спільної таблиці (де вона є) — статика більше не розходиться
 // з рантаймом. Тіло сторінки лишається багатим, як було.
 for (const r of ROUTES) {
@@ -331,7 +289,7 @@ for (const [slug, m] of Object.entries(SEO.expansion)) {
     path: `/expansion/${slug}`, og: `exp-${slug}`, title: m.uk[0], desc: m.uk[1],
     // Раніше тіло було одним абзацом — тим самим описом, що вже в <meta>.
     // Додаємо контекст, спільний для всіх напрямів експансії.
-    content: `<h1>${esc(m.uk[0].split(' — ')[0])}</h1><p>${esc(m.uk[1])}</p><h2>Як це вбудовано в систему</h2><p>Напрям не існує окремо: він частина системи зростання і міряється тими самими грошима, що й решта. Спершу діагностика за даними CRM/ERP/GA4, далі — план хвилями з Definition of Done, далі — робота до економіки, а не до звіту.</p>${ulLinks(SYSTEMS, SYS_SLUGS)}`,
+    content: `<h1>${esc(m.uk[0].split(' — ')[0])}</h1><p>${esc(m.uk[1])}</p><h2>Як це вбудовано в систему</h2><p>Напрям не існує окремо: він частина системи зростання і міряється тими самими грошима, що й решта. Спершу діагностика за даними CRM/ERP/GA4, далі — план хвилями з Definition of Done, далі — робота до економіки, а не до звіту.</p><p><a href="/services">Три формати роботи</a> · <a href="/services/audit">що перевіряє аудит</a></p>`,
   });
 }
 

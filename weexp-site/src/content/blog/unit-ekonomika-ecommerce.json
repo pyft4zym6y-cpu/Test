@@ -15,12 +15,9 @@
   ],
   "category": "commerce",
   "pages": [
-    "/systems/commercial-performance",
+    "/services/audit",
     "/diagnose",
-    "/pricing",
-    "/audit-pack",
-    "/systems",
-    "/services/audit"
+    "/services"
   ],
   "published": "2026-08-04",
   "readMin": 6,

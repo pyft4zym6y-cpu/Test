@@ -31,7 +31,7 @@ export function ExpansionHub() {
           <h1 className="sysx-display xhub-h1">{t('Наші ', 'Our ')}<span className="hl">{t('експертизи', 'expertise')}</span></h1>
           <p className="sysx-lead">{t('Девʼять напрямів, якими ми закриваємо задачі. Це не окремі продукти: експертизи входять у будь-який із трьох форматів співпраці — змінюється тільки те, хто тримає кермо.', 'Nine areas through which we close the work. These are not separate products: the expertise goes into any of the three cooperation formats — only who holds the wheel changes.')}</p>
           <p className="xhub-more-row">
-            <Link to={lp('/services')}>{t('Формати роботи', 'Ways to work')} →</Link>
+            <Link to={lp('/services')}>{t('Послуги', 'Services')} →</Link>
           </p>
           {/* Перевірена мережа — пояснення, а не назва сторінки: доти цей абзац
               стояв заголовком і людина не розуміла, куди потрапила. */}
@@ -57,7 +57,7 @@ export function ExpansionHub() {
 
         <div className="xhub-cta">
           <div>
-            <span className="sysx-kick">{t('Не знаєте, з чого почати?', 'Not sure where to start?')}</span>
+            <span className="sysx-kick">{t('З чого почати?', 'Where to start?')}</span>
             <b className="sysx-display xhub-cta-h">{t('Почніть з ', 'Start with ')}<span className="hl-y">Express Audit</span></b>
           </div>
           <div className="sysx-cta-row">

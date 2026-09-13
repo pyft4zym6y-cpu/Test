@@ -49,18 +49,16 @@ describe('міра стоїть на тексті, а не на шапці', () 
 });
 
 describe('двоколонкова шапка', () => {
-  it('заголовок іде на всю ширину, а не в колонку', () => {
-    // Інакше дві колонки просто міняють порожнечу праворуч на переноси ліворуч.
-    expect(rule('.about-head-full, .pric-head-full')).toMatch(/grid-column:\s*1 \/ -1/);
-    const about = readFileSync(join(__dirname, '..', 'system', 'About.tsx'), 'utf8');
-    const pricing = readFileSync(join(__dirname, '..', 'system', 'Pricing.tsx'), 'utf8');
-    expect(about).toMatch(/about-h1 about-head-full/);
-    expect(pricing).toMatch(/pric-h1 pric-head-full/);
-  });
-
-  it('на вузькому екрані колонки складаються в одну', () => {
-    const at = css.indexOf('@media (max-width: 999px)');
-    expect(at).toBeGreaterThan(0);
-    expect(css.slice(at, at + 260)).toMatch(/\.about-head, \.pric-head \{ grid-template-columns: 1fr/);
+  /*
+   * Тест дивився на Pricing.tsx — сторінку цін, якої більше немає: вона
+   * описувала ті самі три формати, що й сторінка послуг. Правило лишилось тим
+   * самим і переїхало на /services: заголовок іде на всю ширину, а не в одну
+   * з колонок, інакше він ламається на чотири рядки при порожній сусідній.
+   */
+  it('заголовок і надзаголовок ідуть на всю ширину', () => {
+    const srv = readFileSync(join(__dirname, '..', 'system', 'Services.tsx'), 'utf8');
+    const h1 = /<h1 className="([^"]+)"/.exec(srv)?.[1] ?? '';
+    expect(h1, 'на /services не знайдено H1').toBeTruthy();
+    expect(h1, 'H1 сторінки послуг сидить у вузькій колонці').not.toMatch(/-head-l\b|-head-r\b/);
   });
 });

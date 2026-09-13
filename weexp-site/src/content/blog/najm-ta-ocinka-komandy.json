@@ -13,10 +13,9 @@
   ],
   "category": "org",
   "pages": [
-    "/systems/organization-operating-model",
+    "/services/audit",
     "/people",
-    "/systems/strategy-management",
-    "/pricing",
+    "/services",
     "/services/consulting",
     "/services/managed"
   ],

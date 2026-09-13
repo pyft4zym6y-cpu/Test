@@ -103,7 +103,7 @@ export function ServiceFormat() {
           </div>
 
           <div className="srvf-block srvf-resp">
-            <span className="sysx-kick">{t('Хто відповідає за результат', 'Who is accountable for the result')}</span>
+            <span className="sysx-kick">{t('Відповідальність', 'Accountability')}</span>
             <p className="srvf-txt"><b>{s.resp[i]}</b></p>
           </div>
         </div>
@@ -112,15 +112,12 @@ export function ServiceFormat() {
             /diagnose. Написати його двічі означало б завести другу правду. */}
         {s.slug === 'audit' && <AuditScope />}
 
-        {s.slug === 'audit' && (
-          <div className="srvf-pack">
-            <Link to={lp('/audit-pack') + '?scope=store'} className="srvf-pack-link mono">{t('Аудит магазину $2,900 — що всередині', 'Store audit $2,900 — what is inside')} →</Link>
-            <Link to={lp('/audit-pack') + '?scope=dept'} className="srvf-pack-link mono">{t('Аудит відділу $4,900 — що всередині', 'Department audit $4,900 — what is inside')} →</Link>
-          </div>
-        )}
-
+        {/* Склад пакета аудиту був окремою сторінкою — переліком із 19
+            артефактів, тобто чек-листом наших внутрішніх процесів. Те, що
+            справді цікавить клієнта, — що він отримає на руки — лишилось
+            рядком «Що входить» вище. */}
         <div className="srv-steps">
-          <span className="sysx-kick">{t('Однаково для всіх трьох форматів', 'The same for all three formats')}</span>
+          <span className="sysx-kick">{t('Однаково для всіх', 'Same for all three')}</span>
           <h2 className="sysx-display srv-h2">{t('Як ми це робимо', 'How we do it')}</h2>
           <ol className="hb-steps">
             {PROCESS.map((x) => (
@@ -138,9 +135,9 @@ export function ServiceFormat() {
         <div className="srv-foot">
           <p className="srv-foot-t">
             {t('Наступний формат:', 'Next format:')}{' '}
-            <Link to={lp(servicePath(next))} className="srv-foot-link mono">{next.n} · {next.name[i]} →</Link>
+            <Link to={lp(servicePath(next))} className="srv-foot-link mono">{next.name[i]} →</Link>
           </p>
-          <Link to={lp('/pricing')} className="sysx-cta">{t('Ціни', 'Pricing')} →</Link>
+          <Link to={lp('/services')} className="sysx-cta">{t('Послуги', 'Services')} →</Link>
         </div>
       </div>
     </section>

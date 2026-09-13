@@ -13,10 +13,9 @@
   ],
   "category": "traffic",
   "pages": [
-    "/systems/demand-customer",
+    "/services/audit",
     "/expansion/marketing",
-    "/expansion/automation",
-    "/systems/commercial-performance"
+    "/expansion/automation"
   ],
   "published": "2026-08-18",
   "readMin": 7,

@@ -46,7 +46,7 @@ export function Symptoms({ compact = false, cta = 'diagnose' }: {
 
         <ol className="symp-grid">
           {items.map((s) => (
-            <li key={s.systemPath} className="symp-card">
+            <li key={s.systemTitle} className="symp-card">
               <p className="symp-say">«{s.say}»</p>
               {/* У компактному вигляді лишається сама репліка й місце причини.
                   Пояснення та перелік експертиз — на /diagnose: на головній цей
@@ -55,9 +55,12 @@ export function Symptoms({ compact = false, cta = 'diagnose' }: {
                   головній і так мають власний блок вище. */}
               {!compact && <p className="symp-mean">{s.mean}</p>}
               <div className="symp-links">
-                <Link to={lp(s.systemPath)} className="symp-where mono">
-                  {t('Причина', 'Cause')}: {s.systemTitle} →
-                </Link>
+                {/* Причина — текст, а не посилання: сторінок систем більше
+                    немає. Людина має зрозуміти, ЩО зламалось; купує вона
+                    аудит, який це й знаходить. */}
+                <span className="symp-where mono">
+                  {t('Причина', 'Cause')}: {s.systemTitle}
+                </span>
                 {!compact && (
                   <span className="symp-fix mono">
                     {t('Лагодимо', 'We fix it with')}:{' '}
@@ -93,10 +96,11 @@ export function Symptoms({ compact = false, cta = 'diagnose' }: {
               {t('Залишити заявку', 'Leave a request')} →
             </Link>
           )}
-          {/* Єдине посилання на оглядову сторінку восьми систем: у меню її
-              більше немає, і без цього рядка вона лишилась би сиротою. */}
-          <Link to={lp('/systems')} className="symp-all mono">
-            {t('Вісім систем однією картою', 'The eight systems as one map')} →
+          {/* Наступний крок після впізнавання: саме аудит і знаходить, котра
+              з причин ваша. Доти тут стояло посилання на карту восьми систем —
+              тобто на нашу методологію замість пропозиції. */}
+          <Link to={lp('/services/audit')} className="symp-all mono">
+            {t('Аудит', 'Audit')} →
           </Link>
         </footer>
       </div>

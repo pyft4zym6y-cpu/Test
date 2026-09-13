@@ -30,8 +30,10 @@ describe('хлібні крихти', () => {
   });
 
   it('то же в английской версии', () => {
-    at('/en/pricing/');
-    expect(screen.getByText('Pricing')).toBeTruthy();
+    // Была /en/pricing — страницы цен больше нет: она описывала те же три
+    // формата, что и страница услуг.
+    at('/en/services/');
+    expect(screen.getByText('Services')).toBeTruthy();
   });
 
   it('на главной крошек нет — их незачем показывать', () => {

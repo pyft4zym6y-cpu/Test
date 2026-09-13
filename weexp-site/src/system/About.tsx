@@ -8,17 +8,13 @@ import { useJsonLd, ORIGIN } from '@/lib/seo';
 import './system.css';
 
 /*
- * Три блоки переїхали сюди з головної.
+ * Механіка довіри переїхала сюди з головної: там вона стояла між доказом і
+ * послугою й відсувала їх на четвертий екран.
  *
- * Architecture — чотири рівні пропозиції, AudienceByRole — виграші за роллю
- * ЛПР, Credibility — механіка довіри. Усе це матеріал ПРО НАС: як ми
- * влаштовані, з ким говоримо і чому нам можна вірити. На головній вони стояли
- * між доказом і послугою й відсували їх на третій-четвертий екран, а людина,
- * яка прийшла вперше, читала опис нашої внутрішньої будови раніше, ніж
- * дізнавалась, що ми продаємо.
+ * Разом із нею приїхали були «чотири рівні пропозиції» та меседжинг за роллю
+ * ЛПР — і поїхали назовсім. Це опис того, як влаштовані МИ, а не відповідь на
+ * питання, з яким людина відкриває сторінку «Про нас».
  */
-const Architecture = lazy(() => import('@/system/Architecture').then((m) => ({ default: m.Architecture })));
-const AudienceByRole = lazy(() => import('@/system/AudienceByRole').then((m) => ({ default: m.AudienceByRole })));
 const Credibility = lazy(() => import('@/system/Credibility').then((m) => ({ default: m.Credibility })));
 
 /**
@@ -210,11 +206,10 @@ export function About() {
         </div>
       </div>
     </section>
-    <Suspense fallback={null}>
-      <Architecture />
-      <AudienceByRole />
-      <Credibility />
-    </Suspense>
+    {/* Лишилась тільки механіка довіри. «Чотири рівні пропозиції» й меседжинг
+        за роллю ЛПР пішли: це опис нашої внутрішньої будови, а сторінка має
+        відповідати на питання «чи можна вам вірити». */}
+    <Suspense fallback={null}><Credibility /></Suspense>
     </>
   );
 }

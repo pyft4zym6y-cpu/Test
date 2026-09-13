@@ -141,7 +141,10 @@ export function SystemShell() {
               звичайне посилання, а не <Link> роутера: react-router уміє ходити
               лише в межах свого застосунку і на чужий хост не перейде. */}
           <a href={appHref('/cabinet')} className="sysh-account" aria-label={t('Особистий кабінет', 'Client cabinet')} title={t('Кабінет', 'Cabinet')}><Icon d={I.user} /></a>
-          {!workspace && <Link to={lp('/diagnose')} className="sysh-cta mono">Express audit →</Link>}
+          {/* Кнопка називається так само, як усі інші кнопки на цю сторінку.
+              Доти в шапці стояло «Express audit», а в тексті — «Порахувати
+              витік»: людина бачила дві назви однієї дії й не зіставляла їх. */}
+          {!workspace && <Link to={lp('/diagnose')} className="sysh-cta mono">{t('Порахувати витік', 'Calculate the leak')} →</Link>}
         </div>
         {!workspace && (
           <button className="sysh-burger" aria-label={t('Меню', 'Menu')} aria-expanded={open} onClick={() => setOpen((v) => !v)}>
@@ -164,7 +167,7 @@ export function SystemShell() {
             ))}
           </nav>
           <LangToggle className="sysh-sheet-lang" />
-          <Link to={lp('/diagnose')} className="sysx-cta is-primary sysh-sheet-cta">{t('Express audit', 'Express audit')} →</Link>
+          <Link to={lp('/diagnose')} className="sysx-cta is-primary sysh-sheet-cta">{t('Порахувати витік', 'Calculate the leak')} →</Link>
         </div>
       </div>
       )}

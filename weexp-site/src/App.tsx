@@ -55,7 +55,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
           )}</p>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             <button onClick={() => location.reload()} style={{ border: '2.5px solid #141210', background: '#FFD200', padding: '10px 18px', fontWeight: 700, cursor: 'pointer' }}>{tr('Перезавантажити', 'Reload')}</button>
-            <a href={tr('/', '/en')} style={{ border: '2.5px solid #141210', background: '#fff', padding: '10px 18px', fontWeight: 700, textDecoration: 'none', color: '#141210' }}>{tr('На головну', 'Back to home')}</a>
+            <a href={tr('/', '/en')} style={{ border: '2.5px solid #141210', background: '#fff', padding: '10px 18px', fontWeight: 700, textDecoration: 'none', color: '#141210' }}>{tr('Головна', 'Home')}</a>
           </div>
         </div>
       </div>
@@ -99,7 +99,6 @@ function ScrollToHash() {
 // vercel.json), щоб на сайті була ОДНА айдентика. Світла 404 — SystemNotFound.
 const SystemInMotion = lazy(() => import('@/system/SystemInMotion').then((m) => ({ default: m.SystemInMotion })));
 const SystemNotFound = lazy(() => import('@/system/SystemNotFound').then((m) => ({ default: m.SystemNotFound })));
-const SystemsHub = lazy(() => import('@/system/SystemsHub').then((m) => ({ default: m.SystemsHub })));
 const CasesFilm = lazy(() => import('@/system/CasesFilm').then((m) => ({ default: m.CasesFilm })));
 const About = lazy(() => import('@/system/About').then((m) => ({ default: m.About })));
 const ExpansionHub = lazy(() => import('@/system/ExpansionHub').then((m) => ({ default: m.ExpansionHub })));
@@ -109,20 +108,10 @@ const SystemShell = lazy(() => import('@/system/SystemShell').then((m) => ({ def
 const LossCalculator = lazy(() => import('@/system/LossCalculator').then((m) => ({ default: m.LossCalculator })));
 const Cabinet = lazy(() => import('@/system/Cabinet').then((m) => ({ default: m.Cabinet })));
 const AdminPanel = lazy(() => import('@/system/AdminPanel').then((m) => ({ default: m.AdminPanel })));
-const ServicePage = lazy(() => import('@/system/ServicePage').then((m) => ({ default: m.ServicePage })));
-const Pricing = lazy(() => import('@/system/Pricing').then((m) => ({ default: m.Pricing })));
 const Services = lazy(() => import('@/system/Services').then((m) => ({ default: m.Services })));
 const ServiceFormat = lazy(() => import('@/system/ServiceFormat').then((m) => ({ default: m.ServiceFormat })));
 const BlogHub = lazy(() => import('@/system/BlogHub').then((m) => ({ default: m.BlogHub })));
 const BlogPost = lazy(() => import('@/system/BlogPost').then((m) => ({ default: m.BlogPost })));
-const AuditPackPage = lazy(() => import('@/system/AuditPackPage').then((m) => ({ default: m.AuditPackPage })));
-
-// /challenges/:slug (легасі) → відповідна світла сторінка системи /systems/:slug
-// (слаги збігаються), щоб зберегти глибокі посилання, а не кидати все на індекс.
-function ChallengeRedirect() {
-  const { slug } = useParams();
-  return <Navigate to={slug ? `/systems/${slug}` : '/systems'} replace />;
-}
 
 // Єдиний перелік сторінок — рендериться двічі (UK на «/», EN на «/en»).
 const PAGES: { path: string; el: JSX.Element }[] = [
@@ -135,15 +124,11 @@ const PAGES: { path: string; el: JSX.Element }[] = [
   { path: '/diagnose', el: <LossCalculator /> },
   { path: '/services', el: <Services /> },
   { path: '/services/:slug', el: <ServiceFormat /> },
-  { path: '/pricing', el: <Pricing /> },
-  { path: '/audit-pack', el: <AuditPackPage /> },
   // Блог поки лише українською: сторінки монтуються і під /en, але BlogTeaser
   // там не показується, а сам блог веде на українські тексти. Це свідомо —
   // англомовний читач на українському лонгриді гірший за його відсутність.
   { path: '/blog', el: <BlogHub /> },
   { path: '/blog/:slug', el: <BlogPost /> },
-  { path: '/systems', el: <SystemsHub /> },
-  { path: '/systems/:slug', el: <ServicePage /> },
   { path: '/contact', el: <ContactFilm /> },
 ];
 
@@ -188,18 +173,32 @@ export default function App() {
 
           {/* Клієнтські редиректи (дублюють 301 у root vercel.json — для SPA-навігації).
               Легасі темні маршрути ведуть у світлі аналоги; окремої тёмної айдентики немає. */}
+          {/*
+            * Сторінки, яких більше немає. Їхній зміст живе у форматі «Аудит»:
+            * вісім систем і склад пакета — це те, що аудит перевіряє й віддає,
+            * а не окремі розділи сайту. Ціни злились із послугами — вони
+            * описували ті самі три формати.
+            */}
+          <Route path="/systems" element={<Navigate to="/services/audit" replace />} />
+          <Route path="/systems/:slug" element={<Navigate to="/services/audit" replace />} />
+          <Route path="/en/systems" element={<Navigate to="/en/services/audit" replace />} />
+          <Route path="/en/systems/:slug" element={<Navigate to="/en/services/audit" replace />} />
+          <Route path="/audit-pack" element={<Navigate to="/services/audit" replace />} />
+          <Route path="/en/audit-pack" element={<Navigate to="/en/services/audit" replace />} />
+          <Route path="/pricing" element={<Navigate to="/services" replace />} />
+          <Route path="/en/pricing" element={<Navigate to="/en/services" replace />} />
           <Route path="/system" element={<Navigate to="/" replace />} />
           <Route path="/loss" element={<Navigate to="/diagnose" replace />} />
           <Route path="/classic" element={<Navigate to="/" replace />} />
           <Route path="/cases" element={<Navigate to="/proof" replace />} />
           <Route path="/cases/:slug" element={<Navigate to="/proof" replace />} />
-          <Route path="/challenges" element={<Navigate to="/systems" replace />} />
-          <Route path="/challenges/:slug" element={<ChallengeRedirect />} />
-          <Route path="/what-we-build" element={<Navigate to="/systems" replace />} />
+          <Route path="/challenges" element={<Navigate to="/services/audit" replace />} />
+          <Route path="/challenges/:slug" element={<Navigate to="/services/audit" replace />} />
+          <Route path="/what-we-build" element={<Navigate to="/services/audit" replace />} />
           <Route path="/what-we-build/eu-expansion" element={<Navigate to="/expansion" replace />} />
           <Route path="/expansion/web" element={<Navigate to="/expansion/technology" replace />} />
           <Route path="/en/expansion/web" element={<Navigate to="/en/expansion/technology" replace />} />
-          <Route path="/how-it-works" element={<Navigate to="/systems" replace />} />
+          <Route path="/how-it-works" element={<Navigate to="/services/audit" replace />} />
           <Route path="/how-it-works/business-health" element={<Navigate to="/diagnose" replace />} />
           <Route path="/how-it-works/independence-score" element={<Navigate to="/diagnose" replace />} />
           <Route path="/how-it-works/benchmark" element={<Navigate to="/diagnose" replace />} />

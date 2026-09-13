@@ -25,16 +25,16 @@ export function SystemNotFound() {
         <h1 className="sysx-display sysx-404-h">{t('Такої сторінки немає —', 'This page does not exist —')}<br />{t('але ', 'but the ')}<span className="sysx-em">{t('система', 'system')}</span>{t(' на місці.', ' is in place.')}</h1>
         <p className="sysx-lead">{t('Можливо, посилання застаріло. Повернімося на головну або подивимось докази в цифрах.', 'The link may be outdated. Go back to the homepage or see the proof in numbers.')}</p>
         <div className="sysx-cta-row">
-          <Link to={lp('/')} className="sysx-cta is-primary">{t('На головну', 'Home')} →</Link>
+          <Link to={lp('/')} className="sysx-cta is-primary">{t('Головна', 'Home')} →</Link>
           <Link to={lp('/diagnose')} className="sysx-cta">{t('Порахувати витік', 'Calculate the leak')} →</Link>
           <Link to={lp('/contact')} className="sysx-cta">{t('Залишити заявку', 'Leave a request')} →</Link>
         </div>
         <nav className="sysx-404-nav mono" aria-label={t('Популярні сторінки', 'Popular pages')}>
           <span>{t('Куди далі:', 'Where to next:')}</span>
-          <Link to={lp('/proof')}>{t('Докази', 'Proof')}</Link>
-          <Link to={lp('/expansion')}>{t('Експансія', 'Expansion')}</Link>
+          <Link to={lp('/proof')}>{t('Кейси', 'Cases')}</Link>
+          <Link to={lp('/expansion')}>{t('Експертизи', 'Expertise')}</Link>
           <Link to={lp('/people')}>{t('Про нас', 'About')}</Link>
-          <Link to={lp('/pricing')}>{t('Формати і ціни', 'Pricing')}</Link>
+          <Link to={lp('/services')}>{t('Послуги', 'Services')}</Link>
           <a href={appHref('/cabinet')}>{t('Кабінет', 'Cabinet')}</a>
         </nav>
       </div>

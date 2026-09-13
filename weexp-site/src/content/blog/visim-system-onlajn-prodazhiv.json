@@ -12,12 +12,10 @@
   ],
   "category": "systems",
   "pages": [
-    "/systems",
+    "/services/audit",
     "/",
-    "/systems/strategy-management",
     "/diagnose",
-    "/proof",
-    "/services/audit"
+    "/proof"
   ],
   "published": "2026-09-07",
   "readMin": 8,

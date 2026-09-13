@@ -72,7 +72,7 @@ export function CasesFilm() {
         {/* INTRO */}
         <div ref={intro} className="sysx-scene sysx-void">
           {/* Число — з переліку кейсів, а не з рядка. */}
-          <div className="sysx-kick">{t(`WEEXP — The Evidence · ${CASES.length} трансформацій`, `WEEXP — The Evidence · ${CASES.length} transformations`)}</div>
+          <div className="sysx-kick">{t(`${CASES.length} трансформацій`, `${CASES.length} transformations`)}</div>
           {/* Заголовок збігається з пунктом меню й крихтою. «Систему видно в
               цифрах» було твердженням про нас; людина, яка натиснула «Кейси»,
               мала спершу зрозуміти, що потрапила туди, куди йшла. Саме
@@ -127,7 +127,7 @@ export function CasesFilm() {
           <h2 className="sysx-display sysx-h2">{t('Наступне число', 'The next number')}<br />{t('у стрічці — ', 'in the reel is ')}<span className="sysx-em">{t('ваше', 'yours')}</span>.</h2>
           <p className="sysx-lead">{t('Почніть із діагнозу: безкоштовний розрахунок покаже, яка система дасть найбільшу дельту саме вам.', 'Start with the diagnosis: a free estimate shows which system delivers the biggest delta for you.')}</p>
           <div className="sysx-cta-row">
-            <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Знайти свою дельту →', 'Find your delta →')}</Link>
+            <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>
             <Link to={lp('/contact')} className="sysx-cta">{t('Залишити заявку', 'Leave a request')} <span aria-hidden="true">→</span></Link>
             <ShareButton title={t('WEEXP — докази в цифрах', 'WEEXP — proof in numbers')} />
           </div>

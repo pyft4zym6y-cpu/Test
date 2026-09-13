@@ -55,7 +55,7 @@ export const SERVICES: ServiceModel[] = [
     slug: 'audit',
     n: '01',
     name: ['Аудит', 'Audit'],
-    tag: ['Diagnostic · разовий проєкт', 'Diagnostic · one-off project'],
+    tag: ['Разовий проєкт', 'One-off project'],
     period: ['4–6 тижнів', '4–6 weeks'],
     price: ['$2,900 / $4,900', '$2,900 / $4,900'],
     scopes: [
@@ -95,8 +95,8 @@ export const SERVICES: ServiceModel[] = [
   {
     slug: 'consulting',
     n: '02',
-    name: ['Консалтинг і супровід', 'Consulting & advisory'],
-    tag: ['Advisory · зовнішній експерт', 'Advisory · external expert'],
+    name: ['Консалтинг', 'Consulting'],
+    tag: ['Зовнішній експерт', 'External expert'],
     period: ['помісячно · від 1 міс', 'monthly · from 1 mo'],
     price: ['$50 / год', '$50 / hr'],
     priceNote: [
@@ -136,7 +136,7 @@ export const SERVICES: ServiceModel[] = [
     slug: 'managed',
     n: '03',
     name: ['Управління під ключ', 'Managed delivery'],
-    tag: ['Managed · трансформація', 'Managed · transformation'],
+    tag: ['Трансформація', 'Transformation'],
     period: ['6–12 місяців', '6–12 months'],
     price: ['від $4,900 / міс', 'from $4,900 / mo'],
     priceNote: [
@@ -186,3 +186,43 @@ export const serviceBySlug = (slug: string | undefined): ServiceModel | undefine
 
 /** Адреса сторінки формату. Один вираз замість рядків, зібраних руками. */
 export const servicePath = (s: Pick<ServiceModel, 'slug'>): string => `/services/${s.slug}`;
+
+/**
+ * Порівняння форматів поруч — головний інструмент вибору.
+ *
+ * Жив на окремій сторінці «Ціни», яка описувала ті самі три формати, що й
+ * сторінка послуг: два пункти меню на одну сутність. Таблиця переїхала сюди,
+ * сторінка цін пішла. Порядок значень завжди 01 → 02 → 03, як у SERVICES.
+ */
+export type CompareRow = { k: P; v: [P, P, P] };
+
+export const COMPARE: CompareRow[] = [
+  {
+    k: ['Відповідає за результат', 'Accountable for the result'],
+    v: [['Ваша команда', 'Your team'], ['Ви · ми за якість рішень', 'You · us for decision quality'], ['Ми', 'Us']],
+  },
+  {
+    k: ['Хто виконує руками', 'Who does the hands-on work'],
+    v: [['Ваша команда', 'Your team'], ['Ваша під нашим контролем', 'Yours, under our control'], ['Ми + партнери', 'Us + partners']],
+  },
+  {
+    k: ['Що потрібно від вас', 'What we need from you'],
+    v: [['Дані й доступи', 'Data and access'], ['Проджект + виконавці', 'A project lead + doers'], ['Рішення та бюджет', 'Decisions and budget']],
+  },
+  {
+    k: ['Модель оплати', 'Payment model'],
+    v: [['Фіксована за проєкт', 'Fixed per project'], ['$50/год · мін. 30 год', '$50/hr · min. 30 hrs'], ['від $4,900/міс', 'from $4,900/mo']],
+  },
+  {
+    k: ['Мінімальний вхід', 'Minimum entry'],
+    v: [['$2,900', '$2,900'], ['$1,500/міс', '$1,500/mo'], ['$4,900/міс', '$4,900/mo']],
+  },
+  {
+    k: ['Мінімальний термін', 'Minimum term'],
+    v: [['Разово', 'One-off'], ['3 місяці', '3 months'], ['Пілот 3 міс', 'Pilot 3 mo']],
+  },
+  {
+    k: ['Аудит зараховується', 'Audit credited'],
+    v: [['—', '—'], ['50% у 1-й місяць', '50% in month 1'], ['100% у 1-й місяць', '100% in month 1']],
+  },
+];

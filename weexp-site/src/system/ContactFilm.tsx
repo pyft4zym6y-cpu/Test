@@ -41,7 +41,9 @@ export function ContactFilm() {
   // У списку — НАЗВА послуги без «Формат N —»: нумерація має сенс на сторінці
   // цін, де картки стоять поруч, а в контактній формі це шум перед потрібним
   // словом. Порядок масиву лишається джерелом префілу за ?format=.
-  const FORMATS = [t('Аудит', 'Audit'), t('Консалтинг і супровід', 'Consulting & support'), t('Управління під ключ', 'Turnkey management')];
+  /* Формати в списку форми називаються так само, як на сайті: людина щойно
+     читала «Консалтинг» на сторінці й має знайти те саме слово тут. */
+  const FORMATS = [t('Аудит', 'Audit'), t('Консалтинг', 'Consulting'), t('Управління під ключ', 'Managed delivery')];
   const [format, setFormat] = useState('');
   useEffect(() => {
     const m = new URLSearchParams(loc.search).get('format');

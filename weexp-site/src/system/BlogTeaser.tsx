@@ -36,7 +36,7 @@ export function BlogTeaser({ path, title, limit = 5 }: {
         <header className="blogt-head">
           <span className="sysx-kick">{t('Блог', 'Blog')}</span>
           <h2 className="sysx-display blogt-h">{heading}</h2>
-          <Link to={lp('/blog')} className="blogt-all mono">{t('Усі статті', 'All articles')} →</Link>
+          <Link to={lp('/blog')} className="blogt-all mono">{t('Блог', 'Blog')} →</Link>
         </header>
         <ol className="blogt-list">
           {items.map((a) => (

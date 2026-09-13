@@ -13,11 +13,9 @@
   ],
   "category": "data",
   "pages": [
-    "/systems/data-technology",
+    "/services/audit",
     "/expansion/data-growth",
-    "/systems/strategy-management",
-    "/diagnose",
-    "/services/audit"
+    "/diagnose"
   ],
   "published": "2026-08-28",
   "readMin": 7,

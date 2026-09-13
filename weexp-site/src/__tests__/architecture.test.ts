@@ -1,68 +1,31 @@
 /**
- * Архитектура бренда: четыре уровня, которые должны сходиться со страницами.
+ * Перший екран і ваги автономності.
  *
- * Блок «Як це влаштовано» обещает 8 систем, 9 направлений и 3 формата. Каждое
- * из этих чисел уже показывает своя страница, и разъехаться им нельзя: тогда
- * главная будет обещать одно, а страница отдавать другое — ровно та болезнь,
- * из-за которой описание /expansion продолжало звать шесть направлений при
- * девяти. Все три числа теперь выведены из данных: форматы переехали из
- * разметки Pricing.tsx в data/services.ts — единый источник для /services,
- * страницы формата, карточек на главной и таблицы цен.
+ * Блок «Як це влаштовано» — чотири рівні пропозиції — з сайту пішов разом із
+ * data/architecture.ts: це був опис того, як влаштовані МИ, на сторінці, де
+ * людина шукає, що ми для неї робимо. Разом із ним пішли й тести на звʼязок
+ * його чисел зі сторінками — звʼязувати більше нічого.
  *
- * Порядок уровней тоже проверяется: он и есть смысл блока — что строим, кто
- * строит, как заходим, чем меряем. Переставь их, и цепочка перестанет читаться.
+ * Лишилось те, що стереже саму пропозицію: H1 називає послугу, на першому
+ * екрані одна кнопка, і ваги автономності не розходяться з моделлю.
  */
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { SERVICES } from '@/data/services';
-import { ARCHITECTURE, ENGAGEMENT_MODELS } from '@/data/architecture';
 import { SYSTEMS, AUTONOMY_W } from '@/data/xray';
-import { EXPERTISES } from '@/system/expertises';
+
 
 const ROOT = join(__dirname, '..', '..');
 const read = (p: string) => readFileSync(join(ROOT, p), 'utf8');
-const level = (key: string) => ARCHITECTURE.find((l) => l.key === key)!;
 
-describe('уровни архитектуры', () => {
-  it('идут в порядке «что → кто → как → чем меряем»', () => {
-    expect(ARCHITECTURE.map((l) => l.key)).toEqual(['systems', 'expertise', 'models', 'score']);
-  });
-
-  it('числа совпадают с тем, что показывают сами страницы', () => {
-    expect(level('systems').count).toBe(String(SYSTEMS.length));
-    expect(level('expertise').count).toBe(String(EXPERTISES.length));
-  });
-
-  it('число форматов совпадает с источником форматов', () => {
-    /*
-     * Раньше карточки считались в разметке Pricing.tsx. Форматы переехали в
-     * data/services.ts — единый источник для /services, /services/:slug,
-     * карточек на главной и таблицы цен, — поэтому считаем их там.
-     */
-    expect(SERVICES.length, 'форматов стало другое число').toBe(ENGAGEMENT_MODELS);
-    // Номера должны быть подряд: 01, 02, 03. Дырка в нумерации читается как
-    // «а где формат 02».
-    expect(SERVICES.map((s) => s.n)).toEqual(
+describe('три формата', () => {
+  it('номера идут подряд и у каждого своя страница', () => {
+    expect(SERVICES.map((x) => x.n)).toEqual(
       Array.from({ length: SERVICES.length }, (_, k) => String(k + 1).padStart(2, '0')));
-  });
-
-  it('каждый формат имеет свою страницу в приложении', () => {
     const app = read('src/App.tsx');
     expect(app, 'нет маршрута /services').toContain("'/services'");
     expect(app, 'нет маршрута страницы формата').toContain("'/services/:slug'");
-  });
-
-  it('каждый уровень ведёт на существующий маршрут и переведён', () => {
-    const app = read('src/App.tsx');
-    for (const l of ARCHITECTURE) {
-      expect(app, `нет маршрута ${l.to}`).toContain(`'${l.to}'`);
-      for (const pair of [l.title, l.question, l.body]) {
-        expect(pair[0], `${l.key}: пустой uk`).toBeTruthy();
-        expect(pair[1], `${l.key}: пустой en`).toBeTruthy();
-        expect(pair[1], `${l.key}: en кириллицей`).not.toMatch(/\p{Script=Cyrillic}/u);
-      }
-    }
   });
 });
 

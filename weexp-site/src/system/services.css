@@ -93,3 +93,40 @@
 /* Усередині сторінки формату оболонка не потрібна — секція вже в .srv-in. */
 .srv .srvf-scope { border-top: 2.5px solid var(--deep); background: transparent; }
 .srv-in .srvf-scope-in { padding-left: 0; padding-right: 0; }
+
+/* ── Порівняння форматів ──────────────────────────────────────────────────
+   Таблиця на широкому, стопка карток на телефоні. Рядок із чотирьох колонок
+   на 360px не читається ні за яких кеглів — тому це не «адаптив таблиці», а
+   два різні подання одних даних. */
+.srv-compare { margin-top: clamp(40px, 5vw, 72px); border-top: 2.5px solid var(--deep); padding-top: clamp(24px, 3vw, 40px); }
+.srv-table-wrap { overflow-x: auto; border: 2.5px solid var(--deep); background: var(--pure-white); }
+.srv-table { border-collapse: collapse; width: 100%; min-width: 640px; }
+.srv-table th, .srv-table td { text-align: left; padding: 11px 14px; border-bottom: 1px solid rgba(20, 18, 16, .14); font-size: 13.5px; }
+.srv-table thead th { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+  border-bottom: 2.5px solid var(--deep); white-space: nowrap; }
+.srv-table-k { color: var(--graphite); font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+.srv-table tr:last-child td { border-bottom: none; }
+.srv-stack { display: none; }
+.srv-stack-card { border: 2.5px solid var(--deep); background: var(--pure-white); padding: 14px 16px; margin-bottom: 12px; }
+.srv-stack-h { display: block; font-size: 15px; margin-bottom: 10px; }
+.srv-stack-card p { margin: 0; padding: 7px 0; border-top: 1px solid rgba(20, 18, 16, .12);
+  display: flex; justify-content: space-between; gap: 14px; font-size: 13px; }
+.srv-stack-card p span { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--graphite); flex: none; }
+
+@media (max-width: 760px) {
+  .srv-table-wrap { display: none; }
+  .srv-stack { display: block; }
+}
+
+/* ── Питання перед стартом ────────────────────────────────────────────────
+   Закриваємо заперечення там, де людина вибирає формат, а не на окремій
+   сторінці, куди вона вже не дійде. */
+.srv-faq { margin-top: clamp(36px, 4.6vw, 64px); border-top: 2.5px solid var(--deep); padding-top: clamp(24px, 3vw, 40px); }
+.srv-faq-list { border-top: 1px solid rgba(20, 18, 16, .16); max-width: 78ch; }
+.srv-faq-item { border-bottom: 1px solid rgba(20, 18, 16, .16); }
+.srv-faq-q { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  background: none; border: 0; padding: 15px 0; cursor: pointer; text-align: left;
+  font: inherit; font-size: 15.5px; font-weight: 600; color: var(--deep); line-height: 1.3; }
+.srv-faq-q i { font-style: normal; font-size: 20px; color: var(--red-ink); flex: none; line-height: 1; }
+.srv-faq-q:hover span { color: var(--red-ink); }
+.srv-faq-a { margin: 0 0 16px; font-size: 14px; line-height: 1.55; color: var(--graphite); max-width: var(--measure); }
