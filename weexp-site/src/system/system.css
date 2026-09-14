@@ -322,13 +322,68 @@ html { scroll-padding-top: calc(var(--sysh-h) + 12px); }
    ширини вмісту, тому overflow-x нижче ніколи не спрацьовував — меню замість
    прокрутки НАЇЖДЖАЛО на перемикач мови. З сімома пунктами це починалось на
    1280px, з восьмим — на 1440px. */
-.sysh-links { display: flex; align-items: center; gap: clamp(4px, 1.4vw, 20px); min-width: 0; flex: 0 1 auto; overflow-x: auto; scrollbar-width: none; }
-.sysh-links::-webkit-scrollbar { display: none; }
+/*
+ * `overflow-x: auto` тут БУЛО — і воно ж обрізало б панель мега-меню: контейнер
+ * зі скролом стає для абсолютних нащадків межею, за яку їх не видно. Ряд
+ * пунктів і так поміщається (шість слів), а на вузькому екрані меню — шторка,
+ * а не цей ряд.
+ */
+.sysh-links { display: flex; align-items: center; gap: clamp(4px, 1.4vw, 20px); min-width: 0; flex: 0 1 auto; }
 .sysh-link { position: relative; font-family: 'Golos Text', system-ui, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: .02em; text-transform: uppercase; color: var(--sh-charcoal); text-decoration: none; padding: 6px 2px; white-space: nowrap; transition: color .25s; }
 .sysh-link::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--sh-data); transform: scaleX(0); transform-origin: left; transition: transform .3s cubic-bezier(.22,1,.36,1); }
 .sysh-link:hover { color: var(--sh-deep); }
 .sysh-link.is-on { color: var(--sh-deep); }
 .sysh-link.is-on::after { transform: scaleX(1); }
+
+/* ── МЕГА-МЕНЮ: усе, що глибше першого рівня ─────────────────────────────
+ *
+ * Панель у розмітці завжди (краулер і пошук по сторінці мають бачити
+ * посилання), ховає її атрибут hidden. Відкривається наведенням, кліком по
+ * каретці й з клавіатури — на тач-екрані hover не існує, і без кліку панель
+ * була б доступна лише мишею.
+ */
+.sysh-item { position: relative; display: flex; align-items: center; gap: 2px; }
+.sysh-caret { display: grid; place-items: center; width: 20px; height: 20px; padding: 0;
+  border: 0; background: none; color: var(--sh-graphite, #61686F); cursor: pointer;
+  transition: transform .2s var(--ease-cine, ease), color .2s; }
+.sysh-caret svg { width: 12px; height: 12px; }
+.sysh-caret:hover { color: var(--sh-deep); }
+.sysh-item.is-open .sysh-caret { transform: rotate(180deg); color: var(--sh-deep); }
+
+.sysh-mega{
+  position: absolute; top: calc(100% + 14px); left: 0; z-index: 74;
+  width: max-content; max-width: min(92vw, calc(var(--cols, 1) * 300px + 60px));
+  background: var(--pure-white, #fff); color: var(--deep, #141210);
+  border: 2.5px solid var(--sh-deep); box-shadow: 8px 8px 0 var(--sh-deep);
+}
+.sysh-mega[hidden]{ display: none; }
+.sysh-mega-in{ padding: clamp(16px, 1.6vw, 22px); }
+.sysh-mega-head{ border-bottom: 1.5px solid var(--line, rgba(20,18,16,.16)); padding-bottom: 10px; margin-bottom: 10px; }
+.sysh-mega-all{ font-size: 11.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--red-ink, #D0230E); text-decoration: none; }
+.sysh-mega-all:hover{ text-decoration: underline; text-underline-offset: 3px; }
+.sysh-mega-lead{ margin: 6px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--graphite, #6B675E);
+  max-width: 54ch; text-wrap: pretty; }
+
+.sysh-mega-list{ list-style: none; margin: 0; padding: 0; display: grid; gap: 1px 18px;
+  grid-template-columns: repeat(var(--cols, 1), minmax(0, 1fr)); }
+.sysh-mega-i{ display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  padding: 7px 8px; margin-inline: -8px; text-decoration: none; color: inherit;
+  transition: background .15s; }
+.sysh-mega-i:hover{ background: var(--cream-2, #F1E9D4); }
+.sysh-mega-i-t{ font-size: 13.5px; font-weight: 700; letter-spacing: -.01em; }
+.sysh-mega-i-n{ flex: 0 0 auto; font-size: 11px; color: var(--graphite, #6B675E); }
+
+@media (prefers-reduced-motion: reduce){ .sysh-caret{ transition: none; } }
+
+/* ── Мобільна шторка: той самий перелік, з відступом ── */
+.sysh-sheet-grp{ display: grid; }
+.sysh-sheet-sub{ list-style: none; margin: 2px 0 10px; padding: 0 0 0 14px;
+  border-left: 2.5px solid var(--sh-silver, #D9DDE1); display: grid; }
+.sysh-sheet-sublink{ display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  padding: 7px 0; text-decoration: none; color: var(--sh-charcoal, #3A3D42); font-size: 14px; font-weight: 600; }
+.sysh-sheet-sublink b{ flex: 0 0 auto; font-size: 11px; font-weight: 700; color: var(--sh-graphite, #61686F); }
+.sysh-sheet-sublink:hover{ color: var(--sh-deep); }
 .sysh-cta { flex: 0 0 auto; font-family: 'Golos Text', system-ui, sans-serif; font-weight: 800; font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase; color: #fff; background: var(--sh-data); border: 2.5px solid var(--sh-deep); border-radius: 0; padding: 11px 20px; text-decoration: none; transition: transform .16s, box-shadow .16s; box-shadow: 4px 4px 0 var(--sh-deep); }
 .sysh-cta:hover { transform: translate(2px,2px); box-shadow: 2px 2px 0 var(--sh-deep); }
 

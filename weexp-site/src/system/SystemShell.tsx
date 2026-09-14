@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useKeyboardClass } from '@/lib/keyboardClass';
 import { NavLink, Link, Outlet, useLocation } from 'react-router-dom';
 import { Logo } from '@/system/Logo';
@@ -10,6 +10,7 @@ import { useT, useLp, useLang, stripLang } from '@/i18n';
 import { appHref, siteHref, isAppPath } from '@/lib/origins';
 import './system.css';
 import { PAGES, EXTRA_PAGES } from '@/lib/nav';
+import { megaSections, megaExtras, type MegaSection } from '@/lib/megaMenu';
 
 /**
  * Оболонка cinematic-напряму: тонка світла шапка (десктоп) + app-подібна
@@ -18,6 +19,9 @@ import { PAGES, EXTRA_PAGES } from '@/lib/nav';
  */
 // Перелік і назви — з lib/nav: те саме джерело, що в підвалі й хлібних крихтах.
 const LINKS = PAGES;
+/* Розділи з усім, що під ними: три формати, девʼять експертиз, розділи блогу. */
+const MEGA = megaSections();
+const MEGA_EXTRA = megaExtras();
 
 const I = {
   home: 'M3 11.2 12 4l9 7.2M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9',
@@ -50,12 +54,54 @@ const TABS = Object.keys(TAB_ICON).map((to) => {
   return { ...p, icon: TAB_ICON[to] };
 });
 
+/**
+ * Панель розділу: усе, що лежить під ним, одним переліком.
+ *
+ * Панель у DOM завжди, ховає її CSS. Це навмисно: посилання мають бути в
+ * розмітці для краулера й для пошуку по сторінці, а не зʼявлятись від JS.
+ */
+function MegaPanel({ s, open, onGo }: { s: MegaSection; open: boolean; onGo: () => void }) {
+  const t = useT();
+  const lp = useLp();
+  return (
+    /*
+     * Число колонок — від числа пунктів, а не від назви розділу. Девʼять
+     * експертиз в одну колонку — це 458px висоти панелі: око йде списком згори
+     * вниз замість того, щоб охопити все одразу. Три формати у дві колонки,
+     * навпаки, виглядають як обрізана сітка.
+     */
+    <div id={`mega-${s.to.slice(1)}`} className="sysh-mega" hidden={!open}
+         style={{ '--cols': s.items.length > 5 ? 2 : 1 } as CSSProperties}>
+      <div className="sysh-mega-in">
+        <div className="sysh-mega-head">
+          <Link to={lp(s.to)} className="sysh-mega-all mono" onClick={onGo}>
+            {t(s.uk, s.en)} — {t('усі', 'all')} {s.items.length} →
+          </Link>
+          {s.lead && <p className="sysh-mega-lead">{t(s.lead[0], s.lead[1])}</p>}
+        </div>
+        <ul className="sysh-mega-list">
+          {s.items.map((i) => (
+            <li key={i.to}>
+              <Link to={lp(i.to)} className="sysh-mega-i" onClick={onGo}>
+                <span className="sysh-mega-i-t">{t(i.uk, i.en)}</span>
+                {i.note && <span className="sysh-mega-i-n mono">{i.note}</span>}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
 export function SystemShell() {
   // Клавіатура на телефоні: нижня панель має ховатись, поки людина заповнює поле.
   useKeyboardClass();
   const nav = useRef<HTMLElement>(null);
   const sentinel = useRef<HTMLSpanElement>(null);
   const [open, setOpen] = useState(false);
+  /** Відкрита панель мега-меню — адреса розділу або null. */
+  const [mega, setMega] = useState<string | null>(null);
   const { pathname } = useLocation();
   const t = useT();
   const lp = useLp();
@@ -74,7 +120,22 @@ export function SystemShell() {
     io.observe(el);
     return () => io.disconnect();
   }, [base]);
-  useEffect(() => { setOpen(false); }, [pathname]);
+  useEffect(() => { setOpen(false); setMega(null); }, [pathname]);
+  /*
+   * Escape і клік поза шапкою закривають панель. Без цього відкрите меню
+   * лишається висіти над сторінкою: миша пішла вбік, а не «повз пункт», і
+   * onMouseLeave не спрацював.
+   */
+  useEffect(() => {
+    if (!mega) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMega(null); };
+    const onDown = (e: MouseEvent) => {
+      if (!nav.current?.contains(e.target as Node)) setMega(null);
+    };
+    addEventListener('keydown', onKey);
+    addEventListener('mousedown', onDown);
+    return () => { removeEventListener('keydown', onKey); removeEventListener('mousedown', onDown); };
+  }, [mega]);
 
   /**
    * Висота шапки → CSS-змінна `--sysh-h`.
@@ -131,9 +192,37 @@ export function SystemShell() {
           ? <a href={siteHref('/')} className="sysh-brand" aria-label="WEEXP"><Logo title="WEEXP" /></a>
           : <Link to={lp('/')} className="sysh-brand" aria-label="WEEXP"><Logo title="WEEXP" /></Link>}
         {!workspace && (
-          <nav className="sysh-links">
-            {LINKS.map((l) => (
-              <NavLink key={l.to} to={lp(l.to)} end={l.to === '/'} className={({ isActive }) => 'sysh-link mono' + (isActive ? ' is-on' : '')}>{t(l.uk, l.en)}</NavLink>
+          /*
+           * МЕГА-МЕНЮ. Пункт із дітьми — це посилання ПЛЮС окрема кнопка-каретка.
+           *
+           * Не «посилання, що відкриває панель»: тоді на розділ не потрапити з
+           * клавіатури, бо Enter відкриває панель замість переходу. І не сама
+           * лише панель на hover: на тач-екрані hover не існує, а на десктопі
+           * панель, яку не можна відкрити з клавіатури, — це сторінки, схованих
+           * від половини людей.
+           *
+           * Тому: посилання лишається посиланням, каретка поруч має
+           * aria-expanded і відкривається кліком, а миша відкриває панель
+           * наведенням на весь пункт — як звикли на десктопі.
+           */
+          <nav className="sysh-links" onMouseLeave={() => setMega(null)}>
+            {MEGA.map((l) => (
+              <div key={l.to} className={'sysh-item' + (mega === l.to ? ' is-open' : '')}
+                   onMouseEnter={() => setMega(l.items.length ? l.to : null)}>
+                <NavLink to={lp(l.to)} end={l.to === '/'}
+                  className={({ isActive }) => 'sysh-link mono' + (isActive ? ' is-on' : '')}>{t(l.uk, l.en)}</NavLink>
+                {!!l.items.length && (
+                  <>
+                    <button type="button" className="sysh-caret" aria-expanded={mega === l.to}
+                      aria-controls={`mega-${l.to.slice(1)}`}
+                      aria-label={t(`Показати розділ «${l.uk}»`, `Show section “${l.en}”`)}
+                      onClick={() => setMega(mega === l.to ? null : l.to)}>
+                      <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    </button>
+                    <MegaPanel s={l} open={mega === l.to} onGo={() => setMega(null)} />
+                  </>
+                )}
+              </div>
             ))}
           </nav>
         )}
@@ -167,8 +256,32 @@ export function SystemShell() {
             <span className="mono">{t('Меню', 'Menu')}</span>
             <button className="sysh-sheet-x mono" onClick={() => setOpen(false)} aria-label={t('Закрити', 'Close')}>✕</button>
           </div>
+          {/*
+            * На телефоні — той самий повний перелік, без панелей.
+            *
+            * Розгортати тут нічого не треба: місця по вертикалі скільки
+            * завгодно, а зайвий тап на каретку — це ще один крок між людиною
+            * і сторінкою. Розділ і його вміст стоять одразу, з відступом.
+            */}
           <nav className="sysh-sheet-links">
-            {LINKS.map((l) => (
+            {MEGA.map((l) => (
+              <div key={l.to} className="sysh-sheet-grp">
+                <Link to={lp(l.to)} className={`sysh-sheet-link${isActive(l.to) ? ' is-on' : ''}`}>{t(l.uk, l.en)}</Link>
+                {!!l.items.length && (
+                  <ul className="sysh-sheet-sub">
+                    {l.items.map((i) => (
+                      <li key={i.to}>
+                        <Link to={lp(i.to)} className="sysh-sheet-sublink">
+                          <span>{t(i.uk, i.en)}</span>
+                          {i.note && <b className="mono">{i.note}</b>}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+            {MEGA_EXTRA.map((l) => (
               <Link key={l.to} to={lp(l.to)} className={`sysh-sheet-link${isActive(l.to) ? ' is-on' : ''}`}>{t(l.uk, l.en)}</Link>
             ))}
           </nav>

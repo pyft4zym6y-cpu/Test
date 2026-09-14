@@ -199,6 +199,8 @@ if (WRAP) {
     '.sysx-kick', '.hb-claim-link', '.blogt-all', '.srv-table thead th', '.srvf-kind-n',
     // Числа кейсів: одне число — один рядок, і воно має вміщатись у свою комірку.
     '.hb-num b',
+    // Мега-меню: назва розділу в панелі й у мобільній шторці — один рядок.
+    '.sysh-mega-i-t', '.sysh-mega-all', '.sysh-sheet-sublink span',
   ].join(', ');
   const bad = [];
   for (const width of WIDTHS) {
