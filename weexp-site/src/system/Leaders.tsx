@@ -75,7 +75,9 @@ const AREAS: [string, [string, string], [string, string], [string, string]][] = 
    ['Створюємо контентну систему для товарних сторінок, рекламних кампаній, email-комунікацій, соцмереж і всіх ключових точок контакту з аудиторією.',
     'We build a content system for product pages, ad campaigns, email communications, social media and every key point of contact with the audience.']],
   ['10',
-   ['Система постійного покращення', 'A system of continuous improvement'],
+   // «constant», а не «continuous»: довше слово лишало на 320px другий рядок
+   // з одного «improvement» — єдиний такий випадок на всьому сайті.
+   ['Система постійного покращення', 'A system of constant improvement'],
    ['E-commerce не можна налаштувати один раз і залишити без уваги.',
     'E-commerce cannot be set up once and left alone.'],
    ['Формуємо процес безперервної оптимізації: аналіз, гіпотеза, впровадження, тестування, вимірювання результату та наступний крок. Так бізнес не просто запускає зміни, а постійно стає ефективнішим.',

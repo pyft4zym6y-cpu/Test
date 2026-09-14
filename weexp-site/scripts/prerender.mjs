@@ -184,7 +184,7 @@ const PACK = [
 
 /** Тіло EN-сторінки за її адресою. Порожньо — сторінка обійдеться описом. */
 const EN_BODY = {
-  '/': `<p>We grow the profit of online stores without raising the ad budget — through CRO, UX/UI, customer-journey optimization, AI technologies, content and systematic work with data.</p><h2>Three ways to work</h2>${formatLinks('en')}<p>${esc(SERVICES_EN)}</p><h2>What the audit covers</h2>${ul(SYSTEMS_EN)}<p><a href="/en/services/audit">What the audit checks</a></p>`,
+  '/': `<p>We grow online-store profit without raising the ad budget — through CRO, UX/UI, the customer journey, AI technologies, content and systematic work with data.</p><h2>Three ways to work</h2>${formatLinks('en')}<p>${esc(SERVICES_EN)}</p><h2>What the audit covers</h2>${ul(SYSTEMS_EN)}<p><a href="/en/services/audit">What the audit checks</a></p>`,
   '/proof': `<p>Not promises — before→after deltas from CRM, ERP and GA4. Every case is anonymous; every number is real.</p>${ul(PROOF_EN)}`,
   '/people': `<p>WEEXP was founded by Pavlo Sydorenko, Founder &amp; Architect of Commerce (8+ years in international e-commerce: US · EU · MENA). Each of the eight systems of online sales has an owner accountable for the result — specialists, not generalists.</p>${ul(ROSTER_EN)}`,
   '/expansion': `<p>Europe and the US are a separate business contour. We launch systematically and across all storefronts of a market at once. Priority markets: PL, DE, CZ, USA.</p><h2>Market storefronts</h2>${ul(CHANNELS_EN)}${expansionLinks('en')}`,

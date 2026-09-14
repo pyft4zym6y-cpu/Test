@@ -68,7 +68,7 @@ export function SystemInMotion() {
           * бюджету» — тими самими словами, що й лід рядком нижче. Один меседж,
           * записаний двічі підряд, не підсилює, а читається як затинання.
           */}
-        <p className="sysx-lead">{t('Збільшуємо прибуток інтернет-магазинів без збільшення рекламного бюджету — через CRO, UX/UI, оптимізацію клієнтського шляху, AI-технології, контент та системну роботу з даними.', 'We grow the profit of online stores without raising the ad budget — through CRO, UX/UI, customer-journey optimization, AI technologies, content and systematic work with data.')}</p>
+        <p className="sysx-lead">{t('Збільшуємо прибуток інтернет-магазинів без збільшення рекламного бюджету — через CRO, UX/UI, оптимізацію клієнтського шляху, AI-технології, контент та системну роботу з даними.', 'We grow online-store profit without raising the ad budget — through CRO, UX/UI, the customer journey, AI technologies, content and systematic work with data.')}</p>
         {/*
           * ОДНА КНОПКА — І ЦЕ ЗАЯВКА.
           *
