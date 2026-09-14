@@ -3,6 +3,8 @@ import { useT, useLp, useLang } from '@/i18n';
 import { CASES, localizeCase } from '@/data/cases';
 import { SERVICES, servicePath } from '@/data/services';
 import { EXPERTISES, L } from '@/system/expertises';
+import { AUDIT_BLOCKS } from '@/data/auditPack';
+import { AUDIT_KINDS_COUNT } from '@/data/auditScope';
 import './home.css';
 
 /**
@@ -40,6 +42,86 @@ export function HomeProofLine() {
             `We have rebuilt online sales for ${CASES.length} companies across ${nis} niches — from a storefront into a managed system.`,
           )}
         </h2>
+      </div>
+    </section>
+  );
+}
+
+/* ── Комплексність: що саме ми закриваємо ────────────────────────────────
+ *
+ * ПОЗИЦІЮВАННЯ, ЯКОГО НА САЙТІ НЕ БУЛО СКАЗАНО ПРЯМО.
+ *
+ * Сайт обіцяв більше продажів, називав три формати й девʼять експертиз — але
+ * ніде не казав головного: ми беремо ВСЮ структуру e-commerce, а не одну
+ * ділянку. Для власника це різниця між «ще один підрядник по рекламі» і «ті,
+ * хто відповідає за результат цілком»; саме вона вирішує, чи є сенс писати.
+ *
+ * Числа рахуються з даних — тих самих, за якими зібраний аудит. Набрані
+ * руками, вони розійшлися б із першою ж правкою переліку.
+ */
+export function Coverage() {
+  const t = useT();
+  const lang = useLang();
+  return (
+    <section className="sysx hb hb-cover" aria-labelledby="hb-cover-h">
+      <div className="hb-in">
+        <span className="sysx-kick">{t('Комплексний e-commerce', 'Full-scope e-commerce')}</span>
+        <h2 id="hb-cover-h" className="sysx-display hb-h">
+          {t('Не одна ділянка, а ', 'Not one slice, but ')}<span className="sysx-em">{t('вся структура продажів', 'the whole sales structure')}</span>
+        </h2>
+        <p className="hb-cover-l">
+          {t(
+            'Реклама, сайт, склад і аналітика ламаються разом і лагодяться разом. Ми дивимось усі домени одразу — і починаємо з того, який коштує вам найдорожче.',
+            'Ads, site, warehouse and analytics break together and are fixed together. We look at every domain at once — and start with the one costing you the most.',
+          )}
+        </p>
+        <ul className="hb-cover-nums">
+          <li><b>{AUDIT_BLOCKS.length}</b><span>{t('доменів діагностики', 'diagnostic domains')}</span></li>
+          <li><b>{AUDIT_KINDS_COUNT}</b><span>{t('видів аудиту всередині одного', 'audit types inside one')}</span></li>
+          <li><b>{EXPERTISES.length}</b><span>{t('експертиз, якими це закриваємо', 'expertise areas that close it')}</span></li>
+        </ul>
+        <ul className="hb-cover-chips" aria-label={t('Домени діагностики', 'Diagnostic domains')}>
+          {AUDIT_BLOCKS.map((b) => (
+            <li key={b.key} className="hb-cover-chip">{lang === 'en' ? b.en : b.uk}</li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+/* ── Що буде після заявки ─────────────────────────────────────────────────
+ *
+ * Головна дія сайту — написати нам. Найбільше їй заважає не ціна й не довіра
+ * до експертизи, а невідомість: скільки чекати відповіді, чи буде дзвінок із
+ * презентацією на сорок слайдів, чи доведеться щось вирішувати одразу.
+ *
+ * Три рядки знімають рівно це. Вони стоять ПЕРЕД запереченнями й фінальною
+ * кнопкою: спершу людина бачить, що перший крок дешевий, і аж потім її
+ * просять його зробити.
+ */
+export function AfterRequest() {
+  const t = useT();
+  const STEPS: [string, string][][] = [
+    [['Ви пишете у двох реченнях', 'You write two sentences'], ['Що відбувається й чого хочеться. Без брифів і анкет.', 'What is going on and what you want. No briefs or forms.']],
+    [['Відповідаємо протягом робочого дня', 'We reply within a business day'], ['Домовляємось на 30 хвилин розмови у зручний час.', 'We agree on a 30-minute call at a time that suits you.']],
+    [['Кажемо прямо, чи можемо допомогти', 'We say straight if we can help'], ['Якщо так — надсилаємо, що і за скільки. Якщо ні — теж скажемо.', 'If yes — we send what and for how much. If not — we say that too.']],
+  ];
+  const i = 0;
+  return (
+    <section className="sysx hb hb-after" aria-labelledby="hb-after-h">
+      <div className="hb-in">
+        <span className="sysx-kick">{t('Перший крок', 'The first step')}</span>
+        <h2 id="hb-after-h" className="sysx-display hb-h">{t('Що буде після заявки', 'What happens after you write')}</h2>
+        <ol className="hb-after-steps">
+          {STEPS.map((st, k) => (
+            <li key={st[0][0]} className="hb-after-step">
+              <i className="hb-after-n" aria-hidden="true">{String(k + 1).padStart(2, '0')}</i>
+              <b>{t(st[0][i], st[0][1])}</b>
+              <span>{t(st[1][i], st[1][1])}</span>
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   );

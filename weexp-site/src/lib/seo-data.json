@@ -3,12 +3,12 @@
   "routes": {
     "/": {
       "uk": [
-        "Аудит і перебудова онлайн-продажів · WEEXP",
-        "Знаходимо, де витікають гроші в онлайн-продажах, рахуємо це за CRM/ERP/GA4 і перебудовуємо. Три формати: аудит, консалтинг, управління під ключ."
+        "Комплексний e-commerce: аудит і перебудова · WEEXP",
+        "Беремо всю структуру онлайн-продажів, а не одну ділянку: 13 доменів діагностики, 16 видів аудиту. Знаходимо, де витікають гроші, і перебудовуємо."
       ],
       "en": [
-        "Online sales audit & rebuild · WEEXP",
-        "We find where the money leaks in online sales, size it from CRM/ERP/GA4 and rebuild. Three formats: audit, consulting, managed delivery."
+        "Full-scope e-commerce: audit & rebuild · WEEXP",
+        "We take the whole structure of online sales, not a single slice: 13 diagnostic domains, 16 audit types. We find where the money leaks and rebuild."
       ]
     },
     "/proof": {

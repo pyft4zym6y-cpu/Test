@@ -106,7 +106,20 @@ export function ContactFilm() {
               система»: людина тиснула одне, а потрапляла на інше. */}
           <h1 className="sysx-display sysx-calc-h1">{t('Залишити ', 'Leave a ')}<span className="sysx-em">{t('заявку', 'request')}</span></h1>
           <p className="sysx-sub">{t('Це ще не робота — це діагноз', 'This is not work yet — this is a diagnosis')}</p>
-          <p className="sysx-lead">{t('Залиште контакт — повернемося з першим зрізом розриву у грошах. Для e-commerce виробників і D2C-брендів.', 'Leave your contact — we’ll come back with a first read on the gap in money. For e-commerce manufacturers and D2C brands.')}</p>
+          <p className="sysx-lead">{t('Напишіть у двох реченнях, що відбувається. Для e-commerce і D2C-брендів — від виробників до відомих брендів.', 'Write two sentences about what is going on. For e-commerce and D2C brands — from manufacturers to well-known names.')}</p>
+          {/*
+            * Три рядки біля самої форми, а не десь на сторінці.
+            *
+            * Сумнів перед кнопкою «надіслати» — не про експертизу й не про
+            * ціну: про те, що буде далі. Скільки чекати, чи подзвонять із
+            * презентацією, чи доведеться щось вирішувати одразу. Саме тут ця
+            * відповідь і потрібна — на відстані погляду від поля вводу.
+            */}
+          <ul className="ctf-assure">
+            <li>{t('Відповідаємо протягом робочого дня', 'We reply within a business day')}</li>
+            <li>{t('30 хвилин розмови, без презентацій', '30 minutes of talk, no slide decks')}</li>
+            <li>{t('Скажемо прямо, якщо не візьмемось', 'We say straight if we will not take it on')}</li>
+          </ul>
         </header>
 
         {status === 'ok' ? (

@@ -51,7 +51,8 @@ export function ExpansionHub() {
             <b className="sysx-display xhub-cta-h">{t('Почніть з ', 'Start with ')}<span className="hl-y">{t('аудиту', 'the audit')}</span></b>
           </div>
           <div className="sysx-cta-row">
-            <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>
+            <Link to={lp('/contact')} className="sysx-cta is-primary">{t('Залишити заявку', 'Leave a request')} →</Link>
+            <Link to={lp('/diagnose')} className="sysx-cta">{t('Порахувати витік', 'Calculate the leak')} →</Link>
           </div>
         </div>
       </div>

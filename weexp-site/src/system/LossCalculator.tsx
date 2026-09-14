@@ -459,7 +459,7 @@ ${projRows ? `<div class="card"><h2>${escapeHtml(t('Зараз → куди мо
     <Suspense fallback={null}><AuditScope compact /></Suspense>
     {/* Сценарії — після калькулятора: людина або впізнала себе в числах, або
         ні, і в другому випадку їй потрібен вхід словами, а не цифрами. */}
-    <Symptoms cta="contact" />
+    <Symptoms />
     </>
   );
 }

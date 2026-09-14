@@ -16,6 +16,8 @@ const hb = () => import('@/system/HomeBlocks');
 const HomeProofLine = lazy(() => hb().then((m) => ({ default: m.HomeProofLine })));
 const HomeCases = lazy(() => hb().then((m) => ({ default: m.HomeCases })));
 const HomeServices = lazy(() => hb().then((m) => ({ default: m.HomeServices })));
+const Coverage = lazy(() => hb().then((m) => ({ default: m.Coverage })));
+const AfterRequest = lazy(() => hb().then((m) => ({ default: m.AfterRequest })));
 const ClosingCta = lazy(() => hb().then((m) => ({ default: m.ClosingCta })));
 const HomeFaq = lazy(() => import('@/system/HomeFaq').then((m) => ({ default: m.HomeFaq })));
 
@@ -47,14 +49,29 @@ export function SystemInMotion() {
         робимо, щоб його дати, — рядком нижче. */}
     <section className="sysx sysx-hero" aria-label={t('WEEXP — більше продажів з того самого трафіку', 'WEEXP — more sales from the same traffic')}>
       <div className="sysx-hero-in">
-        <div className="sysx-kick">{t('E-commerce і D2C-бренди', 'E-commerce & D2C brands')}</div>
+        {/* Категорія одразу називає масштаб: не «послуги для e-commerce», а
+            вся структура. Це різниця між «ще один підрядник по рекламі» і
+            «ті, хто відповідає за результат цілком». */}
+        <div className="sysx-kick">{t('Комплексний e-commerce · D2C-бренди', 'Full-scope e-commerce · D2C brands')}</div>
         <h1 className="sysx-display sysx-h1">{t('Більше продажів', 'More sales')}{' '}<br className="br-wide" /><span className="sysx-em">{t('з того самого трафіку', 'from the same traffic')}</span></h1>
         <p className="sysx-sub">{t('Без збільшення рекламного бюджету', 'Without raising the ad budget')}</p>
         <p className="sysx-lead">{t('Показуємо в гривнях, скільки магазин втрачає щомісяця — за вашими CRM, ERP і GA4. Далі перебудовуємо те, що дає найбільшу дельту.', 'We show in numbers how much your store loses every month — from your CRM, ERP and GA4. Then we rebuild what delivers the biggest delta.')}</p>
+        {/*
+          * ОДНА КНОПКА — І ЦЕ ЗАЯВКА.
+          *
+          * Доти тут стояв калькулятор. Він просить менше: ніякої розмови,
+          * жодного зобовʼязання. Але й дає менше — людина отримує число і йде,
+          * а число без нас нічого не міняє. Тому головна дія тепер одна й та
+          * сама на всьому сайті: написати нам.
+          *
+          * Калькулятор не зник — він рядком нижче, тихим посиланням, для тих,
+          * кому ще рано говорити. Це не друга кнопка: вибір із двох однакових
+          * кнопок відкладає обидві.
+          */}
         <div className="sysx-cta-row sysx-hero-cta">
-          <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>
+          <Link to={lp('/contact')} className="sysx-cta is-primary">{t('Залишити заявку', 'Leave a request')} →</Link>
         </div>
-        <span className="sysx-reassure mono">{t('Безкоштовно · без реєстрації та картки', 'Free · no sign-up, no card')}</span>
+        <span className="sysx-reassure mono">{t('Відповідаємо протягом робочого дня · без презентацій', 'We reply within a business day · no slide decks')}</span>
         {/* Три числа з реальних кейсів — перший екран не мав жодного доказу. */}
         <ul className="sysx-proofstrip mono">
           {HEADLINE_PROOF.map((h) => (
@@ -66,37 +83,59 @@ export function SystemInMotion() {
         <Link to={lp('/proof') + '#method'} className="sysx-proofhow mono">
           {t('Як ми рахуємо ці цифри', 'How we calculate these numbers')} →
         </Link>
+        {/*
+          * Тихий другий шлях. Питання «ще не готові?» стоїть ОКРЕМИМ рядком, а
+          * не всередині посилання: дія має називатись на сайті однаково —
+          * «Порахувати витік», — інакше людина зустрічає той самий розрахунок
+          * під двома назвами й не розуміє, що вже там була.
+          */}
+        <span className="sysx-alt-row mono">
+          {t('Ще не готові говорити?', 'Not ready to talk yet?')}{' '}
+          <Link to={lp('/diagnose')} className="sysx-cta-alt">{t('Порахувати витік', 'Calculate the leak')} →</Link>
+        </span>
       </div>
       {/* Технологічний стек — рядок під героєм (частина блоку) */}
       <PartnerMarquee />
     </section>
     {/*
-      * ПОРЯДОК БЛОКІВ І Є ЗМІСТОМ.
+      * ПОРЯДОК БЛОКІВ = ПОРЯДОК, У ЯКОМУ ЛЮДИНА УХВАЛЮЄ РІШЕННЯ.
       *
-      * Доказ → що купують і за скільки → з чим приходять → заперечення → дія.
+      * Не «спершу про нас, потім про них» і не «все важливе вгору». Кожен блок
+      * відповідає на питання, яке виникає РІВНО після попереднього:
       *
-      * БУЛО ТРИНАДЦЯТЬ БЛОКІВ І 12.2 ЕКРАНА. Пʼять із них розповідали про НАС
-      * і наш процес — перелік девʼяти експертиз, «як ми це робимо», «життя
-      * після передачі», «команда: 19 ролей», блок статей, — разом 4.7 екрана
-      * й близько 500 слів із 1204. Людина, яка прийшла порахувати свій витік,
-      * проходила повз них до останнього екрана, де на неї чекала не дія, а
-      * пʼять посилань у блог.
+      *   1. «це взагалі про мене?»      → симптоми, репліками власника
+      *   2. «а вони справді вміють?»    → один рядок: скільки компаній, скільки ніш
+      *   3. «вміють ЩО саме?»           → охоплення: вся структура, а не ділянка
+      *   4. «доведіть числами»          → кейси з дельтами до→після
+      *   5. «і що я можу купити?»       → три формати з цінами
+      *   6. «а що буде, якщо напишу?»   → три кроки після заявки
+      *   7. «а якщо…?»                  → FAQ із запереченнями
+      *   8.  дія                        → заявка
       *
-      * Нічого з цього не викинуто в нікуди: процес живе на сторінці формату,
-      * де його читає той, хто вже обирає; команда — на /people; «що буде,
-      * коли ви підете» стало питанням у FAQ, бо це заперечення, а не розділ;
-      * експертизи — блоком на /services. Кожна річ лишилась там, де на неї є
-      * питання, і пішла звідти, де вона лише додає екранів.
+      * Ключова перестановка — симптоми ПЕРЕД доказом. Доказ переконує того, хто
+      * вже визнав проблему; тому, хто ще не визнав, чужі числа нічого не
+      * кажуть. Спершу впізнавання себе, і лише потім — чому нам можна вірити.
+      *
+      * Другий важливий блок — «що буде після заявки». Головній дії сайту
+      * заважає не ціна й не сумнів в експертизі, а невідомість першого кроку:
+      * скільки чекати, чи буде презентація на сорок слайдів, чи доведеться
+      * щось вирішувати одразу. Він стоїть перед запереченнями, а не після:
+      * спершу видно, що крок дешевий, і аж потім про нього просять.
       */}
+    {/* 1. Це про мене? — вхід з боку клієнта, реплікою власника. */}
+    <Suspense fallback={null}><Symptoms compact /></Suspense>
     <Suspense fallback={null}>
+      {/* 2. Вони вміють? 3. Вміють що саме? 4. Доведіть. 5. Що купувати. */}
       <HomeProofLine />
+      <Coverage />
       <HomeCases />
       <HomeServices />
+      {/* 6. Що буде, якщо напишу. */}
+      <AfterRequest />
     </Suspense>
-    {/* Вхід з боку клієнта: репліка власника, а не назва системи. */}
-    <Suspense fallback={null}><Symptoms compact /></Suspense>
-    {/* FAQ — закриває заперечення + FAQPage-розмітка */}
+    {/* 7. FAQ — закриває заперечення + FAQPage-розмітка */}
     <Suspense fallback={null}><HomeFaq /></Suspense>
+    {/* 8. Одна дія. */}
     <Suspense fallback={null}><ClosingCta /></Suspense>
     </>
   );

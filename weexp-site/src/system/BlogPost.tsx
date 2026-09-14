@@ -163,7 +163,7 @@ export function BlogPost() {
               {a.pages.slice(0, 3).map((p) => (
                 <Link key={p} to={lp(p)} className="sysx-cta is-wrap">{pageLabel(p, lang)} →</Link>
               ))}
-              <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>
+              <Link to={lp('/contact')} className="sysx-cta is-primary">{t('Залишити заявку', 'Leave a request')} →</Link>
             </div>
           </section>
         )}

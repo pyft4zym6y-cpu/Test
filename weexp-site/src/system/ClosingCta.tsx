@@ -17,22 +17,28 @@ export function ClosingCta() {
     <section className="sysx hb hb-close" aria-labelledby="hb-close-h">
       <div className="hb-in">
         <h2 id="hb-close-h" className="sysx-display hb-close-h">
-          {t('Почнімо з діагнозу,', 'Let us start with a diagnosis,')}{' '}<br className="br-wide" />
+          {t('Почнімо з розмови,', 'Let us start with a talk,')}{' '}<br className="br-wide" />
           {t('а не з пропозиції', 'not with a proposal')}
         </h2>
         <p className="hb-close-l">
           {t(
-            'Безкоштовний експрес-розрахунок дає перше число — скільки виторгу витікає щороку — і головне вузьке місце. Далі, якщо потрібно, глибокий аудит.',
-            'A free express estimate gives the first number — how much revenue leaks each year — and the main bottleneck. Then, if needed, the deep audit.',
+            'Напишіть у двох реченнях, що відбувається. Відповімо протягом робочого дня, домовимось на 30 хвилин розмови — і скажемо прямо, чи можемо допомогти.',
+            'Write two sentences about what is going on. We reply within a business day, agree a 30-minute call — and tell you straight whether we can help.',
           )}
         </p>
         {/* Одна дія. Доти поруч стояло друге посилання — «Залишити заявку», —
             тобто людині в кінці сторінки пропонували вибрати спосіб звернення
             замість того, щоб звернутись. Заявка нікуди не зникла: вона в шапці
             на кожній сторінці й окремим розділом у меню. */}
-        <Link to={lp('/diagnose')} className="sysx-cta is-primary hb-close-cta">
-          {t('Порахувати витік', 'Calculate the leak')} →
+        <Link to={lp('/contact')} className="sysx-cta is-primary hb-close-cta">
+          {t('Залишити заявку', 'Leave a request')} →
         </Link>
+        {/* Другий шлях лишається тихим рядком, а не рівноцінною кнопкою:
+            вибір із двох однакових кнопок відкладає обидві. */}
+        <span className="sysx-alt-row mono">
+          {t('Ще не готові говорити?', 'Not ready to talk yet?')}{' '}
+          <Link to={lp('/diagnose')} className="sysx-cta-alt">{t('Порахувати витік', 'Calculate the leak')} →</Link>
+        </span>
       </div>
     </section>
   );

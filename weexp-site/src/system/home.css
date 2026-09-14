@@ -143,3 +143,35 @@
   .hb-serv-card { box-shadow: 3px 3px 0 var(--deep); }
   .hb-close-alt { display: block; margin: 14px 0 0; }
 }
+
+/* ── Комплексність: що саме ми закриваємо ────────────────────────────────
+   Числа й домени одним блоком: позиція «вся структура, а не ділянка» має
+   читатись за три секунди, інакше вона нічим не відрізняється від обіцянки. */
+.hb-cover-l { margin: 10px 0 0; font-size: clamp(14px, 1.5vw, 17px); line-height: 1.55;
+  color: var(--charcoal); max-width: var(--measure); text-wrap: pretty; }
+.hb-cover-nums { list-style: none; margin: clamp(18px, 2.6vw, 28px) 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px clamp(10px, 2vw, 26px); }
+.hb-cover-nums li { min-width: 0; }
+.hb-cover-nums b { display: block; font-family: var(--display); font-weight: 900;
+  font-size: clamp(28px, 5vw, 52px); line-height: 1; letter-spacing: -.03em; color: var(--red-ink); }
+.hb-cover-nums span { display: block; margin-top: 5px; font-size: clamp(11px, 1.2vw, 13px);
+  line-height: 1.3; color: var(--charcoal); }
+.hb-cover-chips { list-style: none; margin: clamp(16px, 2.4vw, 26px) 0 0; padding: 0;
+  display: flex; flex-wrap: wrap; gap: 7px 8px; }
+.hb-cover-chip { font-size: clamp(11px, 1.1vw, 12.5px); font-weight: 700; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--deep); background: var(--cream-2);
+  border: 1.5px solid var(--deep); padding: 5px 10px; white-space: nowrap; }
+
+/* ── Що буде після заявки ────────────────────────────────────────────────
+   Три рядки, які знімають невідомість першого кроку. */
+.hb-after-steps { list-style: none; margin: clamp(18px, 2.6vw, 28px) 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(14px, 2.2vw, 26px); }
+.hb-after-step { min-width: 0; display: grid; gap: 5px; align-content: start;
+  border-top: var(--bd); padding-top: 14px; }
+.hb-after-n { font-family: var(--display); font-weight: 900; font-style: normal;
+  font-size: 15px; color: var(--red-ink); letter-spacing: .02em; }
+.hb-after-step b { font-size: clamp(14px, 1.5vw, 17px); line-height: 1.25; color: var(--deep); }
+.hb-after-step span { font-size: clamp(12.5px, 1.3vw, 14px); line-height: 1.5; color: var(--graphite); }
+@media (max-width: 700px) {
+  .hb-after-steps { grid-template-columns: 1fr; gap: 14px; }
+}

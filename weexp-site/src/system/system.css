@@ -260,6 +260,14 @@
 .sysx-reassure { display: block; color: var(--graphite); font-size: 12px; letter-spacing: .04em; }
 .sysx-cta-row { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
 
+/* Другий шлях — рядком, а не другою кнопкою.
+   Дві однакові кнопки поруч не подвоюють вибір, а відкладають обидві: людина
+   починає порівнювати варіанти замість того, щоб зробити крок. */
+.sysx-alt-row { display: block; margin-top: 10px; font-size: 12px; color: var(--graphite); }
+.sysx-cta-alt { color: var(--deep); font-weight: 700; text-decoration: underline;
+  text-underline-offset: 3px; text-decoration-thickness: 1px; white-space: nowrap; }
+.sysx-cta-alt:hover { color: var(--red-ink); }
+
 @media (prefers-reduced-motion: reduce) {
   .sysx * { animation: none !important; transition: none !important; }
 }
@@ -507,6 +515,11 @@ html { scroll-padding-top: calc(var(--sysh-h) + 12px); }
 }
 
 /* ── CONTACT v2 (/contact) — поверх .sysx-calc ── */
+/* Три рядки зняття ризику — біля самої форми. */
+.ctf-assure { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 6px; }
+.ctf-assure li { position: relative; padding-left: 20px; font-size: 13px; line-height: 1.4; color: var(--charcoal); }
+.ctf-assure li::before { content: '✓'; position: absolute; left: 0; top: 0;
+  color: var(--ok, #1F9D55); font-weight: 800; font-size: 13px; }
 .ctf-form { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; }
 .ctf-full { grid-column: 1 / -1; }
 .ctf-field { display: grid; gap: 6px; }

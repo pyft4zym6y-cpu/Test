@@ -73,8 +73,8 @@ export function About() {
           <div className="about-head-l">
           <p className="sysx-lead about-lead">{t('WEEXP будує систему зростання для e-commerce і D2C-брендів. Ми перетворюємо онлайн-продажі з ручного режиму на керовану систему з восьми частин — щоб виторг зростав, а бізнес не тримався на власнику в операційці.', 'WEEXP builds a growth system for e-commerce and D2C brands. We turn online sales from manual mode into a managed system of eight parts — so revenue grows and the business doesn’t rest on the owner’s daily grind.')}</p>
           <div className="sysx-cta-row">
-            <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>
-            <Link to={lp('/contact')} className="sysx-cta">{t('Залишити заявку', 'Leave a request')} →</Link>
+            <Link to={lp('/contact')} className="sysx-cta is-primary">{t('Залишити заявку', 'Leave a request')} →</Link>
+            <Link to={lp('/diagnose')} className="sysx-cta">{t('Порахувати витік', 'Calculate the leak')} →</Link>
           </div>
           </div>
           <aside className="about-head-r">
@@ -173,7 +173,7 @@ export function About() {
             <b className="sysx-display about-cta-h">{t('Побачте, які системи у вас ', 'See which of your systems are ')}<span className="hl">{t('без власника', 'ownerless')}</span></b>
           </div>
           <div className="sysx-cta-row">
-            <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>
+            <Link to={lp('/contact')} className="sysx-cta is-primary">{t('Залишити заявку', 'Leave a request')} →</Link>
             <Link to={lp('/proof')} className="sysx-cta">{t('Кейси', 'Cases')} →</Link>
           </div>
         </div>

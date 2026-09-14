@@ -179,7 +179,8 @@ export function Services() {
             {t('Не знаєте, який формат ваш? Почніть із безкоштовного розрахунку — він покаже масштаб витоку.',
                'Not sure which format is yours? Start with the free estimate — it shows the scale of the leak.')}
           </p>
-          <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>
+          <Link to={lp('/contact')} className="sysx-cta is-primary">{t('Залишити заявку', 'Leave a request')} →</Link>
+            <Link to={lp('/diagnose')} className="sysx-cta">{t('Порахувати витік', 'Calculate the leak')} →</Link>
         </div>
       </div>
     </section>

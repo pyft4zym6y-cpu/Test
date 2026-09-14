@@ -74,7 +74,7 @@ export function ProofTrust() {
           <p className="proof-ref-t">{t('Перевірте методику на своїх числах', 'Check the method against your own numbers')}</p>
           <p className="proof-ref-s">{t('Express Audit рахує ваш розрив за тією самою логікою, що й кейси вище: дані → бенчмарк → розрив → пріоритет. Безкоштовно, без реєстрації. Це орієнтир; повну картину дає глибокий аудит.', 'The Express Audit calculates your gap with the same logic as the cases above: data → benchmark → gap → priority. Free, no sign-up. It is a pointer; the full picture comes from the deep audit.')}</p>
           <div className="sysx-cta-row">
-            <Link to={lp('/diagnose')} className="sysx-cta is-primary">{t('Порахувати витік', 'Calculate the leak')} →</Link>
+            <Link to={lp('/contact')} className="sysx-cta is-primary">{t('Залишити заявку', 'Leave a request')} →</Link>
           </div>
         </div>
       </div>

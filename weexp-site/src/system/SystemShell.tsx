@@ -146,7 +146,11 @@ export function SystemShell() {
           {/* Кнопка називається так само, як усі інші кнопки на цю сторінку.
               Доти в шапці стояло «Express audit», а в тексті — «Порахувати
               витік»: людина бачила дві назви однієї дії й не зіставляла їх. */}
-          {!workspace && <Link to={lp('/diagnose')} className="sysh-cta mono">{t('Порахувати витік', 'Calculate the leak')} →</Link>}
+          {/* Головна кнопка сайту — заявка. Доти тут стояв розрахунок: він
+              просив менше, але й давав менше — людина отримувала число і йшла.
+              Розмова з нами починається заявкою, а калькулятор лишився для
+              тих, хто ще не готовий говорити. */}
+          {!workspace && <Link to={lp('/contact')} className="sysh-cta mono">{t('Залишити заявку', 'Leave a request')} →</Link>}
         </div>
         {!workspace && (
           <button className="sysh-burger" aria-label={t('Меню', 'Menu')} aria-expanded={open} onClick={() => setOpen((v) => !v)}>
@@ -169,7 +173,7 @@ export function SystemShell() {
             ))}
           </nav>
           <LangToggle className="sysh-sheet-lang" />
-          <Link to={lp('/diagnose')} className="sysx-cta is-primary sysh-sheet-cta">{t('Порахувати витік', 'Calculate the leak')} →</Link>
+          <Link to={lp('/contact')} className="sysx-cta is-primary sysh-sheet-cta">{t('Залишити заявку', 'Leave a request')} →</Link>
         </div>
       </div>
       )}
