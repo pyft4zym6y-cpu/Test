@@ -47,7 +47,12 @@ export function Symptoms({ compact = false }: {
           <p className="sysx-lead symp-lead">
             {t(
               'Більшість проблем не виникає в одному місці. Вони накопичуються між стратегією, сайтом, маркетингом, клієнтським досвідом, операціями та даними.',
-              'Most problems do not appear in one place. They build up between strategy, the site, marketing, customer experience, operations and data.',
+              /* Двокрапка з переліком, а не «between X, Y, Z»: заміряно девʼять
+                 формулювань на семи ширинах — усі інші лишали на 540px
+                 останній рядок у 14–21% міри («and data.»), це єдине, що не
+                 падає нижче 40% ніде. Український варіант такої проблеми не
+                 має: там слова довші й рядки лягають інакше. */
+              'Most problems do not appear in one place. They build up in the gaps: strategy, the site, marketing, customer experience, operations, data.',
             )}
           </p>
         </header>
