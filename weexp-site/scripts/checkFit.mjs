@@ -61,6 +61,7 @@ const VERTICAL = ARGS.includes('--vertical');
 const CONTRAST = ARGS.includes('--contrast');
 const WRAP = ARGS.includes('--wrap');
 const ORPHAN = ARGS.includes('--orphan');
+const MENU = ARGS.includes('--menu');
 const BASE = ARGS.find((a) => a.startsWith('http')) || 'http://127.0.0.1:8127';
 
 /* Телефонні вікна МІНУС хром браузера — саме та висота, яку реально бачить
@@ -274,26 +275,8 @@ if (WRAP) {
   process.exit(1);
 }
 
-if (CONTRAST) {
-  /*
-   * Текст, якого не видно: колір тексту майже збігається з тлом під ним.
-   *
-   * Тло шукаємо вгору по предках до першого непрозорого — саме так його
-   * бачить око. Прозорість самого кольору враховуємо: rgba(20,18,16,.1) на
-   * кремовому — це світло-сірий, а не чорний.
-   */
-  const bad = [];
-  for (const path of PATHS) {
-    const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
-    await page.goto(BASE + path, { waitUntil: 'networkidle' });
-    await page.waitForTimeout(400);
-    // Догортуємо до низу: блоки з reveal лишаються прозорими, поки їх не побачили.
-    await page.evaluate(async () => {
-      for (let y = 0; y < document.body.scrollHeight; y += 700) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 40)); }
-      window.scrollTo(0, 0);
-    });
-    await page.waitForTimeout(300);
-    const rows = await page.evaluate(() => {
+/* Одна й та сама міра — і для сторінки, і для відкритої шторки меню. */
+const scanContrast = (page) => page.evaluate(() => {
       const rgb = (v) => {
         const m = /rgba?\(([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)(?:[,\s/]+([\d.]+))?/.exec(v || '');
         return m ? { r: +m[1], g: +m[2], b: +m[3], a: m[4] === undefined ? 1 : +m[4] } : null;
@@ -342,13 +325,52 @@ if (CONTRAST) {
           fg: cs.color, bg: `rgb(${bg.r},${bg.g},${bg.b})` });
       }
       return out;
+});
+
+if (CONTRAST) {
+  /*
+   * Текст, якого не видно: колір тексту майже збігається з тлом під ним.
+   *
+   * Тло шукаємо вгору по предках до першого непрозорого — саме так його
+   * бачить око. Прозорість самого кольору враховуємо: rgba(20,18,16,.1) на
+   * кремовому — це світло-сірий, а не чорний.
+   */
+  const bad = [];
+  for (const path of PATHS) {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+    await page.goto(BASE + path, { waitUntil: 'networkidle' });
+    await page.waitForTimeout(400);
+    // Догортуємо до низу: блоки з reveal лишаються прозорими, поки їх не побачили.
+    await page.evaluate(async () => {
+      for (let y = 0; y < document.body.scrollHeight; y += 700) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 40)); }
+      window.scrollTo(0, 0);
     });
+    await page.waitForTimeout(300);
+    const rows = await scanContrast(page);
     for (const r of rows) bad.push({ path, ...r });
+    await page.close();
+  }
+  /*
+   * Окремо — ВІДКРИТА шторка меню.
+   *
+   * Закрита вона лежить на opacity: 0, тож перевірка вище пропускала її як
+   * невидимий блок — і саме там жила біла кнопка «Залишити заявку» на
+   * кремовому тлі: головна дія сайту, якої на телефоні не було видно.
+   * Заливка бралась із --red-ink, а цей токен оголошений на .sysx, тобто на
+   * сторінці, — у шапці його немає, і колір мовчки виходив прозорим.
+   */
+  for (const path of ['/', '/en']) {
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+    await page.goto(BASE + path, { waitUntil: 'networkidle' });
+    await page.evaluate(() => document.querySelector('.ckc button')?.click());
+    await page.locator('.sysh-burger').click();
+    await page.waitForTimeout(400);
+    for (const r of await scanContrast(page)) bad.push({ path: path + ' (меню)', ...r });
     await page.close();
   }
   await browser.close();
   if (!bad.length) {
-    console.log(`fit --contrast: чисто — ${PATHS.length} сторінок`);
+    console.log(`fit --contrast: чисто — ${PATHS.length} сторінок + шторка меню × 2 мови`);
     process.exit(0);
   }
   console.log(`fit --contrast: ${bad.length} місць, де текст не видно\n`);
@@ -439,6 +461,74 @@ if (VERTICAL) {
   console.log(`fit --vertical: ${bad.length} накладань фіксованого хрому на крайній текст\n`);
   for (const b of bad.sort((x, y) => y.over - x.over)) {
     console.log(`  ${b.width}×${b.height} ${b.path.padEnd(11)} ${b.where.padEnd(7)} ${b.by.padEnd(8)} +${b.over}px  «${b.text}»`);
+  }
+  process.exit(1);
+}
+
+if (MENU) {
+  /*
+   * МЕНЮ НА ТЕЛЕФОНІ МУСИТЬ БУТИ ДОСЯЖНИМ ЦІЛКОМ.
+   *
+   * Шторка лежала як `position: absolute; bottom: 0` без максимальної висоти й
+   * без прокрутки. Поки пунктів було шість, вона вміщалась. Мега-меню додало в
+   * неї двадцять один рядок — і на iPhone SE в неї стало 1354px вмісту при
+   * вікні 568px: перші пункти («Послуги», «Кейси») опинились на 724px ВИЩЕ
+   * екрана, і дістатись до них не було чим — overflow-y стояв visible.
+   *
+   * Тому міряємо не висоту, а досяжність: кожне посилання і кнопка заклику
+   * мусять або бути видимими одразу, або доїхати прокруткою самої шторки.
+   */
+  const bad = [];
+  for (const [width, height] of PHONES) {
+    const page = await browser.newPage({ viewport: { width, height }, hasTouch: true, isMobile: true });
+    for (const path of ['/', '/en']) {
+      await page.goto(BASE + path, { waitUntil: 'networkidle' });
+      await page.evaluate(() => document.querySelector('.ckc button')?.click());
+      await page.locator('.sysh-burger').click();
+      await page.waitForTimeout(350);
+      const rows = await page.evaluate(() => {
+        const box = document.querySelector('.sysh-sheet-in');
+        if (!box) return [{ what: 'шторки немає', over: 9999 }];
+        const cs = getComputedStyle(box);
+        const scrollable = box.scrollHeight - box.clientHeight > 1
+          && (cs.overflowY === 'auto' || cs.overflowY === 'scroll');
+        const out = [];
+        // Прокручуємо в обидва кінці: те, що не видно в жодному з них, недосяжне.
+        const seen = new Map();
+        for (const to of [0, box.scrollHeight]) {
+          box.scrollTop = to;
+          for (const el of box.querySelectorAll('a, button')) {
+            const r = el.getBoundingClientRect();
+            const ok = r.top >= -1 && r.bottom <= innerHeight + 1 && r.height > 0;
+            const label = (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 30) || el.className;
+            if (ok) seen.set(label, true);
+            else if (!seen.has(label)) seen.set(label, false);
+          }
+        }
+        for (const [label, ok] of seen) {
+          if (!ok) out.push({ what: label, over: 1, scrollable });
+        }
+        return out;
+      });
+      for (const r of rows) bad.push({ width, height, path, ...r });
+    }
+    await page.close();
+  }
+  await browser.close();
+  if (!bad.length) {
+    console.log(`fit --menu: чисто — ${PHONES.length} телефонних вікон × 2 мови`);
+    process.exit(0);
+  }
+  // Одне й те саме посилання недосяжне на всіх вікнах — показуємо згруповано.
+  const byLabel = new Map();
+  for (const b of bad) {
+    const k = b.path + '|' + b.what;
+    if (!byLabel.has(k)) byLabel.set(k, { ...b, n: 0 });
+    byLabel.get(k).n++;
+  }
+  console.log(`fit --menu: ${byLabel.size} пунктів меню недосяжні на телефоні\n`);
+  for (const b of [...byLabel.values()].sort((x, y) => y.n - x.n)) {
+    console.log(`  ${b.path.padEnd(5)} ${String(b.n).padStart(2)} з ${PHONES.length} вікон  прокрутка: ${b.scrollable ? 'є' : 'НЕМАЄ'}  «${b.what}»`);
   }
   process.exit(1);
 }

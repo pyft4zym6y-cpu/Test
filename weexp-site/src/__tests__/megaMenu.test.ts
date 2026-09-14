@@ -18,7 +18,6 @@ import { join } from 'node:path';
 import { megaSections } from '@/lib/megaMenu';
 import { SERVICES, servicePath } from '@/data/services';
 import { EXPERTISES } from '@/system/expertises';
-import { filledCategories } from '@/data/blog';
 
 const SRC = join(__dirname, '..');
 const read = (p: string) => readFileSync(join(SRC, p), 'utf8');
@@ -39,15 +38,26 @@ describe('мега-меню показує всі рівні', () => {
     expect(EXPERTISES.length).toBeGreaterThan(5);
   });
 
-  it('кожен розділ блогу є в меню', () => {
+  it('розділів блогу в меню НЕМАЄ', () => {
     /*
-     * Саме розділи, а не сорок чотири статті. Стаття — це вміст розділу, і
-     * перелік із сорока чотирьох пунктів у меню не пояснює структуру, а ховає
-     * її вдруге: сорок чотири рядки читаються як шум.
+     * Перша версія виводила в панель девʼять розділів блогу. Це інший тип
+     * сторінок: туди приходять читати, а не купувати, — і в навігації вони
+     * відсували послуги вниз. На телефоні буквально за край: у шторку набралось
+     * 1354px вмісту при вікні 568px, і «Послуги» опинились на 724px ВИЩЕ
+     * екрана. У меню лишається те, що продає; блог — звичайний пункт, його
+     * розділи живуть на самій сторінці блогу.
      */
-    const missing = filledCategories().filter((c) => !all.some((u) => u.includes(`c=${c}`)));
-    expect(missing, `розділів блогу немає в меню: ${missing.join(', ')}`).toEqual([]);
-    expect(filledCategories().length).toBeGreaterThan(5);
+    const blogItems = mega.filter((s) => s.to === '/blog').flatMap((s) => s.items);
+    expect(blogItems, 'розділи блогу знову в меню').toEqual([]);
+    const cats = all.filter((u) => u.includes('c='));
+    expect(cats, 'у меню фільтри блогу').toEqual([]);
+    // Сам розділ у меню лишається — інакше це знову сторінка поза структурою.
+    expect(mega.map((s) => s.to)).toContain('/blog');
+  });
+
+  it('панель мають лише комерційні розділи', () => {
+    const withPanel = mega.filter((s) => s.items.length).map((s) => s.to).sort();
+    expect(withPanel).toEqual(['/expansion', '/services']);
   });
 
   it('перелік рахується з даних, а не набраний руками', () => {
@@ -57,7 +67,7 @@ describe('мега-меню показує всі рівні', () => {
      * зафіксує розходження, замість того щоб його не допустити.
      */
     const code = read('lib/megaMenu.ts');
-    for (const src of ['SERVICES', 'EXPERTISES', 'filledCategories'])
+    for (const src of ['SERVICES', 'EXPERTISES'])
       expect(code, `перелік меню не спирається на ${src}`).toContain(src);
     const hardcoded = [...code.matchAll(/to:\s*'\/(services|expansion)\/[a-z-]+'/g)];
     expect(hardcoded.map((m) => m[0]), 'адреси підрозділів набрані в меню руками').toEqual([]);

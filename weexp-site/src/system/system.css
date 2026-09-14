@@ -459,7 +459,15 @@ html { scroll-padding-top: calc(var(--sysh-h) + 12px); }
   .sysh-sheet { display: block; position: fixed; inset: 0; z-index: 72; pointer-events: none;
     background: color-mix(in srgb, var(--sh-deep) 58%, transparent); opacity: 0; transition: opacity .25s var(--ease-cine); }
   .sysh-sheet.is-open { pointer-events: auto; opacity: 1; }
+  /* Шторка прокручується сама.
+     Доти вона лежала як `bottom: 0` без максимальної висоти: поки пунктів було
+     шість, вона вміщалась. Мега-меню додало в неї рядки — і на iPhone SE стало
+     1354px вмісту при вікні 568px. Усе зайве йшло ВГОРУ за екран: «Послуги» й
+     «Кейси» опинялись на 724px вище краю, і дістатись до них не було чим.
+     overscroll-behavior тримає жест усередині шторки — інакше він дотягується
+     до сторінки під нею. */
   .sysh-sheet-in { position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 20px calc(20px + env(safe-area-inset-bottom));
+    max-height: 100%; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
     background: var(--sh-warm, #FAF5E9); border-radius: 0; border-top: 2.5px solid var(--sh-deep);
     box-shadow: 0 -30px 60px -20px rgba(21,23,26,.6);
     transform: translateY(16px); transition: transform .3s var(--ease-cine); }
@@ -471,7 +479,27 @@ html { scroll-padding-top: calc(var(--sysh-h) + 12px); }
   .sysh-sheet-links { display: grid; gap: 0; }
   .sysh-sheet-link { display: block; padding: 14px 4px; font-size: 17px; color: var(--sh-deep); text-decoration: none; border-bottom: 1px solid rgba(58,61,66,.1); min-height: 48px; }
   .sysh-sheet-link.is-on { color: var(--sh-data); }
-  .sysh-sheet-cta { margin-top: 16px; width: 100%; justify-content: center; }
+  /* Кнопка заявки лишається на очах, поки перелік їде під нею.
+     Без цього вона опинялась унизу двадцяти пунктів: щоб дійти до головної дії
+     сайту, треба було прокрутити все меню.
+
+     ВЛАСНІ КОЛЬОРИ, А НЕ ЗАПОЗИЧЕНІ. Кнопка носить класи .sysx-cta.is-primary,
+     а ті беруть --red-ink, --deep, --bd і --sh з .sysx — зі сторінки. Шторка
+     живе в .sysh, де цих токенів немає: заливка виходила ПРОЗОРА, рамки й тіні
+     не було, і на кремовому лишався білий текст «Залишити заявку» — головна дія
+     сайту, якої на телефоні не видно. Тут задаємо кольори шапки явно.
+
+     Селектор із .is-primary — не прикраса: .sysx-cta.is-primary це два класи,
+     і правило з одним класом програвало б йому заливку незалежно від порядку
+     в файлі. Перша спроба так і зробила: кольори були прописані й не діяли. */
+  .sysh-sheet-cta.is-primary { position: sticky; bottom: 0; z-index: 2; margin-top: 16px; width: 100%; justify-content: center;
+    background: var(--sh-data); color: #fff; border: 2.5px solid var(--sh-deep);
+    /* Друга тінь — не тінь, а кремова плита під кнопкою: закриває рядки, що
+       їдуть у бічні поля, яких сама кнопка не накриває. Псевдоелементом це не
+       робиться: ::before із z-index:-1 малюється ПОВЕРХ власного тла кнопки, і
+       перша спроба саме так її й знебарвила — заливка була, а видно кремову
+       плиту. Тіні ж малюються ЗА елементом, у порядку оголошення. */
+    box-shadow: 4px 4px 0 var(--sh-deep), 0 0 0 26px var(--sh-warm, #FAF5E9); }
 
   }
 
