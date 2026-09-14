@@ -68,19 +68,56 @@ describe.skipIf(!built)('собранный dist', () => {
   it('H1 в пререндере — тот же, что на странице', () => {
     /*
      * Один текст в двух местах расходится молча. Робот видит НЕ React-рендер,
-     * а статику из scripts/prerender.mjs — и когда герой переписали с «что
-     * делаем мы» на «что получает клиент», в выдаче ещё долго стоял бы старый
-     * заголовок. Ловим расхождение здесь, а не в Search Console через месяц.
+     * а статику из scripts/prerender.mjs.
+     *
+     * Проверка сначала смотрела только на главную — и этого не хватило: замер
+     * живых страниц против dist нашёл ДЕВЯТЬ расхождений. На /contact робот
+     * читал «Зростання — це система. Почнімо з діагнозу», когда страница уже
+     * называлась «Залишити заявку»; на /proof — «Систему видно в цифрах»
+     * вместо «Кейси». Это не мелочь: заголовок в выдаче обещает одно, человек
+     * попадает на другое.
+     *
+     * Поэтому сверяем ВСЕ маршруты, у которых есть свой H1 в пререндере, а не
+     * один. Список берём из самого dist — тогда новая страница попадает под
+     * правило сама, без правки теста.
      */
-    const home = readFileSync(join(__dirname, '..', 'system', 'SystemInMotion.tsx'), 'utf8');
-    const jsx = /<h1 className="sysx-display sysx-h1">([\s\S]*?)<\/h1>/.exec(home)?.[1] ?? '';
-    const words = [...jsx.matchAll(/t\('([^']+)'/g)].map((m) => m[1].trim()).join(' ');
-    expect(words, 'H1 на странице не найден').toBeTruthy();
+    const pages = readdirSync(DIST, { withFileTypes: true })
+      .filter((e) => e.isDirectory() && !['assets', 'en', 'blog'].includes(e.name))
+      .map((e) => `${e.name}/index.html`)
+      .concat('index.html')
+      .filter((f) => existsSync(join(DIST, f)));
 
-    const pre = /<h1>([^<]*)<\/h1>/.exec(html('index.html'))?.[1] ?? '';
-    expect(pre, 'H1 в пререндере не найден').toBeTruthy();
-    const norm = (x: string) => x.toLowerCase().replace(/\s+/g, ' ').trim();
-    expect(norm(pre), `пререндер отдаёт «${pre}», страница показывает «${words}»`).toBe(norm(words));
+    /** H1 страницы из её исходника: t('укр', 'eng') → укр. */
+    const jsxH1 = (file: string): string | null => {
+      const code = readFileSync(join(__dirname, '..', 'system', file), 'utf8');
+      const m = /<h1[^>]*>([\s\S]*?)<\/h1>/.exec(code);
+      if (!m) return null;
+      return [...m[1].matchAll(/t\('([^']+)'/g)].map((x) => x[1]).join('')
+        .replace(/\s+/g, ' ').trim() || null;
+    };
+    /** Маршрут → компонент. Только страницы с собственным H1 в разметке. */
+    const OWN: Record<string, string> = {
+      'index.html': 'SystemInMotion.tsx',
+      'proof/index.html': 'CasesFilm.tsx',
+      'contact/index.html': 'ContactFilm.tsx',
+      'expansion/index.html': 'ExpansionHub.tsx',
+      'diagnose/index.html': 'LossCalculator.tsx',
+    };
+    const norm = (x: string) => x.toLowerCase()
+      .replace(/&amp;/g, '&').replace(/&mdash;/g, '—').replace(/&nbsp;/g, ' ')
+      .replace(/[^a-zа-яіїєґ0-9]+/gi, '');
+
+    const bad: string[] = [];
+    for (const f of pages) {
+      const comp = OWN[f];
+      if (!comp) continue;
+      const want = jsxH1(comp);
+      const pre = /<h1>([^<]*)<\/h1>/.exec(html(f))?.[1] ?? '';
+      if (!want || !pre) { bad.push(`${f}: H1 не найден`); continue; }
+      if (!norm(pre).startsWith(norm(want)) && !norm(want).startsWith(norm(pre)))
+        bad.push(`${f}: пререндер «${pre}» ≠ страница «${want}»`);
+    }
+    expect(bad, `робот и человек видят разные заголовки:\n${bad.join('\n')}`).toEqual([]);
   });
 
   it('sitemap не пуст и покрывает обе языковые версии', () => {
