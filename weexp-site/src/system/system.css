@@ -263,10 +263,24 @@
 /* Другий шлях — рядком, а не другою кнопкою.
    Дві однакові кнопки поруч не подвоюють вибір, а відкладають обидві: людина
    починає порівнювати варіанти замість того, щоб зробити крок. */
-.sysx-alt-row { display: block; margin-top: 10px; font-size: 12px; color: var(--graphite); }
-.sysx-cta-alt { color: var(--deep); font-weight: 700; text-decoration: underline;
+/*
+ * Колір — ВІД ПОВЕРХНІ, а не константою.
+ *
+ * Тут стояв `color: var(--deep)`, тобто чорнило. На кремовому герої це
+ * правильно, а фінальний блок темний (`.hb-close { background: var(--deep) }`)
+ * — і посилання виявилось чорним по чорному: контраст 1:1, тексту не видно
+ * зовсім. Замір --contrast знайшов це на трьох сторінках.
+ *
+ * `currentColor` бере колір секції: на кремі — чорнило, на темному — крем.
+ * Одне правило, обидві поверхні, і жодного шансу завести третій випадок.
+ */
+.sysx-alt-row { display: block; margin-top: 10px; font-size: 12px; color: inherit; opacity: .75; }
+.sysx-cta-alt { color: currentColor; font-weight: 700; text-decoration: underline;
   text-underline-offset: 3px; text-decoration-thickness: 1px; white-space: nowrap; }
 .sysx-cta-alt:hover { color: var(--red-ink); }
+/* На темній поверхні червоне наведення нечитабельне — беремо яскравіший
+   бренд-червоний, той самий, яким на темному написані інші акценти. */
+.hb-close .sysx-cta-alt:hover { color: var(--red); }
 
 @media (prefers-reduced-motion: reduce) {
   .sysx * { animation: none !important; transition: none !important; }

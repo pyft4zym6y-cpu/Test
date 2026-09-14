@@ -52,10 +52,13 @@ export function SystemInMotion() {
         {/* Категорія одразу називає масштаб: не «послуги для e-commerce», а
             вся структура. Це різниця між «ще один підрядник по рекламі» і
             «ті, хто відповідає за результат цілком». */}
-        <div className="sysx-kick">{t('Комплексний e-commerce · D2C-бренди', 'Full-scope e-commerce · D2C brands')}</div>
+        {/* Категорія мусить лишатись В ОДИН РЯДОК: «Комплексний e-commerce ·
+            D2C-бренди» на 320–390px ламалось надвоє. Аудиторію повністю
+            називає лід нижче. */}
+        <div className="sysx-kick">{t('Комплексний e-commerce · D2C', 'Full-scope e-commerce · D2C')}</div>
         <h1 className="sysx-display sysx-h1">{t('Більше продажів', 'More sales')}{' '}<br className="br-wide" /><span className="sysx-em">{t('з того самого трафіку', 'from the same traffic')}</span></h1>
         <p className="sysx-sub">{t('Без збільшення рекламного бюджету', 'Without raising the ad budget')}</p>
-        <p className="sysx-lead">{t('Показуємо в гривнях, скільки магазин втрачає щомісяця — за вашими CRM, ERP і GA4. Далі перебудовуємо те, що дає найбільшу дельту.', 'We show in numbers how much your store loses every month — from your CRM, ERP and GA4. Then we rebuild what delivers the biggest delta.')}</p>
+        <p className="sysx-lead">{t('Показуємо в гривнях, скільки магазин втрачає щомісяця — за вашими CRM, ERP і GA4. Далі перебудовуємо те, що дає найбільшу дельту. Для e-commerce і D2C-брендів.', 'We show in numbers how much your store loses every month — from your CRM, ERP and GA4. Then we rebuild what delivers the biggest delta. For e-commerce and D2C brands.')}</p>
         {/*
           * ОДНА КНОПКА — І ЦЕ ЗАЯВКА.
           *
