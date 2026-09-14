@@ -22,8 +22,12 @@ export type MegaItem = {
   to: string;
   uk: string;
   en: string;
-  /** Правий підпис: ціна формату, число статей у категорії. */
-  note?: string;
+  /**
+   * Правий підпис: ціна формату, число статей у категорії. Пара, а не рядок:
+   * перша версія брала price[0] — і на англійських сторінках у меню світилось
+   * «Consulting $50 / год», «Managed delivery від $4,900 / міс».
+   */
+  note?: [string, string];
 };
 
 export type MegaSection = PageName & {
@@ -41,7 +45,7 @@ const services = (): MegaItem[] =>
     to: servicePath(s),
     uk: s.name[0],
     en: s.name[1],
-    note: s.price[0],
+    note: s.price,
   }));
 
 const expertise = (): MegaItem[] =>
@@ -61,7 +65,7 @@ const blog = (): MegaItem[] =>
      * бачить, що вміст український, ще до кліку.
      */
     en: CATEGORY_LABEL[c],
-    note: String(articlesOf(c).length),
+    note: [String(articlesOf(c).length), String(articlesOf(c).length)],
   }));
 
 /**

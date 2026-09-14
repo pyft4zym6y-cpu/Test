@@ -84,7 +84,7 @@ function MegaPanel({ s, open, onGo }: { s: MegaSection; open: boolean; onGo: () 
             <li key={i.to}>
               <Link to={lp(i.to)} className="sysh-mega-i" onClick={onGo}>
                 <span className="sysh-mega-i-t">{t(i.uk, i.en)}</span>
-                {i.note && <span className="sysh-mega-i-n mono">{i.note}</span>}
+                {i.note && <span className="sysh-mega-i-n mono">{t(i.note[0], i.note[1])}</span>}
               </Link>
             </li>
           ))}
@@ -273,7 +273,7 @@ export function SystemShell() {
                       <li key={i.to}>
                         <Link to={lp(i.to)} className="sysh-sheet-sublink">
                           <span>{t(i.uk, i.en)}</span>
-                          {i.note && <b className="mono">{i.note}</b>}
+                          {i.note && <b className="mono">{t(i.note[0], i.note[1])}</b>}
                         </Link>
                       </li>
                     ))}

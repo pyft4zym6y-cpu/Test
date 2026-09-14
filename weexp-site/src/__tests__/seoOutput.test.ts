@@ -10,6 +10,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { megaSections, megaExtras } from '@/lib/megaMenu';
 
 const DIST = join(__dirname, '..', '..', 'dist');
 const built = existsSync(join(DIST, 'sitemap.xml'));
@@ -515,5 +516,58 @@ describe('серверные правила (vercel.json)', () => {
       const next = byHost.get(hostOf(r) ?? '')!.get(dest.replace(/\/$/, '') || '/');
       expect(next, `${r.source} → ${dest} → ${next}: лишний прыжок, вес теряется`).toBeUndefined();
     }
+  });
+});
+
+
+/*
+ * МЕНЮ НЕ ВЕДЕ ТУДИ, ДЕ ДЛЯ КРАУЛЕРА СТОРІНКИ НЕМАЄ.
+ *
+ * Мега-меню рахує пункти з даних сайту, а статику збирає окремий скрипт зі
+ * свого переліку. Дві правди — і вони вже розійшлись: цикл EN у пререндері
+ * брав мету лише з seo-data.json, форматів послуг там немає, тож
+ * /en/services/audit, /consulting і /managed не існували ні в статиці, ні в
+ * sitemap. У застосунку вони малювались, і поки на них ніщо не вело, це не
+ * боліло. Мега-меню почало вести на них із КОЖНОЇ англійської сторінки.
+ *
+ * Виняток тут рівно один і записаний явно: /en/blog. Розділ навмисно не йде
+ * в індекс — статті лише українською. Якщо винятків стане більше, тест
+ * упаде; якщо цей зникне — теж упаде, і хтось прибере рядок. Сторож, який
+ * мовчить в обидва боки, не сторож.
+ */
+const menuUrls = (lang: 'uk' | 'en') => {
+  const pre = lang === 'en' ? '/en' : '';
+  const abs = (to: string) => (to === '/' ? pre || '/' : pre + to).split('?')[0];
+  const out = new Set<string>();
+  for (const s of megaSections()) {
+    out.add(abs(s.to));
+    for (const i of s.items) out.add(abs(i.to));
+  }
+  for (const e of megaExtras()) out.add(abs(e.to));
+  return [...out];
+};
+
+describe.skipIf(!built)('меню і статика не розходяться', () => {
+  const have = new Set(allPages.map((p) => p.url || '/'));
+
+  it('кожне посилання меню зібране як сторінка', () => {
+    expect(menuUrls('uk').filter((u) => !have.has(u)),
+      'меню веде на адреси, яких немає в статиці').toEqual([]);
+    expect(menuUrls('en').filter((u) => !have.has(u)),
+      'меню веде на адреси, яких немає в статиці').toEqual(['/en/blog']);
+  });
+
+  it('меню показує щось глибше першого рівня', () => {
+    // Якщо панелі спорожніють, перевірка вище стане тавтологією: шість адрес
+    // першого рівня, які й так були в статиці завжди. Рахуємо саме глибокі.
+    const deep = menuUrls('uk').filter((u) => u.split('/').length > 2);
+    expect(deep.length, `глибоких адрес у меню лише ${deep.length}`).toBeGreaterThan(10);
+  });
+
+  it('кожне посилання меню є в sitemap', () => {
+    // Сторінка може лежати в dist і при цьому не бути заявленою пошуку.
+    const map = html('sitemap.xml');
+    const missing = menuUrls('uk').filter((u) => !map.includes(`>https://weexp.agency${u}<`));
+    expect(missing, 'сторінки меню немає в sitemap').toEqual([]);
   });
 });

@@ -13,10 +13,12 @@
  *     ціною в застосунку, і Google показує стару.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { SERVICES, SERVICE_COUNTS, fillCounts, servicePath } from '@/data/services';
 import { PROCESS, AFTER } from '@/data/process';
+import SEO_DATA from '@/lib/seo-data.json';
+const SEO_ROUTES = SEO_DATA.routes;
 import { PAGES, SUB_PAGES, nameOf } from '@/lib/nav';
 
 const SRC = join(__dirname, '..');
@@ -114,12 +116,45 @@ describe('статика не розходиться із застосунком
     expect(drift, `у статиці суми, яких немає в джерелі: ${drift.join(', ')}`).toEqual([]);
   });
 
-  it('усі три сторінки форматів є в статиці й у карті сайту', () => {
-    // Карта сайту будується з ROUTES, тож досить перевірити, що сторінки туди
-    // потрапляють: вісім сторінок систем колись саме так і лишились поза нею.
+  it('ціни в описах для пошуку ті самі, що в джерелі', () => {
+    /*
+     * Мета форматів переїхала з пререндера у спільну таблицю seo-data.json —
+     * туди ж переїхали й суми. Перевірка вище дивиться лише в скрипт, тож без
+     * цієї ціна в сніпеті могла б відстати мовчки: людина бачить у видачі одну
+     * суму, на сторінці іншу.
+     */
+    const MONEY = /\$[\d,]*\d/g;
+    const inSource = new Set([...SERVICES.flatMap((x) => [...x.price, ...x.priceNote, ...x.terms, ...(x.scopes ?? []).map((y) => y.price)])
+      .join(' ').matchAll(MONEY)].map((m) => m[0]));
+    for (const x of SERVICES) {
+      const m = (SEO_ROUTES as Record<string, { uk: string[]; en: string[] }>)[servicePath(x)];
+      expect(m, `у seo-data немає мети ${servicePath(x)} — заголовок у видачі буде чужий`).toBeTruthy();
+      const drift = [...[...m.uk, ...m.en].join(' ').matchAll(MONEY)].map((n) => n[0]).filter((n) => !inSource.has(n));
+      expect(drift, `в описі ${servicePath(x)} суми, яких немає в джерелі: ${drift.join(', ')}`).toEqual([]);
+    }
+  });
+
+  it('усі три сторінки форматів є в статиці й у карті сайту — обома мовами', () => {
+    /*
+     * Доти тут стояла перевірка тексту скрипта: «у prerender згадується слаг».
+     * Вона й не мала шансу впіймати те, що сталось насправді — англійські
+     * сторінки форматів не збирались ЗОВСІМ: цикл EN брав мету лише з
+     * seo-data.json, а форматів там немає. Слаг у файлі був, сторінки не було.
+     * Тому дивимось у зібраний dist, а не в наміри в коді.
+     */
+    const DIST = join(__dirname, '..', '..', 'dist');
+    if (existsSync(join(DIST, 'sitemap.xml'))) {
+      const map = readFileSync(join(DIST, 'sitemap.xml'), 'utf8');
+      for (const s of SERVICES)
+        for (const pre2 of ['', '/en']) {
+          const url = pre2 + servicePath(s);
+          expect(existsSync(join(DIST, url.slice(1), 'index.html')), `немає статики ${url}`).toBe(true);
+          expect(map, `${url} немає в sitemap`).toContain(`>https://weexp.agency${url}<`);
+        }
+    }
+    // Без зібраного dist лишається хоч перевірка, що формати взагалі є в скрипті.
     for (const s of SERVICES)
       expect(pre, `у prerender немає ${servicePath(s)}`).toContain(`'${s.slug}'`);
-    expect(pre).toContain('/services/${slug}');
   });
 });
 

@@ -71,6 +71,36 @@
         "Three ways to work with WEEXP: a deep online-sales audit from $2,900, consulting from $1,500/mo, managed delivery from $4,900/mo. Prices and terms are open."
       ]
     },
+    "/services/audit": {
+      "uk": [
+        "Аудит онлайн-продажів · WEEXP",
+        "Карта: де саме витікають гроші, скільки це коштує на рік і що робити першим. Магазин $2,900 або весь відділ e-commerce $4,900, 4–6 тижнів."
+      ],
+      "en": [
+        "Online-sales audit · WEEXP",
+        "A map: exactly where the money leaks, what it costs per year and what to fix first. The store $2,900 or the whole department $4,900, 4–6 weeks."
+      ]
+    },
+    "/services/consulting": {
+      "uk": [
+        "Консалтинг e-commerce · WEEXP",
+        "Зовнішній архітектор для вашої команди: що робити, в якому порядку і чи зроблено якісно. $50/год, мінімум 30 год/міс ($1,500/міс)."
+      ],
+      "en": [
+        "E-commerce consulting · WEEXP",
+        "An external architect for your team: what to do, in what order and whether it is done well. $50/hr, minimum 30 hrs/mo ($1,500/mo)."
+      ]
+    },
+    "/services/managed": {
+      "uk": [
+        "Управління e-commerce під ключ · WEEXP",
+        "Проєкт ведемо ми — план, люди, бюджет і фінальна відповідальність за результат. Від $4,900/міс, 6–12 місяців."
+      ],
+      "en": [
+        "Managed e-commerce delivery · WEEXP",
+        "We run the project — plan, people, budget and final accountability for the result. From $4,900/mo, 6–12 months."
+      ]
+    },
     "/blog": {
       "uk": [
         "Блог WEEXP — практика e-commerce без загальних слів",

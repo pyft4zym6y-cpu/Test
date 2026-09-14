@@ -1,10 +1,11 @@
-import { Link, Navigate, useLocation, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useT, useLp, useLang } from '@/i18n';
-import { applySeo, useJsonLd } from '@/lib/seo';
+import { useJsonLd } from '@/lib/seo';
 import { SERVICES, serviceBySlug, servicePath, fillCounts } from '@/data/services';
 import { PROCESS } from '@/data/process';
 import { AUDIT_BLOCKS } from '@/data/auditPack';
 import { AuditScope } from '@/system/AuditScope';
+import { SystemNotFound } from '@/system/SystemNotFound';
 import { TOTAL_DOMAINS } from '@/data/xray';
 import './system.css';
 import './home.css';
@@ -22,7 +23,6 @@ import './services.css';
  */
 export function ServiceFormat() {
   const { slug } = useParams();
-  const { pathname } = useLocation();
   const t = useT();
   const lp = useLp();
   const lang = useLang();
@@ -41,8 +41,20 @@ export function ServiceFormat() {
     description: promise,
   } : null);
 
-  if (!s) return <Navigate to={lp('/services')} replace />;
-  applySeo(`${name} — ${t('формат співпраці з WEEXP', 'a way to work with WEEXP')}`, promise, pathname);
+  /*
+   * Невідомий формат — це 404, а не тихий переїзд на хаб.
+   * Редирект віддавав 200 разом зі сторінкою послуг: пошук бачив ще одну копію
+   * /services під чужою адресою, а людина — сторінку, якої не просила. Рівно
+   * це вже лікували на /expansion/:slug.
+   */
+  if (!s) return <SystemNotFound />;
+  /*
+   * Заголовок і опис ставить RouteSeo зі спільної таблиці seo-data.json — тієї
+   * самої, з якої їх бере пререндер. Доти сторінка переписувала укладку тут:
+   * у статиці стояв пошуковий заголовок «Аудит онлайн-продажів · WEEXP», а
+   * застосунок одразу міняв його на «Аудит — формат співпраці з WEEXP».
+   * Googlebot виконує JS, тож у видачу доходив другий.
+   */
 
   const idx = SERVICES.findIndex((x) => x.slug === s.slug);
   const next = SERVICES[(idx + 1) % SERVICES.length];
