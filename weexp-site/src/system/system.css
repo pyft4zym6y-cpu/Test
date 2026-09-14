@@ -303,7 +303,12 @@
    --measure  — довжина рядка абзацу, за якою око ще не губить наступний рядок. */
 :root {
   --page-w: 1320px;
-  --measure: 66ch;
+  /*
+   * Міра рядка ніколи не ширша за контейнер. 66ch у вузькій колонці телефона
+   * самі по собі ширші за неї; min() знімає цілий клас можливих виходів за
+   * межі. Токен використовується РІВНО як max-width і більше ніде.
+   */
+  --measure: min(66ch, 100%);
   --sysh-h: 76px;
 }
 
@@ -1668,11 +1673,23 @@ body.kb-open .sysx-calc-bg { display: none !important; }
 
 /* Смуга доказів у першому екрані головної. Числа беруться з кейсів (cases.ts,
    HEADLINE_PROOF) — перший екран до цього не мав жодного числа результату. */
-.sysx-proofstrip { display: flex; flex-wrap: wrap; gap: 6px 26px; list-style: none; margin: 18px 0 0; padding: 0; }
-.sysx-proofstrip li { display: inline-flex; align-items: baseline; gap: 7px; font-size: 12px; color: var(--graphite); }
-.sysx-proofstrip b { font-size: 21px; font-weight: 800; letter-spacing: -.01em; color: var(--red-ink); font-variant-numeric: tabular-nums; }
-.sysx-proofstrip span { letter-spacing: .01em; }
-@media (max-width: 700px) { .sysx-proofstrip { gap: 4px 16px; } .sysx-proofstrip b { font-size: 18px; } .sysx-proofstrip li { font-size: 11px; } }
+/* Три числа стоять в ОДИН РЯД на всіх ширинах, включно з телефоном.
+   Доти це був flex-wrap: на 320–430px підпис стояв поруч із числом, рядок не
+   вміщався й розсипався на два-три — три докази читались як випадковий
+   перелік. Тепер це сітка з трьох рівних колонок: число зверху, підпис під
+   ним. minmax(0, 1fr) обовʼязковий — без нього колонка не може стати вужчою
+   за свій вміст і сітка знову вилазить за екран. */
+.sysx-proofstrip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0 clamp(8px, 2vw, 26px); list-style: none; padding: 0; width: 100%;
+  /* Обмеження ширини — не косметика: на 1440px три рівні колонки розтягувались
+     на весь герой, і числа переставали читатись як одна трійка доказів. */
+  max-width: 620px; margin: 18px auto 0; }
+.sysx-proofstrip li { display: flex; flex-direction: column; align-items: center; gap: 2px;
+  min-width: 0; font-size: clamp(10px, 2.6vw, 12px); line-height: 1.25; text-align: center;
+  color: var(--graphite); }
+.sysx-proofstrip b { font-size: clamp(17px, 4.6vw, 21px); font-weight: 800; letter-spacing: -.01em;
+  color: var(--red-ink); font-variant-numeric: tabular-nums; }
+.sysx-proofstrip span { letter-spacing: .01em; text-wrap: balance; }
 
 /* Посилання на методику поруч із числами: сам розділ «Як ми рахуємо» жив лише
    всередині /proof, хоча підпирає кожне число на сайті. */

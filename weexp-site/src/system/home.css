@@ -198,9 +198,12 @@
   letter-spacing: -.01em; font-weight: 800; color: var(--deep); }
 .hb-ldr-why { margin: 2px 0 0; font-size: clamp(13px, 1.4vw, 15px); line-height: 1.5; color: var(--deep); }
 .hb-ldr-what { margin: 0; font-size: clamp(12.5px, 1.35vw, 14.5px); line-height: 1.5; color: var(--graphite); }
+/* Явна колонка — з тієї ж причини, що й у .symp-foot: auto-трек розтягується
+   під вміст і виносить блок за екран. */
 .hb-ldr-cta { margin-top: clamp(26px, 3.4vw, 46px); border: 2.5px solid var(--deep);
   box-shadow: 6px 6px 0 var(--deep); background: var(--pure-white);
-  padding: clamp(20px, 2.6vw, 32px); display: grid; gap: 10px; justify-items: start; }
+  padding: clamp(20px, 2.6vw, 32px);
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; justify-items: start; }
 .hb-ldr-cta-h { margin: 0; font-family: var(--display); font-weight: 900;
   font-size: clamp(20px, 2.6vw, 32px); line-height: 1.06; letter-spacing: -.02em;
   text-transform: uppercase; color: var(--deep); }

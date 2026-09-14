@@ -53,9 +53,16 @@
    Доти тут стояв один рядок «хочете розібрати свій випадок?» із кнопкою —
    після восьми карток він читався як службова примітка, а не як момент, коли
    людина себе впізнала. */
+/* grid-template-columns обовʼязковий.
+   Без нього єдина колонка — auto, і вона розтягується під max-content свого
+   вмісту, НЕ зважаючи на ширину самого блоку: при 320px блок був 284px, а його
+   колонка — 312px, і обидва абзаци вилазили за екран на 60px. Рівно на цьому
+   вже горів герой головної. minmax(0, 1fr) дозволяє колонці бути вужчою за
+   вміст; justify-items: start лишає кнопку по вмісту, а не на всю ширину. */
 .symp-foot { margin-top: clamp(24px, 3vw, 40px); border: 2.5px solid var(--deep);
   box-shadow: 6px 6px 0 var(--deep); background: var(--pure-white);
-  padding: clamp(20px, 2.6vw, 32px); display: grid; gap: 10px; justify-items: start; }
+  padding: clamp(20px, 2.6vw, 32px);
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; justify-items: start; }
 .symp-foot-h { margin: 0; font-family: var(--display); font-weight: 900;
   font-size: clamp(20px, 2.6vw, 32px); line-height: 1.06; letter-spacing: -.02em;
   text-transform: uppercase; color: var(--deep); }
@@ -73,7 +80,8 @@
   .symp-foot { box-shadow: 4px 4px 0 var(--deep); padding: 18px 15px; }
   /* Кнопки в стовпчик на всю ширину: поруч вони не вміщаються, а «або» між
      ними в один рядок із двома кнопками виносило б блок за екран. */
-  .symp-foot-act { display: grid; justify-items: stretch; gap: 8px; width: 100%; }
+  .symp-foot-act { display: grid; grid-template-columns: minmax(0, 1fr);
+    justify-items: stretch; gap: 8px; width: 100%; }
   .symp-foot-act .sysx-cta { width: 100%; justify-content: center; }
   .symp-or { text-align: center; }
 }
