@@ -42,7 +42,12 @@
    його від репліки, а не від нічого. */
 .symp-links { padding-top: 10px; border-top: 1px solid rgba(20, 18, 16, .16);
   display: flex; flex-direction: column; gap: 6px; }
-.symp-where { font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; font-weight: 700;
+/* 10.5px і майже без розрядки — це замір, а не смак. Найдовші дві причини
+   («Acquisition / CRM / Retention», «Дані / аналітика / технології») при
+   11.5px/.04em просять 277px, а картка дає 248 на 320px і 264 на 1024, де
+   сітка стає тривколонковою. Підпис мусить лишатись в один рядок, тож
+   зменшується він, а не текст власника. */
+.symp-where { font-size: 10.5px; letter-spacing: .01em; text-transform: uppercase; font-weight: 700;
   color: var(--red-ink); text-decoration: none; }
 .symp-where:hover { text-decoration: underline; }
 .symp-fix { font-size: 11.5px; line-height: 1.45; color: var(--graphite); }

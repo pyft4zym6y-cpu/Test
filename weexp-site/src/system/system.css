@@ -858,6 +858,20 @@ html { scroll-padding-top: calc(var(--sysh-h) + 12px); }
   .sysx-cta { white-space: nowrap; }
   .sysx-cta.is-wrap, .s3-reco .sysx-cta{ white-space: normal; }
 }
+
+/* Довгі підписи кнопок на вузьких екранах.
+   «Замовити комплексний аудит →» і «Знайти можливості для росту →» не
+   вміщаються в 320–430px при padding 18px: кнопка не вміє переносити рядок
+   (правило вище ставить nowrap, і сторож --wrap це тримає), тож стискається
+   сама кнопка. Правило стоїть ТУТ, а не в home.css: там воно діяло б лише на
+   сторінках, які той файл вантажать, і на /diagnose та сама кнопка вилазила
+   за екран на 13px. */
+@media (max-width: 480px) {
+  .sysx-cta { padding: 13px 14px; font-size: 12px; letter-spacing: .03em; gap: 7px; }
+}
+@media (max-width: 380px) {
+  .sysx-cta { padding: 13px 10px; font-size: 11px; letter-spacing: .02em; }
+}
 @keyframes s3Mile { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 .s3-sec-chip.is-on { border-color: var(--deep); color: var(--deep); background: color-mix(in srgb, var(--data) 5%, var(--pure-white)); }
 .s3-sec-chip.is-on b { color: var(--data); }

@@ -224,17 +224,10 @@
   max-width: var(--measure); color: var(--graphite); }
 .hb-after-cta { margin-top: clamp(20px, 2.6vw, 32px); }
 
-/* Довгі підписи кнопок на телефоні.
-   «Знайти можливості для росту →» і «Обговорити мій e-commerce →» не
-   вміщаються в 320–390px при padding 26px: кнопка не вміє переносити рядок
-   (сторож --wrap тримає підпис в один рядок), тож стискається сама кнопка.
-   Всередині рамкового блоку вона ще й розтягується на всю ширину — так вона
-   не тулиться до лівого краю, а читається як смуга дії. */
+/* Рамковий блок і кнопка в ньому на телефоні. Розміри самої .sysx-cta живуть
+   у system.css, поруч із класом: тут вони діяли б лише на сторінках, які
+   вантажать home.css, — і на /diagnose кнопка лишалась завеликою. */
 @media (max-width: 480px) {
-  .sysx .sysx-cta { padding: 14px 16px; font-size: 12px; letter-spacing: .03em; gap: 7px; }
   .hb-ldr-cta { padding: 16px 14px; box-shadow: 4px 4px 0 var(--deep); }
   .hb-ldr-cta .sysx-cta, .hb-after-cta .sysx-cta { width: 100%; justify-content: center; }
-}
-@media (max-width: 380px) {
-  .sysx .sysx-cta { padding: 13px 11px; font-size: 11px; letter-spacing: .02em; }
 }
