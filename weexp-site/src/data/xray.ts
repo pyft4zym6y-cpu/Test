@@ -32,7 +32,7 @@ export const SYSTEMS: System[] = [
   {
     key: 'strategy', num: '01', slug: 'strategy-management',
     title: 'Стратегія та управління', en: 'Strategy & Management',
-    feel: 'Ми ростемо, але я не розумію, куди і навіщо.',
+    feel: 'Ми ростемо, але не розуміємо, куди рухатися далі.',
     when: 'Коли бізнес не розуміє, куди рости',
     bigIdea: 'Стратегія продажів, якою можна керувати',
     flow: ['Стратегія', 'Цілі', 'Економіка', 'Модель росту', 'Управлінський цикл'],
@@ -69,7 +69,7 @@ export const SYSTEMS: System[] = [
   {
     key: 'customer', num: '03', slug: 'demand-customer',
     title: 'Попит і клієнт', en: 'Demand & Customer',
-    feel: 'Ми дорого залучаємо людей і погано робимо їх постійними клієнтами.',
+    feel: 'Ми дорого залучаємо клієнтів і майже не повертаємо їх.',
     when: 'Коли клієнт дорогий і не повертається',
     bigIdea: 'Перетворюйте трафік на клієнтів, а клієнтів — на цінність.',
     flow: ['Залучення', 'Конверсія', 'Утримання', 'Реактивація', 'Зростання LTV'],
@@ -105,7 +105,7 @@ export const SYSTEMS: System[] = [
   {
     key: 'operations', num: '05', slug: 'operations-fulfillment',
     title: 'Операції та fulfillment', en: 'Operations & Fulfillment',
-    feel: 'Маркетинг приводить замовлення, а склад і доставка все ламають.',
+    feel: 'Маркетинг приводить замовлення, а далі все починає ламатися.',
     when: 'Коли продаж є, а виконати його не можемо',
     bigIdea: 'Продавати марно, якщо не можеш доставити.',
     flow: ['Замовлення', 'Склад', 'Fulfillment', 'Доставка', 'Повернення', 'Клієнт'],
@@ -123,7 +123,7 @@ export const SYSTEMS: System[] = [
   {
     key: 'data', num: '06', slug: 'data-technology',
     title: 'Дані, технології, інтеграції', en: 'Data, Technology & Integration',
-    feel: 'У кожного свої цифри, і жодній не можна довіряти.',
+    feel: 'У кожного своя цифра — і незрозуміло, якій довіряти.',
     when: 'Коли системи не дають керувати процесом',
     bigIdea: 'Один бізнес. Одне джерело правди.',
     flow: ['Джерела', 'Інтеграції', 'Master data', 'Аналітика', 'P&L'],
@@ -141,7 +141,7 @@ export const SYSTEMS: System[] = [
   {
     key: 'org', num: '07', slug: 'organization-operating-model',
     title: 'Організація та операційна модель', en: 'Organization & Operating Model',
-    feel: 'Усе тримається на мені та на кількох людях.',
+    feel: 'Усе тримається на мені та кількох ключових людях.',
     when: 'Коли немає власників, процесів і відповідальності',
     bigIdea: 'Побудуйте бізнес, якому не потрібні герої.',
     flow: ['Ролі', 'RACI', 'KPI', 'SOP', 'Owner journey', 'Незалежність'],
@@ -159,7 +159,7 @@ export const SYSTEMS: System[] = [
   {
     key: 'expansion', num: '08', slug: 'expansion-markets',
     title: 'Експансія та ринки', en: 'Expansion & Markets',
-    feel: 'Наш ринок майже вичерпано, а нові — це страшно й незрозуміло.',
+    feel: 'Наш ринок майже вичерпаний, а нові можливості виглядають ризиково.',
     when: 'Коли ріст упирається в стелю одного ринку',
     bigIdea: 'Новий ринок — це не «ще один канал», а окремий бізнес-контур.',
     flow: ['Вибір ринку', 'Локалізація', 'Маркетплейси', 'Логістика', 'Юридика', 'Масштабування'],
@@ -222,7 +222,7 @@ export const shortOf = (k: SystemKey, lang: 'uk' | 'en') => (lang === 'en' ? SHO
 type SystemEn = Pick<System, 'feel' | 'when' | 'bigIdea' | 'flow' | 'sell' | 'pains' | 'domains'>;
 const SYS_EN: Record<SystemKey, SystemEn> = {
   strategy: {
-    feel: 'We keep growing, but I do not understand where to or why.',
+    feel: 'We are growing, but we do not understand where to go next.',
     when: 'When the business does not know where to grow',
     bigIdea: 'A sales strategy you can actually manage.',
     flow: ['Strategy', 'Goals', 'Economics', 'Growth model', 'Management cycle'],
@@ -255,7 +255,7 @@ const SYS_EN: Record<SystemKey, SystemEn> = {
     domains: ['Conversion / order value / repeat', 'Assortment & SKUs', 'Promo & margin', 'Unit economics'],
   },
   customer: {
-    feel: 'We acquire people expensively and turn them into loyal customers poorly.',
+    feel: 'We acquire customers expensively and almost never bring them back.',
     when: 'When the customer is expensive and does not return',
     bigIdea: 'Turn traffic into customers, and customers into value.',
     flow: ['Acquisition', 'Conversion', 'Retention', 'Reactivation', 'LTV growth'],
@@ -287,7 +287,7 @@ const SYS_EN: Record<SystemKey, SystemEn> = {
     domains: ['Navigation & catalog', 'Product page & content', 'Checkout & mobile', 'CRO & A/B'],
   },
   operations: {
-    feel: 'Marketing brings orders, and the warehouse and delivery break everything.',
+    feel: 'Marketing brings the orders, and after that everything starts to break.',
     when: 'When the sale happens but we cannot fulfill it',
     bigIdea: 'Selling is pointless if you cannot deliver.',
     flow: ['Order', 'Warehouse', 'Fulfillment', 'Delivery', 'Returns', 'Customer'],
@@ -303,7 +303,7 @@ const SYS_EN: Record<SystemKey, SystemEn> = {
     domains: ['Order processing', 'Delivery acceptance', 'Returns', 'Warehouse & stock', 'SLAs at the seams'],
   },
   data: {
-    feel: 'Everyone has their own numbers, and none of them can be trusted.',
+    feel: 'Everyone has their own number — and it is unclear which one to trust.',
     when: 'When the systems do not let you manage the process',
     bigIdea: 'One business. One source of truth.',
     flow: ['Sources', 'Integrations', 'Master data', 'Analytics', 'P&L'],
@@ -319,7 +319,7 @@ const SYS_EN: Record<SystemKey, SystemEn> = {
     domains: ['Analytics & GA4', 'P&L & unit economics', 'CMS/CRM/ERP/WMS integrations', 'Master data'],
   },
   org: {
-    feel: 'Everything rests on me and a few people.',
+    feel: 'Everything rests on me and a few key people.',
     when: 'When there are no owners, processes or accountability',
     bigIdea: 'Build a business that does not need heroes.',
     flow: ['Roles', 'RACI', 'KPIs', 'SOPs', 'Owner journey', 'Independence'],
@@ -335,7 +335,7 @@ const SYS_EN: Record<SystemKey, SystemEn> = {
     domains: ['Owner & RACI', 'KPIs by role', 'SOPs & knowledge base', 'Cross-team interaction', 'Roadmap & change'],
   },
   expansion: {
-    feel: 'Our market is nearly exhausted, and new ones feel scary and unclear.',
+    feel: 'Our market is nearly exhausted, and new opportunities look risky.',
     when: 'When growth hits the ceiling of a single market',
     bigIdea: 'A new market is not “one more channel” — it is a separate business circuit.',
     flow: ['Market choice', 'Localization', 'Marketplaces', 'Logistics', 'Legal', 'Scaling'],

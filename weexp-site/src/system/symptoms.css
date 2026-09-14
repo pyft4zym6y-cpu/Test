@@ -37,7 +37,10 @@
   letter-spacing: -.01em; margin: 0; text-wrap: balance; }
 .symp-mean { font-size: 14px; line-height: 1.5; color: var(--graphite); margin: 0; }
 
-.symp-links { margin-top: auto; padding-top: 10px; border-top: 1px solid rgba(20, 18, 16, .16);
+/* Причина стоїть НАД поясненням, тож ніякого margin-top: auto: доти цей рядок
+   притискався до низу картки, бо був останнім. Лінія тепер зверху відділяє
+   його від репліки, а не від нічого. */
+.symp-links { padding-top: 10px; border-top: 1px solid rgba(20, 18, 16, .16);
   display: flex; flex-direction: column; gap: 6px; }
 .symp-where { font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; font-weight: 700;
   color: var(--red-ink); text-decoration: none; }
@@ -46,14 +49,31 @@
 .symp-fix a { color: var(--deep); text-decoration: underline; text-underline-offset: 2px; }
 .symp-fix a:hover { color: var(--red-ink); }
 
-.symp-foot { margin-top: clamp(22px, 2.6vw, 34px); display: flex; align-items: center;
-  flex-wrap: wrap; gap: 14px 22px; }
-.symp-ask { font-size: 14px; line-height: 1.4; color: var(--deep); font-weight: 700; }
-.symp-all { font-size: 12px; letter-spacing: .04em; text-transform: uppercase;
-  color: var(--deep); text-decoration: underline; text-underline-offset: 3px; }
-.symp-all:hover { color: var(--red-ink); }
+/* Фінал блоку: впізнавання окремою плитою, а не рядком у підвалі секції.
+   Доти тут стояв один рядок «хочете розібрати свій випадок?» із кнопкою —
+   після восьми карток він читався як службова примітка, а не як момент, коли
+   людина себе впізнала. */
+.symp-foot { margin-top: clamp(24px, 3vw, 40px); border: 2.5px solid var(--deep);
+  box-shadow: 6px 6px 0 var(--deep); background: var(--pure-white);
+  padding: clamp(20px, 2.6vw, 32px); display: grid; gap: 10px; justify-items: start; }
+.symp-foot-h { margin: 0; font-family: var(--display); font-weight: 900;
+  font-size: clamp(20px, 2.6vw, 32px); line-height: 1.06; letter-spacing: -.02em;
+  text-transform: uppercase; color: var(--deep); }
+.symp-foot-p { margin: 0; font-size: clamp(13.5px, 1.45vw, 16px); line-height: 1.55;
+  max-width: var(--measure); color: var(--graphite); }
+.symp-foot-act { margin-top: 6px; display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; }
+/* «або» між кнопками — підпис, а не третя дія: дрібний, без рамки, і тому
+   дві кнопки не читаються як пара рівних. */
+.symp-or { font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--graphite); }
 
 @media (max-width: 560px) {
   /* На телефоні тінь у 5px з'їдає праву межу екрана при повній ширині картки. */
   .symp-card { box-shadow: 3px 3px 0 var(--deep); }
+  .symp-foot { box-shadow: 4px 4px 0 var(--deep); padding: 18px 15px; }
+  /* Кнопки в стовпчик на всю ширину: поруч вони не вміщаються, а «або» між
+     ними в один рядок із двома кнопками виносило б блок за екран. */
+  .symp-foot-act { display: grid; justify-items: stretch; gap: 8px; width: 100%; }
+  .symp-foot-act .sysx-cta { width: 100%; justify-content: center; }
+  .symp-or { text-align: center; }
 }
