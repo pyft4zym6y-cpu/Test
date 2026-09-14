@@ -175,3 +175,63 @@
 @media (max-width: 700px) {
   .hb-after-steps { grid-template-columns: 1fr; gap: 14px; }
 }
+
+/* ── Другий екран: як працюють лідери e-commerce ──────────────────────────
+   Префікс hb-ldr-, а не hb-lead-: клас .hb-lead у цьому ж файлі вже означає
+   ЛІД-АБЗАЦ блоку й несе max-width: var(--measure). Секція з тим самим іменем
+   отримала його теж — і розділ на 1440px займав ліві 660px, а «E-COMMERCE?»
+   у заголовку ламалось посеред слова. Одне імʼя на дві різні речі.
+
+   Десять напрямів у дві колонки на широкому, в одну на телефоні. Номер —
+   окремим рядком над заголовком, а не перед ним: на 320px номер і заголовок
+   в один рядок лишали заголовку 190px і ламали його на чотири рядки. */
+.hb-ldr { background: var(--cream-2); }
+.hb-ldr-l { margin: 10px 0 0; font-size: clamp(15px, 1.7vw, 19px); line-height: 1.5;
+  max-width: var(--measure); color: var(--deep); font-weight: 600; }
+.hb-ldr-list { list-style: none; margin: clamp(22px, 3.2vw, 40px) 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(20px, 2.6vw, 34px); }
+.hb-ldr-item { min-width: 0; display: grid; gap: 6px; align-content: start;
+  border-top: 2.5px solid var(--deep); padding-top: 12px; }
+.hb-ldr-n { font-family: var(--display); font-weight: 900; font-style: normal;
+  font-size: 13px; letter-spacing: .04em; color: var(--red-ink); }
+.hb-ldr-t { margin: 0; font-size: clamp(16px, 1.8vw, 21px); line-height: 1.18;
+  letter-spacing: -.01em; font-weight: 800; color: var(--deep); }
+.hb-ldr-why { margin: 2px 0 0; font-size: clamp(13px, 1.4vw, 15px); line-height: 1.5; color: var(--deep); }
+.hb-ldr-what { margin: 0; font-size: clamp(12.5px, 1.35vw, 14.5px); line-height: 1.5; color: var(--graphite); }
+.hb-ldr-cta { margin-top: clamp(26px, 3.4vw, 46px); border: 2.5px solid var(--deep);
+  box-shadow: 6px 6px 0 var(--deep); background: var(--pure-white);
+  padding: clamp(20px, 2.6vw, 32px); display: grid; gap: 10px; justify-items: start; }
+.hb-ldr-cta-h { margin: 0; font-family: var(--display); font-weight: 900;
+  font-size: clamp(20px, 2.6vw, 32px); line-height: 1.06; letter-spacing: -.02em;
+  text-transform: uppercase; color: var(--deep); }
+.hb-ldr-cta p { margin: 0; font-size: clamp(13.5px, 1.45vw, 16px); line-height: 1.5;
+  max-width: var(--measure); color: var(--graphite); }
+.hb-ldr-cta .sysx-cta { margin-top: 6px; }
+@media (max-width: 760px) {
+  .hb-ldr-list { grid-template-columns: 1fr; gap: 18px; }
+}
+
+/* Другий абзац блоку охоплення: підзаголовок лишається великим, пояснення —
+   спокійнішим, інакше два однакові абзаци підряд читаються як один довгий. */
+.hb-cover-p { margin: 10px 0 0; font-size: clamp(13px, 1.4vw, 15.5px); line-height: 1.55;
+  max-width: var(--measure); color: var(--graphite); }
+
+/* Лід і кнопка блоку «що буде після заявки». */
+.hb-after-l { margin: 10px 0 0; font-size: clamp(13.5px, 1.45vw, 16px); line-height: 1.55;
+  max-width: var(--measure); color: var(--graphite); }
+.hb-after-cta { margin-top: clamp(20px, 2.6vw, 32px); }
+
+/* Довгі підписи кнопок на телефоні.
+   «Знайти можливості для росту →» і «Обговорити мій e-commerce →» не
+   вміщаються в 320–390px при padding 26px: кнопка не вміє переносити рядок
+   (сторож --wrap тримає підпис в один рядок), тож стискається сама кнопка.
+   Всередині рамкового блоку вона ще й розтягується на всю ширину — так вона
+   не тулиться до лівого краю, а читається як смуга дії. */
+@media (max-width: 480px) {
+  .sysx .sysx-cta { padding: 14px 16px; font-size: 12px; letter-spacing: .03em; gap: 7px; }
+  .hb-ldr-cta { padding: 16px 14px; box-shadow: 4px 4px 0 var(--deep); }
+  .hb-ldr-cta .sysx-cta, .hb-after-cta .sysx-cta { width: 100%; justify-content: center; }
+}
+@media (max-width: 380px) {
+  .sysx .sysx-cta { padding: 13px 11px; font-size: 11px; letter-spacing: .02em; }
+}

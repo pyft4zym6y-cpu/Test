@@ -67,18 +67,27 @@ export function Coverage() {
       <div className="hb-in">
         <span className="sysx-kick">{t('Комплексний e-commerce', 'Full-scope e-commerce')}</span>
         <h2 id="hb-cover-h" className="sysx-display hb-h">
-          {t('Не одна ділянка, а ', 'Not one slice, but ')}<span className="sysx-em">{t('вся структура продажів', 'the whole sales structure')}</span>
+          {t('Не оптимізуємо окремі ділянки.', 'We do not optimise separate slices.')}{' '}
+          <span className="sysx-em">{t('Посилюємо всю систему продажів.', 'We strengthen the whole sales system.')}</span>
         </h2>
         <p className="hb-cover-l">
           {t(
-            'Реклама, сайт, склад і аналітика ламаються разом і лагодяться разом. Ми дивимось усі домени одразу — і починаємо з того, який коштує вам найдорожче.',
-            'Ads, site, warehouse and analytics break together and are fixed together. We look at every domain at once — and start with the one costing you the most.',
+            'Реклама не компенсує слабкий сайт. Сайт не врятує процеси, які не працюють. А зростання неможливе без даних, технологій і команди, що рухаються в одному напрямку.',
+            'Ads do not compensate for a weak site. A site will not save processes that do not work. And growth is impossible without data, technology and a team moving in one direction.',
           )}
         </p>
+        <p className="hb-cover-p">
+          {t(
+            'Реклама, сайт, клієнтський досвід, операції та аналітика впливають один на одного. Тому ми аналізуємо e-commerce як єдину систему — і починаємо з тієї точки, де бізнес втрачає найбільше грошей.',
+            'Ads, the site, the customer experience, operations and analytics affect one another. That is why we analyse e-commerce as a single system — and start at the point where the business loses the most money.',
+          )}
+        </p>
+        {/* Числа рахуються з тих самих даних, за якими зібраний аудит: набрані
+            руками, вони розійшлися б із першою ж правкою переліку. */}
         <ul className="hb-cover-nums">
-          <li><b>{AUDIT_BLOCKS.length}</b><span>{t('доменів діагностики', 'diagnostic domains')}</span></li>
-          <li><b>{AUDIT_KINDS_COUNT}</b><span>{t('видів аудиту всередині одного', 'audit types inside one')}</span></li>
-          <li><b>{EXPERTISES.length}</b><span>{t('експертиз, якими це закриваємо', 'expertise areas that close it')}</span></li>
+          <li><b>{AUDIT_BLOCKS.length}</b><span>{t('ключових зон аналізу', 'key areas of analysis')}</span></li>
+          <li><b>{AUDIT_KINDS_COUNT}</b><span>{t('типів аудиту в межах одного підходу', 'audit types within one approach')}</span></li>
+          <li><b>{EXPERTISES.length}</b><span>{t('профільних експертиз', 'specialist expertise areas')}</span></li>
         </ul>
         <ul className="hb-cover-chips" aria-label={t('Домени діагностики', 'Diagnostic domains')}>
           {AUDIT_BLOCKS.map((b) => (
@@ -102,10 +111,11 @@ export function Coverage() {
  */
 export function AfterRequest() {
   const t = useT();
+  const lp = useLp();
   const STEPS: [string, string][][] = [
-    [['Ви пишете у двох реченнях', 'You write two sentences'], ['Що відбувається й чого хочеться. Без брифів і анкет.', 'What is going on and what you want. No briefs or forms.']],
-    [['Відповідаємо протягом робочого дня', 'We reply within a business day'], ['Домовляємось на 30 хвилин розмови у зручний час.', 'We agree on a 30-minute call at a time that suits you.']],
-    [['Кажемо прямо, чи можемо допомогти', 'We say straight if we can help'], ['Якщо так — надсилаємо, що і за скільки. Якщо ні — теж скажемо.', 'If yes — we send what and for how much. If not — we say that too.']],
+    [['Розкажіть про свій бізнес', 'Tell us about your business'], ['Кілька речень про те, що відбувається, що не працює та якого результату ви хочете.', 'A few sentences on what is going on, what is not working and what result you want.']],
+    [['Ми звʼяжемося з вами', 'We get in touch'], ['Відповімо протягом робочого дня та домовимося про коротку розмову у зручний час.', 'We reply within a business day and agree on a short call at a time that suits you.']],
+    [['Визначимо наступний крок', 'We define the next step'], ['Розберемо ваш запит і чесно скажемо, чи можемо бути корисними. Якщо так — запропонуємо формат роботи.', 'We go through your request and say honestly whether we can be useful. If yes — we propose a format of work.']],
   ];
   const i = 0;
   return (
@@ -113,6 +123,10 @@ export function AfterRequest() {
       <div className="hb-in">
         <span className="sysx-kick">{t('Перший крок', 'The first step')}</span>
         <h2 id="hb-after-h" className="sysx-display hb-h">{t('Що буде після заявки', 'What happens after you write')}</h2>
+        <p className="hb-after-l">
+          {t('Короткий діалог без зайвої бюрократії. Розберемося у вашій ситуації, визначимо потенціал і запропонуємо наступний крок.',
+             'A short conversation without needless bureaucracy. We look into your situation, assess the potential and propose the next step.')}
+        </p>
         <ol className="hb-after-steps">
           {STEPS.map((st, k) => (
             <li key={st[0][0]} className="hb-after-step">
@@ -122,6 +136,14 @@ export function AfterRequest() {
             </li>
           ))}
         </ol>
+        {/* Кнопка стоїть тут, а не лише в кінці сторінки: щойно людина
+            прочитала, що перший крок дешевий, — саме той момент, коли її
+            варто про нього попросити. */}
+        <div className="hb-after-cta">
+          <Link to={lp('/contact')} className="sysx-cta is-primary">
+            {t('Обговорити мій e-commerce', 'Discuss my e-commerce')} →
+          </Link>
+        </div>
       </div>
     </section>
   );

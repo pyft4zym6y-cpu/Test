@@ -8,6 +8,12 @@ import { HEADLINE_PROOF } from '@/data/cases';
 
 const Symptoms = lazy(() => import('@/system/Symptoms').then((m) => ({ default: m.Symptoms })));
 /*
+ * Другий екран — окремим чанком, а не разом із блоками нижче: він іде одразу
+ * за героєм, і вантажити заради нього ще вісім блоків означало б платити за
+ * весь скрол наперед.
+ */
+const Leaders = lazy(() => import('@/system/Leaders').then((m) => ({ default: m.Leaders })));
+/*
  * Вісім блоків головної після героя лежать в одному модулі й вантажаться одним
  * чанком: вони йдуть підряд, і сім окремих lazy-імпортів дали б сім запитів на
  * одну прокрутку.
@@ -47,7 +53,7 @@ export function SystemInMotion() {
         роботу. Людина, яка щойно зайшла, шукає не виконавця, а свій результат:
         більше продажів із трафіку, за який вона вже платить. Що саме ми
         робимо, щоб його дати, — рядком нижче. */}
-    <section className="sysx sysx-hero" aria-label={t('WEEXP — більше продажів з того самого трафіку', 'WEEXP — more sales from the same traffic')}>
+    <section className="sysx sysx-hero" aria-label={t('WEEXP — ваш магазин може заробляти більше на тому самому трафіку', 'WEEXP — your store can earn more from the same traffic')}>
       <div className="sysx-hero-in">
         {/* Категорія одразу називає масштаб: не «послуги для e-commerce», а
             вся структура. Це різниця між «ще один підрядник по рекламі» і
@@ -56,9 +62,13 @@ export function SystemInMotion() {
             D2C-бренди» на 320–390px ламалось надвоє. Аудиторію повністю
             називає лід нижче. */}
         <div className="sysx-kick">{t('Комплексний e-commerce · D2C', 'Full-scope e-commerce · D2C')}</div>
-        <h1 className="sysx-display sysx-h1">{t('Більше продажів', 'More sales')}{' '}<br className="br-wide" /><span className="sysx-em">{t('з того самого трафіку', 'from the same traffic')}</span></h1>
-        <p className="sysx-sub">{t('Без збільшення рекламного бюджету', 'Without raising the ad budget')}</p>
-        <p className="sysx-lead">{t('Показуємо в гривнях, скільки магазин втрачає щомісяця — за вашими CRM, ERP і GA4. Далі перебудовуємо те, що дає найбільшу дельту. Для e-commerce і D2C-брендів.', 'We show in numbers how much your store loses every month — from your CRM, ERP and GA4. Then we rebuild what delivers the biggest delta. For e-commerce and D2C brands.')}</p>
+        <h1 className="sysx-display sysx-h1">{t('Ваш магазин може заробляти більше.', 'Your store can earn more.')}{' '}<br className="br-wide" /><span className="sysx-em">{t('На тому самому трафіку.', 'From the same traffic.')}</span></h1>
+        {/*
+          * Підзаголовка тут більше немає. Він казав «Без збільшення рекламного
+          * бюджету» — тими самими словами, що й лід рядком нижче. Один меседж,
+          * записаний двічі підряд, не підсилює, а читається як затинання.
+          */}
+        <p className="sysx-lead">{t('Збільшуємо прибуток інтернет-магазинів без збільшення рекламного бюджету — через CRO, UX/UI, оптимізацію клієнтського шляху, AI-технології, контент та системну роботу з даними.', 'We grow the profit of online stores without raising the ad budget — through CRO, UX/UI, customer-journey optimization, AI technologies, content and systematic work with data.')}</p>
         {/*
           * ОДНА КНОПКА — І ЦЕ ЗАЯВКА.
           *
@@ -72,7 +82,7 @@ export function SystemInMotion() {
           * кнопок відкладає обидві.
           */}
         <div className="sysx-cta-row sysx-hero-cta">
-          <Link to={lp('/contact')} className="sysx-cta is-primary">{t('Залишити заявку', 'Leave a request')} →</Link>
+          <Link to={lp('/contact')} className="sysx-cta is-primary">{t('Знайти точки росту', 'Find your growth points')} →</Link>
         </div>
         <span className="sysx-reassure mono">{t('Відповідаємо протягом робочого дня · без презентацій', 'We reply within a business day · no slide decks')}</span>
         {/* Три числа з реальних кейсів — перший екран не мав жодного доказу. */}
@@ -125,6 +135,15 @@ export function SystemInMotion() {
       * щось вирішувати одразу. Він стоїть перед запереченнями, а не після:
       * спершу видно, що крок дешевий, і аж потім про нього просять.
       */}
+    {/*
+      * 0. З чого складається перевага лідерів — десять напрямів.
+      *
+      * Блок доданий на пряме прохання власника й стоїть другим екраном.
+      * Він змінює баланс сторінки: до «це про мене?» тепер іде довгий перелік
+      * того, що ми вміємо. Симптоми нижче лишились — вони відповідають на інше
+      * питання, і жодне з двох не замінює друге.
+      */}
+    <Suspense fallback={null}><Leaders /></Suspense>
     {/* 1. Це про мене? — вхід з боку клієнта, реплікою власника. */}
     <Suspense fallback={null}><Symptoms compact /></Suspense>
     <Suspense fallback={null}>
