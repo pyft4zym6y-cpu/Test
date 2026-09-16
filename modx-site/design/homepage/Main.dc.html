@@ -14,13 +14,6 @@
   a { color: inherit; text-decoration: none; }
   a:hover { color: #F9CB28; }
 
-  @keyframes riseIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-  .reveal { animation: riseIn 0.55s ease-out both; }
-  .reveal:nth-of-type(2) { animation-delay: 0.06s; }
-  .reveal:nth-of-type(3) { animation-delay: 0.12s; }
-  .reveal:nth-of-type(4) { animation-delay: 0.18s; }
-  .reveal:nth-of-type(5) { animation-delay: 0.24s; }
-
   .btn-pill { transition: transform 0.16s ease, box-shadow 0.16s ease; }
   .btn-pill:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(20,20,15,0.18); }
   .btn-pill:active { transform: translateY(0); box-shadow: none; }
@@ -118,10 +111,6 @@
       <div class="hero-grid" style="display:grid; grid-template-columns:1.3fr 1fr; grid-template-rows:auto auto; gap:24px;">
 
         <div class="hero-cell" style="grid-column:1; grid-row:1; display:flex; flex-direction:column; gap:22px; justify-content:center;">
-          <div style="display:flex; align-items:center; gap:9px; font-family:'Oswald', sans-serif; font-size:13px; letter-spacing:0.08em; text-transform:uppercase; color:#6B655A;">
-            <span style="width:7px; height:7px; background:{{accentAlert}}; border-radius:50%; display:inline-block;"></span>
-            Діагностика · e-commerce
-          </div>
           <h1 class="h1" style="font-family:'Oswald', sans-serif; font-size:56px; line-height:1.04; font-weight:700; text-transform:uppercase; margin:0; color:#14140F; letter-spacing:-0.01em;">Зростання починається там, де видно, куди зникають гроші й час</h1>
           <p style="font-size:17px; line-height:1.6; color:#5B5648; margin:0; max-width:480px;">Ми діагностуємо операційні розриви в e-commerce і закриваємо їх разом з вами — аудитом, консалтингом або повним управлінням зростанням.</p>
           <div style="display:flex; gap:14px; margin-top:4px; flex-wrap:wrap;">
@@ -147,9 +136,13 @@
           </a>
         </div>
 
+        <!-- Real chart: gridlines, filled area, data markers — not a decorative squiggle -->
         <div class="hero-cell" style="grid-column:1; grid-row:2; position:relative; background:#1D1D16; border-radius:24px; padding:28px;">
-          <span style="font-family:'Oswald', sans-serif; font-size:12px; letter-spacing:0.06em; text-transform:uppercase; color:#9C9788;">Симптом → Зростання</span>
-          <svg width="100%" height="130" viewBox="0 0 460 130" preserveAspectRatio="none" style="display:block; margin-top:10px;">
+          <div style="display:flex; align-items:baseline; justify-content:space-between;">
+            <span style="font-size:13px; color:#F1ECDF; font-weight:700;">Виручка: симптом → зростання</span>
+            <span style="font-size:11.5px; color:#6B675C;">умовна динаміка</span>
+          </div>
+          <svg width="100%" height="140" viewBox="0 0 460 140" preserveAspectRatio="none" style="display:block; margin-top:12px;">
             <defs>
               <linearGradient id="trend" x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0%" stop-color="{{accentAlert}}"></stop>
@@ -157,8 +150,23 @@
                 <stop offset="54%" stop-color="{{accentYellow}}"></stop>
                 <stop offset="100%" stop-color="{{accentYellow}}"></stop>
               </linearGradient>
+              <linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="{{accentYellow}}" stop-opacity="0.22"></stop>
+                <stop offset="100%" stop-color="{{accentYellow}}" stop-opacity="0"></stop>
+              </linearGradient>
             </defs>
-            <path d="M0,70 L28,95 L56,55 L84,100 L112,68 L140,105 L168,80 L196,88 L222,78 C255,68 275,45 310,32 C345,20 375,10 460,4" fill="none" stroke="url(#trend)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+            <line x1="0" y1="20" x2="460" y2="20" stroke="rgba(244,242,233,0.07)"></line>
+            <line x1="0" y1="58" x2="460" y2="58" stroke="rgba(244,242,233,0.07)"></line>
+            <line x1="0" y1="96" x2="460" y2="96" stroke="rgba(244,242,233,0.07)"></line>
+            <line x1="0" y1="128" x2="460" y2="128" stroke="rgba(244,242,233,0.16)"></line>
+            <path d="M0,80 L28,105 L56,65 L84,110 L112,78 L140,115 L168,90 L196,98 L222,88 C255,78 275,55 310,42 C345,30 375,20 460,14 L460,128 L0,128 Z" fill="url(#trendFill)"></path>
+            <path d="M0,80 L28,105 L56,65 L84,110 L112,78 L140,115 L168,90 L196,98 L222,88 C255,78 275,55 310,42 C345,30 375,20 460,14" fill="none" stroke="url(#trend)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+            <circle cx="0" cy="80" r="4" fill="{{accentAlert}}"></circle>
+            <circle cx="222" cy="88" r="4" fill="#1D1D16" stroke="#F1ECDF" stroke-width="1.5"></circle>
+            <circle cx="460" cy="14" r="4" fill="{{accentYellow}}"></circle>
+            <text x="0" y="138" font-family="PT Sans, sans-serif" font-size="10.5" fill="#6B675C">симптом</text>
+            <text x="196" y="138" font-family="PT Sans, sans-serif" font-size="10.5" fill="#6B675C" text-anchor="middle">діагностика</text>
+            <text x="460" y="138" font-family="PT Sans, sans-serif" font-size="10.5" fill="#6B675C" text-anchor="end">зростання</text>
           </svg>
           <a href="#calculator" class="overlap-btn" style="position:absolute; bottom:-18px; right:-18px; width:62px; height:62px; border-radius:50%; background:{{accentYellow}}; display:flex; align-items:center; justify-content:center; color:#14140F; font-family:'Oswald', sans-serif; font-weight:700; font-size:20px; box-shadow:0 8px 18px rgba(0,0,0,0.35);">→</a>
         </div>
@@ -172,156 +180,166 @@
       </div>
     </section>
 
-    <!-- SYMPTOMS: click a tile to expand it -->
+    <!-- SYMPTOMS: icon per tile, not sequence numbers; click a tile to expand it -->
     <section class="section-pad" id="symptoms" style="background:#14140F; border-radius:32px; padding:48px; margin-bottom:24px;">
       <div style="display:flex; flex-direction:column; gap:14px; margin-bottom:36px; max-width:640px;">
-        <span style="font-family:'Oswald', sans-serif; font-size:13px; letter-spacing:0.08em; text-transform:uppercase; color:{{accentYellow}};">5 симптомів</span>
         <h2 class="h2" style="font-family:'Oswald', sans-serif; font-size:32px; font-weight:700; text-transform:uppercase; margin:0; color:#F1ECDF;">Впізнайте свою проблему</h2>
-        <p style="font-size:15px; color:#9C9788; margin:0;">Кожен симптом — вхідна точка. Натисніть, щоб побачити деталі.</p>
+        <p style="font-size:15px; color:#9C9788; margin:0;">П'ять станів, які найчастіше тримають оборот на місці. Натисніть на картку, щоб побачити деталі.</p>
       </div>
 
       <div class="bento-grid" style="display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px;">
 
         <div class="tile" onClick="{{toggleS1}}" style="grid-column:span 1; background:#1D1D16; border-radius:20px; padding:24px; display:flex; flex-direction:column; gap:12px;">
           <div style="display:flex; align-items:flex-start; justify-content:space-between;">
-            <span style="font-family:'Oswald', sans-serif; font-size:22px; font-weight:700; color:{{accentYellow}};">01</span>
-            <span style="font-family:'Oswald', sans-serif; font-size:18px; color:#9C9788;">{{s1Symbol}}</span>
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="{{accentAlert}}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 17 L7 9 L11 13 L15 7 L18 11 L22 11"></path></svg>
+            <span style="font-family:'Oswald', sans-serif; font-size:18px; color:#6B675C;">{{s1Symbol}}</span>
           </div>
           <span style="font-size:16px; font-weight:700; color:#F1ECDF; line-height:1.25;">Виручка стоїть</span>
           <sc-if value="{{s1}}" hint-placeholder-val="{{false}}">
             <div class="tile-extra" style="display:flex; flex-direction:column; gap:8px;">
               <span style="font-size:13.5px; line-height:1.5; color:#9C9788;">Оборот місяць у місяць приблизно однаковий, хоча реклама і асортимент не стоять на місці.</span>
-              <a href="#" style="font-weight:700; font-size:12.5px; color:{{accentYellow}};">Читати про симптом →</a>
+              <a href="#" style="font-weight:700; font-size:12.5px; color:{{accentYellow}};">Читати про симптом</a>
             </div>
           </sc-if>
         </div>
 
         <div class="tile" onClick="{{toggleS2}}" style="grid-column:span 1; background:#1D1D16; border-radius:20px; padding:24px; display:flex; flex-direction:column; gap:12px;">
           <div style="display:flex; align-items:flex-start; justify-content:space-between;">
-            <span style="font-family:'Oswald', sans-serif; font-size:22px; font-weight:700; color:{{accentYellow}};">02</span>
-            <span style="font-family:'Oswald', sans-serif; font-size:18px; color:#9C9788;">{{s2Symbol}}</span>
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="{{accentAlert}}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19 L9 13 L13 16 L21 5"></path><path d="M21 5h-5"></path><path d="M21 5v5"></path></svg>
+            <span style="font-family:'Oswald', sans-serif; font-size:18px; color:#6B675C;">{{s2Symbol}}</span>
           </div>
           <span style="font-size:16px; font-weight:700; color:#F1ECDF; line-height:1.25;">Реклама дорожчає</span>
           <sc-if value="{{s2}}" hint-placeholder-val="{{false}}">
             <div class="tile-extra" style="display:flex; flex-direction:column; gap:8px;">
               <span style="font-size:13.5px; line-height:1.5; color:#9C9788;">CPA/CAC росте швидше, ніж виручка з нового клієнта.</span>
-              <a href="#" style="font-weight:700; font-size:12.5px; color:{{accentYellow}};">Читати про симптом →</a>
+              <a href="#" style="font-weight:700; font-size:12.5px; color:{{accentYellow}};">Читати про симптом</a>
             </div>
           </sc-if>
         </div>
 
         <div class="tile" onClick="{{toggleS3}}" style="grid-column:span 2; background:#1D1D16; border-radius:20px; padding:24px; display:flex; flex-direction:column; gap:12px;">
           <div style="display:flex; align-items:flex-start; justify-content:space-between;">
-            <span style="font-family:'Oswald', sans-serif; font-size:22px; font-weight:700; color:{{accentYellow}};">03</span>
-            <span style="font-family:'Oswald', sans-serif; font-size:18px; color:#9C9788;">{{s3Symbol}}</span>
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="{{accentAlert}}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 0 -3 6.2"></path><path d="M20 8v4h-4"></path></svg>
+            <span style="font-family:'Oswald', sans-serif; font-size:18px; color:#6B675C;">{{s3Symbol}}</span>
           </div>
           <span style="font-size:16px; font-weight:700; color:#F1ECDF; line-height:1.25;">Клієнти не повертаються</span>
           <span style="font-size:14px; line-height:1.5; color:#9C9788;">Більшість замовлень — від людей, які купили один раз і не повернулись.</span>
           <sc-if value="{{s3}}" hint-placeholder-val="{{false}}">
-            <div class="tile-extra"><a href="#" style="font-weight:700; font-size:12.5px; color:{{accentYellow}};">Дізнатись, як вирішуємо →</a></div>
+            <div class="tile-extra"><a href="#" style="font-weight:700; font-size:12.5px; color:{{accentYellow}};">Дізнатись, як вирішуємо</a></div>
           </sc-if>
         </div>
 
         <div class="tile" onClick="{{toggleS4}}" style="grid-column:span 2; background:#1D1D16; border-radius:20px; padding:24px; display:flex; flex-direction:column; gap:12px;">
           <div style="display:flex; align-items:flex-start; justify-content:space-between;">
-            <span style="font-family:'Oswald', sans-serif; font-size:22px; font-weight:700; color:{{accentYellow}};">04</span>
-            <span style="font-family:'Oswald', sans-serif; font-size:18px; color:#9C9788;">{{s4Symbol}}</span>
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="{{accentAlert}}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3"></circle><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6"></path><path d="M2 4l4 4M22 4l-4 4M2 20l4-4M22 20l-4-4"></path></svg>
+            <span style="font-family:'Oswald', sans-serif; font-size:18px; color:#6B675C;">{{s4Symbol}}</span>
           </div>
           <span style="font-size:16px; font-weight:700; color:#F1ECDF; line-height:1.25;">Процеси на одній людині</span>
           <span style="font-size:14px; line-height:1.5; color:#9C9788;">Бізнес зупиняється, коли одна людина йде у відпустку.</span>
           <sc-if value="{{s4}}" hint-placeholder-val="{{false}}">
-            <div class="tile-extra"><a href="#" style="font-weight:700; font-size:12.5px; color:{{accentYellow}};">Дізнатись, як вирішуємо →</a></div>
+            <div class="tile-extra"><a href="#" style="font-weight:700; font-size:12.5px; color:{{accentYellow}};">Дізнатись, як вирішуємо</a></div>
           </sc-if>
         </div>
 
         <div class="tile" onClick="{{toggleS5}}" style="grid-column:span 2; background:#1D1D16; border-radius:20px; padding:24px; display:flex; flex-direction:column; gap:12px;">
           <div style="display:flex; align-items:flex-start; justify-content:space-between;">
-            <span style="font-family:'Oswald', sans-serif; font-size:22px; font-weight:700; color:{{accentYellow}};">05</span>
-            <span style="font-family:'Oswald', sans-serif; font-size:18px; color:#9C9788;">{{s5Symbol}}</span>
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="{{accentAlert}}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="6"></circle><path d="M14.5 14.5 L21 21"></path><path d="M7 9h4M7 11.5h3"></path></svg>
+            <span style="font-family:'Oswald', sans-serif; font-size:18px; color:#6B675C;">{{s5Symbol}}</span>
           </div>
           <span style="font-size:16px; font-weight:700; color:#F1ECDF; line-height:1.25;">Незрозуміло, що відбувається</span>
           <span style="font-size:14px; line-height:1.5; color:#9C9788;">Звіти є, а відповіді на прямі запитання шукаються вручну.</span>
           <sc-if value="{{s5}}" hint-placeholder-val="{{false}}">
-            <div class="tile-extra"><a href="#" style="font-weight:700; font-size:12.5px; color:{{accentYellow}};">Дізнатись, як вирішуємо →</a></div>
+            <div class="tile-extra"><a href="#" style="font-weight:700; font-size:12.5px; color:{{accentYellow}};">Дізнатись, як вирішуємо</a></div>
           </sc-if>
         </div>
 
       </div>
     </section>
 
-    <!-- SOLUTIONS -->
+    <!-- SOLUTIONS: numbering kept here — this genuinely is a sequence (escalating scope) -->
     <section class="section-pad" id="solutions" style="background:#F1ECDF; border-radius:32px; padding:48px; margin-bottom:24px;">
       <div style="display:flex; flex-direction:column; gap:14px; margin-bottom:36px;">
-        <span style="font-family:'Oswald', sans-serif; font-size:13px; letter-spacing:0.08em; text-transform:uppercase; color:#6B655A;">Як ми працюємо</span>
         <h2 class="h2" style="font-family:'Oswald', sans-serif; font-size:32px; font-weight:700; text-transform:uppercase; margin:0; color:#14140F;">Три формати — під розмір задачі</h2>
       </div>
 
       <div class="solutions-grid" style="display:grid; grid-template-columns:2fr 3fr 5fr; gap:16px;">
 
         <div class="fmt-card" style="background:#FAF7EE; border:1px solid rgba(20,20,15,0.12); border-radius:24px; padding:26px; display:flex; flex-direction:column; gap:14px;">
-          <span style="font-family:'Oswald', sans-serif; font-size:12px; letter-spacing:0.05em; text-transform:uppercase; color:#8A8370;">4–6 тижнів</span>
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#14140F" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="11" height="15" rx="1"></rect><path d="M7 7h5M7 10h5M7 13h3"></path><circle cx="17" cy="17" r="4"></circle><path d="M20 20l3 3"></path></svg>
+            <span style="font-family:'Oswald', sans-serif; font-size:22px; font-weight:700; color:#D8D0BA;">1</span>
+          </div>
           <h3 style="font-family:'Oswald', sans-serif; font-size:20px; font-weight:700; text-transform:uppercase; margin:0; color:#14140F;">Аудит</h3>
-          <p style="font-size:13.5px; line-height:1.5; color:#6B655A; margin:0; flex-grow:1;">Фіксований обсяг і термін. На виході — звіт з пріоритетами.</p>
-          <a href="#" style="font-weight:700; font-size:13px; color:#14140F;">Детальніше →</a>
+          <span style="font-size:12px; color:#8A8370;">4–6 тижнів, фіксований обсяг</span>
+          <p style="font-size:13.5px; line-height:1.5; color:#6B655A; margin:0; flex-grow:1;">На виході — звіт з пріоритетами.</p>
+          <a href="#" style="font-weight:700; font-size:13px; color:#14140F;">Детальніше</a>
         </div>
 
         <div class="fmt-card" style="background:#EFDD9B; border-radius:24px; padding:26px; display:flex; flex-direction:column; gap:14px;">
-          <span style="font-family:'Oswald', sans-serif; font-size:12px; letter-spacing:0.05em; text-transform:uppercase; color:#7A6B34;">Щомісяця</span>
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#14140F" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h11v7H9l-3 3v-3H3z"></path><path d="M13 9h8v6h-3v3l-3-3h-2"></path></svg>
+            <span style="font-family:'Oswald', sans-serif; font-size:22px; font-weight:700; color:#DCC87C;">2</span>
+          </div>
           <h3 style="font-family:'Oswald', sans-serif; font-size:20px; font-weight:700; text-transform:uppercase; margin:0; color:#14140F;">Консалтинг</h3>
+          <span style="font-size:12px; color:#7A6B34;">Щомісяця, від 30 годин</span>
           <p style="font-size:13.5px; line-height:1.5; color:#5B4F28; margin:0; flex-grow:1;">Погодинний супровід після аудиту — впроваджуємо разом з вашою командою.</p>
-          <a href="#" style="font-weight:700; font-size:13px; color:#14140F;">Детальніше →</a>
+          <a href="#" style="font-weight:700; font-size:13px; color:#14140F;">Детальніше</a>
         </div>
 
         <div class="fmt-card" style="background:#14140F; border-radius:24px; padding:26px; display:flex; flex-direction:column; gap:14px;">
-          <span style="font-family:'Oswald', sans-serif; font-size:12px; letter-spacing:0.05em; text-transform:uppercase; color:{{accentYellow}};">Пілот 3 місяці</span>
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="{{accentYellow}}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"></circle><path d="M12 4v4M12 16v4M4 12h4M16 12h4"></path><circle cx="12" cy="12" r="2" fill="{{accentYellow}}" stroke="none"></circle></svg>
+            <span style="font-family:'Oswald', sans-serif; font-size:22px; font-weight:700; color:#3A3A30;">3</span>
+          </div>
           <h3 style="font-family:'Oswald', sans-serif; font-size:20px; font-weight:700; text-transform:uppercase; margin:0; color:#F1ECDF;">Управління</h3>
+          <span style="font-size:12px; color:{{accentYellow}};">Пілот 3 місяці, з KPI</span>
           <p style="font-size:13.5px; line-height:1.5; color:#9C9788; margin:0; flex-grow:1;">Повний аутсорс зростання з узгодженими KPI — відповідальність на нашій стороні.</p>
-          <a href="#" style="font-weight:700; font-size:13px; color:#F1ECDF;">Детальніше →</a>
+          <a href="#" style="font-weight:700; font-size:13px; color:#F1ECDF;">Детальніше</a>
         </div>
 
       </div>
     </section>
 
-    <!-- RESULTS -->
+    <!-- RESULTS: charts with a filled area and an end marker, not bare squiggles -->
     <section class="section-pad" id="results" style="background:#14140F; border-radius:32px; padding:48px; margin-bottom:24px;">
       <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:36px;">
-        <span style="font-family:'Oswald', sans-serif; font-size:13px; letter-spacing:0.08em; text-transform:uppercase; color:{{accentYellow}};">Результати</span>
-        <a href="#" style="font-weight:700; font-size:13.5px; color:#F1ECDF;">Усі кейси →</a>
+        <h2 class="h2" style="font-family:'Oswald', sans-serif; font-size:32px; font-weight:700; text-transform:uppercase; margin:0; color:#F1ECDF;">Результати клієнтів</h2>
+        <a href="#" style="font-weight:700; font-size:13.5px; color:#F1ECDF;">Усі кейси</a>
       </div>
 
       <div class="results-grid" style="display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:16px;">
 
         <div class="fmt-card" style="background:#1D1D16; border-radius:20px; padding:26px; display:flex; flex-direction:column; gap:12px;">
-          <svg width="90" height="30" viewBox="0 0 90 30"><path d="M2,25 C18,26 26,20 36,18 C50,14 58,8 88,2" fill="none" stroke="{{accentYellow}}" stroke-width="2" stroke-linecap="round"></path></svg>
+          <svg width="100%" height="50" viewBox="0 0 140 50"><defs><linearGradient id="rf1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="{{accentYellow}}" stop-opacity="0.3"></stop><stop offset="100%" stop-color="{{accentYellow}}" stop-opacity="0"></stop></linearGradient></defs><path d="M2,42 C28,44 40,32 56,28 C78,22 90,12 138,4 L138,50 L2,50 Z" fill="url(#rf1)"></path><path d="M2,42 C28,44 40,32 56,28 C78,22 90,12 138,4" fill="none" stroke="{{accentYellow}}" stroke-width="2" stroke-linecap="round"></path><circle cx="138" cy="4" r="3" fill="{{accentYellow}}"></circle></svg>
           <div style="display:flex; align-items:baseline; gap:10px;">
             <span style="font-size:12px; color:#9C9788; text-transform:uppercase; letter-spacing:0.04em;">[ніша]</span>
             <span style="font-family:'Oswald', sans-serif; font-size:13px; color:{{accentYellow}};">[+NN%]</span>
           </div>
           <span style="font-size:15.5px; font-weight:700; color:#F1ECDF;">[Назва кейсу]</span>
           <span style="font-size:13px; line-height:1.5; color:#9C9788; flex-grow:1;">[Короткий опис — очікує реальних даних]</span>
-          <a href="#" style="font-weight:700; font-size:12.5px; color:#F1ECDF;">Читати кейс →</a>
+          <a href="#" style="font-weight:700; font-size:12.5px; color:#F1ECDF;">Читати кейс</a>
         </div>
 
         <div class="fmt-card" style="background:#1D1D16; border-radius:20px; padding:26px; display:flex; flex-direction:column; gap:12px;">
-          <svg width="90" height="30" viewBox="0 0 90 30"><path d="M2,23 C16,25 24,19 34,19 C48,19 56,10 88,2" fill="none" stroke="{{accentYellow}}" stroke-width="2" stroke-linecap="round"></path></svg>
+          <svg width="100%" height="50" viewBox="0 0 140 50"><defs><linearGradient id="rf2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="{{accentYellow}}" stop-opacity="0.3"></stop><stop offset="100%" stop-color="{{accentYellow}}" stop-opacity="0"></stop></linearGradient></defs><path d="M2,38 C24,40 36,30 52,30 C74,30 86,16 138,4 L138,50 L2,50 Z" fill="url(#rf2)"></path><path d="M2,38 C24,40 36,30 52,30 C74,30 86,16 138,4" fill="none" stroke="{{accentYellow}}" stroke-width="2" stroke-linecap="round"></path><circle cx="138" cy="4" r="3" fill="{{accentYellow}}"></circle></svg>
           <div style="display:flex; align-items:baseline; gap:10px;">
             <span style="font-size:12px; color:#9C9788; text-transform:uppercase; letter-spacing:0.04em;">[ніша]</span>
             <span style="font-family:'Oswald', sans-serif; font-size:13px; color:{{accentYellow}};">[+NN%]</span>
           </div>
           <span style="font-size:15.5px; font-weight:700; color:#F1ECDF;">[Назва кейсу]</span>
           <span style="font-size:13px; line-height:1.5; color:#9C9788; flex-grow:1;">[Короткий опис — очікує реальних даних]</span>
-          <a href="#" style="font-weight:700; font-size:12.5px; color:#F1ECDF;">Читати кейс →</a>
+          <a href="#" style="font-weight:700; font-size:12.5px; color:#F1ECDF;">Читати кейс</a>
         </div>
 
         <div class="fmt-card" style="background:#1D1D16; border-radius:20px; padding:26px; display:flex; flex-direction:column; gap:12px;">
-          <svg width="90" height="30" viewBox="0 0 90 30"><path d="M2,27 C14,27 22,23 32,21 C46,18 54,7 88,1" fill="none" stroke="{{accentYellow}}" stroke-width="2" stroke-linecap="round"></path></svg>
+          <svg width="100%" height="50" viewBox="0 0 140 50"><defs><linearGradient id="rf3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="{{accentYellow}}" stop-opacity="0.3"></stop><stop offset="100%" stop-color="{{accentYellow}}" stop-opacity="0"></stop></linearGradient></defs><path d="M2,46 C22,46 34,38 50,34 C72,28 84,12 138,2 L138,50 L2,50 Z" fill="url(#rf3)"></path><path d="M2,46 C22,46 34,38 50,34 C72,28 84,12 138,2" fill="none" stroke="{{accentYellow}}" stroke-width="2" stroke-linecap="round"></path><circle cx="138" cy="2" r="3" fill="{{accentYellow}}"></circle></svg>
           <div style="display:flex; align-items:baseline; gap:10px;">
             <span style="font-size:12px; color:#9C9788; text-transform:uppercase; letter-spacing:0.04em;">[ніша]</span>
             <span style="font-family:'Oswald', sans-serif; font-size:13px; color:{{accentYellow}};">[+NN%]</span>
           </div>
           <span style="font-size:15.5px; font-weight:700; color:#F1ECDF;">[Назва кейсу]</span>
           <span style="font-size:13px; line-height:1.5; color:#9C9788; flex-grow:1;">[Короткий опис — очікує реальних даних]</span>
-          <a href="#" style="font-weight:700; font-size:12.5px; color:#F1ECDF;">Читати кейс →</a>
+          <a href="#" style="font-weight:700; font-size:12.5px; color:#F1ECDF;">Читати кейс</a>
         </div>
 
       </div>
