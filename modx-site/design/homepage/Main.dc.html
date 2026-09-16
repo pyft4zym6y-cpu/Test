@@ -43,7 +43,29 @@
   @keyframes expandIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
   .tile-extra { animation: expandIn 0.18s ease-out both; }
 
+  @keyframes glowDrift { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(4%,-3%) scale(1.06); } }
+  .glow-blob { position: absolute; border-radius: 50%; filter: blur(64px); pointer-events: none; animation: glowDrift 9s ease-in-out infinite; }
+
+  @keyframes livePulse { 0% { box-shadow: 0 0 0 0 rgba(249,203,40,0.55); } 70% { box-shadow: 0 0 0 9px rgba(249,203,40,0); } 100% { box-shadow: 0 0 0 0 rgba(249,203,40,0); } }
+  .live-dot { animation: livePulse 2s ease-out infinite; }
+
+  @keyframes sparkDraw { from { stroke-dashoffset: 240; } to { stroke-dashoffset: 0; } }
+  .spark-draw { stroke-dasharray: 240; animation: sparkDraw 1.3s cubic-bezier(.2,.7,.2,1) both; }
+
+  @keyframes sparkDrawLg { from { stroke-dashoffset: 900; } to { stroke-dashoffset: 0; } }
+  .spark-draw-lg { stroke-dasharray: 900; animation: sparkDrawLg 1.6s cubic-bezier(.2,.7,.2,1) both; animation-delay: 0.2s; }
+
+  .dash-card { transition: transform 0.15s ease-out, box-shadow 0.2s ease; will-change: transform; }
+  .dash-card:hover { box-shadow: 0 34px 70px rgba(0,0,0,0.5); }
+
+  .kpi-tile { transition: transform 0.16s ease, background-color 0.16s ease; }
+  .kpi-tile:hover { transform: translateY(-2px); background-color: rgba(244,242,233,0.05); }
+
+  .btn-pill.glow:hover { box-shadow: 0 10px 28px rgba(249,203,40,0.35); }
+
   @media (max-width: 760px) {
+    .dash-grid { grid-template-columns: 1fr !important; }
+    .kpi-grid { grid-template-columns: 1fr !important; }
     .nav-desktop { display: none !important; }
     .hamburger-btn { display: flex !important; }
     .hero-grid { grid-template-columns: 1fr !important; }
@@ -107,14 +129,17 @@
   <div class="gutter" style="padding:24px 40px 40px;">
 
     <!-- HERO -->
-    <section class="section-pad" style="background:#F1ECDF; border-radius:32px; padding:48px; margin-bottom:24px;">
-      <div class="hero-grid" style="display:grid; grid-template-columns:1.3fr 1fr; grid-template-rows:auto auto; gap:24px;">
+    <section class="section-pad" style="background:#F1ECDF; border-radius:32px; padding:48px; margin-bottom:24px; position:relative; overflow:hidden;">
+      <div class="glow-blob" style="width:420px; height:420px; top:-160px; right:-100px; background:{{accentYellow}}; opacity:0.30;"></div>
+      <div class="glow-blob" style="width:320px; height:320px; bottom:-140px; left:10%; background:{{accentAlert}}; opacity:0.16; animation-delay:-4s;"></div>
+
+      <div class="hero-grid" style="display:grid; grid-template-columns:1.3fr 1fr; grid-template-rows:auto auto; gap:24px; position:relative;">
 
         <div class="hero-cell" style="grid-column:1; grid-row:1; display:flex; flex-direction:column; gap:22px; justify-content:center;">
           <h1 class="h1" style="font-family:'Oswald', sans-serif; font-size:56px; line-height:1.04; font-weight:700; text-transform:uppercase; margin:0; color:#14140F; letter-spacing:-0.01em;">Зростання починається там, де видно, куди зникають гроші й час</h1>
           <p style="font-size:17px; line-height:1.6; color:#5B5648; margin:0; max-width:480px;">Ми діагностуємо операційні розриви в e-commerce і закриваємо їх разом з вами — аудитом, консалтингом або повним управлінням зростанням.</p>
           <div style="display:flex; gap:14px; margin-top:4px; flex-wrap:wrap;">
-            <a href="#brief" class="btn-pill" style="background:{{accentYellow}}; color:#14140F; padding:15px 28px; border-radius:999px; font-weight:700; font-size:14.5px;">Заповнити бриф</a>
+            <a href="#brief" class="btn-pill glow" style="background:{{accentYellow}}; color:#14140F; padding:15px 28px; border-radius:999px; font-weight:700; font-size:14.5px;">Заповнити бриф</a>
             <a href="#calculator" class="btn-pill btn-outline" style="background:transparent; color:#14140F; padding:14px 28px; border-radius:999px; font-weight:700; font-size:14.5px; border:2px solid #14140F;">Пройти калькулятор</a>
           </div>
         </div>
@@ -177,6 +202,94 @@
           <a href="#brief" class="btn-pill" style="background:{{accentYellow}}; color:#14140F; padding:9px 18px; border-radius:999px; font-weight:700; font-size:12.5px; align-self:flex-start; margin-top:4px;">Почати →</a>
         </div>
 
+      </div>
+    </section>
+
+    <!-- LIVE DASHBOARD PREVIEW: animated gauge, counting KPIs, redrawing chart, mouse-tilt card -->
+    <section class="section-pad" style="background:#14140F; border-radius:32px; padding:48px; margin-bottom:24px; position:relative; overflow:hidden;">
+      <div class="glow-blob" style="width:380px; height:380px; top:-140px; left:-80px; background:{{accentYellow}}; opacity:0.14;"></div>
+      <div class="glow-blob" style="width:300px; height:300px; bottom:-120px; right:5%; background:{{accentAlert}}; opacity:0.12; animation-delay:-3s;"></div>
+
+      <div style="position:relative; display:flex; flex-direction:column; gap:8px; margin-bottom:28px;">
+        <div style="display:flex; align-items:center; gap:9px;">
+          <span class="live-dot" style="width:8px; height:8px; border-radius:50%; background:{{accentYellow}}; display:inline-block;"></span>
+          <span style="font-size:13px; color:#9C9788;">Оновлюється щодня · демо-дані для ілюстрації інтерфейсу</span>
+        </div>
+        <h2 class="h2" style="font-family:'Oswald', sans-serif; font-size:32px; font-weight:700; text-transform:uppercase; margin:0; color:#F1ECDF;">Бачите систему наскрізь</h2>
+        <p style="font-size:15px; color:#9C9788; margin:0; max-width:560px;">Після аудиту ви отримуєте не PDF, а робочий дашборд: зрілість напрямків, розрив у грошах і що саме тягне назад.</p>
+      </div>
+
+      <div class="dash-card" onMouseMove="{{handleTilt}}" onMouseLeave="{{resetTilt}}" style="position:relative; background:#1D1D16; border:1px solid rgba(244,242,233,0.08); border-radius:22px; overflow:hidden; transform:perspective(1000px) rotateX({{tiltX}}deg) rotateY({{tiltY}}deg); box-shadow:0 24px 50px rgba(0,0,0,0.4);">
+
+        <div style="display:flex; align-items:center; gap:8px; padding:14px 20px; border-bottom:1px solid rgba(244,242,233,0.08);">
+          <span style="width:9px; height:9px; border-radius:50%; background:#E8552F; display:inline-block;"></span>
+          <span style="width:9px; height:9px; border-radius:50%; background:#EFDD9B; display:inline-block;"></span>
+          <span style="width:9px; height:9px; border-radius:50%; background:#6E9C7A; display:inline-block;"></span>
+          <span style="font-size:12px; color:#6B675C; margin-left:8px;">dashboard.brand.app/health</span>
+        </div>
+
+        <div class="dash-grid" style="display:grid; grid-template-columns:220px 1fr; gap:0;">
+
+          <!-- Radial Health Score gauge -->
+          <div style="padding:28px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; border-right:1px solid rgba(244,242,233,0.08);">
+            <svg width="140" height="140" viewBox="0 0 140 140">
+              <circle cx="70" cy="70" r="54" fill="none" stroke="rgba(244,242,233,0.08)" stroke-width="10"></circle>
+              <circle cx="70" cy="70" r="54" fill="none" stroke="{{accentYellow}}" stroke-width="10" stroke-linecap="round" stroke-dasharray="339" stroke-dashoffset="{{healthOffset}}" transform="rotate(-90 70 70)"></circle>
+              <text x="70" y="64" text-anchor="middle" font-family="Oswald, sans-serif" font-size="34" font-weight="700" fill="#F1ECDF">{{cHealth}}</text>
+              <text x="70" y="86" text-anchor="middle" font-family="PT Sans, sans-serif" font-size="11" fill="#9C9788">із 100</text>
+            </svg>
+            <span style="font-size:13px; font-weight:700; color:#F1ECDF;">Health Score</span>
+            <span style="font-size:11.5px; color:#6B675C; text-align:center;">Зрілість 18 напрямків бізнесу</span>
+          </div>
+
+          <div style="padding:28px; display:flex; flex-direction:column; gap:22px;">
+
+            <div class="kpi-grid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:14px;">
+
+              <div class="kpi-tile" style="border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:8px;">
+                <span style="font-size:12px; color:#9C9788;">Виручка</span>
+                <div style="display:flex; align-items:baseline; gap:8px;">
+                  <span style="font-family:'Oswald', sans-serif; font-size:26px; font-weight:700; color:#F1ECDF;">+{{cKpi1}}%</span>
+                  <span style="display:inline-flex; align-items:center; gap:3px; font-size:11px; color:{{accentYellow}};"><svg width="7" height="7" viewBox="0 0 8 8"><path d="M4 1l3.5 6h-7z" fill="{{accentYellow}}"></path></svg>потенціал</span>
+                </div>
+                <svg width="100%" height="24" viewBox="0 0 90 24"><path class="spark-draw" d="M2,20 C18,21 26,15 38,13 C56,10 66,4 88,2" fill="none" stroke="{{accentYellow}}" stroke-width="2" stroke-linecap="round"></path></svg>
+              </div>
+
+              <div class="kpi-tile" style="border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:8px;">
+                <span style="font-size:12px; color:#9C9788;">CAC</span>
+                <div style="display:flex; align-items:baseline; gap:8px;">
+                  <span style="font-family:'Oswald', sans-serif; font-size:26px; font-weight:700; color:#F1ECDF;">−{{cKpi2}}%</span>
+                  <span style="display:inline-flex; align-items:center; gap:3px; font-size:11px; color:{{accentYellow}};"><svg width="7" height="7" viewBox="0 0 8 8"><path d="M4 7L0.5 1h7z" fill="{{accentYellow}}"></path></svg>ціль</span>
+                </div>
+                <svg width="100%" height="24" viewBox="0 0 90 24"><path class="spark-draw" d="M2,4 C18,6 26,10 38,13 C56,17 66,20 88,21" fill="none" stroke="{{accentYellow}}" stroke-width="2" stroke-linecap="round"></path></svg>
+              </div>
+
+              <div class="kpi-tile" style="border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:8px;">
+                <span style="font-size:12px; color:#9C9788;">Повторні покупки</span>
+                <div style="display:flex; align-items:baseline; gap:8px;">
+                  <span style="font-family:'Oswald', sans-serif; font-size:26px; font-weight:700; color:#F1ECDF;">{{cKpi3}}%</span>
+                  <span style="display:inline-flex; align-items:center; gap:3px; font-size:11px; color:{{accentYellow}};"><svg width="7" height="7" viewBox="0 0 8 8"><path d="M4 1l3.5 6h-7z" fill="{{accentYellow}}"></path></svg>ціль</span>
+                </div>
+                <svg width="100%" height="24" viewBox="0 0 90 24"><path class="spark-draw" d="M2,18 C18,17 26,14 38,12 C56,9 66,6 88,3" fill="none" stroke="{{accentYellow}}" stroke-width="2" stroke-linecap="round"></path></svg>
+              </div>
+
+            </div>
+
+            <svg width="100%" height="90" viewBox="0 0 520 90" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="dashFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="{{accentYellow}}" stop-opacity="0.25"></stop>
+                  <stop offset="100%" stop-color="{{accentYellow}}" stop-opacity="0"></stop>
+                </linearGradient>
+              </defs>
+              <line x1="0" y1="20" x2="520" y2="20" stroke="rgba(244,242,233,0.06)"></line>
+              <line x1="0" y1="50" x2="520" y2="50" stroke="rgba(244,242,233,0.06)"></line>
+              <path d="M0,60 C60,64 90,44 140,42 C200,40 230,54 280,48 C340,40 380,16 440,12 C470,10 500,8 520,6 L520,90 L0,90 Z" fill="url(#dashFill)"></path>
+              <path class="spark-draw-lg" d="M0,60 C60,64 90,44 140,42 C200,40 230,54 280,48 C340,40 380,16 440,12 C470,10 500,8 520,6" fill="none" stroke="{{accentYellow}}" stroke-width="2.5" stroke-linecap="round"></path>
+            </svg>
+
+          </div>
+        </div>
       </div>
     </section>
 
@@ -369,8 +482,51 @@
 </x-dc>
 <script data-dc-script data-props='{"accentAlert":{"editor":"color","default":"#E8552F","section":"Кольори"},"accentYellow":{"editor":"color","default":"#F9CB28","section":"Кольори"}}'>
 class Component extends DCLogic {
+  componentDidMount() {
+    this._targets = { health: 74, kpi1: 24, kpi2: 38, kpi3: 91 };
+    const duration = 1400;
+    let start = null;
+    const ease = (t) => 1 - Math.pow(1 - t, 3);
+    const step = (ts) => {
+      if (start === null) start = ts;
+      const p = Math.min(1, (ts - start) / duration);
+      const e = ease(p);
+      this.setState({
+        cHealth: Math.round(this._targets.health * e),
+        cKpi1: Math.round(this._targets.kpi1 * e),
+        cKpi2: Math.round(this._targets.kpi2 * e),
+        cKpi3: Math.round(this._targets.kpi3 * e),
+      });
+      if (p < 1) {
+        this._raf = requestAnimationFrame(step);
+      }
+    };
+    this._raf = requestAnimationFrame(step);
+  }
+
+  componentWillUnmount() {
+    if (this._raf) cancelAnimationFrame(this._raf);
+  }
+
   renderVals() {
     const menuOpen = !!this.state.menuOpen;
+
+    const cHealth = this.state.cHealth ?? 0;
+    const cKpi1 = this.state.cKpi1 ?? 0;
+    const cKpi2 = this.state.cKpi2 ?? 0;
+    const cKpi3 = this.state.cKpi3 ?? 0;
+    const gaugeCirc = 339;
+    const healthOffset = Math.round(gaugeCirc * (1 - cHealth / 100));
+
+    const tiltX = this.state.tiltX ?? 0;
+    const tiltY = this.state.tiltY ?? 0;
+    const handleTilt = (e) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const px = (e.clientX - rect.left) / rect.width - 0.5;
+      const py = (e.clientY - rect.top) / rect.height - 0.5;
+      this.setState({ tiltX: py * -5, tiltY: px * 7 });
+    };
+    const resetTilt = () => this.setState({ tiltX: 0, tiltY: 0 });
     const toggleMenu = () => this.setState({ menuOpen: !this.state.menuOpen });
     const closeMenu = () => this.setState({ menuOpen: false });
 
@@ -392,6 +548,8 @@ class Component extends DCLogic {
       menuClosed: !menuOpen,
       toggleMenu,
       closeMenu,
+      cHealth, healthOffset, cKpi1, cKpi2, cKpi3,
+      tiltX, tiltY, handleTilt, resetTilt,
       s1, s2, s3, s4, s5,
       s1Symbol: s1 ? '−' : '+',
       s2Symbol: s2 ? '−' : '+',
