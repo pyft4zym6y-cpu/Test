@@ -178,7 +178,7 @@
                 <path id="badgeRing" d="M95,17 A78,78 0 1 1 94.99,17.01"></path>
               </defs>
               <text font-family="Oswald, sans-serif" font-size="10.5" letter-spacing="2" fill="#D9D4C6">
-                <textPath href="#badgeRing" startOffset="0%">ДІАГНОСТИКА • АУДИТ • КОНСАЛТИНГ • УПРАВЛІННЯ • ДІАГНОСТИКА • АУДИТ • КОНСАЛТИНГ • УПРАВЛІННЯ •</textPath>
+                <textPath href="#badgeRing" xlink:href="#badgeRing" startOffset="0%">ДІАГНОСТИКА • АУДИТ • КОНСАЛТИНГ • УПРАВЛІННЯ • ДІАГНОСТИКА • АУДИТ • КОНСАЛТИНГ • УПРАВЛІННЯ •</textPath>
               </text>
             </svg>
             <div class="badge-inner" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:108px; height:108px; border-radius:50%; background:{{accentYellow}}; border:3px solid #14140F; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#14140F; font-family:'Oswald', sans-serif; font-weight:700; font-size:14px; letter-spacing:0.02em; text-transform:uppercase; text-align:center; line-height:1.3;">
@@ -246,7 +246,7 @@
         <p style="font-size:15px; color:#9C9788; margin:0; max-width:560px;">Після аудиту ви отримуєте не PDF, а робочий дашборд: зрілість напрямків, розрив у грошах і що саме тягне назад.</p>
       </div>
 
-      <div class="dash-card" onMouseMove="{{handleTilt}}" onMouseLeave="{{resetTilt}}" style="position:relative; background:#1D1D16; border:2.5px solid rgba(244,242,233,0.18); border-radius:22px; overflow:hidden; transform:perspective(1000px) rotateX({{tiltX}}deg) rotateY({{tiltY}}deg); box-shadow:0 24px 50px rgba(0,0,0,0.4);">
+      <div class="dash-card" style="position:relative; background:#1D1D16; border:2.5px solid rgba(244,242,233,0.18); border-radius:22px; overflow:hidden; box-shadow:0 24px 50px rgba(0,0,0,0.4);">
 
         <div style="display:flex; align-items:center; gap:8px; padding:14px 20px; border-bottom:1px solid rgba(244,242,233,0.08);">
           <span style="width:9px; height:9px; border-radius:50%; background:#E8552F; display:inline-block;"></span>
@@ -545,15 +545,6 @@ class Component extends DCLogic {
     const gaugeCirc = 339;
     const healthOffset = Math.round(gaugeCirc * (1 - cHealth / 100));
 
-    const tiltX = this.state.tiltX ?? 0;
-    const tiltY = this.state.tiltY ?? 0;
-    const handleTilt = (e) => {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const px = (e.clientX - rect.left) / rect.width - 0.5;
-      const py = (e.clientY - rect.top) / rect.height - 0.5;
-      this.setState({ tiltX: py * -5, tiltY: px * 7 });
-    };
-    const resetTilt = () => this.setState({ tiltX: 0, tiltY: 0 });
     const toggleMenu = () => this.setState({ menuOpen: !this.state.menuOpen });
     const closeMenu = () => this.setState({ menuOpen: false });
 
@@ -576,7 +567,6 @@ class Component extends DCLogic {
       toggleMenu,
       closeMenu,
       cHealth, healthOffset, cKpi1, cKpi2, cKpi3,
-      tiltX, tiltY, handleTilt, resetTilt,
       s1, s2, s3, s4, s5,
       s1Symbol: s1 ? '−' : '+',
       s2Symbol: s2 ? '−' : '+',
