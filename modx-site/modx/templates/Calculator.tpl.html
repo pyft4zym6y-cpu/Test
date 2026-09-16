@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>[[*pagetitle]] — {{BRAND}}</title>
+  <meta name="description" content="[[*description]]">
+  <link rel="canonical" href="[[~[[*id]]]]">
+</head>
+<body>
+  [[$Header]]
+  [[$Breadcrumbs]]
+
+  <article class="calculator-page">
+    <h1>[[*pagetitle]]</h1>
+    <p>[[*introtext]]</p>
+
+    <div id="calculator-root" data-lead-endpoint="/api/lead">
+      <!-- Інтерактивний віджет калькулятора монтується сюди окремим JS-бандлом. -->
+      <noscript>Увімкніть JavaScript, щоб скористатись калькулятором.</noscript>
+    </div>
+  </article>
+
+  [[$Footer]]
+
+  <script src="/assets/calculator/calculator.js" defer></script>
+</body>
+</html>
+
+<!--
+  calculator.js — окремий фронтенд-проєкт (аналогічно калькулятору
+  weexp.agency: кроки → ніші → ланцюгова модель → форма заявки). Логіка й
+  збірка цього віджета — окрема задача, тут лише точка монтування.
+-->

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>[[*pagetitle]] — {{BRAND}}</title>
+  <meta name="description" content="[[*description]]">
+  <link rel="canonical" href="[[~[[*id]]]]">
+</head>
+<body>
+  [[$Header]]
+  [[$Breadcrumbs]]
+
+  <header class="hub-intro">
+    <h1>[[*pagetitle]]</h1>
+    <p>[[*introtext]]</p>
+  </header>
+
+  <!-- Фільтр за нішею/симптомом — клієнтський JS (data-атрибути карток),
+       без переzagruzki сторінки. Базова версія без фільтра: просто список. -->
+  <section class="results-grid">
+    [[pdoResources? &parents=`[[*id]]` &tpl=`CaseCard` &sortby=`publishedon` &sortdir=`DESC` &limit=`0`]]
+  </section>
+
+  [[$Footer]]
+</body>
+</html>

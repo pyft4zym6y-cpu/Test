@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>[[*pagetitle]] — {{BRAND}}</title>
+  <meta name="description" content="[[*excerpt]]">
+  <link rel="canonical" href="[[~[[*id]]]]">
+</head>
+<body>
+  [[$Header]]
+  [[$Breadcrumbs]]
+
+  <article class="blog-post">
+    <h1>[[*pagetitle]]</h1>
+    [[*cover_image:notempty=`<img class="blog-post__cover" src="[[*cover_image]]" alt="[[*pagetitle]]">`]]
+
+    <div class="blog-post__body">
+      [[*content]]
+    </div>
+
+    <section class="related-posts">
+      <h2>Пов'язане</h2>
+      [[!RelatedBySymptom? &template=`[[*id]]` &tpl=`BlogCard` &limit=`3`]]
+    </section>
+  </article>
+
+  [[$Footer]]
+</body>
+</html>

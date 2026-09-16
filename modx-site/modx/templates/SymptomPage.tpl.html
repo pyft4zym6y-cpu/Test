@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>[[*pagetitle]] — {{BRAND}}</title>
+  <meta name="description" content="[[*description]]">
+  <link rel="canonical" href="[[~[[*id]]]]">
+</head>
+<body>
+  [[$Header]]
+  [[$Breadcrumbs]]
+
+  <article class="symptom-page">
+    <h1>[[*pagetitle]]</h1>
+
+    <p class="short-answer">[[*short_answer]]</p>
+
+    <div class="symptom-body">
+      [[*content]]
+    </div>
+
+    <section class="related-solutions">
+      <h2>Що з цим робити</h2>
+      [[pdoResources? &resources=`[[*related_solutions]]` &tpl=`SolutionCard`]]
+    </section>
+
+    <section class="related-cases">
+      <h2>Хто вже проходив через це</h2>
+      [[!RelatedBySymptom? &template=`[[*case_template_id]]` &tpl=`CaseCard` &limit=`2`]]
+    </section>
+
+    [[$CtaBrief? &cta_text=`Побачити, скільки саме втрачаєте на цьому`]]
+  </article>
+
+  [[$Footer]]
+</body>
+</html>
+
+<!--
+  &resources=`[[*related_solutions]]` — если TV related_solutions пуст,
+  этот параметр pdoResources проигнорирует блок; тогда остаётся только
+  автоматический RelatedBySymptom. &template=`[[*case_template_id]]` —
+  плейсхолдер под фактический ID шаблона CaseDetail (подставить после
+  создания шаблонов в MODX).
+-->

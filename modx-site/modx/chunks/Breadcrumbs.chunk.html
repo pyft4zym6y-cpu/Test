@@ -1,0 +1,12 @@
+<nav class="breadcrumbs" aria-label="Хлібні крихти">
+  <a href="[[~1]]">Головна</a>
+  [[+crumb_parent:notempty=` <span>›</span> <a href="[[+crumb_parent_url]]">[[+crumb_parent_title]]</a>`]]
+  <span>›</span>
+  <span aria-current="page">[[*pagetitle]]</span>
+</nav>
+
+<!--
+  Плейсхолдеры [[+crumb_parent...]] заполняются в шаблоне перед вызовом
+  чанка (через [[$Breadcrumbs? &crumb_parent=`1` &crumb_parent_url=... ]])
+  либо простым сниппетом-обёрткой, если понадобится больше уровней глубины.
+-->

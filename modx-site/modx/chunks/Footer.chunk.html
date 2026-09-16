@@ -1,0 +1,17 @@
+<footer class="site-footer">
+  <div class="site-footer__brand">{{BRAND}}</div>
+
+  <div class="site-footer__contacts">
+    <a href="mailto:{{CONTACT_EMAIL}}">{{CONTACT_EMAIL}}</a>
+    <a href="tel:{{CONTACT_PHONE}}">{{CONTACT_PHONE}}</a>
+  </div>
+
+  <nav class="site-footer__legal" aria-label="Юридична інформація">
+    <a href="[[~[[*privacy_id]]]]">Політика конфіденційності</a>
+    <a href="[[~[[*terms_id]]]]">Умови використання</a>
+  </nav>
+
+  <div class="site-footer__copyright">
+    © [[!date? &format=`Y`]] {{BRAND}}. Усі права захищені.
+  </div>
+</footer>

@@ -1,0 +1,23 @@
+<header class="site-header">
+  <a class="site-header__logo" href="[[~1]]">{{BRAND}}</a>
+
+  <nav class="site-header__nav" aria-label="Головна навігація">
+    <a href="[[~[[*symptoms_id]]]]">Симптоми</a>
+    <a href="[[~[[*solutions_id]]]]">Як ми працюємо</a>
+    <a href="[[~[[*results_id]]]]">Результати</a>
+    <a href="[[~[[*calculator_id]]]]">Калькулятор</a>
+    <a href="[[~[[*about_id]]]]">Про нас</a>
+    <a href="[[~[[*resources_id]]]]">Ресурси</a>
+    <a href="[[~[[*contact_id]]]]">Контакти</a>
+  </nav>
+
+  <a class="site-header__cta" href="[[~[[*brief_id]]]]">Заповнити бриф</a>
+</header>
+
+<!--
+  На старте пункты меню — плейсхолдеры [[*symptoms_id]] и т.д.: задать их
+  как System Settings или Resource Fields с ID соответствующих контейнеров,
+  либо (рекомендуется после утверждения дерева) заменить весь <nav> на
+  [[pdoMenu? &parents=`0` &level=`1`]], чтобы меню строилось из дерева
+  ресурсов автоматически.
+-->

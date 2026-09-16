@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>[[*pagetitle]] — {{BRAND}}</title>
+  <meta name="description" content="[[*description]]">
+  <link rel="canonical" href="[[~[[*id]]]]">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+  [[$Header]]
+
+  <section class="hero">
+    <h1>[[*longtitle]]</h1>
+    <p>[[*introtext]]</p>
+    [[$CtaBrief]]
+  </section>
+
+  <section class="home-symptoms">
+    <h2>Впізнайте свою проблему</h2>
+    [[pdoResources? &parents=`[[*symptoms_id]]` &tpl=`SymptomCard` &limit=`5`]]
+    <a href="[[~[[*symptoms_id]]]]">Усі симптоми →</a>
+  </section>
+
+  <section class="home-solutions">
+    <h2>Як ми працюємо</h2>
+    [[pdoResources? &parents=`[[*solutions_id]]` &tpl=`SolutionCard` &limit=`3`]]
+  </section>
+
+  <section class="home-results">
+    <h2>Результати</h2>
+    [[pdoResources? &parents=`[[*results_id]]` &tpl=`CaseCard` &limit=`3` &sortby=`publishedon` &sortdir=`DESC`]]
+    <a href="[[~[[*results_id]]]]">Усі кейси →</a>
+  </section>
+
+  [[$Footer]]
+</body>
+</html>
+
+<!--
+  [[pdoResources]] — из пакета pdoTools (стандарт для листингов в MODX).
+  Если pdoTools не устанавливается, заменить на связку getResources +
+  свои параметры (синтаксис аналогичный).
+  [[*symptoms_id]] и т.п. — задать как System Settings с ID контейнеров
+  после создания дерева ресурсов.
+-->

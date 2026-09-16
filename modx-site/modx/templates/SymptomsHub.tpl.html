@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>[[*pagetitle]] — {{BRAND}}</title>
+  <meta name="description" content="[[*description]]">
+  <link rel="canonical" href="[[~[[*id]]]]">
+</head>
+<body>
+  [[$Header]]
+  [[$Breadcrumbs]]
+
+  <header class="hub-intro">
+    <h1>[[*pagetitle]]</h1>
+    <p>[[*introtext]]</p>
+  </header>
+
+  <section class="symptoms-grid">
+    [[pdoResources? &parents=`[[*id]]` &tpl=`SymptomCard` &sortby=`menuindex` &sortdir=`ASC`]]
+  </section>
+
+  [[$Footer]]
+</body>
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>[[*pagetitle]] — {{BRAND}}</title>
+  <meta name="description" content="[[*description]]">
+  <link rel="canonical" href="[[~[[*id]]]]">
+</head>
+<body>
+  [[$Header]]
+  [[$Breadcrumbs]]
+
+  <article class="static-page">
+    <h1>[[*pagetitle]]</h1>
+    <div class="static-page__body">
+      [[*content]]
+    </div>
+
+    [[*show_contact_form:is=`1`:then=`[[$ContactForm]]`]]
+  </article>
+
+  [[$Footer]]
+</body>
+</html>
+
+<!--
+  Один шаблон для /about, /contact, /privacy, /terms. Для /contact включить
+  TV show_contact_form → появится чанк ContactForm (форма на базе FormIt,
+  лиди — на тот же /api/lead или mailto, как на weexp.agency).
+-->

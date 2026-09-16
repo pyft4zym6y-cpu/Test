@@ -1,0 +1,32 @@
+[[!FormIt?
+  &hooks=`spam,email`
+  &emailTpl=`ContactFormEmail`
+  &emailSubject=`Нова заявка з {{BRAND}}`
+  &emailToName=`{{BRAND}}`
+  &emailTo=`{{CONTACT_EMAIL}}`
+  &successMessage=`Дякуємо! Ми відповімо найближчим часом.`
+  &validate=`name:required,phone:required,email:email`
+]]
+
+<form action="[[~[[*id]]]]" method="post" class="contact-form">
+  [[!+fi.successMessage]]
+  <label>Ім'я
+    <input type="text" name="name" value="[[!+fi.name]]" required>
+  </label>
+  <label>Телефон
+    <input type="tel" name="phone" value="[[!+fi.phone]]" required>
+  </label>
+  <label>Email (необов'язково)
+    <input type="email" name="email" value="[[!+fi.email]]">
+  </label>
+  <label>Повідомлення
+    <textarea name="message">[[!+fi.message]]</textarea>
+  </label>
+  <input type="hidden" name="nospam:blank" value="">
+  <button type="submit">Надіслати</button>
+</form>
+
+<!--
+  FormIt (стандартний сніппет-пакет MODX) — форма і антиспам-хук з коробки.
+  emailTo/CONTACT_EMAIL — підставити реальний email власника перед запуском.
+-->

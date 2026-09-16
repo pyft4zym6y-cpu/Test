@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>[[*pagetitle]] — {{BRAND}}</title>
+  <meta name="description" content="[[*description]]">
+  <link rel="canonical" href="[[~[[*id]]]]">
+</head>
+<body>
+  [[$Header]]
+  [[$Breadcrumbs]]
+
+  <article class="solution-page">
+    <h1>[[*pagetitle]]</h1>
+    <p class="solution-meta">[[*price_note]] · [[*duration]]</p>
+
+    <div class="solution-body">
+      [[*content]]
+    </div>
+
+    <section class="related-cases">
+      <h2>Приклади</h2>
+      [[!RelatedBySymptom? &tag=`[[*format_code]]` &template=`[[*case_template_id]]` &tpl=`CaseCard` &limit=`2`]]
+    </section>
+
+    [[$CtaBrief]]
+  </article>
+
+  [[$Footer]]
+</body>
+</html>
