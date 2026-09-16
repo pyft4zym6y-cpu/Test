@@ -49,6 +49,13 @@
     "citedy-seo-agent": {
       "type": "http",
       "url": "https://mcp.citedy.com/mcp"
+    },
+    "21st-magic": {
+      "type": "http",
+      "url": "https://21st.dev/api/mcp",
+      "headers": {
+        "x-api-key": "${API_KEY_21ST:-}"
+      }
     }
   }
 }
